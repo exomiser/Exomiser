@@ -64,12 +64,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
         this.jannovarData = loadJannovarData();
         this.dataSource = loadGenomeDataSource();
-
-        mvStore = new MVStore.Builder()
-                .fileName("C:/Users/hhx640/Documents/exomiser-build/data/allele_importer/mvStore/alleles.mv.db")
-                .readOnly()
-                .open();
-        logger.info("MVStore opened with maps: {}", mvStore.getMapNames());
+        this.mvStore = openMvStore();
 
         logger.info("{}", genomeProperties.getDatasource());
     }
@@ -109,7 +104,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             return new DefaultFrequencyDao(dataSource);
         }
         return new DefaultFrequencyDaoMvStore(mvStore);
-//        return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
     }
 
     @Override
@@ -119,7 +113,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             return new DefaultPathogenicityDao(dataSource);
         }
         return new DefaultPathogenicityDaoMvStore(mvStore);
-//        return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
     }
 
     protected TabixDataSource defaultFrequencyTabixDataSource() {
@@ -229,6 +222,17 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         return transcriptFilePath;
     }
 
+    private MVStore openMvStore() {
+        String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
+
+        MVStore store = new MVStore.Builder()
+                .fileName(genomeData.resolveAbsoluteResourcePath(mvStoreFileName).toString())
+                .readOnly()
+                .open();
+        logger.info("MVStore opened with maps: {}", store.getMapNames());
+        return store;
+    }
+
     private DataSource loadGenomeDataSource() {
         return new HikariDataSource(genomeDataSourceConfig());
     }
@@ -237,11 +241,11 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         //omit the .h2.db extensions
         String dbFileName = String.format("%s_exomiser_genome", genomeData.getVersionAssemblyPrefix());
 
-        Path dbPath = genomeData.getPath().resolve(dbFileName);
+        Path dbPath = genomeData.resolveAbsoluteResourcePath(dbFileName);
 
         String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
 
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
+        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath, startUpArgs);
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
