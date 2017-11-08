@@ -65,16 +65,37 @@ public class ResourceConfig {
         Set<Resource> resources = new LinkedHashSet<>();
 //            resources.add(exampleResource());
         resources.add(orphanetResource());
+        resources.add(diseaseTermsResource());
+        resources.add(diseasePhenotypeResource());
+
+        //ontologies
         resources.add(hpoResource());
+        resources.add(mpResource());
+        resources.add(zpResource());
+        resources.add(hpHpResource());
+        resources.add(hpMpResource());
+        resources.add(hpZpResource());
+
+
         //OMIM group
         resources.add(omimMimToGeneResource());
         resources.add(omimMorbidMapResource());
         resources.add(hpoPhenotypeAnnotationsResource());
-
         resources.add(entrezToSymResource());
+
         //Exome Walker
         resources.add(exomeWalkerPhenotypicSeriesResource());
         resources.add(exomeWalkerOmimToGeneResource());
+        // mouse
+        resources.add(mgiPhenotypeResource());
+        resources.add(impcPhenotypeResource());
+        resources.add(mouseHomoloGeneOrthologResource());
+        resources.add(mouseEnsemblOrthologResource());
+
+        // fish
+        resources.add(fishPhenotypeResource());
+        resources.add(fishOrthologResource());
+        resources.add(fishGeneLabelResource());
 
         return resources;
 
@@ -117,9 +138,73 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(HPOOntologyFileParser.class);
         //resource groups
-        resource.setResourceGroupName("");
-        resource.setResourceGroupParserClass(null);
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
+        return resource;
+    }
 
+    @Bean
+    public Resource mpResource() {
+        logger.info("Making MP resource");
+        Resource resource = new Resource("MP");
+        populateResourceFromProperty("mp", resource);
+        //parsing
+        resource.setParserClass(MPOntologyFileParser.class);
+        //resource groups
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource zpResource() {
+        logger.info("Making ZPOntologyFileParser resource");
+        Resource resource = new Resource("ZPOntologyFileParser");
+        populateResourceFromProperty("zp", resource);
+        //parsing
+        resource.setParserClass(ZPOntologyFileParser.class);
+        //resource groups
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource hpHpResource() {
+        logger.info("Making HPHPMappingParser resource");
+        Resource resource = new Resource("HPHPMappingParser");
+        populateResourceFromProperty("hphp", resource);
+        //parsing
+        resource.setParserClass(HPHPMapperParser.class);
+        //resource groups
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource hpMpResource() {
+        logger.info("Making HPMPMappingParser resource");
+        Resource resource = new Resource("HPMPMappingParser");
+        populateResourceFromProperty("hpmp", resource);
+        //parsing
+        resource.setParserClass(HPMPMapperParser.class);
+        //resource groups
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource hpZpResource() {
+        logger.info("Making HPZPMappingParser resource");
+        Resource resource = new Resource("HPZPMappingParser");
+        populateResourceFromProperty("hpzp", resource);
+        //parsing
+        resource.setParserClass(HPZPMapperParser.class);
+        //resource groups
+        resource.setResourceGroupName(OntologyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OntologyResourceGroupParser.class);
         return resource;
     }
 
@@ -131,13 +216,129 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(Orphanet2GeneParser.class);
         //resource groups
-        resource.setResourceGroupName("");
-        resource.setResourceGroupParserClass(null);
+        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
 
         return resource;
     }
 
+    @Bean
+    public Resource diseaseTermsResource() {
+        logger.info("Making disease terms resource");
+        Resource resource = new Resource("Disease_terms");
+        populateResourceFromProperty("diseaseterms", resource);
+        //parsing
+        resource.setParserClass(Disease2TermParser.class);
+        //resource groups
+        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
 
+        return resource;
+    }
+
+    @Bean
+    public Resource diseasePhenotypeResource() {
+        logger.info("Making disease phenotype resource");
+        Resource resource = new Resource("Disease_phenotypes");
+        populateResourceFromProperty("diseasephenotypes", resource);
+        //parsing
+        resource.setParserClass(DiseasePhenotypeParser.class);
+        //resource groups
+        resource.setResourceGroupName("");
+        resource.setResourceGroupParserClass(null);
+        return resource;
+    }
+
+    @Bean
+    public Resource mgiPhenotypeResource() {
+        logger.info("Making MGI phenotype resource");
+        Resource resource = new Resource("MGI_phenotypes");
+        populateResourceFromProperty("mgiphenotypes", resource);
+        //parsing
+        resource.setParserClass(MGIPhenotypeParser.class);
+        //resource groups
+        resource.setResourceGroupName(MouseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(MouseResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource impcPhenotypeResource() {
+        logger.info("Making IMPC phenotype resource");
+        Resource resource = new Resource("IMPC_phenotypes");
+        populateResourceFromProperty("impcphenotypes", resource);
+        //parsing
+        resource.setParserClass(IMPCPhenotypeParser.class);
+        //resource groups
+        resource.setResourceGroupName(MouseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(MouseResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource mouseHomoloGeneOrthologResource() {
+        logger.info("Making HomoloGene Mouse Ortholog phenotype resource");
+        Resource resource = new Resource("Mouse_Homologene_orthologs");
+        populateResourceFromProperty("mousehomologeneorthologs", resource);
+        //parsing
+        resource.setParserClass(MouseHomoloGeneOrthologParser.class);
+        //resource groups
+        resource.setResourceGroupName(MouseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(MouseResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource mouseEnsemblOrthologResource() {
+        logger.info("Making Ensembl Mouse Ortholog phenotype resource");
+        Resource resource = new Resource("Mouse_Ensembl_orthologs");
+        populateResourceFromProperty("mouseensemblorthologs", resource);
+        //parsing
+        resource.setParserClass(MouseEnsemblOrthologParser.class);
+        //resource groups
+        resource.setResourceGroupName(MouseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(MouseResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource fishPhenotypeResource() {
+        logger.info("Making Fish phenotype resource");
+        Resource resource = new Resource("Fish_phenotypes");
+        populateResourceFromProperty("fishphenotypes", resource);
+        //parsing
+        resource.setParserClass(FishPhenotypeParser.class);
+        //resource groups
+        resource.setResourceGroupName(FishResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(FishResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource fishOrthologResource() {
+        logger.info("Making Fish Ortholog phenotype resource");
+        Resource resource = new Resource("Fish_orthologs");
+        populateResourceFromProperty("fishorthologs", resource);
+        //parsing
+        resource.setParserClass(FishOrthologParser.class);
+        //resource groups
+        resource.setResourceGroupName(FishResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(FishResourceGroupParser.class);
+        return resource;
+    }
+
+    @Bean
+    public Resource fishGeneLabelResource() {
+        logger.info("Making Fish gene label resource");
+        Resource resource = new Resource("Fish_gene_labels");
+        populateResourceFromProperty("fishgenelabels", resource);
+        //parsing
+        resource.setParserClass(FishGeneLabelParser.class);
+        //resource groups
+        resource.setResourceGroupName(FishResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(FishResourceGroupParser.class);
+        return resource;
+    }
 
     @Bean
     public Resource omimMimToGeneResource() {

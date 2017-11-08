@@ -48,19 +48,14 @@ import java.util.Map;
  * @version 0.04 (27 November, 2013)
  * @author Peter Robinson
  */
-public class HPOOntologyFileParser implements ResourceParser {
+public class MPOntologyFileParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(HPOOntologyFileParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(MPOntologyFileParser.class);
 
-    /**
-     * A variable that keeps count of the number of rows added to the database.
-     */
-    int n_row = 0;
+    private final Map<String, String> mpId2termMap;
 
-    private final Map<String, String> hpId2termMap;
-
-    public HPOOntologyFileParser(Map<String, String> hpId2termMap) {
-        this.hpId2termMap = hpId2termMap;
+    public MPOntologyFileParser(Map<String, String> mpId2termMap) {
+        this.mpId2termMap = mpId2termMap;
     }
 
     /**
@@ -115,12 +110,12 @@ public class HPOOntologyFileParser implements ResourceParser {
                     }
                     termCount++;
                 } else if (line.startsWith("is_obsolete")) {
-                    id = null;
-                    name = null;
+                    //id = null;
+                    //name = null;
                     synonymLst.clear();
                 } else if (line.startsWith("[Term]") && name != null && id != null) {
-                    hpId2termMap.put(id,name);
-                    writer.write(String.format("%s|%s|%s", name, id, synonymLst));
+                    mpId2termMap.put(id,name);
+                    writer.write(String.format("%s|%s", id, name));
                     writer.newLine();
 //		    logger.info("{} {} {}", name,id,synonymLst);
                     name = null;
@@ -130,7 +125,7 @@ public class HPOOntologyFileParser implements ResourceParser {
             }
             if (name != null && id != null) {
                 writer.write(String.format("%s|%s|%s", name, id, synonymLst));
-                hpId2termMap.put(id,name);
+                mpId2termMap.put(id,name);
                 writer.newLine();
 //                logger.info("{} {} {}", name,id,synonymLst);
 
@@ -149,43 +144,5 @@ public class HPOOntologyFileParser implements ResourceParser {
         resource.setParseStatus(status);
         logger.info("{}", status);
     }
-
-//    /**
-//     * This function directly enters name/id pairs into the Exomiser database
-//     * @param preferred The actual term name of an HPO term
-//     * @param id The corresponding HPO term id
-//     * @param synLst A list of synonyms for this term (including the preferred name itself).
-//     */
-//    private void populateHPOTable(String preferred,String id, List<String>synLst) {
-//	String insert = "INSERT INTO hpo (lcname,id,prefname) VALUES(?,?,?);";
-//	try {
-//	    PreparedStatement instPS = connection.prepareStatement(insert);
-//	    for (String name:synLst) {
-//		String lcname = name.toLowerCase();
-//		instPS.setString(1,lcname);
-//		instPS.setString(2,id);
-//		instPS.setString(3,preferred);
-//		System.out.println(n_row + ": " + instPS);
-//		instPS.executeUpdate();
-//		n_row++;
-//	
-//	    }
-//	    
-//	} catch (SQLException e) {
-//	    e.printStackTrace();
-//	    System.err.println("[ERROR] SQLException");
-//	    System.out.println("Unable to insert into table, preferredname=\""+preferred +
-//			       "\", id=\""+id+"\"");
-//	    System.exit(1);
-//	} catch (Exception e) {
-//	    System.out.println("Unable to insert into table, preferredname=\""+preferred +
-//			       "\", id=\""+id+"\"");
-//	    e.printStackTrace();
-//	    System.exit(1);
-//
-//	}
-//
-//
-//    }
 }
 /* eof */
