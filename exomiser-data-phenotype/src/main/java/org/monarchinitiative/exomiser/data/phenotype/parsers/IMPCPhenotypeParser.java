@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
+import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -37,21 +38,29 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
 
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class IMPCPhenotypeParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(IMPCPhenotypeParser.class);
 
-    private final Map<String, String> disease2TermMap;
+    private final Map<String, String> mouse2PhenotypesMap;
+    private final Map<String, String> mouse2geneMap;
+    private final Map<String, String> mgiGeneId2Symbol;
 
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
-        this.disease2TermMap = disease2TermMap;
+
+    public IMPCPhenotypeParser(Map<String, String> mouse2PhenotypesMap, Map<String, String> mouse2GeneMap, Map<String,String> mgiGeneId2Symbol) {
+        this.mouse2geneMap = mouse2GeneMap;
+        this.mouse2PhenotypesMap = mouse2PhenotypesMap;
+        this.mgiGeneId2Symbol = mgiGeneId2Symbol;
     }
 
     @Override
@@ -60,22 +69,40 @@ public class Orphanet2GeneParser implements ResourceParser {
         Path outFile = outDir.resolve(resource.getParsedFileName());
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
+        Map<String, Set <String>> mouse2PhenotypeMap = new HashMap<>();
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
+                String[] fields = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                int mpIndex = fields.length - 7;
+                String mpId = fields[mpIndex];
+                String modelID = fields[6] + fields[3] + fields[7] + fields[9];
+                mouse2geneMap.put(modelID,fields[6]);
+                if (mouse2PhenotypeMap.containsKey(modelID)) {
+                    mouse2PhenotypeMap.get(modelID).add(mpId);
                 }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+                else{
+                    Set<String> mpIds = new HashSet<>();
+                    mpIds.add(mpId);
+                    mouse2PhenotypeMap.put(modelID,mpIds);
+                }
+            }
+            for (String modelId: mouse2PhenotypeMap.keySet()) {
+                Set<String> mpIds = mouse2PhenotypeMap.get(modelId);
+                mouse2PhenotypesMap.put(modelId, Joiner.on(",").join(mpIds));
+            }
+            int id = 1;
+            for (String modelId: mouse2PhenotypesMap.keySet()) {
+                String mpIds = mouse2PhenotypesMap.get(modelId);
+                String[] mgiIds = mouse2geneMap.get(modelId).split(",");
+                for (String mgiID : mgiIds) {
+                    if (null != mgiGeneId2Symbol.get(mgiID)) {
+                        String mgiSymbol = mgiGeneId2Symbol.get(mgiID);
+                        writer.write(String.format("%s|%s|%s|%s%n", mgiID, mgiSymbol, id, mpIds));
+                    }
+                }
+                id++;
             }
             status = ResourceOperationStatus.SUCCESS;
 

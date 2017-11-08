@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
+import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -37,21 +38,24 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
 
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class FishPhenotypeParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(FishPhenotypeParser.class);
 
-    private final Map<String, String> disease2TermMap;
+    private final Map<String, String> fishId2Symbol;
 
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
-        this.disease2TermMap = disease2TermMap;
+    public FishPhenotypeParser(Map<String, String> fishId2Symbol) {
+        this.fishId2Symbol = fishId2Symbol;
     }
 
     @Override
@@ -61,21 +65,29 @@ public class Orphanet2GeneParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
+            Map<String, Set <String>> fish2PhenotypeMap = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
+                String fishId = fields[0];
+                String zpID = fields[1];
+                if (zpID.startsWith("ZP:")) {
+                    if (fish2PhenotypeMap.containsKey(fishId)) {
+                        fish2PhenotypeMap.get(fishId).add(zpID);
+                    } else {
+                        Set<String> zpIds = new HashSet<>();
+                        zpIds.add(zpID);
+                        fish2PhenotypeMap.put(fishId, zpIds);
+                    }
                 }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+            }
+            int id = 1;
+            for (String fishId: fish2PhenotypeMap.keySet()) {
+                Set <String>  zpIds = fish2PhenotypeMap.get(fishId);
+                String fishSymbol = fishId2Symbol.get(fishId);
+                writer.write(String.format("%s|%s|%s|%s%n",fishId,fishSymbol,id,Joiner.on(",").join(zpIds)));
+                id++;
             }
             status = ResourceOperationStatus.SUCCESS;
 

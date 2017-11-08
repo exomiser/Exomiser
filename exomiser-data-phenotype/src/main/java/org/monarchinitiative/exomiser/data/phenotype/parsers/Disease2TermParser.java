@@ -44,13 +44,13 @@ import java.util.Map;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class Disease2TermParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(Disease2TermParser.class);
 
     private final Map<String, String> disease2TermMap;
 
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
+    public Disease2TermParser(Map<String, String> disease2TermMap) {
         this.disease2TermMap = disease2TermMap;
     }
 
@@ -64,18 +64,18 @@ public class Orphanet2GeneParser implements ResourceParser {
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
+                //logger.info("Line is " + line);
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
-                }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+                String diseaseId = fields[0] + ":" + fields[1];
+                String diseaseTerm = fields[2];
+                String[] diseaseTerms = diseaseTerm.split(";;");
+                diseaseTerm = diseaseTerms[0];
+                String hpId = fields[4];
+                disease2TermMap.put(diseaseId,diseaseTerm);
+            }
+            for (String diseaseId : disease2TermMap.keySet()){
+                String diseaseTerm = disease2TermMap.get(diseaseId);
+                writer.write(String.format("%s|%s%n", diseaseId ,diseaseTerm));
             }
             status = ResourceOperationStatus.SUCCESS;
 

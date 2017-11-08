@@ -25,6 +25,8 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
+import com.google.common.base.Joiner;
+import org.codehaus.plexus.util.StringUtils;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -37,22 +39,16 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
+import java.util.*;
 
 /**
 
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class DiseasePhenotypeParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
-
-    private final Map<String, String> disease2TermMap;
-
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
-        this.disease2TermMap = disease2TermMap;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(DiseasePhenotypeParser.class);
 
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
@@ -60,22 +56,27 @@ public class Orphanet2GeneParser implements ResourceParser {
         Path outFile = outDir.resolve(resource.getParsedFileName());
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
+        Map<String, Set <String>> disease2PhenotypeMap = new HashMap<>();;
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
+                //logger.info("Line is " + line);
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
+                String diseaseId = fields[0] + ":" + fields[1];
+                String hpId = fields[4];
+                if (disease2PhenotypeMap.containsKey(diseaseId)) {
+                    disease2PhenotypeMap.get(diseaseId).add(hpId);
                 }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+                else{
+                    Set<String> hpIds = new HashSet<>();
+                    hpIds.add(hpId);
+                    disease2PhenotypeMap.put(diseaseId,hpIds);
+                }
+            }
+            for (String diseaseId: disease2PhenotypeMap.keySet()) {
+                Set <String>  hpIds = disease2PhenotypeMap.get(diseaseId);
+                writer.write(String.format("%s|%s%n", diseaseId , Joiner.on(",").join(hpIds)));
             }
             status = ResourceOperationStatus.SUCCESS;
 

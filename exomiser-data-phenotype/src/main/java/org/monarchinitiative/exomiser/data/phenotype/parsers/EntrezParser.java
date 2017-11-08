@@ -66,24 +66,21 @@ public class EntrezParser implements ResourceParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] split = line.split("\t");
-                if (split.length != 3) {
+                if (split[0].equals("hgnc_id") || split[2].equals("entry withdrawn")
+                        || split[3].equals("phenotype")
+                        || split.length <= 18 || split[18].isEmpty())
                     continue;
-                }
-                String ens = split[0];
                 Integer entrez = null;
-                if (split[1].equals("")) {
-                    continue;
-                }
+
                 try {
-                    entrez = Integer.parseInt(split[1]);
+                    entrez = Integer.parseInt(split[18]);
                 } catch (NumberFormatException e) {
                     logger.error("Malformed line: {} (could not parse entrez gene field: '{}')", line, split[1]);
                 }
-
-                if (split[2] == null || split[2].isEmpty()) {
+                if (split[1] == null || split[1].isEmpty()) {
                     logger.warn("Could not extract symbol, skipping line: {}", line);
                 }
-                String symbol = split[2];
+                String symbol = split[1];
                 entrez2sym.put(entrez, symbol);
             }
 

@@ -44,14 +44,17 @@ import java.util.Map;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class HPMPMapperParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(HPMPMapperParser.class);
 
-    private final Map<String, String> disease2TermMap;
+    private final Map<String, String> hpId2termMap;
+    private final Map<String, String> mpId2termMap;
 
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
-        this.disease2TermMap = disease2TermMap;
+
+    public HPMPMapperParser(Map<String, String> hpId2termMap, Map<String, String> mpId2termMap) {
+        this.hpId2termMap = hpId2termMap;
+        this.mpId2termMap = mpId2termMap;
     }
 
     @Override
@@ -65,17 +68,29 @@ public class Orphanet2GeneParser implements ResourceParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
+                String queryId = fields[0];
+                queryId = queryId.replace("_",":");
+                String queryTerm = "";
+                if (null != hpId2termMap.get(queryId))
+                    queryTerm = hpId2termMap.get(queryId);
+                String hitId = fields[1];
+                hitId = hitId.replace("_",":");
+                String hitTerm = "";
+                if (null != mpId2termMap.get(hitId))
+                    hitTerm = mpId2termMap.get(hitId);
+                String simJ = fields[2];
+                String ic = fields[3];
+                double score = Math.sqrt(Double.parseDouble(simJ) * Double.parseDouble(ic));
+                String lcs = fields[4];
+                lcs = lcs.replace("_",":");
+                lcs = lcs.replace(";","");
+                if (lcs.contains("HP:")) {
+                    lcs = hpId2termMap.get(lcs) + " (" + lcs + ")";
                 }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+                else if (lcs.contains("MP:")){
+                    lcs = mpId2termMap.get(lcs) + " (" + lcs + ")";
+                }
+                writer.write(String.format("%s|%s|%s|%s|%s|%s|%s|%s%n", queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs));
             }
             status = ResourceOperationStatus.SUCCESS;
 

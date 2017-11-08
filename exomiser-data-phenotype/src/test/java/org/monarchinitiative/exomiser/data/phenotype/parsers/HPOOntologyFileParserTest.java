@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests for the HPO ontology parser
@@ -47,7 +49,8 @@ public class HPOOntologyFileParserTest {
         Resource testResource = new Resource("HPO");
         testResource.setExtractedFileName("hp.obo");
         testResource.setParsedFileName("hpoTestOut.pg");
-        HPOOntologyFileParser instance = new HPOOntologyFileParser();
+        Map<String, String> hpId2termMap = new HashMap<>();
+        HPOOntologyFileParser instance = new HPOOntologyFileParser(hpId2termMap);
         instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
     }
 

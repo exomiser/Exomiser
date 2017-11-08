@@ -18,11 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
@@ -40,45 +35,51 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
-
+ * Parse the good old human-phenotype-ontology.obo file (or alternatively the
+ * hp.obo file from our Hudson server). We want to create a table in the
+ * database with lcname - HP:id - preferred name, where lcname is the lower-case
+ * name or synonym, ID is the HPO id, and preferred name is the HPO Term name.
+ * We lower-case the name ans synonyms to be able to search only over lower
+ * cased names for the autosuggestion. However, we want to display the preferred
+ * name in the end.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @version 0.04 (27 November, 2013)
+ * @author Peter Robinson
  */
-public class Orphanet2GeneParser implements ResourceParser {
+public class FishGeneLabelParser implements ResourceParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Orphanet2GeneParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(FishGeneLabelParser.class);
 
-    private final Map<String, String> disease2TermMap;
+    private final Map<String, String> fishIdtoSymbol;
 
-    public Orphanet2GeneParser(Map<String, String> disease2TermMap) {
-        this.disease2TermMap = disease2TermMap;
+    public FishGeneLabelParser(Map<String, String> fishId2Symbol) {
+        this.fishIdtoSymbol = fishId2Symbol;
     }
 
+    /**
+     * This function does the actual work of parsing the HPO file.
+     *
+     * @param resource
+     * @param inDir Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param outDir Directory where output file is to be written
+     * @return
+     */
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
+
         Path inFile = inDir.resolve(resource.getExtractedFileName());
-        Path outFile = outDir.resolve(resource.getParsedFileName());
-        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+
+        logger.info("Parsing {} file: {}", resource.getName(), inFile);
         ResourceOperationStatus status;
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
-                if (fields.length != expectedFields) {
-                    //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
-                    continue;
-                }
-                String diseaseId = fields[0];
-                if (!diseaseId.startsWith("ORPHA"))
-                    continue;
-                String entrezGeneId = fields[1];
-                String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s%n", diseaseId , diseaseName, entrezGeneId));
+                fishIdtoSymbol.put(fields[0],fields[1]);
             }
+            reader.close();
             status = ResourceOperationStatus.SUCCESS;
-
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
@@ -86,7 +87,8 @@ public class Orphanet2GeneParser implements ResourceParser {
             logger.error(null, ex);
             status = ResourceOperationStatus.FAILURE;
         }
-        logger.info("{}", status);
         resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 }
+/* eof */
