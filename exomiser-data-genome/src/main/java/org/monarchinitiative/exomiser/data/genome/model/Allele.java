@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -104,7 +102,7 @@ public class Allele implements Comparable<Allele> {
     }
 
     @Override
-    public int compareTo(@NotNull Allele other) {
+    public int compareTo(Allele other) {
         if (this.chr != other.chr) {
             return Integer.compare(this.chr, other.chr);
         }
