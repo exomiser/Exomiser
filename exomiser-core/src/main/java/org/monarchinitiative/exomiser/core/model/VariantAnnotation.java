@@ -97,8 +97,13 @@ public class VariantAnnotation implements Variant {
         return variantEffect;
     }
 
-    public List<TranscriptAnnotation> getAnnotations() {
+    public List<TranscriptAnnotation> getTranscriptAnnotations() {
         return annotations;
+    }
+
+    @Override
+    public boolean hasTranscriptAnnotations() {
+        return !annotations.isEmpty();
     }
 
     public static VariantAnnotation empty() {

@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.db.resources;
 
-import org.monarchinitiative.exomiser.db.io.FileDownloadUtils;
+import org.monarchinitiative.exomiser.db.resources.io.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +42,10 @@ import java.time.Instant;
 public class ResourceDownloadHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceDownloadHandler.class);
+
+    private ResourceDownloadHandler() {
+        //static utility class
+    }
 
     public static void downloadResources(Iterable<Resource> externalResources, Path downloadPath) {
 

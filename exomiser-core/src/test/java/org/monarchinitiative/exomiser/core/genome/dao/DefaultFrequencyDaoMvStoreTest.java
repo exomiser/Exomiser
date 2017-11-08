@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import com.google.common.collect.ImmutableMap;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
@@ -44,7 +43,6 @@ public class DefaultFrequencyDaoMvStoreTest {
 
     public static final String FREQ_MAP_NAME = "alleles";
 
-    @NotNull
     private DefaultFrequencyDaoMvStore getInstance(String mapName, Map<String, String> value) {
         MVStore mvStore = buildMvStore(mapName, value);
         return new DefaultFrequencyDaoMvStore(mvStore);

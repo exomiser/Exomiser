@@ -219,7 +219,7 @@ public class VariantEvaluationTest {
     @Test
     public void testTranscriptAnnotationsAreEmptyByDefault() {
         VariantEvaluation variantEvaluation = testVariantBuilder().build();
-        assertThat(variantEvaluation.getAnnotations(), equalTo(Collections.emptyList()));
+        assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(Collections.emptyList()));
     }
 
     @Test
@@ -230,7 +230,7 @@ public class VariantEvaluationTest {
                 .annotations(annotations)
                 .build();
         System.out.println(annotations);
-        assertThat(variantEvaluation.getAnnotations(), equalTo(annotations));
+        assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(annotations));
     }
 
     @Test
@@ -489,7 +489,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testHasAnnotationsIsFalseByDefault() {
-        assertThat(instance.hasAnnotations(), is(false));
+        assertThat(instance.hasTranscriptAnnotations(), is(false));
     }
     
     @Test

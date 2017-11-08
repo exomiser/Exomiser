@@ -80,7 +80,7 @@ public final class TestVcfParser {
      * Single sample:    "1 123256213 . CA CC 0 . . GT 1/1"
      * MultiSample examples:
      * Single variation: "1 123256213 . CA CC 0 . . GT 1/1 0/1"
-     * Multi variantion: "1 123256213 . CA CC,CT 0 . . GT 1/1 1/2"
+     * Multi variation: "1 123256213 . CA CC,CT 0 . . GT 1/1 1/2"
      *
      * @param line
      * @return a VariantContext for the line provided.

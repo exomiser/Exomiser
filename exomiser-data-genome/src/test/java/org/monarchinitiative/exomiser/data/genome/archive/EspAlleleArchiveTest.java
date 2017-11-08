@@ -18,36 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package org.monarchinitiative.exomiser.db.parsers;
+package org.monarchinitiative.exomiser.data.genome.archive;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.db.resources.Resource;
 
 import java.nio.file.Paths;
 
-/**
- * Tests for the HPO ontology parser
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
- */
-public class HPOOntologyFileParserTest {
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-    /**
-     * Test of parseHPO method, of class HPOOntologyFileParser.
-     */
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+public class EspAlleleArchiveTest {
+
+    private final EspAlleleArchive espArchive = new EspAlleleArchive(Paths.get("file"));
+
     @Test
-    public void testParseHPO() {
-        System.out.println("parseHPO");
-        Resource testResource = new Resource("HPO");
-        testResource.setExtractedFileName("hp.obo");
-        testResource.setParsedFileName("hpoTestOut.pg");
-        HPOOntologyFileParser instance = new HPOOntologyFileParser();
-        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
+    public void archiveFileFormat() throws Exception {
+        assertThat(espArchive.getArchiveFileFormat(), equalTo("tgz"));
     }
-    
+
+    @Test
+    public void dataFileFormat() throws Exception {
+        assertThat(espArchive.getDataFileFormat(), equalTo("vcf"));
+    }
 }

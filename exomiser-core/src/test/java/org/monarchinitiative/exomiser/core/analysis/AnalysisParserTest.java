@@ -257,6 +257,13 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisStep_RegulatoryFeatureFilter() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("regulatoryFeatureFilter: {}"));
+        analysisSteps.add(new RegulatoryFeatureFilter());
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
     public void testParseAnalysisStep_IntervalFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {interval: 'chr10:122892600-122892700'}"));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 122892600, 122892700)));

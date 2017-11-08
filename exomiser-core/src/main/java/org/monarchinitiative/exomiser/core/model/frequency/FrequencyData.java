@@ -51,6 +51,14 @@ public class FrequencyData {
         return validate(rsId, Arrays.asList(frequency));
     }
 
+    public static FrequencyData of(Frequency frequency) {
+        return validate(RsId.empty(), Collections.singletonList(frequency));
+    }
+
+    public static FrequencyData of(Frequency... frequency) {
+        return validate(RsId.empty(), Arrays.asList(frequency));
+    }
+
     public static FrequencyData empty() {
         return EMPTY_DATA;
     }

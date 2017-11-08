@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
@@ -45,7 +44,6 @@ public class DefaultPathogenicityDaoMvStoreTest {
 
     public static final String PATH_MAP_NAME = "alleles";
 
-    @NotNull
     private DefaultPathogenicityDaoMvStore getInstance(String mapName, Map<String, String> value) {
         MVStore mvStore = buildMvStore(mapName, value);
         return new DefaultPathogenicityDaoMvStore(mvStore);

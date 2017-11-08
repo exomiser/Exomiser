@@ -36,7 +36,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 public abstract class AbstractFilterDataProvider implements VariantFilterDataProvider {
 
     protected final VariantDataService variantDataService;
-    protected final VariantFilter variantFilter;
+    private final VariantFilter variantFilter;
 
     /**
      * Provides the base functionality for all VariantFilterDataProviders.
@@ -48,15 +48,6 @@ public abstract class AbstractFilterDataProvider implements VariantFilterDataPro
         this.variantDataService = variantDataService;
         this.variantFilter = variantFilter;
     }
-
-    /**
-     * Classes extending this class must provide the variantEvaluation with the
-     * implementation-specific data.
-     *
-     * @param variantEvaluation
-     */
-    @Override
-    public abstract void provideVariantData(VariantEvaluation variantEvaluation);
 
     @Override
     public VariantFilter getDecoratedFilter() {

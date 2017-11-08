@@ -41,8 +41,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -71,27 +71,39 @@ public class AnalysisParser {
     }
 
     public Analysis parseAnalysis(Path analysisScript) {
-        Yaml yaml = new Yaml();
-        Map settingsMap = (Map) yaml.load(readPath(analysisScript));
+        Map settingsMap = loadMap(analysisScript);
         return constructAnalysisFromMap(settingsMap);
     }
 
     public Analysis parseAnalysis(String analysisDoc) {
-        Yaml yaml = new Yaml();
-        Map settingsMap = (Map) yaml.load(analysisDoc);
+        Map settingsMap = loadMap(analysisDoc);
         return constructAnalysisFromMap(settingsMap);
     }
 
     public OutputSettings parseOutputSettings(Path analysisScript) {
-        Yaml yaml = new Yaml();
-        Map settingsMap = (Map) yaml.load(readPath(analysisScript));
+        Map settingsMap = loadMap(analysisScript);
         return constructOutputSettingsFromMap(settingsMap);
     }
 
     public OutputSettings parseOutputSettings(String analysisDoc) {
-        Yaml yaml = new Yaml();
-        Map settingsMap = (Map) yaml.load(analysisDoc);
+        Map settingsMap = loadMap(analysisDoc);
         return constructOutputSettingsFromMap(settingsMap);
+    }
+
+    private Map loadMap(String analysisDoc) {
+        Yaml yaml = new Yaml();
+        return (Map) yaml.load(analysisDoc);
+    }
+
+    private Map loadMap(Path analysisScript) {
+        Yaml yaml = new Yaml();
+        try (InputStream inputStream = newInputStream(analysisScript)) {
+            CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, decoder));
+            return (Map) yaml.load(bufferedReader);
+        } catch (IOException ex) {
+            throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage(), ex);
+        }
     }
 
     private Analysis constructAnalysisFromMap(Map settingsMap) {
@@ -102,16 +114,6 @@ public class AnalysisParser {
     private OutputSettings constructOutputSettingsFromMap(Map settingsMap) {
         OutputSettingsConstructor outputSettingsConstructor = new OutputSettingsConstructor();
         return outputSettingsConstructor.construct((Map) settingsMap.get("outputOptions"));
-    }
-
-    private BufferedReader readPath(Path analysisDoc) {
-        try {
-            CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
-            Reader reader = new InputStreamReader(newInputStream(analysisDoc), decoder);
-            return new BufferedReader(reader);
-        } catch (IOException ex) {
-            throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage(), ex);
-        }
     }
 
     protected static class AnalysisFileNotFoundException extends RuntimeException {

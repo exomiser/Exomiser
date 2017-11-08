@@ -25,6 +25,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
@@ -53,6 +54,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     protected final DataSource dataSource;
     private final JannovarData jannovarData;
+    private final MVStore mvStore;
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
@@ -62,12 +64,13 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
         this.jannovarData = loadJannovarData();
         this.dataSource = loadGenomeDataSource();
+        this.mvStore = openMvStore();
 
         logger.info("{}", genomeProperties.getDatasource());
     }
 
     private VariantFactory variantFactory() {
-        return new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData));
+        return new VariantFactoryImpl(new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData));
     }
 
     private GenomeDataService genomeDataService() {
@@ -100,7 +103,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultFrequencyDao(dataSource);
         }
-        return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
+        return new DefaultFrequencyDaoMvStore(mvStore);
     }
 
     @Override
@@ -109,7 +112,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultPathogenicityDao(dataSource);
         }
-        return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
+        return new DefaultPathogenicityDaoMvStore(mvStore);
     }
 
     protected TabixDataSource defaultFrequencyTabixDataSource() {
@@ -219,6 +222,17 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         return transcriptFilePath;
     }
 
+    private MVStore openMvStore() {
+        String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
+
+        MVStore store = new MVStore.Builder()
+                .fileName(genomeData.resolveAbsoluteResourcePath(mvStoreFileName).toString())
+                .readOnly()
+                .open();
+        logger.info("MVStore opened with maps: {}", store.getMapNames());
+        return store;
+    }
+
     private DataSource loadGenomeDataSource() {
         return new HikariDataSource(genomeDataSourceConfig());
     }
@@ -227,11 +241,11 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         //omit the .h2.db extensions
         String dbFileName = String.format("%s_exomiser_genome", genomeData.getVersionAssemblyPrefix());
 
-        Path dbPath = genomeData.getPath().resolve(dbFileName);
+        Path dbPath = genomeData.resolveAbsoluteResourcePath(dbFileName);
 
         String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
 
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
+        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath, startUpArgs);
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");

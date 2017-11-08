@@ -29,10 +29,4 @@ public interface VariantAnnotator {
 
     public VariantAnnotation annotate(String chr, int pos, String ref, String alt);
 
-//    //TODO move to a new VariantContextAnnotationService
-//    public Stream<VariantEvaluation> annotate(VariantContext variantContext);
-//
-//    //TODO move to a new VariantContextAnnotationService
-//    public Stream<VariantEvaluation> annotate(Stream<VariantContext> variantContextStream);
-
 }
