@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
-import org.jetbrains.annotations.NotNull;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -86,7 +85,6 @@ public abstract class VcfAlleleParser implements AlleleParser {
         return alleles;
     }
 
-    @NotNull
     private Allele makeAllele(byte chr, int pos, String ref, String alt) {
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
         return new Allele(chr, allelePosition.getPos(), allelePosition.getRef(), allelePosition.getAlt());
