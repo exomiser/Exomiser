@@ -60,7 +60,7 @@ public class AlleleArchiveProcessorTest {
         }
 
         @Override
-        public void write(Allele allele) {
+        public void writeAllele(Allele allele) {
             alleles.add(allele);
         }
 
