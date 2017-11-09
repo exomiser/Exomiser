@@ -64,6 +64,8 @@ public class ResourceConfig {
         logger.info("Making new set of Resources");
         Set<Resource> resources = new LinkedHashSet<>();
 //            resources.add(exampleResource());
+        resources.add(metaDataResource());
+
         resources.add(orphanetResource());
         resources.add(diseaseTermsResource());
         resources.add(diseasePhenotypeResource());

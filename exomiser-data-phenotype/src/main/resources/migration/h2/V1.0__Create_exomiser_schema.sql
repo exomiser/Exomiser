@@ -27,7 +27,7 @@ CREATE TABLE hp_mp_mappings (
     simJ double precision,
     ic double precision,
     score double precision,
-    lcs_id character varying(10),
+    lcs_id character varying(20),
     lcs_term character varying(150)
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE hp_zp_mappings (
     simJ double precision,
     ic double precision,
     score double precision,
-    lcs_id character varying(10),
+    lcs_id character varying(40),
     lcs_term character varying(150)
 );
 
@@ -126,7 +126,7 @@ CREATE TABLE mgi_mp (
 DROP TABLE IF EXISTS zfin_zp;
 
 CREATE TABLE zfin_zp (
-    zfin_gene_id character varying(20),
+    zfin_gene_id character varying(40),
     zfin_gene_symbol character varying(200),
     zfin_model_id integer,
     zp_id character varying(3000)
@@ -208,7 +208,7 @@ CREATE TABLE hp_hp_mappings (
     simJ double precision,
     ic double precision,
     score double precision,
-    lcs_id character varying(10),
+    lcs_id character varying(20),
     lcs_term character varying(150)
 );
 
@@ -235,7 +235,7 @@ DROP TABLE IF EXISTS entrez2sym;
 
 CREATE TABLE entrez2sym (
     entrezID INTEGER PRIMARY KEY,
-    symbol VARCHAR(24)
+    symbol VARCHAR(100)
 );
 
 --
