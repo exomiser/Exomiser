@@ -65,7 +65,7 @@ public class AlleleArchiveProcessor {
                 bufferedReader.lines()
                         .flatMap(toAlleleStream())
                         .peek(alleleLogger.logCount())
-                        .forEach(alleleWriter::write);
+                        .forEach(alleleWriter::writeAllele);
             } catch (IOException e) {
                 logger.error("Error reading archive file {}", fileObject.getName(), e);
             }

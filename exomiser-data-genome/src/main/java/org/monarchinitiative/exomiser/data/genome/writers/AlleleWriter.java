@@ -28,7 +28,7 @@ import org.monarchinitiative.exomiser.data.genome.model.Allele;
  */
 public interface AlleleWriter {
 
-    public void write(Allele allele);
+    public void writeAllele(Allele allele);
 
     public long count();
 }
