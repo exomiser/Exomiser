@@ -63,7 +63,9 @@ public class HPHPMapperParser implements ResourceParser {
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
+            int id = 0;
             while ((line = reader.readLine()) != null) {
+                id++;
                 String[] fields = line.split("\\t");
                 String queryId = fields[0];
                 queryId = queryId.replace("_",":");
@@ -79,11 +81,14 @@ public class HPHPMapperParser implements ResourceParser {
                 String ic = fields[3];
                 //float score = Math.sqrt(Float.parseFloat(simJ) * Float.parseFloat(ic));
                 double score = Math.sqrt(Double.parseDouble(simJ) * Double.parseDouble(ic));
-                String lcs = fields[4];
+                String lcs = fields[4].split(";")[0];
                 lcs = lcs.replace("_",":");
-                lcs = lcs.replace(";","");
-                lcs = hpId2termMap.get(lcs) + " (" + lcs + ")";
-                writer.write(String.format("%s|%s|%s|%s|%s|%s|%s|%s%n", queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs));
+                //lcs = lcs.replace(";","");
+                String lcsTerm = "";
+                if (null != hpId2termMap.get(lcs)) {
+                    lcsTerm = hpId2termMap.get(lcs);
+                }
+                writer.write(String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s%n", id,queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs,lcsTerm));
             }
             status = ResourceOperationStatus.SUCCESS;
 

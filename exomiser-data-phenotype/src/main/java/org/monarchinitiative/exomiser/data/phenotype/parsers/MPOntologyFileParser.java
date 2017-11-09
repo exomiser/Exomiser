@@ -124,7 +124,7 @@ public class MPOntologyFileParser implements ResourceParser {
                 }
             }
             if (name != null && id != null) {
-                writer.write(String.format("%s|%s|%s", name, id, synonymLst));
+                writer.write(String.format("%s|%s", id, name));
                 mpId2termMap.put(id,name);
                 writer.newLine();
 //                logger.info("{} {} {}", name,id,synonymLst);

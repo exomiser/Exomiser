@@ -66,7 +66,9 @@ public class HPMPMapperParser implements ResourceParser {
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
+            int id = 0;
             while ((line = reader.readLine()) != null) {
+                id++;
                 String[] fields = line.split("\\t");
                 String queryId = fields[0];
                 queryId = queryId.replace("_",":");
@@ -81,17 +83,18 @@ public class HPMPMapperParser implements ResourceParser {
                 String simJ = fields[2];
                 String ic = fields[3];
                 double score = Math.sqrt(Double.parseDouble(simJ) * Double.parseDouble(ic));
-                String lcs = fields[4];
+                String lcs = fields[4].split(";")[0];
                 lcs = lcs.replace("_",":");
-                lcs = lcs.replace(";","");
-                if (lcs.contains("HP:")) {
-                    lcs = hpId2termMap.get(lcs) + " (" + lcs + ")";
+                //lcs = lcs.replace(";","");
+                String lcsTerm = "";
+                if (null != hpId2termMap.get(lcs)) {
+                    lcsTerm = hpId2termMap.get(lcs);
                 }
-                else if (lcs.contains("MP:")){
-                    lcs = mpId2termMap.get(lcs) + " (" + lcs + ")";
+                else if (null != mpId2termMap.get(lcs)) {
+                    lcsTerm = mpId2termMap.get(lcs);
                 }
-                writer.write(String.format("%s|%s|%s|%s|%s|%s|%s|%s%n", queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs));
-            }
+                writer.write(String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s%n", id,queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs,lcsTerm));
+                }
             status = ResourceOperationStatus.SUCCESS;
 
         } catch (FileNotFoundException ex) {
