@@ -6,22 +6,31 @@ This maven project is used to build the Exomiser phenotype database used by the 
 Currently the build relies on a preliminary OWLSim2 file build which in future versions will
 be incorporated into this codebase:
 
-(1) git clone https://github.com/owlcollab/owltools.git, install following the instructions in the README and make sure owltools and owltools-runner are added to path
+1. ```git clone https://github.com/owlcollab/owltools.git```, install following the instructions in the README and make sure owltools and owltools-runner are added to path
+    ```
     cd owltools/OWLTools-Parent
     mvn clean install
     cd ../../
-    chmod +x owltools/OWLTools-Runner/bin/owltools	
-    Add owltools/OWLTools-Oort/bin/ontology-release-runner and owltools/OWLTools-Runner/bin/owltools to path
-(2) git clone https://github.com/monarch-initiative/monarch-owlsim-data
-(3) git clone https://github.com/obophenotype/human-phenotype-ontology/
-(4) git clone https://github.com/obophenotype/mammalian-phenotype-ontology/
+    chmod +x owltools/OWLTools-Runner/bin/owltools
+    ```
+    Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
+2. Clone Monarch OwlSim:
+```git clone https://github.com/monarch-initiative/monarch-owlsim-data```
+3. Clone the HPO:
+```git clone https://github.com/obophenotype/human-phenotype-ontology/```
+4. Clone the MPO: 
+```
+    git clone https://github.com/obophenotype/mammalian-phenotype-ontology/
     cd mammalian-phenotype-ontology/src/ontology
     make mp.owl
     cd ../../../
-(5) git clone https://github.com/obophenotype/upheno
-(6) wget http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl
-(7) Run owltools commands
-
+   ```
+5. Clone uPheno:
+```git clone https://github.com/obophenotype/upheno```
+6. Get ZPO:
+```wget http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl```
+7. Run owltools commands:
+```
 owltools --catalog-xml upheno/catalog-v001.xml mammalian-phenotype-ontology/scratch/mp-importer.owl mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl monarch-owlsim-data/data/Mus_musculus/Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --merge-imports-closure --load-instances monarch-owlsim-data/data/Mus_musculus/Mm_gene_phenotype.txt --load-labels monarch-owlsim-data/data/Mus_musculus/Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
 
 owltools --catalog-xml upheno/catalog-v001.xml human-phenotype-ontology/scratch/hp-importer.owl mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl monarch-owlsim-data/data/Mus_musculus/Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --merge-imports-closure --load-instances monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt --load-labels monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
@@ -35,8 +44,8 @@ owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equiva
 OWLTOOLS_MEMORY=14G owltools Homo_sapiens-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,HP -a hp-hp-phenodigm-cache.txt
 OWLTOOLS_MEMORY=14G owltools Mus_musculus-all-merged.owl Homo_sapiens-all-merged.owl upheno/hp-mp/mp_hp-align-equiv.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,MP -a hp-mp-phenodigm-cache.txt
 OWLTOOLS_MEMORY=14G owltools hp-zp-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,ZP -a hp-zp-phenodigm-cache.txt
-
-(8) mv *-cache.txt to downloads directory of database build
+```
+8. mv *-cache.txt to downloads directory of database build
 
 The application requires configuration in a couple of places depending on how it
 is to be used.
