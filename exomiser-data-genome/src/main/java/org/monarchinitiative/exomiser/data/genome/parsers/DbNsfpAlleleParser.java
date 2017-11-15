@@ -23,7 +23,10 @@ package org.monarchinitiative.exomiser.data.genome.parsers;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -31,7 +34,6 @@ import java.util.*;
 public class DbNsfpAlleleParser implements AlleleParser {
 
     private static final String EMPTY_VALUE = ".";
-    private final Map<String, Integer> columnIndex = new HashMap<>();
 
     private int chrPos;
     private int posPos;
@@ -103,7 +105,6 @@ public class DbNsfpAlleleParser implements AlleleParser {
                     break;
             }
         }
-//        columnIndex
     }
 
     private List<Allele> parseAllele(String line, String[] fields) {
@@ -116,11 +117,6 @@ public class DbNsfpAlleleParser implements AlleleParser {
         String ref = fields[refPos];
         String alt = fields[altPos];
 
-        // VCF files and Annovar-style annotations use different nomenclature for
-        // indel variants. We use Annovar.
-        //TODO - now that we use the new Jannovar which uses a 0-based co-ordinate system investigate is this is necessary
-//       transformVCF2AnnovarCoordinates();
-
         Map<AlleleProperty, Float> pathScores = parsePathScores(fields);
 
         if (EMPTY_VALUE.equals(rsId) && pathScores.isEmpty()) {
@@ -130,7 +126,6 @@ public class DbNsfpAlleleParser implements AlleleParser {
         Allele allele = new Allele(chr, pos, ref, alt);
         allele.setRsId(rsId);
         allele.getValues().putAll(pathScores);
-//        logger.info("{} sift={} polyPhen={} mTasterScore={} mTasterPred={}", allele, fields[siftPos], fields[polyPhen2HvarPos], fields[mTasterScorePos], fields[mTasterPredPos]);
         return Collections.singletonList(allele);
     }
 
@@ -153,12 +148,11 @@ public class DbNsfpAlleleParser implements AlleleParser {
         float maxValue = 1;
         for (int i = 0; i < transcriptPredictions.length; i++) {
             String score = transcriptPredictions[i];
-            if (EMPTY_VALUE.equals(score)) {
-                continue;
+            if (!EMPTY_VALUE.equals(score)) {
+                float value = Float.parseFloat(score);
+                //The smaller the score the more likely the SNP has damaging effect.
+                maxValue = Float.min(maxValue, value);
             }
-            float value = Float.parseFloat(score);
-            //The smaller the score the more likely the SNP has damaging effect.
-            maxValue = Float.min(maxValue, value);
         }
         if (maxValue < 1) {
             values.put(key, maxValue);
@@ -192,12 +186,11 @@ public class DbNsfpAlleleParser implements AlleleParser {
         float maxValue = 0;
         for (int i = 0; i < transcriptPredictions.length; i++) {
             String score = transcriptPredictions[i];
-            if (EMPTY_VALUE.equals(score)) {
-                continue;
+            if (!EMPTY_VALUE.equals(score)) {
+                float value = Float.parseFloat(score);
+                //The larger the score the more likely the SNP has damaging effect.
+                maxValue = Float.max(maxValue, value);
             }
-            float value = Float.parseFloat(score);
-            //The larger the score the more likely the SNP has damaging effect.
-            maxValue = Float.max(maxValue, value);
         }
         return maxValue;
     }
@@ -218,18 +211,14 @@ public class DbNsfpAlleleParser implements AlleleParser {
             float maxValue = 0;
             for (int i = 0; i < scores.length; i++) {
                 String score = scores[i];
-                if (score.equals(EMPTY_VALUE)) {
-                    // Note there are some entries such as ".;0.292" so catch them here
-                    continue;
-                }
-                String p = predictions[i].trim();
-                if (p.equals("N") || p.equals("P")) {
-                    continue;
-                }
-                if (p.equals("A") || p.equals("D")) {
-                    float value = Float.parseFloat(score);
-                    //The larger the score the more likely the SNP has damaging effect.
-                    maxValue = Float.max(maxValue, value);
+                // Note there are some entries such as ".;0.292" so catch them here
+                if (!score.equals(EMPTY_VALUE)) {
+                    String p = predictions[i].trim();
+                    if (p.equals("A") || p.equals("D")) {
+                        float value = Float.parseFloat(score);
+                        //The larger the score the more likely the SNP has damaging effect.
+                        maxValue = Float.max(maxValue, value);
+                    }
                 }
             }
             if (maxValue > 0) {

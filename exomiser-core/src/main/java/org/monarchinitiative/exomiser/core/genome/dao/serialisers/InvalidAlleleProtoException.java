@@ -18,20 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.parsers;
-
-import org.junit.Test;
+package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExomiserAlleleParserTest {
+public class InvalidAlleleProtoException extends RuntimeException {
 
-    @Test
-    public void testParseLine() {
-        String line = "25\t42\trs377245343\tT\tTC\t.\t.\t.\n";
-        ExomiserAlleleParser instance = new ExomiserAlleleParser();
-        instance.parseLine(line);
+    public InvalidAlleleProtoException(Exception e) {
+        super(e);
     }
-
 }

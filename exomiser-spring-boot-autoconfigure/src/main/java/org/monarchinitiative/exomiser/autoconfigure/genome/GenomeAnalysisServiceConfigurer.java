@@ -99,20 +99,14 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        if (genomeProperties.getFrequencyPath().isEmpty()) {
-            //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
-            return new DefaultFrequencyDao(dataSource);
-        }
-        return new DefaultFrequencyDaoMvStore(mvStore);
+        logger.info("Using MVStore for frequency defaults");
+        return new DefaultFrequencyDaoMvStoreProto(mvStore);
     }
 
     @Override
     public PathogenicityDao pathogenicityDao() {
-        if (genomeProperties.getPathogenicityPath().isEmpty()) {
-            //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
-            return new DefaultPathogenicityDao(dataSource);
-        }
-        return new DefaultPathogenicityDaoMvStore(mvStore);
+        logger.info("Using MVStore for pathogenicity defaults");
+        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
     protected TabixDataSource defaultFrequencyTabixDataSource() {
@@ -224,9 +218,10 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     private MVStore openMvStore() {
         String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
-
+        Path mvStoreAbsolutePath = genomeData.resolveAbsoluteResourcePath(mvStoreFileName);
+        logger.info("Opening MVStore from {}", mvStoreAbsolutePath);
         MVStore store = new MVStore.Builder()
-                .fileName(genomeData.resolveAbsoluteResourcePath(mvStoreFileName).toString())
+                .fileName(mvStoreAbsolutePath.toString())
                 .readOnly()
                 .open();
         logger.info("MVStore opened with maps: {}", store.getMapNames());
