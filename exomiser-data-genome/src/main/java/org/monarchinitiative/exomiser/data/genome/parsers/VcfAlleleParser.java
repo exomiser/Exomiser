@@ -48,7 +48,14 @@ public abstract class VcfAlleleParser implements AlleleParser {
             return alleles;
         }
         String info = fields[7];
-        return parseInfoField(alleles, info);
+
+        try {
+            parseInfoField(alleles, info);
+        } catch (Exception e) {
+            logger.error("Unable to parse info field in line '{}'", line, e);
+        }
+
+        return alleles;
     }
 
     private boolean hasNoInfoField(String[] fields) {

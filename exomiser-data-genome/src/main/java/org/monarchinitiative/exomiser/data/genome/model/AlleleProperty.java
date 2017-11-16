@@ -28,6 +28,8 @@ import java.util.Set;
  */
 public enum AlleleProperty {
     KG,
+    TOPMED,
+    UK10K,
 
     ESP_EA,
     ESP_AA,
