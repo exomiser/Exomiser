@@ -44,22 +44,7 @@ public class DefaultFrequencyDaoTabix implements FrequencyDao {
     private static final Logger logger = LoggerFactory.getLogger(DefaultFrequencyDaoTabix.class);
 
     private static final String EMPTY_FIELD = ".";
-    private static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP;
-
-    static {
-        FREQUENCY_SOURCE_MAP = new HashMap<>();
-        FREQUENCY_SOURCE_MAP.put("KG", FrequencySource.THOUSAND_GENOMES);
-        FREQUENCY_SOURCE_MAP.put("ESP_AA", FrequencySource.ESP_AFRICAN_AMERICAN);
-        FREQUENCY_SOURCE_MAP.put("ESP_EA", FrequencySource.ESP_EUROPEAN_AMERICAN);
-        FREQUENCY_SOURCE_MAP.put("ESP_ALL", FrequencySource.ESP_ALL);
-        FREQUENCY_SOURCE_MAP.put("EXAC_AFR", FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
-        FREQUENCY_SOURCE_MAP.put("EXAC_AMR", FrequencySource.EXAC_AMERICAN);
-        FREQUENCY_SOURCE_MAP.put("EXAC_EAS", FrequencySource.EXAC_EAST_ASIAN);
-        FREQUENCY_SOURCE_MAP.put("EXAC_FIN", FrequencySource.EXAC_FINNISH);
-        FREQUENCY_SOURCE_MAP.put("EXAC_NFE", FrequencySource.EXAC_NON_FINNISH_EUROPEAN);
-        FREQUENCY_SOURCE_MAP.put("EXAC_SAS", FrequencySource.EXAC_SOUTH_ASIAN);
-        FREQUENCY_SOURCE_MAP.put("EXAC_OTH", FrequencySource.EXAC_OTHER);
-    }
+    private static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP = FrequencySource.FREQUENCY_SOURCE_MAP;
 
     private final TabixDataSource tabixDataSource;
 
