@@ -20,11 +20,141 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.monarchinitiative.exomiser.data.genome.model.Allele;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class DbNsfpAlleleParserTest {
 
+    private List<Allele> parseLine(DbNsfpColumnIndex columnIndex, String line) {
+        DbNsfpAlleleParser instance = new DbNsfpAlleleParser(columnIndex);
+        instance.parseLine(LineBuilder.HEADER);
+        return instance.parseLine(line);
+    }
+
+    private void assertParseLineEqualsExpected(DbNsfpColumnIndex columnIndex, String line, List<Allele> expectedAlleles) {
+        List<Allele> alleles = parseLine(columnIndex, line);
+
+        Assert.assertThat(alleles.size(), equalTo(expectedAlleles.size()));
+        for (int i = 0; i < alleles.size(); i++) {
+            Allele allele = alleles.get(i);
+            System.out.println(allele.toString());
+            Allele expected = expectedAlleles.get(i);
+            assertThat(allele, equalTo(expected));
+            assertThat(allele.getValues(), equalTo(expected.getValues()));
+        }
+    }
+
+    @Test
+    public void parseChrZero() throws Exception {
+        String line = lineBuilder().chr19("0").pos19("11").ref("A").alt("T").build();
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.emptyList());
+    }
+
+    @Test
+    public void parseHg19NoScoresNoRsId() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11").build();
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.emptyList());
+    }
+
+    @Test
+    public void parseHg38NoScoresNoRsId() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11").build();
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, Collections.emptyList());
+    }
+
+    @Test
+    public void parseHg19NoScoresRsId() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .rs("rs12345")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.setRsId("rs12345");
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseHg38NoScoresRsId() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .rs("rs12345")
+                .build();
+        Allele allele = new Allele(1, 10, "A", "T");
+        allele.setRsId("rs12345");
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseSift() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .sift("0.0")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(SIFT, 0f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseSiftMultipleValuesReturnsHighest() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .sift("0.0;1.0")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(SIFT, 0f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parsePolyPhen() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .polyPhen2Hvar("1.0")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(POLYPHEN, 1f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parsePolyPhenMultipleValuesReturnsHighest() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .polyPhen2Hvar("0.998;0.02;0.99")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(POLYPHEN, 0.998f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseMutationTaster() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .mTasterScore("1")
+                .mTasterPred("D")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(MUT_TASTER, 1f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseMutationTasterMultipleValuesReturnsHighest() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .mTasterScore("0.880664;1")
+                .mTasterPred("D;D")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addValue(MUT_TASTER, 1f);
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+    }
 
     //##chr	pos(1-based)	ref	alt	aaref	aaalt	rs_dbSNP147	hg19_chr	hg19_pos(1-based)	hg18_chr	hg18_pos(1-based)	genename	cds_strand	refcodon	codonpos	codon_degeneracy	Ancestral_allele	AltaiNeandertal	Denisova	Ensembl_geneid	Ensembl_transcriptid	Ensembl_proteinid	aapos	SIFT_score	SIFT_converted_rankscore	SIFT_pred	Uniprot_acc_Polyphen2	Uniprot_id_Polyphen2	Uniprot_aapos_Polyphen2	Polyphen2_HDIV_score	Polyphen2_HDIV_rankscore	Polyphen2_HDIV_pred	Polyphen2_HVAR_score	Polyphen2_HVAR_rankscore	Polyphen2_HVAR_pred	LRT_score	LRT_converted_rankscore	LRT_pred	LRT_Omega	MutationTaster_score	MutationTaster_converted_rankscore	MutationTaster_pred	MutationTaster_model	MutationTaster_AAE	MutationAssessor_UniprotID	MutationAssessor_variant	MutationAssessor_score	MutationAssessor_score_rankscore	MutationAssessor_pred	FATHMM_score	FATHMM_converted_rankscore	FATHMM_pred	PROVEAN_score	PROVEAN_converted_rankscore	PROVEAN_pred	Transcript_id_VEST3	Transcript_var_VEST3	VEST3_score	VEST3_rankscore	MetaSVM_score	MetaSVM_rankscore	MetaSVM_pred	MetaLR_score	MetaLR_rankscore	MetaLR_pred	Reliability_index	M-CAP_score	M-CAP_rankscore	M-CAP_pred	CADD_raw	CADD_raw_rankscore	CADD_phred	DANN_score	DANN_rankscore	fathmm-MKL_coding_score	fathmm-MKL_coding_rankscore	fathmm-MKL_coding_pred	fathmm-MKL_coding_group	Eigen_coding_or_noncoding	Eigen-raw	Eigen-phred	Eigen-PC-raw	Eigen-PC-phred	Eigen-PC-raw_rankscore	GenoCanyon_score	GenoCanyon_score_rankscore	integrated_fitCons_score	integrated_fitCons_score_rankscore	integrated_confidence_value	GM12878_fitCons_score	GM12878_fitCons_score_rankscore	GM12878_confidence_value	H1-hESC_fitCons_score	H1-hESC_fitCons_score_rankscore	H1-hESC_confidence_value	HUVEC_fitCons_score	HUVEC_fitCons_score_rankscore	HUVEC_confidence_value	GERP++_NR	GERP++_RS	GERP++_RS_rankscore	phyloP100way_vertebrate	phyloP100way_vertebrate_rankscore	phyloP20way_mammalian	phyloP20way_mammalian_rankscore	phastCons100way_vertebrate	phastCons100way_vertebrate_rankscore	phastCons20way_mammalian	phastCons20way_mammalian_rankscore	SiPhy_29way_pi	SiPhy_29way_logOdds	SiPhy_29way_logOdds_rankscore	1000Gp3_AC	1000Gp3_AF	1000Gp3_AFR_AC	1000Gp3_AFR_AF	1000Gp3_EUR_AC	1000Gp3_EUR_AF	1000Gp3_AMR_AC	1000Gp3_AMR_AF	1000Gp3_EAS_AC	1000Gp3_EAS_AF	1000Gp3_SAS_AC	1000Gp3_SAS_AF	TWINSUK_AC	TWINSUK_AF	ALSPAC_AC	ALSPAC_AF	ESP6500_AA_AC	ESP6500_AA_AF	ESP6500_EA_AC	ESP6500_EA_AF	ExAC_AC	ExAC_AF	ExAC_Adj_AC	ExAC_Adj_AF	ExAC_AFR_AC	ExAC_AFR_AF	ExAC_AMR_AC	ExAC_AMR_AF	ExAC_EAS_AC	ExAC_EAS_AF	ExAC_FIN_AC	ExAC_FIN_AF	ExAC_NFE_AC	ExAC_NFE_AF	ExAC_SAS_AC	ExAC_SAS_AF	ExAC_nonTCGA_AC	ExAC_nonTCGA_AF	ExAC_nonTCGA_Adj_AC	ExAC_nonTCGA_Adj_AF	ExAC_nonTCGA_AFR_AC	ExAC_nonTCGA_AFR_AF	ExAC_nonTCGA_AMR_AC	ExAC_nonTCGA_AMR_AF	ExAC_nonTCGA_EAS_AC	ExAC_nonTCGA_EAS_AF	ExAC_nonTCGA_FIN_AC	ExAC_nonTCGA_FIN_AF	ExAC_nonTCGA_NFE_AC	ExAC_nonTCGA_NFE_AF	ExAC_nonTCGA_SAS_AC	ExAC_nonTCGA_SAS_AF	ExAC_nonpsych_AC	ExAC_nonpsych_AF	ExAC_nonpsych_Adj_AC	ExAC_nonpsych_Adj_AF	ExAC_nonpsych_AFR_AC	ExAC_nonpsych_AFR_AF	ExAC_nonpsych_AMR_AC	ExAC_nonpsych_AMR_AF	ExAC_nonpsych_EAS_AC	ExAC_nonpsych_EAS_AF	ExAC_nonpsych_FIN_AC	ExAC_nonpsych_FIN_AF	ExAC_nonpsych_NFE_AC	ExAC_nonpsych_NFE_AF	ExAC_nonpsych_SAS_AC	ExAC_nonpsych_SAS_AF	clinvar_rs	clinvar_clnsig	clinvar_trait	clinvar_golden_stars	Interpro_domain	GTEx_V6_gene	GTEx_V6_tissue
 
@@ -53,4 +183,117 @@ public class DbNsfpAlleleParserTest {
 //Allele{chr=13, pos=20233254, ref='C', alt='G', rsId='.', values={SIFT=0.005}} sift=0.005 polyPhen=0.556;0.337 mTasterScore1;1 mTasterPredD;D
 //    Allele{chr=13, pos=20233251, ref='A', alt='T', rsId='.', values={SIFT=0.011}} sift=0.011 polyPhen=0.648;0.663 mTasterScore0.957857;0.957857 mTasterPredN;N
 //    Allele{chr=17, pos=10209848, ref='C', alt='A', rsId='.', values={MUT_TASTER=0.987356, POLYPHEN=0.25}} sift=.;0.003;. polyPhen=0.648;0.663 mTasterScore=0.987356;0.987356;0.987356 mTasterPred=D;D;D
+
+    private static LineBuilder lineBuilder() {
+        return new LineBuilder();
+    }
+
+    /**
+     * Utility class to build lines in a type-safe way.
+     */
+    private static class LineBuilder {
+
+        private static final String HEADER =
+                "#chr\t" +
+                        "pos(1-based)\t" +
+                        "ref\t" +
+                        "alt\t" +
+                        "rs_dbSNP147\t" +
+                        "hg19_chr\t" +
+                        "hg19_pos(1-based)\t" +
+                        "SIFT_score\t" +
+                        "Polyphen2_HVAR_score\t" +
+                        "MutationTaster_score\t" +
+                        "MutationTaster_pred";
+
+        private String chr = "0";
+        private String pos = "0";
+
+        private String chr19 = "0";
+        private String pos19 = "0";
+
+        private String rs = ".";
+        private String ref = "";
+        private String alt = "";
+
+        private String sift = ".";
+        private String polyPhen2Hvar = ".";
+        private String mTasterScore = ".";
+        private String mTasterPred = ".";
+
+        public LineBuilder chr(String chr) {
+            this.chr = chr;
+            return this;
+        }
+
+        public LineBuilder pos(String pos) {
+            this.pos = pos;
+            return this;
+        }
+
+        public LineBuilder chr19(String chr19) {
+            this.chr19 = chr19;
+            return this;
+        }
+
+        public LineBuilder pos19(String pos19) {
+            this.pos19 = pos19;
+            return this;
+        }
+
+        public LineBuilder rs(String rs) {
+            this.rs = rs;
+            return this;
+        }
+
+        public LineBuilder ref(String ref) {
+            this.ref = ref;
+            return this;
+        }
+
+        public LineBuilder alt(String alt) {
+            this.alt = alt;
+            return this;
+        }
+
+        public LineBuilder sift(String sift) {
+            this.sift = sift;
+            return this;
+        }
+
+        public LineBuilder polyPhen2Hvar(String polyPhen2Hvar) {
+            this.polyPhen2Hvar = polyPhen2Hvar;
+            return this;
+        }
+
+        public LineBuilder mTasterScore(String mTasterScore) {
+            this.mTasterScore = mTasterScore;
+            return this;
+        }
+
+        public LineBuilder mTasterPred(String mTasterPred) {
+            this.mTasterPred = mTasterPred;
+            return this;
+        }
+
+        public String build() {
+            StringJoiner stringJoiner = new StringJoiner("\t");
+            // This order is critical for the tests to work properly.
+            // If we add another field, it needs to match the order of the HEADER fields
+            stringJoiner.add(chr);
+            stringJoiner.add(pos);
+            stringJoiner.add(ref);
+            stringJoiner.add(alt);
+            stringJoiner.add(rs);
+            stringJoiner.add(chr19);
+            stringJoiner.add(pos19);
+            stringJoiner.add(sift);
+            stringJoiner.add(polyPhen2Hvar);
+            stringJoiner.add(mTasterScore);
+            stringJoiner.add(mTasterPred);
+            return stringJoiner.toString();
+        }
+
+    }
+
 }

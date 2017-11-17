@@ -23,10 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.parsers;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -35,15 +32,23 @@ public class DbNsfpAlleleParser implements AlleleParser {
 
     private static final String EMPTY_VALUE = ".";
 
-    private int chrPos;
-    private int posPos;
+    private final DbNsfpColumnIndex columnIndex;
+
+    //these fields are mutable as they are re-set each time a new chromosome is parsed.
+    private int chrIndex;
+    private int posIndex;
     private int rsPos;
     private int refPos;
     private int altPos;
+
     private int siftPos;
     private int polyPhen2HvarPos;
     private int mTasterScorePos;
     private int mTasterPredPos;
+
+    public DbNsfpAlleleParser(DbNsfpColumnIndex columnIndex) {
+        this.columnIndex = columnIndex;
+    }
 
     @Override
     public List<Allele> parseLine(String line) {
@@ -57,62 +62,36 @@ public class DbNsfpAlleleParser implements AlleleParser {
         return parseAllele(line, fields);
     }
 
-    private void parseColumnIndex(String line) {
-        logger.info("Parsing header");
+    private void parseColumnIndex(String header) {
+        Map<String, Integer> index = new HashMap<>();
         //remove the '#' prefix to the first column
-        String[] fields = line.substring(1).split("\t");
+        String[] fields = header.substring(1).split("\t");
         for (int i = 0; i < fields.length; i++) {
             String token = fields[i];
-            logger.debug("{} {}", i, token);
-            switch (token) {
-                case "hg19_chr":
-                    chrPos = i;
-                    logger.info("Setting CHR field '{}' to position {}", token, i);
-                    break;
-                case "hg19_pos(1-based)":
-                    posPos = i;
-                    logger.info("Setting POS field '{}' to position {}", token, i);
-                    break;
-                case "rs_dbSNP147":
-                    rsPos = i;
-                    logger.info("Setting RSID field '{}' to position {}", token, i);
-                    break;
-                case "ref":
-                    refPos = i;
-                    logger.info("Setting REF field '{}' to position {}", token, i);
-                    break;
-                case "alt":
-                    altPos = i;
-                    logger.info("Setting ALT field '{}' to position {}", token, i);
-                    break;
-                case "SIFT_score":
-                    siftPos = i;
-                    logger.info("Setting SIFT_SCORE field '{}' to position {}", token, i);
-                    break;
-                case "Polyphen2_HVAR_score":
-                    polyPhen2HvarPos = i;
-                    logger.info("Setting POLYPHEN2_HVAR_SCORE field '{}' to position {}", token, i);
-                    break;
-                case "MutationTaster_score":
-                    mTasterScorePos = i;
-                    logger.info("Setting MUTATION_TASTER_SCORE field '{}' to position {}", token, i);
-                    break;
-                case "MutationTaster_pred":
-                    mTasterPredPos = i;
-                    logger.info("Setting MUTATION_TASTER_PRED field '{}' to position {}", token, i);
-                    break;
-                default:
-                    break;
+            if (token.startsWith(columnIndex.getRsPrefix())) {
+                index.put(columnIndex.getRsPrefix(), i);
             }
+            index.put(token, i);
         }
+
+        this.chrIndex = index.get(columnIndex.getChrHeader());
+        this.posIndex = index.get(columnIndex.getPosHeader());
+        this.rsPos = index.get(columnIndex.getRsPrefix());
+        this.refPos = index.get(columnIndex.getRefHeader());
+        this.altPos = index.get(columnIndex.getAltHeader());
+        //values
+        this.siftPos = index.get(columnIndex.getSiftHeader());
+        this.polyPhen2HvarPos = index.get(columnIndex.getPolyPhen2HvarHeader());
+        this.mTasterScorePos = index.get(columnIndex.getMTasterScoreHeader());
+        this.mTasterPredPos = index.get(columnIndex.getMTasterPredHeader());
     }
 
     private List<Allele> parseAllele(String line, String[] fields) {
-        byte chr = parseChr(fields[chrPos], line);
+        byte chr = parseChr(fields[chrIndex], line);
         if (chr == 0) {
             return Collections.emptyList();
         }
-        int pos = Integer.parseInt(fields[posPos]);
+        int pos = Integer.parseInt(fields[posIndex]);
         String rsId = fields[rsPos];
         String ref = fields[refPos];
         String alt = fields[altPos];
