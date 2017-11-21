@@ -35,7 +35,9 @@ public class EspAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        Map<AlleleProperty, Float> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
+        String[] infoFields = info.split(";");
+
+        Map<AlleleProperty, Float> minorAlleleFrequencies = parseMinorAlleleFrequencies(infoFields);
 
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
@@ -44,8 +46,7 @@ public class EspAlleleParser extends VcfAlleleParser {
         return alleles;
     }
 
-    private Map<AlleleProperty, Float> parseMinorAlleleFrequencies(String info) {
-        String[] infoFields = info.split(";");
+    public Map<AlleleProperty, Float> parseMinorAlleleFrequencies(String[] infoFields) {
         for (String infoField : infoFields) {
             if (infoField.startsWith("MAF=")) {
                 return parseMafField(infoField);
