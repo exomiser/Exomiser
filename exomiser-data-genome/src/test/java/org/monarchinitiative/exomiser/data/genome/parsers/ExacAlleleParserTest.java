@@ -370,19 +370,6 @@ public class ExacAlleleParserTest {
         String line = "CONT000211213\t38048436\t.\tA\tG\t5175.39\tPASS\tAC=2;AC_AFR=0;AC_AMR=0;AC_Adj=2;AC_EAS=0;AC_FIN=0;AC_Het=2;AC_Hom=0;AC_NFE=2;AC_OTH=0;AC_SAS=0;AF=1.647e-05;AN=121412;AN_AFR=10404;AN_AMR=11576;AN_Adj=121382;AN_EAS=8654;AN_FIN=6614;AN_NFE=66718;AN_OTH=908;AN_SAS=16508;BaseQRankSum=0.560;ClippingRankSum=0.939;DP=2029453;FS=0.788;GQ_MEAN=75.04;GQ_STDDEV=20.97;Het_AFR=0;Het_AMR=0;Het_EAS=0;Het_FIN=0;Het_NFE=2;Het_OTH=0;Het_SAS=0;Hom_AFR=0;Hom_AMR=0;Hom_EAS=0;Hom_FIN=0;Hom_NFE=0;Hom_OTH=0;Hom_SAS=0;InbreedingCoeff=-0.0001;MQ=59.78;MQ0=0;MQRankSum=0.343;NCC=3;QD=13.55;ReadPosRankSum=-3.260e-01;VQSLOD=1.80;culprit=ReadPosRankSum;DP_HIST=1|14|8|6|12087|20843|12530|5883|3021|1444|903|645|518|429|391|274|233|194|162|1120,0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|1|0|0|1;GQ_HIST=0|1|0|0|17|2|1|6|1|2|3|1|27766|7687|3283|4881|3675|1591|2366|9423,0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|2;DOUBLETON_DIST=0.0301124558945;AC_MALE=1;AC_FEMALE=1;AN_MALE=67272;AN_FEMALE=54110;AC_CONSANGUINEOUS=0;AN_CONSANGUINEOUS=2164;Hom_CONSANGUINEOUS=0;CSQ=G|upstream_gene_allele|MODIFIER|GNL2|ENSG00000134697|Transcript|ENST00000469191|processed_transcript||||||||||rs371440333|1|26|-1|SNV|1|HGNC|29925|||||||||||||||||||G:0|G:0.0001|||||||||||||AAG|A,G|synonymous_allele|LOW|GNL2|ENSG00000134697|Transcript|ENST00000373062|protein_coding|7/16||ENST00000373062.3:c.738T>C|ENST00000373062.3:c.738T>C(p.%3D)|837|738|246|P|ccT/ccC|rs371440333|1||-1|SNV|1|HGNC|29925|YES||CCDS421.1|ENSP00000362153|NOG2_HUMAN|Q5T0F3_HUMAN|UPI0000000C9E|||Superfamily_domains:SSF52540&Gene3D:3.40.50.300&hmmpanther:PTHR11089:SF9&hmmpanther:PTHR11089&PROSITE_profiles:PS51721|||||||||G:0|G:0.0001|||||||||||||AAG|A,G|non_coding_transcript_exon_allele&non_coding_transcript_allele|MODIFIER|GNL2|ENSG00000134697|Transcript|ENST00000489146|processed_transcript|1/2||ENST00000489146.1:n.512T>C||512|||||rs371440333|1||-1|SNV|1|HGNC|29925|||||||||||||||||||G:0|G:0.0001|||||||||||||AAG|A,G|synonymous_allele|LOW|GNL2|ENSG00000134697|Transcript|ENST00000538069|protein_coding|1/6||ENST00000538069.1:c.89T>C|ENST00000538069.1:c.89T>C(p.%3D)|89|90|30|P|ccT/ccC|rs371440333|1||-1|SNV|1|HGNC|29925||||ENSP00000441288|||UPI000204AF2E|||PROSITE_profiles:PS51721&hmmpanther:PTHR11089&hmmpanther:PTHR11089:SF9&Gene3D:3.40.50.300&Superfamily_domains:SSF52540|||||||||G:0|G:0.0001|||||||||||||AAG|A;AC_POPMAX=2;AN_POPMAX=66718;POPMAX=NFE;K1_RUN=A:0;K2_RUN=AG:0;K3_RUN=AGG:0;ESP_AF_POPMAX=0.00011627907224465162;ESP_AF_GLOBAL=0.00007688759069424123;ESP_AC=1;KG_AF_POPMAX=0;KG_AF_GLOBAL=0;KG_AC=0";
         List<Allele> alleles = parseLine(line);
 
-        assertThat(alleles.size(), equalTo(1));
-
-        Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
-        //AC_NFE=2/AN_NFE=66718 * 100
-        values.put(EXAC_NFE, 0.0029976917f);
-
-        Allele allele = alleles.get(0);
-        System.out.println(allele.toString());
-        assertThat(allele.getChr(), equalTo(0));
-        assertThat(allele.getPos(), equalTo(38048436));
-        assertThat(allele.getRsId(), equalTo("."));
-        assertThat(allele.getRef(), equalTo("A"));
-        assertThat(allele.getAlt(), equalTo("G"));
-        assertThat(allele.getValues(), equalTo(values));
+        assertThat(alleles.size(), equalTo(0));
     }
 }
