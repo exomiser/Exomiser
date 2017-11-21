@@ -59,7 +59,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
         }
         String[] fields = line.split("\t");
 
-        return parseAllele(line, fields);
+        return parseAllele(fields);
     }
 
     private void parseColumnIndex(String header) {
@@ -86,8 +86,8 @@ public class DbNsfpAlleleParser implements AlleleParser {
         this.mTasterPredPos = index.get(columnIndex.getMTasterPredHeader());
     }
 
-    private List<Allele> parseAllele(String line, String[] fields) {
-        byte chr = parseChr(fields[chrIndex], line);
+    private List<Allele> parseAllele(String[] fields) {
+        byte chr = ChromosomeParser.parseChr(fields[chrIndex]);
         if (chr == 0) {
             return Collections.emptyList();
         }

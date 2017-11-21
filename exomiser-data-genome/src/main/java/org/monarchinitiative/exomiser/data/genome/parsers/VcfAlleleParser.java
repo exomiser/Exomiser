@@ -66,7 +66,10 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
     private List<Allele> parseAlleles(String[] fields, String line) {
 
-        byte chr = parseChr(fields[0], line);
+        byte chr = ChromosomeParser.parseChr(fields[0]);
+        if (chr == 0) {
+            return Collections.emptyList();
+        }
         int pos = Integer.parseInt(fields[1]);
         //A dbSNP rsID such as rs101432848. In rare cases may be multiple e.g., rs200118651;rs202059104
         String[] rsId = fields[2].split(";");

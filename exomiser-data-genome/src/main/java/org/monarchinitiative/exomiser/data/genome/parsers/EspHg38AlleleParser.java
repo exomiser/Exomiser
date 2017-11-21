@@ -67,15 +67,10 @@ public class EspHg38AlleleParser implements AlleleParser {
 
         //GRCh38_POSITION=17:156203
         String[] chrPos = hg38ChrPos.split(":");
-        String chr = chrPos[0];
-        String pos = chrPos[1];
-        if (chr.endsWith("_alt")) {
-            logger.debug("Position mapped to Hg38 alt scaffold: {} {} {} {} {} {}", fields[0], fields[1], fields[2], fields[3], fields[4], fields[7]);
-            return COMMENT_CHAR;
-        }
+
         StringJoiner stringJoiner = new StringJoiner("\t");
-        stringJoiner.add(chr);
-        stringJoiner.add(pos);
+        stringJoiner.add(chrPos[0]);
+        stringJoiner.add(chrPos[1]);
 
         for (int i = 2; i < fields.length; i++) {
             stringJoiner.add(fields[i]);
@@ -83,7 +78,6 @@ public class EspHg38AlleleParser implements AlleleParser {
 
         return stringJoiner.toString();
     }
-
 
     private String parseHg38PositionFromInfoField(String info) {
         String[] infoFields = info.split(";");

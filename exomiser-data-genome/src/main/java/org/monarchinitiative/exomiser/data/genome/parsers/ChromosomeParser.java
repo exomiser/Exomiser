@@ -20,16 +20,42 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
-import org.monarchinitiative.exomiser.data.genome.model.Allele;
-
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@FunctionalInterface
-public interface AlleleParser {
+public class ChromosomeParser {
 
-    List<Allele> parseLine(String line);
+    private static final Logger logger = LoggerFactory.getLogger(ChromosomeParser.class);
 
+    private ChromosomeParser() {
+        //static utility class
+    }
+
+    public static byte parseChr(String field) {
+        switch (field) {
+            case "X":
+            case "x":
+                return 23;
+            case "Y":
+            case "y":
+                return 24;
+            case "M":
+            case "MT":
+            case "m":
+                return 25;
+            case ".":
+                return 0;
+            default:
+                try {
+                    return Byte.parseByte(field);
+                } catch (NumberFormatException e) {
+                    //hg38 alternate scaffolds will throw these all the time, so its on debug
+                    logger.debug("Unable to parse chromosome: '{}'.", field, e);
+                }
+                return 0;
+        }
+    }
 }
