@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -47,7 +49,7 @@ public enum AlleleProperty {
     POLYPHEN,
     MUT_TASTER;
 
-    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = EnumSet.range(KG, EXAC_SAS);
-    public static final Set<AlleleProperty> PATHOGENIC_PROPERTIES = EnumSet.range(SIFT, MUT_TASTER);
+    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(KG, EXAC_SAS));
+    public static final Set<AlleleProperty> PATHOGENIC_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(SIFT, MUT_TASTER));
 
 }
