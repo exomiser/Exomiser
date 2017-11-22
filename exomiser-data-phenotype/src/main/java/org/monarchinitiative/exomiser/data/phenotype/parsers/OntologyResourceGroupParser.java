@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -67,24 +66,24 @@ public class OntologyResourceGroupParser extends AbstractResourceGroupParser imp
 
         Map<String, String> hpId2termMap = new HashMap<>();
         HPOOntologyFileParser hpoOntologyFileParser = new HPOOntologyFileParser(hpId2termMap);
-        hpoOntologyFileParser.parseResource(hpResource,inDir,outDir);
+        hpoOntologyFileParser.parseResource(hpResource, inDir, outDir);
 
         HPHPMapperParser hphpMapperParser = new HPHPMapperParser(hpId2termMap);
-        hphpMapperParser.parseResource(hpHpResource,inDir,outDir);
+        hphpMapperParser.parseResource(hpHpResource, inDir, outDir);
 
         Map<String, String> mpId2termMap = new HashMap<>();
         MPOntologyFileParser mpOntologyFileParser = new MPOntologyFileParser(mpId2termMap);
-        mpOntologyFileParser.parseResource(mpResource,inDir,outDir);
+        mpOntologyFileParser.parseResource(mpResource, inDir, outDir);
 
-        HPMPMapperParser hpmpMapperParser  = new HPMPMapperParser(hpId2termMap,mpId2termMap);
-        hpmpMapperParser.parseResource(hpMpResource, inDir,outDir);
+        HPMPMapperParser hpmpMapperParser = new HPMPMapperParser(hpId2termMap, mpId2termMap);
+        hpmpMapperParser.parseResource(hpMpResource, inDir, outDir);
 
         Map<String, String> zpId2termMap = new HashMap<>();
         ZPOntologyFileParser zpOntologyFileParser = new ZPOntologyFileParser(zpId2termMap);
-        zpOntologyFileParser.parseResource(zpResource,inDir,outDir);
+        zpOntologyFileParser.parseResource(zpResource, inDir, outDir);
 
-        HPZPMapperParser hpzpMapperParser = new HPZPMapperParser(hpId2termMap,zpId2termMap);
-        hpzpMapperParser.parseResource(hpZpResource,inDir,outDir);
+        HPZPMapperParser hpzpMapperParser = new HPZPMapperParser(hpId2termMap, zpId2termMap);
+        hpzpMapperParser.parseResource(hpZpResource, inDir, outDir);
 
     }
 
@@ -109,19 +108,19 @@ public class OntologyResourceGroupParser extends AbstractResourceGroupParser imp
         }
 
         hpHpResource = resourceGroup.getResource(HPHPMapperParser.class);
-        if (hpHpResource == null){
+        if (hpHpResource == null) {
             logResourceMissing(resourceGroup.getName(), HPHPMapperParser.class);
             return false;
         }
 
         hpMpResource = resourceGroup.getResource(HPMPMapperParser.class);
-        if (hpMpResource == null){
+        if (hpMpResource == null) {
             logResourceMissing(resourceGroup.getName(), HPMPMapperParser.class);
             return false;
         }
 
         hpZpResource = resourceGroup.getResource(HPZPMapperParser.class);
-        if (hpHpResource == null){
+        if (hpZpResource == null) {
             logResourceMissing(resourceGroup.getName(), HPZPMapperParser.class);
             return false;
         }
