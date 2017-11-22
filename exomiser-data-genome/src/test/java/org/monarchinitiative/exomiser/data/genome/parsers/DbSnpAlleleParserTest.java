@@ -54,6 +54,26 @@ public class DbSnpAlleleParserTest {
     }
 
     @Test
+    public void testSingleAlleleSnpMultiRsId() {
+        DbSnpAlleleParser instance = new DbSnpAlleleParser();
+        String line = "1\t12345\t74640812;rs115693429\tG\tA\t.\t.\t.";
+        List<Allele> alleles = instance.parseLine(line);
+
+        assertThat(alleles.size(), equalTo(1));
+        Allele allele = alleles.get(0);
+
+        System.out.println(allele);
+        assertThat(allele.getChr(), equalTo(1));
+        assertThat(allele.getPos(), equalTo(12345));
+//        assertThat(allele.getRsId(), equalTo("rs200118651"));
+        assertThat(allele.getRsId(), equalTo("74640812"));
+        assertThat(allele.getRef(), equalTo("G"));
+        assertThat(allele.getAlt(), equalTo("A"));
+        assertThat(allele.getValues().isEmpty(), is(true));
+    }
+
+
+    @Test
     public void testSingleAlleleSnp() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "1\t8036291\trs72854879\tT\tC\t.\t.\tRS=72854879;RSPOS=8036291;dbSNPBuildID=130;SSR=0;SAO=0;VP=0x05010008000515013e000100;GENEINFO=PARK7:11315;WGT=1;VC=SNV;SLO;INT;ASP;VLD;G5;GNO;KGPhase1;KGPhase3;CAF=0.9413,0.05871;COMMON=1";

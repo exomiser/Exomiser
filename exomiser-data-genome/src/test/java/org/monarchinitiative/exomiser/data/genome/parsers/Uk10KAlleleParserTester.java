@@ -24,34 +24,17 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.UK10K;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class Uk10kAlleleParserTest {
+public class Uk10KAlleleParserTester extends AbstractAlleleParserTester<Uk10kAlleleParser> {
 
-    private List<Allele> parseLine(String line) {
-        Uk10kAlleleParser instance = new Uk10kAlleleParser();
-        return instance.parseLine(line);
-    }
-
-
-    private void assertParseLineEqualsExpected(String line, List<Allele> expectedAlleles) {
-        List<Allele> alleles = parseLine(line);
-
-        assertThat(alleles.size(), equalTo(expectedAlleles.size()));
-        for (int i = 0; i < alleles.size(); i++) {
-            Allele allele = alleles.get(i);
-            System.out.println(allele.toString());
-            Allele expected = expectedAlleles.get(i);
-            assertThat(allele, equalTo(expected));
-            assertThat(allele.getValues(), equalTo(expected.getValues()));
-        }
+    @Override
+    public Uk10kAlleleParser newInstance() {
+        return new Uk10kAlleleParser();
     }
 
     @Test
@@ -60,16 +43,17 @@ public class Uk10kAlleleParserTest {
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.addValue(UK10K, 95.5567f);
 
-        assertParseLineEqualsExpected(line, Arrays.asList(expected));
-    }// for alleles [Allele{chr=1, pos=866920, ref='A', alt='G', rsId='rs2341361', values={}}]
+        assertParseLineEquals(line, Arrays.asList(expected));
+    }
 
 
     @Test
     public void testOneAllAlleles() throws Exception {
         String line = "1\t866920\trs2341361\tA\tG\t999\tPASS\tDP=24068;VQSLOD=3.8238;AN=7562;AC=7562;AF=1;AN_TWINSUK=3708;AC_TWINSUK=3708;AF_TWINSUK=1;AN_ALSPAC=3854;AC_ALSPAC=3854;AF_ALSPAC=1;AF_AFR=1;AF_AMR=1;AF_ASN=1;AF_EUR=1;AF_MAX=1;CSQ=ENST00000341065:SAMD11:intron_variant+ENST00000342066:SAMD11:intron_variant+ENST00000420190:SAMD11:intron_variant+ENST00000437963:SAMD11:intron_variant+ENST00000598827:AL645608.1:upstream_gene_variant+GERP,-6.67;AC_TWINSUK_NODUP=3574;AN_TWINSUK_NODUP=3574;AF_TWINSUK_NODUP=1";
         Allele expected = new Allele(1, 866920, "A", "G");
+        expected.setRsId("rs2341361");
         expected.addValue(UK10K, 100.0f);
 
-        assertParseLineEqualsExpected(line, Arrays.asList(expected));
+        assertParseLineEquals(line, Arrays.asList(expected));
     }
 }

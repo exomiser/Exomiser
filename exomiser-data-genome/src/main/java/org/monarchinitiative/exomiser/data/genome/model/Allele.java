@@ -35,7 +35,7 @@ public class Allele implements Comparable<Allele> {
     private final String ref;
     private final String alt;
 
-    private String rsId = ".";
+    private String rsId = "";
     private Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
 
     public Allele(int chr, int pos, String ref, String alt) {
@@ -92,7 +92,7 @@ public class Allele implements Comparable<Allele> {
 
     public String generateInfoField() {
         StringJoiner stringJoiner = new StringJoiner(";");
-        if (!rsId.equals(".")) {
+        if (!rsId.isEmpty() && !rsId.equals(".")) {
             stringJoiner.add("RS=" + rsId);
         }
         for (Map.Entry<AlleleProperty, Float> value : values.entrySet()) {

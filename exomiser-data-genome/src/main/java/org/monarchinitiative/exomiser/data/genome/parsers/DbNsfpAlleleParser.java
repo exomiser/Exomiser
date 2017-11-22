@@ -22,6 +22,8 @@ package org.monarchinitiative.exomiser.data.genome.parsers;
 
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -29,6 +31,8 @@ import java.util.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class DbNsfpAlleleParser implements AlleleParser {
+
+    private static Logger logger = LoggerFactory.getLogger(DbNsfpAlleleParser.class);
 
     private static final String EMPTY_VALUE = ".";
 
@@ -92,13 +96,13 @@ public class DbNsfpAlleleParser implements AlleleParser {
             return Collections.emptyList();
         }
         int pos = Integer.parseInt(fields[posIndex]);
-        String rsId = fields[rsPos];
+        String rsId = RsIdParser.parseRsId(fields[rsPos]);
         String ref = fields[refPos];
         String alt = fields[altPos];
 
         Map<AlleleProperty, Float> pathScores = parsePathScores(fields);
 
-        if (EMPTY_VALUE.equals(rsId) && pathScores.isEmpty()) {
+        if (rsId.isEmpty() && pathScores.isEmpty()) {
             return Collections.emptyList();
         }
 

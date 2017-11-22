@@ -42,7 +42,7 @@ public class AlleleTest {
         assertThat(instance.getPos(), equalTo(123435));
         assertThat(instance.getRef(), equalTo("A"));
         assertThat(instance.getAlt(), equalTo("T"));
-        assertThat(instance.getRsId(), equalTo("."));
+        assertThat(instance.getRsId(), equalTo(""));
         assertThat(instance.getValues().isEmpty(), is(true));
     }
 
@@ -86,7 +86,7 @@ public class AlleleTest {
     @Test
     public void testGenerateInfoFieldRsIdEmpty() {
         Allele instance = new Allele(1, 123456, "A", "C");
-        instance.setRsId(".");
+        instance.setRsId("");
         assertThat(instance.generateInfoField(), equalTo(""));
     }
 

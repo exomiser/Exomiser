@@ -72,7 +72,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
         }
         int pos = Integer.parseInt(fields[1]);
         //A dbSNP rsID such as rs101432848. In rare cases may be multiple e.g., rs200118651;rs202059104
-        String[] rsId = fields[2].split(";");
+        String rsId = RsIdParser.parseRsId(fields[2]);
         //Uppercasing shouldn't be necessary acccording to the VCF standard,
         //but occasionally one sees VCF files with lower case for part of the
         //sequences, e.g., to show indels.
@@ -89,7 +89,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
         List<Allele> alleles = new ArrayList<>();
         for (int i = 0; i < alts.length; i++) {
             Allele allele = makeAllele(chr, pos, ref, alts[i]);
-            allele.setRsId(getCurrentRsId(rsId));
+            allele.setRsId(rsId);
             alleles.add(allele);
         }
         return alleles;

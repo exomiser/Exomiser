@@ -24,36 +24,22 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.TOPMED;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TopMedAlleleParserTest {
+public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAlleleParser> {
 
-    private List<Allele> parseLine(String line) {
-        TopMedAlleleParser instance = new TopMedAlleleParser();
-        return instance.parseLine(line);
+    @Override
+    public TopMedAlleleParser newInstance() {
+        return new TopMedAlleleParser();
     }
-
-
-    private void assertParseLineEqualsExpected(String line, List<Allele> expectedAlleles) {
-        List<Allele> alleles = parseLine(line);
-
-        assertThat(alleles.size(), equalTo(expectedAlleles.size()));
-        for (int i = 0; i < alleles.size(); i++) {
-            Allele allele = alleles.get(i);
-            System.out.println(allele.toString());
-            Allele expected = expectedAlleles.get(i);
-            assertThat(allele, equalTo(expected));
-            assertThat(allele.getValues(), equalTo(expected.getValues()));
-        }
-    }
-
 
     @Test
     public void parseOne() throws Exception {
@@ -77,14 +63,16 @@ public class TopMedAlleleParserTest {
         String line = "1\t1669549\trs904496209\tG\tA,C\t.\t.\tTOPMED=3.4343e-005,0.000103029";
 
         Allele expected1 = new Allele(1, 1669549, "G", "A");
+        expected1.setRsId("rs904496209");
         expected1.addValue(TOPMED, 3.4343e-003f);
 
         Allele expected2 = new Allele(1, 1669549, "G", "C");
+        expected2.setRsId("rs904496209");
         expected2.addValue(TOPMED, 0.0103029f);
 
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2);
 
-        assertParseLineEqualsExpected(line, expectedAlleles);
+        assertParseLineEquals(line, expectedAlleles);
     }
 
 
@@ -93,27 +81,34 @@ public class TopMedAlleleParserTest {
         String line = "1\t1668890\trs367918436\tC\tG,T\t.\t.\tTOPMED=3.43643e-005,.";
 
         Allele expected1 = new Allele(1, 1668890, "C", "G");
+        expected1.setRsId("rs367918436");
         expected1.addValue(TOPMED, 0.0034364301f);
 
         Allele expected2 = new Allele(1, 1668890, "C", "T");
+        expected2.setRsId("rs367918436");
+
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2);
 
-        assertParseLineEqualsExpected(line, expectedAlleles);
+        assertParseLineEquals(line, expectedAlleles);
     }
 
     @Test
     public void parseMultiAlleleOneMissingFreqWithMissingDot() throws Exception {
 //        2       202593315       rs587777132     G       A,C,T   .       .       TOPMED=,6.8686e-005,.
-        String line = "2\t202593315\trs367918436\tG\tA,C,T\t.\t.\tTOPMED=,6.8686e-005,.";
+        String line = "2\t202593315\trs587777132\tG\tA,C,T\t.\t.\tTOPMED=,6.8686e-005,.";
         Allele expected1 = new Allele(2, 202593315, "G", "A");
+        expected1.setRsId("rs587777132");
 
         Allele expected2 = new Allele(2, 202593315, "G", "C");
+        expected2.setRsId("rs587777132");
         expected2.addValue(TOPMED, 6.8686e-003f);
 
         Allele expected3 = new Allele(2, 202593315, "G", "T");
+        expected3.setRsId("rs587777132");
+
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2, expected3);
 
-        assertParseLineEqualsExpected(line, expectedAlleles);
+        assertParseLineEquals(line, expectedAlleles);
     }
 
     @Test
@@ -122,12 +117,15 @@ public class TopMedAlleleParserTest {
         String line = "17\t10599057\trs587776629\tCTC\tC,CAG,CGA\t.\t.\tTOPMED=.,.,";
 
         Allele expected1 = new Allele(17, 10599057, "CTC", "C");
+        expected1.setRsId("rs587776629");
         Allele expected2 = new Allele(17, 10599058, "TC", "AG");
+        expected2.setRsId("rs587776629");
         Allele expected3 = new Allele(17, 10599058, "TC", "GA");
+        expected3.setRsId("rs587776629");
 
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2, expected3);
 
-        assertParseLineEqualsExpected(line, expectedAlleles);
+        assertParseLineEquals(line, expectedAlleles);
     }
 
     @Test
@@ -136,12 +134,15 @@ public class TopMedAlleleParserTest {
         String line = "13\t86928760\trs201161694\tAGA\tA,AA\t.\t.\tTOPMED=0.990109,";
 
         Allele expected1 = new Allele(13, 86928760, "AGA", "A");
+        expected1.setRsId("rs201161694");
         expected1.addValue(TOPMED, 99.0109f);
 
         Allele expected2 = new Allele(13, 86928760, "AG", "A");
+        expected2.setRsId("rs201161694");
+
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2);
 
-        assertParseLineEqualsExpected(line, expectedAlleles);
+        assertParseLineEquals(line, expectedAlleles);
     }
 
     @Test
@@ -149,15 +150,9 @@ public class TopMedAlleleParserTest {
         String line = "1\t2045245\trs1038362304\tCAGGTGGGTGGT\tC\t.\t.\tTOPMED=";
 
         Allele expected = new Allele(1, 2045245, "CAGGTGGGTGGT", "C");
+        expected.setRsId("rs1038362304");
 
-        List<Allele> alleles = parseLine(line);
-
-        assertThat(alleles.size(), equalTo(1));
-
-        Allele allele = alleles.get(0);
-        System.out.println(allele.toString());
-        assertThat(allele, equalTo(expected));
-        assertThat(allele.getValues(), equalTo(expected.getValues()));
+        assertParseLineEquals(line, Collections.singletonList(expected));
     }
 
     @Test
@@ -165,15 +160,9 @@ public class TopMedAlleleParserTest {
         String line = "1\t2045245\trs1038362304\tCAGGTGGGTGGT\tC\t.\t.\tTOPMED=wibble";
 
         Allele expected = new Allele(1, 2045245, "CAGGTGGGTGGT", "C");
+        expected.setRsId("rs1038362304");
 
-        List<Allele> alleles = parseLine(line);
-
-        assertThat(alleles.size(), equalTo(1));
-
-        Allele allele = alleles.get(0);
-        System.out.println(allele.toString());
-        assertThat(allele, equalTo(expected));
-        assertThat(allele.getValues(), equalTo(expected.getValues()));
+        assertParseLineEquals(line, Collections.singletonList(expected));
     }
 
 }

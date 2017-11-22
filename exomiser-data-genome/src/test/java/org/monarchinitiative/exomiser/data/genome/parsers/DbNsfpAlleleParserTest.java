@@ -52,6 +52,7 @@ public class DbNsfpAlleleParserTest {
             System.out.println(allele.toString());
             Allele expected = expectedAlleles.get(i);
             assertThat(allele, equalTo(expected));
+            assertThat(allele.getRsId(), equalTo(expected.getRsId()));
             assertThat(allele.getValues(), equalTo(expected.getValues()));
         }
     }
@@ -92,6 +93,16 @@ public class DbNsfpAlleleParserTest {
         Allele allele = new Allele(1, 10, "A", "T");
         allele.setRsId("rs12345");
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, Collections.singletonList(allele));
+    }
+
+    @Test
+    public void parseMultiRsId() throws Exception {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .rs("rs12345;rs54321")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.setRsId("rs12345");
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
     }
 
     @Test
