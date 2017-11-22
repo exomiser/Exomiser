@@ -29,7 +29,38 @@ be incorporated into this codebase:
 ```git clone https://github.com/obophenotype/upheno```
 6. Get ZPO:
 ```wget http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl```
-7. Run owltools commands:
+7. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
+OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
+
+system("wget http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/phenotype_annotation.tab");
+```
+open(IN,"phenotype_annotation.tab");
+open(OUT1,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt");
+open(OUT2,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt");
+my %data;
+while (my $line = <IN>){
+    my @line = split(/\t/,$line);
+    my $id = $line[0].":".$line[1];
+    $id =~ s/ //g;
+    my $label = $line[2];
+    my $hp =  $line[4];
+    $hp =~ s/ //g;
+    $data{$id}{$label}{$hp} = 1;
+}
+close IN;
+foreach my $id(sort keys %data){
+    foreach my $label(sort keys %{$data{$id}}){
+	print OUT2 "$id\t$label\n";
+	foreach my $hp (sort keys %{$data{$id}{$label}}){
+	    print OUT1 "$id\t$hp\n";
+	}
+    }
+}
+close OUT1;
+close OUT2;
+```
+
+8. Run owltools commands:
 ```
 owltools --catalog-xml upheno/catalog-v001.xml mammalian-phenotype-ontology/scratch/mp-importer.owl mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl monarch-owlsim-data/data/Mus_musculus/Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --merge-imports-closure --load-instances monarch-owlsim-data/data/Mus_musculus/Mm_gene_phenotype.txt --load-labels monarch-owlsim-data/data/Mus_musculus/Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
 
