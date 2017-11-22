@@ -20,10 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-/**
- * Command line functions from apache
- */
-
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -43,14 +39,14 @@ import java.util.Set;
 
 /**
  * This class is intended to parseResource the information about the OMIM phenotypic
- series and to enter it into the SQL database exomizer that will be used for
- the larger exomizer project. Note that this program parses the output of the
- perl scripts that are located in the "extraStuff" folder of the ExomeWalker
- project; see the README file there for information on how to get all of that
- parsed. These scripts are currently not very pretty, since the phenoseries
- information is delivered as an HTML page with subtly inconsistent formatting,
- it requires some "hacks" to parseResource with a perl script.
- <P>
+ * series and to enter it into the SQL database exomizer that will be used for
+ * the larger exomizer project. Note that this program parses the output of the
+ * perl scripts that are located in the "extraStuff" folder of the ExomeWalker
+ * project; see the README file there for information on how to get all of that
+ * parsed. These scripts are currently not very pretty, since the phenoseries
+ * information is delivered as an HTML page with subtly inconsistent formatting,
+ * it requires some "hacks" to parseResource with a perl script.
+ * <P>
  * This program is thus part of the ExomeWalker subproject of the Exomizer.
  * <P>
  * The format of the pheno2gene.txt file is as follows:
@@ -81,13 +77,8 @@ public class PhenoSeriesParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenoSeriesParser.class);
 
-
-    public PhenoSeriesParser() {
-    }
-
     /**
-     * ResourceParser for the pheno2gene.txt file which produces the phenoseries.pg dump file,
- assuming you want to call them that.
+     * ResourceParser for the pheno2gene.txt file which produces the phenoseries.pg dump file, assuming you want to call them that.
      * 
      * Note that OMIM has some entries such as 61206
      * <ul>
@@ -140,15 +131,15 @@ public class PhenoSeriesParser implements ResourceParser {
                     logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
                     continue;
                 }
-                
-		String seriesName = fields[0];
-		String seriesId = fields[1];
+
+                String seriesName = fields[0];
+                String seriesId = fields[1];
                 String cytoBand = fields[2];
                 String mimDiseaseName = fields[3];
-		String mimDiseaseId = fields[5];
-		String mimGeneId = fields[7];
-		String entrezGeneId = fields[8];
-		String geneSymbol = fields[9];
+                String mimDiseaseId = fields[5];
+                String mimGeneId = fields[7];
+                String entrezGeneId = fields[8];
+                String geneSymbol = fields[9];
                 
                 String uniqueSeriesId = String.format("%s-%s", seriesId, mimDiseaseId);
                 
@@ -159,7 +150,7 @@ public class PhenoSeriesParser implements ResourceParser {
                     logger.debug("seriesId-diseaseId {} has already been mapped, skipping phenoseries: {} MIM gene: {} location: {} disease: {} {}", uniqueSeriesId, seriesId,  mimGeneId, cytoBand, mimDiseaseId , mimDiseaseName);
                 } else {
                     uniqueSeriesIds.add(uniqueSeriesId);
-                    logger.debug(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId , mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
+                    logger.debug("{}|{}|{}|{}|{}|{}|{}", mimDiseaseId, mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId);
                 } 
                 
                 if (phenoseriesMap.containsKey(seriesId)) {
