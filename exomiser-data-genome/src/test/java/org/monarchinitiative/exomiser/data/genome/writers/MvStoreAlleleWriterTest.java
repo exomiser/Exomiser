@@ -74,6 +74,12 @@ public class MvStoreAlleleWriterTest {
                 .build();
     }
 
+    private AlleleProperties alleleProperties(Map<String, Float> properties) {
+        return AlleleProperties.newBuilder()
+                .putAllProperties(properties)
+                .build();
+    }
+
     private AlleleProperties alleleProperties(String rsId, Map<String, Float> properties) {
         return AlleleProperties.newBuilder()
                 .setRsId(rsId)
@@ -104,7 +110,7 @@ public class MvStoreAlleleWriterTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
-        AlleleProperties alleleProperties = alleleProperties(".", Collections.emptyMap());
+        AlleleProperties alleleProperties = alleleProperties(Collections.emptyMap());
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -253,7 +259,7 @@ public class MvStoreAlleleWriterTest {
         AlleleKey otherAlleleKey = alleleKey(23, 36103454, "A", "G");
         Map<String, Float> otherProperties = new HashMap<>();
         otherProperties.put("EXAC_AFR", 0.012086052f);
-        AlleleProperties otherAlleleProperties = alleleProperties(".", otherProperties);
+        AlleleProperties otherAlleleProperties = alleleProperties(otherProperties);
 
         assertThat(alleleMap.containsKey(otherAlleleKey), is(true));
         assertThat(alleleMap.get(otherAlleleKey), equalTo(otherAlleleProperties));
@@ -303,7 +309,7 @@ public class MvStoreAlleleWriterTest {
         Map<String, Float> otherProperties = new HashMap<>();
         otherProperties.put("EXAC_AFR", 0.01f);
         otherProperties.put("ESP_ALL", 0.2f);
-        AlleleProperties otherAlleleProperties = alleleProperties(".", otherProperties);
+        AlleleProperties otherAlleleProperties = alleleProperties(otherProperties);
 
         assertThat(alleleMap.containsKey(otherAlleleKey), is(true));
         assertThat(alleleMap.get(otherAlleleKey), equalTo(otherAlleleProperties));
