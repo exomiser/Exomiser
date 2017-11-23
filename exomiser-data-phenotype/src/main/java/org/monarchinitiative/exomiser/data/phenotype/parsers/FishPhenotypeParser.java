@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FishPhenotypeParser implements ResourceParser {
@@ -65,9 +63,9 @@ public class FishPhenotypeParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
-            Map<String, Set <String>> fish2PhenotypeMap = new HashMap<>();
+            Map<String, Set<String>> fish2PhenotypeMap = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
                 String fishId = fields[0];
@@ -83,10 +81,11 @@ public class FishPhenotypeParser implements ResourceParser {
                 }
             }
             int id = 1;
-            for (String fishId: fish2PhenotypeMap.keySet()) {
-                Set <String>  zpIds = fish2PhenotypeMap.get(fishId);
+            for (Map.Entry<String, Set<String>> entry : fish2PhenotypeMap.entrySet()) {
+                String fishId = entry.getKey();
+                Set<String> zpIds = entry.getValue();
                 String fishSymbol = fishId2Symbol.get(fishId);
-                writer.write(String.format("%s|%s|%s|%s%n",fishId,fishSymbol,id,Joiner.on(",").join(zpIds)));
+                writer.write(String.format("%s|%s|%s|%s%n", fishId, fishSymbol, id, Joiner.on(",").join(zpIds)));
                 id++;
             }
             status = ResourceOperationStatus.SUCCESS;

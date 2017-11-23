@@ -40,8 +40,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class Disease2TermParser implements ResourceParser {
@@ -64,18 +62,18 @@ public class Disease2TermParser implements ResourceParser {
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
-                //logger.info("Line is " + line);
                 String[] fields = line.split("\\t");
                 String diseaseId = fields[0] + ":" + fields[1];
                 String diseaseTerm = fields[2];
                 String[] diseaseTerms = diseaseTerm.split(";;");
                 diseaseTerm = diseaseTerms[0];
                 String hpId = fields[4];
-                disease2TermMap.put(diseaseId,diseaseTerm);
+                disease2TermMap.put(diseaseId, diseaseTerm);
             }
-            for (String diseaseId : disease2TermMap.keySet()){
-                String diseaseTerm = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s%n", diseaseId ,diseaseTerm));
+            for (Map.Entry<String, String> entry : disease2TermMap.entrySet()) {
+                String diseaseId = entry.getKey();
+                String diseaseTerm = entry.getValue();
+                writer.write(String.format("%s|%s%n", diseaseId, diseaseTerm));
             }
             status = ResourceOperationStatus.SUCCESS;
 

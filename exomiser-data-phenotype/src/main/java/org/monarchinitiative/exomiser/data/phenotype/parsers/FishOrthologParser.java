@@ -37,22 +37,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FishOrthologParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(FishOrthologParser.class);
-
-    //private final Map<String, String> fishSymbol2Id;
-
-    public FishOrthologParser(){}
 
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
@@ -60,23 +52,19 @@ public class FishOrthologParser implements ResourceParser {
         Path outFile = outDir.resolve(resource.getParsedFileName());
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
-        //Map<String, String> humanId2Symbol = new HashMap<>();
-        //Map<String, String> fishId2Symbol = new HashMap<>();
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             HashSet<String> seenOrthologs = new HashSet<>();
-            Map<String , String> fishIds = new HashMap<>();
-            Map<String , String> humanIds = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
                 String fishId = "ZFIN:" + fields[0];
                 String fishSymbol = fields[1];
                 String humanId = fields[6];
                 String humanSymbol = fields[3];
-                String seenId = fishId+humanId;
+                String seenId = fishId + humanId;
                 if (!seenOrthologs.contains(seenId))
-                    writer.write(String.format("%s|%s|%s|%s%n",fishId,fishSymbol,humanSymbol,humanId));
+                    writer.write(String.format("%s|%s|%s|%s%n", fishId, fishSymbol, humanSymbol, humanId));
                 seenOrthologs.add(seenId);
             }
             status = ResourceOperationStatus.SUCCESS;
