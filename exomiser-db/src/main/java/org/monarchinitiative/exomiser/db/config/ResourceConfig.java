@@ -26,7 +26,10 @@
 
 package org.monarchinitiative.exomiser.db.config;
 
-import org.monarchinitiative.exomiser.db.parsers.*;
+import org.monarchinitiative.exomiser.db.parsers.ClinVarParser;
+import org.monarchinitiative.exomiser.db.parsers.EnsemblEnhancerParser;
+import org.monarchinitiative.exomiser.db.parsers.FantomEnhancerParser;
+import org.monarchinitiative.exomiser.db.parsers.MetaDataParser;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,14 +72,6 @@ public class ResourceConfig {
         resources.add(clinVarResource());
         resources.add(metaDataResource());
 
-        //these ones are biggies:
-        resources.add(dbNsfpResource());
-        //VariantFrequency group
-        resources.add(dbSnpResource());
-        resources.add(espResource());
-        resources.add(jannovarResource());
-        resources.add(exacResource());
-
         return resources;
 
     }
@@ -108,76 +103,6 @@ public class ResourceConfig {
         resource.setExtractedFileName(env.getProperty(resourcePropertyId + ".extractedName"));
         resource.setExtractionScheme(env.getProperty(resourcePropertyId + ".extractScheme"));
         resource.setParsedFileName(env.getProperty(resourcePropertyId + ".parsedName"));
-    }
-
-    @Bean
-    public Resource dbNsfpResource() {
-        logger.info("Making dbNSFP resource");
-        Resource resource = new Resource("dbNSFP");
-        populateResourceFromProperty("nsfp", resource);
-        //parsing
-        resource.setParserClass(NSFP2SQLDumpParser.class);
-        //
-        resource.setResourceGroupName("");
-        resource.setResourceGroupParserClass(null);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource dbSnpResource() {
-        logger.info("Making dbSNP resource");
-        Resource resource = new Resource("dbSNP");
-        populateResourceFromProperty("dbSnp", resource);
-        //parsing
-        resource.setParserClass(DbSnpFrequencyParser.class);
-        //resource groups
-        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource exacResource() {
-        logger.info("Making ExAC resource");
-        Resource resource = new Resource("ExAC");
-        populateResourceFromProperty("exac", resource);
-        //parsing
-        resource.setParserClass(ExACFrequencyParser.class);
-        //resource groups
-        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource espResource() {
-        logger.info("Making ESP resource");
-        Resource resource = new Resource("ESP");
-        populateResourceFromProperty("esp", resource);
-        //parsing
-        resource.setParserClass(EspFrequencyParser.class);
-        //resource groups
-        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource jannovarResource() {
-        logger.info("Making UCSC_HG19 resource");
-        Resource resource = new Resource("UCSC_HG19");
-        populateResourceFromProperty("ucsc", resource);
-        //
-        resource.setParserClass(null);
-        //
-        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-
-        return resource;
     }
 
     @Bean

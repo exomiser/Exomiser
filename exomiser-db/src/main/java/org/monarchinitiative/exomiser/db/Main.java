@@ -24,7 +24,6 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.exomiser.db.config.AppConfig;
 import org.monarchinitiative.exomiser.db.config.DataSourceConfig;
 import org.monarchinitiative.exomiser.db.config.ResourceConfig;
-import org.monarchinitiative.exomiser.db.io.PhenodigmDataDumper;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.monarchinitiative.exomiser.db.resources.ResourceDownloadHandler;
 import org.monarchinitiative.exomiser.db.resources.ResourceExtractionHandler;
@@ -55,13 +54,11 @@ public class Main implements ApplicationRunner {
     private final AppConfig appConfig;
     private final ResourceConfig resourceConfig;
     private final DataSourceConfig dataSourceConfig;
-    private final PhenodigmDataDumper phenodigmDataDumper;
 
-    public Main(AppConfig appConfig, ResourceConfig resourceConfig, DataSourceConfig dataSourceConfig, PhenodigmDataDumper phenodigmDataDumper) {
+    public Main(AppConfig appConfig, ResourceConfig resourceConfig, DataSourceConfig dataSourceConfig) {
         this.appConfig = appConfig;
         this.resourceConfig = resourceConfig;
         this.dataSourceConfig = dataSourceConfig;
-        this.phenodigmDataDumper = phenodigmDataDumper;
     }
 
     @Override
@@ -108,15 +105,6 @@ public class Main implements ApplicationRunner {
         logger.info("Statuses for external resources:");
         for (Resource resource : externalResources) {
             logger.info(resource.getStatus());
-        }
-
-        //dump Phenodigm data to flatfiles for import
-        boolean dumpPhenoDigmData = appConfig.dumpPhenoDigmData();
-        if (dumpPhenoDigmData) {
-            logger.info("Making Phenodigm data dump files...");
-            phenodigmDataDumper.dumpPhenodigmData(dataPath);
-        } else {
-            logger.info("Skipping making Phenodigm data dump files.");
         }
 
         logger.info("Migrating exomiser databases...");
