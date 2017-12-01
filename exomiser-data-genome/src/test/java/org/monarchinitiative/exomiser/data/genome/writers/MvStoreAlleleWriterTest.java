@@ -194,6 +194,37 @@ public class MvStoreAlleleWriterTest {
     }
 
     @Test
+    public void writeTwoIdenticalAllelesRsIdIsUpdatedWhenEmptyAndInfoFieldIsMerged() throws Exception {
+        MVStore mvStore = newMvStore();
+
+        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+
+        Allele allele = new Allele(1, 12345, "A", "T");
+        allele.addValue(AlleleProperty.KG, 0.0023f);
+
+        Allele other = new Allele(1, 12345, "A", "T");
+        other.setRsId("rs12345");
+        other.addValue(AlleleProperty.EXAC_NFE, 0.12345f);
+
+        instance.writeAllele(allele);
+        instance.writeAllele(other);
+
+        assertThat(instance.count(), equalTo(1L));
+
+        MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
+
+        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
+        Map<String, Float> properties = new HashMap<>();
+        properties.put("KG", 0.0023f);
+        properties.put("EXAC_NFE", 0.12345f);
+        properties.put("KG", 0.0023f);
+        AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
+
+        assertThat(alleleMap.containsKey(alleleKey), is(true));
+        assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
+    }
+
+    @Test
     public void writeTwoIdenticalAllelesFromDifferentDbSnpReleases() throws Exception {
         MVStore mvStore = newMvStore();
 

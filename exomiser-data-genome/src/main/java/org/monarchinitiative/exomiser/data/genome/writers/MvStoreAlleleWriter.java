@@ -70,11 +70,13 @@ public class MvStoreAlleleWriter implements AlleleWriter {
     }
 
     private AlleleProperties mergeProperties(AlleleProperties originalProperties, AlleleProperties properties) {
+        String updatedRsId = (originalProperties.getRsId()
+                .isEmpty()) ? properties.getRsId() : originalProperties.getRsId();
         return AlleleProperties.newBuilder()
                 .mergeFrom(originalProperties)
                 .mergeFrom(properties)
-                //original rsid would have been overwritten by the new on - we don't want that, so re-set it now.
-                .setRsId(originalProperties.getRsId())
+                //original rsid would have been overwritten by the new one - we don't necessarily want that, so re-set it now.
+                .setRsId(updatedRsId)
                 .build();
     }
 
