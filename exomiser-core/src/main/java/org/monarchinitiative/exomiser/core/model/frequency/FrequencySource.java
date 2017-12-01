@@ -59,32 +59,72 @@ public enum FrequencySource {
     EXAC_AFRICAN_INC_AFRICAN_AMERICAN("ExAC AFR"),
     EXAC_AMERICAN("ExAC AMR"),
     EXAC_EAST_ASIAN("ExAC EAS"),
-    EXAC_SOUTH_ASIAN("ExAC SAS"),
     EXAC_FINNISH("ExAC FIN"),
     EXAC_NON_FINNISH_EUROPEAN("ExAC NFE"),
-    EXAC_OTHER("ExAC OTH");
+    EXAC_OTHER("ExAC OTH"),
+    EXAC_SOUTH_ASIAN("ExAC SAS"),
+
+    //http://gnomad.broadinstitute.org/about
+    GNOMAD_E_AFR("gnomAD_E_AFR"),
+    GNOMAD_E_AMR("gnomAD_E_AMR"),
+    GNOMAD_E_ASJ("gnomAD_E_ASJ"),
+    GNOMAD_E_EAS("gnomAD_E_EAS"),
+    GNOMAD_E_FIN("gnomAD_E_FIN"),
+    GNOMAD_E_NFE("gnomAD_E_NFE"),
+    GNOMAD_E_OTH("gnomAD_E_OTH"),
+    GNOMAD_E_SAS("gnomAD_E_SAS"),
+
+    GNOMAD_G_AFR("gnomAD_G_AFR"),
+    GNOMAD_G_AMR("gnomAD_G_AMR"),
+    GNOMAD_G_ASJ("gnomAD_G_ASJ"),
+    GNOMAD_G_EAS("gnomAD_G_EAS"),
+    GNOMAD_G_FIN("gnomAD_G_FIN"),
+    GNOMAD_G_NFE("gnomAD_G_NFE"),
+    GNOMAD_G_OTH("gnomAD_G_OTH"),
+    GNOMAD_G_SAS("gnomAD_G_SAS");
 
     public static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP = new ImmutableMap.Builder<String, FrequencySource>()
-            .put("KG", FrequencySource.THOUSAND_GENOMES)
-            .put("TOPMED", FrequencySource.TOPMED)
-            .put("UK10K", FrequencySource.UK10K)
-            .put("ESP_AA", FrequencySource.ESP_AFRICAN_AMERICAN)
-            .put("ESP_EA", FrequencySource.ESP_EUROPEAN_AMERICAN)
-            .put("ESP_ALL", FrequencySource.ESP_ALL)
-            .put("EXAC_AFR", FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN)
-            .put("EXAC_AMR", FrequencySource.EXAC_AMERICAN)
-            .put("EXAC_EAS", FrequencySource.EXAC_EAST_ASIAN)
-            .put("EXAC_SAS", FrequencySource.EXAC_SOUTH_ASIAN)
-            .put("EXAC_FIN", FrequencySource.EXAC_FINNISH)
-            .put("EXAC_NFE", FrequencySource.EXAC_NON_FINNISH_EUROPEAN)
-            .put("EXAC_OTH", FrequencySource.EXAC_OTHER)
+            .put("KG", THOUSAND_GENOMES)
+            .put("TOPMED", TOPMED)
+            .put("UK10K", UK10K)
+
+            .put("ESP_AA", ESP_AFRICAN_AMERICAN)
+            .put("ESP_EA", ESP_EUROPEAN_AMERICAN)
+            .put("ESP_ALL", ESP_ALL)
+
+            .put("EXAC_AFR", EXAC_AFRICAN_INC_AFRICAN_AMERICAN)
+            .put("EXAC_AMR", EXAC_AMERICAN)
+            .put("EXAC_EAS", EXAC_EAST_ASIAN)
+            .put("EXAC_FIN", EXAC_FINNISH)
+            .put("EXAC_NFE", EXAC_NON_FINNISH_EUROPEAN)
+            .put("EXAC_OTH", EXAC_OTHER)
+            .put("EXAC_SAS", EXAC_SOUTH_ASIAN)
+
+            .put("GNOMAD_E_AFR", GNOMAD_E_AFR)
+            .put("GNOMAD_E_AMR", GNOMAD_E_AMR)
+            .put("GNOMAD_E_ASJ", GNOMAD_E_ASJ)
+            .put("GNOMAD_E_EAS", GNOMAD_E_EAS)
+            .put("GNOMAD_E_FIN", GNOMAD_E_FIN)
+            .put("GNOMAD_E_NFE", GNOMAD_E_NFE)
+            .put("GNOMAD_E_OTH", GNOMAD_E_OTH)
+            .put("GNOMAD_E_SAS", GNOMAD_E_SAS)
+
+            .put("GNOMAD_G_AFR", GNOMAD_G_AFR)
+            .put("GNOMAD_G_AMR", GNOMAD_G_AMR)
+            .put("GNOMAD_G_ASJ", GNOMAD_G_ASJ)
+            .put("GNOMAD_G_EAS", GNOMAD_G_EAS)
+            .put("GNOMAD_G_FIN", GNOMAD_G_FIN)
+            .put("GNOMAD_G_NFE", GNOMAD_G_NFE)
+            .put("GNOMAD_G_OTH", GNOMAD_G_OTH)
+            .put("GNOMAD_G_SAS", GNOMAD_G_SAS)
+
             .build();
 
     public static final Set<FrequencySource> ALL_ESP_SOURCES = Sets.immutableEnumSet(EnumSet.range(ESP_AFRICAN_AMERICAN, ESP_ALL));
 
-    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Sets.immutableEnumSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_OTHER));
+    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Sets.immutableEnumSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
 
-    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Sets.immutableEnumSet(EnumSet.range(THOUSAND_GENOMES, EXAC_OTHER));
+    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Sets.immutableEnumSet(EnumSet.range(THOUSAND_GENOMES, GNOMAD_G_SAS));
 
     private final String source;
 
