@@ -45,11 +45,29 @@ public enum AlleleProperty {
     EXAC_OTH,
     EXAC_SAS,
 
+    GNOMAD_E_AFR,
+    GNOMAD_E_AMR,
+    GNOMAD_E_ASJ,
+    GNOMAD_E_EAS,
+    GNOMAD_E_FIN,
+    GNOMAD_E_NFE,
+    GNOMAD_E_OTH,
+    GNOMAD_E_SAS,
+
+    GNOMAD_G_AFR,
+    GNOMAD_G_AMR,
+    GNOMAD_G_ASJ,
+    GNOMAD_G_EAS,
+    GNOMAD_G_FIN,
+    GNOMAD_G_NFE,
+    GNOMAD_G_OTH,
+//  There is no SAS in gnomad genomes.
+
     SIFT,
     POLYPHEN,
     MUT_TASTER;
 
-    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(KG, EXAC_SAS));
+    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(KG, GNOMAD_G_OTH));
     public static final Set<AlleleProperty> PATHOGENIC_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(SIFT, MUT_TASTER));
 
 }

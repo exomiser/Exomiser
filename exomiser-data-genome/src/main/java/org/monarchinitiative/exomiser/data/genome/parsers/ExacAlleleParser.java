@@ -31,11 +31,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Parser for the ExAC/GnomAD data sets. The data we want from these are almost identical, with variation only in the
+ * output values and slight differences in the population fields. These differences are encoded in the {@link ExacPopulationKey}
+ * class.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class ExacAlleleParser extends VcfAlleleParser {
 
     private static final Logger logger = LoggerFactory.getLogger(ExacAlleleParser.class);
+
+    private final List<ExacPopulationKey> populationKeys;
+
+    public ExacAlleleParser(List<ExacPopulationKey> populationKeys) {
+        this.populationKeys = populationKeys;
+    }
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
@@ -51,12 +61,13 @@ public class ExacAlleleParser extends VcfAlleleParser {
         return alleles;
     }
 
+    //this is the slowest part of this.
     private Map<String, String> getAlleleCountsFromInfoField(String info) {
         Map<String, String> exACFreqs = new HashMap<>();
         String[] infoFields = info.split(";");
         for (String infoField : infoFields) {
             // freq data for each population e.g. AC_FIN=0,0;AN_FIN=6600;AC_EAS=0,1;AN_EAS=8540 etc...
-            if (infoField.startsWith(EXAC_FIELD.ALLELE_COUNT_PREFIX) || infoField.startsWith(EXAC_FIELD.ALLELE_NUMBER_PREFIX)) {
+            if (infoField.startsWith(ExacPopulationKey.ALLELE_COUNT_PREFIX) || infoField.startsWith(ExacPopulationKey.ALLELE_NUMBER_PREFIX)) {
                 String[] exACData = infoField.split("=");
                 exACFreqs.put(exACData[0], exACData[1]);
             }
@@ -66,12 +77,12 @@ public class ExacAlleleParser extends VcfAlleleParser {
 
     private Map<AlleleProperty, Float> calculateAllelePopulationFrequencies(Map<String, String> alleleCounts, int i) {
         Map<AlleleProperty, Float> allelePopFreqs = new EnumMap<>(AlleleProperty.class);
-        for (EXAC_FIELD field : EXAC_FIELD.values()) {
-            int alleleCount = parseAlleleCount(alleleCounts.get(field.AC), i);
+        for (ExacPopulationKey population : populationKeys) {
+            int alleleCount = parseAlleleCount(alleleCounts.get(population.AC), i);
             if (alleleCount != 0) {
-                int alleleNumber = Integer.parseInt(alleleCounts.get(field.AN));
+                int alleleNumber = Integer.parseInt(alleleCounts.get(population.AN));
                 float minorAlleleFrequency = frequencyAsPercentage(alleleCount, alleleNumber);
-                allelePopFreqs.put(AlleleProperty.valueOf(field.name()), minorAlleleFrequency);
+                allelePopFreqs.put(population.alleleProperty, minorAlleleFrequency);
             }
         }
         return allelePopFreqs;
@@ -84,28 +95,6 @@ public class ExacAlleleParser extends VcfAlleleParser {
 
     private float frequencyAsPercentage(int alleleCount, int alleleNumber) {
         return 100f * alleleCount / alleleNumber;
-    }
-
-    public enum EXAC_FIELD {
-        EXAC_AFR("AN_AFR", "AC_AFR"),
-        EXAC_AMR("AN_AMR", "AC_AMR"),
-        EXAC_EAS("AN_EAS", "AC_EAS"),
-        EXAC_FIN("AN_FIN", "AC_FIN"),
-        EXAC_NFE("AN_NFE", "AC_NFE"),
-        EXAC_OTH("AN_OTH", "AC_OTH"),
-        EXAC_SAS("AN_SAS", "AC_SAS");
-
-        public static final String ALLELE_COUNT_PREFIX = "AC";
-        public static final String ALLELE_NUMBER_PREFIX = "AN";
-
-        private final String AN;
-        private final String AC;
-
-        EXAC_FIELD(String alleleNumField, String alleleCountField) {
-            this.AN = alleleNumField;
-            this.AC = alleleCountField;
-        }
-
     }
 
 }
