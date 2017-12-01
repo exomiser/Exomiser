@@ -42,15 +42,15 @@ public abstract class VcfAlleleParser implements AlleleParser {
             return Collections.emptyList();
         }
         String[] fields = line.split("\t");
-        List<Allele> alleles = parseAlleles(fields, line);
+        List<Allele> alleles = parseAlleles(fields);
 
-        if (hasNoInfoField(fields)) {
+        if (hasNoInfoField(fields) || alleles.isEmpty()) {
             return alleles;
         }
         String info = fields[7];
 
         try {
-            parseInfoField(alleles, info);
+            return parseInfoField(alleles, info);
         } catch (Exception e) {
             logger.error("Unable to parse info field in line '{}'", line, e);
         }
@@ -64,12 +64,13 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
     abstract List<Allele> parseInfoField(List<Allele> alleles, String info);
 
-    private List<Allele> parseAlleles(String[] fields, String line) {
+    private List<Allele> parseAlleles(String[] fields) {
 
         byte chr = ChromosomeParser.parseChr(fields[0]);
-        if (chr == 0) {
+        if (chr == 0 || !unfilteredOrPassed(fields[6])) {
             return Collections.emptyList();
         }
+
         int pos = Integer.parseInt(fields[1]);
         //A dbSNP rsID such as rs101432848. In rare cases may be multiple e.g., rs200118651;rs202059104
         String rsId = RsIdParser.parseRsId(fields[2]);
@@ -95,22 +96,13 @@ public abstract class VcfAlleleParser implements AlleleParser {
         return alleles;
     }
 
+    private boolean unfilteredOrPassed(String passField) {
+        return ".".equals(passField) || "PASS".equals(passField);
+    }
+
     private Allele makeAllele(byte chr, int pos, String ref, String alt) {
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
         return new Allele(chr, allelePosition.getPos(), allelePosition.getRef(), allelePosition.getAlt());
     }
 
-    /**
-     * rsIds can be merged - these are reported in the format rs200118651;rs202059104 where the first rsId is the current one,
-     * the second is the rsId which was merged into the first.
-     *
-     * @param rsIds an array of rsId. Can be empty.
-     * @return The first rsId present in an array or "." if empty.
-     */
-    private String getCurrentRsId(String[] rsIds) {
-        if (rsIds.length >= 1) {
-            return rsIds[0].replaceFirst("~", "");
-        }
-        return ".";
-    }
 }
