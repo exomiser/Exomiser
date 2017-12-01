@@ -20,14 +20,10 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
-import org.h2.mvstore.MVStore;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.Collections;
-import java.util.Map;
 
 import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.GNOMAD_E_SAS;
 
@@ -66,28 +62,4 @@ public class ExacAlleleParserGnomadExomeTest extends AbstractAlleleParserTester<
         assertParseLineEquals(line, Collections.singletonList(expected));
     }
 
-
-    @Test
-    public void testMapContainsSasFreqs() throws Exception {
-        String line = "1\t139020\t.\tT\tC\t1976.24\tPASS\tAC=1;AF=7.55504e-06;AN=132362;BaseQRankSum=3.81000e+00;ClippingRankSum=8.56000e-01;DP=7254150;FS=2.19900e+00;InbreedingCoeff=-7.80000e-03;MQ=4.70800e+01;MQRankSum=1.38000e+00;QD=7.32000e+00;ReadPosRankSum=1.52000e+00;SOR=8.48000e-01;VQSLOD=-8.14000e-01;VQSR_culprit=QD;VQSR_NEGATIVE_TRAIN_SITE;GQ_HIST_ALT=0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|1;DP_HIST_ALT=0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0;AB_HIST_ALT=0|0|0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0;GQ_HIST_ALL=3203|1636|438|584|447|186|305|298|142|231|199|103|305|32|193|59|205|27|208|63837;DP_HIST_ALL=5227|1208|754|526|484|345|5354|21034|10848|3044|1125|884|949|938|1030|1068|1029|1069|1088|1328;AB_HIST_ALL=0|0|0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0;AC_AFR=0;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=0;AC_NFE=0;AC_OTH=0;AC_SAS=1;AC_Male=1;AC_Female=0;AN_AFR=6182;AN_AMR=23682;AN_ASJ=7998;AN_EAS=9936;AN_FIN=6012;AN_NFE=52528;AN_OTH=3638;AN_SAS=22386;AN_Male=72380;AN_Female=59982;AF_AFR=0.00000e+00;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=0.00000e+00;AF_NFE=0.00000e+00;AF_OTH=0.00000e+00;AF_SAS=4.46708e-05;AF_Male=1.38160e-05;AF_Female=0.00000e+00;GC_AFR=3091,0,0;GC_AMR=11841,0,0;GC_ASJ=3999,0,0;GC_EAS=4968,0,0;GC_FIN=3006,0,0;GC_NFE=26264,0,0;GC_OTH=1819,0,0;GC_SAS=11192,1,0;GC_Male=36189,1,0;GC_Female=29991,0,0;AC_raw=1;AN_raw=145276;AF_raw=6.88345e-06;GC_raw=72637,1,0;GC=66180,1,0;Hom_AFR=0;Hom_AMR=0;Hom_ASJ=0;Hom_EAS=0;Hom_FIN=0;Hom_NFE=0;Hom_OTH=0;Hom_SAS=0;Hom_Male=0;Hom_Female=0;Hom_raw=0;Hom=0;POPMAX=SAS;AC_POPMAX=1;AN_POPMAX=22386;AF_POPMAX=4.46708e-05;DP_MEDIAN=264;DREF_MEDIAN=6.30957e-205;GQ_MEDIAN=99;AB_MEDIAN=3.10606e-01;AS_RF=2.26895e-01;AS_FilterStatus=PASS";
-
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
-                .setChr(1)
-                .setPosition(139020)
-                .setRef("T")
-                .setAlt("C")
-                .build();
-
-        Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> map = MVStore
-                .open("C:\\Users\\hhx640\\Documents\\exomiser-cli-dev\\data\\1711_hg19\\1711_hg19_variants.mv.db")
-                .openMap("alleles", MvStoreUtil.alleleMapBuilder());
-        System.out.println(map.size());
-
-        for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : map.entrySet()) {
-            if (entry.getValue().containsProperties("GNOMAD_E_SAS")) {
-                System.out.println(entry.getKey() + " = " + entry.getValue());
-            }
-        }
-        System.out.println(map.get(key));
-    }
 }
