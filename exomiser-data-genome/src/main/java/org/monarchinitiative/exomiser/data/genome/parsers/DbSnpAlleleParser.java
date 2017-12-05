@@ -74,4 +74,5 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
         }
         return minorFreqs;
     }
+
 }

@@ -211,5 +211,16 @@ public class DbNsfpAlleleParser implements AlleleParser {
         return values;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DbNsfpAlleleParser that = (DbNsfpAlleleParser) o;
+        return Objects.equals(columnIndex, that.columnIndex);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(columnIndex);
+    }
 }

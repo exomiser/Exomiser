@@ -47,6 +47,10 @@ public class ExacAlleleParser extends VcfAlleleParser {
         this.populationKeys = populationKeys;
     }
 
+    public List<ExacPopulationKey> getPopulationKeys() {
+        return populationKeys;
+    }
+
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
         Map<String, String> alleleCounts = getAlleleCountsFromInfoField(info);
