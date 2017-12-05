@@ -18,14 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome;
+package org.monarchinitiative.exomiser.data.genome.indexers;
 
 import org.apache.commons.vfs2.FileObject;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.ArchiveFileReader;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
+import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.parsers.AlleleParser;
-import org.monarchinitiative.exomiser.data.genome.writers.AlleleWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,27 +35,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AlleleArchiveProcessor {
+public abstract class AbstractAlleleIndexer implements AlleleIndexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AlleleArchiveProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractAlleleIndexer.class);
 
-    private final AlleleArchive alleleArchive;
-    private final AlleleParser alleleParser;
+    @Override
+    public void index(AlleleResource alleleResource) {
+        logger.info("Processing {} resource", alleleResource.getName());
+        AlleleArchive alleleArchive = alleleResource.getAlleleArchive();
+        AlleleParser alleleParser = alleleResource.getAlleleParser();
 
-    public AlleleArchiveProcessor(AlleleArchive alleleArchive, AlleleParser alleleParser) {
-        this.alleleArchive = alleleArchive;
-        this.alleleParser = alleleParser;
-    }
-
-    public void process(AlleleWriter alleleWriter) {
         ArchiveFileReader archiveFileReader = new ArchiveFileReader(alleleArchive);
         Instant startTime = Instant.now();
         AlleleLogger alleleLogger = new AlleleLogger(startTime);
@@ -63,29 +58,35 @@ public class AlleleArchiveProcessor {
             try (InputStream archiveFileInputStream = archiveFileReader.readFileObject(fileObject);
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(archiveFileInputStream))) {
                 bufferedReader.lines()
-                        .flatMap(toAlleleStream())
+//                        .peek(line -> logger.info("{}", line))
+                        .flatMap(line -> alleleParser.parseLine(line).stream())
                         .peek(alleleLogger.logCount())
-                        .forEach(alleleWriter::writeAllele);
+                        .forEach(this::writeAllele);
             } catch (IOException e) {
                 logger.error("Error reading archive file {}", fileObject.getName(), e);
             }
         }
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished - processed {} variants total in {} sec", alleleWriter.count(), seconds);
+        logger.info("Finished processing {} resource - processed {} variants total in {} sec", alleleResource.getName(), alleleLogger
+                .count(), seconds);
     }
 
-    private Function<String, Stream<Allele>> toAlleleStream() {
-        return line -> alleleParser.parseLine(line).stream();
-    }
+    protected abstract void writeAllele(Allele allele);
+
+    public abstract void close();
 
     private class AlleleLogger {
 
-        private final AtomicInteger counter;
+        private final AtomicLong counter;
         private final Instant startTime;
 
         public AlleleLogger(Instant startTime) {
-            this.counter = new AtomicInteger();
+            this.counter = new AtomicLong();
             this.startTime = startTime;
+        }
+
+        public long count() {
+            return counter.get();
         }
 
         public Consumer<Allele> logCount() {

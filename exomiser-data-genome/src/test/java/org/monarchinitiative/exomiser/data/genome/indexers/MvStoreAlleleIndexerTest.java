@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.writers;
+package org.monarchinitiative.exomiser.data.genome.indexers;
 
 import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
@@ -27,11 +27,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.data.genome.AlleleArchiveProcessor;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
+import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.parsers.DbSnpAlleleParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +51,9 @@ import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProper
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class MvStoreAlleleWriterTest {
+public class MvStoreAlleleIndexerTest {
 
-    private static Logger logger = LoggerFactory.getLogger(MvStoreAlleleWriterTest.class);
+    private static Logger logger = LoggerFactory.getLogger(MvStoreAlleleIndexerTest.class);
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -91,7 +91,7 @@ public class MvStoreAlleleWriterTest {
     public void createsSingleAllelesMap() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
         assertThat(mvStore.getMapNames(), equalTo(Sets.newHashSet("alleles")));
         assertThat(instance.count(), equalTo(0L));
     }
@@ -100,7 +100,7 @@ public class MvStoreAlleleWriterTest {
     public void writeSingleAlleleNoInfo() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
         instance.writeAllele(allele);
@@ -120,7 +120,7 @@ public class MvStoreAlleleWriterTest {
     public void writeSingleAlleleWithJustRsId() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
@@ -141,7 +141,7 @@ public class MvStoreAlleleWriterTest {
     public void writeSingleAlleleWithRsIdAndOtherInfo() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
@@ -166,7 +166,7 @@ public class MvStoreAlleleWriterTest {
     public void writeTwoIdenticalAllelesWithRsIdAndOtherInfoMergesInfoField() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
@@ -197,7 +197,7 @@ public class MvStoreAlleleWriterTest {
     public void writeTwoIdenticalAllelesRsIdIsUpdatedWhenEmptyAndInfoFieldIsMerged() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.addValue(AlleleProperty.KG, 0.0023f);
@@ -228,7 +228,7 @@ public class MvStoreAlleleWriterTest {
     public void writeTwoIdenticalAllelesFromDifferentDbSnpReleases() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
@@ -258,7 +258,7 @@ public class MvStoreAlleleWriterTest {
     public void writeTwoAlleles() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
@@ -300,7 +300,7 @@ public class MvStoreAlleleWriterTest {
     public void writeAndUpdateAlleles() throws Exception {
         MVStore mvStore = newMvStore();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
@@ -350,7 +350,7 @@ public class MvStoreAlleleWriterTest {
     @Test
     public void processAndWriteToDisk() throws Exception {
         AlleleArchive dbsnpArchive = new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
-        AlleleArchiveProcessor dbSnpProcessor = new AlleleArchiveProcessor(dbsnpArchive, new DbSnpAlleleParser());
+        AlleleResource dbSnpResource = new AlleleResource(dbsnpArchive, new DbSnpAlleleParser());
 
         File mvTestFile = temporaryFolder.newFile("test.mv.db");
         logger.info("Writing allele data to file {}", mvTestFile);
@@ -359,8 +359,8 @@ public class MvStoreAlleleWriterTest {
                 .compress()
                 .open();
 
-        MvStoreAlleleWriter instance = new MvStoreAlleleWriter(mvStore);
-        dbSnpProcessor.process(instance);
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
+        instance.index(dbSnpResource);
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
         int originalMapSize = alleleMap.size();

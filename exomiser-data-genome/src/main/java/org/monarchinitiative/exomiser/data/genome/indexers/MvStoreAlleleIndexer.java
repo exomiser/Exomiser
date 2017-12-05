@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.writers;
+package org.monarchinitiative.exomiser.data.genome.indexers;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -35,23 +35,22 @@ import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 /**
- * {@link MVStore} backed {@link AlleleWriter} implementation.
+ * {@link MVStore} backed {@link AlleleIndexer} implementation.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class MvStoreAlleleWriter implements AlleleWriter {
+public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MvStoreAlleleWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(MvStoreAlleleIndexer.class);
 
     private final MVStore mvStore;
     private final MVMap<AlleleKey, AlleleProperties> map;
 
-    public MvStoreAlleleWriter(MVStore mvStore) {
+    public MvStoreAlleleIndexer(MVStore mvStore) {
         this.mvStore = mvStore;
         this.map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
     }
 
-    //TODO: add in the AbstractWriter stuff from the allele_store here or to the AlleleArchiveProcessor
     @Override
     public void writeAllele(Allele allele) {
         AlleleKey key = toAlleleKey(allele);
@@ -105,13 +104,8 @@ public class MvStoreAlleleWriter implements AlleleWriter {
                 .build();
     }
 
-    @Override
     public long count() {
         return map.size();
-    }
-
-    public void commit() {
-        mvStore.commit();
     }
 
     public void close() {

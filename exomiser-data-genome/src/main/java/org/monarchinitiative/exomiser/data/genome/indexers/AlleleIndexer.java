@@ -18,17 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.writers;
+package org.monarchinitiative.exomiser.data.genome.indexers;
 
-
-import org.monarchinitiative.exomiser.data.genome.model.Allele;
+import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface AlleleWriter {
+public interface AlleleIndexer {
 
-    public void writeAllele(Allele allele);
+    void index(AlleleResource alleleResource);
 
-    public long count();
 }
