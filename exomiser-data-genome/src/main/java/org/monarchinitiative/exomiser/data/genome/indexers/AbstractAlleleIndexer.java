@@ -47,7 +47,7 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
 
     @Override
     public void index(AlleleResource alleleResource) {
-        logger.info("Processing {} resource", alleleResource.getName());
+        logger.info("Processing '{}' resource", alleleResource.getName());
         AlleleArchive alleleArchive = alleleResource.getAlleleArchive();
         AlleleParser alleleParser = alleleResource.getAlleleParser();
 
@@ -67,7 +67,7 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
             }
         }
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished processing {} resource - processed {} variants total in {} sec", alleleResource.getName(), alleleLogger
+        logger.info("Finished processing '{}' resource - processed {} variants total in {} sec", alleleResource.getName(), alleleLogger
                 .count(), seconds);
     }
 

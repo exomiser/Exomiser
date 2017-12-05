@@ -350,7 +350,7 @@ public class MvStoreAlleleIndexerTest {
     @Test
     public void processAndWriteToDisk() throws Exception {
         AlleleArchive dbsnpArchive = new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
-        AlleleResource dbSnpResource = new AlleleResource(dbsnpArchive, new DbSnpAlleleParser());
+        AlleleResource dbSnpResource = new AlleleResource("test_first_ten_dbsnp", dbsnpArchive, new DbSnpAlleleParser());
 
         File mvTestFile = temporaryFolder.newFile("test.mv.db");
         logger.info("Writing allele data to file {}", mvTestFile);
