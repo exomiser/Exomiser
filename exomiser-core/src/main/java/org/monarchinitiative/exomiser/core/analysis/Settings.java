@@ -40,11 +40,14 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Class for storing the options data required for running the Exomiser.
+ * Class for storing the options data required for running the Exomiser. This class is deprecated as of version 9.0.0
+ * and is scheduled for removal. It is highly recommended to use the {@link Analysis} class in place of this.
  *
+ * @deprecated
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated
 @JsonDeserialize(builder = SettingsBuilder.class)
 public class Settings implements FilterSettings, PrioritiserSettings, OutputSettings {
 
