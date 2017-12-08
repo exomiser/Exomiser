@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -43,8 +42,8 @@ import java.util.Map;
  * cased names for the autosuggestion. However, we want to display the preferred
  * name in the end.
  *
- * @version 0.04 (27 November, 2013)
  * @author Peter Robinson
+ * @version 0.04 (27 November, 2013)
  */
 public class FishGeneLabelParser implements ResourceParser {
 
@@ -60,8 +59,8 @@ public class FishGeneLabelParser implements ResourceParser {
      * This function does the actual work of parsing the HPO file.
      *
      * @param resource
-     * @param inDir Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
-     * @param outDir Directory where output file is to be written
+     * @param inDir    Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param outDir   Directory where output file is to be written
      * @return
      */
     @Override
@@ -76,7 +75,7 @@ public class FishGeneLabelParser implements ResourceParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
-                fishIdtoSymbol.put(fields[0],fields[1]);
+                fishIdtoSymbol.put(fields[0], fields[1]);
             }
             reader.close();
             status = ResourceOperationStatus.SUCCESS;

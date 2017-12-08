@@ -414,7 +414,6 @@ public class ResourceConfig {
     }
 
 
-
     @Bean
     public Resource exomeWalkerOmimToGeneResource() {
         logger.info("Making ExomeWalker_omim2gene resource");

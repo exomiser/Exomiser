@@ -44,7 +44,6 @@ import java.util.Set;
  * Main class for building the exomiser database. This will attempt to download
  * and process the resources specified in the app.properties file.
  * {@code  org.monarchinitiative.exomiser.config.ResourceConfig}.
- *
  */
 @Component
 public class Main implements ApplicationRunner {

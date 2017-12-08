@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class MGIPhenotypeParser implements ResourceParser {
@@ -66,33 +64,32 @@ public class MGIPhenotypeParser implements ResourceParser {
         Path outFile = outDir.resolve(resource.getParsedFileName());
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
-        Map<String, Set <String>> mouse2PhenotypeMap = new HashMap<>();
+        Map<String, Set<String>> mouse2PhenotypeMap = new HashMap<>();
         //Map<String, String> mouse2geneMap = new HashMap<>();
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 //logger.info("Line is " + line);
                 String[] fields = line.split("\\t");
                 String mpId = fields[4];
                 String modelID = fields[0] + fields[3];
-                mouse2geneMap.put(modelID,fields[6]);
+                mouse2geneMap.put(modelID, fields[6]);
                 if (mouse2PhenotypeMap.containsKey(modelID)) {
                     mouse2PhenotypeMap.get(modelID).add(mpId);
-                }
-                else{
+                } else {
                     Set<String> mpIds = new HashSet<>();
                     mpIds.add(mpId);
-                    mouse2PhenotypeMap.put(modelID,mpIds);
+                    mouse2PhenotypeMap.put(modelID, mpIds);
                 }
             }
             int id = 1;
-            for (String modelId: mouse2PhenotypeMap.keySet()) {
-                Set <String>  mpIds = mouse2PhenotypeMap.get(modelId);
-                mouse2PhenotypesMap.put(modelId,Joiner.on(",").join(mpIds));
+            for (String modelId : mouse2PhenotypeMap.keySet()) {
+                Set<String> mpIds = mouse2PhenotypeMap.get(modelId);
+                mouse2PhenotypesMap.put(modelId, Joiner.on(",").join(mpIds));
                 //String[] mgiIds = mouse2geneMap.get(modelId).split(",");
                 //for (String mgiID : mgiIds) {
-                    //writer.write(String.format("%s|%s|%s|%s%n", mgiID, "", id, Joiner.on(",").join(mpIds)));
+                //writer.write(String.format("%s|%s|%s|%s%n", mgiID, "", id, Joiner.on(",").join(mpIds)));
                 //}
                 id++;
             }

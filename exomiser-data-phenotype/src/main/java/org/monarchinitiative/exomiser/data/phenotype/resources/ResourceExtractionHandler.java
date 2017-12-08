@@ -123,7 +123,8 @@ public class ResourceExtractionHandler {
     }
 
     /**
-     * Will extract a .zip or .tar archive to the specified outFile location 
+     * Will extract a .zip or .tar archive to the specified outFile location
+     *
      * @param inFile
      * @param outFile
      * @return

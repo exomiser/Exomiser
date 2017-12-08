@@ -37,7 +37,6 @@ import java.net.URL;
 import java.nio.file.Files;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FileDownloadUtils {
@@ -50,7 +49,8 @@ public class FileDownloadUtils {
 
     /**
      * Fetches the file from the source URL and writes it out to the destination
-     * file. 
+     * file.
+     *
      * @param source
      * @param destination
      * @return
@@ -74,7 +74,7 @@ public class FileDownloadUtils {
             return ResourceOperationStatus.FAILURE;
         }
 
-        if (destination.length() == 0 ) {
+        if (destination.length() == 0) {
             logger.info("{} is empty - deleting file.", destination.getAbsolutePath());
             try {
                 Files.delete(destination.toPath());

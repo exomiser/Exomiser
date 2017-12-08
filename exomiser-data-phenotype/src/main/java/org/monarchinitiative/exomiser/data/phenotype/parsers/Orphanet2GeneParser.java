@@ -40,8 +40,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class Orphanet2GeneParser implements ResourceParser {
@@ -75,7 +73,7 @@ public class Orphanet2GeneParser implements ResourceParser {
                     continue;
                 String entrezGeneId = fields[1];
                 String diseaseName = disease2TermMap.get(diseaseId);
-                writer.write(String.format("%s|%s|%s|%s|%s|%s%n", diseaseId , "",diseaseName, entrezGeneId,"",""));
+                writer.write(String.format("%s|%s|%s|%s|%s|%s%n", diseaseId, "", diseaseName, entrezGeneId, "", ""));
             }
             status = ResourceOperationStatus.SUCCESS;
 

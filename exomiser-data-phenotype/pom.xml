@@ -58,7 +58,7 @@
             <artifactId>flyway-core</artifactId>
             <version>4.2.0</version>
         </dependency>
-         <!--Commons VFS is used for obtaining the required flatfiles-->
+        <!--Commons VFS is used for obtaining the required flatfiles-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>

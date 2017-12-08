@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -58,19 +57,20 @@ public class FishResourceGroupParser extends AbstractResourceGroupParser impleme
 
         //Check everything is present before trying to parse them
         if (!requiredResourcesPresent(resourceGroup)) {
-            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup
+                    .getName());
             return;
         }
 
         Map<String, String> fishId2Symbol = new HashMap<>();
         FishGeneLabelParser fishGeneLabelParser = new FishGeneLabelParser(fishId2Symbol);
-        fishGeneLabelParser.parseResource(fishGeneLabelResource,inDir,outDir);
+        fishGeneLabelParser.parseResource(fishGeneLabelResource, inDir, outDir);
 
         FishPhenotypeParser fishPhenotypeParser = new FishPhenotypeParser(fishId2Symbol);
-        fishPhenotypeParser.parseResource(fishPhenotypeResource,inDir,outDir);
+        fishPhenotypeParser.parseResource(fishPhenotypeResource, inDir, outDir);
 
         FishOrthologParser fishOrthologParser = new FishOrthologParser();
-        fishOrthologParser.parseResource(fishOrthologResource,inDir,outDir);
+        fishOrthologParser.parseResource(fishOrthologResource, inDir, outDir);
 
     }
 

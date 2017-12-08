@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * This class represents a bundle of resources which need to be parsed as a
  * group due to inter-dependencies of the resources.
- *
+ * <p>
  * <p>
  * For example the OMIM resources mordbidmap and mim2gene have related
  * information which needs to be drawn together in order to produce the final
@@ -45,9 +45,8 @@ import java.util.Map;
  * of grouping these together so that they can be parsed in the correct order by
  * a {@code org.monarchinitiative.exomiser.parsers.ResourceGroupParser}.
  *
- * @see ResourceGroupParser
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @see ResourceGroupParser
  */
 public class ResourceGroup {
 
@@ -98,7 +97,7 @@ public class ResourceGroup {
      * is parsed by the specified
      * {@code org.monarchinitiative.exomiser.parsers.ResourceParser} class or a
      * null.
-     *
+     * <p>
      * <p>
      * This is the preferred method for getting a resource from the
      * ResourceGroup as opposed to the getResource(String resourceName).
@@ -107,8 +106,8 @@ public class ResourceGroup {
      * {@code org.monarchinitiative.exomiser.parsers.ResourceParser}
      *
      * @param clazz the class of the
-     * {@code org.monarchinitiative.exomiser.parsers.ResourceParser} used to parse
-     * a {@code org.monarchinitiative.exomiser.resources.Resource}
+     *              {@code org.monarchinitiative.exomiser.parsers.ResourceParser} used to parse
+     *              a {@code org.monarchinitiative.exomiser.resources.Resource}
      * @return The matching
      * {@code org.monarchinitiative.exomiser.resources.Resource} or null if no
      * match is found.
@@ -120,16 +119,15 @@ public class ResourceGroup {
     /**
      * Returns the {@code org.monarchinitiative.exomiser.resources.Resource} with
      * the same groupName as the provided resourceName or a null.
-     *
+     * <p>
      * <p>
      * Only use this method when there is no ResourceParserClass available for
      * the resource as this method essentially relies on hard-coded names for
      * resources. In preference to this define a ResourceParserClass and use the
      * getResource(Class clazz) method.
      *
-     *
      * @param resourceName the groupName of the required
-     * {@code org.monarchinitiative.exomiser.resources.Resource}
+     *                     {@code org.monarchinitiative.exomiser.resources.Resource}
      * @return The matching
      * {@code org.monarchinitiative.exomiser.resources.Resource} or null if no
      * match is found.
@@ -140,6 +138,7 @@ public class ResourceGroup {
 
     @Override
     public String toString() {
-        return "ResourceGroup{" + "groupName=" + groupName + ", resourceGroupParserClass=" + resourceGroupParserClass + ", resources=" + resourcesClassMap.values() + '}';
+        return "ResourceGroup{" + "groupName=" + groupName + ", resourceGroupParserClass=" + resourceGroupParserClass + ", resources=" + resourcesClassMap
+                .values() + '}';
     }
 }

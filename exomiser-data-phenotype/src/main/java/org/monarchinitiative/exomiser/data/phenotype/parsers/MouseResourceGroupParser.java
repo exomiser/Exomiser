@@ -26,25 +26,18 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceGroup;
-import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -66,25 +59,26 @@ public class MouseResourceGroupParser extends AbstractResourceGroupParser implem
 
         //Check everything is present before trying to parse them
         if (!requiredResourcesPresent(resourceGroup)) {
-            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup
+                    .getName());
             return;
         }
 
-        Map<String, String> mouseId2Symbol  = new HashMap<>();
-        Map<String, String> humanId2Symbol  = new HashMap<>();
-        Map<String, Set<String>> mouse2human  = new HashMap<>();
+        Map<String, String> mouseId2Symbol = new HashMap<>();
+        Map<String, String> humanId2Symbol = new HashMap<>();
+        Map<String, Set<String>> mouse2human = new HashMap<>();
 
-        MouseHomoloGeneOrthologParser mouseHomoloGeneOrthologParser = new MouseHomoloGeneOrthologParser(mouseId2Symbol,humanId2Symbol,mouse2human);
-        mouseHomoloGeneOrthologParser.parseResource(mouseHomoloGeneOrthologResource,inDir,outDir);
-        MouseEnsemblOrthologParser mouseEnsemblGeneOrthologParser = new MouseEnsemblOrthologParser(mouseId2Symbol,humanId2Symbol,mouse2human);
-        mouseEnsemblGeneOrthologParser.parseResource(mouseEnsemblOthologResource, inDir,outDir);
+        MouseHomoloGeneOrthologParser mouseHomoloGeneOrthologParser = new MouseHomoloGeneOrthologParser(mouseId2Symbol, humanId2Symbol, mouse2human);
+        mouseHomoloGeneOrthologParser.parseResource(mouseHomoloGeneOrthologResource, inDir, outDir);
+        MouseEnsemblOrthologParser mouseEnsemblGeneOrthologParser = new MouseEnsemblOrthologParser(mouseId2Symbol, humanId2Symbol, mouse2human);
+        mouseEnsemblGeneOrthologParser.parseResource(mouseEnsemblOthologResource, inDir, outDir);
 
         Map<String, String> mouse2PhenotypesMap = new HashMap<>();
         Map<String, String> mouse2geneMap = new HashMap<>();
-        MGIPhenotypeParser mgiPhenotypeParser = new MGIPhenotypeParser(mouse2PhenotypesMap,mouse2geneMap);
-        mgiPhenotypeParser.parseResource(mgiPhenotypeResource,inDir,outDir);
-        IMPCPhenotypeParser impcPhenotypeParser = new IMPCPhenotypeParser(mouse2PhenotypesMap,mouse2geneMap,mouseId2Symbol);
-        impcPhenotypeParser.parseResource(impcPhenotypeResource,inDir,outDir);
+        MGIPhenotypeParser mgiPhenotypeParser = new MGIPhenotypeParser(mouse2PhenotypesMap, mouse2geneMap);
+        mgiPhenotypeParser.parseResource(mgiPhenotypeResource, inDir, outDir);
+        IMPCPhenotypeParser impcPhenotypeParser = new IMPCPhenotypeParser(mouse2PhenotypesMap, mouse2geneMap, mouseId2Symbol);
+        impcPhenotypeParser.parseResource(impcPhenotypeResource, inDir, outDir);
 
     }
 

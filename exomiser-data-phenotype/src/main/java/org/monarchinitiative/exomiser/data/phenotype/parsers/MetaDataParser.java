@@ -40,6 +40,7 @@ import java.time.Instant;
 
 /**
  * Creates a pipe delimited file of resource|version
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class MetaDataParser implements ResourceParser {
@@ -49,7 +50,7 @@ public class MetaDataParser implements ResourceParser {
     private final Iterable<Resource> externalResources;
     private final Resource metaDataResource;
 
-    public MetaDataParser (Resource metaDataResource, Iterable<Resource> externalResources) {
+    public MetaDataParser(Resource metaDataResource, Iterable<Resource> externalResources) {
         this.metaDataResource = metaDataResource;
         this.externalResources = externalResources;
     }
@@ -69,7 +70,7 @@ public class MetaDataParser implements ResourceParser {
 
                 if (version == null || version.isEmpty()) {
                     Instant now = Instant.now();
-                    version  = now.toString();
+                    version = now.toString();
                 }
                 logger.info("Resource: {} Version: {}", resource.getName(), version);
                 writer.write(String.format("%s|%s%n", resource.getName(), version));

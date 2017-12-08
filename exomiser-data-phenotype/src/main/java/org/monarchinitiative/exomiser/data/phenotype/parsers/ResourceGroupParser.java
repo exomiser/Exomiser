@@ -34,7 +34,6 @@ import java.nio.file.Path;
  * Interface defining the functionality for how a group of parsers should work in concert
  * in order to produce the output file(s).
  *
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface ResourceGroupParser {
@@ -52,7 +51,8 @@ public interface ResourceGroupParser {
     void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir);
 
     /**
-     * Checks that all the required resources for the ResourceGroupParser are present. 
+     * Checks that all the required resources for the ResourceGroupParser are present.
+     *
      * @param resourceGroup
      * @return false if any resource is missing.
      */

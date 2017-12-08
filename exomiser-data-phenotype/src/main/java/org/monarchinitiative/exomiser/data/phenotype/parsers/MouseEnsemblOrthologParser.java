@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -38,14 +37,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class MouseEnsemblOrthologParser implements ResourceParser {
@@ -56,7 +52,7 @@ public class MouseEnsemblOrthologParser implements ResourceParser {
     private final Map<String, String> humanId2Symbol;
     private final Map<String, Set<String>> mouse2human;
 
-    public MouseEnsemblOrthologParser(Map<String, String> mouseId2Symbol,Map<String, String> humanId2Symbol,Map<String, Set<String>> mouse2human){
+    public MouseEnsemblOrthologParser(Map<String, String> mouseId2Symbol, Map<String, String> humanId2Symbol, Map<String, Set<String>> mouse2human) {
         this.mouseId2Symbol = mouseId2Symbol;
         this.humanId2Symbol = humanId2Symbol;
         this.mouse2human = mouse2human;
@@ -69,7 +65,7 @@ public class MouseEnsemblOrthologParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
@@ -84,17 +80,16 @@ public class MouseEnsemblOrthologParser implements ResourceParser {
                 humanId2Symbol.put(humanId, humanSymbol);
                 //mouse2human.put(mouseId, humanId);
 
-                if (null != mouse2human.get(mouseId)){
+                if (null != mouse2human.get(mouseId)) {
                     mouse2human.get(mouseId).add(humanId);
-                }
-                else {
+                } else {
                     Set<String> humanSet = new HashSet<>();
                     humanSet.add(humanId);
                     mouse2human.put(mouseId, humanSet);
                 }
 
             }
-            for (String mouseId: mouse2human.keySet()) {
+            for (String mouseId : mouse2human.keySet()) {
                 String mouseSymbol = mouseId2Symbol.get(mouseId);
                 Set<String> humanIds = mouse2human.get(mouseId);
                 for (String humanId : humanIds) {

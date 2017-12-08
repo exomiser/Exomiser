@@ -119,7 +119,7 @@ public class HPOOntologyFileParser implements ResourceParser {
                     name = null;
                     synonymLst.clear();
                 } else if (line.startsWith("[Term]") && name != null && id != null) {
-                    hpId2termMap.put(id,name);
+                    hpId2termMap.put(id, name);
                     writer.write(String.format("%s|%s|%s", name, id, synonymLst));
                     writer.newLine();
 //		    logger.info("{} {} {}", name,id,synonymLst);
@@ -130,7 +130,7 @@ public class HPOOntologyFileParser implements ResourceParser {
             }
             if (name != null && id != null) {
                 writer.write(String.format("%s|%s|%s", name, id, synonymLst));
-                hpId2termMap.put(id,name);
+                hpId2termMap.put(id, name);
                 writer.newLine();
 //                logger.info("{} {} {}", name,id,synonymLst);
 

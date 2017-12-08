@@ -40,8 +40,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HPZPMapperParser implements ResourceParser {
@@ -71,12 +69,12 @@ public class HPZPMapperParser implements ResourceParser {
                 id++;
                 String[] fields = line.split("\\t");
                 String queryId = fields[0];
-                queryId = queryId.replace("_",":");
+                queryId = queryId.replace("_", ":");
                 String queryTerm = "";
                 if (null != hpId2termMap.get(queryId))
                     queryTerm = hpId2termMap.get(queryId);
                 String hitId = fields[1];
-                hitId = hitId.replace("_",":");
+                hitId = hitId.replace("_", ":");
                 String hitTerm = "";
                 if (null != zpId2termMap.get(hitId))
                     hitTerm = zpId2termMap.get(hitId);
@@ -84,15 +82,14 @@ public class HPZPMapperParser implements ResourceParser {
                 String ic = fields[3];
                 double score = Math.sqrt(Double.parseDouble(simJ) * Double.parseDouble(ic));
                 String lcs = fields[4].split(";")[0];
-                lcs = lcs.replace("_",":");
+                lcs = lcs.replace("_", ":");
                 String lcsTerm = "";
                 if (null != hpId2termMap.get(lcs)) {
                     lcsTerm = hpId2termMap.get(lcs);
-                }
-                else if (null != zpId2termMap.get(lcs)) {
+                } else if (null != zpId2termMap.get(lcs)) {
                     lcsTerm = zpId2termMap.get(lcs);
                 }
-                writer.write(String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s%n", id,queryId,queryTerm,hitId ,hitTerm,simJ,ic,score,lcs,lcsTerm));
+                writer.write(String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s%n", id, queryId, queryTerm, hitId, hitTerm, simJ, ic, score, lcs, lcsTerm));
             }
             status = ResourceOperationStatus.SUCCESS;
 

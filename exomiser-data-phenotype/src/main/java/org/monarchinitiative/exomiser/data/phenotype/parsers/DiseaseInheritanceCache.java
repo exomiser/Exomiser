@@ -152,7 +152,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
                 }
                 if (fields[1].equals("OMIM"))
                     continue;
-                fields[1] = fields[1].replace(" ","");
+                fields[1] = fields[1].replace(" ", "");
                 Integer currentDiseaseId = Integer.parseInt(fields[1]);
                 //first line will have a null diseaseId
                 if (diseaseId == null) {

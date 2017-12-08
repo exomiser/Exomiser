@@ -28,7 +28,6 @@ package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceGroup;
-import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *

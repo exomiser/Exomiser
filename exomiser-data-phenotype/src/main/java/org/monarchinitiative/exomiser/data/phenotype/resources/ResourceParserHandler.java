@@ -70,11 +70,13 @@ public class ResourceParserHandler {
                 continue;
             }
             //resource is not parsed as part of a group so parse it now
-            if (resourceGroupParserClass == null){
-                logger.info("Resource {} has no declared resourceGroupParserClass. Attempting to parse as a single resource.", resource.getName());
+            if (resourceGroupParserClass == null) {
+                logger.info("Resource {} has no declared resourceGroupParserClass. Attempting to parse as a single resource.", resource
+                        .getName());
                 parseResource(resource, inDir, outDir);
             } else {
-                logger.info("Resource {} is part of resourceGroup {} - this will be parsed by {}", resource.getName(), resource.getResourceGroupName(), resourceGroupParserClass);
+                logger.info("Resource {} is part of resourceGroup {} - this will be parsed by {}", resource.getName(), resource
+                        .getResourceGroupName(), resourceGroupParserClass);
                 //resource is part of a group - add this to a ResourceGroup
                 if (!resourceGroupMap.containsKey(resourceGroupParserClass)) {
                     ResourceGroup resourceGroup = new ResourceGroup(resource.getResourceGroupName(), resourceGroupParserClass);
@@ -103,7 +105,8 @@ public class ResourceParserHandler {
 
     public static void parseResource(Resource resource, Path inDir, Path outDir) {
         try {
-            logger.info("Parsing resource: {} file: {} using parser: {}", resource.getName(), resource.getExtractedFileName(), resource.getParserClass());
+            logger.info("Parsing resource: {} file: {} using parser: {}", resource.getName(), resource.getExtractedFileName(), resource
+                    .getParserClass());
             if (resource.getParserClass() == null) {
                 logger.error("No parser defined for resource: {}", resource.getExtractedFileName());
                 resource.setParseStatus(ResourceOperationStatus.PARSER_NOT_FOUND);

@@ -45,8 +45,8 @@ import java.util.Map;
  * cased names for the autosuggestion. However, we want to display the preferred
  * name in the end.
  *
- * @version 0.04 (27 November, 2013)
  * @author Peter Robinson
+ * @version 0.04 (27 November, 2013)
  */
 public class MPOntologyFileParser implements ResourceParser {
 
@@ -62,8 +62,8 @@ public class MPOntologyFileParser implements ResourceParser {
      * This function does the actual work of parsing the HPO file.
      *
      * @param resource
-     * @param inDir Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
-     * @param outDir Directory where output file is to be written
+     * @param inDir    Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param outDir   Directory where output file is to be written
      * @return
      */
     @Override
@@ -114,7 +114,7 @@ public class MPOntologyFileParser implements ResourceParser {
                     //name = null;
                     synonymLst.clear();
                 } else if (line.startsWith("[Term]") && name != null && id != null) {
-                    mpId2termMap.put(id,name);
+                    mpId2termMap.put(id, name);
                     writer.write(String.format("%s|%s", id, name));
                     writer.newLine();
 //		    logger.info("{} {} {}", name,id,synonymLst);
@@ -125,7 +125,7 @@ public class MPOntologyFileParser implements ResourceParser {
             }
             if (name != null && id != null) {
                 writer.write(String.format("%s|%s", id, name));
-                mpId2termMap.put(id,name);
+                mpId2termMap.put(id, name);
                 writer.newLine();
 //                logger.info("{} {} {}", name,id,synonymLst);
 

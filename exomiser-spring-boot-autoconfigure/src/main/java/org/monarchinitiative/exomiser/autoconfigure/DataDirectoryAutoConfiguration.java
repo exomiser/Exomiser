@@ -53,7 +53,6 @@ public class DataDirectoryAutoConfiguration {
      * This is critical for the application to run as it points to the data
      * directory where all the required resources are found. Without this being
      * correctly set, the application will fail.
-     *
      */
     @Bean
     @ConditionalOnMissingBean(name = "exomiserDataDirectory")

@@ -31,16 +31,16 @@ import org.monarchinitiative.exomiser.data.phenotype.parsers.ResourceParser;
 import java.util.Objects;
 
 /**
- * This is the fundamental atomic unit of work for storing information about a 
+ * This is the fundamental atomic unit of work for storing information about a
  * resource required for building the Exomiser database.
- *
- * It specifies where a required resource (a file) is found, both on the web and 
+ * <p>
+ * It specifies where a required resource (a file) is found, both on the web and
  * locally. How it should be downloaded and extracted, which class is required to
- * parse the resource and whether this is also required by other resources in 
- * order to parse them as part of a 
+ * parse the resource and whether this is also required by other resources in
+ * order to parse them as part of a
  * {@code org.monarchinitiative.exomiser.resources.ResourceGroup}.
- *
- * It also tracks the download, extract and parse steps as 
+ * <p>
+ * It also tracks the download, extract and parse steps as
  * {@code org.monarchinitiative.exomiser.resources.ResourceOperationStatus}s
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -224,6 +224,6 @@ public class Resource {
 
     @Override
     public String toString() {
-        return "Resource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parserClass + ", parsedFileName=" + parsedFileName + ", resourceGroupName=" + resourceGroupName +'}';
+        return "Resource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parserClass + ", parsedFileName=" + parsedFileName + ", resourceGroupName=" + resourceGroupName + '}';
     }
 }

@@ -43,8 +43,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class MouseHomoloGeneOrthologParser implements ResourceParser {
@@ -55,7 +53,7 @@ public class MouseHomoloGeneOrthologParser implements ResourceParser {
     private final Map<String, String> humanId2Symbol;
     private final Map<String, Set<String>> mouse2human;
 
-    public MouseHomoloGeneOrthologParser(Map<String, String> mouseId2Symbol,Map<String, String> humanId2Symbol,Map<String, Set<String>> mouse2human){
+    public MouseHomoloGeneOrthologParser(Map<String, String> mouseId2Symbol, Map<String, String> humanId2Symbol, Map<String, Set<String>> mouse2human) {
         this.mouseId2Symbol = mouseId2Symbol;
         this.humanId2Symbol = humanId2Symbol;
         this.mouse2human = mouse2human;
@@ -68,46 +66,43 @@ public class MouseHomoloGeneOrthologParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-            BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
-            Map<String , Set<String>> mouseIds = new HashMap<>();
-            Map<String , Set<String>> humanIds = new HashMap<>();
+            Map<String, Set<String>> mouseIds = new HashMap<>();
+            Map<String, Set<String>> humanIds = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
                 String homoloGeneId = fields[0];
-                if (fields[1].equals("human")){
+                if (fields[1].equals("human")) {
                     String humanSymbol = fields[3];
                     String humanId = fields[4];
                     if (null != humanIds.get(homoloGeneId)) {
                         humanIds.get(homoloGeneId).add(humanId);
-                    }
-                    else{
+                    } else {
                         Set<String> newSet = new HashSet<>();
                         newSet.add(humanId);
-                        humanIds.put(homoloGeneId,newSet);
+                        humanIds.put(homoloGeneId, newSet);
                     }
-                    humanId2Symbol.put(humanId,humanSymbol);
-                }
-                else if (fields[1].equals("mouse, laboratory")){
+                    humanId2Symbol.put(humanId, humanSymbol);
+                } else if (fields[1].equals("mouse, laboratory")) {
                     String mouseSymbol = fields[3];
                     String mouseId = fields[5];
                     //mouseIds.put(homoloGeneId,mouseId);
                     if (null != mouseIds.get(homoloGeneId)) {
                         mouseIds.get(homoloGeneId).add(mouseId);
-                    }
-                    else{
+                    } else {
                         Set<String> newSet = new HashSet<>();
                         newSet.add(mouseId);
-                        mouseIds.put(homoloGeneId,newSet);
+                        mouseIds.put(homoloGeneId, newSet);
                     }
 
-                    mouseId2Symbol.put(mouseId,mouseSymbol);
+                    mouseId2Symbol.put(mouseId, mouseSymbol);
                 }
             }
-            for (String homoloGeneId: mouseIds.keySet()){
+            for (String homoloGeneId : mouseIds.keySet()) {
                 if (null != mouseIds.get(homoloGeneId) && null != humanIds.get(homoloGeneId)) {
                     for (String mouseId : mouseIds.get(homoloGeneId)) {
-                        for (String humanId : humanIds.get(homoloGeneId)){
+                        for (String humanId : humanIds.get(homoloGeneId)) {
                             if (null != mouse2human.get(mouseId)) {
                                 mouse2human.get(mouseId).add(humanId);
                             } else {
