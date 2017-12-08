@@ -321,6 +321,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(modeOfInheritance, pedigree);
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
+        //could add the OmimPrioritiser in here too - it requires the InheritanceModes in order to run correctly, as does the GeneScorer
     }
 
     /**

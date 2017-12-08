@@ -76,6 +76,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      */
     @Override
     public Consumer<Gene> scoreGene() {
+        //Should change to Function<Gene, Map<ModeOfInheritance, Float>> or return a GeneScore containing scores for the inheritance modes?
         return gene -> {
             //It is critical only the PASS variants are used in the scoring
             float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations());
