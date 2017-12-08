@@ -49,7 +49,6 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>application.properties</include>
-                <include>ehcache.xml</include>
             </includes>
         </fileSet>
         <fileSet>

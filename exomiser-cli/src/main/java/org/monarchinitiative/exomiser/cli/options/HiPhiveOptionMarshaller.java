@@ -28,6 +28,8 @@ package org.monarchinitiative.exomiser.cli.options;
 import org.apache.commons.cli.Option;
 import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 
+import java.util.StringJoiner;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -54,18 +56,10 @@ public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     private String parseHiPhiveParams(String[] values) {
-        String hiPhiveParams = "";
-        if (values.length == 0) {
-            return hiPhiveParams;
-        }
+        StringJoiner hiPhiveParams = new StringJoiner(",");
         for (String token : values) {
-            token = token.trim();
-            if (hiPhiveParams.equals("")) {
-                hiPhiveParams = token;
-            } else {
-                hiPhiveParams = hiPhiveParams + "," + token;
-            }
+            hiPhiveParams.add(token.trim());
         }
-        return hiPhiveParams;
+        return hiPhiveParams.toString();
     }
 }

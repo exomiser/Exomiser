@@ -92,8 +92,7 @@ public class FrequencyFilter implements VariantFilter {
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
         //frequency data is derived from the database - consequently make sure the data has been fetched otherwise the
-        //score will be the same for all variants.
-        float variantFrequencyScore = frequencyData.getScore();
+        //variant will always pass the filter.
 
         if (passesFilter(frequencyData)) {
             return PASS;
@@ -109,7 +108,7 @@ public class FrequencyFilter implements VariantFilter {
      * @param frequencyData
      * @return true if the variant being analyzed is rarer than the threshold
      */
-    protected boolean passesFilter(FrequencyData frequencyData) {
+    private boolean passesFilter(FrequencyData frequencyData) {
 
         for (Frequency frequency : frequencyData.getKnownFrequencies()) {
             if (frequency.isOverThreshold(maxFreq)) {

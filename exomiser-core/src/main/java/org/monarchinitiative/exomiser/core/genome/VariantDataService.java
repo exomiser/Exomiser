@@ -25,15 +25,12 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,9 +42,5 @@ public interface VariantDataService {
     FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
 
     PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
-
-    List<RegulatoryFeature> getRegulatoryFeatures();
-    
-    List<TopologicalDomain> getTopologicallyAssociatedDomains();
 
 }

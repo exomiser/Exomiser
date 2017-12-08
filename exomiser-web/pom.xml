@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative</groupId>
         <artifactId>exomiser</artifactId>
-        <version>8.0.2</version>
+        <version>9.0.0-ALPHA</version>
     </parent>
 
     <properties>
@@ -72,11 +72,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
@@ -87,6 +82,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <type>jar</type>
+        </dependency>
+        <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
         <!--WebJars-->
         <dependency>

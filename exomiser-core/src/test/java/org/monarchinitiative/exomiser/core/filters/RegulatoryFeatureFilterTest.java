@@ -25,40 +25,26 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class RegulatoryFeatureFilterTest {
 
-    public RegulatoryFeatureFilterTest() {
-    }
-
-    @Before
-    public void setUp() {
-    }
+    RegulatoryFeatureFilter instance = new RegulatoryFeatureFilter();
 
     @Test
     public void testGetFilterType() {
+        assertThat(instance.getFilterType(), equalTo(FilterType.REGULATORY_FEATURE_FILTER));
     }
 
     @Test
-    public void testRunFilter() {
+    public void intergenicVariantsWithNoAnnotationsFailFilter() throws Exception {
+        //TODO!
     }
-
-    @Test
-    public void testHashCode() {
-    }
-
-    @Test
-    public void testEquals() {
-    }
-
-    @Test
-    public void testToString() {
-    }
-
 }

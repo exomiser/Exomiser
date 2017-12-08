@@ -44,7 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
-    private final SimpleAnalysisRunner instance = new SimpleAnalysisRunner(geneFactory, variantFactory, stubDataService);
+    private final SimpleAnalysisRunner instance = new SimpleAnalysisRunner(genomeAnalysisService);
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {

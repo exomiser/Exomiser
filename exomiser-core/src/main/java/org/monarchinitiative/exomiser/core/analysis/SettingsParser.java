@@ -144,7 +144,7 @@ public class SettingsParser {
         }
         //GENE_ID
         if (!settings.getGenesToKeep().isEmpty()) {
-            variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));
+            variantFilters.add(new GeneSymbolFilter(settings.getGenesToKeep()));
         }
         //INTERVAL
         if (settings.getGeneticInterval() != null) {

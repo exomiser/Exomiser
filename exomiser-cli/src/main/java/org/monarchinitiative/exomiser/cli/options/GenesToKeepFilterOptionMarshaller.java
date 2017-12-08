@@ -30,10 +30,10 @@ import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
+import java.util.Arrays;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  *
@@ -48,9 +48,9 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
     public GenesToKeepFilterOptionMarshaller() {
         option = Option.builder()
                 .hasArgs()
-                .argName("Entrez geneId")
+                .argName("HGNC gene symbol")
                 .valueSeparator(',')
-                .desc("Comma separated list of seed genes (Entrez gene IDs) for filtering")
+                .desc("Comma separated list of seed genes (HGNC gene symbols e.g. FGFR2) for filtering")
                 .longOpt(GENES_TO_KEEP_OPTION)
                 .build();
     }
@@ -59,28 +59,9 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.genesToKeep(parseGenesToKeepList(values));
     }
-    
-    private Set<Integer> parseGenesToKeepList(String[] values) {
 
-        Set<Integer> returnList = new LinkedHashSet<>();
-
-        if (values.length == 0) {
-            return returnList;
-        }
-
-        Pattern entrezGeneIdPattern = Pattern.compile("[0-9]+");
-
-        for (String string : values) {
-            Matcher entrezGeneIdPatternMatcher = entrezGeneIdPattern.matcher(string);
-            if (entrezGeneIdPatternMatcher.matches()) {
-                Integer integer = Integer.parseInt(string.trim());
-                returnList.add(integer);
-            } else {
-                logger.error("Malformed Entrez gene ID input string \"{}\". Term \"{}\" does not match the Entrez gene ID identifier pattern: {}", values, string, entrezGeneIdPattern);
-            }
-        }
-
-        return returnList;
+    private Set<String> parseGenesToKeepList(String[] values) {
+        return Arrays.stream(values).collect(toSet());
     }
 
 }

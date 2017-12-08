@@ -40,11 +40,14 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Class for storing the options data required for running the Exomiser.
+ * Class for storing the options data required for running the Exomiser. This class is deprecated as of version 9.0.0
+ * and is scheduled for removal. It is highly recommended to use the {@link Analysis} class in place of this.
  *
+ * @deprecated
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated
 @JsonDeserialize(builder = SettingsBuilder.class)
 public class Settings implements FilterSettings, PrioritiserSettings, OutputSettings {
 
@@ -84,7 +87,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
     private final boolean keepOffTargetVariants;
     //genes to keep in final results
-    private final Set<Integer> genesToKeep;
+    private final Set<String> genesToKeep;
 
     //PRIORITISER variables
     private final PriorityType prioritiserType;  //default is NONE
@@ -144,7 +147,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private boolean removePathFilterCutOff = false;
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
-        private Set<Integer> geneIdsToKeep = new LinkedHashSet();
+        private Set<String> geneSymbolsToKeep = new LinkedHashSet<>();
 
         //PRIORITISER
         private PriorityType prioritiserType = PriorityType.NONE;
@@ -153,8 +156,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private String candidateGene = "";
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
         private String diseaseId = "";
-        private List<String> hpoIds = new ArrayList();
-        private List<Integer> seedGeneList = new ArrayList();
+        private List<String> hpoIds = new ArrayList<>();
+        private List<Integer> seedGeneList = new ArrayList<>();
         private String hiPhiveParams = "";
 
         //OUTPUT options
@@ -287,8 +290,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         }
 
         @JsonSetter
-        public SettingsBuilder genesToKeep(Set<Integer> value) {
-            geneIdsToKeep = value;
+        public SettingsBuilder genesToKeep(Set<String> value) {
+            geneSymbolsToKeep = value;
             return this;
         }
 
@@ -356,7 +359,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         keepNonPathogenicVariants = builder.removePathFilterCutOff;
         removeKnownVariants = builder.removeKnownVariants;
         keepOffTargetVariants = builder.keepOffTargetVariants;
-        genesToKeep = builder.geneIdsToKeep;
+        genesToKeep = builder.geneSymbolsToKeep;
 
         //PRIORITISER options
         candidateGene = builder.candidateGene;
@@ -496,7 +499,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     @JsonProperty
     @Override
-    public Set<Integer> getGenesToKeep() {
+    public Set<String> getGenesToKeep() {
         return genesToKeep;
     }
 

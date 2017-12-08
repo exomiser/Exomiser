@@ -35,7 +35,7 @@
     <parent>
         <groupId>org.monarchinitiative</groupId>
         <artifactId>exomiser</artifactId>
-        <version>8.0.2</version>
+        <version>9.0.0-ALPHA</version>
     </parent>
 
     <properties>
@@ -51,10 +51,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
         <dependency>
@@ -62,14 +58,9 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--Caching deps-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -26,7 +26,7 @@
 
 package org.monarchinitiative.exomiser.db.resources;
 
-import org.junit.*;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,25 +35,6 @@ import static org.junit.Assert.assertEquals;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ResourceTest {
-
-    public ResourceTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of getStatus method, of class Resource.

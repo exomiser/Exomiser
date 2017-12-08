@@ -28,8 +28,6 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -44,16 +42,14 @@ import java.util.List;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Repository
 public class RegulatoryFeatureDao {
 
     private final Logger logger = LoggerFactory.getLogger(RegulatoryFeatureDao.class);
 
     private final DataSource dataSource;
 
-    @Autowired
-    public RegulatoryFeatureDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public RegulatoryFeatureDao(DataSource genomeDataSource) {
+        this.dataSource = genomeDataSource;
     }
 
     public List<RegulatoryFeature> getRegulatoryFeatures() {

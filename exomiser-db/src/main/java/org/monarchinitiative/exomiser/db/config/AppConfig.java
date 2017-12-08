@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.db.config;
 
-import org.monarchinitiative.exomiser.db.io.PhenodigmDataDumper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +62,6 @@ public class AppConfig {
 
     @Autowired
     private ResourceLoader resourceLoader;
-
-    @Bean
-    public PhenodigmDataDumper phenodigmDataDumper() {
-        return new PhenodigmDataDumper();
-    }
 
     @Bean
     public Path dataPath() {

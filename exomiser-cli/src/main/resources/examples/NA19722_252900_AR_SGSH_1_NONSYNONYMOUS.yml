@@ -42,6 +42,8 @@ analysis:
     #   EXAC_OTHER
     frequencySources: [
         THOUSAND_GENOMES,
+        TOPMED,
+        UK10K,
         ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
         EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
         EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
@@ -58,7 +60,7 @@ analysis:
     steps: [ 
         #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
         #failedVariantFilter: {},
-        #geneIdFilter: {geneIds: [12345, 34567, 98765]},
+        #genePanelFilter: {geneSymbols: ['POMP','SUMF1','JUP']},
         hiPhivePrioritiser: {},
         #running the prioritiser followed by a priorityScoreFilter will remove genes
         #which are least likely to contribute to the phenotype defined in hpoIds, this will

@@ -23,9 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SparseVariantFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
@@ -41,8 +39,8 @@ import java.util.function.Predicate;
  */
 class SparseAnalysisRunner extends AbstractAnalysisRunner {
 
-    SparseAnalysisRunner(GeneFactory geneFactory, VariantFactory variantFactory, VariantDataService variantDataService) {
-        super(geneFactory, variantFactory, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+    SparseAnalysisRunner(GenomeAnalysisService genomeAnalysisService) {
+        super(genomeAnalysisService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

@@ -111,7 +111,7 @@ public class AnalysisResults {
 
     @JsonIgnore
     public List<VariantEvaluation> getUnAnnotatedVariantEvaluations() {
-        return variantEvaluations.stream().filter(varEval -> !varEval.hasAnnotations()).collect(toList());
+        return variantEvaluations.stream().filter(varEval -> !varEval.hasTranscriptAnnotations()).collect(toList());
     }
 
     @Override

@@ -20,21 +20,30 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SimpleVariantCoordinates implements VariantCoordinates {
 
+    private final GenomeAssembly genomeAssembly;
     private final int chr;
     private final int pos;
     private final String ref;
     private final String alt;
 
-    public SimpleVariantCoordinates(int chr, int pos, String ref, String alt) {
+    public SimpleVariantCoordinates(GenomeAssembly genomeAssembly, int chr, int pos, String ref, String alt) {
+        this.genomeAssembly = genomeAssembly;
         this.chr = chr;
         this.pos = pos;
         this.ref = ref;
         this.alt = alt;
+    }
+
+    @Override
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
     }
 
     @Override

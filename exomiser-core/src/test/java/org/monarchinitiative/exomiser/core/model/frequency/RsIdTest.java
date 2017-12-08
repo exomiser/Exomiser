@@ -99,6 +99,11 @@ public class RsIdTest {
     }
 
     @Test
+    public void testEmptyInputReturnsEmpty() {
+        assertThat(RsId.valueOf(""), equalTo(RsId.empty()));
+    }
+
+    @Test
     public void testIsEmpty() {
         assertThat(RsId.empty().isEmpty(), is(true));
     }

@@ -68,7 +68,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     private Map<Integer, IntervalArray<T>> createChromosomeIntervalTreeIndex(Map<Integer, Set<T>> regionIndex) {
         Map<Integer, IntervalArray<T>> index = new HashMap<>();
-        for (Map.Entry<Integer, Set<T>> entry :regionIndex.entrySet()) {
+        for (Map.Entry<Integer, Set<T>> entry : regionIndex.entrySet()) {
             Integer chrId = entry.getKey();
             IntervalArray<T> intervalTree = new IntervalArray<>(entry.getValue(), new ChromosomalRegionEndExtractor());
             logger.debug("Chr: {} - {} regions", chrId, intervalTree.size());
@@ -98,7 +98,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         if (intervalTree == null) {
             return Collections.emptyList();
         }
-        IntervalArray.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
+        IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
         return queryResult.getEntries();
     }
 

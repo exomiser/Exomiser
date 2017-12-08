@@ -28,8 +28,6 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -41,16 +39,14 @@ import java.util.*;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Repository
 public class TadDao {
 
     private final Logger logger = LoggerFactory.getLogger(TadDao.class);
 
     private final DataSource dataSource;
 
-    @Autowired
-    public TadDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public TadDao(DataSource genomeDataSource) {
+        this.dataSource = genomeDataSource;
     }
 
 

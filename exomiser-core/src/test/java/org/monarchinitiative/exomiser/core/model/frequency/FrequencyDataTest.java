@@ -77,6 +77,18 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testNoRsIdNoFrequencyEqualToEmpty() {
+        FrequencyData localFrequency = FrequencyData.of();
+        assertThat(localFrequency, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    public void testNoRsIdSpecifiedSingleFrequencyValue() {
+        FrequencyData localFrequency = FrequencyData.of(Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        assertThat(localFrequency.hasKnownFrequency(), is(true));
+    }
+
+    @Test
     public void testSingleFrequencyValue() {
         FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.valueOf(0.001f, FrequencySource.LOCAL));
         assertThat(localFrequency.hasKnownFrequency(), is(true));
