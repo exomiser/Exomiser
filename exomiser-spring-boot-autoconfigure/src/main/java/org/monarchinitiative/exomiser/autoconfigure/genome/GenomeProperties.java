@@ -48,8 +48,6 @@ interface GenomeProperties {
 
     public Path getDataDirectory();
 
-    public void setDataDirectory(Path dataDirectory);
-
     public void setDataDirectory(String dataDirectory);
 
     //IMPORTANT! Do not change this name to match the usual java conventions as this will break the application.properties parsing
@@ -57,15 +55,6 @@ interface GenomeProperties {
     public DataSourceProperties getDatasource();
 
     public void setDatasource(DataSourceProperties dataSourceProperties);
-
-    //Tabix variant data files
-    public String getFrequencyPath();
-
-    public void setFrequencyPath(String frequencyPath);
-
-    public String getPathogenicityPath();
-
-    public void setPathogenicityPath(String pathogenicityPath);
 
     //Optional tabix variant data
     public String getCaddSnvPath();

@@ -70,8 +70,8 @@ public class GenomeDataTest {
         genomeProperties.setDataDirectory("src/test/resources/data");
 
         GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
-        Path relativeFilePath = Paths.get("exomiser.h2.db");
-        assertThat(instance.resolveAbsoluteResourcePath(relativeFilePath), equalTo(Paths.get("src/test/resources/data/exomiser.h2.db")
+        Path relativeFilePath = Paths.get("genome.h2.db");
+        assertThat(instance.resolveAbsoluteResourcePath(relativeFilePath), equalTo(Paths.get("src/test/resources/data/genome.h2.db")
                 .toAbsolutePath()));
     }
 
@@ -82,8 +82,8 @@ public class GenomeDataTest {
         genomeProperties.setDataDirectory("src/test/resources/data");
 
         GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
-        Path absoluteFilePath = Paths.get("src/test/resources/user-defined/exomiser.h2.db").toAbsolutePath();
-        assertThat(instance.resolveAbsoluteResourcePath(absoluteFilePath), equalTo(Paths.get("src/test/resources/user-defined/exomiser.h2.db")
+        Path absoluteFilePath = Paths.get("src/test/resources/user-defined/genome.h2.db").toAbsolutePath();
+        assertThat(instance.resolveAbsoluteResourcePath(absoluteFilePath), equalTo(Paths.get("src/test/resources/user-defined/genome.h2.db")
                 .toAbsolutePath()));
     }
 
@@ -94,7 +94,7 @@ public class GenomeDataTest {
         genomeProperties.setDataDirectory("src/test/resources/user-defined");
 
         GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
-        assertThat(instance.resolveAbsoluteResourcePath("exomiser.h2.db"), equalTo(Paths.get("src/test/resources/user-defined/exomiser.h2.db")
+        assertThat(instance.resolveAbsoluteResourcePath("genome.h2.db"), equalTo(Paths.get("src/test/resources/user-defined/genome.h2.db")
                 .toAbsolutePath()));
     }
 }

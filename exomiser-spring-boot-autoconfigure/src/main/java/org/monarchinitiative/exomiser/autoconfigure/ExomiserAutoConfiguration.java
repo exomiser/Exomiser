@@ -49,7 +49,7 @@ import org.springframework.context.annotation.Import;
 public class ExomiserAutoConfiguration {
 
     //TODO: This is a hack in order to wire this up in the interim - probably going to remove this class as its no longer used.
-    //TODO: Alternatively add genomeAssembly to Settings and fix this properly.
+    // Alternatively add genomeAssembly to Settings and fix this properly.
     @Bean
     public SettingsParser settingsParser(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
         return new SettingsParser(priorityFactory, genomeAnalysisServiceProvider.get(GenomeAssembly.HG19));

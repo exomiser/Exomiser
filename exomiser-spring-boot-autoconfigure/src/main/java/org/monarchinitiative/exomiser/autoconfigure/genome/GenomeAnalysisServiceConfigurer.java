@@ -109,20 +109,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
-    protected TabixDataSource defaultFrequencyTabixDataSource() {
-        String frequencyPath = genomeProperties.getFrequencyPath();
-        Path pathToTabixGzFile = genomeData.resolveAbsoluteResourcePath(frequencyPath);
-        logger.info("Reading variant frequency data from {}", pathToTabixGzFile);
-        return TabixDataSourceLoader.load(pathToTabixGzFile);
-    }
-
-    protected TabixDataSource defaultPathogenicityTabixDataSource() {
-        String pathogenicityPath = genomeProperties.getPathogenicityPath();
-        Path pathToTabixGzFile = genomeData.resolveAbsoluteResourcePath(pathogenicityPath);
-        logger.info("Reading variant pathogenicity data from {}", pathToTabixGzFile);
-        return TabixDataSourceLoader.load(pathToTabixGzFile);
-    }
-
     /**
      * Optional full system path to CADD InDels.tsv.gz and InDels.tsv.gz.tbi file pair.
      * These can be downloaded from http://cadd.gs.washington.edu/download - v1.3 has been tested.
@@ -234,7 +220,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     private HikariConfig genomeDataSourceConfig() {
         //omit the .h2.db extensions
-        String dbFileName = String.format("%s_exomiser_genome", genomeData.getVersionAssemblyPrefix());
+        String dbFileName = String.format("%s_genome", genomeData.getVersionAssemblyPrefix());
 
         Path dbPath = genomeData.resolveAbsoluteResourcePath(dbFileName);
 

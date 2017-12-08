@@ -38,9 +38,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     private Path dataDirectory;
 
-    //Tabix variant data files
-    private String frequencyPath = "exomiser-freq.vcf.gz";
-    private String pathogenicityPath = "exomiser-path.vcf.gz";
     //Optional tabix variant data
     private String caddSnvPath = "";
     private String caddInDelPath = "";
@@ -50,11 +47,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     @Override
     public Path getDataDirectory() {
         return dataDirectory;
-    }
-
-    @Override
-    public void setDataDirectory(Path dataDirectory) {
-        this.dataDirectory = dataDirectory;
     }
 
     @Override
@@ -99,24 +91,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     public void setDatasource(DataSourceProperties dataSourceProperties) {
         this.datasource = dataSourceProperties;
-    }
-
-
-    //Tabix variant data files
-    public String getFrequencyPath() {
-        return frequencyPath;
-    }
-
-    public void setFrequencyPath(String frequencyPath) {
-        this.frequencyPath = frequencyPath;
-    }
-
-    public String getPathogenicityPath() {
-        return pathogenicityPath;
-    }
-
-    public void setPathogenicityPath(String pathogenicityPath) {
-        this.pathogenicityPath = pathogenicityPath;
     }
 
     public String getCaddSnvPath() {

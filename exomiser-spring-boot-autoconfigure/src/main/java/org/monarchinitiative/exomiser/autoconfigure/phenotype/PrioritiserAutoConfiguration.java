@@ -95,6 +95,7 @@ public class PrioritiserAutoConfiguration {
                 return automaticallyDefinedPath;
             }
         }
+        logger.info("exomiser.phenotype.data-directory defined as: {}", originalPath);
         return originalPath;
     }
 
@@ -175,7 +176,7 @@ public class PrioritiserAutoConfiguration {
     private HikariConfig phenotypeDataSourceConfig() {
         String version = phenotypeProperties.getDataVersion();
         //omit the .h2.db extensions
-        String dbFileName = String.format("%s_exomiser_phenotype", version);
+        String dbFileName = String.format("%s_phenotype", version);
 
         Path dbPath = phenotypeDataDirectory().resolve(dbFileName);
 

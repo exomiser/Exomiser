@@ -53,10 +53,6 @@ public class PhenotypeProperties {
         return dataDirectory;
     }
 
-    public void setDataDirectory(Path dataDirectory) {
-        this.dataDirectory = dataDirectory;
-    }
-
     public void setDataDirectory(String dataDirectory) {
         this.dataDirectory = Paths.get(dataDirectory);
     }
