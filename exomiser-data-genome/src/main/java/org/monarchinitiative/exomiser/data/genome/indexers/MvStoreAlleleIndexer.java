@@ -104,10 +104,12 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
                 .build();
     }
 
+    @Override
     public long count() {
         return map.size();
     }
 
+    @Override
     public void close() {
         mvStore.close();
     }

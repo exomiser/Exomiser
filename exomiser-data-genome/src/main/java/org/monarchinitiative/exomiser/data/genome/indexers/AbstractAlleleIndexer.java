@@ -67,11 +67,16 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
             }
         }
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished processing '{}' resource - processed {} variants total in {} sec", alleleResource.getName(), alleleLogger
-                .count(), seconds);
+        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written",
+                alleleResource.getName(),
+                alleleLogger.count(),
+                seconds,
+                this.count());
     }
 
     protected abstract void writeAllele(Allele allele);
+
+    public abstract long count();
 
     public abstract void close();
 
