@@ -58,7 +58,7 @@ public class MainConfig {
 }
 ```
 
-Or if using Spring boot for your application, the exomiser wll be autoconfigured if it is on your classpath.
+Or if using Spring boot for your application, the exomiser will be autoconfigured if it is on your classpath.
 
 ```java
 @SpringBootApplication
@@ -81,6 +81,7 @@ private final Exomiser exomiser;
 ...
            
     Analysis analysis = exomiser.getAnalysisBuilder()
+                .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
                 .pedPath(pedPath)
                 .probandSampleName(probandSampleId)
@@ -109,10 +110,9 @@ Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java
 
 #### Caching
 
-Since 8.0.2 caching is disabled by default when using the ```exomiser-spring-boot-starter```. It is still possible to use the ```exomiser.cache``` in your ```application.properties``` file, but the caches and their sizes are restricted to the bundled ehcache.xml.
+Since 9.0.0 caching uses the standard Spring mechanisms.
  
-To enable and configure your own caching in your Spring application, make sure you do *not* specify ```exomiser.cache``` in your ```application.properties```. Instead, use the ```@EnableCaching``` annotation as usual in a ```@Configuration``` class. 
-However in doing so this will trigger Spring to pick up the bundled ehcache.xml, so you will need to add the ```spring.cache.type``` and any implementation specific properties to the ```application.properties``` as well.
+To enable and configure caching in your Spring application, use the ```@EnableCaching``` annotation on a ```@Configuration``` class, include the required cache implementation jar and add the specific properties to the ```application.properties```.
 
 For example, to use [Caffeine](https://github.com/ben-manes/caffeine) just add the dependency to your pom:
 
@@ -124,7 +124,6 @@ For example, to use [Caffeine](https://github.com/ben-manes/caffeine) just add t
 ```
 and these lines to the ```application.properties```:
 ```properties
-# make sure you don't have exomiser.cache in here
 spring.cache.type=caffeine
 spring.cache.caffeine.spec=maximumSize=300000
 ```
