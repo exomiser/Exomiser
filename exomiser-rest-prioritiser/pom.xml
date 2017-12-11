@@ -25,9 +25,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.monarchinitiative</groupId>
+        <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.0-ALPHA</version>
+        <version>9.0.0</version>
     </parent>
 
     <artifactId>exomiser-rest-prioritiser</artifactId>
@@ -40,12 +40,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-test</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>

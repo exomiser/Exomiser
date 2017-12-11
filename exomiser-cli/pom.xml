@@ -29,9 +29,9 @@
     <url>http://maven.apache.org</url>
 
     <parent>
-        <groupId>org.monarchinitiative</groupId>
+        <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.0-ALPHA</version>
+        <version>9.0.0</version>
     </parent>
   
     <properties>
@@ -40,7 +40,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

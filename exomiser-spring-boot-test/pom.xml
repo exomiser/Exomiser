@@ -23,9 +23,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
+        <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <groupId>org.monarchinitiative</groupId>
-        <version>9.0.0-ALPHA</version>
+        <version>9.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,7 +34,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
