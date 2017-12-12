@@ -22,10 +22,10 @@ Further information can be found in the [online documentation](http://exomiser.g
 Windows:
     
  1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
- 2. Download the data and distribution files from the FTP site.
+ 2. Download the data and distribution files from ```https://data.monarchinitiative.org/exomiser/latest```
  3. Extract the distribution files by right-clicking exomiser-cli-${project.version}-distribution.zip and selecting 7-Zip > Extract Here
- 4. Extract the data files by right-clicking exomiser-cli-${project.version}-data.zip and selecting 7-Zip > Extract Here
-   4.1 Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
+ 4. Extract the data files (e.g. 1711_phenotype.zip, 1711_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files...
+   4.1 Extract the files to the exomiser data directory. By default exomiser expects this to be ```exomiser-cli-${project.version}/data```, but this can be changed in the ```application.properties``` 
  5. cd exomiser-cli-${project.version}
  6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
  
@@ -33,18 +33,21 @@ Linux:
 The following shell script should work-
     
     #download the distribution (won't take long)
-    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}-distribution.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}-data.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1711_phenotype.zip
 
-    #download the checksums and verify the files (optional)
-    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}.sha256    
-    sha256sum -c exomiser-cli-${project.version}.sha256
-    
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    unzip exomiser-cli-${project.version}-data.zip
+    unzip 1711_*.zip -d exomiser-cli-${project.version}/data
 
+    #Check the application.properties are pointing to the correct versions
+    #exomiser.hg19.data-version=1711
+    #exomiser.hg38.data-version=1711
+    #exomiser.phenotype.data-version=1711
+    
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
@@ -55,7 +58,7 @@ This script will download, verify and extract the exomiser files and then run th
 
 In order to run the Genomiser you will also need to download the REMM data file from [here](https://charite.github.io/software-remm-score.html). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz file to the ```application.properties``` file. For example if you downloaded the file to the exomiser data directory you could add the entry like this:
 
-    exomiser.remm-path=${exomiser.data-directory}/ReMM.v0.3.1.tsv.gz
+    exomiser.hg19.remm-path=${exomiser.hg19.data-directory}/ReMM.v0.3.1.tsv.gz
  
 If this step is omitted, the application will throw and error and stop any analysis which defines ```REMM``` in the ```pathogenicitySources``` section of an analysis yml file. 
 
@@ -97,7 +100,7 @@ Analyses can be run in batch mode. Simply put the path to each analysis file in 
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
 
-### CLI only (limited to exome analysis only)
+### CLI only (limited to hg19 exome analysis only)
 
 (a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
 
