@@ -68,7 +68,8 @@
                 <filtering>true</filtering>
                 <excludes>
                     <exclude>distribution/*</exclude>
-                    <exclude>data/*</exclude>
+                    <exclude>examples/*</exclude>
+                    <exclude>vcf/*</exclude>
                 </excludes>
             </resource>
         </resources> 
