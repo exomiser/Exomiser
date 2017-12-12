@@ -98,7 +98,7 @@ public class VariantDataServiceImpl implements VariantDataService {
         if (pathogenicitySources.isEmpty()) {
             return PathogenicityData.empty();
         }
-        //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources to query and ship.
+
         List<PathogenicityScore> allPathScores = new ArrayList<>();
         final VariantEffect variantEffect = variant.getVariantEffect();
         //Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
