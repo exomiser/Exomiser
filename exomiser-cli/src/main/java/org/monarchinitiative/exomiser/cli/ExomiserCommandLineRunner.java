@@ -65,13 +65,14 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
+        logger.info("Exomiser running...");
         if (strings.length == 0) {
-            printHelp();
             logger.error("Please supply some command line arguments - none found");
+            printHelpAndExit();
         }
         CommandLine commandLine = parseCommandLineOptions(strings);
         if (commandLine.hasOption("help")) {
-            printHelp();
+            printHelpAndExit();
         }
         runAnalyses(commandLine);
     }
@@ -113,7 +114,9 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     private CommandLine parseCommandLineOptions(String[] args) {
         CommandLineParser parser = new DefaultParser();
         try {
-            return parser.parse(options, args);
+            // Beware! - the command line parser will fail if any spring-related options are provided before the exomiser ones
+            // ensure all exomiser commands are provided before any spring boot command.
+            return parser.parse(options, args, true);
         } catch (ParseException ex) {
             String message = "Unable to parse command line arguments. Please check you have typed the parameters correctly." +
                     " Use command --help for a list of commands.";
@@ -121,10 +124,11 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         }
     }
 
-    private void printHelp() {
+    private void printHelpAndExit() {
         HelpFormatter formatter = new HelpFormatter();
-        String launchCommand = String.format("java -jar exomizer-cli-%s.jar [...]", buildVersion);
+        String launchCommand = String.format("java -jar exomiser-cli-%s.jar [...]", buildVersion);
         formatter.printHelp(launchCommand, options);
+        System.exit(0);
     }
 
     private void runAnalysisFromScript(Path analysisScript) {

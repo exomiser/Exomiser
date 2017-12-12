@@ -298,7 +298,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.isXChromosomal();
+        return ve.getChromosome() == 23;
     }
 
     @JsonIgnore
@@ -307,7 +307,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.isYChromosomal();
+        return ve.getChromosome() == 24;
     }
 
     /**

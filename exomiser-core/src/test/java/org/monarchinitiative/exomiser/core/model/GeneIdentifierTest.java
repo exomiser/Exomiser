@@ -128,4 +128,12 @@ public class GeneIdentifierTest {
         assertThat(geneIdentifier.hasEntrezId(), is(true));
     }
 
+    @Test
+    public void testToString() {
+        System.out.println(GeneIdentifier.builder()
+                .entrezId("2263")
+                .build()
+        );
+    }
+
 }

@@ -31,27 +31,27 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public final class ModelPhenotypeMatch implements Comparable<ModelPhenotypeMatch> {
+public final class ModelPhenotypeMatch<T extends Model> implements Comparable<ModelPhenotypeMatch> {
 
     private final double score;
-    private final Model model;
+    private final T model;
     private final List<PhenotypeMatch> bestPhenotypeMatches;
 
-    private ModelPhenotypeMatch(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
+    private ModelPhenotypeMatch(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.score = score;
         this.model = model;
         this.bestPhenotypeMatches = bestPhenotypeMatches;
     }
 
-    public static ModelPhenotypeMatch of(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
-        return new ModelPhenotypeMatch(score, model, ImmutableList.copyOf(bestPhenotypeMatches));
+    public static <T extends Model> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
+        return new ModelPhenotypeMatch<>(score, model, ImmutableList.copyOf(bestPhenotypeMatches));
     }
 
     public double getScore() {
         return score;
     }
 
-    public Model getModel() {
+    public T getModel() {
         return model;
     }
 

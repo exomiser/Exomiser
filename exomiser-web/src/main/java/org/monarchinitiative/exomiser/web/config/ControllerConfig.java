@@ -40,7 +40,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class ControllerConfig extends WebMvcConfigurerAdapter {
 
-    Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
 
     @Autowired
     private Environment env;

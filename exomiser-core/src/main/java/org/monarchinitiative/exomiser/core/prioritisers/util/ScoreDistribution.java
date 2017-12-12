@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
- *
  */
 public class ScoreDistribution {
 
@@ -43,36 +42,36 @@ public class ScoreDistribution {
     }
 
 
-    public void setDistribution(List<Double> scoresAL, List<Double> pvaluesAL, double numRandomizations){
+    public void setDistribution(List<Double> scoresAL, List<Double> pvaluesAL, double numRandomizations) {
 
         this.scores = new double[scoresAL.size()];
         this.pvalues = new double[pvaluesAL.size()];
 
-        for (int i = 0 ; i < scoresAL.size(); i++){
-            this.scores[i] 	= scoresAL.get(i);
+        for (int i = 0; i < scoresAL.size(); i++) {
+            this.scores[i] = scoresAL.get(i);
             this.pvalues[i] = pvaluesAL.get(i);
         }
 
-        this.numberRandomizations 	= numRandomizations;
+        this.numberRandomizations = numRandomizations;
 
     }
 
     public double getPvalue(double score, double roundFactor) {
 
-        score 	= round(score, roundFactor);
-		
+        double rounded = round(score, roundFactor);
+
 		/* maybe this value is too high */
-        if ( scores[scores.length-1] < score )
-            return (double)1/numberRandomizations;
-		
+        if (scores[scores.length - 1] < rounded)
+            return (double) 1 / numberRandomizations;
+
 		/* init with 1 */
         double pvalue = 1;
 
-        for (int i = 0; i < scores.length ; i++){
+        for (int i = 0; i < scores.length; i++) {
 
             double scoreCand = scores[i];
-            if ( score <= scoreCand ){
-                pvalue 	= pvalues[i];
+            if (rounded <= scoreCand) {
+                pvalue = pvalues[i];
                 break;
             }
 
@@ -80,17 +79,20 @@ public class ScoreDistribution {
         return pvalue;
     }
 
-    public static double round( double d , double fact) {
-        return Math.rint( d * fact ) / fact;
+    private static double round(double d, double fact) {
+        return Math.rint(d * fact) / fact;
     }
 
     @Override
     public String toString() {
-        StringBuffer buff = new StringBuffer("score dist for: "+mimNumber+":\n");
-        for (int i = 0 ; i< scores.length ; i++){
-            buff.append(scores[i]+"-"+pvalues[i]+"\n");
+        StringBuilder stringBuilder = new StringBuilder("score dist for: " + mimNumber + ":\n");
+        for (int i = 0; i < scores.length; i++) {
+            stringBuilder.append(scores[i]);
+            stringBuilder.append("-");
+            stringBuilder.append(pvalues[i]);
+            stringBuilder.append("\n");
         }
-        return buff.toString();
+        return stringBuilder.toString();
     }
 
 }

@@ -126,10 +126,10 @@ public class FilterSettingsImplTest {
     
     @Test
     public void testGenesToKeep() {
-        Set<Integer> genesToKeep = new LinkedHashSet<>();
-        genesToKeep.add(1);
-        genesToKeep.add(2);
-        genesToKeep.add(3);
+        Set<String> genesToKeep = new LinkedHashSet<>();
+        genesToKeep.add("1");
+        genesToKeep.add("2");
+        genesToKeep.add("3");
         instance = builder.genesToKeep(genesToKeep).build();
         assertThat(instance.getGenesToKeep(), equalTo(genesToKeep));        
     }

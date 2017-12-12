@@ -20,12 +20,18 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
+import java.util.stream.Stream;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @FunctionalInterface
-public interface ModelScorer {
+public interface ModelScorer<T extends Model> {
 
-    ModelPhenotypeMatch scoreModel(Model model);
+    ModelPhenotypeMatch<T> scoreModel(T model);
+
+    default Stream<ModelPhenotypeMatch<T>> scoreModels(Stream<T> models) {
+        return models.map(this::scoreModel);
+    }
 
 }

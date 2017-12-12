@@ -19,68 +19,30 @@
  */
 package org.monarchinitiative.exomiser.cli;
 
-import org.monarchinitiative.exomiser.cli.config.MainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.CodeSource;
 import java.util.Locale;
 
 
 /**
  * Main class for calling off the command line in the Exomiser package.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@SpringBootApplication
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private AnnotationConfigApplicationContext applicationContext;
-
     public static void main(String[] args) {
-        Main main = new Main();
-        main.run(args);
-    }
-
-    private void run(String[] args) {
-        setUpApplicationContext();
-        showSplash();
-        runExomiser(args);
-    }
-
-    //Get Spring started - this contains the configuration of the application
-    private AnnotationConfigApplicationContext setUpApplicationContext() {
         Locale.setDefault(Locale.UK);
         logger.info("Locale set to {}", Locale.getDefault());
-        //this is set here so that Spring can load the properties file from the jarFilePath
-        System.setProperty("jarFilePath", jarFilePath().toString());
-        applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
-        return applicationContext;
-    }
 
-    private Path jarFilePath() {
-        CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-        try {
-            return Paths.get(codeSource.getLocation().toURI()).getParent();
-        } catch (URISyntaxException ex) {
-            logger.error("Unable to find jar file", ex);
-            throw new RuntimeException("Unable to find jar file", ex);
-        }
-    }
+        SpringApplication.run(Main.class, args).close();
 
-    private void showSplash() {
-        String splash = (String) applicationContext.getBean("banner");
-        System.out.println(splash);
-    }
-
-    private void runExomiser(String[] args) {
-        ExomiserCommandLineRunner exomiserCliRunner = applicationContext.getBean(ExomiserCommandLineRunner.class);
-        exomiserCliRunner.run(args);
         logger.info("Exomising finished - Bye!");
     }
 

@@ -50,7 +50,7 @@ import static java.util.stream.Collectors.maxBy;
  * @version 0.13 (13 May, 2013).
  * @see org.monarchinitiative.exomiser.core.filters.Filter
  */
-public interface Prioritiser extends AnalysisStep {
+public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
 
     /**
      * Apply a prioritization algorithm to a list of {@link Gene Gene} objects ranking the results against the similarity
@@ -61,7 +61,7 @@ public interface Prioritiser extends AnalysisStep {
      * @param genes
      */
     default void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
-        Map<Integer, Optional<PriorityResult>> results = prioritise(hpoIds, genes)
+        Map<Integer, Optional<T>> results = prioritise(hpoIds, genes)
                 .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
 
         genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
@@ -69,13 +69,14 @@ public interface Prioritiser extends AnalysisStep {
     }
 
     /**
-     * Applies the prioritiser to the list of genes and returns a Stream of PriorityResult from the Prioritiser.
+     * Scores the list of genes by phenotypic similarity to the provided HPO identifiers returning a Stream of
+     * PriorityResult from the Prioritiser.
      *
      * @param hpoIds
      * @param genes
      * @return the stream of results.
      */
-    Stream<? extends PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes);
+    Stream<T> prioritise(List<String> hpoIds, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

@@ -27,7 +27,6 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,13 +37,6 @@ import static org.junit.Assert.assertThat;
  * @author jj8
  */
 public class VariantTypePathogenicityScoresTest {
-
-    public VariantTypePathogenicityScoresTest() {
-    }
-
-    @Before
-    public void setUp() {
-    }
 
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {

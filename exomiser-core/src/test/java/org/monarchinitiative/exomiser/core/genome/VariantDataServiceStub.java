@@ -25,16 +25,12 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,16 +47,6 @@ public class VariantDataServiceStub implements VariantDataService {
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         return PathogenicityData.empty();
-    }
-
-    @Override
-    public List<RegulatoryFeature> getRegulatoryFeatures() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
-        return Collections.emptyList();
     }
 
 }

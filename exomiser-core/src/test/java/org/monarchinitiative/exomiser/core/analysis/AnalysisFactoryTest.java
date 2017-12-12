@@ -21,11 +21,14 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.UnsupportedGenomeAssemblyException;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -34,29 +37,34 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class AnalysisFactoryTest {
 
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
+            .buildStubGenomeAnalysisService(GenomeAssembly.HG19));
     private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
-    private final VariantDataService variantDataService = new VariantDataServiceStub();
-    private final GeneFactory geneFactory = TestFactory.buildDefaultGeneFactory();
-    private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
-    private final AnalysisFactory instance = new AnalysisFactory(geneFactory, variantFactory, priorityFactory, variantDataService);
+    private final AnalysisFactory instance = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory);
 
     @Test
     public void testCanMakeFullAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.FULL);
-        assertThat(SimpleAnalysisRunner.class.isInstance(analysisRunner), is(true));
+        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG19, AnalysisMode.FULL);
+        assertThat(analysisRunner, instanceOf(SimpleAnalysisRunner.class));
     }
 
     @Test
     public void testCanMakeSparseAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.SPARSE);
-        assertThat(SparseAnalysisRunner.class.isInstance(analysisRunner), is(true));
+        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG19, AnalysisMode.SPARSE);
+        assertThat(analysisRunner, instanceOf(SparseAnalysisRunner.class));
     }
 
     @Test
     public void testCanMakePassOnlyAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
-        assertThat(PassOnlyAnalysisRunner.class.isInstance(analysisRunner), is(true));
+        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG19, AnalysisMode.PASS_ONLY);
+        assertThat(analysisRunner, instanceOf(PassOnlyAnalysisRunner.class));
+    }
+
+    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    public void testGetAnalysisRunnerThrowsExceptionWhenUnsupportedGenomeAssemblyIsSpecified() {
+        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL);
+        assertThat(analysisRunner, instanceOf(SimpleAnalysisRunner.class));
     }
 
     @Test

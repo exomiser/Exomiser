@@ -49,7 +49,7 @@ public class GeneFactoryTest {
     @Test
     public void testCreateKnownGeneIds() {
         Set<GeneIdentifier> expected = Sets.newHashSet(TestFactory.buildGeneIdentifiers());
-        Set<GeneIdentifier> knownGeneIds = instance.createKnownGeneIds();
+        Set<GeneIdentifier> knownGeneIds = instance.getGeneIdentifiers();
         assertThat(knownGeneIds, equalTo(expected));
     }
 

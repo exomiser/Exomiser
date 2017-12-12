@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,14 +66,14 @@ public class TopologicalDomainTest {
 
     @Test
     public void testVariantIsWithinDomain() {
-        VariantCoordinates variant = new SimpleVariantCoordinates(1, 5, "A", "T");
+        VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1, 10, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(true));
     }
 
     @Test
     public void testVariantIsOutsideDomain() {
-        VariantCoordinates variant = new SimpleVariantCoordinates(1, 5, "A", "T");
+        VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1000, 10000, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(false));
     }

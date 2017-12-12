@@ -53,7 +53,7 @@ import static java.util.stream.Collectors.*;
  * @author Jules Jacobsen
  * @version 0.05 (April 6, 2013)
  */
-public class PhivePriority implements Prioritiser {
+public class PhivePriority implements Prioritiser<PhivePriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(PhivePriority.class);
 
@@ -114,16 +114,14 @@ public class PhivePriority implements Prioritiser {
     private List<GeneModelPhenotypeMatch> scoreModels(PhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
         Organism organism = organismPhenotypeMatcher.getOrganism();
 
-        ModelScorer modelScorer = PhenodigmModelScorer.forSingleCrossSpecies(organismPhenotypeMatcher);
+        ModelScorer<GeneModel> modelScorer = PhenodigmModelScorer.forSingleCrossSpecies(organismPhenotypeMatcher);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
-                .map(model -> {
-                    ModelPhenotypeMatch score = modelScorer.scoreModel(model);
-                    return new GeneModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
-                })
+                .map(modelScorer::scoreModel)
+                .map(GeneModelPhenotypeMatch::new)
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());

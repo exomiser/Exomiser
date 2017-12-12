@@ -98,8 +98,8 @@ public class SimpleVariantFilterRunnerTest {
                                            failsAllFilters, 
                                            passesQualityFrequencyFilter, 
                                            passesTargetQualityFilter);
-         
-        variantDataService = new VariantDataServiceMock(mockFrequencyData(), null, null, null);
+
+        variantDataService = new VariantDataServiceMock(mockFrequencyData(), Collections.emptyMap());
         
         frequencyFilter = new FrequencyDataProvider(variantDataService, EnumSet.of(FrequencySource.UNKNOWN), new FrequencyFilter(1f));
         

@@ -29,7 +29,6 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -51,9 +50,8 @@ public class MousePhenotypeOntologyDao implements OntologyDao {
 
     private final DataSource dataSource;
 
-    @Autowired
-    public MousePhenotypeOntologyDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public MousePhenotypeOntologyDao(DataSource phenotypeDataSource) {
+        this.dataSource = phenotypeDataSource;
     }
 
     @Override

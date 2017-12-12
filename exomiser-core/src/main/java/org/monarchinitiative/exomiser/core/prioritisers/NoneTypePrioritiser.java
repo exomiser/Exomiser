@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class NoneTypePrioritiser implements Prioritiser {
+public class NoneTypePrioritiser implements Prioritiser<PriorityResult> {
 
     @Override
     public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {

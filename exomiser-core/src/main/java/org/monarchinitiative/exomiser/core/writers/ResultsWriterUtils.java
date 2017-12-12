@@ -139,6 +139,7 @@ public class ResultsWriterUtils {
         }
 
         int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
+        //TODO check replace with variantEvaluations.get(0).getVariantContext().getGenotypes().size()
         VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {

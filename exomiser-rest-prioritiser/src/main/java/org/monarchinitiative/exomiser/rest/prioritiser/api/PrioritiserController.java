@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -59,9 +59,9 @@ public class PrioritiserController {
     private final Map<Integer, GeneIdentifier> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, GeneFactory geneFactory) {
+    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService genomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = geneFactory.createKnownGeneIds().stream()
+        this.geneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
                 .filter(GeneIdentifier::hasEntrezId)
                 .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
@@ -87,9 +87,9 @@ public class PrioritiserController {
 
         Instant start = Instant.now();
 
-        Prioritiser prioritiser = parsePrioritser(prioritiserName, prioritiserParams);
+        Prioritiser prioritiser = parsePrioritiser(prioritiserName, prioritiserParams);
         List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toImmutableList());
-        List<Gene> genes = parseGeneIdentifiers(genesIds);
+        List<Gene> genes = makeGenesFromIdentifiers(genesIds);
         List<PriorityResult> results = runLimitAndCollectResults(prioritiser, uniquePhenotypes, genes, limit);
 
         Instant end = Instant.now();
@@ -105,7 +105,7 @@ public class PrioritiserController {
         return new PrioritiserResultSet(params, duration.toMillis(), results);
     }
 
-    private Prioritiser parsePrioritser(String prioritiserName, String prioritiserParams) {
+    private Prioritiser parsePrioritiser(String prioritiserName, String prioritiserParams) {
         switch(prioritiserName) {
             case "phenix":
                 return priorityFactory.makePhenixPrioritiser();
@@ -120,7 +120,7 @@ public class PrioritiserController {
         }
     }
 
-    private List<Gene> parseGeneIdentifiers(List<Integer> genesIds) {
+    private List<Gene> makeGenesFromIdentifiers(List<Integer> genesIds) {
         if (genesIds.isEmpty()) {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
@@ -141,7 +141,7 @@ public class PrioritiserController {
     }
 
     private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
-        Stream<? extends PriorityResult> resultsStream = prioritiser.prioritise(phenotypes, genes)
+        Stream<PriorityResult> resultsStream = prioritiser.prioritise(phenotypes, genes)
                 .sorted(Comparator.naturalOrder());
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {

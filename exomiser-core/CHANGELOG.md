@@ -1,5 +1,23 @@
 # The Exomiser - Core Library Changelog
 
+## 9.0.0 2017-12-12
+In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
+- Maven groupId changed from root ```org.monarchinitiative``` to more specific ```org.monarchinitiative.exomiser```.
+- New AlleleProto protobuf class used to store allele data in the new MVstore.
+- Replaced DefaultPathogenicityDao and DefaultFrequencyDao implementations with MvStoreProto implementations.
+- Classes in the genome package are no longer under direct Spring control as the @Component and @Autowired annotations have been removed to enable user-defined genome assemblies on a per-analysis basis.
+- Genome package classes are now configured explicitly in the ```exomiser-spring-boot-autoconfigure``` module.
+- New GenomeAssembly enum
+- New GenomeAnalysisServiceProvider class
+- New GenomeAnalysisService interface - a facade for providing simplified access to the genome module.
+- New VcfFiles utility class for providing access to VCF files with the HTSJDK
+- New VariantAnnotator interface
+- New JannovarVariantAnnotator and JannovarAnnotationService classes
+- VariantFactoryImpl now takes a VariantAnnotator as a constructor argument.
+- VariantDataService getRegulatoryFeatures() and getTopologicalDomains() split out into new GenomeDataService
+- Deprecated Settings class - this will be removed in the next major version.
+- Updated classes in analysis package to enable analyses with user-defined genome assemblies.
+
 ## 8.0.0 2017-08-08
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
 - Namespace changed from ```de.charite.compbio``` to ```org.monarchinitiative```. 

@@ -316,7 +316,7 @@ public class VcfResultsWriterTest {
     public void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(vcfPath).collect(toList());
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(System.out::println);
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
         //TODO: Check that all alleles are analysed - i.e. 0/1, 1/1, 1/2, 0/2 and 2/2 are always represented
@@ -329,7 +329,10 @@ public class VcfResultsWriterTest {
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);
 
-        Gene gene = new Gene(altAlleleOne.getGeneSymbol(), altAlleleOne.getEntrezGeneId());
+        Gene gene = new Gene(GeneIdentifier.builder()
+                .geneSymbol(altAlleleOne.getGeneSymbol())
+                .geneId(altAlleleOne.getGeneId())
+                .build());
         gene.addVariant(altAlleleOne);
         gene.addVariant(altAlleleTwo);
 

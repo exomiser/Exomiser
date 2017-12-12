@@ -23,16 +23,14 @@ package org.monarchinitiative.exomiser.core.analysis;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
 import org.monarchinitiative.exomiser.core.filters.GeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
@@ -64,29 +62,29 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
-    private final GeneFactory geneFactory;
-    private final VariantFactory variantFactory;
+    //arguably this shouldn't even be exposed here...
+    private final GenomeAnalysisService genomeAnalysisService;
 
-    private final VariantDataService variantDataService;
-    final VariantFilterRunner variantFilterRunner;
+    protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
-    public AbstractAnalysisRunner(GeneFactory geneFactory, VariantFactory variantFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
-        this.geneFactory = geneFactory;
-        this.variantFactory = variantFactory;
-        this.variantDataService = variantDataService;
+    public AbstractAnalysisRunner(GenomeAnalysisService genomeAnalysisService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+        this.genomeAnalysisService = genomeAnalysisService;
+
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
     }
 
     @Override
     public AnalysisResults run(Analysis analysis) {
+        logger.info("Starting analysis");
+        logger.info("Using genome assembly {}", analysis.getGenomeAssembly());
 
         Path vcfPath = analysis.getVcfPath();
         Path pedigreeFilePath = analysis.getPedPath();
 
         logger.info("Setting up analysis for VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
-        VCFHeader vcfHeader = readVcfHeader(vcfPath);
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         List<String> sampleNames = vcfHeader.getGenotypeSamples();
 
         String probandSampleName = SampleNameChecker.getProbandSampleName(analysis.getProbandSampleName(), sampleNames);
@@ -144,7 +142,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .pedPath(pedigreeFilePath)
                 .vcfHeader(vcfHeader)
                 .probandSampleName(probandSampleName)
-                .sampleNames(vcfHeader.getGenotypeSamples())
+                .sampleNames(sampleNames)
                 .pedigree(pedigree)
                 .genes(genes)
                 .variantEvaluations(variants)
@@ -177,7 +175,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
-        ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(variantDataService.getTopologicallyAssociatedDomains());
+        ChromosomalRegionIndex<TopologicalDomain> tadIndex = genomeAnalysisService.getTopologicallyAssociatedDomainIndex();
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
         return new GeneReassigner(mainPriorityType, allGenes, tadIndex);
     }
@@ -193,19 +191,19 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toList());
     }
 
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
-        //todo: this won't function correctly if run before a prioritiser has been run
-        return variantEvaluation -> {
-            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
-            return variantEvaluation;
-        };
-    }
-
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
         return variantEvaluation -> {
             if (variantEvaluation.isNonCodingVariant()){
                 geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
             }
+            return variantEvaluation;
+        };
+    }
+
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
+        //todo: this won't function correctly if run before a prioritiser has been run
+        return variantEvaluation -> {
+            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
             return variantEvaluation;
         };
     }
@@ -231,11 +229,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
 
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
-        List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
-        ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
-        logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
+        ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = genomeAnalysisService.getRegulatoryRegionIndex();
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-        return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
+        return genomeAnalysisService.createVariantEvaluations(vcfPath)
+                .map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
@@ -254,12 +251,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
         return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
-    }
-
-    private VCFHeader readVcfHeader(Path vcfFilePath) {
-        try (VCFFileReader vcfReader = new VCFFileReader(vcfFilePath.toFile(), false)) {
-            return vcfReader.getFileHeader();
-        }
     }
 
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
@@ -285,7 +276,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return a map of genes indexed by gene symbol.
      */
     private Map<String, Gene> makeKnownGenes() {
-        return geneFactory.createKnownGenes()
+        return genomeAnalysisService.getKnownGenes()
                 .parallelStream()
                 .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
     }
@@ -330,6 +321,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(modeOfInheritance, pedigree);
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
+        //could add the OmimPrioritiser in here too - it requires the InheritanceModes in order to run correctly, as does the GeneScorer
     }
 
     /**

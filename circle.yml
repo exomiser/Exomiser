@@ -4,6 +4,7 @@ dependencies:
     - mvn install -DskipTests=true
 test:
   override:
+    - git fetch --unshallow
     - mvn test
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/

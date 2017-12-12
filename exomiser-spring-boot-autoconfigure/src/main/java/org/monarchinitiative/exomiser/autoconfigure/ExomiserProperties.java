@@ -20,10 +20,14 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
+import org.monarchinitiative.exomiser.autoconfigure.genome.Hg19GenomeProperties;
+import org.monarchinitiative.exomiser.autoconfigure.genome.Hg38GenomeProperties;
+import org.monarchinitiative.exomiser.autoconfigure.phenotype.PhenotypeProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @ConfigurationProperties(prefix = "exomiser")
@@ -33,37 +37,16 @@ public class ExomiserProperties {
 
     private String workingDirectory;
 
+    //exomiser.phenotype...
     @NestedConfigurationProperty
-    private ExomiserProperties.H2 h2 = new H2();
+    private PhenotypeProperties phenotype = new PhenotypeProperties();
 
-    //genomiser variant data files
-    private String caddSnvPath = "";
-    private String caddInDelPath = "";
-    private String remmPath = "";
+    //exomiser.hg19...
+    @NestedConfigurationProperty
+    private Hg19GenomeProperties hg19 = new Hg19GenomeProperties();
 
-    private String localFrequencyPath = "";
-
-    //http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
-//    private CacheType cache = CacheType.NONE;
-
-    /**
-     * none/mem/ehcache
-     */
-    private String cache = "none";
-
-    /**
-     * name of transcript data .ser file created from Jannovar for defining known exon locations
-     */
-    private String transcriptDataFileName = "hg19_ucsc.ser";
-
-    //Random walk matrix for hiPhive and exomeWalker
-    private String randomWalkFileName = "rw_string_9_05.gz";
-    private String randomWalkIndexFileName = "rw_string_9_05_id2index.gz";
-
-    //Phenix data
-    private String phenixDataDir = "phenix";
-    private String hpoFileName = "hp.obo";
-    private String hpoAnnotationFile = "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt";
+    @NestedConfigurationProperty
+    private Hg38GenomeProperties hg38 = new Hg38GenomeProperties();
 
     public String getDataDirectory() {
         return dataDirectory;
@@ -81,150 +64,28 @@ public class ExomiserProperties {
         this.workingDirectory = workingDirectory;
     }
 
-    public ExomiserProperties.H2 getH2() {
-        return h2;
+    public PhenotypeProperties getPhenotype() {
+        return phenotype;
     }
 
-    public void setH2(ExomiserProperties.H2 h2) {
-        this.h2 = h2;
+    public void setPhenotype(PhenotypeProperties phenotype) {
+        this.phenotype = phenotype;
     }
 
-    public String getCaddSnvPath() {
-        return caddSnvPath;
+    public Hg19GenomeProperties getHg19() {
+        return hg19;
     }
 
-    public void setCaddSnvPath(String caddSnvPath) {
-        this.caddSnvPath = caddSnvPath;
+    public void setHg19(Hg19GenomeProperties hg19) {
+        this.hg19 = hg19;
     }
 
-    public String getCaddInDelPath() {
-        return caddInDelPath;
+    public Hg38GenomeProperties getHg38() {
+        return hg38;
     }
 
-    public void setCaddInDelPath(String caddInDelPath) {
-        this.caddInDelPath = caddInDelPath;
+    public void setHg38(Hg38GenomeProperties hg38) {
+        this.hg38 = hg38;
     }
 
-    public String getRemmPath() {
-        return remmPath;
-    }
-
-    public void setRemmPath(String remmPath) {
-        this.remmPath = remmPath;
-    }
-
-    public String getLocalFrequencyPath() {
-        return localFrequencyPath;
-    }
-
-    public void setLocalFrequencyPath(String localFrequencyPath) {
-        this.localFrequencyPath = localFrequencyPath;
-    }
-
-    public String getCache() {
-        return cache;
-    }
-
-    public void setCache(String cache) {
-        this.cache = cache;
-    }
-
-    public String getTranscriptDataFileName() {
-        return transcriptDataFileName;
-    }
-
-    public void setTranscriptDataFileName(String transcriptDataFileName) {
-        this.transcriptDataFileName = transcriptDataFileName;
-    }
-
-    public String getRandomWalkFileName() {
-        return randomWalkFileName;
-    }
-
-    public void setRandomWalkFileName(String randomWalkFileName) {
-        this.randomWalkFileName = randomWalkFileName;
-    }
-
-    public String getRandomWalkIndexFileName() {
-        return randomWalkIndexFileName;
-    }
-
-    public void setRandomWalkIndexFileName(String randomWalkIndexFileName) {
-        this.randomWalkIndexFileName = randomWalkIndexFileName;
-    }
-
-    public String getPhenixDataDir() {
-        return phenixDataDir;
-    }
-
-    public void setPhenixDataDir(String phenixDataDir) {
-        this.phenixDataDir = phenixDataDir;
-    }
-
-    public String getHpoFileName() {
-        return hpoFileName;
-    }
-
-    public void setHpoFileName(String hpoFileName) {
-        this.hpoFileName = hpoFileName;
-    }
-
-    public String getHpoAnnotationFile() {
-        return hpoAnnotationFile;
-    }
-
-    public void setHpoAnnotationFile(String hpoAnnotationFile) {
-        this.hpoAnnotationFile = hpoAnnotationFile;
-    }
-
-    public static class H2 {
-
-        private String directory = "";
-
-        private String user = "sa";
-        private String password = "";
-        private String url = "jdbc:h2:file:${h2Path}/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-        private int maxConnections = 3;
-
-
-        public String getDirectory() {
-            return directory;
-        }
-
-        public void setDirectory(String directory) {
-            this.directory = directory;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public void setUser(String user) {
-            this.user = user;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public int getMaxConnections() {
-            return maxConnections;
-        }
-
-        public void setMaxConnections(int maxConnections) {
-            this.maxConnections = maxConnections;
-        }
-    }
 }

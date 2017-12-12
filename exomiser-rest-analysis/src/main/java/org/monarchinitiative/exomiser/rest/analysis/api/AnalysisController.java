@@ -62,13 +62,13 @@ public class AnalysisController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public AnalysisResponse postAnalysis(@RequestBody Analysis analysis) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@RequestBody Analysis analysis) {
         logger.info("Receiving new analysis: {}", analysis);
         return analysisService.createAnalysisJob(analysis);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    public AnalysisResponse postAnalysis(@RequestBody String analysisYaml) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@RequestBody String analysisYaml) {
         logger.info("Receiving new YAML analysis: {}", analysisYaml);
         return analysisService.createAnalysisJobFromYaml(analysisYaml);
     }
@@ -89,7 +89,7 @@ public class AnalysisController {
     @RequestMapping(value = "/{analysisId}/upload", method = RequestMethod.POST)
     public AnalysisResponse postVcf(@PathVariable("analysisId") long id,
                                     @RequestParam(value = "vcf", required = true) MultipartFile file,
-                                    @RequestParam(value = "ped", required = false) MultipartFile pedFile) throws FileUploadException {
+                                    @RequestParam(value = "ped", required = false) MultipartFile pedFile) {
 
         if (!file.isEmpty()) {
             Path analysisDir = getAnalysisDirectory(id);
@@ -118,7 +118,7 @@ public class AnalysisController {
 
 
     @RequestMapping(value = "/{analysisId}/vcf", method = RequestMethod.POST)
-    public AnalysisResponse postAnalysis(@PathVariable("analysisId") long id, @RequestBody String file) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@PathVariable("analysisId") long id, @RequestBody String file) {
         logger.info(file);
         return new AnalysisResponse(id, AnalysisStatus.ERROR, "testing");
     }
@@ -136,7 +136,7 @@ public class AnalysisController {
 
     private Path getAnalysisDirectory(long id) {
         final Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
-        if (!Files.exists(analysisDir)) {
+        if (!analysisDir.toFile().exists()) {
             throw new UnknownAnalysisException("AnalysisId not found: " + id);
         }
         return analysisDir;

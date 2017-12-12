@@ -58,7 +58,7 @@ public final class RsId {
      * @return the rsId value represented by the argument provided.
      */
     public static RsId valueOf(String id) {
-        if (VCF_EMPTY_VALUE.equals(id) || id == null) {
+        if (id == null || id.isEmpty() || VCF_EMPTY_VALUE.equals(id)) {
             return EMPTY;
         }
         if (id.startsWith("rs")) {

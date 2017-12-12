@@ -32,7 +32,6 @@ import java.util.Objects;
 public class GeneIdentifier {
 
     public static final String EMPTY_FIELD = "";
-    public static final Integer NULL_ENTREZ_ID = -1;
 
     private final String geneId;
     private final String geneSymbol;
@@ -41,6 +40,7 @@ public class GeneIdentifier {
     private final String hgncSymbol;
 
     private final String entrezId;
+    private final int entrezIdIntValue;
     private final String ensemblId;
     private final String ucscId;
 
@@ -52,23 +52,23 @@ public class GeneIdentifier {
         this.hgncSymbol = builder.hgncSymbol;
 
         //the entrezId is used by the Prioritisers as a primary key for the gene so this is important!
-        this.entrezId = validateEntrezId(builder.entrezId);
+        this.entrezId = builder.entrezId;
+        this.entrezIdIntValue = validateEntrezIdIntValue(builder.entrezId);
         this.ensemblId = builder.ensemblId;
         this.ucscId = builder.ucscId;
     }
 
-    private String validateEntrezId(String entrezId) {
+    private int validateEntrezIdIntValue(String entrezId) {
         Objects.requireNonNull(entrezId, "GeneIdentifier entrezId cannot be null");
         if (entrezId.isEmpty()) {
             //This is permissible - will default to returning a NULL_ENTREZ_ID
-            return entrezId;
+            return -1;
         }
         try {
-            Integer.valueOf(entrezId);
+            return Integer.parseInt(entrezId);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("entrezId '" + entrezId + "' is invalid. GeneIdentifier entrezId must be a positive integer");
         }
-        return entrezId;
     }
 
     public String getGeneId() {
@@ -92,7 +92,7 @@ public class GeneIdentifier {
     }
 
     public Integer getEntrezIdAsInteger() {
-        return entrezId.equals(EMPTY_FIELD) ? NULL_ENTREZ_ID : Integer.valueOf(entrezId);
+        return entrezIdIntValue;
     }
 
     public boolean hasEntrezId() {

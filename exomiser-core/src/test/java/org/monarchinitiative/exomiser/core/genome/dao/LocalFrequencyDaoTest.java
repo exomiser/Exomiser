@@ -71,7 +71,7 @@ public class LocalFrequencyDaoTest {
     //non-autosomes
     //X 12345   AT   G   0.02  (an AT->G deletion on chrX at position 12345 with frequency of 0.02%)
     //Y 12345   AT   G   0.02  (an AT->G deletion on chrY at position 12345 with frequency of 0.02%)
-    //M 12345   AT   G   0.02  (an AT->G deletion on chrM at position 12345 with frequency of 0.02%)
+    //MT 12345   AT   G   0.02  (an AT->G deletion on chrM at position 12345 with frequency of 0.02%)
 
     @Test
     public void variantNotInFile() {
@@ -108,8 +108,8 @@ public class LocalFrequencyDaoTest {
 
     @Test
     public void testMitochondrialSnp() {
-        Mockito.when(tabixReader.query("M:12345-12345"))
-                .thenReturn(MockTabixIterator.of("M\t12345\tA\tT\t23.0"));
+        Mockito.when(tabixReader.query("MT:12345-12345"))
+                .thenReturn(MockTabixIterator.of("MT\t12345\tA\tT\t23.0"));
 
         assertThat(instance.getFrequencyData(variant(25, 12345, "A", "T")), equalTo(localFrequencyData(23.0f)));
     }

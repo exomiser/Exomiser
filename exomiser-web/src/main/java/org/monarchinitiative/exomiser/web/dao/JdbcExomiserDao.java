@@ -85,7 +85,7 @@ public class JdbcExomiserDao implements ExomiserDao {
     
     @Override
     public Map<String, String> getGenes() {
-        String query = "select entrez_id, human_gene_symbol from human2mouse_orthologs";
+        String query = "select human_gene_symbol, human_gene_symbol from human2mouse_orthologs";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement preparedStatement = createPreparedStatement(connection, query);

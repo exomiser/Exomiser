@@ -28,7 +28,7 @@
     <fileSets>
         <fileSet>
             <directory>${project.basedir}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>./</outputDirectory>
             <filtered>true</filtered>
             <includes>
                 <include>*.jar</include>
@@ -39,22 +39,21 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>./</outputDirectory>
             <includes>
                 <include>exomiser-cli-${version}.jar</include>
             </includes>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/distribution-resources</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>./</outputDirectory>
             <includes>
                 <include>application.properties</include>
-                <include>ehcache.xml</include>
             </includes>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/distribution-resources</directory>
-            <outputDirectory>/data</outputDirectory>
+            <outputDirectory>./data</outputDirectory>
             <includes>
                 <include>hg19_ucsc.ser</include>
                 <include>hg19_refseq.ser</include>
@@ -67,7 +66,7 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/distribution-resources</directory>
-            <outputDirectory>/examples</outputDirectory>
+            <outputDirectory>./examples</outputDirectory>
             <includes>
                 <include>*.yml</include>
                 <include>test-analysis-batch.txt</include>
@@ -80,7 +79,7 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/lib</directory>
-            <outputDirectory>/lib</outputDirectory>
+            <outputDirectory>./lib</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

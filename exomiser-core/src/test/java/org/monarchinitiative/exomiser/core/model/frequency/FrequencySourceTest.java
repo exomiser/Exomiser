@@ -27,6 +27,8 @@ package org.monarchinitiative.exomiser.core.model.frequency;
 
 import org.junit.Test;
 
+import java.util.EnumSet;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -41,17 +43,41 @@ public class FrequencySourceTest {
         FrequencySource[] values = {
                 FrequencySource.UNKNOWN,
                 FrequencySource.LOCAL,
+
                 FrequencySource.THOUSAND_GENOMES,
+                FrequencySource.TOPMED,
+                FrequencySource.UK10K,
+
                 FrequencySource.ESP_AFRICAN_AMERICAN,
                 FrequencySource.ESP_EUROPEAN_AMERICAN,
                 FrequencySource.ESP_ALL,
+
                 FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
                 FrequencySource.EXAC_AMERICAN,
                 FrequencySource.EXAC_EAST_ASIAN,
-                FrequencySource.EXAC_SOUTH_ASIAN,
                 FrequencySource.EXAC_FINNISH,
                 FrequencySource.EXAC_NON_FINNISH_EUROPEAN,
-                FrequencySource.EXAC_OTHER};
+                FrequencySource.EXAC_OTHER,
+                FrequencySource.EXAC_SOUTH_ASIAN,
+
+                FrequencySource.GNOMAD_E_AFR,
+                FrequencySource.GNOMAD_E_AMR,
+                FrequencySource.GNOMAD_E_ASJ,
+                FrequencySource.GNOMAD_E_EAS,
+                FrequencySource.GNOMAD_E_FIN,
+                FrequencySource.GNOMAD_E_NFE,
+                FrequencySource.GNOMAD_E_OTH,
+                FrequencySource.GNOMAD_E_SAS,
+
+                FrequencySource.GNOMAD_G_AFR,
+                FrequencySource.GNOMAD_G_AMR,
+                FrequencySource.GNOMAD_G_ASJ,
+                FrequencySource.GNOMAD_G_EAS,
+                FrequencySource.GNOMAD_G_FIN,
+                FrequencySource.GNOMAD_G_NFE,
+                FrequencySource.GNOMAD_G_OTH,
+                FrequencySource.GNOMAD_G_SAS
+        };
 
         assertThat(FrequencySource.values(), equalTo(values));
     }
@@ -68,7 +94,13 @@ public class FrequencySourceTest {
 
     @Test
     public void testGetAllExternalFrequencySources(){
-        assertThat(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.size(), equalTo(11));
+        assertThat(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.size(), equalTo(29));
+    }
+
+    @Test
+    public void frequencySourceMap() {
+        EnumSet<FrequencySource> actual = EnumSet.copyOf(FrequencySource.FREQUENCY_SOURCE_MAP.values());
+        assertThat(actual, equalTo(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES));
     }
 
     @Test

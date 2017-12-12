@@ -20,75 +20,176 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
+ * Handles creation of {@link VariantAnnotation} using Jannovar.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Component
-public class JannovarVariantAnnotator {
+public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarVariantAnnotator.class);
 
-    private final ReferenceDictionary referenceDictionary;
-    private final VariantAnnotator variantAnnotator;
+    private final GenomeAssembly genomeAssembly;
+    private final JannovarAnnotationService jannovarAnnotationService;
 
-    //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
-    //requirement of a variant having an integer chromosome
-    private static final int UNKNOWN_CHROMOSOME = 0;
-
-    @Autowired
-    public JannovarVariantAnnotator(JannovarData jannovarData) {
-        this.referenceDictionary = jannovarData.getRefDict();
-        this.variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+    public JannovarVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData) {
+        this.genomeAssembly = genomeAssembly;
+        this.jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
     }
 
-    public VariantAnnotations getVariantAnnotations(String contig, AllelePosition allelePosition) {
-        return getVariantAnnotations(contig, allelePosition.getPos(), allelePosition.getRef(), allelePosition.getAlt());
+    /**
+     * Given a single allele from a multi-positional site, incoming variants might not be fully trimmed.
+     * In cases where there is repetition, depending on the program used, the final variant allele will be different.
+     * VCF:      X-118887583-TCAAAA-TCAAAACAAAA
+     * Exomiser: X-118887583-T     -TCAAAA
+     * CellBase: X-118887584--     - CAAAA
+     * Jannovar: X-118887588-      -      CAAAA
+     * Nirvana:  X-118887589-      -      CAAAA
+     * <p>
+     * Trimming first with Exomiser, then annotating with Jannovar, constrains the Jannovar annotation to the same
+     * position as Exomiser.
+     * VCF:      X-118887583-TCAAAA-TCAAAACAAAA
+     * Exomiser: X-118887583-T     -TCAAAA
+     * CellBase: X-118887584--     - CAAAA
+     * Jannovar: X-118887583-      - CAAAA      (Jannovar is zero-based)
+     * Nirvana:  X-118887584-      - CAAAA
+     * <p>
+     * Cellbase:
+     * https://github.com/opencb/biodata/blob/develop/biodata-tools/src/main/java/org/opencb/biodata/tools/variant/VariantNormalizer.java
+     * http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/genomic/variant/X:118887583:TCAAAA:TCAAAACAAAA/annotation?assembly=grch37&limit=-1&skip=-1&count=false&Output format=json&normalize=true
+     * <p>
+     * Nirvana style trimming:
+     * https://github.com/Illumina/Nirvana/blob/master/VariantAnnotation/Algorithms/BiDirectionalTrimmer.cs
+     * <p>
+     * Jannovar:
+     * https://github.com/charite/jannovar/blob/master/jannovar-core/src/main/java/de/charite/compbio/jannovar/reference/VariantDataCorrector.java
+     *
+     * @param contig
+     * @param pos
+     * @param ref
+     * @param alt
+     * @return {@link VariantAnnotation} objects trimmed according to {@link AllelePosition#trim(int, String, String)} and annotated using Jannovar.
+     */
+    public VariantAnnotation annotate(String contig, int pos, String ref, String alt) {
+        //so given the above, trim the allele first, then annotate it otherwise untrimmed alleles from multi-allelic sites will give different results
+        AllelePosition trimmedAllele = AllelePosition.trim(pos, ref, alt);
+        VariantAnnotations variantAnnotations = jannovarAnnotationService.annotateVariant(contig, trimmedAllele.getPos(), trimmedAllele
+                .getRef(), trimmedAllele.getAlt());
+        return buildVariantAlleleAnnotation(genomeAssembly, contig, trimmedAllele, variantAnnotations);
     }
 
-    public VariantAnnotations getVariantAnnotations(String contig, int pos, String ref, String alt) {
-        GenomeVariant genomeVariant = buildOneBasedFwdStrandGenomicVariant(contig, pos, ref, alt);
-        if (genomeVariant.getChr() == UNKNOWN_CHROMOSOME) {
-            logger.trace("Unknown contig '{}' - mapping to {}", contig, UNKNOWN_CHROMOSOME);
-            //Need to check this here and return otherwise the variantAnnotator will throw a NPE.
-            return VariantAnnotations.buildEmptyList(genomeVariant);
+    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, String contig, AllelePosition allelePosition, VariantAnnotations variantAnnotations) {
+        int chr = variantAnnotations.getChr();
+        GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
+        String chromosomeName = genomeVariant.getChrName() == null ? contig : genomeVariant.getChrName();
+        //Attention! highestImpactAnnotation can be null
+        Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
+        String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
+        String geneId = buildGeneId(highestImpactAnnotation);
+
+        VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
+        List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
+
+        int pos = allelePosition.getPos();
+        String ref = allelePosition.getRef();
+        String alt = allelePosition.getAlt();
+
+        return VariantAnnotation.builder()
+                .genomeAssembly(genomeAssembly)
+                .chromosome(chr)
+                .chromosomeName(chromosomeName)
+                .position(pos)
+                .ref(ref)
+                .alt(alt)
+                .geneId(geneId)
+                .geneSymbol(geneSymbol)
+                .variantEffect(variantEffect)
+                .annotations(annotations).build();
+    }
+
+    private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
+        List<TranscriptAnnotation> transcriptAnnotations = new ArrayList<>(annotations.size());
+        for (Annotation annotation : annotations) {
+            transcriptAnnotations.add(toTranscriptAnnotation(annotation));
         }
-        return buildAnnotations(genomeVariant);
+        return transcriptAnnotations;
     }
 
-    private VariantAnnotations buildAnnotations(GenomeVariant genomeVariant) {
-        try {
-            return variantAnnotator.buildAnnotations(genomeVariant);
-        } catch (Exception e) {
-            logger.debug("Unable to annotate variant {}-{}-{}-{}", genomeVariant.getChrName(), genomeVariant.getPos(), genomeVariant
-                    .getRef(), genomeVariant.getAlt(), e);
+    private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
+        return TranscriptAnnotation.builder()
+                .variantEffect(annotation.getMostPathogenicVarType())
+                .accession(getTranscriptAccession(annotation))
+                .geneSymbol(buildGeneSymbol(annotation))
+                .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
+                .hgvsCdna(annotation.getCDSNTChangeStr())
+                .hgvsProtein(annotation.getProteinChangeStr())
+                .distanceFromNearestGene(getDistFromNearestGene(annotation))
+                .build();
+    }
+
+    private String getTranscriptAccession(Annotation annotation) {
+        TranscriptModel transcriptModel = annotation.getTranscript();
+        if (transcriptModel == null) {
+            return "";
         }
-        return VariantAnnotations.buildEmptyList(genomeVariant);
+        return transcriptModel.getAccession();
     }
 
+    private int getDistFromNearestGene(Annotation annotation) {
 
-    private GenomeVariant buildOneBasedFwdStrandGenomicVariant(String contig, int pos, String ref, String alt) {
-        int chr = getIntValueOfChromosomeOrZero(contig);
-        GenomePosition genomePosition = new GenomePosition(referenceDictionary, Strand.FWD, chr, pos, PositionType.ONE_BASED);
-        return new GenomeVariant(genomePosition, ref, alt);
+        TranscriptModel tm = annotation.getTranscript();
+        if (tm == null) {
+            return Integer.MIN_VALUE;
+        }
+        GenomeVariant change = annotation.getGenomeVariant();
+        Set<VariantEffect> effects = annotation.getEffects();
+        if (effects.contains(VariantEffect.INTERGENIC_VARIANT) || effects.contains(VariantEffect.UPSTREAM_GENE_VARIANT) || effects
+                .contains(VariantEffect.DOWNSTREAM_GENE_VARIANT)) {
+            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos()))
+                return tm.getTXRegion().getGenomeBeginPos().differenceTo(change.getGenomeInterval().getGenomeEndPos());
+            else
+                return change.getGenomeInterval().getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+        }
+
+        return Integer.MIN_VALUE;
     }
 
-    private Integer getIntValueOfChromosomeOrZero(String contig) {
-        return referenceDictionary.getContigNameToID().getOrDefault(contig, UNKNOWN_CHROMOSOME);
+    private String buildGeneId(Annotation annotation) {
+        if (annotation == null) {
+            return "";
+        }
+
+        final TranscriptModel transcriptModel = annotation.getTranscript();
+        if (transcriptModel == null) {
+            return "";
+        }
+        //this will now return the id from the user-specified data source. Previously would only return the Entrez id.
+        String geneId = transcriptModel.getGeneID();
+        return geneId == null ? "" : geneId;
+    }
+
+    private String buildGeneSymbol(Annotation annotation) {
+        if (annotation == null || annotation.getGeneSymbol() == null) {
+            return ".";
+        } else {
+            return annotation.getGeneSymbol();
+        }
     }
 
 }

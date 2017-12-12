@@ -102,7 +102,7 @@ public class GeneReassigner {
             //given the physical ranges of topologically associated domains, the annotations are likely to be meaningless once reassigned
             //but try to find any anything matching the new gene symbol.
             String geneSymbol = geneWithHighestPhenotypeScore.getGeneSymbol();
-            List<TranscriptAnnotation> matchingGeneAnnotations = getTranscriptAnnotationsMatchingGene(variantEvaluation.getAnnotations(), geneSymbol);
+            List<TranscriptAnnotation> matchingGeneAnnotations = getTranscriptAnnotationsMatchingGene(variantEvaluation.getTranscriptAnnotations(), geneSymbol);
             assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore, matchingGeneAnnotations);
         }
     }
@@ -144,7 +144,7 @@ public class GeneReassigner {
                 .getGeneSymbol(), gene.getGeneSymbol());
 
         variant.setGeneSymbol(gene.getGeneSymbol());
-        variant.setEntrezGeneId(gene.getEntrezGeneID());
+        variant.setGeneId(gene.getGeneId());
         variant.setAnnotations(matchingGeneAnnotations);
     }
 
@@ -158,7 +158,7 @@ public class GeneReassigner {
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
         List<TranscriptAnnotation> newAnnotations = new ArrayList<>();
-        for (TranscriptAnnotation annotation : variantEvaluation.getAnnotations()) {
+        for (TranscriptAnnotation annotation : variantEvaluation.getTranscriptAnnotations()) {
             String geneSymbol = annotation.getGeneSymbol();
             geneSymbols.add(geneSymbol);
             variantEffects.add(annotation.getVariantEffect());

@@ -27,9 +27,10 @@ package org.monarchinitiative.exomiser.core;
 
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -38,7 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -49,11 +50,11 @@ public class ExomiserTest {
 
     private static final Path VCF_PATH = Paths.get("src/test/resources/smallTest.vcf");
 
-    private final VariantDataService stubDataService = new VariantDataServiceStub();
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
+            .buildDefaultHg19GenomeAnalysisService());
     private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
 
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(TestFactory.buildDefaultGeneFactory(), TestFactory
-            .buildDefaultVariantFactory(), priorityFactory, stubDataService);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory);
     //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module
     private Exomiser instance = new Exomiser(analysisFactory);
 
@@ -86,9 +87,37 @@ public class ExomiserTest {
     }
 
     @Test
+    public void canRunAnalysisUsingAlternateGenomeAssemblyPassOnly() {
+        GenomeAnalysisService grch37Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
+        GenomeAnalysisService grch38Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
+
+        GenomeAnalysisServiceProvider twoAssemblyProvider = new GenomeAnalysisServiceProvider(grch37Service, grch38Service);
+        AnalysisFactory analysisFactory = new AnalysisFactory(twoAssemblyProvider, priorityFactory);
+
+        Exomiser twoAssembliesSupportedExomiser = new Exomiser(analysisFactory);
+
+        Analysis hg37Analysis = twoAssembliesSupportedExomiser.getAnalysisBuilder()
+                .vcfPath(VCF_PATH)
+                .genomeAssembly(GenomeAssembly.HG19)
+                .analysisMode(AnalysisMode.PASS_ONLY)
+                .build();
+        AnalysisResults hg37AnalysisResults = twoAssembliesSupportedExomiser.run(hg37Analysis);
+        assertThat(hg37AnalysisResults.getGenes().size(), equalTo(2));
+
+
+        Analysis hg38Analysis = twoAssembliesSupportedExomiser.getAnalysisBuilder()
+                .vcfPath(VCF_PATH)
+                .genomeAssembly(GenomeAssembly.HG38)
+                .analysisMode(AnalysisMode.PASS_ONLY)
+                .build();
+        AnalysisResults hg38AnalysisResults = twoAssembliesSupportedExomiser.run(hg38Analysis);
+        assertThat(hg38AnalysisResults.getGenes().size(), equalTo(2));
+    }
+
+    @Test
     public void canGetAnalysisBuilder() {
         AnalysisBuilder analysisBuilder = instance.getAnalysisBuilder();
-        assertThat(analysisBuilder, notNullValue());
+        assertThat(analysisBuilder, instanceOf(AnalysisBuilder.class));
     }
 
  }

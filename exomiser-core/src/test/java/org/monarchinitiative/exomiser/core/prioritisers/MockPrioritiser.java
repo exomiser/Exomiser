@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MockPrioritiser implements Prioritiser {
+public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
 
     private final PriorityType priorityType;
     private final Map<String, Float> expectedScores;
@@ -59,11 +59,11 @@ public class MockPrioritiser implements Prioritiser {
     }
 
     @Override
-    public Stream<PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<MockPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 
-    private Function<Gene, PriorityResult> prioritiseGene() {
+    private Function<Gene, MockPriorityResult> prioritiseGene() {
         return gene -> {
             String geneSymbol = gene.getGeneSymbol();
             Float score = expectedScores.getOrDefault(geneSymbol, 0f);

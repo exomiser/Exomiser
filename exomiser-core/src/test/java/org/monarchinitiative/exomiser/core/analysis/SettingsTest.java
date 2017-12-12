@@ -48,7 +48,7 @@ import static org.junit.Assert.assertThat;
  */
 public class SettingsTest {
 
-    SettingsBuilder instance;
+    private SettingsBuilder instance;
 
     //
     private static final String BUILD_VERSION_DEFAULT = "";

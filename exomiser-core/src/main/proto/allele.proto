@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_package = "org.monarchinitiative.exomiser.core.proto";
+option java_outer_classname = "AlleleProto";
+option java_generate_equals_and_hash = true;
+
+message AlleleKey {
+    int32 chr = 1;
+    int32 position = 2;
+    string ref = 3;
+    string alt = 4;
+}
+
+message AlleleProperties {
+    string rs_id = 1;
+    map<string, float> properties = 2;
+}

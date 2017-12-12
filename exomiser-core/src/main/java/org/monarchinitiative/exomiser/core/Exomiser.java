@@ -26,6 +26,7 @@
 package org.monarchinitiative.exomiser.core;
 
 import org.monarchinitiative.exomiser.core.analysis.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +56,12 @@ public class Exomiser {
     }
 
     public AnalysisResults run(Analysis analysis) {
+        //TODO: This might be better returning a Mono.just(analysisRunner.run(analysis)) and running the job on an async queue, or a CompletableFuture
+        //or maybe better keep this and add a runAsync(Analysis) method.
+        GenomeAssembly genomeAssembly = analysis.getGenomeAssembly();
         AnalysisMode analysisMode = analysis.getAnalysisMode();
-        logger.info("Running analysis with mode: {}", analysisMode);
-        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(analysisMode);
+        logger.info("Running analysis using {} assembly with mode: {}", genomeAssembly, analysisMode);
+        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunner(genomeAssembly, analysisMode);
         return analysisRunner.run(analysis);
     }
 

@@ -162,8 +162,8 @@ public class SettingsParserTest {
     @Test
     public void testCanMakeAllTypesOfFilter() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        Set<Integer> geneIdsToKeep = new HashSet<>();
-        geneIdsToKeep.add(1);
+        Set<String> geneIdsToKeep = new HashSet<>();
+        geneIdsToKeep.add("GENE1");
         GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
 
         Settings settings = settingsBuilder()
@@ -179,7 +179,7 @@ public class SettingsParserTest {
 
         Analysis analysis = analysisBuilder()
                 .addStep(new FailedVariantFilter())
-                .addStep(new EntrezGeneIdFilter(geneIdsToKeep))
+                .addStep(new GeneSymbolFilter(geneIdsToKeep))
                 .addStep(new IntervalFilter(interval))
                 .addStep(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS))
                 .addStep(new QualityFilter(2f))

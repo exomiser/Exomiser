@@ -1,5 +1,13 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 9.0.0 2017-12-12
+- Exomiser can now analyse hg19 or hg38 samples - see ```application.properties``` for setup details.
+- Analysis file has new ```genomeAssembly:``` field - see example ```.yml``` files. Will default to hg19 if not specified.
+- Genomic and phenotypic data are now separated to allow for more frequent and smaller updates - see README.md for details
+- Variant alleles are now stored in a new highly-compressed data format enabling much smaller on-disk footprint with minimal loss of read performance.
+- New variant frequency data-sets: TOPMed, UK10K, gnomAD - see example ```.yml``` files.
+- New caching mechanism - see ```application.properties``` for setup details.
+
 ## 8.0.0 2017-08-08
 - See https://github.com/exomiser/Exomiser/projects/2 for a complete list of changes.
 - ```application.properties``` file has changed to use ```exomiser``` namespace prefix. Will allow property placeholder substitution - e.g. ```exomiser.property=foo``` can be used elsewhere in the file as ```${exomiser.property}```. Will support user-defined property values too. 

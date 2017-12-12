@@ -56,7 +56,7 @@ import static java.util.stream.Collectors.toMap;
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.06 (6 December, 2013)
  */
-public class PhenixPriority implements Prioritiser {
+public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenixPriority.class);
 
