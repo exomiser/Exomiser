@@ -49,8 +49,6 @@ jobs:
     # https://circleci.com/docs/2.0/circleci-images/
     docker:
     - image: circleci/openjdk:8u151-jdk
-#    - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
-#      command: /sbin/init
     steps:
     # Machine Setup
     #   If you break your build into multiple jobs with workflows, you will probably want to do the parts of this that are relevant in each
@@ -72,13 +70,13 @@ jobs:
         # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
         - v1-dep-
     # This is based on your 1.0 configuration file or project settings
-    - run: mvn install -DskipTests=true
+#    - run: mvnw install -DskipTests=true
+    - run: mvn -pl exomiser-core clean install -DskipTests=true
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ epoch }}
         paths:
         # This is a broad list of cache paths to include many possible development environments
-        # You can probably delete some of these entries
         - ~/.m2
         - ~/.gradle
     # Test
