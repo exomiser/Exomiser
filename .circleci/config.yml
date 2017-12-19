@@ -8,6 +8,7 @@ jobs:
       - checkout
       - restore_cache:
           key: exomiser-{{ checksum "pom.xml" }}
+      - run: mvn -pl exomiser-core clean install -DskipTests=true
       - run: mvn dependency:go-offline
       - save_cache:
           paths:
