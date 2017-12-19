@@ -10,6 +10,7 @@ jobs:
       - image: circleci/jdk8:0.1.1
     steps:
       - checkout
+      - run: chmod +x mvnw
       - restore_cache:
           key: exomiser-{{ checksum "pom.xml" }}
       - run: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
