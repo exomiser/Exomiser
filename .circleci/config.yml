@@ -23,8 +23,8 @@ jobs:
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
       #Save jars
       - run: mkdir -p $CIRCLE_ARTIFACTS/
-      - run: find . -type f -regex ".*/target/.exomiser*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
-      - run: find . -type f -regex ".*/target/.exomiser-cli*zip" -exec cp {} $CIRCLE_ARTIFACTS/ \;
+      - run: find . -type f -regex ".*/target/exomiser.*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
+      - run: find . -type f -regex ".*/target/exomiser.*zip" -exec cp {} $CIRCLE_ARTIFACTS/ \;
       # Save test results
       - store_test_results:
           path: /tmp/circleci-test-results

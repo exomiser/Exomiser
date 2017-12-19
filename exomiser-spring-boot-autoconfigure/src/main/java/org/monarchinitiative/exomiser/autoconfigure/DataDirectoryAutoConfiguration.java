@@ -73,7 +73,6 @@ public class DataDirectoryAutoConfiguration {
         return workingDir;
     }
 
-    // This is a test comment
 //    @Bean
 //    Path analysisPath() {
 //        Path analysisPath = Paths.get(environment.getProperty("exomiser.working-directory"));
