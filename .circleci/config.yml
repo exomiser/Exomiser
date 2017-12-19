@@ -80,7 +80,7 @@ jobs:
     # Test
     #   This would typically be a build job when using workflows, possibly combined with build
     # This is based on your 1.0 configuration file or project settings
-    - run: mvn package
+    - run: mvn test
     # This is based on your 1.0 configuration file or project settings
     #- run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
     #- run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
