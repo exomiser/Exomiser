@@ -1,23 +1,26 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.model.frequency;
+
+import com.google.common.collect.Maps;
 
 import java.util.*;
 
@@ -31,34 +34,52 @@ import java.util.*;
  */
 public class FrequencyData {
 
-    private static final FrequencyData EMPTY_DATA = new FrequencyData(null, Collections.emptyList());
+    private static final FrequencyData EMPTY_DATA = new FrequencyData(RsId.empty(), Collections.emptyMap());
 
     private final RsId rsId;
     private final Map<FrequencySource, Frequency> knownFrequencies;
 
-
     public static FrequencyData of(RsId rsId, Collection<Frequency> frequencies) {
-        return new FrequencyData(rsId, frequencies);
+        return validate(rsId, frequencies);
     }
 
     public static FrequencyData of(RsId rsId, Frequency frequency) {
-        return new FrequencyData(rsId, Collections.singletonList(frequency));
+        return validate(rsId, Collections.singletonList(frequency));
     }
 
     public static FrequencyData of(RsId rsId, Frequency... frequency) {
-        return new FrequencyData(rsId, Arrays.asList(frequency));
+        return validate(rsId, Arrays.asList(frequency));
+    }
+
+    public static FrequencyData of(Frequency frequency) {
+        return validate(RsId.empty(), Collections.singletonList(frequency));
+    }
+
+    public static FrequencyData of(Frequency... frequency) {
+        return validate(RsId.empty(), Arrays.asList(frequency));
     }
 
     public static FrequencyData empty() {
         return EMPTY_DATA;
     }
 
-    private FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
-        this.rsId = rsId;
-        knownFrequencies = new EnumMap<>(FrequencySource.class);
-        for (Frequency frequency : frequencies) {
-            knownFrequencies.put(frequency.getSource(), frequency);
+    private static FrequencyData validate(RsId rsId, Collection<Frequency> frequencies) {
+        Objects.requireNonNull(rsId, "RsId cannot be null");
+        Objects.requireNonNull(frequencies, "frequencies cannot be null");
+
+        if (rsId.isEmpty() && frequencies.isEmpty()) {
+            return FrequencyData.empty();
         }
+        Map<FrequencySource, Frequency> frequencySourceMap = new EnumMap<>(FrequencySource.class);
+        for (Frequency frequency : frequencies) {
+            frequencySourceMap.put(frequency.getSource(), frequency);
+        }
+        return new FrequencyData(rsId, frequencySourceMap);
+    }
+
+    private FrequencyData(RsId rsId, Map<FrequencySource, Frequency> knownFrequencies) {
+        this.rsId = rsId;
+        this.knownFrequencies = Maps.immutableEnumMap(knownFrequencies);
     }
 
     //RSID ought to belong to the Variant, not the frequencyData, but its here for convenience
@@ -76,10 +97,7 @@ public class FrequencyData {
      * any frequency data at all, return true, otherwise false.
      */
     public boolean isRepresentedInDatabase() {
-        if (rsId != null) {
-            return true;
-        }
-        return !knownFrequencies.isEmpty();
+        return hasDbSnpRsID() || hasKnownFrequency();
     }
 
     public boolean hasDbSnpData() {
@@ -87,7 +105,7 @@ public class FrequencyData {
     }
 
     public boolean hasDbSnpRsID() {
-        return rsId != null;
+        return !rsId.isEmpty();
     }
 
     public boolean hasEspData() {
@@ -198,7 +216,7 @@ public class FrequencyData {
         } else if (max > 2) {
             return NOT_RARE_SCORE;
         } else {
-            return 1f - (0.13533f * (float) Math.exp(max));
+            return 1.13533f - (0.13533f * (float) Math.exp(max));
         }
     }
 

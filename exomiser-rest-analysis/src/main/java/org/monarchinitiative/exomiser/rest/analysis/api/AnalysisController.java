@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.rest.analysis.api;
@@ -61,13 +62,13 @@ public class AnalysisController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public AnalysisResponse postAnalysis(@RequestBody Analysis analysis) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@RequestBody Analysis analysis) {
         logger.info("Receiving new analysis: {}", analysis);
         return analysisService.createAnalysisJob(analysis);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    public AnalysisResponse postAnalysis(@RequestBody String analysisYaml) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@RequestBody String analysisYaml) {
         logger.info("Receiving new YAML analysis: {}", analysisYaml);
         return analysisService.createAnalysisJobFromYaml(analysisYaml);
     }
@@ -88,7 +89,7 @@ public class AnalysisController {
     @RequestMapping(value = "/{analysisId}/upload", method = RequestMethod.POST)
     public AnalysisResponse postVcf(@PathVariable("analysisId") long id,
                                     @RequestParam(value = "vcf", required = true) MultipartFile file,
-                                    @RequestParam(value = "ped", required = false) MultipartFile pedFile) throws FileUploadException {
+                                    @RequestParam(value = "ped", required = false) MultipartFile pedFile) {
 
         if (!file.isEmpty()) {
             Path analysisDir = getAnalysisDirectory(id);
@@ -117,7 +118,7 @@ public class AnalysisController {
 
 
     @RequestMapping(value = "/{analysisId}/vcf", method = RequestMethod.POST)
-    public AnalysisResponse postAnalysis(@PathVariable("analysisId") long id, @RequestBody String file) throws FileUploadException {
+    public AnalysisResponse postAnalysis(@PathVariable("analysisId") long id, @RequestBody String file) {
         logger.info(file);
         return new AnalysisResponse(id, AnalysisStatus.ERROR, "testing");
     }
@@ -135,7 +136,7 @@ public class AnalysisController {
 
     private Path getAnalysisDirectory(long id) {
         final Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
-        if (!Files.exists(analysisDir)) {
+        if (!analysisDir.toFile().exists()) {
             throw new UnknownAnalysisException("AnalysisId not found: " + id);
         }
         return analysisDir;

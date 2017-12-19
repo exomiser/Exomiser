@@ -1,8 +1,9 @@
 The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 ===============================================================
-#### Branch build status:
-Master: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/master.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/master)
-Development: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
+
+[![GitHub release](https://img.shields.io/github/release/exomiser/Exomiser.svg)](https://github.com/exomiser/Exomiser/releases)
+[![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/041e1de03278443c9eb64900b839e7ac)](https://www.codacy.com/app/jules-jacobsen/Exomiser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=exomiser/Exomiser&amp;utm_campaign=Badge_Grade)
 
 #### Overview:
 
@@ -40,6 +41,10 @@ For further instructions on installing and running please refer to the [README.m
 
 Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on how to configure and run the Exomiser.
 
+#### Demo site
+
+There is a limited [demo version](http://exomiser.monarchinitiative.org/exomiser/) of the exomiser hosted by the [Monarch Initiative](https://monarchinitiative.org/). This instance is for teaching purposes only and is limited to small exome analysis.
+
 #### Using The Exomiser in your code
 
 The exomiser can also be used as a library in Spring Java applications. Add the ```exomiser-spring-boot-starter``` library to your pom/gradle build script.
@@ -53,10 +58,9 @@ public class MainConfig {
 }
 ```
 
-Or if using Spring boot for your application, you can add it on your main class
+Or if using Spring boot for your application, the exomiser will be autoconfigured if it is on your classpath.
 
 ```java
-@EnableExomiser
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
@@ -77,6 +81,7 @@ private final Exomiser exomiser;
 ...
            
     Analysis analysis = exomiser.getAnalysisBuilder()
+                .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
                 .pedPath(pedPath)
                 .probandSampleName(probandSampleId)
@@ -102,4 +107,23 @@ private final Exomiser exomiser;
 
 Analysing whole genomes using the ``AnalysisMode.FULL`` or ``AnalysisMode.SPARSE`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
 Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java -jar -Xmx...`` incantation. 
+
+#### Caching
+
+Since 9.0.0 caching uses the standard Spring mechanisms.
  
+To enable and configure caching in your Spring application, use the ```@EnableCaching``` annotation on a ```@Configuration``` class, include the required cache implementation jar and add the specific properties to the ```application.properties```.
+
+For example, to use [Caffeine](https://github.com/ben-manes/caffeine) just add the dependency to your pom:
+
+```xml
+<dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
+</dependency>
+```
+and these lines to the ```application.properties```:
+```properties
+spring.cache.type=caffeine
+spring.cache.caffeine.spec=maximumSize=300000
+```

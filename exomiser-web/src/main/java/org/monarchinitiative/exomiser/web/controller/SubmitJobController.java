@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.monarchinitiative.exomiser.web.controller;
 
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import com.google.common.collect.ImmutableSortedSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.Exomiser;
@@ -45,13 +47,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  *
@@ -61,6 +63,8 @@ import java.util.*;
 public class SubmitJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(SubmitJobController.class);
+
+    private static final String SUBMIT_PAGE = "submit";
 
     @Autowired
     private Integer maxVariants;
@@ -78,12 +82,12 @@ public class SubmitJobController {
     @Autowired
     private ResultsWriterFactory resultsWriterFactory;
 
-    @GetMapping(value = "submit")
+    @GetMapping(value = SUBMIT_PAGE)
     public String submit() {
-        return "submit";
+        return SUBMIT_PAGE;
     }
 
-    @PostMapping(value = "submit")
+    @PostMapping(value = SUBMIT_PAGE)
     public String submit(
             @RequestParam(value = "vcf") MultipartFile vcfFile,
             @RequestParam(value = "ped", required = false) MultipartFile pedFile,
@@ -109,12 +113,12 @@ public class SubmitJobController {
         //require a mimimum input of a VCF file and a set of HPO terms - these can come from the diseaseId
         if (vcfPath == null) {
             logger.info("User did not submit a VCF - returning to submission page");
-            return "submit";
+            return SUBMIT_PAGE;
         }
 
         if (phenotypes == null && diseaseId == null) {
             logger.info("User did not provide a disease or phenotype set - returning to submission page");
-            return "submit";
+            return SUBMIT_PAGE;
         }
 
         if(phenotypes == null) {
@@ -125,13 +129,15 @@ public class SubmitJobController {
         logger.info("Using disease: {}", diseaseId);
         logger.info("Using phenotypes: {}", phenotypes);
 
-        int numVariantsInSample = countVariantLinesInVcf(vcfPath);
+        long numVariantsInSample = streamLines(vcfPath).filter(line -> !line.startsWith("#")).count();
         if (numVariantsInSample > maxVariants) {
             logger.info("{} contains {} variants - this is more than the allowed maximum of {}."
                     + "Returning user to submit page", vcfPath, numVariantsInSample, maxVariants);
             cleanUpSampleFiles(vcfPath, pedPath);
             model.addAttribute("numVariants", numVariantsInSample);
             return "resubmitWithFewerVariants";
+        } else {
+            logger.info("{} contains {} variants - within set limit of {}", vcfPath, numVariantsInSample, maxVariants);
         }
 
         Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
@@ -170,27 +176,16 @@ public class SubmitJobController {
         return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
-    private int countVariantLinesInVcf(Path vcfPath) {
-        int variantCount = 0;
-        try (BufferedReader fileReader = Files.newBufferedReader(vcfPath, StandardCharsets.UTF_8)) {
-            boolean readingVariants = false;
-            String line;
-            for (line = fileReader.readLine(); fileReader.readLine() != null;) {
-                if (line.startsWith("#CHROM")) {
-                    readingVariants = true;
-                }
-                while (readingVariants) {
-                    variantCount++;
-                }
-            }
-        } catch (IOException ex) {
-            logger.error("", ex);
+    private Stream<String> streamLines(Path vcfPath) {
+        try {
+            return Files.lines(vcfPath, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.error("Error reading lines from {}", vcfPath, e);
         }
-        logger.info("Vcf {} contains {} variants", vcfPath, variantCount);
-        return variantCount;
+        return Stream.empty();
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
         Settings settings = Settings.builder()
                 .vcfFilePath(vcfPath)
@@ -300,22 +295,12 @@ public class SubmitJobController {
         }
     }
 
-    private Set<Integer> makeGenesToKeep(List<String> genesToFilter) {
+    private Set<String> makeGenesToKeep(List<String> genesToFilter) {
         logger.info("Genes to filter: {}", genesToFilter);
         if (genesToFilter == null) {
-            return new HashSet<>();
+            return Collections.emptySet();
         }
-        Set<Integer> genesToKeep = new TreeSet<>();
-        for (String geneId : genesToFilter) {
-            try {
-                Integer entrezId = Integer.parseInt(geneId);
-                logger.info("Adding gene {} to genesToFilter", entrezId);
-                genesToKeep.add(entrezId);
-            } catch (NumberFormatException ex) {
-                logger.error("'{}' not added to genesToKeep as this is not a number.", geneId);
-            }
-        }
-        return genesToKeep;
+        return ImmutableSortedSet.copyOf(genesToFilter);
     }
 
     private Path createVcfPathFromMultipartFile(MultipartFile multipartVcfFile) {

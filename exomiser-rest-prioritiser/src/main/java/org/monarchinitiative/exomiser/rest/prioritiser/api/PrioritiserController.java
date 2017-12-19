@@ -1,25 +1,26 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -58,9 +59,9 @@ public class PrioritiserController {
     private final Map<Integer, GeneIdentifier> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, GeneFactory geneFactory) {
+    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService genomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = geneFactory.createKnownGeneIds().stream()
+        this.geneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
                 .filter(GeneIdentifier::hasEntrezId)
                 .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
@@ -86,9 +87,9 @@ public class PrioritiserController {
 
         Instant start = Instant.now();
 
-        Prioritiser prioritiser = parsePrioritser(prioritiserName, prioritiserParams);
+        Prioritiser prioritiser = parsePrioritiser(prioritiserName, prioritiserParams);
         List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toImmutableList());
-        List<Gene> genes = parseGeneIdentifiers(genesIds);
+        List<Gene> genes = makeGenesFromIdentifiers(genesIds);
         List<PriorityResult> results = runLimitAndCollectResults(prioritiser, uniquePhenotypes, genes, limit);
 
         Instant end = Instant.now();
@@ -104,7 +105,7 @@ public class PrioritiserController {
         return new PrioritiserResultSet(params, duration.toMillis(), results);
     }
 
-    private Prioritiser parsePrioritser(String prioritiserName, String prioritiserParams) {
+    private Prioritiser parsePrioritiser(String prioritiserName, String prioritiserParams) {
         switch(prioritiserName) {
             case "phenix":
                 return priorityFactory.makePhenixPrioritiser();
@@ -119,7 +120,7 @@ public class PrioritiserController {
         }
     }
 
-    private List<Gene> parseGeneIdentifiers(List<Integer> genesIds) {
+    private List<Gene> makeGenesFromIdentifiers(List<Integer> genesIds) {
         if (genesIds.isEmpty()) {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
@@ -140,7 +141,7 @@ public class PrioritiserController {
     }
 
     private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
-        Stream<? extends PriorityResult> resultsStream = prioritiser.prioritise(phenotypes, genes)
+        Stream<PriorityResult> resultsStream = prioritiser.prioritise(phenotypes, genes)
                 .sorted(Comparator.naturalOrder());
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {

@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.analysis;
 
 import com.google.common.collect.Sets;
@@ -6,8 +26,10 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.UnsupportedGenomeAssemblyException;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -28,7 +50,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AnalysisBuilderTest {
 
     private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
-    private final VariantDataService variantDataService = new VariantDataServiceStub();
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
+            .buildDefaultHg19GenomeAnalysisService());
 
     private AnalysisBuilder analysisBuilder;
 
@@ -36,7 +59,7 @@ public class AnalysisBuilderTest {
 
     @Before
     public void setUp() {
-        analysisBuilder = new AnalysisBuilder(priorityFactory, variantDataService);
+        analysisBuilder = new AnalysisBuilder(priorityFactory, genomeAnalysisServiceProvider);
     }
 
     private List<AnalysisStep> analysisSteps() {
@@ -70,6 +93,20 @@ public class AnalysisBuilderTest {
         Path vcfPath = Paths.get("test.vcf");
         analysisBuilder.vcfPath(vcfPath);
         assertThat(analysisBuilder.build().getVcfPath(), equalTo(vcfPath));
+    }
+
+    @Test
+    public void testAnalysisBuilderGenomeAssembly() {
+        GenomeAssembly genomeAssembly = GenomeAssembly.HG19;
+        analysisBuilder.genomeAssembly(genomeAssembly);
+        assertThat(analysisBuilder.build().getGenomeAssembly(), equalTo(genomeAssembly));
+    }
+
+    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    public void testAnalysisBuilderUnsupportedGenomeAssembly() {
+        GenomeAssembly genomeAssembly = GenomeAssembly.HG38;
+        analysisBuilder.genomeAssembly(genomeAssembly);
+        assertThat(analysisBuilder.build().getGenomeAssembly(), equalTo(genomeAssembly));
     }
 
     @Test
@@ -162,9 +199,9 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddEntrezGeneIdFilter() {
-        Set<Integer> entrezIds = Sets.newHashSet(123345, 67890);
+        Set<String> entrezIds = Sets.newHashSet("FGFR1", "FGFR2");
         analysisBuilder.addGeneIdFilter(entrezIds);
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new EntrezGeneIdFilter(entrezIds))));
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new GeneSymbolFilter(entrezIds))));
     }
 
     @Test
@@ -188,6 +225,14 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddKnownVariantFilter() {
+        analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
+        analysisBuilder.frequencySources(EnumSet.allOf(FrequencySource.class));
+        analysisBuilder.addKnownVariantFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
+    }
+
+    @Test(expected = UndefinedGenomeAssemblyException.class)
+    public void testAddKnownVariantFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
         analysisBuilder.frequencySources(EnumSet.allOf(FrequencySource.class));
         analysisBuilder.addKnownVariantFilter();
         assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
@@ -200,8 +245,16 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddFrequencyFilter() {
-        Set<FrequencySource> sources = EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES);
-        analysisBuilder.frequencySources(sources);
+        analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
+        analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
+        float cutOff = 0.01f;
+        analysisBuilder.addFrequencyFilter(cutOff);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+    }
+
+    @Test(expected = UndefinedGenomeAssemblyException.class)
+    public void testAddFrequencyFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
+        analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
         float cutOff = 0.01f;
         analysisBuilder.addFrequencyFilter(cutOff);
         assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
@@ -214,8 +267,16 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddPathogenicityFilter() {
-        Set<PathogenicitySource> sources = EnumSet.allOf(PathogenicitySource.class);
-        analysisBuilder.pathogenicitySources(sources);
+        analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
+        analysisBuilder.pathogenicitySources(EnumSet.allOf(PathogenicitySource.class));
+        boolean keepNonPathogenic = true;
+        analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(keepNonPathogenic))));
+    }
+
+    @Test(expected = UndefinedGenomeAssemblyException.class)
+    public void testAddPathogenicityFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
+        analysisBuilder.pathogenicitySources(EnumSet.allOf(PathogenicitySource.class));
         boolean keepNonPathogenic = true;
         analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
         assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(keepNonPathogenic))));
@@ -264,6 +325,7 @@ public class AnalysisBuilderTest {
         RegulatoryFeatureFilter regulatoryFeatureFilter = new RegulatoryFeatureFilter();
 
         analysisBuilder.hpoIds(hpoIds)
+                .genomeAssembly(GenomeAssembly.HG19)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .analysisMode(AnalysisMode.FULL)
                 .frequencySources(frequencySources)
@@ -320,6 +382,7 @@ public class AnalysisBuilderTest {
 
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
+
     @Test
     public void testCanSpecifyHiPhivePrioritiser_noOptions() {
         Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);

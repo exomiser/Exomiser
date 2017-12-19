@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
-  ~  This program is free software: you can redistribute it and/or modify
-  ~  it under the terms of the GNU Affero General Public License as
-  ~  published by the Free Software Foundation, either version 3 of the
-  ~  License, or (at your option) any later version.
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
   ~
-  ~  This program is distributed in the hope that it will be useful,
-  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~  GNU Affero General Public License for more details.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
   ~
-  ~  You should have received a copy of the GNU Affero General Public License
-  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -28,9 +29,9 @@
     <name>exomiser-web</name>
 
     <parent>
-        <groupId>org.monarchinitiative</groupId>
+        <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>7.3.0-SNAPSHOT</version>
+        <version>9.0.0</version>
     </parent>
 
     <properties>
@@ -54,12 +55,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.monarchinitiative</groupId>
+            <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-test</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
@@ -68,11 +69,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -86,6 +82,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <type>jar</type>
+        </dependency>
+        <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
         <!--WebJars-->
         <dependency>

@@ -1,6 +1,6 @@
-DROP TABLE variant IF EXISTS;
+DROP TABLE pathogenicity IF EXISTS;
 
-CREATE TABLE variant (
+CREATE TABLE pathogenicity (
     chromosome smallint NOT NULL,
     "position" integer NOT NULL,
     ref character(1) NOT NULL,

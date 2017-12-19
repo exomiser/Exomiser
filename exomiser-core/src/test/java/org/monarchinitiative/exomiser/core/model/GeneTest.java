@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -70,9 +71,9 @@ public class GeneTest {
     @Before
     public void setUp() {
         // variant1 is the first one in in FGFR2 gene
-        variantEvaluation1 = new VariantEvaluation.Builder(10, 123353320, "C", "G").build();
+        variantEvaluation1 = VariantEvaluation.builder(10, 123353320, "C", "G").build();
         // variant2 is the second one in in FGFR2 gene
-        variantEvaluation2 = new VariantEvaluation.Builder(10, 123353325, "T", "A").build();
+        variantEvaluation2 = VariantEvaluation.builder(10, 123353325, "T", "A").build();
 
         instance = newGeneOne();
     }
@@ -492,7 +493,7 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(1, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(false));
     }
 
@@ -500,7 +501,7 @@ public class GeneTest {
     public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
         int X_CHROMOSOME = 23;
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(X_CHROMOSOME, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(X_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(true));
     }
 
@@ -513,7 +514,7 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(1, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(false));
     }
 
@@ -521,7 +522,7 @@ public class GeneTest {
     public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
         int Y_CHROMOSOME = 24;
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(Y_CHROMOSOME, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(Y_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(true));
     }
 

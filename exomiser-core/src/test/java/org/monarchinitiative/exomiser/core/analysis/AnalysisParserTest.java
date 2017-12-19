@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -31,7 +32,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -66,7 +67,8 @@ public class AnalysisParserTest {
     @Before
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new AnalysisParser(priorityFactory, new VariantDataServiceStub());
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory.buildDefaultHg19GenomeAnalysisService());
+        instance = new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
@@ -77,6 +79,7 @@ public class AnalysisParserTest {
     private static String addStepToAnalysis(String step) {
         return String.format("analysis:\n"
                 + "    vcf: test.vcf\n"
+                + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
                 + "    modeOfInheritance: AUTOSOMAL_DOMINANT\n"
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
@@ -112,6 +115,16 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisPedPathSpecified() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ped: test.ped\n"
+                        + "    ");
+        assertThat(analysis.getPedPath(), equalTo(Paths.get("test.ped")));
+    }
+
+    @Test
     public void testParseAnalysisProbandSampleNameSpecified() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
@@ -129,6 +142,70 @@ public class AnalysisParserTest {
                 + "    analysisMode: FULL \n"
                 + "    ");
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+    }
+
+    @Test
+    public void testParseAnalysisNotSettingGenomeBuildReturnsDefault() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ");
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+    }
+
+    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    public void testParseAnalysisThrowsExceptionForUnsupportedGenomeBuild() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg38\n"
+                        + "    ");
+    }
+
+    @Test
+    public void testParseAnalysisCanSetAlternativeGenomeAssemblyUsingUcscName() {
+        AnalysisParser hg19And38SupportedParser = getHg19and38SupportedParser();
+
+        Analysis hg38Analysis = hg19And38SupportedParser.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg38\n"
+                        + "    ");
+        assertThat(hg38Analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+
+        Analysis hg19Analysis = hg19And38SupportedParser.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg19\n"
+                        + "    ");
+        assertThat(hg19Analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+    }
+
+    private AnalysisParser getHg19and38SupportedParser() {
+        GenomeAnalysisService hg19AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
+        GenomeAnalysisService hg38AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
+
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(hg19AnalysisService, hg38AnalysisService);
+        return new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
+    }
+
+    @Test
+    public void testParseAnalysisCanSetGenomeBuildUsingGrcName() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: GRCh37\n"
+                        + "    ");
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+    }
+
+    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
+    public void testParseAnalysisUnrecognisedGenomeBuild() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: invalid\n"
+                        + "    ");
     }
 
     @Test
@@ -180,6 +257,13 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisStep_RegulatoryFeatureFilter() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("regulatoryFeatureFilter: {}"));
+        analysisSteps.add(new RegulatoryFeatureFilter());
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
     public void testParseAnalysisStep_IntervalFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {interval: 'chr10:122892600-122892700'}"));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 122892600, 122892700)));
@@ -188,8 +272,8 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStep_GeneIdFilter() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("geneIdFilter: {geneIds: [12345, 34567, 98765]}"));
-        analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(Arrays.asList(12345, 34567, 98765))));
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("genePanelFilter: {geneSymbols: [FGFR1, FGFR2]}"));
+        analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -353,7 +437,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));
-        analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(Arrays.asList(12345, 34567, 98765))));
+        analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))));
         analysisSteps.add(new QualityFilter(50.0f));
         analysisSteps.add(new VariantEffectFilter(EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT)));
         analysisSteps.add(new KnownVariantFilter());
@@ -421,7 +505,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseOutputSettings_OutputFormats() {
+    public void testParseOutputSettingsAllSupportedOutputFormats() {
         OutputSettings outputSettings = instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
@@ -429,6 +513,30 @@ public class AnalysisParserTest {
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
                 + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
         Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
+        assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
+    }
+
+    @Test
+    public void testParseOutputSettingsNoOutputFormats() {
+        OutputSettings outputSettings = instance.parseOutputSettings(
+                "outputOptions:\n"
+                        + "    outputPassVariantsOnly: true\n"
+                        + "    numGenes: 1\n"
+                        + "    outputPrefix: results/Pfeiffer-hiphive\n"
+                        + "    outputFormats:\n");
+        Set<OutputFormat> outputFormats = EnumSet.noneOf(OutputFormat.class);
+        assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
+    }
+
+    @Test
+    public void testParseOutputSettingsUnsupportedOutputFormatDefaultsToHtml() {
+        OutputSettings outputSettings = instance.parseOutputSettings(
+                "outputOptions:\n"
+                        + "    outputPassVariantsOnly: true\n"
+                        + "    numGenes: 1\n"
+                        + "    outputPrefix: results/Pfeiffer-hiphive\n"
+                        + "    outputFormats: [WIBBLE!]\n");
+        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
         assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
     }
 

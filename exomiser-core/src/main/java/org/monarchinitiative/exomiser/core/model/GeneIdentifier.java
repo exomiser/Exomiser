@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.model;
 
 import java.util.Objects;
@@ -12,7 +32,6 @@ import java.util.Objects;
 public class GeneIdentifier {
 
     public static final String EMPTY_FIELD = "";
-    public static final Integer NULL_ENTREZ_ID = -1;
 
     private final String geneId;
     private final String geneSymbol;
@@ -21,6 +40,7 @@ public class GeneIdentifier {
     private final String hgncSymbol;
 
     private final String entrezId;
+    private final int entrezIdIntValue;
     private final String ensemblId;
     private final String ucscId;
 
@@ -32,23 +52,23 @@ public class GeneIdentifier {
         this.hgncSymbol = builder.hgncSymbol;
 
         //the entrezId is used by the Prioritisers as a primary key for the gene so this is important!
-        this.entrezId = validateEntrezId(builder.entrezId);
+        this.entrezId = builder.entrezId;
+        this.entrezIdIntValue = validateEntrezIdIntValue(builder.entrezId);
         this.ensemblId = builder.ensemblId;
         this.ucscId = builder.ucscId;
     }
 
-    private String validateEntrezId(String entrezId) {
+    private int validateEntrezIdIntValue(String entrezId) {
         Objects.requireNonNull(entrezId, "GeneIdentifier entrezId cannot be null");
         if (entrezId.isEmpty()) {
             //This is permissible - will default to returning a NULL_ENTREZ_ID
-            return entrezId;
+            return -1;
         }
         try {
-            Integer.valueOf(entrezId);
+            return Integer.parseInt(entrezId);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("entrezId '" + entrezId + "' is invalid. GeneIdentifier entrezId must be a positive integer");
         }
-        return entrezId;
     }
 
     public String getGeneId() {
@@ -72,7 +92,7 @@ public class GeneIdentifier {
     }
 
     public Integer getEntrezIdAsInteger() {
-        return entrezId.equals(EMPTY_FIELD) ? NULL_ENTREZ_ID : Integer.valueOf(entrezId);
+        return entrezIdIntValue;
     }
 
     public boolean hasEntrezId() {

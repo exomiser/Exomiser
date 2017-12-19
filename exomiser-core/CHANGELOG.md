@@ -1,5 +1,47 @@
 # The Exomiser - Core Library Changelog
 
+## 9.0.0 2017-12-12
+In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
+- Maven groupId changed from root ```org.monarchinitiative``` to more specific ```org.monarchinitiative.exomiser```.
+- New AlleleProto protobuf class used to store allele data in the new MVstore.
+- Replaced DefaultPathogenicityDao and DefaultFrequencyDao implementations with MvStoreProto implementations.
+- Classes in the genome package are no longer under direct Spring control as the @Component and @Autowired annotations have been removed to enable user-defined genome assemblies on a per-analysis basis.
+- Genome package classes are now configured explicitly in the ```exomiser-spring-boot-autoconfigure``` module.
+- New GenomeAssembly enum
+- New GenomeAnalysisServiceProvider class
+- New GenomeAnalysisService interface - a facade for providing simplified access to the genome module.
+- New VcfFiles utility class for providing access to VCF files with the HTSJDK
+- New VariantAnnotator interface
+- New JannovarVariantAnnotator and JannovarAnnotationService classes
+- VariantFactoryImpl now takes a VariantAnnotator as a constructor argument.
+- VariantDataService getRegulatoryFeatures() and getTopologicalDomains() split out into new GenomeDataService
+- Deprecated Settings class - this will be removed in the next major version.
+- Updated classes in analysis package to enable analyses with user-defined genome assemblies.
+
+## 8.0.0 2017-08-08
+In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
+- Namespace changed from ```de.charite.compbio``` to ```org.monarchinitiative```. 
+- Package layout has been changed to be more modular. New packages include ```genome``` and ```phenotype```.
+- ```phenotype``` package is independent of the others and contains the new ```PhenodigmModelScorer```.
+- Many classes are now immutable value objects, for example the ```Frequency```, ```FrequencyData``` and ```RsId``` classes. These use static ```of()``` constructors.
+- Builders are now used extensively and are exposed using the static ```Class.builder()``` method.
+- Prioritisers have been extensively refactored and test coverage has been much improved from zero.
+- ```Prioritiser``` interface signature change.
+- ```Exomiser``` class now has static ```getAnalysisBuilder()``` exposing a fluent API for building and running an analysis.
+- New ```GeneSymbol``` class for storing mappings between HGNC and the UCSC/ENSEMBL/REFSEQ gene identifiers.
+- New ```TranscriptAnnotation``` class for storing transcript annotations. This provides a much-improved memory footprint.
+- New ```AllelePosition``` class for storing POS, REF and ALT and also providing basic variant normalisation/trimming.
+- New ```TabixDataSource``` interface to abstract the ```TabixReader``` allowing simpler testing and other benefits. 
+ 
+## 7.2.3 2016-11-02 
+- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+
+*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be properly fixed in the next major release.
+
+## 7.2.2 2016-07-01 
+- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being halved.
+- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like this in the output file.
+
 ## 7.2.1 2016-01-05
 - Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
 

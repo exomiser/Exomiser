@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.analysis;
@@ -39,11 +40,14 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Class for storing the options data required for running the Exomiser.
+ * Class for storing the options data required for running the Exomiser. This class is deprecated as of version 9.0.0
+ * and is scheduled for removal. It is highly recommended to use the {@link Analysis} class in place of this.
  *
+ * @deprecated
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated
 @JsonDeserialize(builder = SettingsBuilder.class)
 public class Settings implements FilterSettings, PrioritiserSettings, OutputSettings {
 
@@ -83,7 +87,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
     private final boolean keepOffTargetVariants;
     //genes to keep in final results
-    private final Set<Integer> genesToKeep;
+    private final Set<String> genesToKeep;
 
     //PRIORITISER variables
     private final PriorityType prioritiserType;  //default is NONE
@@ -143,7 +147,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private boolean removePathFilterCutOff = false;
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
-        private Set<Integer> geneIdsToKeep = new LinkedHashSet();
+        private Set<String> geneSymbolsToKeep = new LinkedHashSet<>();
 
         //PRIORITISER
         private PriorityType prioritiserType = PriorityType.NONE;
@@ -152,8 +156,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private String candidateGene = "";
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
         private String diseaseId = "";
-        private List<String> hpoIds = new ArrayList();
-        private List<Integer> seedGeneList = new ArrayList();
+        private List<String> hpoIds = new ArrayList<>();
+        private List<Integer> seedGeneList = new ArrayList<>();
         private String hiPhiveParams = "";
 
         //OUTPUT options
@@ -286,8 +290,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         }
 
         @JsonSetter
-        public SettingsBuilder genesToKeep(Set<Integer> value) {
-            geneIdsToKeep = value;
+        public SettingsBuilder genesToKeep(Set<String> value) {
+            geneSymbolsToKeep = value;
             return this;
         }
 
@@ -355,7 +359,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         keepNonPathogenicVariants = builder.removePathFilterCutOff;
         removeKnownVariants = builder.removeKnownVariants;
         keepOffTargetVariants = builder.keepOffTargetVariants;
-        genesToKeep = builder.geneIdsToKeep;
+        genesToKeep = builder.geneSymbolsToKeep;
 
         //PRIORITISER options
         candidateGene = builder.candidateGene;
@@ -495,7 +499,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     @JsonProperty
     @Override
-    public Set<Integer> getGenesToKeep() {
+    public Set<String> getGenesToKeep() {
         return genesToKeep;
     }
 

@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.prioritisers;
@@ -50,7 +51,7 @@ import java.util.stream.Stream;
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.09 (3 November, 2013)
  */
-public class ExomeWalkerPriority implements Prioritiser {
+public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
@@ -71,7 +72,7 @@ public class ExomeWalkerPriority implements Prioritiser {
      * List of the Entrez Gene IDs corresponding to the disease gene family that
      * will be used to prioritize the genes with variants in the exome.
      */
-    private List<Integer> seedGenes;
+    private List<Integer> seedGenes = new ArrayList<>();
 
     /**
      * This is the matrix of similarities between the seeed genes and all genes
@@ -110,9 +111,8 @@ public class ExomeWalkerPriority implements Prioritiser {
      * @param entrezSeedGenes
      */
     public ExomeWalkerPriority(DataMatrix randomWalkMatrix, List<Integer> entrezSeedGenes) {
-
         this.randomWalkMatrix = randomWalkMatrix;
-        seedGenes = new ArrayList<>();
+        this.seedGenes = new ArrayList<>();
         addMatchedGenesToSeedGeneList(entrezSeedGenes);
         computeDistanceAllNodesFromStartNodes();
     }
@@ -125,7 +125,6 @@ public class ExomeWalkerPriority implements Prioritiser {
      */
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
-
             if (randomWalkMatrix.containsGene(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
@@ -152,17 +151,7 @@ public class ExomeWalkerPriority implements Prioritiser {
      */
     private void computeDistanceAllNodesFromStartNodes() {
         boolean first = true;
-//        FloatMatrix combinedProximityVector = null;
         for (Integer seedGeneEntrezId : seedGenes) {
-            //shouldn't happed as we've already thrown this in the constructor
-//	    if (this.randomWalkMatrix == null) {
-//		String e = "[GeneWanderer.java] Error: randomWalkMatrix is null";
-//		throw new ExomizerInitializationException(e);
-//	    }
-//	    if (this.randomWalkMatrix.objectid2idx == null) {
-//		String e = "[GeneWanderer.java] Error: randomWalkMatrix.object2idx is null";
-//		throw new ExomizerInitializationException(e);
-//	    }
             if (!randomWalkMatrix.containsGene(seedGeneEntrezId)) {
                 /* Note that the RW matrix does not have an entry for every
                  Entrez Gene. If the gene is not contained in the matrix, we
@@ -182,14 +171,12 @@ public class ExomeWalkerPriority implements Prioritiser {
                 combinedProximityVector = combinedProximityVector.add(column);
             }
         }
-        /* p_{\infty} */
-//        this.combinedProximityVector = combinedProximityVector;
     }
 
     @Override
     public Stream<ExomeWalkerPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
-        if (seedGenes == null || seedGenes.isEmpty()) {
-            throw new RuntimeException("Please specify a valid list of known genes!");
+        if (seedGenes.isEmpty()) {
+            logger.error("Seed genes is empty - please specify a valid list of known genes!");
         }
         return genes.stream().map(prioritiseGene());
     }
@@ -209,10 +196,9 @@ public class ExomeWalkerPriority implements Prioritiser {
      */
     @Override
     public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {
-        if (seedGenes == null || seedGenes.isEmpty()) {
-            throw new RuntimeException("Please specify a valid list of known genes!");
+        if (seedGenes.isEmpty()) {
+            logger.error("Seed genes is empty - please specify a valid list of known genes!");
         }
-
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
@@ -226,29 +212,6 @@ public class ExomeWalkerPriority implements Prioritiser {
             }
             gene.addPriorityResult(relScore);
         }
-
-
-//        float factor = 1f / (float) max;
-//        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
-//
-//        for (Gene gene : geneList) {
-//            float scr = gene.getPriorityResult(EXOMEWALKER_PRIORITY);
-//            float newscore = factor * (scr - (float) min);
-//            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
-//            newscore = factorMaxPossible * (scr - (float) min);
-//            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
-//        }
-        
-        //TODO: move this into a report if required 
-//        String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
-//                PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-//        this.messages.add(s);
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("Seed genes:");
-//        for (Integer seed : seedGenes) {
-//            sb.append(seed + "&nbsp;");
-//        }
-//        this.messages.add(sb.toString());
     }
 
     private double calculateGeneScore(int entrezId) {

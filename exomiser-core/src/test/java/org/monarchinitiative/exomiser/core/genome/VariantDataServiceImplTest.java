@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.genome;
@@ -23,16 +24,14 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
+import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
+import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation.Builder;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -41,7 +40,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -54,7 +54,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class VariantDataServiceImplTest {
 
-    @InjectMocks
     private VariantDataServiceImpl instance;
     @Mock
     private FrequencyDao defaultFrequencyDao;
@@ -66,34 +65,45 @@ public class VariantDataServiceImplTest {
     private RemmDao mockRemmDao;
     @Mock
     private CaddDao mockCaddDao;
-    @Mock
-    private RegulatoryFeatureDao mockRegulatoryFeatureDao;
-    @Mock
-    private TadDao mockTadDao;
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
-    private static final PathogenicityData PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1), MutationTasterScore
-            .valueOf(1), SiftScore.valueOf(0));
-    private static final FrequencyData FREQ_DATA = FrequencyData.of(RsId.valueOf(1234567), Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
+    private static final PathogenicityData PATH_DATA = PathogenicityData.of(
+            PolyPhenScore.valueOf(1),
+            MutationTasterScore.valueOf(1),
+            SiftScore.valueOf(0)
+    );
+
+    private static final FrequencyData FREQ_DATA = FrequencyData.of(
+            RsId.valueOf(1234567),
+            Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN)
+    );
+
     private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.valueOf(1));
+
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
     private VariantEvaluation variant;
-    private static final Builder variantBuilder = new Builder(1, 1, "A", "T");
 
     @Before
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
+
+        instance = VariantDataServiceImpl.builder()
+                .defaultFrequencyDao(defaultFrequencyDao)
+                .localFrequencyDao(localFrequencyDao)
+                .pathogenicityDao(mockPathogenicityDao)
+                .caddDao(mockCaddDao)
+                .remmDao(mockRemmDao)
+                .build();
     }
 
-    private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
-        return variantBuilder.variantEffect(variantEffect).build();
+    private VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
+        return VariantEvaluation.builder(1, 1, "A", "T").variantEffect(variantEffect).build();
     }
 
     @Test
@@ -190,7 +200,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariant() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
@@ -200,7 +210,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariantWithRsIdIfKnown() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
@@ -213,7 +223,7 @@ public class VariantDataServiceImplTest {
                 .valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.LOCAL));
@@ -227,24 +237,6 @@ public class VariantDataServiceImplTest {
                 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
         assertThat(result, equalTo(FrequencyData.empty()));
-    }
-
-    @Test
-    public void serviceReturnsRegulatoryFeatures() {
-        List<RegulatoryFeature> regulatoryFeatures = Arrays.asList(new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER));
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatures()).thenReturn(regulatoryFeatures);
-
-        List<RegulatoryFeature> result = instance.getRegulatoryFeatures();
-        assertThat(result, equalTo(regulatoryFeatures));
-    }
-
-    @Test
-    public void serviceReturnsTopologicalDomains(){
-        List<TopologicalDomain> tads = Arrays.asList(new TopologicalDomain(1, 1, 2, Collections.emptyMap()));
-        Mockito.when(mockTadDao.getAllTads()).thenReturn(tads);
-
-        List<TopologicalDomain> topologicalDomains = instance.getTopologicallyAssociatedDomains();
-        assertThat(topologicalDomains, equalTo(tads));
     }
 
 }

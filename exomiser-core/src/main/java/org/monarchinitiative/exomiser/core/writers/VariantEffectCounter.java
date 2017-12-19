@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.collect.ImmutableList;
@@ -19,7 +39,7 @@ public class VariantEffectCounter {
     VariantEffectCounter(int numSamples) {
         this.counters = new ArrayList<>();
         for (int i = 0; i < numSamples; ++i) {
-            counters.add(new EnumMap<VariantEffect, Integer>(VariantEffect.class));
+            counters.add(new EnumMap<>(VariantEffect.class));
         }
     }
 
@@ -54,7 +74,7 @@ public class VariantEffectCounter {
             if (!counters.get(sampleIdx).containsKey(effect)) {
                 counters.get(sampleIdx).put(effect, 1);
             } else {
-                counters.get(sampleIdx).put(effect, counters.get(sampleIdx).get(effect).intValue() + 1);
+                counters.get(sampleIdx).put(effect, counters.get(sampleIdx).get(effect) + 1);
             }
         }
     }
@@ -86,7 +106,7 @@ public class VariantEffectCounter {
         ImmutableList.Builder<Map<VariantEffect, Integer>> listBuilder = new ImmutableList.Builder<>();
 
         for (Map<VariantEffect, Integer> map : counters) {
-            Map<VariantEffect, Integer> counters2 = new HashMap<>();
+            Map<VariantEffect, Integer> counters2 = new EnumMap<>(VariantEffect.class);
             for (VariantEffect effect : effects) {
                 counters2.put(effect, 0);
             }

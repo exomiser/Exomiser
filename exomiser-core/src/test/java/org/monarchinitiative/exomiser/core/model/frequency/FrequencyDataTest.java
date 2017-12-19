@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -31,7 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 
@@ -58,15 +60,38 @@ public class FrequencyDataTest {
 
     @Test
     public void testEmptyData() {
-        assertThat(EMPTY_DATA.getRsId(), nullValue());
+        assertThat(EMPTY_DATA.getRsId(), equalTo(RsId.empty()));
         assertThat(EMPTY_DATA.getKnownFrequencies().isEmpty(), is(true));
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testThrowsExceptionWithNullRsId() {
+        FrequencyData.of(null, Collections.emptyList());
+    }
+
+    @Test
+    public void testEmptyInputValuesReturnsEmpty() {
+        FrequencyData instance = FrequencyData.of(RsId.empty(), Collections.emptyList());
+        assertThat(instance, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    public void testNoRsIdNoFrequencyEqualToEmpty() {
+        FrequencyData localFrequency = FrequencyData.of();
+        assertThat(localFrequency, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    public void testNoRsIdSpecifiedSingleFrequencyValue() {
+        FrequencyData localFrequency = FrequencyData.of(Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        assertThat(localFrequency.hasKnownFrequency(), is(true));
+    }
+
     @Test
     public void testSingleFrequencyValue() {
-        assertThat(FrequencyData.of(null, Frequency.valueOf(0.001f, FrequencySource.LOCAL))
-                .hasKnownFrequency(), is(true));
+        FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        assertThat(localFrequency.hasKnownFrequency(), is(true));
     }
 
     @Test
@@ -101,18 +126,18 @@ public class FrequencyDataTest {
 
     @Test
     public void testRepresentedInDatabaseEspAllOnly() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RsId.empty(), ESP_ALL_PASS);
         assertThat(instance.isRepresentedInDatabase(), is(true));
-    }
-
-    @Test
-    public void testHasDbSnpData() {
-        assertThat(FREQUENCY_DATA.hasDbSnpData(), is(true));
     }
 
     @Test
     public void testRepresentedInDatabaseRsIdOnly() {
         assertThat(RS_ID_ONLY_DATA.isRepresentedInDatabase(), is(true));
+    }
+
+    @Test
+    public void testHasDbSnpData() {
+        assertThat(FREQUENCY_DATA.hasDbSnpData(), is(true));
     }
 
     @Test
@@ -235,7 +260,7 @@ public class FrequencyDataTest {
     public void testGetScore_rareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
-        FrequencyData instance = FrequencyData.of(null, maxFrequency);
-        assertThat(instance.getScore(), equalTo(0.8504372f));
+        FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);
+        assertThat(instance.getScore(), equalTo(0.9857672f));
     }
 }

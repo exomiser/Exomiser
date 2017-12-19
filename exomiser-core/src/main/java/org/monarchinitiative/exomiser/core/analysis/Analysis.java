@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
@@ -53,7 +55,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
-@JsonPropertyOrder({"vcf", "ped", "proband", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
+@JsonPropertyOrder({"vcf", "genomeAssembly", "ped", "proband", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
@@ -67,6 +69,8 @@ public class Analysis {
     @JsonProperty("proband")
     private final String probandSampleName;
 
+    private final GenomeAssembly genomeAssembly;
+
     //these are more optional variables
     private final List<String> hpoIds;
     private final ModeOfInheritance modeOfInheritance;
@@ -78,6 +82,7 @@ public class Analysis {
 
     private Analysis(Builder builder) {
         this.vcfPath = builder.vcfPath;
+        this.genomeAssembly = builder.genomeAssembly;
         this.pedPath = builder.pedPath;
         this.probandSampleName = builder.probandSampleName;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
@@ -91,6 +96,10 @@ public class Analysis {
 
     public Path getVcfPath() {
         return vcfPath;
+    }
+
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
     }
 
     public Path getPedPath() {
@@ -192,6 +201,7 @@ public class Analysis {
     public Builder copy() {
         return builder()
                 .vcfPath(vcfPath)
+                .genomeAssembly(genomeAssembly)
                 .pedPath(pedPath)
                 .probandSampleName(probandSampleName)
                 .hpoIds(hpoIds)
@@ -206,6 +216,7 @@ public class Analysis {
     public static class Builder {
 
         private Path vcfPath = null;
+        private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
         //there is often no pedigree.
         private Path pedPath = null;
         private String probandSampleName = "";
@@ -224,6 +235,16 @@ public class Analysis {
 
         public Builder vcfPath(Path vcfPath) {
             this.vcfPath = vcfPath;
+            return this;
+        }
+
+        /**
+         * Specifies the genome assembly of the sample.
+         *
+         * @param genomeAssembly
+         */
+        public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
+            this.genomeAssembly = genomeAssembly;
             return this;
         }
 
@@ -271,6 +292,7 @@ public class Analysis {
             this.analysisSteps = new ArrayList<>(analysisSteps);
             return this;
         }
+
     }
 
     @Override
@@ -279,6 +301,7 @@ public class Analysis {
         if (o == null || getClass() != o.getClass()) return false;
         Analysis analysis = (Analysis) o;
         return Objects.equals(vcfPath, analysis.vcfPath) &&
+                Objects.equals(genomeAssembly, analysis.genomeAssembly) &&
                 Objects.equals(pedPath, analysis.pedPath) &&
                 Objects.equals(probandSampleName, analysis.probandSampleName) &&
                 Objects.equals(hpoIds, analysis.hpoIds) &&
@@ -291,11 +314,11 @@ public class Analysis {
 
     @Override
     public int hashCode() {
-        return Objects.hash(vcfPath, pedPath, probandSampleName, hpoIds, modeOfInheritance, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
+        return Objects.hash(vcfPath, genomeAssembly, pedPath, probandSampleName, hpoIds, modeOfInheritance, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
     }
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", genomeAssembly=" + genomeAssembly + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 }

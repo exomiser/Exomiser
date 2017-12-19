@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.ImmutableList;
@@ -24,17 +44,17 @@ public class PhenodigmModelScorerTest {
     private OntologyService ontologyService = TestPriorityServiceFactory.TEST_ONTOLOGY_SERVICE;
     private PhenotypeMatchService priorityService = new PhenotypeMatchService(ontologyService);
 
-    private Model makeBestHumanModel(PhenotypeMatcher referenceOrganismPhenotypeMatcher) {
+    private GeneDiseaseModel makeBestHumanModel(PhenotypeMatcher referenceOrganismPhenotypeMatcher) {
         List<String> exactHumanPhenotypes = getBestMatchedPhenotypes(referenceOrganismPhenotypeMatcher);
         return new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", exactHumanPhenotypes);
     }
 
-    private Model makeBestMouseModel(PhenotypeMatcher mouseOrganismPhenotypeMatcher) {
+    private GeneOrthologModel makeBestMouseModel(PhenotypeMatcher mouseOrganismPhenotypeMatcher) {
         List<String> exactMousePhenotypes = getBestMatchedPhenotypes(mouseOrganismPhenotypeMatcher);
         return new GeneOrthologModel("MOUSE:1", Organism.MOUSE, 12345, "GENE1", "MGI:12345", "gene1", exactMousePhenotypes);
     }
 
-    private Model makeBestFishModel(PhenotypeMatcher fishOrganismPhenotypeMatcher) {
+    private GeneOrthologModel makeBestFishModel(PhenotypeMatcher fishOrganismPhenotypeMatcher) {
         List<String> exactFishPhenotypes = getBestMatchedPhenotypes(fishOrganismPhenotypeMatcher);
         return new GeneOrthologModel("FISH:1", Organism.FISH, 12345, "GENE1", "ZFIN:12345", "gene-1", exactFishPhenotypes);
     }
@@ -50,7 +70,7 @@ public class PhenodigmModelScorerTest {
     public void testScoreModelNoPhenotypesNoMatches() {
         PhenotypeMatcher emptyMatches = new CrossSpeciesPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
 
-        ModelScorer instance = PhenodigmModelScorer.forSameSpecies(emptyMatches);
+        ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(emptyMatches);
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", Collections.emptyList());
 
@@ -65,7 +85,7 @@ public class PhenodigmModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
+        ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         PhenotypeTerm noMatchTerm = PhenotypeTerm.of("HP:000000", "No term");
         //The model should have no phenotypes in common with the query set.
@@ -83,7 +103,7 @@ public class PhenodigmModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
+        ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
         ModelPhenotypeMatch result = instance.scoreModel(model);
@@ -98,7 +118,7 @@ public class PhenodigmModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
+        ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         List<String> twoExactPhenotypeMatches = queryTerms.stream().limit(2).map(PhenotypeTerm::getId).collect(toList());
 
@@ -115,7 +135,7 @@ public class PhenodigmModelScorerTest {
         queryTerms.add(PhenotypeTerm.of("HP:000000", "No match"));
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
+        ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
         ModelPhenotypeMatch result = instance.scoreModel(model);
@@ -130,7 +150,7 @@ public class PhenodigmModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
         PhenotypeMatcher mouseOrganismPhenotypeMatcher = priorityService.getMousePhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer mousePhiveModelScorer = PhenodigmModelScorer.forSingleCrossSpecies(mouseOrganismPhenotypeMatcher);
+        ModelScorer<Model> mousePhiveModelScorer = PhenodigmModelScorer.forSingleCrossSpecies(mouseOrganismPhenotypeMatcher);
 
         Model model = makeBestMouseModel(mouseOrganismPhenotypeMatcher);
 
@@ -149,7 +169,7 @@ public class PhenodigmModelScorerTest {
         QueryPhenotypeMatch bestQueryPhenotypeMatch = referenceOrganismPhenotypeMatcher.getQueryPhenotypeMatch();
 
 
-        ModelScorer diseaseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, referenceOrganismPhenotypeMatcher);
+        ModelScorer<Model> diseaseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, referenceOrganismPhenotypeMatcher);
         Model disease = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
         ModelPhenotypeMatch diseaseResult = diseaseModelScorer.scoreModel(disease);
         System.out.println(diseaseResult);
@@ -157,16 +177,16 @@ public class PhenodigmModelScorerTest {
 
 
         PhenotypeMatcher mouseOrganismPhenotypeMatcher = priorityService.getMousePhenotypeMatcherForTerms(queryTerms);
-        ModelScorer mouseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, mouseOrganismPhenotypeMatcher);
-        Model mouse = makeBestMouseModel(mouseOrganismPhenotypeMatcher);
+        ModelScorer<GeneOrthologModel> mouseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, mouseOrganismPhenotypeMatcher);
+        GeneOrthologModel mouse = makeBestMouseModel(mouseOrganismPhenotypeMatcher);
         ModelPhenotypeMatch mouseResult = mouseModelScorer.scoreModel(mouse);
         System.out.println(mouseResult);
         assertThat(mouseResult.getScore(), equalTo(0.9718528996668048));
 
 
         PhenotypeMatcher fishOrganismPhenotypeMatcher = priorityService.getFishPhenotypeMatcherForTerms(queryTerms);
-        ModelScorer fishModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, fishOrganismPhenotypeMatcher);
-        Model fish = makeBestFishModel(fishOrganismPhenotypeMatcher);
+        ModelScorer<GeneOrthologModel> fishModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, fishOrganismPhenotypeMatcher);
+        GeneOrthologModel fish = makeBestFishModel(fishOrganismPhenotypeMatcher);
         ModelPhenotypeMatch fishResult = fishModelScorer.scoreModel(fish);
         System.out.println(fishResult);
         assertThat(fishResult.getScore(), equalTo(0.628922135363762));

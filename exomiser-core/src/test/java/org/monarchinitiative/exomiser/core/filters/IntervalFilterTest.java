@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -26,7 +27,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -40,8 +40,8 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class IntervalFilterTest {
-    
-    IntervalFilter instance;
+
+    IntervalFilter instance = new IntervalFilter(SEARCH_INTERVAL);
     
     private static final byte RIGHT_CHR = 7;
     private static final byte WRONG_CHR = 3;
@@ -55,27 +55,14 @@ public class IntervalFilterTest {
     
     private static final GeneticInterval SEARCH_INTERVAL = new GeneticInterval(RIGHT_CHR, START_REGION, END_REGION);
 
-        
-    private VariantEvaluation rightChromosomeRightPosition;
-    private VariantEvaluation rightChromosomeWrongPosition;
-    private VariantEvaluation wrongChromosomeRightPosition;
-    private VariantEvaluation wrongChromosomeWrongPosition;
-    
-    public IntervalFilterTest() {
-        setUpVariants();
-    }
-
-    private void setUpVariants() {
-        rightChromosomeRightPosition = new VariantEvaluation.Builder(RIGHT_CHR, INSIDE_REGION, "A", "T").build();
-        rightChromosomeWrongPosition = new VariantEvaluation.Builder(RIGHT_CHR, BEFORE_REGION, "A", "T").build();
-        wrongChromosomeRightPosition = new VariantEvaluation.Builder(WRONG_CHR, INSIDE_REGION, "A", "T").build();
-        wrongChromosomeWrongPosition = new VariantEvaluation.Builder(RIGHT_CHR, AFTER_REGION, "A", "T").build();
-    }
-
-    @Before
-    public void setUp() {
-        instance = new IntervalFilter(SEARCH_INTERVAL);
-    }
+    private final VariantEvaluation rightChromosomeRightPosition = VariantEvaluation.builder(RIGHT_CHR, INSIDE_REGION, "A", "T")
+            .build();
+    private final VariantEvaluation rightChromosomeWrongPosition = VariantEvaluation.builder(RIGHT_CHR, BEFORE_REGION, "A", "T")
+            .build();
+    private final VariantEvaluation wrongChromosomeRightPosition = VariantEvaluation.builder(WRONG_CHR, INSIDE_REGION, "A", "T")
+            .build();
+    private final VariantEvaluation wrongChromosomeWrongPosition = VariantEvaluation.builder(RIGHT_CHR, AFTER_REGION, "A", "T")
+            .build();
 
     @Test
     public void testGetInterval() {

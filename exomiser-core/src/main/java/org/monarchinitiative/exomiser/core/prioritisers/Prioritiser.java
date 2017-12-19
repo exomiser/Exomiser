@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.prioritisers;
@@ -49,7 +50,7 @@ import static java.util.stream.Collectors.maxBy;
  * @version 0.13 (13 May, 2013).
  * @see org.monarchinitiative.exomiser.core.filters.Filter
  */
-public interface Prioritiser extends AnalysisStep {
+public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
 
     /**
      * Apply a prioritization algorithm to a list of {@link Gene Gene} objects ranking the results against the similarity
@@ -60,7 +61,7 @@ public interface Prioritiser extends AnalysisStep {
      * @param genes
      */
     default void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
-        Map<Integer, Optional<PriorityResult>> results = prioritise(hpoIds, genes)
+        Map<Integer, Optional<T>> results = prioritise(hpoIds, genes)
                 .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
 
         genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
@@ -68,13 +69,14 @@ public interface Prioritiser extends AnalysisStep {
     }
 
     /**
-     * Applies the prioritiser to the list of genes and returns a Stream of PriorityResult from the Prioritiser.
+     * Scores the list of genes by phenotypic similarity to the provided HPO identifiers returning a Stream of
+     * PriorityResult from the Prioritiser.
      *
      * @param hpoIds
      * @param genes
      * @return the stream of results.
      */
-    Stream<? extends PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes);
+    Stream<T> prioritise(List<String> hpoIds, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.phenotype;
@@ -53,7 +54,7 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     private final Map<String, PhenotypeMatch> mappedTerms;
 
     /**
-     * @param organism - The organism for which these PhenotypeMatches are associated.
+     * @param organism                  - The organism for which these PhenotypeMatches are associated.
      * @param queryTermPhenotypeMatches - Map of query PhenotypeTerms and their corresponding PhenotypeMatches. If there is no match then an empty Set of PhenotypeMatches is expected.
      */
     //TODO: should the constructor simply take the QueryPhenotypeMatch? This is a bit odd as the queryPhenotypeMatch is required externally to this - could then remove getBestPhenotypeMatches and getQueryPhenotypeMatch from the interface?
@@ -107,6 +108,7 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     /**
      * Calculates the best forward and reverse matches for a given set of model phenotypes against the sub-graph of matches
      * for the query phenotypes against this organism. The best forward and reverse matches are not necessarily the same.
+     *
      * @param modelPhenotypes
      * @return
      */
@@ -170,7 +172,8 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
 
     private void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match, Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms) {
         PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
-        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore()) {
+        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || bestPhenotypeMatchForTerms.get(matchQueryTerm)
+                .getScore() < match.getScore()) {
             bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
         }
     }
@@ -186,11 +189,10 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     }
 
     /**
-     *
      * @param modelPhenotypes
      * @return
      */
-     List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
+    List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
         List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
                 .filter(matchedOrganismPhenotypeIds::contains)
                 .collect(toList());
@@ -220,17 +222,20 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 .map(Optional::get)
                 .collect(toList());
 
-         return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream())
-                 .collect(ImmutableList.toImmutableList());
+        //why turn the lists back into streams when they were streams to start with?
+        return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream())
+                .collect(ImmutableList.toImmutableList());
     }
 
     /**
      * Calculates the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches.     *
+     *
      * @param bestForwardAndReciprocalMatches
      * @return A list of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
      */
-     List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
-        Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches.stream()
+    List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
+        Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches
+                .stream()
                 .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
 
         return bestOptionalPhenotypeMatchForTerms.values().stream()

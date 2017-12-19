@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import org.slf4j.Logger;
@@ -16,7 +36,7 @@ import java.util.Set;
  * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PhenodigmModelScorer implements ModelScorer {
+public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenodigmModelScorer.class);
 
@@ -61,9 +81,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      *
      * @param phenotypeMatcher The HP to HP PhenotypeMatches for the query Phenotypes.
      */
-    public static PhenodigmModelScorer forSameSpecies(PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forSameSpecies(PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = phenotypeMatcher.getQueryTerms().size();
-        return new PhenodigmModelScorer(phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(phenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -72,9 +92,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      *
      * @param phenotypeMatcher The HP to MP/ZP PhenotypeMatches for the query Phenotypes.
      */
-    public static PhenodigmModelScorer forSingleCrossSpecies(PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forSingleCrossSpecies(PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = phenotypeMatcher.getBestPhenotypeMatches().size();
-        return new PhenodigmModelScorer(phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(phenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -84,9 +104,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      * @param referenceOrganismQueryPhenotypeMatch {@link QueryPhenotypeMatch} for the reference organism - this should be for the HP-HP hits.
      * @param phenotypeMatcher                     the {@link PhenotypeMatcher} for the relevant organism i.e. HP-HP, HP-MP or HP-ZP matches.
      */
-    public static PhenodigmModelScorer forMultiCrossSpecies(QueryPhenotypeMatch referenceOrganismQueryPhenotypeMatch, PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forMultiCrossSpecies(QueryPhenotypeMatch referenceOrganismQueryPhenotypeMatch, PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = referenceOrganismQueryPhenotypeMatch.getQueryTerms().size();
-        return new PhenodigmModelScorer(referenceOrganismQueryPhenotypeMatch, phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(referenceOrganismQueryPhenotypeMatch, phenotypeMatcher, numQueryPhenotypes);
     }
 
     private void logOrganismPhenotypeMatches() {
@@ -110,7 +130,7 @@ public class PhenodigmModelScorer implements ModelScorer {
     }
 
     @Override
-    public ModelPhenotypeMatch scoreModel(Model model) {
+    public ModelPhenotypeMatch<T> scoreModel(T model) {
         PhenodigmMatchRawScore rawModelScore = organismPhenotypeMatcher.matchPhenotypeIds(model.getPhenotypeIds());
         double score = calculateCombinedScore(rawModelScore);
         return ModelPhenotypeMatch.of(score, model, rawModelScore.getBestPhenotypeMatches());

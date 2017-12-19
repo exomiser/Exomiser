@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
@@ -5,48 +25,41 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Component
 public class LocalFrequencyDao implements FrequencyDao {
 
     private final Logger logger = LoggerFactory.getLogger(LocalFrequencyDao.class);
 
-    private final TabixReader tabixReader;
+    private final TabixDataSource tabixDataSource;
 
-    @Autowired
-    public LocalFrequencyDao(TabixReader localFrequencyTabixReader) {
-        this.tabixReader = localFrequencyTabixReader;
+    public LocalFrequencyDao(TabixDataSource localFrequencyTabixDataSource) {
+        this.tabixDataSource = localFrequencyTabixDataSource;
     }
 
-    @Cacheable(value = "local", key = "#variant.hgvsGenome")
+    @Cacheable(value = "local", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
+        logger.debug("Getting LOCAL_FREQ data for {}", variant);
         return processResults(variant);
     }
 
-    FrequencyData processResults(Variant variant) {
+    private FrequencyData processResults(Variant variant) {
+//        logger.info("Fetching data for {}", variant);
         String chromosome = variant.getChromosomeName();
-        String ref = dotIfEmpty(variant.getRef());
-        String alt = dotIfEmpty(variant.getAlt());
+        String ref = variant.getRef();
+        String alt = variant.getAlt();
         int start = variant.getPosition();
-        return getPositionFrequencyData(chromosome, start, ref, alt);
-    }
 
-    private String dotIfEmpty(String allele) {
-        if ("-".equals(allele)) {
-            return ".";
-        }
-        return allele;
+        return getPositionFrequencyData(chromosome, start, ref, alt);
     }
 
     private FrequencyData getPositionFrequencyData(String chromosome, int start, String ref, String alt) {
@@ -58,7 +71,7 @@ public class LocalFrequencyDao implements FrequencyDao {
         //1 12345   AT   G   0.02  (an AT->G deletion on chr1 at position 12345 with frequency of 0.02%)
         //1 12345   T   .   0.03  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with frequency of 0.03%)
         try {
-            TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
+            TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + start);
             String line;
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
@@ -69,7 +82,7 @@ public class LocalFrequencyDao implements FrequencyDao {
                 }
             }
         } catch (IOException e) {
-            logger.error("Unable to read from local frequency tabix file {}", tabixReader.getSource(), e);
+            logger.error("Unable to read from local frequency tabix file {}", tabixDataSource.getSource(), e);
         }
         return FrequencyData.empty();
     }
@@ -77,6 +90,6 @@ public class LocalFrequencyDao implements FrequencyDao {
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
         Frequency localFreq = Frequency.valueOf(value, FrequencySource.LOCAL);
-        return FrequencyData.of(null, localFreq);
+        return FrequencyData.of(RsId.empty(), localFreq);
     }
 }

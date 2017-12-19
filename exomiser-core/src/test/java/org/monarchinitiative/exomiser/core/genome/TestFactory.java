@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.genome;
@@ -30,7 +31,7 @@ import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import java.util.List;
 
 /**
- * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link VariantAnnotationData} objects for testing.
+ * Allows the easy creation of {@link JannovarData} {@link VariantFactoryImpl} objects for testing.
  *
  * The default data contains one transcript each for the genes FGFR2, GNRHR2A, RBM8A (overlaps with GNRHR2A), and SHH based on the HG19/GRCh37 build.
  *
@@ -45,13 +46,17 @@ public class TestFactory {
     private static final TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
     private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
 
+    private static final GenomeAssembly DEFAULT_GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantAnnotationData DEFAULT_VARIANT_ANNOTATION_DATA = new VariantAnnotationData(DEFAULT_JANNOVAR_DATA);
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA));
 
     private TestFactory() {
         //this class should be used in a static context.
+    }
+
+    public static GenomeAssembly getDefaultGenomeAssembly() {
+        return DEFAULT_GENOME_ASSEMBLY;
     }
 
     public static ReferenceDictionary getDefaultRefDict() {
@@ -66,30 +71,13 @@ public class TestFactory {
         return DEFAULT_VARIANT_FACTORY;
     }
 
-    public static VariantAnnotationData buildDefaultVariantAnnotationData() {
-        return DEFAULT_VARIANT_ANNOTATION_DATA;
-    }
-
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
         return new JannovarData(DEFAULT_REF_DICT, ImmutableList.copyOf(transcriptModels));
     }
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new VariantFactory(jannovarData);
-    }
-
-    public static VariantFactory buildVariantFactory(JannovarData jannovarData) {
-        return new VariantFactory(jannovarData);
-    }
-
-    public static VariantAnnotationData buildVariantAnnotationData(TranscriptModel... transcriptModels) {
-        final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return buildVariantAnnotationData(jannovarData);
-    }
-
-    public static VariantAnnotationData buildVariantAnnotationData(JannovarData jannovarData) {
-        return new VariantAnnotationData(jannovarData);
+        return new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData));
     }
 
     public static GeneFactory buildDefaultGeneFactory() {
@@ -111,5 +99,17 @@ public class TestFactory {
     public static Gene newGeneRBM8A() { return new Gene(TestGeneFactory.RBM8A_IDENTIFIER);}
 
     public static Gene newGeneSHH() { return new Gene(TestGeneFactory.SHH_IDENTIFIER);}
+
+    public static GenomeDataService buildDefaultGenomeDataService() {
+        return TestGenomeDataService.builder().genes(buildGenes()).geneIdentifiers(buildGeneIdentifiers()).build();
+    }
+
+    public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
+        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), new VariantDataServiceStub(), DEFAULT_VARIANT_FACTORY);
+    }
+
+    public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA)));
+    }
 
 }

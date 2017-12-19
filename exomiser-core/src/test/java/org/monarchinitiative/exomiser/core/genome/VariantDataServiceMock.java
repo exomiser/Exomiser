@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -24,15 +25,15 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Mock of VariantDataService to provide canned responses for variants. Enables
@@ -42,25 +43,19 @@ import java.util.*;
  *
  * @author Jules Jacobsen<jules.jacobsen@sanger.ac.uk>
  */
-public class VariantDataServiceMock extends VariantDataServiceImpl {
+public class VariantDataServiceMock implements VariantDataService {
 
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
-    private final List<RegulatoryFeature> expectedRegulatoryRegions;
-    private final List<TopologicalDomain> expectedTopologicalDomains;
-    
+
     public VariantDataServiceMock() {
         this.expectedFrequencyData = new HashMap<>();
         this.expectedPathogenicityData = new HashMap<>();
-        this.expectedRegulatoryRegions = new ArrayList<>();
-        this.expectedTopologicalDomains = new ArrayList<>();
     }
 
-    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, List<RegulatoryFeature> expectedRegulatoryRegions, List<TopologicalDomain> expectedTopologicalDomains) {
+    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData) {
         this.expectedFrequencyData = expectedFrequencyData;
         this.expectedPathogenicityData = expectedPathogenicityData;
-        this.expectedRegulatoryRegions = expectedRegulatoryRegions;
-        this.expectedTopologicalDomains = expectedTopologicalDomains;
     }
 
     /**
@@ -85,43 +80,16 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
         expectedPathogenicityData.put(variant, pathogenicityData);
     }
 
-    /**
-     * Adds the expected RegulatoryFeature to the VariantDataService.
-     *
-     * @param regulatoryFeature
-     */
-    public void put(RegulatoryFeature regulatoryFeature) {
-        expectedRegulatoryRegions.add(regulatoryFeature);
-    }
-
-    /**
-     * Adds the expected TopologicalDomain to the VariantDataService.
-     *
-     * @param topologicalDomain
-     */
-    public void put(TopologicalDomain topologicalDomain) {
-        expectedTopologicalDomains.add(topologicalDomain);
-    }
-
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
-        return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
+        return VariantDataServiceImpl.frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
-        return pathDataFromSpecifiedDataSources(pathData.getPredictedPathogenicityScores(), pathogenicitySources);
+        return VariantDataServiceImpl.pathDataFromSpecifiedDataSources(pathData.getPredictedPathogenicityScores(), pathogenicitySources);
     }
 
-    @Override
-    public List<RegulatoryFeature> getRegulatoryFeatures() {
-        return expectedRegulatoryRegions;
-    }
-
-    @Override
-    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
-        return expectedTopologicalDomains;
-    }
 }

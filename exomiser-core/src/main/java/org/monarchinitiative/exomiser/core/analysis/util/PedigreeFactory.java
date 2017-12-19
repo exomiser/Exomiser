@@ -1,21 +1,22 @@
 
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.analysis.util;
@@ -64,41 +65,26 @@ public class PedigreeFactory {
      * @return
      */
     public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, List<String> sampleNames) {
-        int numberOfSamples = sampleNames.size();
-        switch (numberOfSamples) {
-            case 0:
-                if (pedigreeFilePath != null) {
-                    throw new PedigreeCreationException("No data present in sampleData");
-                }
-            case 1:
-                return createSingleSamplePedigree(sampleNames);
-            default:
-                return createMultiSamplePedigree(pedigreeFilePath, sampleNames);
+
+        if (sampleNames == null || sampleNames.isEmpty()) {
+            if (pedigreeFilePath != null) {
+                throw new PedigreeCreationException("Pedigree present, but no sample names present in sampleData");
+            }
+            logger.info("No sample names present. Using default '{}'", DEFAULT_SAMPLE_NAME);
+            return createSingleSamplePedigree(DEFAULT_SAMPLE_NAME);
         }
+
+        if (sampleNames.size() == 1) {
+            return createSingleSamplePedigree(sampleNames.get(0));
+
+        }
+        return createMultiSamplePedigree(pedigreeFilePath, sampleNames);
     }
 
-    //TODO: this might be overly convoluted- Jannovar does this:
-//    final PedFileReader pedReader = new PedFileReader(new File(options.pathPedFile));
-//    final PedFileContents pedContents = pedReader.read();
-//    final Pedigree pedigree = new Pedigree(pedContents, pedContents.getIndividuals().get(0).getPedigree());
-//    if (!pedigree.getNames().containsAll(vcfHeader.getGenotypeSamples())) {
-//	      throw new IncompatiblePedigreeException("The VCF file is not compatible with the pedigree!");
-//    }
-
-
-    private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
-        String sampleName = getSingleSampleName(sampleNames);
+    private Pedigree createSingleSamplePedigree(String sampleName) {
         logger.info("Creating single-sample pedigree for {}", sampleName);
         final Person person = new Person(sampleName, null, null, Sex.UNKNOWN, Disease.AFFECTED);
         return new Pedigree("family", ImmutableList.of(person));
-    }
-
-    private String getSingleSampleName(List<String> sampleNames) {
-        if (sampleNames.isEmpty()) {
-            logger.info("No sample names present. Using default '{}'", DEFAULT_SAMPLE_NAME);
-            return DEFAULT_SAMPLE_NAME;
-        }
-        return sampleNames.get(0);
     }
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
@@ -133,7 +119,7 @@ public class PedigreeFactory {
         }
     }
 
-    private void checkPedigreePathIsNotNull(Path pedigreeFilePath) throws PedigreeCreationException {
+    private void checkPedigreePathIsNotNull(Path pedigreeFilePath) {
         if (pedigreeFilePath == null) {
             logger.error("PED file must be be provided for multi-sample VCF files.");
             //terminate the program - we really need one of these.
@@ -141,7 +127,7 @@ public class PedigreeFactory {
         }
     }
 
-    private void checkPedFileContentsContainsSingleFamily(PedFileContents pedFileContents) throws PedigreeCreationException {
+    private void checkPedFileContentsContainsSingleFamily(PedFileContents pedFileContents) {
         List<String> familyNames = pedFileContents.getIndividuals().stream().map(PedPerson::getPedigree).distinct().collect(toList());
         if (familyNames.size() > 1) {
             throw new PedigreeCreationException("PED file must contain only one family, found " + familyNames.size() + ": " + familyNames + ". Please provide PED file containing only the proband family matching supplied HPO terms.");
@@ -157,7 +143,7 @@ public class PedigreeFactory {
     }
 
 
-    private void checkPedFileContentsMatchesSampleNames(PedFileContents pedFileContents, List<String> sampleNames) throws PedigreeCreationException {
+    private void checkPedFileContentsMatchesSampleNames(PedFileContents pedFileContents, List<String> sampleNames) {
         logger.debug("Sample names from VCF: {}", sampleNames);
         logger.debug("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
         logger.debug("Matching VCF sample names with PED individuals...");

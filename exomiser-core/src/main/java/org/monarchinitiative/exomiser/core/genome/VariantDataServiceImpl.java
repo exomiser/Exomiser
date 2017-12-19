@@ -1,29 +1,31 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
+import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
+import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -34,10 +36,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScor
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -45,28 +44,29 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 
 /**
+ * Default implementation of the VariantDataService. This is a
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Service
 public class VariantDataServiceImpl implements VariantDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
 
-    @Resource(name = "defaultFrequencyDao")
     private FrequencyDao defaultFrequencyDao;
-    @Resource(name = "localFrequencyDao")
     private FrequencyDao localFrequencyDao;
-    @Autowired
+
     private PathogenicityDao pathogenicityDao;
-    @Resource(name = "caddDao")
     private CaddDao caddDao;
-    @Resource(name = "remmDao")
     private RemmDao remmDao;
-    @Autowired
-    private RegulatoryFeatureDao regulatoryFeatureDao;
-    @Autowired
-    private TadDao tadDao;
+
+    private VariantDataServiceImpl(Builder builder) {
+        this.defaultFrequencyDao = builder.defaultFrequencyDao;
+        this.localFrequencyDao = builder.localFrequencyDao;
+
+        this.pathogenicityDao = builder.pathogenicityDao;
+        this.caddDao = builder.caddDao;
+        this.remmDao = builder.remmDao;
+    }
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
@@ -82,11 +82,11 @@ public class VariantDataServiceImpl implements VariantDataService {
         return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencies, frequencySources);
     }
 
-    FrequencyData frequencyDataFromSpecifiedSources(RsId rsid, List<Frequency> allFrequencies, Set<FrequencySource> frequencySources) {
+    protected static FrequencyData frequencyDataFromSpecifiedSources(RsId rsid, List<Frequency> allFrequencies, Set<FrequencySource> frequencySources) {
         Set<Frequency> wanted = allFrequencies.stream()
                 .filter(frequency -> frequencySources.contains(frequency.getSource()))
                 .collect(toSet());
-        if (rsid == null && wanted.isEmpty()) {
+        if (rsid.isEmpty() && wanted.isEmpty()) {
             return FrequencyData.empty();
         }
         return FrequencyData.of(rsid, wanted);
@@ -98,7 +98,7 @@ public class VariantDataServiceImpl implements VariantDataService {
         if (pathogenicitySources.isEmpty()) {
             return PathogenicityData.empty();
         }
-        //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources to query and ship.
+
         List<PathogenicityScore> allPathScores = new ArrayList<>();
         final VariantEffect variantEffect = variant.getVariantEffect();
         //Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
@@ -121,7 +121,7 @@ public class VariantDataServiceImpl implements VariantDataService {
         return pathDataFromSpecifiedDataSources(allPathScores, pathogenicitySources);
     }
 
-    protected PathogenicityData pathDataFromSpecifiedDataSources(List<PathogenicityScore> allPathScores, Set<PathogenicitySource> pathogenicitySources) {
+    protected static PathogenicityData pathDataFromSpecifiedDataSources(List<PathogenicityScore> allPathScores, Set<PathogenicitySource> pathogenicitySources) {
         Set<PathogenicityScore> wanted = allPathScores.stream()
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
                 .collect(toSet());
@@ -131,14 +131,47 @@ public class VariantDataServiceImpl implements VariantDataService {
         return PathogenicityData.of(wanted);
     }
 
-    @Override
-    public List<RegulatoryFeature> getRegulatoryFeatures() {
-        return regulatoryFeatureDao.getRegulatoryFeatures();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    @Override
-    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
-        return tadDao.getAllTads();
+    public static class Builder {
+
+        private FrequencyDao defaultFrequencyDao;
+        private FrequencyDao localFrequencyDao;
+
+        private PathogenicityDao pathogenicityDao;
+        private CaddDao caddDao;
+        private RemmDao remmDao;
+
+        public Builder defaultFrequencyDao(FrequencyDao defaultFrequencyDao) {
+            this.defaultFrequencyDao = defaultFrequencyDao;
+            return this;
+        }
+
+        public Builder localFrequencyDao(FrequencyDao localFrequencyDao) {
+            this.localFrequencyDao = localFrequencyDao;
+            return this;
+        }
+
+        public Builder pathogenicityDao(PathogenicityDao pathogenicityDao) {
+            this.pathogenicityDao = pathogenicityDao;
+            return this;
+        }
+
+        public Builder caddDao(CaddDao caddDao) {
+            this.caddDao = caddDao;
+            return this;
+        }
+
+        public Builder remmDao(RemmDao remmDao) {
+            this.remmDao = remmDao;
+            return this;
+        }
+
+        public VariantDataServiceImpl build() {
+            return new VariantDataServiceImpl(this);
+        }
     }
 
 }

@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.filters;
@@ -31,64 +32,31 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class FrequencyFilterTest {
-    
+
+    private static final FilterResult PASS_FREQUENCY_FILTER_RESULT = FilterResult.pass(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult FAIL_FREQUENCY_FILTER_RESULT = FilterResult.fail(FilterType.FREQUENCY_FILTER);
+
     private FrequencyFilter instance;
 
-    private VariantEvaluation passesEspAllFrequency;
-    private VariantEvaluation passesEspAAFrequency;
-    private VariantEvaluation passesEspEAFrequency;
-    private VariantEvaluation passesDbsnpFrequency;
-
-    private VariantEvaluation failsFrequency;
-    private VariantEvaluation passesNoFrequencyData;
-
     private static final float FREQ_THRESHOLD = 0.1f;
-    private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
-    private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
-
-    private static final Frequency ESP_ALL_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_ALL);
-    private static final Frequency ESP_ALL_FAIL = Frequency.valueOf(FAIL_FREQ, FrequencySource.ESP_ALL);
-
-    private static final Frequency ESP_AA_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_AFRICAN_AMERICAN);
-
-    private static final Frequency ESP_EA_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_EUROPEAN_AMERICAN);
-
-    private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
-
-    private static final FrequencyData espAllPassData = FrequencyData.of(null, ESP_ALL_PASS);
-    private static final FrequencyData espAllFailData = FrequencyData.of(null, ESP_ALL_FAIL);
-    private static final FrequencyData espAaPassData = FrequencyData.of(null, ESP_AA_PASS);
-    private static final FrequencyData espEaPassData = FrequencyData.of(null, ESP_EA_PASS);
-    private static final FrequencyData dbSnpPassData = FrequencyData.of(null, DBSNP_PASS);
-    private static final FrequencyData noFreqData = FrequencyData.empty();
 
     @Before
     public void setUp() throws Exception {
-
         instance = new FrequencyFilter(FREQ_THRESHOLD);
-
-        passesEspAllFrequency = makeTestVariantEvaluation();
-        passesEspAllFrequency.setFrequencyData(espAllPassData);
-
-        passesEspAAFrequency = makeTestVariantEvaluation();
-        passesEspAAFrequency.setFrequencyData(espAaPassData);
-
-        passesEspEAFrequency = makeTestVariantEvaluation();
-        passesEspEAFrequency.setFrequencyData(espEaPassData);
-
-        passesDbsnpFrequency = makeTestVariantEvaluation();
-        passesDbsnpFrequency.setFrequencyData(dbSnpPassData);
-
-        failsFrequency = makeTestVariantEvaluation();
-        failsFrequency.setFrequencyData(espAllFailData);
-
-        passesNoFrequencyData = makeTestVariantEvaluation();
-        passesNoFrequencyData.setFrequencyData(noFreqData);
-
     }
-    
-    private VariantEvaluation makeTestVariantEvaluation() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T").build();
+
+    private Frequency passFrequency(FrequencySource source) {
+        return Frequency.valueOf(FREQ_THRESHOLD - 0.02f, source);
+    }
+
+    private Frequency failFrequency(FrequencySource source) {
+        return Frequency.valueOf(FREQ_THRESHOLD + 1.0f, source);
+    }
+
+    private VariantEvaluation makeVariantEvaluation(Frequency... frequencies) {
+        return VariantEvaluation.builder(1, 1, "A", "T")
+                .frequencyData(FrequencyData.of(frequencies))
+                .build();
     }
 
     @Test
@@ -112,39 +80,39 @@ public class FrequencyFilterTest {
     }
 
     @Test
-    public void testFilterPassesVariantEvaluationWithFrequencyUnderThreshold() {
-        instance = new FrequencyFilter(FREQ_THRESHOLD);
-        System.out.println(passesEspAllFrequency + " " + passesEspAllFrequency.getFrequencyData());
-        FilterResult filterResult = instance.runFilter(passesEspAllFrequency);
-
-        FilterTestHelper.assertPassed(filterResult);
-    }
-
-    @Test
     public void testFilterPassesVariantEvaluationWithNoFrequencyData() {
-        FilterResult filterResult = instance.runFilter(passesNoFrequencyData);
-        FilterTestHelper.assertPassed(filterResult);
+        VariantEvaluation variantEvaluation = makeVariantEvaluation();
+        assertThat(instance.runFilter(variantEvaluation), equalTo(PASS_FREQUENCY_FILTER_RESULT));
     }
 
     @Test
-    public void testFilterFailsVariantEvaluationWithFrequencyDataAboveThreshold() {
-        FilterResult filterResult = instance.runFilter(failsFrequency);
-        FilterTestHelper.assertFailed(filterResult);
+    public void testFilterPassesVariantEvaluationWithFrequencyUnderThreshold() {
+        VariantEvaluation variantEvaluation = makeVariantEvaluation(passFrequency(FrequencySource.ESP_ALL));
+        assertThat(instance.runFilter(variantEvaluation), equalTo(PASS_FREQUENCY_FILTER_RESULT));
     }
 
     @Test
-    public void testPassesFilterFails() {
-        assertThat(instance.passesFilter(espAllFailData), is(false));
+    public void testFilterPassesVariantEvaluationWithAllFrequenciesUnderThreshold() {
+        VariantEvaluation variantEvaluation = makeVariantEvaluation(
+                passFrequency(FrequencySource.ESP_ALL),
+                passFrequency(FrequencySource.THOUSAND_GENOMES)
+        );
+        assertThat(instance.runFilter(variantEvaluation), equalTo(PASS_FREQUENCY_FILTER_RESULT));
     }
 
     @Test
-    public void testEaspAllPassesFilter() {
-        assertThat(instance.passesFilter(espAllPassData), is(true));
+    public void testFilterFailsVariantEvaluationWithFrequencyOverThreshold() {
+        VariantEvaluation variantEvaluation = makeVariantEvaluation(failFrequency(FrequencySource.ESP_ALL));
+        assertThat(instance.runFilter(variantEvaluation), equalTo(FAIL_FREQUENCY_FILTER_RESULT));
     }
 
     @Test
-    public void testNoFrequencyDataPassesFilter() {
-        assertThat(instance.passesFilter(noFreqData), is(true));
+    public void testFilterFailsVariantEvaluationWithAtLeastFrequencyOverThreshold() {
+        VariantEvaluation variantEvaluation = makeVariantEvaluation(
+                passFrequency(FrequencySource.THOUSAND_GENOMES),
+                failFrequency(FrequencySource.ESP_ALL)
+        );
+        assertThat(instance.runFilter(variantEvaluation), equalTo(FAIL_FREQUENCY_FILTER_RESULT));
     }
 
     @Test
@@ -167,7 +135,7 @@ public class FrequencyFilterTest {
 
     @Test
     public void testNotEqualOtherFrequencyFilterWithDifferentThreshold() {
-        FrequencyFilter otherFilter = new FrequencyFilter(FAIL_FREQ);
+        FrequencyFilter otherFilter = new FrequencyFilter(FREQ_THRESHOLD + 1f);
         assertThat(instance.equals(otherFilter), is(false));
     }
 

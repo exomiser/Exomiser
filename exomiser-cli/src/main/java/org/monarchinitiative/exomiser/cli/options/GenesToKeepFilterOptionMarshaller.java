@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -29,10 +30,10 @@ import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
+import java.util.Arrays;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  *
@@ -47,9 +48,9 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
     public GenesToKeepFilterOptionMarshaller() {
         option = Option.builder()
                 .hasArgs()
-                .argName("Entrez geneId")
+                .argName("HGNC gene symbol")
                 .valueSeparator(',')
-                .desc("Comma separated list of seed genes (Entrez gene IDs) for filtering")
+                .desc("Comma separated list of seed genes (HGNC gene symbols e.g. FGFR2) for filtering")
                 .longOpt(GENES_TO_KEEP_OPTION)
                 .build();
     }
@@ -58,28 +59,9 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.genesToKeep(parseGenesToKeepList(values));
     }
-    
-    private Set<Integer> parseGenesToKeepList(String[] values) {
 
-        Set<Integer> returnList = new LinkedHashSet<>();
-
-        if (values.length == 0) {
-            return returnList;
-        }
-
-        Pattern entrezGeneIdPattern = Pattern.compile("[0-9]+");
-
-        for (String string : values) {
-            Matcher entrezGeneIdPatternMatcher = entrezGeneIdPattern.matcher(string);
-            if (entrezGeneIdPatternMatcher.matches()) {
-                Integer integer = Integer.parseInt(string.trim());
-                returnList.add(integer);
-            } else {
-                logger.error("Malformed Entrez gene ID input string \"{}\". Term \"{}\" does not match the Entrez gene ID identifier pattern: {}", values, string, entrezGeneIdPattern);
-            }
-        }
-
-        return returnList;
+    private Set<String> parseGenesToKeepList(String[] values) {
+        return Arrays.stream(values).collect(toSet());
     }
 
 }
