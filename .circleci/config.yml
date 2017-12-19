@@ -2,6 +2,9 @@ version: 2
 jobs:
   build:
     working_directory: ~/exomiser
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
       - image: circleci/openjdk:8u151-jdk
     steps:
@@ -15,10 +18,20 @@ jobs:
           key: exomiser-{{ checksum "pom.xml" }}
       - run: mvn test -B
       - run: mvn sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+      #Save junit xml
+      - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
+      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      #Save jars
+      - run: mkdir -p $CIRCLE_ARTIFACTS/
+      - run: find . -type f -regex ".*/target/.*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
+      # Save test results
       - store_test_results:
-          path: .*/target/surefire-reports
+          path: /tmp/circleci-test-results
+      # Save artifacts
       - store_artifacts:
-          path: .*/target/
+          path: /tmp/circleci-artifacts
+      - store_artifacts:
+          path: /tmp/circleci-test-results
 
 # This configuration was automatically generated from a CircleCI 1.0 config.
 # It should include any build commands you had along with commands that CircleCI
