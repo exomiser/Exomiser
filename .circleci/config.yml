@@ -6,14 +6,14 @@ jobs:
       - image: circleci/openjdk:8u151-jdk
     steps:
       - checkout
-      - restore_cache:
-          key: exomiser-{{ checksum "pom.xml" }}
-      - run: mvn -pl exomiser-core,exomiser-spring-boot-autoconfigure,exomiser-spring-boot-starter clean install -DskipTests=true
-      - run: mvn dependency:go-offline
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: exomiser-{{ checksum "pom.xml" }}
+#      - restore_cache:
+#          key: exomiser-{{ checksum "pom.xml" }}
+#      - run: mvn clean install -DskipTests=true
+#      - run: mvn dependency:go-offline
+#      - save_cache:
+#          paths:
+#            - ~/.m2
+#          key: exomiser-{{ checksum "pom.xml" }}
       - run: mvn install
       - run: mvn sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
       - store_test_results:
