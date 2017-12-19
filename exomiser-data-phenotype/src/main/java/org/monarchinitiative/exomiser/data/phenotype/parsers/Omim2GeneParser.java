@@ -42,12 +42,12 @@ import java.util.Set;
 
 /**
  * ResourceParser for the pheno2gene.txt file which produces the omim2gene.pg dump file,
- assuming you want to call them that.
- *
+ * assuming you want to call them that.
+ * <p>
  * The parser expects a file of the format:
  * <pre>
  * Warburg micro syndrome|600118|10p12.1|Warburg micro syndrome 3|3|614222|RAB18, WARBM3|602207|22931|RAB18
- * </pre> 
+ * </pre>
  * We are interested in the following fields.
  * <ol>
  * <li> Warburg micro syndrome: name of the phenoseries
@@ -64,7 +64,7 @@ import java.util.Set;
  * <li> Gene symbol of the Entrez Gene entry (should match one of the items in
  * field 7).
  * </ol>
- *
+ * <p>
  * and produces a pipe delimited file of this format:
  * <pre>
  * 614222|Warburg micro syndrome 3|10p12.1|602207|22931|RAB18|600118
@@ -126,8 +126,8 @@ public class Omim2GeneParser implements ResourceParser {
                     logger.debug("diseaseId {} has already been mapped to phenoseries: {}. Skipping diseaseId: {} MIM gene: {} {} location: {} name:{}", mimDiseaseId, seriesId, mimDiseaseId, mimGeneId, geneSymbol, cytoBand, mimDiseaseName);
                 } else {
                     uniqueSeriesIds.add(uniqueSeriesId);
-                    logger.debug(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId , mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
-                    writer.write(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId , mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
+                    logger.debug(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId, mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
+                    writer.write(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId, mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
                 }
             }
             status = ResourceOperationStatus.SUCCESS;

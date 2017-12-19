@@ -193,7 +193,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
         return variantEvaluation -> {
-            if (variantEvaluation.isNonCodingVariant()){
+            if (variantEvaluation.isNonCodingVariant()) {
                 geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
             }
             return variantEvaluation;

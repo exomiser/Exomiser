@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import java.nio.file.Path;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface ResourceParser {

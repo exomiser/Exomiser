@@ -98,7 +98,7 @@ public class MorbidMapParser implements ResourceParser {
         Set<String> seen = new HashSet<>();
 
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
             String line;
             // expected format
@@ -209,22 +209,22 @@ public class MorbidMapParser implements ResourceParser {
         /**
          * MIM Id for a gene corresponding to the phenotype entry
          */
-        private final  int omimGeneId;
+        private final int omimGeneId;
         /**
          * Name of the disease corresponding to the phenotype entry
          */
-        private final  String diseaseName;
+        private final String diseaseName;
         /**
          * NCBI Entrez Gene ID corresponding to the gene entry.
          */
-        private final  int entrezGeneId;
+        private final int entrezGeneId;
         /**
          * One of: 'N', non-disease; 'S', susceptibility to multifactorial
          * disorders, '?' an unconfirmed or possibly spurious mapping; 'C', a
          * chromosome deletion or duplication syndrome, or 'D', default, a
          * Mendelian disease.
          */
-        private final  String diseaseType;
+        private final String diseaseType;
         /**
          * One of 'D' for autosomal Dominant, 'R' for autosomal recessive, 'B'
          * for both D and R, 'X' for X chromosomal, and 'U' for unknown.
@@ -245,7 +245,8 @@ public class MorbidMapParser implements ResourceParser {
          * database of the Exomizer for OMIM associations.
          */
         String dumpLine() {
-            return String.format("OMIM:%d|OMIM:%d|%s|%d|%s|%s%n", diseaseId, omimGeneId, diseaseName, entrezGeneId, diseaseType, inheritanceMode.getInheritanceCode());
+            return String.format("OMIM:%d|OMIM:%d|%s|%d|%s|%s%n", diseaseId, omimGeneId, diseaseName, entrezGeneId, diseaseType, inheritanceMode
+                    .getInheritanceCode());
         }
 
     }

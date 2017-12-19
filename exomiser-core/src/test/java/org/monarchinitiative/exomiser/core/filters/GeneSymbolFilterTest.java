@@ -37,7 +37,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneSymbolFilterTest {
@@ -63,7 +62,7 @@ public class GeneSymbolFilterTest {
         GeneSymbolFilter instance = new GeneSymbolFilter(genesToKeep);
         assertThat(instance.getGeneSymbols(), equalTo(genesToKeep));
     }
-    
+
     @Test
     public void testGetFilterType() {
         GeneSymbolFilter instance = new GeneSymbolFilter(Collections.emptySet());
@@ -78,7 +77,7 @@ public class GeneSymbolFilterTest {
         FilterTestHelper.assertPassed(filterResult);
         assertThat(filterResult.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }
-    
+
     @Test
     public void testRunFilterOnVariantWithUnWantedGeneIdFailsFilter() {
         GeneSymbolFilter instance = geneSymbolFilter(WANTED_GENE_SYMBOL);
@@ -107,5 +106,5 @@ public class GeneSymbolFilterTest {
         GeneSymbolFilter instance = geneSymbolFilter("ABC1");
         assertThat(instance.toString(), equalTo("GeneSymbolFilter{genesToKeep=[ABC1]}"));
     }
-    
+
 }

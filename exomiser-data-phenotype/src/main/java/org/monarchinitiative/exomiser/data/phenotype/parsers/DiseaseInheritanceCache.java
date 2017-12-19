@@ -61,7 +61,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
         hpoInheritanceCodes = setUpHpoInheritanceCodes();
     }
 
-    private Map<String,InheritanceMode> setUpHpoInheritanceCodes() {
+    private Map<String, InheritanceMode> setUpHpoInheritanceCodes() {
         Map map = new HashMap<>();
         //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not
         //really unknown, but vague enough.
@@ -80,23 +80,23 @@ public class DiseaseInheritanceCache implements ResourceParser {
 
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
-        
+
         Path phenotypeAnnotationFile = inDir.resolve(resource.getExtractedFileName());
-        
+
         ResourceOperationStatus status = setUpCache(phenotypeAnnotationFile);
-        
+
         resource.setParseStatus(status);
         logger.info("{}", status);
     }
 
-    
+
     /**
      * Get an appropriate inheritance code for the disease represented by
      * phenID. Note that we return the code for somatic mutation only if AR and
      * AD and X are not true. The same is for polygenic.
-     * 
+     * <p>
      * Ensure that the parseResource() method has been successfully called before
-     * trying to 
+     * trying to
      *
      * @param diseaseId
      * @return
@@ -114,6 +114,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
     public boolean isEmpty() {
         return diseaseInheritanceModeMap == null || diseaseInheritanceModeMap.isEmpty();
     }
+
     /**
      * Parse the file "phenotype_annotation.tab" in order to get the modes of
      * inheritance that match the diseases. Skip lines that do not refer to OMIM
@@ -130,7 +131,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
         //getInheritanceMode is called before the cache is initialised. 
         //In which case a nullPointer will be thrown.
         diseaseInheritanceModeMap = new HashMap<>();
-        
+
         Charset charSet = Charset.forName("UTF-8");
         try (
                 BufferedReader br = Files.newBufferedReader(inFile, charSet)) {
@@ -187,8 +188,8 @@ public class DiseaseInheritanceCache implements ResourceParser {
             logger.error("Tried using Charset: {}", charSet);
             logger.error("Could not read phenotype_annotation.tab file from {}", inFile, ex);
             return ResourceOperationStatus.FAILURE;
-        } 
-        
+        }
+
         logger.debug(diseaseInheritanceModeMap.toString());
         return ResourceOperationStatus.SUCCESS;
     }

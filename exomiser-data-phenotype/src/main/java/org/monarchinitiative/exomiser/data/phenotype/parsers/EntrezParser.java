@@ -47,8 +47,8 @@ public class EntrezParser implements ResourceParser {
      * This function does the actual work of parsing the Entrez data.
      *
      * @param resource Resource containing the information about
-     * @param inDir Directory path to string file.
-     * @param outDir Directory where output file is to be written
+     * @param inDir    Directory path to string file.
+     * @param outDir   Directory where output file is to be written
      */
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {

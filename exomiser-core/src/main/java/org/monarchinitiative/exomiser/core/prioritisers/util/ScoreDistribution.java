@@ -60,11 +60,11 @@ public class ScoreDistribution {
 
         double rounded = round(score, roundFactor);
 
-		/* maybe this value is too high */
+        /* maybe this value is too high */
         if (scores[scores.length - 1] < rounded)
             return (double) 1 / numberRandomizations;
 
-		/* init with 1 */
+        /* init with 1 */
         double pvalue = 1;
 
         for (int i = 0; i < scores.length; i++) {

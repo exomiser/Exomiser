@@ -131,7 +131,7 @@ public class HiPhiveProteinInteractionScorer {
         resulted in a self-hit being returned with a PPI score of 0.5+0.7=1.2 and also lots of
         low-scoring (0.5) PPI hits to 50640 for other genes with no PPI match
          */
-        if (columnIndex == -1){
+        if (columnIndex == -1) {
             return GeneMatch.NO_HIT;
         }
 

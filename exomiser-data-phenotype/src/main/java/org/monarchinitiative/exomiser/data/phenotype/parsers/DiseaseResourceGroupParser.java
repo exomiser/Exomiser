@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -57,7 +56,8 @@ public class DiseaseResourceGroupParser extends AbstractResourceGroupParser impl
 
         //Check everything is present before trying to parse them
         if (!requiredResourcesPresent(resourceGroup)) {
-            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup
+                    .getName());
             return;
         }
 
