@@ -70,23 +70,20 @@ jobs:
         # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
         - v1-dep-
     # This is based on your 1.0 configuration file or project settings
-#    - run: mvnw install -DskipTests=true
-    - run: mvn -pl exomiser-core clean install -DskipTests=true
+    - run: mvn -pl exomiser-core install -DskipTests=true
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ epoch }}
         paths:
-        # This is a broad list of cache paths to include many possible development environments
         - ~/.m2
         - ~/.gradle
     # Test
     #   This would typically be a build job when using workflows, possibly combined with build
     # This is based on your 1.0 configuration file or project settings
-#    - run: git fetch --unshallow
-    - run: mvn test
+    - run: mvn package
     # This is based on your 1.0 configuration file or project settings
-    - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+    #- run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    #- run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - run: mvn sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
     # Teardown
     #   If you break your build into multiple jobs with workflows, you will probably want to do the parts of this that are relevant in each
