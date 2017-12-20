@@ -31,7 +31,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.springframework.boot.test.context.SpringBootTest.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -40,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
-@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class}, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class})
 public class SubmitJobControllerTest {
 
     @Autowired
