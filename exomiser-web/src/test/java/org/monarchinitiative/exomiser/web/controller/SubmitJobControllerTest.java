@@ -45,7 +45,6 @@ public class SubmitJobControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Ignore
     @Test
     public void submitJobControllerGetReturnsOkStatusAndSubmitPage() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/submit"))
