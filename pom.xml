@@ -230,10 +230,8 @@
                 <version>0.7.9</version>
                 <configuration>
                     <excludes>
-                        <!--		 Application starter
-                        <exclude>ac/simons/biking2/Application.class</exclude>
-                         Configuration
-                        <exclude>ac/simons/biking2/config/*</exclude>			-->
+                        <exclude>**/resources/**</exclude>
+                        <exclude>**/assemble/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
