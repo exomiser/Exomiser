@@ -6,20 +6,20 @@ jobs:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-#      - image: circleci/openjdk:8-jdk
-      - image: circleci/jdk8:0.1.1
+      - image: circleci/openjdk:8-jdk
+#      - image: circleci/jdk8:0.1.1
     steps:
       - checkout
-      - run: chmod +x mvnw
+#      - run: chmod +x mvnw
       - restore_cache:
           key: exomiser-{{ checksum "pom.xml" }}
-      - run: ./mvnw clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      - run: mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       - save_cache:
           paths:
             - ~/.m2
           key: exomiser-{{ checksum "pom.xml" }}
-      - run: ./mvnw test -B
-      - run: ./mvnw sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+      - run: mvn test -B
+      - run: mvn sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
