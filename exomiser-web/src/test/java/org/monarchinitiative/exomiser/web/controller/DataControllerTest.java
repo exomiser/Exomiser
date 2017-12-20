@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.web.controller;
 
 import config.TestDaoConfig;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
@@ -28,13 +27,10 @@ import org.monarchinitiative.exomiser.web.ExomiserWebApp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,21 +40,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @RunWith(SpringRunner.class)
+@AutoConfigureMockMvc
 @SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class, TestDaoConfig.class})
 public class DataControllerTest {
 
-    private MockMvc mockMvc;
-
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @Before
-    public void setUp() {
-        //We have to reset our mock between tests because the mock objects
-        //are managed by the Spring container. If we would not reset them,
-        //stubbing and verified behavior would "leak" from one test to another.
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-    }
+    private MockMvc mockMvc;
 
     private void assertOneGruffaloDiseaseOptionIsReturned(String inputTerm) throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/disease?term=%s", inputTerm)))
