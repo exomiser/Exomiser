@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
     }
 
     private Map<String, InheritanceMode> setUpHpoInheritanceCodes() {
-        Map map = new HashMap<>();
+        Map<String, InheritanceMode> map = new HashMap<>();
         //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not
         //really unknown, but vague enough.
         map.put("HP:0000005", InheritanceMode.UNKNOWN);
@@ -102,13 +102,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
      * @return
      */
     public InheritanceMode getInheritanceMode(Integer diseaseId) {
-        InheritanceMode inheritanceMode = diseaseInheritanceModeMap.get(diseaseId);
-        //maybe the disease hasn't been annotated so expect a null
-        if (inheritanceMode == null) {
-            inheritanceMode = InheritanceMode.UNKNOWN;
-        }
-
-        return inheritanceMode;
+        return diseaseInheritanceModeMap.getOrDefault(diseaseId, InheritanceMode.UNKNOWN);
     }
 
     public boolean isEmpty() {
@@ -143,18 +137,15 @@ public class DiseaseInheritanceCache implements ResourceParser {
             //from the HPO annotations in the file
             List<InheritanceMode> inheritanceModes = new ArrayList<>();
             //and store them in this intermediate map
-            Map<Integer, List<InheritanceMode>> intermadiateDiseaseInheritanceMap = new HashMap<>();
+            Map<Integer, List<InheritanceMode>> intermediateDiseaseInheritanceMap = new HashMap<>();
             //so let's parse...
             while ((line = br.readLine()) != null) {
-                //System.out.println(line);
                 String[] fields = line.split("\t");
-                if (fields[3].equals("NOT")) {
+                if (fields[1].equals("OMIM") || fields[3].equals("NOT")) {
                     continue;
                 }
-                if (fields[1].equals("OMIM"))
-                    continue;
-                fields[1] = fields[1].replace(" ", "");
-                Integer currentDiseaseId = Integer.parseInt(fields[1]);
+                String diseaseIdToken = fields[1].replace(" ", "");
+                Integer currentDiseaseId = Integer.parseInt(diseaseIdToken);
                 //first line will have a null diseaseId
                 if (diseaseId == null) {
                     diseaseId = currentDiseaseId;
@@ -163,7 +154,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
                 //we've reached the end of this current set of disease annotations
                 if (!currentDiseaseId.equals(diseaseId)) {
                     //add the current disease and HPO annotations
-                    intermadiateDiseaseInheritanceMap.put(diseaseId, inheritanceModes);
+                    intermediateDiseaseInheritanceMap.put(diseaseId, inheritanceModes);
                     //reset the counters for the next set of disease annotations
                     diseaseId = currentDiseaseId;
                     inheritanceModes = new ArrayList<>();
@@ -171,16 +162,16 @@ public class DiseaseInheritanceCache implements ResourceParser {
                 //get the hpo term
                 String hpoTerm = fields[4];
                 //only add the known inheritance mode
-                InheritanceMode currentInheritance = hpoInheritanceCodes.getOrDefault(hpoTerm, InheritanceMode.UNKNOWN); //InheritanceMode.valueOfHpoTerm(hpoTerm);
+                InheritanceMode currentInheritance = hpoInheritanceCodes.getOrDefault(hpoTerm, InheritanceMode.UNKNOWN);
                 if (currentInheritance != InheritanceMode.UNKNOWN) {
                     inheritanceModes.add(currentInheritance);
                 }
             }
             //remember to add the final disease
-            intermadiateDiseaseInheritanceMap.put(diseaseId, inheritanceModes);
+            intermediateDiseaseInheritanceMap.put(diseaseId, inheritanceModes);
             //now we have the map of all diseases and theirt annotations we're going to extract the 
             //relevant inheritance modes and store these in the cache.
-            diseaseInheritanceModeMap = finaliseInheritanceModes(intermadiateDiseaseInheritanceMap);
+            diseaseInheritanceModeMap = finaliseInheritanceModes(intermediateDiseaseInheritanceMap);
         } catch (FileNotFoundException ex) {
             logger.error("Could not find phenotype_annotation.tab file at location {}", inFile, ex);
             return ResourceOperationStatus.FILE_NOT_FOUND;
@@ -190,7 +181,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
             return ResourceOperationStatus.FAILURE;
         }
 
-        logger.debug(diseaseInheritanceModeMap.toString());
+        logger.debug("{}", diseaseInheritanceModeMap);
         return ResourceOperationStatus.SUCCESS;
     }
 
@@ -219,7 +210,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
 
             //now decide the inheritance - this ordering is important as mainly
             //we're interested in whether the disease is dominant or recessive in order to 
-            //check wether the observed inheritance patterns of the exome sequences match
+            //check whether the observed inheritance patterns of the exome sequences match
             //that of the known disease.
             if (isDominant && isRecessive) {
                 inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
