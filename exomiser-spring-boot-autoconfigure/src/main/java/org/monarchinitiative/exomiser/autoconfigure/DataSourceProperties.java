@@ -48,10 +48,6 @@ public class DataSourceProperties {
      */
     private String password;
 
-    public DataSourceProperties() {
-        //
-    }
-
     public String getDriverClassName() {
         return driverClassName;
     }

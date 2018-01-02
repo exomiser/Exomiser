@@ -24,9 +24,6 @@ public class VcfFileOptionMarshallerTest {
     
     VcfFileOptionMarshaller instance;
     
-    public VcfFileOptionMarshallerTest() {
-    }
-    
     @Before
     public void setUp() {
         instance = new VcfFileOptionMarshaller();

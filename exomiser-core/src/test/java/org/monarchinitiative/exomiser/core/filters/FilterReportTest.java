@@ -48,10 +48,6 @@ public class FilterReportTest {
     private static final int FAILED = 345;
     private static final String MESSAGE = "hello";
 
-
-    public FilterReportTest() {
-    }
-
     @Before
     public void setUp() {
         instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);

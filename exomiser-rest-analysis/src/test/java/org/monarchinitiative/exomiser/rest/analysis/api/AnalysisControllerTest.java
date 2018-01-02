@@ -110,9 +110,6 @@ public class AnalysisControllerTest {
 
     @JsonComponent
     public class MyModule extends SimpleModule {
-        public MyModule() {
-            super();
-        }
 
         @Override
         public void setupModule(SetupContext context) {

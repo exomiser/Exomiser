@@ -104,9 +104,6 @@ public class SettingsTest {
     private static final String OUTPUT_PREFIX_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
-    
-    public SettingsTest() {
-    }
 
     @Before
     public void setUp() {

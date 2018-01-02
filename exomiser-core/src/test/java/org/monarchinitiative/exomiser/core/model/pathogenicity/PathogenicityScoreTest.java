@@ -41,15 +41,7 @@ import static org.junit.Assert.assertThat;
  * @author jj8
  */
 public class PathogenicityScoreTest {
-    
-    public PathogenicityScoreTest() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
 
-    
     @Test
     public void testComparableOnlySiftScores() {
         SiftScore mostPathogenic = SiftScore.valueOf(0.001f);
