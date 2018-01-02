@@ -23,10 +23,7 @@ package org.monarchinitiative.exomiser.core.phenotype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class implementing the Phenodigm (PHENOtype comparisons for DIsease Genes and Models) algorithm for scoring the
@@ -118,10 +115,9 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
             if (matches.isEmpty()) {
                 logger.info("{}-NOT MATCHED", queryTerm.getId());
             } else {
-                PhenotypeMatch bestMatch = matches.stream()
+                matches.stream()
                         .max(Comparator.comparingDouble(PhenotypeMatch::getScore))
-                        .get();
-                logger.info("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
+                        .ifPresent(bestMatch -> logger.info("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
             }
         }
         QueryPhenotypeMatch organismQueryPhenotypeMatch = organismPhenotypeMatcher.getQueryPhenotypeMatch();
