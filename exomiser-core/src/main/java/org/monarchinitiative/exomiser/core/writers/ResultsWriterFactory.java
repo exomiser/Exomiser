@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ import org.thymeleaf.TemplateEngine;
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 @Component
-public class ResultsWriterFactory implements ResultsWriter {
+public class ResultsWriterFactory {
 
     private final TemplateEngine coreTemplateEngine;
 
@@ -71,13 +71,4 @@ public class ResultsWriterFactory implements ResultsWriter {
         }
     }
 
-    @Override
-    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-
-    }
-
-    @Override
-    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        return null;
-    }
 }
