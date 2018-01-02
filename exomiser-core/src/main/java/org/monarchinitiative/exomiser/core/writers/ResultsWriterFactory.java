@@ -26,8 +26,6 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
