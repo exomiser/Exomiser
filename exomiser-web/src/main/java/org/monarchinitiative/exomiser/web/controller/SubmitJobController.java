@@ -206,8 +206,7 @@ public class SubmitJobController {
 
     private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
-        AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder();
-        analysisBuilder
+        AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder()
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
@@ -239,7 +238,7 @@ public class SubmitJobController {
             analysisBuilder.addIntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
         }
         //Keep off-target variants:
-        if (keepOffTarget == false) {
+        if (!keepOffTarget) {
             analysisBuilder.addVariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS);
         }
         //Minimum variant call quality:
