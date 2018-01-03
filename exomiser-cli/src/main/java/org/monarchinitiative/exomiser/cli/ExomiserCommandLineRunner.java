@@ -22,7 +22,9 @@ package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.*;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.*;
+import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisParser;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.monarchinitiative.exomiser.core.writers.ResultsWriter;
@@ -47,14 +49,10 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCommandLineRunner.class);
 
     @Autowired
-    private CommandLineOptionsParser commandLineOptionsParser;
-    @Autowired
     private Options options;
 
     @Autowired
     private AnalysisParser analysisParser;
-    @Autowired
-    private SettingsParser settingsParser;
     @Autowired
     private Exomiser exomiser;
     @Autowired
@@ -94,21 +92,6 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
                 runAnalysisFromScript(analysis);
             });
         }
-        //check the args for a batch file first as this option is otherwise ignored
-        else if (commandLine.hasOption("batch-file")) {
-            Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-            List<Path> settingsFiles = BatchFileReader.readPathsFromBatchFile(batchFilePath);
-            logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
-            for (Path settingsFile : settingsFiles) {
-                logger.info("Running settings: {}", settingsFile);
-                Settings settings = commandLineOptionsParser.parseSettingsFile(settingsFile);
-                runAnalysisFromSettings(settings);
-            }
-        } else {
-            //make a single SettingsBuilder
-            Settings settings = commandLineOptionsParser.parseCommandLine(commandLine);
-            runAnalysisFromSettings(settings);
-        }
     }
 
     private CommandLine parseCommandLineOptions(String[] args) {
@@ -135,13 +118,6 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         Analysis analysis = analysisParser.parseAnalysis(analysisScript);
         OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
         runAnalysisAndWriteResults(analysis, outputSettings);
-    }
-
-    private void runAnalysisFromSettings(Settings settings) {
-        if (settings.isValid()) {
-            Analysis analysis = settingsParser.parse(settings);
-            runAnalysisAndWriteResults(analysis, settings);
-        }
     }
 
     private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
