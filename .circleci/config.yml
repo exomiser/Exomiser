@@ -34,3 +34,4 @@ jobs:
           path: /tmp/circleci-artifacts
       - store_artifacts:
           path: /tmp/circleci-test-results
+      - run: bash <(curl -s https://codecov.io/bash)
