@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -65,7 +65,6 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        logger.info("Exomiser running...");
         if (strings.length == 0) {
             logger.error("Please supply some command line arguments - none found");
             printHelpAndExit();
@@ -74,6 +73,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         if (commandLine.hasOption("help")) {
             printHelpAndExit();
         }
+        logger.info("Exomiser running...");
         runAnalyses(commandLine);
     }
 
@@ -83,7 +83,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             runAnalysisFromScript(analysisScript);
         } else if (commandLine.hasOption("analysis-batch")) {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
-            List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+            List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
             //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //like this:
@@ -97,7 +97,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         //check the args for a batch file first as this option is otherwise ignored
         else if (commandLine.hasOption("batch-file")) {
             Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-            List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
+            List<Path> settingsFiles = BatchFileReader.readPathsFromBatchFile(batchFilePath);
             logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
             for (Path settingsFile : settingsFiles) {
                 logger.info("Running settings: {}", settingsFile);
