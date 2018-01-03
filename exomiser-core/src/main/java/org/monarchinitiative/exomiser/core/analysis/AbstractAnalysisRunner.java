@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -256,7 +256,11 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             Gene gene = allGenes.get(variantEvaluation.getGeneSymbol());
-            gene.addVariant(variantEvaluation);
+            if (gene != null) {
+                // It is possible that the gene could be null if no filters have been run and the variant isn't assigned
+                // to a known gene (gene symbol  is '.')
+                gene.addVariant(variantEvaluation);
+            }
         }
     }
 
