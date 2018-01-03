@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,13 +24,8 @@ import org.monarchinitiative.exomiser.autoconfigure.genome.GenomeAnalysisService
 import org.monarchinitiative.exomiser.autoconfigure.phenotype.PrioritiserAutoConfiguration;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
-import org.monarchinitiative.exomiser.core.analysis.SettingsParser;
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -48,10 +43,4 @@ import org.springframework.context.annotation.Import;
 @ComponentScan(basePackageClasses = {Exomiser.class}, basePackages = {"org.monarchinitiative.exomiser.core.analysis"})
 public class ExomiserAutoConfiguration {
 
-    //TODO: This is a hack in order to wire this up in the interim - probably going to remove this class as its no longer used.
-    // Alternatively add genomeAssembly to Settings and fix this properly.
-    @Bean
-    public SettingsParser settingsParser(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
-        return new SettingsParser(priorityFactory, genomeAnalysisServiceProvider.get(GenomeAssembly.HG19));
-    }
 }

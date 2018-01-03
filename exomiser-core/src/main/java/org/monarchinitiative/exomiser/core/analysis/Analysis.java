@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,10 +45,10 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * This class is analogous to the {@link Settings} class, although the key difference is that an Analysis allows an the
- * excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
+ * This class allows an the excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
  *
- * Creation of an Analysis is *strongly* recommended to be done via an {@link AnalysisBuilder} obtained from an {@link AnalysisFactory}.
+ * Creation of an Analysis is *strongly* recommended to be done via an {@link AnalysisBuilder} obtained from an
+ * {@link AnalysisFactory} or the {@link org.monarchinitiative.exomiser.core.Exomiser} class.
  * Not doing so will likely result in incorrect/meaningless results.
  * 
  * @since 7.0.0

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,55 +58,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
         this.priorityService = priorityService;
         this.randomWalkMatrix = randomWalkMatrix;
         this.phenixDataDirectory = phenixDataDirectory;
-    }
-
-    /**
-     * Returns a Prioritiser of the given type, ready to run according to the
-     * settings provided. Will return a non-functional prioritiser in cases
-     * where the type is not recognised.
-     *
-     * @param settings
-     * @return
-     */
-    @Override
-    public Prioritiser makePrioritiser(PrioritiserSettings settings) {
-        PriorityType priorityType = settings.getPrioritiserType();
-        List<Integer> entrezSeedGenes = settings.getSeedGeneList();
-        String diseaseId = settings.getDiseaseId();
-        String candidateGene = settings.getCandidateGene();
-        String hiPhiveParams = settings.getHiPhiveParams();
-
-        switch (priorityType) {
-            case OMIM_PRIORITY:
-                return makeOmimPrioritiser();
-            case PHENIX_PRIORITY:
-                return makePhenixPrioritiser();
-            case HIPHIVE_PRIORITY:
-                HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
-                        .diseaseId(diseaseId)
-                        .candidateGeneSymbol(candidateGene)
-                        .runParams(hiPhiveParams)
-                        .build();
-                return makeHiPhivePrioritiser(hiPhiveOptions);
-            case PHIVE_PRIORITY:
-                return makePhivePrioritiser();
-            case EXOMEWALKER_PRIORITY:
-                return makeExomeWalkerPrioritiser(entrezSeedGenes);
-            case NONE:
-                return new NoneTypePrioritiser();
-            default:
-                logger.warn("Prioritiser: '{}' not supported. Returning '{}' type", priorityType, PriorityType.NONE);
-                return new NoneTypePrioritiser();
-        }
-
-    }
-
-    @Override
-    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        if (diseaseId == null || diseaseId.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
     @Override
