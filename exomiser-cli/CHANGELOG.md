@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 10.0.0 2018...
+- Deprecated extended cli options as these were less capable than the analysis file.
+
 ## 9.0.0 2017-12-12
 - Exomiser can now analyse hg19 or hg38 samples - see ```application.properties``` for setup details.
 - Analysis file has new ```genomeAssembly:``` field - see example ```.yml``` files. Will default to hg19 if not specified.
