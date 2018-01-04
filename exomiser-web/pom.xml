@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.0</version>
+        <version>10.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -41,17 +41,6 @@
         <h2.dir>${data.dir}</h2.dir>
         <warName>exomiser</warName>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>sanger</id>
-            <properties>
-                <data.dir>/www/data/exomiser</data.dir>
-                <h2.dir>/www/data/exomiser/data</h2.dir>
-                <warName>resources#software#exomiser</warName>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
