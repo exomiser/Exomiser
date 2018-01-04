@@ -1,5 +1,12 @@
 # The Exomiser - Core Library Changelog
 
+## 10.0.0 2018...
+API breaking changes:
+- Removed previously deprecated ```Settings``` and ```SettingsParser``` classes - this was only used by the cli which was also removed.
+- Removed unused ```PrioritiserSettings``` and ```PrioritiserSettingsImpl``` classes - these were only used by the ```SettingsParser```
+- Removed unused ```PrioritiserFactory.makePrioritiser(PrioritiserSettings settings)``` method - this was only used by the ```SettingsParser```
+- Removed unused ```PrioritiserFactory.getHpoIdsForDiseaseId(String diseaseId)``` method. This duplicated/called ```PriorityService.getHpoIdsForDiseaseId(String diseaseId)```
+
 ## 9.0.0 2017-12-12
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
 - Maven groupId changed from root ```org.monarchinitiative``` to more specific ```org.monarchinitiative.exomiser```.

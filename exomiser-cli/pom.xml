@@ -1,7 +1,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -26,12 +26,13 @@
     <packaging>jar</packaging>
 
     <name>exomiser-cli</name>
-    <url>http://maven.apache.org</url>
+    <description>Exomiser command-line interface</description>
+    <url>https://github.com/exomiser/Exomiser</url>
 
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.0</version>
+        <version>10.0.0-SNAPSHOT</version>
     </parent>
   
     <properties>

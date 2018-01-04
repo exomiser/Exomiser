@@ -21,7 +21,7 @@ jobs:
       - run: ./mvnw sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
-      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
       #Save jars
       - run: mkdir -p $CIRCLE_ARTIFACTS/
       - run: find . -type f -regex ".*/target/exomiser.*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
@@ -34,3 +34,4 @@ jobs:
           path: /tmp/circleci-artifacts
       - store_artifacts:
           path: /tmp/circleci-test-results
+      - run: bash <(curl -s https://codecov.io/bash)

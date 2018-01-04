@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,16 +33,6 @@ import java.util.List;
  */
 public interface PriorityFactory {
 
-    /**
-     * Returns a Prioritiser of the given type, ready to run according to the
-     * settings provided. Will return a non-functional prioritiser in cases
-     * where the type is not recognised.
-     *
-     * @param settings
-     * @return
-     */
-    Prioritiser makePrioritiser(PrioritiserSettings settings);
-
     OMIMPriority makeOmimPrioritiser();
 
     PhenixPriority makePhenixPrioritiser();
@@ -53,5 +43,4 @@ public interface PriorityFactory {
 
     HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
 
-    List<String> getHpoIdsForDiseaseId(String diseaseId);
 }
