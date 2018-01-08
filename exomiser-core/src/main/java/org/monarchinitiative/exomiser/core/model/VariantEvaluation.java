@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -238,6 +238,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * @return a String such as chr6:g.29911092G>T
      */
+//    SPDI?
     public String getHgvsGenome() {
         return chr + ":g." + pos + ref + ">" + alt;
     }
@@ -246,24 +247,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         // collect genotype string list
         List<String> gtStrings = new ArrayList<>();
         for (Genotype gt : variantContext.getGenotypes()) {
-            boolean firstAllele = true;
-            StringBuilder builder = new StringBuilder();
+            StringJoiner genotypeStringJoiner = new StringJoiner("/");
             for (Allele allele : gt.getAlleles()) {
-                if (firstAllele) {
-                    firstAllele = false;
-                } else {
-                    builder.append('/');
-                }
-
                 if (allele.isNoCall()) {
-                    builder.append('.');
+                    genotypeStringJoiner.add(".");
                 } else if (allele.equals(variantContext.getAlternateAllele(altAlleleId))) {
-                    builder.append('1');
+                    genotypeStringJoiner.add("1");
                 } else {
-                    builder.append('0');
+                    genotypeStringJoiner.add("0");
                 }
             }
-            gtStrings.add(builder.toString());
+            gtStrings.add(genotypeStringJoiner.toString());
         }
 
         // normalize 1/0 to 0/1 and join genotype strings with colon
