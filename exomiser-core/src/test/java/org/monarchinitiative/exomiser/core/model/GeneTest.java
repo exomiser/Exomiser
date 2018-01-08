@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -420,7 +420,7 @@ public class GeneTest {
 
     @Test
     public void canSetAndGetInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
 
         instance.setInheritanceModes(inheritanceModes);
 
@@ -429,14 +429,15 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-                ModeOfInheritance.X_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
 
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
         assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(true));
@@ -444,13 +445,14 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithDominantInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(false));
@@ -458,13 +460,14 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithRecessiveInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(false));
         assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(false));
@@ -472,14 +475,30 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithXRecessiveInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
 
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
+        assertThat(instance.isConsistentWithX(), is(true));
+    }
+
+    @Test
+    public void isConsistentWithXDominantInheritanceModes() {
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_DOMINANT);
+
+        instance.setInheritanceModes(inheritanceModes);
+
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }

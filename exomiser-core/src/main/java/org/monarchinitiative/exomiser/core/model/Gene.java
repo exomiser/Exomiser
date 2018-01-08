@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -268,7 +268,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @JsonIgnore
     public boolean isCompatibleWithRecessive() {
-        return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE) || inheritanceModes.contains(ModeOfInheritance.X_RECESSIVE);
     }
 
     /**
@@ -277,7 +277,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @JsonIgnore
     public boolean isCompatibleWithDominant() {
-        return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_DOMINANT) || inheritanceModes.contains(ModeOfInheritance.X_DOMINANT);
     }
 
     /**
@@ -286,7 +286,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @JsonIgnore
     public boolean isConsistentWithX() {
-        return inheritanceModes.contains(ModeOfInheritance.X_RECESSIVE);
+        return inheritanceModes.contains(ModeOfInheritance.X_RECESSIVE) || inheritanceModes.contains(ModeOfInheritance.X_DOMINANT);
     }
 
     /**
