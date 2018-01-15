@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -89,7 +89,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.23</jannovar.version>
+        <jannovar.version>0.24</jannovar.version>
         <guava.version>22.0</guava.version>
         <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
     </properties>
