@@ -7,7 +7,7 @@ analysis:
     vcf: examples/Pfeiffer-quartet.vcf.gz
     ped: examples/Pfeiffer-quartet.ped
     proband: ISDBM322017
-    # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE, X_DOMINANT or UNDEFINED
+    # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE, X_DOMINANT, MITOCHONDRIAL or UNDEFINED
     modeOfInheritance: AUTOSOMAL_DOMINANT
     #FULL, SPARSE or PASS_ONLY
     analysisMode: PASS_ONLY
