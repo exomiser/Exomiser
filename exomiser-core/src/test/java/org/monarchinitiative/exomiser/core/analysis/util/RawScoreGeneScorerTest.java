@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -193,13 +193,13 @@ public class RawScoreGeneScorerTest {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //Classical recessive inheritance mode
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(1));
+        Genotype proband = buildUnPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(1));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildUnPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildUnPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
