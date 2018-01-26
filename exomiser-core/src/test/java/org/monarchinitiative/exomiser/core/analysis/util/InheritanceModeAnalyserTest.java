@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -56,6 +56,10 @@ import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactor
  */
 public class InheritanceModeAnalyserTest {
 
+    private Gene newGene() {
+        return new Gene("ABC", 123);
+    }
+
     @Test
     public void testAnalyseInheritanceModes_SingleSample_NoVariants() {
         Gene gene = newGene();
@@ -86,7 +90,7 @@ public class InheritanceModeAnalyserTest {
     public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HET() {
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
-        Genotype genotype = buildSampleGenotype("Adam", alleles.get(0), alleles.get(1));
+        Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(1));
         assertThat(genotype.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
@@ -110,7 +114,7 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //HomRef 0/0 or 0|0 variants really shouldn't be causing rare diseases so we need to ensure these are removed
-        Genotype genotype = buildSampleGenotype("Adam", alleles.get(0), alleles.get(0));
+        Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(0));
         assertThat(genotype.getType(), equalTo(GenotypeType.HOM_REF));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
@@ -133,7 +137,7 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //HomRef 0/0 or 0|0 variants really shouldn't be causing rare diseases so we need to ensure these are removed
-        Genotype genotype = buildSampleGenotype("Adam", alleles.get(0), alleles.get(0));
+        Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(0));
         assertThat(genotype.getType(), equalTo(GenotypeType.HOM_REF));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
@@ -158,7 +162,7 @@ public class InheritanceModeAnalyserTest {
     public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HOM_VAR() {
         List<Allele> alleles = buildAlleles("A", "T");
         //HOM_ALT
-        Genotype genotype = buildSampleGenotype("Adam", alleles.get(1), alleles.get(1));
+        Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(1));
         assertThat(genotype.getType(), equalTo(GenotypeType.HOM_VAR));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
@@ -185,13 +189,13 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(1));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(1));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
@@ -220,13 +224,13 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(0), alleles.get(0));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(0), alleles.get(0));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_REF));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
@@ -255,13 +259,13 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(0), alleles.get(1));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(0), alleles.get(1));
         assertThat(proband.getType(), equalTo(GenotypeType.HET));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(0));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(0));
         assertThat(mother.getType(), equalTo(GenotypeType.HOM_REF));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(0), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HOM_REF));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
@@ -290,13 +294,13 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(2), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(2), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
@@ -337,13 +341,13 @@ public class InheritanceModeAnalyserTest {
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(2), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(2), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(1), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(1), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(0));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
@@ -379,19 +383,20 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HET));
 
-        Genotype brother = buildSampleGenotype("Abel", alleles.get(1), alleles.get(1));
+        Genotype brother = buildPhasedSampleGenotype("Abel", alleles.get(1), alleles.get(1));
         assertThat(brother.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        Genotype father = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(1));
         assertThat(father.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
+//        VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         System.out.println("Built variant context " + variantContext);
 
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
@@ -402,6 +407,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+//        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(ModeOfInheritance.AUTOSOMAL_DOMINANT, pedigree);
         instance.analyseInheritanceModes(gene);
@@ -412,21 +418,17 @@ public class InheritanceModeAnalyserTest {
         gene.getPassedVariantEvaluations()
                 .forEach(variant -> {
                     System.out.println(variantString(variant));
+                    System.out.println(variant);
                     assertThat(variant.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
                 });
     }
-
-    private Gene newGene() {
-        return new Gene("ABC", 123);
-    }
-
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
@@ -455,7 +457,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HET));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
@@ -484,7 +486,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(2), alleles.get(2));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(2), alleles.get(2));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
@@ -513,7 +515,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(1));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(1));
         assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
@@ -538,19 +540,19 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testFindCompHetCompatibleAllelesTwoAffectedSibsUnaffectedMotherhMissingFater() {
+    public void testFindCompHetCompatibleAllelesTwoAffectedSibsUnaffectedMotherhMissingFather() {
         Gene gene = newGene();
 
         //1 98518687 . T A 733 . GT 1|0 1|0 1|0
         List<Allele> alleles = buildAlleles("T", "A");
 
-        Genotype proband = buildSampleGenotype("Cain", alleles.get(0), alleles.get(1));
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(0), alleles.get(1));
         assertThat(proband.getType(), equalTo(GenotypeType.HET));
 
-        Genotype brother = buildSampleGenotype("Abel", alleles.get(0), alleles.get(1));
+        Genotype brother = buildPhasedSampleGenotype("Abel", alleles.get(0), alleles.get(1));
         assertThat(brother.getType(), equalTo(GenotypeType.HET));
 
-        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype mother = buildPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
         assertThat(mother.getType(), equalTo(GenotypeType.HET));
 
         VariantContext vc98518687 = buildVariantContext(1, 98518687, alleles, proband, brother, mother);
@@ -561,13 +563,13 @@ public class InheritanceModeAnalyserTest {
         //1 98518683 . T A 733 . GT 1|0 1|0 1|0
         List<Allele> alleles98518683 = buildAlleles("T", "A");
 
-        Genotype proband98518683 = buildSampleGenotype("Cain", alleles98518683.get(0), alleles98518683.get(1));
+        Genotype proband98518683 = buildPhasedSampleGenotype("Cain", alleles98518683.get(0), alleles98518683.get(1));
         assertThat(proband98518683.getType(), equalTo(GenotypeType.HET));
 
-        Genotype brother98518683 = buildSampleGenotype("Abel", alleles98518683.get(0), alleles98518683.get(1));
+        Genotype brother98518683 = buildPhasedSampleGenotype("Abel", alleles98518683.get(0), alleles98518683.get(1));
         assertThat(brother98518683.getType(), equalTo(GenotypeType.HET));
 
-        Genotype mother98518683 = buildSampleGenotype("Eve", alleles98518683.get(0), alleles98518683.get(1));
+        Genotype mother98518683 = buildPhasedSampleGenotype("Eve", alleles98518683.get(0), alleles98518683.get(1));
         assertThat(mother98518683.getType(), equalTo(GenotypeType.HET));
 
         VariantContext vc98518683 = buildVariantContext(1, 98518683, alleles98518683, proband98518683, brother98518683, mother98518683);
@@ -578,13 +580,13 @@ public class InheritanceModeAnalyserTest {
         //1 97723020 . A G 1141 . GT 1/0 0/0 1/0
         List<Allele> alleles97723020 = buildAlleles("A", "G");
 
-        Genotype proband97723020 = buildSampleGenotype("Cain", alleles97723020.get(0), alleles97723020.get(1));
+        Genotype proband97723020 = buildPhasedSampleGenotype("Cain", alleles97723020.get(0), alleles97723020.get(1));
         assertThat(proband97723020.getType(), equalTo(GenotypeType.HET));
 
-        Genotype brother97723020 = buildSampleGenotype("Abel", alleles97723020.get(0), alleles97723020.get(1));
+        Genotype brother97723020 = buildPhasedSampleGenotype("Abel", alleles97723020.get(0), alleles97723020.get(1));
         assertThat(brother97723020.getType(), equalTo(GenotypeType.HET));
 
-        Genotype mother97723020 = buildSampleGenotype("Eve", alleles97723020.get(0), alleles97723020.get(0));
+        Genotype mother97723020 = buildPhasedSampleGenotype("Eve", alleles97723020.get(0), alleles97723020.get(0));
         assertThat(mother97723020.getType(), equalTo(GenotypeType.HOM_REF));
 
         VariantContext vc97723020 = buildVariantContext(1, 97723020, alleles97723020, proband97723020, brother97723020, mother97723020);
