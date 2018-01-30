@@ -86,10 +86,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private boolean contributesToGeneScore = false;
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
-    //bit of an orphan variable - look into refactoring this
-    @JsonIgnore
-    private List<String> mutationRefList = null;
-
     private VariantEvaluation(Builder builder) {
         genomeAssembly = builder.genomeAssembly;
         chr = builder.chr;
