@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -78,7 +78,7 @@ public class AnalysisBuilderTest {
 
         //These are specified in a non-functional order.
         analysisBuilder.hpoIds(hpoIds)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .addPriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.501f)
                 .addPhivePrioritiser()
                 .addOmimPrioritiser()
@@ -136,13 +136,19 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAnalysisBuilderModeOfInheritance_default() {
-        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
+        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(EnumSet.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT,
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.X_DOMINANT,
+                ModeOfInheritance.X_RECESSIVE,
+                ModeOfInheritance.MITOCHONDRIAL
+        )));
     }
 
     @Test
     public void testAnalysisBuilderModeOfInheritance() {
-        analysisBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        analysisBuilder.modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
     }
 
     @Test
@@ -305,7 +311,7 @@ public class AnalysisBuilderTest {
     @Test
     public void testAddInheritanceModeFilter() {
         ModeOfInheritance autosomalDominant = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        analysisBuilder.modeOfInheritance(autosomalDominant);
+        analysisBuilder.modeOfInheritance(EnumSet.of(autosomalDominant));
         analysisBuilder.addInheritanceFilter();
         assertThat(buildAndGetSteps(), equalTo(singletonList(new InheritanceFilter(autosomalDominant))));
     }
@@ -326,7 +332,7 @@ public class AnalysisBuilderTest {
 
         analysisBuilder.hpoIds(hpoIds)
                 .genomeAssembly(GenomeAssembly.HG19)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .analysisMode(AnalysisMode.FULL)
                 .frequencySources(frequencySources)
                 .pathogenicitySources(pathogenicitySources)
@@ -337,7 +343,7 @@ public class AnalysisBuilderTest {
 
         Analysis analysis = analysisBuilder.build();
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getModeOfInheritance(), equalTo(Collections.singleton(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));

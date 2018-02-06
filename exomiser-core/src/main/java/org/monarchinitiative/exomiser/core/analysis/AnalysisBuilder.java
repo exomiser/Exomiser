@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -57,7 +57,7 @@ public class AnalysisBuilder {
 
     //Sample-related variables
     private List<String> hpoIds = new ArrayList<>();
-    private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
+    private Set<ModeOfInheritance> modesOfInheritance = EnumSet.of(ModeOfInheritance.ANY);
     //Source-data-related variables
     private GenomeAnalysisService genomeAnalysisService;
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -104,9 +104,9 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
-        builder.modeOfInheritance(modeOfInheritance);
+    public AnalysisBuilder modeOfInheritance(Set<ModeOfInheritance> modeOfInheritance) {
+        this.modesOfInheritance = Sets.immutableEnumSet(modeOfInheritance);
+        builder.modeOfInheritance(this.modesOfInheritance);
         return this;
     }
 
@@ -209,11 +209,11 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addInheritanceFilter() {
-        if (modeOfInheritance == ModeOfInheritance.ANY) {
-            logger.info("Not adding an inheritance filter for {} mode of inheritance", modeOfInheritance);
+        if (modesOfInheritance == null || modesOfInheritance.isEmpty() || modesOfInheritance.equals(InheritanceFilter.JUST_ANY)) {
+            logger.info("Not adding an inheritance filter for {} mode of inheritance", modesOfInheritance);
             return this;
         }
-        analysisSteps.add(new InheritanceFilter(modeOfInheritance));
+        analysisSteps.add(new InheritanceFilter(modesOfInheritance));
         return this;
     }
 

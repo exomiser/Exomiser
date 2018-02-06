@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,13 +26,13 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.collect.Lists;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.*;
@@ -48,10 +48,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.thymeleaf.TemplateEngine;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,11 +59,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ThymeleafConfig.class)
 public class HtmlResultsWriterTest {
 
     private HtmlResultsWriter instance;
@@ -79,9 +72,6 @@ public class HtmlResultsWriterTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    @Autowired
-    private TemplateEngine templateEngine;
-
     private String testOutFilePrefix;
 
     private VariantEvaluation unAnnotatedVariantEvaluation1;
@@ -92,8 +82,8 @@ public class HtmlResultsWriterTest {
 
     @Before
     public void setUp() {
-        instance = new HtmlResultsWriter(templateEngine);
-        
+        instance = new HtmlResultsWriter();
+
         TestVariantFactory varFactory = new TestVariantFactory();
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
@@ -111,8 +101,10 @@ public class HtmlResultsWriterTest {
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariantEvaluation);
 
-        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
-        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList()));
+        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections
+                .emptyList()));
+        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections
+                .emptyList()));
 
         unAnnotatedVariantEvaluation1 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         unAnnotatedVariantEvaluation2 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
@@ -137,10 +129,10 @@ public class HtmlResultsWriterTest {
 
         Analysis analysis = Analysis.builder().build();
         AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), Collections.emptyList());
-       
+
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
 
@@ -148,7 +140,7 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData_AD.html").toString();
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
@@ -156,7 +148,7 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
@@ -164,7 +156,7 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes_AD.html").toString();
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
@@ -173,7 +165,7 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         Files.readAllLines(testOutFile).forEach(System.out::println);
 
@@ -196,7 +188,34 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        String output = instance.writeString(analysis, analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+
+        Path testOutFile = Paths.get(testOutFilePrefix);
+        assertFalse(output.isEmpty());
+        assertTrue(testOutFile.toFile().exists());
+    }
+
+    @Test
+    public void testWriteTemplateWithFullDataAndFullAnalysis() throws Exception {
+        testOutFilePrefix = tmpFolder.newFile("testWrite").toString();
+
+        unAnnotatedVariantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
+
+        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
+        AnalysisResults analysisResults = buildAnalysisResults(genes, variants);
+
+        Analysis analysis = Analysis.builder()
+                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .addStep(new RegulatoryFeatureFilter())
+                .addStep(new FrequencyFilter(0.1f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
+                .build();
+
+        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
+
+        String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertFalse(output.isEmpty());

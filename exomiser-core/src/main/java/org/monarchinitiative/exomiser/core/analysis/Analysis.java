@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.*;
 
+import static de.charite.compbio.jannovar.mendel.ModeOfInheritance.*;
+
 /**
  * This class allows an the excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
  *
@@ -60,6 +62,8 @@ public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
 
+    public static final Set<ModeOfInheritance> DEFAULT_INHERITANCE_MODES = Sets.immutableEnumSet(AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE, X_DOMINANT, MITOCHONDRIAL);
+    
     //Store the path of the file used to create this data.
     @JsonProperty("vcf")
     private final Path vcfPath;
@@ -73,7 +77,7 @@ public class Analysis {
 
     //these are more optional variables
     private final List<String> hpoIds;
-    private final ModeOfInheritance modeOfInheritance;
+    private final Set<ModeOfInheritance> modeOfInheritance;
 
     private final AnalysisMode analysisMode;
     private final Set<FrequencySource> frequencySources;
@@ -86,7 +90,7 @@ public class Analysis {
         this.pedPath = builder.pedPath;
         this.probandSampleName = builder.probandSampleName;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
-        this.modeOfInheritance = builder.modeOfInheritance;
+        this.modeOfInheritance = Sets.immutableEnumSet(builder.modeOfInheritance);
 
         this.analysisMode = builder.analysisMode;
         this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
@@ -110,7 +114,7 @@ public class Analysis {
         return probandSampleName;
     }
 
-    public ModeOfInheritance getModeOfInheritance() {
+    public Set<ModeOfInheritance> getModeOfInheritance() {
         return modeOfInheritance;
     }
 
@@ -222,7 +226,7 @@ public class Analysis {
         private String probandSampleName = "";
         //these are more optional variables
         private List<String> hpoIds = new ArrayList<>();
-        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
+        private Set<ModeOfInheritance> modeOfInheritance = DEFAULT_INHERITANCE_MODES;
 
         private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
         private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -263,7 +267,12 @@ public class Analysis {
             return this;
         }
 
-        public Builder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
+        public Builder modeOfInheritance(ModeOfInheritance... modeOfInheritance) {
+            this.modeOfInheritance = Sets.immutableEnumSet(Arrays.asList(modeOfInheritance));
+            return this;
+        }
+
+        public Builder modeOfInheritance(Set<ModeOfInheritance> modeOfInheritance) {
             this.modeOfInheritance = modeOfInheritance;
             return this;
         }

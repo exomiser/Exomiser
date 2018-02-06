@@ -49,7 +49,15 @@ public class InheritanceModeAnnotator {
         this.mendelChecker = new MendelianInheritanceChecker(pedigree);
     }
 
-    //TODO: add wrapper methods to check gene compatibility and passed variants only before calling this method.
+    /**
+     * This method will check the supplied list of {@link VariantEvaluation} against the pedigree supplied in the class
+     * constructor to determine the modes of inheritance with which the variants are compatible. It does not alter the
+     * input objects. It is expected that the input variants have been pre-filtered, failure to do so will result in
+     * overly-long computation time and potentially incorrect analyses.
+     *
+     * @param variantEvaluations a pre-filtered list of variants
+     * @return a map of inheritance modes and the variants which are compatible with them
+     */
     public Map<ModeOfInheritance, List<VariantEvaluation>> computeCompatibleInheritanceModes(List<VariantEvaluation> variantEvaluations) {
         List<GenotypeCalls> genotypeCalls = buildGenotypeCalls(variantEvaluations);
         try {
@@ -78,6 +86,15 @@ public class InheritanceModeAnnotator {
         return Collections.emptyMap();
     }
 
+    /**
+     * This method will check the supplied list of {@link VariantEvaluation} against the pedigree supplied in the class
+     * constructor to determine the sub-modes of inheritance with which the variants are compatible. It does not alter the
+     * input objects. It is expected that the input variants have been pre-filtered, failure to do so will result in
+     * overly-long computation time and potentially incorrect analyses.
+     *
+     * @param variantEvaluations a pre-filtered list of variants
+     * @return a map of sub-inheritance modes and the variants which are compatible with them
+     */
     public Map<SubModeOfInheritance, List<VariantEvaluation>> computeCompatibleInheritanceSubModes(List<VariantEvaluation> variantEvaluations) {
         List<GenotypeCalls> genotypeCalls = buildGenotypeCalls(variantEvaluations);
         try {

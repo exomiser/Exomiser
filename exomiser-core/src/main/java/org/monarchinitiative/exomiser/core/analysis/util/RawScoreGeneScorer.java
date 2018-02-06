@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,9 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -36,8 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Class for scoring Genes according to their phenotype similarity to the proband, the filtered variants and the
@@ -48,21 +52,22 @@ import java.util.function.Predicate;
 public class RawScoreGeneScorer implements GeneScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(RawScoreGeneScorer.class);
+    private static final EnumSet<ModeOfInheritance> JUST_ANY = EnumSet.of(ModeOfInheritance.ANY);
 
     private final int probandSampleId;
-    private final ModeOfInheritance modeOfInheritance;
+    private final Set<ModeOfInheritance> inheritanceModes;
 
-    private final InheritanceModeAnalyser inheritanceModeAnalyser;
+    private final CompHetChecker compHetChecker;
 
     /**
      * @param probandSampleId   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
-     * @param modeOfInheritance Inheritance mode which the genes should be scored for.
+     * @param inheritanceModes  Inheritance modes which the genes should be scored for.
      * @param pedigree          Pedigree containing the proband - either a single sample pedigree or the proband and their family.
      */
-    public RawScoreGeneScorer(int probandSampleId, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+    public RawScoreGeneScorer(int probandSampleId, Set<ModeOfInheritance> inheritanceModes, Pedigree pedigree) {
         this.probandSampleId = probandSampleId;
-        this.modeOfInheritance = modeOfInheritance;
-        this.inheritanceModeAnalyser = new InheritanceModeAnalyser(ModeOfInheritance.AUTOSOMAL_RECESSIVE, pedigree);
+        this.inheritanceModes = inheritanceModes;
+        this.compHetChecker = new CompHetChecker(pedigree);
     }
 
     /**
@@ -75,21 +80,136 @@ public class RawScoreGeneScorer implements GeneScorer {
      * is taken.
      */
     @Override
-    public Consumer<Gene> scoreGene() {
-        //Should change to Function<Gene, Map<ModeOfInheritance, Float>> or return a GeneScore containing scores for the inheritance modes?
+    public Function<Gene, List<GeneScore>> scoreGene() {
         return gene -> {
-            //It is critical only the PASS variants are used in the scoring
-            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations());
-            gene.setVariantScore(variantScore);
 
             float priorityScore = calculateGenePriorityScore(gene);
-            gene.setPriorityScore(priorityScore);
 
-            float combinedScore = calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults().keySet());
-            gene.setCombinedScore(combinedScore);
+            //Handle the scenario where no inheritance mode-dependent step was run
+            if (inheritanceModes.isEmpty() || inheritanceModes.equals(JUST_ANY)) {
+                List<VariantEvaluation> contributingVariants = findNonAutosomalRecessiveContributingVariants(ModeOfInheritance.ANY, gene.getPassedVariantEvaluations());
+                GeneScore geneScore = calculateGeneScore(gene, priorityScore, ModeOfInheritance.ANY, contributingVariants);
+                logger.debug("{}", geneScore);
+                return ImmutableList.of(geneScore);
+            }
+
+            List<GeneScore> geneScores = new ArrayList<>();
+            for (ModeOfInheritance modeOfInheritance : inheritanceModes) {
+                //It is critical only the PASS variants are used in the scoring
+                List<VariantEvaluation> contributingVariants = findContributingVariantsForInheritanceMode(modeOfInheritance, gene.getPassedVariantEvaluations());
+                GeneScore geneScore = calculateGeneScore(gene, priorityScore, modeOfInheritance, contributingVariants);
+                logger.debug("{}", geneScore);
+                geneScores.add(geneScore);
+            }
+
+            return geneScores;
         };
     }
 
+    private GeneScore calculateGeneScore(Gene gene, float priorityScore, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants) {
+        float variantScore = (float) contributingVariants.stream()
+                .mapToDouble(VariantEvaluation::getVariantScore)
+                .average()
+                .orElse(0);
+
+        float combinedScore = calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults().keySet());
+
+        return GeneScore.builder()
+                .geneIdentifier(gene.getGeneIdentifier())
+                .modeOfInheritance(modeOfInheritance)
+                .variantScore(variantScore)
+                .phenotypeScore(priorityScore)
+                .combinedScore(combinedScore)
+                .contributingVariants(contributingVariants)
+                .build();
+    }
+
+    /**
+     * Calculates the total priority score for the {@code VariantEvaluation} of
+     * the gene. Note that for assumed autosomal recessive variants, the mean of the worst two variants scores is
+     * taken, and for other modes of inheritance, the worst (highest numerical) value is taken.
+     * <P>
+     * Note that we <b>cannot assume that genes have been filtered for mode of
+     * inheritance before this function is called. This means that we
+     * need to apply separate filtering for mode of inheritance here</b>. We also
+     * need to watch out for is whether a variant is homozygous or
+     * not (for autosomal recessive inheritance, these variants get counted
+     * twice).
+     */
+    private List<VariantEvaluation> findContributingVariantsForInheritanceMode(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
+        List<VariantEvaluation> variantsCompatibleWithMode = variantEvaluations.stream()
+                .filter(variantEvaluation -> variantEvaluation.isCompatibleWith(modeOfInheritance))
+                .collect(toList());
+        //note these need to be filtered for the relevant ModeOfInheritance before being checked for the contributing variants
+        if (variantsCompatibleWithMode.isEmpty()) {
+            return Collections.emptyList();
+        }
+        switch(modeOfInheritance) {
+            case AUTOSOMAL_RECESSIVE:
+            case X_RECESSIVE:
+                return findAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+            default:
+                return findNonAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+        }
+
+    }
+
+    private List<VariantEvaluation> findAutosomalRecessiveContributingVariants(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Optional<CompHetPair> bestCompHetPair = compHetChecker.findCompatibleCompHetAlleles(variantEvaluations).stream()
+                .map(pair -> new CompHetPair(pair.get(0), pair.get(1)))
+                .max(Comparator.comparing(CompHetPair::getScore));
+
+        Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
+                .filter(variantIsHomozygousAlt(probandSampleId))
+                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
+
+        // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
+        // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
+        double bestCompHetScore = bestCompHetPair
+                .map(CompHetPair::getScore)
+                .orElse(0.0);
+
+        double bestHomAltScore = bestHomozygousAlt
+                .map(VariantEvaluation::getVariantScore)
+                .orElse(0f);
+
+        double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
+
+        if (BigDecimal.valueOf(bestScore).equals(BigDecimal.valueOf(bestCompHetScore)) && bestCompHetPair.isPresent()) {
+           CompHetPair compHetPair = bestCompHetPair.get();
+           compHetPair.setContributesToGeneScoreUnderMode(modeOfInheritance);
+           logger.debug("Top scoring comp het: {}", compHetPair);
+
+           return bestCompHetPair.get().getAlleles();
+        } else if (bestHomozygousAlt.isPresent()){
+            VariantEvaluation topHomAlt = bestHomozygousAlt.get();
+            topHomAlt.setContributesToGeneScoreUnderMode(modeOfInheritance);
+            logger.debug("Top scoring hom alt het: {}", topHomAlt);
+
+            return ImmutableList.of(topHomAlt);
+        }
+        return Collections.emptyList();
+    }
+
+    private List<VariantEvaluation> findNonAutosomalRecessiveContributingVariants(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
+        Optional<VariantEvaluation> bestVariant = variantEvaluations
+                .stream()
+                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
+
+        bestVariant.ifPresent(variantEvaluation -> variantEvaluation.setContributesToGeneScoreUnderMode(modeOfInheritance));
+
+        return bestVariant.map(Collections::singletonList).orElseGet(Collections::emptyList);
+    }
+
+    private Predicate<VariantEvaluation> variantIsHomozygousAlt(int sampleId) {
+        // can be replaced by native exomiser API using the VariantContextSampleGenotypeConverter, but will require the
+        // sample name instead of the id
+        return ve -> ve.getVariantContext().getGenotype(sampleId).isHomVar();
+    }
 
     /**
      * Calculates the total priority score for the {@code VariantEvaluation} of
@@ -103,20 +223,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      * only thing we need to watch out for is whether a variant is homozygous or
      * not (for autosomal recessive inheritance, these variants get counted
      * twice).
-     *
-     * @param variantEvaluations from a gene
-     * @return
      */
-    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.isEmpty()) {
-            return 0f;
-        }
-        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(variantEvaluations);
-        }
-        return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
-    }
-
     private float calculateGenePriorityScore(Gene gene) {
         //TODO #194 - this is broken as the Gene priority results are almost never empty as OMIM is typically always run.
         // If a gene has only got an OMIM prioritiser result and the result of this is the default 1.0 the gene will score top. If run in conjunction with a second prioritiser
@@ -148,95 +255,27 @@ public class RawScoreGeneScorer implements GeneScorer {
     /**
      * Calculate the combined score of this gene based on the relevance of the
      * gene (priorityScore) and the predicted effects of the variants
-     * (filterScore).
+     * (variantScore).
      * <P>
      * Note that this method assumes we have already calculated the filter and variant scores.
      *
      */
-    private float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
+    private float calculateCombinedScore(float variantScore, float priorityScore, Set<PriorityType> prioritiesRun) {
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
         if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
-            double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * filterScore)));
+            double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
             return (float) logitScore;
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
             //NB this is based on raw walker score
-            double logitScore = 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * filterScore)));
+            double logitScore = 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * variantScore)));
             return (float) logitScore;
         } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
-            double logitScore = 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * filterScore)));
+            double logitScore = 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * variantScore)));
             return (float) logitScore;
         } else {
-            return (priorityScore + filterScore) / 2f;
+            return (priorityScore + variantScore) / 2f;
         }
-    }
-
-    /**
-     * For assumed autosomal recessive variants, this method calculates the mean
-     * of the worst(highest numerical) two variants. Requires the sampleId so that the correct inheritance pattern is
-     * calculated for the proband alleles.
-     */
-    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-
-        if (variantEvaluations.isEmpty()) {
-            return 0f;
-        }
-
-        Optional<CompHetPair> bestCompHetPair = inheritanceModeAnalyser.findCompatibleCompHetAlleles(variantEvaluations)
-                .stream()
-                .map(pair -> new CompHetPair(pair.get(0), pair.get(1)))
-                .max(Comparator.comparing(CompHetPair::getScore));
-
-        Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt(probandSampleId))
-                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
-
-        // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
-        // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
-        double bestCompHetScore = bestCompHetPair
-                .map(CompHetPair::getScore)
-                .orElse(0.0);
-
-        double bestHomAltScore = bestHomozygousAlt
-                .map(VariantEvaluation::getVariantScore)
-                .orElse(0f);
-
-        double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
-
-        if (BigDecimal.valueOf(bestScore).equals(BigDecimal.valueOf(bestCompHetScore))) {
-            bestCompHetPair.ifPresent(CompHetPair::setAsContributingToGeneScore);
-        } else {
-            bestHomozygousAlt.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
-        }
-
-        return (float) bestScore;
-    }
-    
-    private Predicate<VariantEvaluation> variantIsHomozygousAlt(int sampleId) {
-        return ve -> ve.getVariantContext().getGenotype(sampleId).isHomVar();
-    }
-
-    private Predicate<VariantEvaluation> variantIsHeterozygous(int sampleId) {
-        return ve -> ve.getVariantContext().getGenotype(sampleId).isHet();
-    }
-
-    /**
-     * For other variants with non-autosomal recessive modes of inheritance, the
-     * most deleterious variant (highest numerical variantScore value) is taken.
-     *
-     * @param variantEvaluations
-     * @return
-     */
-    private float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        //Otherwise for non-autosomal recessive, there is just one heterozygous mutation
-        //thus return only the single highest score.
-        Optional<VariantEvaluation> bestVariant = variantEvaluations
-                .stream()
-                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
-
-        bestVariant.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
-
-        return bestVariant.map(VariantEvaluation::getVariantScore).orElse(0f);
     }
 
     /**
@@ -264,12 +303,23 @@ public class RawScoreGeneScorer implements GeneScorer {
             return score;
         }
 
-        void setAsContributingToGeneScore() {
+        List<VariantEvaluation> getAlleles() {
+            List<VariantEvaluation> alleles = new ArrayList<>();
+            if (null != allele1) {
+                alleles.add(allele1);
+            }
+            if (null != allele2) {
+                alleles.add(allele2);
+            }
+            return alleles;
+        }
+
+        void setContributesToGeneScoreUnderMode(ModeOfInheritance modeOfInheritance) {
             if (allele1 != null) {
-                allele1.setAsContributingToGeneScore();
+                allele1.setContributesToGeneScoreUnderMode(modeOfInheritance);
             }
             if (allele2 != null) {
-                allele2.setAsContributingToGeneScore();
+                allele2.setContributesToGeneScoreUnderMode(modeOfInheritance);
             }
         }
 

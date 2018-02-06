@@ -46,6 +46,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -91,7 +92,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         int probandSampleId = SampleNameChecker.getProbandSampleId(probandSampleName, sampleNames);
 
         Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames);
-        ModeOfInheritance modeOfInheritance = analysis.getModeOfInheritance();
+        Set<ModeOfInheritance> inheritanceModes = analysis.getModeOfInheritance();
 
         logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSampleName, probandSampleId + 1, sampleNames);
         Instant timeStart = Instant.now();
@@ -115,7 +116,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, modeOfInheritance);
+                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, inheritanceModes);
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -131,7 +132,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         logger.info("Scoring genes");
-        GeneScorer geneScorer = new RawScoreGeneScorer(probandSampleId, modeOfInheritance, pedigree);
+        GeneScorer geneScorer = new RawScoreGeneScorer(probandSampleId, inheritanceModes, pedigree);
         List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()));
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
@@ -286,15 +287,22 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+    private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, Pedigree pedigree, Set<ModeOfInheritance> inheritanceModes) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
-                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritance);
+                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, inheritanceModes);
                 inheritanceModesCalculated = true;
             }
             runStep(analysisStep, hpoIds, genes);
         }
+    }
+
+    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, Set<ModeOfInheritance> inheritanceModes) {
+        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", inheritanceModes);
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(inheritanceModes, pedigree);
+        inheritanceModeAnalyser.analyseInheritanceModes(genes);
+        //could add the OmimPrioritiser in here too - it requires the InheritanceModes in order to run correctly, as does the GeneScorer
     }
 
     private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
@@ -319,13 +327,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             logger.info("Running Prioritiser: {}", prioritiser);
             prioritiser.prioritizeGenes(hpoIds, genes);
         }
-    }
-
-    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(modeOfInheritance, pedigree);
-        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
-        inheritanceModeAnalyser.analyseInheritanceModes(genes);
-        //could add the OmimPrioritiser in here too - it requires the InheritanceModes in order to run correctly, as does the GeneScorer
     }
 
     /**

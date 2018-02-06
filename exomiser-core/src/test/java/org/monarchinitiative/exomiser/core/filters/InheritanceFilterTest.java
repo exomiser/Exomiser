@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -44,6 +45,7 @@ public class InheritanceFilterTest {
 
     private Gene compatibleWithAutosomalDominant;
     private Gene compatibleWithAutosomalRecessive;
+    private Gene compatibleWithAutosomalDominantAndRecessive;
     private Gene compatibleWithXLinked;
 
     @Before
@@ -55,22 +57,23 @@ public class InheritanceFilterTest {
         compatibleWithAutosomalRecessive = new Gene("mockGeneId", 12345);
         compatibleWithAutosomalRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
+        compatibleWithAutosomalDominantAndRecessive = new Gene("mockGeneId", 12345);
+        compatibleWithAutosomalDominantAndRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
         compatibleWithXLinked = new Gene("mockGeneId", 12345);
         compatibleWithXLinked.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
     }
 
     @Test
     public void testGetModeOfInheritance() {
-        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        Set<ModeOfInheritance> desiredInheritanceMode = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
-        assertThat(instance.getModeOfInheritance(), equalTo(desiredInheritanceMode));
+        assertThat(instance.getCompatibleModes(), equalTo(desiredInheritanceMode));
     }
     
     @Test
-    public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
-
-        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.ANY;
-        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
+    public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnspecified() {
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.ANY));
         
         FilterResult filterResult = instance.runFilter(compatibleWithAutosomalRecessive);
 
@@ -78,8 +81,17 @@ public class InheritanceFilterTest {
     }
 
     @Test
+    public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsEmpty() {
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.noneOf(ModeOfInheritance.class));
+
+        FilterResult filterResult = instance.runFilter(compatibleWithAutosomalRecessive);
+
+        assertThat(filterResult.wasRun(), is(false));
+    }
+
+    @Test
     public void testFilterGenePasses() {
-        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalDominant);
 
@@ -87,8 +99,35 @@ public class InheritanceFilterTest {
     }
 
     @Test
+    public void testFilterGenePassesAllInheritanceModes() {
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        FilterResult filterResult = inheritanceFilter.runFilter(compatibleWithAutosomalDominantAndRecessive);
+
+        FilterTestHelper.assertPassed(filterResult);
+    }
+
+    @Test
+    public void testFilterGenePassesOneOfTheInheritanceModes() {
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        FilterResult filterResult = inheritanceFilter.runFilter(compatibleWithAutosomalDominant);
+
+        FilterTestHelper.assertPassed(filterResult);
+    }
+
+    @Test
+    public void testFilterGeneFailsTheInheritanceModes() {
+        InheritanceFilter recessiveFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        FilterResult filterResult = recessiveFilter.runFilter(compatibleWithAutosomalDominant);
+
+        FilterTestHelper.assertFailed(filterResult);
+    }
+
+    @Test
     public void testFilterGeneFails() {
-        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalRecessive);
 
@@ -97,15 +136,15 @@ public class InheritanceFilterTest {
 
     @Test
     public void testGetFilterType() {
-        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
         assertThat(instance.getFilterType(), equalTo(FilterType.INHERITANCE_FILTER));
     }
 
     @Test
     public void testHashCode() {
-        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
-        InheritanceFilter other = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.X_DOMINANT));
+        InheritanceFilter other = new InheritanceFilter(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
@@ -113,7 +152,8 @@ public class InheritanceFilterTest {
     @Test
     public void testEquals() {
         InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        InheritanceFilter otherDominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter otherDominantFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
 
         assertThat(dominantFilter.equals(otherDominantFilter), is(true));
 
@@ -121,8 +161,8 @@ public class InheritanceFilterTest {
 
     @Test
     public void testNotEquals() {
-        InheritanceFilter recessiveFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter recessiveFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        InheritanceFilter dominantFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         assertThat(recessiveFilter.equals(dominantFilter), is(false));
 
@@ -130,7 +170,7 @@ public class InheritanceFilterTest {
 
     @Test
     public void testNotEqualOtherObject() {
-        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         String string = "string";
         assertThat(instance.equals(string), is(false));
         assertThat(string.equals(instance), is(false));
@@ -139,17 +179,16 @@ public class InheritanceFilterTest {
     
     @Test
     public void testNotEqualNull() {
-        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        Object object = null;
-        
-        assertThat(instance.equals(object), is(false));
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        assertThat(instance.equals(null), is(false));
     }
     
     @Test
     public void testToString() {
-        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
-        assertThat(instance.toString(), equalTo("Inheritance filter: ModeOfInheritance=AUTOSOMAL_RECESSIVE"));
+        assertThat(instance.toString(), equalTo("InheritanceFilter{compatibleModes=[AUTOSOMAL_RECESSIVE]}"));
     }
 
 }

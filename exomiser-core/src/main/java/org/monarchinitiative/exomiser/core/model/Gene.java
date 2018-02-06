@@ -22,6 +22,8 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
@@ -66,7 +68,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "combinedScore", "variantScore", "priorityScore", "inheritanceModes", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "geneScores", "inheritanceModes", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
@@ -78,28 +80,13 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private final Set<FilterType> passedFilterTypes = new LinkedHashSet<>();
     private final Map<FilterType, FilterResult> filterResults = new EnumMap<>(FilterType.class);
 
-    /**
-     * A priority score between 0 (irrelevant) and an arbitrary number (highest
-     * prediction for a disease gene) reflecting the predicted relevance of this
-     * gene for the disease under study by exome sequencing.
-     */
-    private float priorityScore = 0f;
-
-    /**
-     * A score representing the combined pathogenicity predictions for the
-     * {@link Variant} objects associated with this gene.
-     */
-    private float variantScore = 0f;
-    /**
-     * A score representing the combined filter and priority scores.
-     */
-    private float combinedScore = 0f;
+    private GeneScore topGeneScore;
+    private final Map<ModeOfInheritance, GeneScore> geneScoreMap = new EnumMap<>(ModeOfInheritance.class);
 
     private final Map<PriorityType, PriorityResult> priorityResultsMap = new EnumMap<>(PriorityType.class);
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
     private final GeneIdentifier geneIdentifier;
-
     private final String geneSymbol;
     private final int entrezGeneId;
 
@@ -117,6 +104,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
         this.geneSymbol = geneIdentifier.getGeneSymbol();
         this.entrezGeneId = geneIdentifier.getEntrezIdAsInteger();
+
+        this.topGeneScore = GeneScore.builder().geneIdentifier(geneIdentifier).build();
     }
 
     /**
@@ -249,7 +238,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public void setInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
-        this.inheritanceModes = inheritanceModes;
+        this.inheritanceModes = Sets.immutableEnumSet(inheritanceModes);
     }
 
     /**
@@ -259,7 +248,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @Override
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
-        return inheritanceModes.contains(modeOfInheritance);
+        return modeOfInheritance == ModeOfInheritance.ANY || inheritanceModes.contains(modeOfInheritance);
     }
 
     /**
@@ -329,8 +318,43 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the map of {@code PriorityResult} objects that represent the
      * result of filtering
      */
+    @JsonIgnore
     public Map<PriorityType, PriorityResult> getPriorityResults() {
         return priorityResultsMap;
+    }
+
+    public synchronized void addGeneScore(GeneScore geneScore) {
+        geneScoreMap.put(geneScore.getModeOfInheritance(), geneScore);
+        topGeneScore = maxCombinedScore(topGeneScore, geneScore);
+    }
+
+    private GeneScore maxCombinedScore(GeneScore topGeneScore, GeneScore geneScore) {
+        float maxCombinedScore = Math.max(topGeneScore.getCombinedScore(), geneScore.getCombinedScore());
+        return (Float.compare(maxCombinedScore, topGeneScore.getCombinedScore()) == 0) ? topGeneScore : geneScore;
+    }
+
+    public GeneScore getTopGeneScore() {
+        return topGeneScore;
+    }
+
+    public List<GeneScore> getGeneScores() {
+        return ImmutableList.copyOf(geneScoreMap.values());
+    }
+
+    public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
+        return geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.builder()
+                .geneIdentifier(this.geneIdentifier)
+                .modeOfInheritance(modeOfInheritance)
+                .build()
+        );
+    }
+
+    /**
+     * Gets the priority score for the gene.
+     *
+     */
+    public float getPriorityScore() {
+        return topGeneScore.getPhenotypeScore();
     }
 
     /**
@@ -339,33 +363,28 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a score that will be used to rank the gene.
      */
-    public float getPriorityScore() {
-        return priorityScore;
+    public float getPriorityScoreForMode(ModeOfInheritance modeOfInheritance) {
+        GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
+        return geneScore.getPhenotypeScore();
     }
 
     /**
-     * Sets the priority score for the gene.
-     *
-     * @param score
+     * Get the variant score for the gene.
      */
-    public void setPriorityScore(float score) {
-        priorityScore = score;
+    public float getVariantScore() {
+        return topGeneScore.getVariantScore();
     }
 
     /**
      * @return a variant score that will be used to rank the gene.
      */
-    public float getVariantScore() {
-        return this.variantScore;
+    public float getVariantScoreForMode(ModeOfInheritance modeOfInheritance) {
+        GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
+        return geneScore.getVariantScore();
     }
 
-    /**
-     * Set the variant score for the gene.
-     *
-     * @param variantScore
-     */
-    public void setVariantScore(float variantScore) {
-        this.variantScore = variantScore;
+    public float getCombinedScore() {
+        return topGeneScore.getCombinedScore();
     }
 
     /**
@@ -374,12 +393,9 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a combined score that will be used to rank the gene.
      */
-    public float getCombinedScore() {
-        return combinedScore;
-    }
-
-    public void setCombinedScore(float combinedScore) {
-        this.combinedScore = combinedScore;
+    public float getCombinedScoreForMode(ModeOfInheritance modeOfInheritance) {
+        GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
+        return geneScore.getCombinedScore();
     }
 
     /**
@@ -389,10 +405,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @Override
     public boolean passedFilters() {
-        if (isUnfiltered()) {
-            return true;
-        }
-        return failedFilterTypes.isEmpty() && atLeastOneVariantPassedFilters();
+        return isUnfiltered() || failedFilterTypes.isEmpty() && atLeastOneVariantPassedFilters();
     }
 
     private boolean isUnfiltered() {
@@ -474,6 +487,26 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return this.entrezGeneId == other.entrezGeneId;
     }
 
+    public static class InheritanceModeScoreComparator implements Comparator<Gene> {
+        private final ModeOfInheritance modeOfInheritance;
+
+        public InheritanceModeScoreComparator(ModeOfInheritance modeOfInheritance) {
+            this.modeOfInheritance = modeOfInheritance;
+        }
+
+        @Override
+        public int compare(Gene o1, Gene o2) {
+            float o1Score = o1.getGeneScoreForMode(modeOfInheritance).getCombinedScore();
+            float o2Score = o2.getGeneScoreForMode(modeOfInheritance).getCombinedScore();
+
+            //TODO: Shouldn't this be encapsulated directly with a GeneScoreComparator?
+            //order is reversed here higher scores should appear first
+            int compareCombinedScore = - Float.compare(o1Score, o2Score);
+
+            return (compareCombinedScore != 0) ? compareCombinedScore : o1.geneSymbol.compareTo(o2.geneSymbol);
+        }
+    }
+
     /**
      * Sort this gene based on priority and filter score. This function
      * satisfies the Interface {@code Comparable}.
@@ -482,8 +515,9 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @Override
     public int compareTo(Gene other) {
-        float thisScore = this.combinedScore;
-        float otherScore = other.combinedScore;
+        //TODO: Shouldn't this be encapsulated directly with a GeneScoreComparator?
+        float thisScore = this.topGeneScore.getCombinedScore();
+        float otherScore = other.topGeneScore.getCombinedScore();
         if (thisScore < otherScore) {
             return 1;
         }
@@ -491,7 +525,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return -1;
         }
         //if the scores are equal then return an alphabeticised list
-        if (thisScore == otherScore) {
+        if (Float.compare(thisScore, otherScore) == 0) {
             return geneSymbol.compareTo(other.geneSymbol);
         }
         return 0;
@@ -500,7 +534,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public String toString() {
-        return String.format("%s entrezId=%d compatibleWith=%s variantScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, variantScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
+        return String.format("%s entrezId=%d compatibleWith=%s geneScores=%s variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, geneScoreMap.values(), variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
     }
 
 }

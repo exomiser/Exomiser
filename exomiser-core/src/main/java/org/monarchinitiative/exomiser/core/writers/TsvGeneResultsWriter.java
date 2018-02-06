@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
@@ -87,39 +88,38 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
+    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(analysisResults, printer);
+            writeData(modeOfInheritance, analysisResults, printer);
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}.", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
-
+        logger.info("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     @Override
-    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(stringBuilder, format)) {
-            writeData(analysisResults, printer);
+            writeData(modeOfInheritance, analysisResults, printer);
         } catch (IOException ex) {
-            logger.error("Unable to write results to string {}.", stringBuilder, ex);
+            logger.error("Unable to write results to string {}", stringBuilder, ex);
         }
         return stringBuilder.toString();
     }
 
-    private void writeData(AnalysisResults analysisResults, CSVPrinter printer) throws IOException {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, CSVPrinter printer) throws IOException {
         for (Gene gene : analysisResults.getGenes()) {
-            if (gene.passedFilters()) {
-                List<String> geneRecord = makeGeneRecord(gene);
+            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
+                List<String> geneRecord = makeGeneRecord(modeOfInheritance, gene);
                 printer.printRecord(geneRecord);
             }
         }
     }
 
-    private List<String> makeGeneRecord(Gene gene) {
+    private List<String> makeGeneRecord(ModeOfInheritance modeOfInheritance, Gene gene) {
         double humanPhenScore = 0;
         double mousePhenScore = 0;
         double fishPhenScore = 0;
@@ -154,9 +154,9 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
         values.add(gene.getGeneSymbol());
         values.add(Integer.toString(gene.getEntrezGeneID()));
-        values.add(decimalFormat.format(gene.getPriorityScore()));
-        values.add(decimalFormat.format(gene.getVariantScore()));
-        values.add(decimalFormat.format(gene.getCombinedScore()));
+        values.add(decimalFormat.format(gene.getPriorityScoreForMode(modeOfInheritance)));
+        values.add(decimalFormat.format(gene.getVariantScoreForMode(modeOfInheritance)));
+        values.add(decimalFormat.format(gene.getCombinedScoreForMode(modeOfInheritance)));
         values.add(decimalFormat.format(humanPhenScore));
         values.add(decimalFormat.format(mousePhenScore));
         values.add(decimalFormat.format(fishPhenScore));

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,26 +20,27 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * Static utility class to provide a Thymeleaf template engine.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Configuration
 public class ThymeleafConfig {
 
-    @Bean
-    public TemplateEngine coreTemplateEngine() {
+    private ThymeleafConfig() {
+    }
+
+    public static TemplateEngine coreTemplateEngine() {
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         return templateEngine;
     }
 
-    private TemplateResolver templateResolver() {
+    private static TemplateResolver templateResolver() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode("HTML5");
         templateResolver.setPrefix("templates/");

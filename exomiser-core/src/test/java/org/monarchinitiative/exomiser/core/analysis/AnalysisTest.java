@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -95,17 +95,39 @@ public class AnalysisTest {
     }
 
     @Test
-    public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
+    public void modeOfInheritanceDefaultsToEmpty() {
+        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(EnumSet.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT,
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.X_DOMINANT,
+                ModeOfInheritance.X_RECESSIVE,
+                ModeOfInheritance.MITOCHONDRIAL)
+        ));
     }
 
     @Test
-    public void testCanMakeAnalysis_specifyModeOfInheritance() {
-        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+    public void testCanMakeAnalysisWithJustOneModeOfInheritance() {
         Analysis instance = newBuilder()
-                .modeOfInheritance(modeOfInheritance)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(instance.getModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+    }
+
+    @Test
+    public void testCanMakeAnalysisUseVarArgsForModeOfInheritance() {
+        Analysis instance = newBuilder()
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        assertThat(instance.getModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+    }
+
+    @Test
+    public void testCanMakeAnalysisUseSetForModeOfInheritance() {
+        EnumSet<ModeOfInheritance> modeOfInheritances = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        Analysis instance = newBuilder()
+                .modeOfInheritance(modeOfInheritances)
+                .build();
+        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritances));
     }
 
     @Test

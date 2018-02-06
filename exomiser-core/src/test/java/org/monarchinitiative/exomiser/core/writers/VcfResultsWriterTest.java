@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
@@ -112,17 +113,17 @@ public class VcfResultsWriterTest {
     private Path outPath;
     private OutputSettings settings;
 
-    private Analysis analysis = Analysis.builder().build();
+    private Analysis analysis = Analysis.builder().modeOfInheritance(ModeOfInheritance.ANY).build();
     /** VariantEvaluation objects used for testing (annotated ones). */
-    private VariantEvaluation missenseVariantEvaluation;
-    private VariantEvaluation indelVariantEvaluation;
+    private VariantEvaluation fgfr2MissenseVariant;
+    private VariantEvaluation shhIndelVariant;
 
     /** VariantEvaluation objects used for testing (unannotated ones). */
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
 
-    private Gene Fgfr2Gene;
-    private Gene ShhGene;
+    private Gene fgfr2Gene;
+    private Gene shhGene;
 
     @BeforeClass
     public static void loadVCFHeader() throws URISyntaxException {
@@ -151,20 +152,20 @@ public class VcfResultsWriterTest {
     }
 
     private void setUpShhGene() {
-        indelVariantEvaluation = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        shhIndelVariant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
-        ShhGene = TestFactory.newGeneSHH();
-        ShhGene.addVariant(indelVariantEvaluation);
-        ShhGene.addPriorityResult(new OMIMPriorityResult(ShhGene.getEntrezGeneID(), ShhGene.getGeneSymbol(), 1f, Collections.emptyList()));
+        shhGene = TestFactory.newGeneSHH();
+        shhGene.addVariant(shhIndelVariant);
+        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList()));
     }
 
     private void setUpFgfr2Gene() {
-        missenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        missenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
+        fgfr2MissenseVariant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        fgfr2MissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
 
-        Fgfr2Gene = TestFactory.newGeneFGFR2();
-        Fgfr2Gene.addVariant(missenseVariantEvaluation);
-        Fgfr2Gene.addPriorityResult(new OMIMPriorityResult(Fgfr2Gene.getEntrezGeneID(), Fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
+        fgfr2Gene = TestFactory.newGeneFGFR2();
+        fgfr2Gene.addVariant(fgfr2MissenseVariant);
+        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
     }
 
     private AnalysisResults buildAnalysisResults(Gene... genes) {
@@ -178,7 +179,7 @@ public class VcfResultsWriterTest {
     @Test
     public void testWriteHeaderFile() {
         AnalysisResults analysisResults = AnalysisResults.builder().vcfHeader(vcfHeader).build();
-        assertThat(instance.writeString(analysis, analysisResults, settings), equalTo(EXPECTED_HEADER));
+        assertThat(instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings), equalTo(EXPECTED_HEADER));
     }
 
     /* test writing out unannotated variants */
@@ -189,7 +190,7 @@ public class VcfResultsWriterTest {
                 .variantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2))
                 .build();
         
-        String vcf = instance.writeString(analysis, analysisResults, settings);
+        String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr5\t11\t.\tAC\tAT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "chr5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
@@ -199,9 +200,9 @@ public class VcfResultsWriterTest {
     /* test writing out annotated variants in two genes */
     @Test
     public void testWriteAnnotatedVariantsNoFiltersApplied() {
-        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
+        AnalysisResults analysisResults = buildAnalysisResults(fgfr2Gene, shhGene);
 
-        String vcf = instance.writeString(analysis, analysisResults, settings);
+        String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
@@ -222,12 +223,13 @@ public class VcfResultsWriterTest {
                 .build();
 
         Gene gene = new Gene(incorrectGeneSymbol);
-        gene.addVariant(indelVariantEvaluation);
+        gene.addVariant(shhIndelVariant);
         gene.addPriorityResult(new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList()));
+        gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(gene);
 
-        String vcf = instance.writeString(analysis, analysisResults, settings);
+        String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
@@ -236,11 +238,14 @@ public class VcfResultsWriterTest {
     /* test writing out a variant PASSing all filters */
     @Test
     public void testWritePassVariant() {
-        missenseVariantEvaluation.addFilterResult(PASS_TARGET_RESULT);
+        fgfr2MissenseVariant.addFilterResult(PASS_TARGET_RESULT);
+        fgfr2MissenseVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene);
+        fgfr2Gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        String vcf = instance.writeString(analysis, analysisResults, settings);
+        AnalysisResults analysisResults = buildAnalysisResults(fgfr2Gene);
+
+        String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         assertThat(vcf, equalTo(expected));
     }
@@ -248,11 +253,12 @@ public class VcfResultsWriterTest {
     /* test writing out a variant failing the target filter */
     @Test
     public void testWriteFailTargetVariant() {
-        missenseVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
+        fgfr2MissenseVariant.addFilterResult(FAIL_TARGET_RESULT);
+        fgfr2Gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene);
+        AnalysisResults analysisResults = buildAnalysisResults(fgfr2Gene);
 
-        String vcf = instance.writeString(analysis, analysisResults, settings);
+        String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr10\t123256215\t.\tT\tG\t2.20\tvar-effect\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
@@ -260,10 +266,16 @@ public class VcfResultsWriterTest {
 
     @Test
     public void testWritePassVariantsOnlyContainsOnlyPassedVariantLine() {
-        missenseVariantEvaluation.addFilterResult(PASS_TARGET_RESULT);
-        indelVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
+        fgfr2MissenseVariant.addFilterResult(PASS_TARGET_RESULT);
+        fgfr2MissenseVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
+        shhIndelVariant.addFilterResult(FAIL_TARGET_RESULT);
+        shhIndelVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        fgfr2Gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2MissenseVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        AnalysisResults analysisResults = buildAnalysisResults(fgfr2Gene, shhGene);
 
         OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
@@ -271,17 +283,23 @@ public class VcfResultsWriterTest {
                 .outputPrefix(outPath + "testWrite")
                 .build();
         
-        String output = instance.writeString(analysis, analysisResults, outputPassVariantsOnlySettings);
+        String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputPassVariantsOnlySettings);
         String expected = EXPECTED_HEADER + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         assertThat(output, equalTo(expected));
     }
 
     @Test
     public void testWritePassVariantsWithNoPassingVariants() {
-        missenseVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
-        indelVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
+        fgfr2MissenseVariant.addFilterResult(FAIL_TARGET_RESULT);
+        fgfr2MissenseVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
+        shhIndelVariant.addFilterResult(FAIL_TARGET_RESULT);
+        shhIndelVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        fgfr2Gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        shhGene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        AnalysisResults analysisResults = buildAnalysisResults(fgfr2Gene, shhGene);
 
         OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
@@ -289,7 +307,7 @@ public class VcfResultsWriterTest {
                 .outputPrefix(outPath + "testWrite")
                 .build();
 
-        String output = instance.writeString(analysis, analysisResults, outputPassVariantsOnlySettings);
+        String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputPassVariantsOnlySettings);
         assertThat(output, equalTo(EXPECTED_HEADER));
     }
     
@@ -301,10 +319,11 @@ public class VcfResultsWriterTest {
         Gene gene = new Gene("TEST", 12345);
         gene.addVariant(alt1);
         gene.addVariant(alt2);
+        gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(gene);
 
-        String output = instance.writeString(analysis, analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         System.out.println(output);
         String expected = EXPECTED_HEADER
                 + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040T>TCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
@@ -324,7 +343,7 @@ public class VcfResultsWriterTest {
         //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
         //variant score is 0.95 - contributes to score
         altAlleleOne.setVariantEffect(VariantEffect.FRAMESHIFT_VARIANT);
-        altAlleleOne.setAsContributingToGeneScore();
+        altAlleleOne.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);
@@ -335,10 +354,11 @@ public class VcfResultsWriterTest {
                 .build());
         gene.addVariant(altAlleleOne);
         gene.addVariant(altAlleleTwo);
+        gene.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(gene);
 
-        String output = instance.writeString(analysis, analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER

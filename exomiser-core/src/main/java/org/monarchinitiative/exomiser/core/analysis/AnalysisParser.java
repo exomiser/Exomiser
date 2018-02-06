@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static java.nio.file.Files.newInputStream;
 
@@ -277,7 +278,7 @@ public class AnalysisParser {
             return probandSampleName;
         }
 
-        private List<String> parseHpoIds(Map<String, List> analysisMap) {
+        private List<String> parseHpoIds(Map<String, List<String>> analysisMap) {
             List<String> hpoIds = analysisMap.get("hpoIds");
             if (hpoIds == null) {
                 return new ArrayList<>();
@@ -285,14 +286,35 @@ public class AnalysisParser {
             return hpoIds;
         }
 
-        private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
-            String value = analysisMap.get("modeOfInheritance");
-            if (value == null || value.isEmpty()) {
-                return ModeOfInheritance.ANY;
+        private Set<ModeOfInheritance> parseModeOfInheritance(Map<String, Object> analysisMap) {
+            Object modeOfInheritanceInput = analysisMap.get("modeOfInheritance");
+
+            if (String.class.isInstance(modeOfInheritanceInput)) {
+                //Pre 10.0.0 version - only expected a single string value
+                String value = (String) modeOfInheritanceInput;
+                return parseModesOfInheritanceFromList(Collections.singletonList(value));
             }
-            if (value.equals("UNDEFINED") || value.equals("UNINITIALIZED")) {
-                return ModeOfInheritance.ANY;
+            if (List.class.isInstance(modeOfInheritanceInput)) {
+                return parseModesOfInheritanceFromList((List<String>) modeOfInheritanceInput);
             }
+            return Analysis.DEFAULT_INHERITANCE_MODES;
+        }
+
+
+        private Set<ModeOfInheritance> parseModesOfInheritanceFromList(List<String> inheritanceModes) {
+            if (inheritanceModes == null || inheritanceModes.isEmpty()) {
+                return Collections.emptySet();
+            }
+            if (inheritanceModes.equals(Collections.singletonList("UNDEFINED")) || inheritanceModes.equals(Collections.singletonList("UNINITIALIZED")) || inheritanceModes.equals(Collections.singletonList("ANY"))) {
+                return Collections.emptySet();
+            }
+            return inheritanceModes.stream()
+                    .map(this::parseValueOfInheritanceMode)
+                    .filter(mode -> mode != ModeOfInheritance.ANY)
+                    .collect(Collectors.toSet());
+        }
+
+        private ModeOfInheritance parseValueOfInheritanceMode(String value) {
             try {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
@@ -512,8 +534,8 @@ public class AnalysisParser {
             return new RegulatoryFeatureFilter();
         }
 
-        private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-            if (modeOfInheritance == ModeOfInheritance.ANY) {
+        private InheritanceFilter makeInheritanceFilter(Set<ModeOfInheritance> modeOfInheritance) {
+            if (modeOfInheritance.isEmpty() || modeOfInheritance.equals(InheritanceFilter.JUST_ANY)) {
                 logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
                 return null;
             }

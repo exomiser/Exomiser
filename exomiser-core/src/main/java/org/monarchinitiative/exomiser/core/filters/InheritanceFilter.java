@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,15 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A Gene runFilter for filtering against a particular inheritance mode.
@@ -38,43 +42,69 @@ import java.util.Objects;
  */
 public class InheritanceFilter implements GeneFilter {
 
+    public static final Set<ModeOfInheritance> JUST_ANY = Sets.immutableEnumSet(ModeOfInheritance.ANY);
+
     private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
 
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
     private static final FilterResult NOT_RUN = FilterResult.notRun(filterType);
 
-    private final ModeOfInheritance modeOfInheritance;
-    
-    public InheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
+
+    private final Set<ModeOfInheritance> compatibleModes;
+
+    public InheritanceFilter(ModeOfInheritance compatibleMode) {
+        this.compatibleModes = Sets.immutableEnumSet(compatibleMode);
     }
 
-    public ModeOfInheritance getModeOfInheritance() {
-        return modeOfInheritance;
+    public InheritanceFilter(ModeOfInheritance... compatibleModes) {
+        this.compatibleModes = Sets.immutableEnumSet(Arrays.asList(compatibleModes));
+    }
+
+    public InheritanceFilter(Set<ModeOfInheritance> compatibleModes) {
+        this.compatibleModes = Sets.immutableEnumSet(compatibleModes);
+    }
+
+    public Set<ModeOfInheritance> getCompatibleModes() {
+        return compatibleModes;
     }
     
     @Override
     public FilterResult runFilter(Gene gene) {
-        if (modeOfInheritance == ModeOfInheritance.ANY) {
+        if (compatibleModes.isEmpty() || compatibleModes.equals(JUST_ANY)) {
             //if ModeOfInheritance.ANY pass the runFilter - ideally it shouldn't be applied in the first place.
             return NOT_RUN;
         }
-        if (gene.isCompatibleWith(modeOfInheritance)) {
-            return addFilterResultToVariants(PASS, gene);
+
+        addFilterResultToVariants(gene.getVariantEvaluations());
+
+        //If we're going to score against multiple inheritance models we're going to want to keep them and filter when scoring.
+        //On the other hand - if there is only one or two modes it makes sense to filter them out if incompatible.
+        for (ModeOfInheritance modeOfInheritance : compatibleModes) {
+            if (gene.isCompatibleWith(modeOfInheritance)) {
+                return PASS;
+            }
         }
-        return addFilterResultToVariants(FAIL, gene);
+        return FAIL;
     }
 
-    private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
-        for (VariantEvaluation variant : gene.getVariantEvaluations()) {
-            if (variant.isCompatibleWith(modeOfInheritance)) {
+    private void addFilterResultToVariants(List<VariantEvaluation> variantEvaluations) {
+        for (VariantEvaluation variant : variantEvaluations) {
+            if (compatibleWithAtLeastOneModeOfInheritance(variant)) {
                 variant.addFilterResult(PASS);
             } else {
                 variant.addFilterResult(FAIL);
             }
         }
-        return filterResult;
+    }
+
+    private boolean compatibleWithAtLeastOneModeOfInheritance(VariantEvaluation variant) {
+        for (ModeOfInheritance modeOfInheritance : compatibleModes) {
+            if (variant.isCompatibleWith(modeOfInheritance)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -83,27 +113,22 @@ public class InheritanceFilter implements GeneFilter {
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 71 * hash + Objects.hashCode(this.modeOfInheritance);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InheritanceFilter that = (InheritanceFilter) o;
+        return Objects.equals(compatibleModes, that.compatibleModes);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final InheritanceFilter other = (InheritanceFilter) obj;
-        return this.modeOfInheritance == other.modeOfInheritance;
+    public int hashCode() {
+        return Objects.hash(compatibleModes);
     }
 
     @Override
     public String toString() {
-        return filterType + " filter: ModeOfInheritance=" + modeOfInheritance;
+        return "InheritanceFilter{" +
+                "compatibleModes=" + compatibleModes +
+                '}';
     }
-    
 }

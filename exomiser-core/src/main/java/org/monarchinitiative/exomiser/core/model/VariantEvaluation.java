@@ -80,10 +80,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Set<FilterType> passedFilterTypes;
     private final Set<FilterType> failedFilterTypes;
 
-    //score-related stuff
+    //score-related stuff - these are mutable
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
-    private boolean contributesToGeneScore = false;
+    private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
     private VariantEvaluation(Builder builder) {
@@ -416,12 +416,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.pathogenicityData = pathogenicityData;
     }
 
-    public void setAsContributingToGeneScore() {
-        contributesToGeneScore = true;
+    public void setContributesToGeneScoreUnderMode(ModeOfInheritance modeOfInheritance) {
+        contributingModes.add(modeOfInheritance);
     }
 
     public boolean contributesToGeneScore() {
-        return contributesToGeneScore;
+        return !contributingModes.isEmpty();
+    }
+
+    public boolean contributesToGeneScoreUnderMode(ModeOfInheritance modeOfInheritance) {
+        return modeOfInheritance == ModeOfInheritance.ANY && !contributingModes.isEmpty() || contributingModes.contains(modeOfInheritance);
     }
 
     /**
@@ -455,7 +459,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @Override
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
-        return inheritanceModes.contains(modeOfInheritance);
+        return modeOfInheritance == ModeOfInheritance.ANY || inheritanceModes.contains(modeOfInheritance);
     }
     
     /**
@@ -488,8 +492,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public static int compareByRank(VariantEvaluation some, VariantEvaluation other) {
-        if (some.contributesToGeneScore != other.contributesToGeneScore) {
-            return -Boolean.compare(some.contributesToGeneScore, other.contributesToGeneScore);
+        if (some.contributesToGeneScore() != other.contributesToGeneScore()) {
+            return -Boolean.compare(some.contributesToGeneScore(), other.contributesToGeneScore());
         }
         float thisScore = some.getVariantScore();
         float otherScore = other.getVariantScore();
@@ -536,7 +540,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public String toString() {
         //TODO: expose frequency and pathogenicity scores?
-        if(contributesToGeneScore) {
+        if(contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
             return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + inheritanceModes + "}";

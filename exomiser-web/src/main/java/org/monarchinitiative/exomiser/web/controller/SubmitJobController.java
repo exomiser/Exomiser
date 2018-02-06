@@ -98,8 +98,6 @@ public class SubmitJobController {
 
     @Autowired
     private PriorityService priorityService;
-    @Autowired
-    private ResultsWriterFactory resultsWriterFactory;
 
     @GetMapping(value = SUBMIT_PAGE)
     public String submit() {
@@ -162,25 +160,7 @@ public class SubmitJobController {
         Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(analysis);
 
-        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
-        try {
-            Files.createDirectory(outputDir);
-        } catch (IOException e) {
-            logger.error("Unable to create directory {}", outputDir, e);
-        }
-        logger.info("Output dir: {}", outputDir);
-        String outFileName = outputDir.toString() + "/results";
-        OutputSettings outputSettings = OutputSettings.builder()
-                .numberOfGenesToShow(20)
-                .outputPrefix(outFileName)
-                //OutputFormat.HTML, causes issues due to thymeleaf templating
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
-                .build();
-
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
-        }
+        writeResultsToFile(analysisId, analysis, analysisResults);
 
         buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
@@ -213,7 +193,7 @@ public class SubmitJobController {
                 .pedPath(pedPath)
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
-                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
+                .modeOfInheritance(EnumSet.of(ModeOfInheritance.valueOf(modeOfInheritance)))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
 
@@ -267,6 +247,25 @@ public class SubmitJobController {
         else if (priorityType == PHIVE_PRIORITY) {
             analysisBuilder.addPhivePrioritiser();
         }
+    }
+
+    private void writeResultsToFile(UUID analysisId, Analysis analysis, AnalysisResults analysisResults) {
+        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
+        try {
+            Files.createDirectory(outputDir);
+        } catch (IOException e) {
+            logger.error("Unable to create directory {}", outputDir, e);
+        }
+        logger.info("Output dir: {}", outputDir);
+        String outFileName = outputDir.toString() + "/results";
+        OutputSettings outputSettings = OutputSettings.builder()
+                .numberOfGenesToShow(20)
+                .outputPrefix(outFileName)
+                //OutputFormat.HTML, causes issues due to thymeleaf templating
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
+                .build();
+
+        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
     }
 
     private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {

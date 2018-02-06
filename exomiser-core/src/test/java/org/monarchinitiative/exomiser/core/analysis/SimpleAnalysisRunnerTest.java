@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -202,8 +202,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
         assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER, FilterType.INHERITANCE_FILTER)));
-//        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
-            
+
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
@@ -243,6 +242,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
         assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
         assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        System.out.println(rbm8a.getGeneScores());
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(true));
@@ -283,6 +283,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
         assertThat(rbm8a.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        System.out.println(rbm8a.getGeneScores());
         assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
@@ -337,12 +338,12 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
         assertThat(rbm8a.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        System.out.println(rbm8a.getGeneScores());
         assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
         assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
-//        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));

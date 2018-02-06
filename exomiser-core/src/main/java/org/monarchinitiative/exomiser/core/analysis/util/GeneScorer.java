@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,10 +26,11 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  *
@@ -38,10 +39,16 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface GeneScorer {
 
-    Consumer<Gene> scoreGene();
+    public Function<Gene, List<GeneScore>> scoreGene();
 
     default List<Gene> scoreGenes(List<Gene> genes) {
-        genes.forEach(scoreGene());
+        //TODO! FIX THIS
+        genes.forEach(gene -> {
+            List<GeneScore> geneScores = scoreGene().apply(gene);
+            for (GeneScore score : geneScores) {
+                gene.addGeneScore(score);
+            }
+        });
         Collections.sort(genes);
         return genes;
     }

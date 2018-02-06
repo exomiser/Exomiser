@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
@@ -81,7 +82,7 @@ public class AnalysisParserTest {
                 + "    vcf: test.vcf\n"
                 + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
-                + "    modeOfInheritance: AUTOSOMAL_DOMINANT\n"
+                + "    modeOfInheritance: [AUTOSOMAL_DOMINANT]\n"
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
                 + "    analysisMode: PASS_ONLY \n"
                 + "    frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN, EXAC_AFRICAN_INC_AFRICAN_AMERICAN]\n"
@@ -98,7 +99,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getProbandSampleName(), equalTo(""));
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
@@ -213,9 +214,19 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: AUTOSOMAL_DOMINANT \n"
+                        + "    modeOfInheritance: [AUTOSOMAL_DOMINANT] \n"
                         + "    ");
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+    }
+
+    @Test
+    public void testParseAnalysisModeOfInheritanceRemovesAny() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    modeOfInheritance: [AUTOSOMAL_DOMINANT, ANY] \n"
+                        + "    ");
+        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
     }
 
     @Test(expected = AnalysisParserException.class)
@@ -223,9 +234,8 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: AD\n"
+                        + "    modeOfInheritance: [AD]\n"
                         + "    ");
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
     }
 
     /**
@@ -370,7 +380,7 @@ public class AnalysisParserTest {
         instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: WIBBLE!"
+                        + "    modeOfInheritance: [WIBBLE!]"
         );
     }
 
@@ -433,7 +443,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(analysis.getModeOfInheritance(), equalTo(EnumSet.of(modeOfInheritance)));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));

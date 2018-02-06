@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -583,10 +583,16 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testCanSetAsContributingToGeneScore() {
+    public void testCanSetAsContributingToGeneScoreUnderMode() {
         instance = testVariantBuilder().build();
-        instance.setAsContributingToGeneScore();
+        instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         assertThat(instance.contributesToGeneScore(), is(true));
+        assertThat(instance.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.contributesToGeneScoreUnderMode(ModeOfInheritance.X_DOMINANT), is(false));
+        assertThat(instance.contributesToGeneScoreUnderMode(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.contributesToGeneScoreUnderMode(ModeOfInheritance.MITOCHONDRIAL), is(false));
     }
 
     @Test
@@ -596,7 +602,11 @@ public class VariantEvaluationTest {
         assertThat(instance.getInheritanceModes(), equalTo(compatibleModes));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(false));
+
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
     }
     
     @Test
@@ -638,13 +648,13 @@ public class VariantEvaluationTest {
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
-        zero.setAsContributingToGeneScore();
+        zero.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
                 .frequencyData(FrequencyData.of(RsId.empty(), Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
-        one.setAsContributingToGeneScore();
+        one.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         VariantEvaluation two = VariantEvaluation.builder(1, 2, "A", "G")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
@@ -710,7 +720,7 @@ public class VariantEvaluationTest {
     @Test
     public void testToStringVariant_ContributesToGeneScore() {
         String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
-        instance.setAsContributingToGeneScore();
+        instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }

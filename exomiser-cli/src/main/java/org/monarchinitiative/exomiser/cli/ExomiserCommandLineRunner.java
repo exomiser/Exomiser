@@ -25,10 +25,8 @@ import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.writers.OutputFormat;
+import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
-import org.monarchinitiative.exomiser.core.writers.ResultsWriter;
-import org.monarchinitiative.exomiser.core.writers.ResultsWriterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +53,6 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     private AnalysisParser analysisParser;
     @Autowired
     private Exomiser exomiser;
-    @Autowired
-    private ResultsWriterFactory resultsWriterFactory;
 
     @Value("buildVersion")
     private String buildVersion;
@@ -122,15 +118,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
         AnalysisResults analysisResults = exomiser.run(analysis);
-        writeResults(analysis, analysisResults, outputSettings);
-    }
-
-    private void writeResults(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
-        logger.info("Writing results");
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
-        }
+        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
     }
 
 }
