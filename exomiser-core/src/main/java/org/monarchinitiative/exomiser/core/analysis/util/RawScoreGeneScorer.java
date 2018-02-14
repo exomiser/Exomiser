@@ -31,7 +31,6 @@ import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +57,7 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final Set<ModeOfInheritance> inheritanceModes;
 
     private final CompHetChecker compHetChecker;
+    private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
     /**
      * @param probandSampleId   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
@@ -68,6 +68,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         this.probandSampleId = probandSampleId;
         this.inheritanceModes = inheritanceModes;
         this.compHetChecker = new CompHetChecker(pedigree);
+        this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
     }
 
     /**
@@ -82,13 +83,10 @@ public class RawScoreGeneScorer implements GeneScorer {
     @Override
     public Function<Gene, List<GeneScore>> scoreGene() {
         return gene -> {
-
-            float priorityScore = calculateGenePriorityScore(gene);
-
             //Handle the scenario where no inheritance mode-dependent step was run
             if (inheritanceModes.isEmpty() || inheritanceModes.equals(JUST_ANY)) {
                 List<VariantEvaluation> contributingVariants = findNonAutosomalRecessiveContributingVariants(ModeOfInheritance.ANY, gene.getPassedVariantEvaluations());
-                GeneScore geneScore = calculateGeneScore(gene, priorityScore, ModeOfInheritance.ANY, contributingVariants);
+                GeneScore geneScore = calculateGeneScore(gene, ModeOfInheritance.ANY, contributingVariants);
                 logger.debug("{}", geneScore);
                 return ImmutableList.of(geneScore);
             }
@@ -97,7 +95,7 @@ public class RawScoreGeneScorer implements GeneScorer {
             for (ModeOfInheritance modeOfInheritance : inheritanceModes) {
                 //It is critical only the PASS variants are used in the scoring
                 List<VariantEvaluation> contributingVariants = findContributingVariantsForInheritanceMode(modeOfInheritance, gene.getPassedVariantEvaluations());
-                GeneScore geneScore = calculateGeneScore(gene, priorityScore, modeOfInheritance, contributingVariants);
+                GeneScore geneScore = calculateGeneScore(gene, modeOfInheritance, contributingVariants);
                 logger.debug("{}", geneScore);
                 geneScores.add(geneScore);
             }
@@ -106,7 +104,10 @@ public class RawScoreGeneScorer implements GeneScorer {
         };
     }
 
-    private GeneScore calculateGeneScore(Gene gene, float priorityScore, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants) {
+    private GeneScore calculateGeneScore(Gene gene, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants) {
+
+        float priorityScore = (float) genePriorityScoreCalculator.calculateGenePriorityScoreForMode(gene, modeOfInheritance);
+
         float variantScore = (float) contributingVariants.stream()
                 .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
@@ -210,47 +211,6 @@ public class RawScoreGeneScorer implements GeneScorer {
         // sample name instead of the id
         return ve -> ve.getVariantContext().getGenotype(sampleId).isHomVar();
     }
-
-    /**
-     * Calculates the total priority score for the {@code VariantEvaluation} of
-     * the gene. Note that for assumed
-     * autosomal recessive variants, the mean of the worst two variants is
-     * taken, and for other modes of inheritance,the since worst value is taken.
-     * <P>
-     * Note that we <b>assume that genes have been filtered for mode of
-     * inheritance before this function is called. This means that we do not
-     * need to apply separate filtering for mode of inheritance here</b>. The
-     * only thing we need to watch out for is whether a variant is homozygous or
-     * not (for autosomal recessive inheritance, these variants get counted
-     * twice).
-     */
-    private float calculateGenePriorityScore(Gene gene) {
-        //TODO #194 - this is broken as the Gene priority results are almost never empty as OMIM is typically always run.
-        // If a gene has only got an OMIM prioritiser result and the result of this is the default 1.0 the gene will score top. If run in conjunction with a second prioritiser
-        // and when a gene id/symbol in a model doesn't match that of the gene itself - e.g. {USF3, 205717} {KIAA2018, 205717} where the HGNC changed the symbol, the gene with
-        // *only* the OMIM result will have a score of 1.0 and hence be ranked above the top real result.
-        // Possible solutions - don't return 1.0 score from OMIM, only take into account OOMIM if the score is not 1.0, apply OMIM scoring at a different stage,
-        //OMIM prioritiser shouldn't be a prioritiser - the scoring is actually via the inheritance mode of the known diseases associated with that gene.
-        if (gene.getPriorityResults().isEmpty()) {
-            return 0f;
-        }
-        return calculatePriorityScore(gene.getPriorityResults().values());
-    }
-
-    /**
-     * Calculate the combined priority score for the gene.
-     *
-     * @param priorityScores of the gene
-     * @return
-     */
-    private float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
-        float finalPriorityScore = 1f;
-        for (PriorityResult priorityScore : priorityScores) {
-            finalPriorityScore *= priorityScore.getScore();
-        }
-        return finalPriorityScore;
-    }
-
 
     /**
      * Calculate the combined score of this gene based on the relevance of the

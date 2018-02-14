@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -143,13 +143,6 @@ public class OMIMPriorityTest {
         });
     }
 
-    private void checkOmimScoreAndHasAssociatedDiseases(Gene gene, double score, boolean associatedDiseasesIsEmpty) {
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
-        assertThat(result.getScore(), equalTo(score));
-        assertThat(result.getAssociatedDiseases().isEmpty(), is(associatedDiseasesIsEmpty));
-    }
-
     @Test
     public void prioritizeGenes_InheritanceModeIsNotCompatible() throws Exception {
         //FREM2 has only one associated condition (recessive). We're going to simulate this not matching.
@@ -160,8 +153,15 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
-            checkOmimScoreAndHasAssociatedDiseases(gene, 0.5d, false);
+            checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
         });
+    }
+
+    private void checkOmimScoreAndHasAssociatedDiseases(Gene gene, double score, boolean associatedDiseasesIsEmpty) {
+        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+        assertThat(result.getScore(), equalTo(score));
+        assertThat(result.getAssociatedDiseases().isEmpty(), is(associatedDiseasesIsEmpty));
     }
 
 }
