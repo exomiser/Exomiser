@@ -32,7 +32,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 
@@ -205,20 +204,19 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @param var A Variant affecting the current gene.
      */
     public final void addVariant(VariantEvaluation var) {
+        Objects.requireNonNull(var);
         addGeneFilterResultsToVariant(var);
         variantEvaluations.add(var);
     }
 
     private void addGeneFilterResultsToVariant(VariantEvaluation var) {
-        filterResults.values().stream()
-                .filter(isNotInheritanceFilterResult())
-                .forEach(var::addFilterResult);
+        for (FilterResult filterResult : filterResults.values()) {
+            if (filterResult.getFilterType() != FilterType.INHERITANCE_FILTER) {
+                var.addFilterResult(filterResult);
+            }
+        }
     }
-    
-    private Predicate<FilterResult> isNotInheritanceFilterResult() {
-        return filterResult -> filterResult.getFilterType() != FilterType.INHERITANCE_FILTER;
-    }
-    
+
     /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
@@ -303,6 +301,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @param priorityResult Result of a prioritization algorithm
      */
     public void addPriorityResult(PriorityResult priorityResult) {
+        Objects.requireNonNull(priorityResult);
         priorityResultsMap.put(priorityResult.getPriorityType(), priorityResult);
     }
 
@@ -323,7 +322,14 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return priorityResultsMap;
     }
 
+    /**
+     *
+     * @param geneScore
+     * @throws NullPointerException if the argument is null
+     * @since 10.0.0
+     */
     public synchronized void addGeneScore(GeneScore geneScore) {
+        Objects.requireNonNull(geneScore);
         geneScoreMap.put(geneScore.getModeOfInheritance(), geneScore);
         topGeneScore = maxCombinedScore(topGeneScore, geneScore);
     }
@@ -342,6 +348,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
+        Objects.requireNonNull(modeOfInheritance);
         return geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.builder()
                 .geneIdentifier(this.geneIdentifier)
                 .modeOfInheritance(modeOfInheritance)
@@ -364,6 +371,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return a score that will be used to rank the gene.
      */
     public float getPriorityScoreForMode(ModeOfInheritance modeOfInheritance) {
+        Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getPhenotypeScore();
     }
@@ -379,6 +387,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return a variant score that will be used to rank the gene.
      */
     public float getVariantScoreForMode(ModeOfInheritance modeOfInheritance) {
+        Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getVariantScore();
     }
@@ -394,6 +403,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return a combined score that will be used to rank the gene.
      */
     public float getCombinedScoreForMode(ModeOfInheritance modeOfInheritance) {
+        Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getCombinedScore();
     }
@@ -423,6 +433,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
+        Objects.requireNonNull(filterType);
         if (!failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType)) {
             return true;
         }
@@ -447,6 +458,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
+        Objects.requireNonNull(filterResult);
         filterResults.put(filterResult.getFilterType(), filterResult);
         if (filterResult.passed()) {
             return addPassedFilterResult(filterResult);
@@ -481,54 +493,41 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         final Gene other = (Gene) obj;
-        if (!Objects.equals(this.geneSymbol, other.geneSymbol)) {
-            return false;
-        }
-        return this.entrezGeneId == other.entrezGeneId;
-    }
-
-    public static class InheritanceModeScoreComparator implements Comparator<Gene> {
-        private final ModeOfInheritance modeOfInheritance;
-
-        public InheritanceModeScoreComparator(ModeOfInheritance modeOfInheritance) {
-            this.modeOfInheritance = modeOfInheritance;
-        }
-
-        @Override
-        public int compare(Gene o1, Gene o2) {
-            float o1Score = o1.getGeneScoreForMode(modeOfInheritance).getCombinedScore();
-            float o2Score = o2.getGeneScoreForMode(modeOfInheritance).getCombinedScore();
-
-            //TODO: Shouldn't this be encapsulated directly with a GeneScoreComparator?
-            //order is reversed here higher scores should appear first
-            int compareCombinedScore = - Float.compare(o1Score, o2Score);
-
-            return (compareCombinedScore != 0) ? compareCombinedScore : o1.geneSymbol.compareTo(o2.geneSymbol);
-        }
+        return Objects.equals(this.geneSymbol, other.geneSymbol) && this.entrezGeneId == other.entrezGeneId;
     }
 
     /**
-     * Sort this gene based on priority and filter score. This function
-     * satisfies the Interface {@code Comparable}.
+     * Sorts a pair of {@code Gene} objects according to the natural {@code GeneScore} ordering for the argument
+     * {@code ModeOfInheritance}. This method is same to use for {@code ModeOfInheritance} which the {@code Gene} has no
+     * {@code GeneScore} for.
      *
-     * @param other
+     * @param modeOfInheritance the {@code ModeOfInheritance} under which the genes should be sorted.
+     * @return a negative integer, zero, or a positive integer as the first argument is compared to the second according
+     *         to the {@code GeneScore} for the {@code ModeOfInheritance} argument.
+     * @throws NullPointerException if any argument is null.
+     * @since 10.0.0
+     */
+    public static Comparator<Gene> comparingScoreForInheritanceMode(ModeOfInheritance modeOfInheritance) {
+        return (g1, g2) -> {
+            GeneScore g1ScoreForMode = g1.getGeneScoreForMode(modeOfInheritance);
+            GeneScore g2ScoreForMode = g2.getGeneScoreForMode(modeOfInheritance);
+            return GeneScore.compare(g1ScoreForMode, g2ScoreForMode);
+        };
+    }
+
+    /**
+     * Sorts a pair of {@code Gene} objects according to the natural {@code GeneScore} ordering for the argument
+     * {@code ModeOfInheritance}. This method is same to use for {@code ModeOfInheritance} which the {@code Gene} has no
+     * {@code GeneScore} for. Note the natural ordering of this class is inconsistent with equals.
+     *
+     * @param otherGene the other {@code Gene} to compare this {@code Gene} with.
+     * @return a negative integer, zero, or a positive integer as the first argument is compared to the second according
+     *         to their top {@code GeneScore}.
+     * @throws NullPointerException if the argument is null.
      */
     @Override
-    public int compareTo(Gene other) {
-        //TODO: Shouldn't this be encapsulated directly with a GeneScoreComparator?
-        float thisScore = this.topGeneScore.getCombinedScore();
-        float otherScore = other.topGeneScore.getCombinedScore();
-        if (thisScore < otherScore) {
-            return 1;
-        }
-        if (thisScore > otherScore) {
-            return -1;
-        }
-        //if the scores are equal then return an alphabeticised list
-        if (Float.compare(thisScore, otherScore) == 0) {
-            return geneSymbol.compareTo(other.geneSymbol);
-        }
-        return 0;
+    public int compareTo(Gene otherGene) {
+        return GeneScore.compare(topGeneScore, otherGene.topGeneScore);
     }
 
 

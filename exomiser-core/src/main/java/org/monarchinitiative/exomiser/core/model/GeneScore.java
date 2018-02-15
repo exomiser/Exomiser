@@ -34,7 +34,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.0.0
  */
-public class GeneScore {
+public final class GeneScore implements Comparable<GeneScore> {
 
     private static final GeneScore EMPTY = new Builder().build();
 
@@ -76,6 +76,46 @@ public class GeneScore {
 
     public List<VariantEvaluation> getContributingVariants() {
         return contributingVariants;
+    }
+
+    /**
+     * Compares two specified {@code GeneScore} objects. The natural ordering of these objects is the reverse numerical
+     * ordering of their {@code combinedScore} or if this value is equal to 0, the natural order of their {@code GeneSymbol}.
+     *
+     * @param anotherGeneScore the other {@code GeneScore} against which this is compared
+     * @return a value less than {@code 0} if this {@code combinedScore} is numerically greater than
+     *          {@code anotherGeneScore.combinedScore}; and a value greater than {@code 0} if this {@code combinedScore} is numerically
+     *          less than {@code anotherGeneScore.combinedScore}. Should {@code combinedScore} be numerically equal to
+     *          {@code anotherGeneScore.combinedScore} the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
+     * @throws NullPointerException if an argument is null
+     */
+    public int compareTo(GeneScore anotherGeneScore) {
+        return GeneScore.compare(this, anotherGeneScore);
+    }
+
+    /**
+     * Compares two specified {@code GeneScore} objects. The natural ordering of these objects is the reverse numerical
+     * ordering of their {@code combinedScore} or if this value is equal to 0, the natural order of their {@code GeneSymbol}.
+     *
+     * @param s1 the fist score to be compared.
+     * @param s2 the second score to be compared.
+     * @return  a value less than {@code 0} if this {@code s1.combinedScore} is numerically greater than
+     *          {@code s2.combinedScore}; and a value greater than {@code 0} if {@code s1.combinedScore} is numerically
+     *          less than {@code s2.combinedScore}. Should {@code s1.combinedScore} be numerically equal to
+     *          {@code s2.combinedScore} the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
+     * @throws NullPointerException if an argument is null
+     */
+    public static int compare(GeneScore s1, GeneScore s2) {
+        float s1CombinedScore = s1.getCombinedScore();
+        float s2CombinedScore = s2.getCombinedScore();
+        if (s1CombinedScore < s2CombinedScore) {
+            return 1;
+        }
+        if (s1CombinedScore > s2CombinedScore) {
+            return -1;
+        }
+        //if the scores are equal then return an alphabetised list based on gene symbol
+        return GeneIdentifier.compare(s1.getGeneIdentifier(), s2.getGeneIdentifier());
     }
 
     @Override

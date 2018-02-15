@@ -241,7 +241,7 @@ public class RawScoreGeneScorer implements GeneScorer {
     /**
      * Data class for holding pairs of alleles which are compatible with AR compound heterozygous inheritance.
      */
-    private final class CompHetPair {
+    private static final class CompHetPair {
 
         private final double score;
         private final VariantEvaluation allele1;

@@ -51,7 +51,7 @@ public class AnalysisResultsWriter {
             //Change the getModeOfInheritance to getInheritanceModes?
             for (ModeOfInheritance modeOfInheritance : analysis.getModeOfInheritance()) {
                 logger.info("Writing {} results:", modeOfInheritance);
-                analysisResults.getGenes().sort(new Gene.InheritanceModeScoreComparator(modeOfInheritance));
+                analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
 
                 writeForInheritanceMode(modeOfInheritance, analysis, outputSettings, resultsWriterFactory, analysisResults);
             }

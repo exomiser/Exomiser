@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -98,7 +99,25 @@ public class GeneScoreTest {
     }
 
     @Test
-    public void testHashCode() {
+    public void testCompareTo() {
+        GeneIdentifier first = GeneIdentifier.builder().geneSymbol("1ABC").build();
+        GeneIdentifier second = GeneIdentifier.builder().geneSymbol("1BBC").build();
+        GeneIdentifier third = GeneIdentifier.builder().geneSymbol("2BCD").build();
+
+        // After an analysis, a single gene will have different scores due to different inheritance modes but these have
+        // been omitted for clarity of what is actually being tested
+        GeneScore one = GeneScore.builder().combinedScore(1f).geneIdentifier(first).build();
+        GeneScore two = GeneScore.builder().combinedScore(0.5f).geneIdentifier(first).build();
+        GeneScore three =  GeneScore.builder().combinedScore(0.5f).geneIdentifier(second).build();
+        GeneScore four =  GeneScore.builder().combinedScore(0.25f).geneIdentifier(second).build();
+        GeneScore five =  GeneScore.builder().combinedScore(0.25f).geneIdentifier(third).build();
+        GeneScore six =  GeneScore.builder().combinedScore(0.125f).geneIdentifier(third).build();
+
+        List<GeneScore> geneScores = Arrays.asList(two, three, six, one, five, four);
+
+        geneScores.sort(GeneScore::compareTo);
+
+        Assert.assertThat(geneScores, equalTo(Arrays.asList(one, two, three, four, five, six)));
     }
 
     @Test

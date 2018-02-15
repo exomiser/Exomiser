@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
@@ -43,7 +44,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneTest {
@@ -285,30 +285,30 @@ public class GeneTest {
 //        //but that the variant also passes the gene filter - this is OK behaviour as Variants fail fast - i.e. we really only care if a variant passed ALL filters
 //        assertThat(variantEvaluation1.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
 //    }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGenePassesAndVariantsFailFilterOfThatType() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(FAIL_GENE_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGeneUnfilteredAndVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_FalseWhenGeneUnfilteredAndVariantsFailFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGeneUnfilteredAndAtLeastOneVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -366,39 +366,39 @@ public class GeneTest {
     public void testAddVariant_AfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
     }
-    
+
     @Test
     public void testAddVariant_AfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.fail(FilterType.PRIORITY_SCORE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(false));
         assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
     }
-    
+
     @Test
     public void testAddVariant_AfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
-        
+
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
         instance.addFilterResult(FilterResult.fail(FilterType.INHERITANCE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
         assertThat(variantEvaluation1.getFailedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
     }
-    
+
     @Test
     public void testCanAddAndRetrievePriorityScoreByPriorityType() {
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
@@ -650,6 +650,52 @@ public class GeneTest {
                 .build();
         instance.addGeneScore(secondGeneScore);
         assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(secondScore));
+    }
+
+    @Test
+    public void testInheritanceModeComparator() {
+        Gene topAutosomalDominant = TestFactory.newGeneFGFR2();
+        //add gene scores for mois
+        GeneScore fgfr2AutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+                .combinedScore(1f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        topAutosomalDominant.addGeneScore(fgfr2AutoDomScore);
+
+        GeneScore fgfr2AutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+                .combinedScore(0.5f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        topAutosomalDominant.addGeneScore(fgfr2AutoRecScore);
+
+        Gene topAutosomalRecessive = TestFactory.newGeneRBM8A();
+        GeneScore rbm8aAutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+                .combinedScore(0.5f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        topAutosomalRecessive.addGeneScore(rbm8aAutoDomScore);
+
+        GeneScore rbm8aAutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+                .combinedScore(1f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        topAutosomalRecessive.addGeneScore(rbm8aAutoRecScore);
+
+        Gene noScores = TestFactory.newGeneSHH();
+
+        List<Gene> genes = Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores);
+        //test sorting by AD
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores)));
+
+        // test sorting by AR
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalRecessive, topAutosomalDominant, noScores)));
+
+        // test sort by ANY
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.ANY));
+        //these should be sorted by combined score desc, gene symbols asc
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores)));
     }
 
     @Test
