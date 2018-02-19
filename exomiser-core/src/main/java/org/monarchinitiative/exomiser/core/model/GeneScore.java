@@ -78,10 +78,16 @@ public final class GeneScore implements Comparable<GeneScore> {
         return contributingVariants;
     }
 
+    /**
+     * Compares the combined score of two {@code GeneScore} objects. Will return the {@code GeneScore} with the highest
+     * numerical value or the first if equal.
+     *
+     * @param s1 the first {@code GeneScore}
+     * @param s2 the other {@code GeneScore}
+     * @return the {@code GeneScore} with the highest combined score.
+     */
     public static GeneScore max(GeneScore s1, GeneScore s2) {
-        float s1CombinedScore = s1.getCombinedScore();
-        float maxCombinedScore = Math.max(s1CombinedScore, s2.getCombinedScore());
-        return (Float.compare(maxCombinedScore, s1CombinedScore) == 0) ? s1 : s2;
+        return (Float.compare(s1.getCombinedScore(), s2.getCombinedScore()) >= 0) ? s1 : s2;
     }
 
     /**
