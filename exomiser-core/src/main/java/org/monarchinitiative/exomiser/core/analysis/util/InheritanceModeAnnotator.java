@@ -63,23 +63,7 @@ public class InheritanceModeAnnotator {
         try {
             Map<ModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls = mendelChecker.checkMendelianInheritance(genotypeCalls);
             logger.debug("{}", compatibilityCalls);
-            Map<ModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(ModeOfInheritance.class);
-
-            for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
-                ModeOfInheritance compatibleMode = entry.getKey();
-                if (compatibleMode == ModeOfInheritance.ANY) {
-                    continue;
-                }
-                List<VariantEvaluation> compatibleVariants = new ArrayList<>();
-                for (GenotypeCalls callResults : entry.getValue()) {
-                    VariantEvaluation payload = (VariantEvaluation) callResults.getPayload();
-                    compatibleVariants.add(payload);
-                }
-                if (!compatibleVariants.isEmpty()) {
-                    results.put(compatibleMode, compatibleVariants);
-                }
-            }
-            return results;
+            return variantsGroupedByCompatibleMode(compatibilityCalls);
         } catch (IncompatiblePedigreeException e) {
             logger.error("Problem with annotating VariantContext for Mendelian inheritance.", e);
         }
@@ -100,27 +84,51 @@ public class InheritanceModeAnnotator {
         try {
             Map<SubModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls = mendelChecker.checkMendelianInheritanceSub(genotypeCalls);
             logger.debug("{}", compatibilityCalls);
-            Map<SubModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(SubModeOfInheritance.class);
-
-            for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
-                SubModeOfInheritance compatibleMode = entry.getKey();
-                if (compatibleMode == SubModeOfInheritance.ANY) {
-                    continue;
-                }
-                List<VariantEvaluation> compatibleVariants = new ArrayList<>();
-                for (GenotypeCalls callResults : entry.getValue()) {
-                    VariantEvaluation payload = (VariantEvaluation) callResults.getPayload();
-                    compatibleVariants.add(payload);
-                }
-                if (!compatibleVariants.isEmpty()) {
-                    results.put(compatibleMode, compatibleVariants);
-                }
-            }
-            return results;
+            return variantsGroupedByCompatibleSubMode(compatibilityCalls);
         } catch (IncompatiblePedigreeException e) {
             logger.error("Problem with annotating VariantContext for Mendelian inheritance.", e);
         }
         return Collections.emptyMap();
+    }
+
+
+    private Map<ModeOfInheritance, List<VariantEvaluation>> variantsGroupedByCompatibleMode(Map<ModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls) {
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(ModeOfInheritance.class);
+        for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
+            ModeOfInheritance compatibleMode = entry.getKey();
+            if (compatibleMode != ModeOfInheritance.ANY) {
+                List<GenotypeCalls> genotypeCalls = entry.getValue();
+                List<VariantEvaluation> compatibleVariants = getCompatibleVariants(genotypeCalls);
+                if (!compatibleVariants.isEmpty()) {
+                    results.put(compatibleMode, compatibleVariants);
+                }
+            }
+        }
+        return results;
+    }
+
+    private Map<SubModeOfInheritance, List<VariantEvaluation>> variantsGroupedByCompatibleSubMode(Map<SubModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls) {
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(SubModeOfInheritance.class);
+        for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
+            SubModeOfInheritance compatibleMode = entry.getKey();
+            if (compatibleMode != SubModeOfInheritance.ANY) {
+                List<GenotypeCalls> genotypeCalls = entry.getValue();
+                List<VariantEvaluation> compatibleVariants = getCompatibleVariants(genotypeCalls);
+                if (!compatibleVariants.isEmpty()) {
+                    results.put(compatibleMode, compatibleVariants);
+                }
+            }
+        }
+        return results;
+    }
+
+    private List<VariantEvaluation> getCompatibleVariants(List<GenotypeCalls> genotypeCalls) {
+        List<VariantEvaluation> compatibleVariants = new ArrayList<>();
+        for (GenotypeCalls callResults : genotypeCalls) {
+            VariantEvaluation payload = (VariantEvaluation) callResults.getPayload();
+            compatibleVariants.add(payload);
+        }
+        return compatibleVariants;
     }
 
     private List<GenotypeCalls> buildGenotypeCalls(List<VariantEvaluation> variantEvaluations) {
