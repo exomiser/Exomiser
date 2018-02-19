@@ -331,12 +331,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     public synchronized void addGeneScore(GeneScore geneScore) {
         Objects.requireNonNull(geneScore);
         geneScoreMap.put(geneScore.getModeOfInheritance(), geneScore);
-        topGeneScore = maxCombinedScore(topGeneScore, geneScore);
-    }
-
-    private GeneScore maxCombinedScore(GeneScore topGeneScore, GeneScore geneScore) {
-        float maxCombinedScore = Math.max(topGeneScore.getCombinedScore(), geneScore.getCombinedScore());
-        return (Float.compare(maxCombinedScore, topGeneScore.getCombinedScore()) == 0) ? topGeneScore : geneScore;
+        topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
     public GeneScore getTopGeneScore() {

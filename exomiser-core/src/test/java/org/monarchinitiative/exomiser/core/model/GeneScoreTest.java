@@ -99,6 +99,21 @@ public class GeneScoreTest {
     }
 
     @Test
+    public void testMaxCombinedScore() {
+        GeneScore max = GeneScore.builder().combinedScore(1f).build();
+        GeneScore other = GeneScore.builder().combinedScore(0.5f).build();
+
+        assertThat(GeneScore.max(max, other), equalTo(max));
+        assertThat(GeneScore.max(other, max), equalTo(max));
+
+        GeneScore positiveZero = GeneScore.builder().combinedScore(0f).build();
+        GeneScore negativeZero = GeneScore.builder().combinedScore(-0f).build();
+
+        assertThat(GeneScore.max(positiveZero, negativeZero), equalTo(positiveZero));
+        assertThat(GeneScore.max(negativeZero, positiveZero), equalTo(positiveZero));
+    }
+
+    @Test
     public void testCompareTo() {
         GeneIdentifier first = GeneIdentifier.builder().geneSymbol("1ABC").build();
         GeneIdentifier second = GeneIdentifier.builder().geneSymbol("1BBC").build();

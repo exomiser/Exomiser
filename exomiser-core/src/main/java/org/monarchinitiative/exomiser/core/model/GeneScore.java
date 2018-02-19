@@ -78,6 +78,12 @@ public final class GeneScore implements Comparable<GeneScore> {
         return contributingVariants;
     }
 
+    public static GeneScore max(GeneScore s1, GeneScore s2) {
+        float s1CombinedScore = s1.getCombinedScore();
+        float maxCombinedScore = Math.max(s1CombinedScore, s2.getCombinedScore());
+        return (Float.compare(maxCombinedScore, s1CombinedScore) == 0) ? s1 : s2;
+    }
+
     /**
      * Compares two specified {@code GeneScore} objects. The natural ordering of these objects is the reverse numerical
      * ordering of their {@code combinedScore} or if this value is equal to 0, the natural order of their {@code GeneSymbol}.
