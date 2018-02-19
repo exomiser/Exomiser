@@ -30,11 +30,11 @@ import java.util.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class CompHetChecker {
+class CompHetAlleleCalculator {
 
     private final InheritanceModeAnnotator inheritanceAnnotator;
 
-    public CompHetChecker(Pedigree pedigree) {
+    CompHetAlleleCalculator(Pedigree pedigree) {
         this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree);
     }
 

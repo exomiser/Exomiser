@@ -77,6 +77,8 @@ public class Analysis {
 
     //these are more optional variables
     private final List<String> hpoIds;
+    //TODO: Make this a Map<ModeOfInheritance, Float> inheritanceModeFrequencyCutOffs
+    //percentage value minor allele frequency cutoffs to use when considering variants in the scores
     private final Set<ModeOfInheritance> modeOfInheritance;
 
     private final AnalysisMode analysisMode;

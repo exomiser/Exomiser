@@ -45,7 +45,7 @@ import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactor
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class CompHetCheckerTest {
+public class CompHetAlleleCalculatorTest {
 
 
     @Test
@@ -108,7 +108,7 @@ public class CompHetCheckerTest {
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson);
 
-        CompHetChecker instance = new CompHetChecker(pedigree);
+        CompHetAlleleCalculator instance = new CompHetAlleleCalculator(pedigree);
         List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.getPassedVariantEvaluations());
 
         assertThat(compHetAlleles.size(), equalTo(2));
