@@ -39,8 +39,6 @@ import java.util.function.ToDoubleFunction;
  * IMPORTANT: It is required that all genes have been filtered and the {@link InheritanceModeAnalyser} has been run.
  * Ideally the genes should also have been run through a {@link org.monarchinitiative.exomiser.core.prioritisers.Prioritiser}
  *
- *
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class GenePriorityScoreCalculator {
@@ -87,12 +85,14 @@ class GenePriorityScoreCalculator {
             return 0.5;
         }
 
-        //if we're still here check the compatibility of the gene against the known modes for the disease
+        // if we're still here check the compatibility of the gene against the known modes for the disease
+        // under the current mode of inheritance
         List<Disease> knownAssociatedDiseases = getAssociatedDiseasesForGene(gene);
+
         return knownAssociatedDiseases.stream()
                 .filter(disease -> disease.getInheritanceMode() != InheritanceMode.UNKNOWN)
                 .map(Disease::getInheritanceMode)
-                .mapToDouble(scoreInheritanceMode(gene))
+                .mapToDouble(scoreInheritanceMode(gene, modeOfInheritance))
                 .max()
                 .orElse(1);
     }
@@ -106,36 +106,36 @@ class GenePriorityScoreCalculator {
     }
 
     /**
-         * This function checks whether the mode of inheritance of the disease
-         * matches the observed pattern of variants. That is, if the disease is
-         * autosomal recessive and we have just one heterozygous mutation, then the
-         * disease is probably not the correct diagnosis, and we assign it a factor
-         * of 0.5. Note that hemizygous X chromosomal variants are usually called as
-         * homozygous ALT in VCF files, and thus it is not reliable to distinguish
-         * between X-linked recessive and dominant inheritance. Therefore, we return
-         * 1 for any gene with X-linked inheritance if the disease in question is
-         * listed as X chromosomal.
-         */
-        private ToDoubleFunction<InheritanceMode> scoreInheritanceMode(Gene gene){
-            return inheritanceMode -> {
-                // not likely a rare-disease
-                // gene only associated with somatic mutations or is polygenic
-                if (inheritanceMode == InheritanceMode.SOMATIC || inheritanceMode == InheritanceMode.POLYGENIC) {
-                    return 0.5;
-                }
+     * This function checks whether the mode of inheritance of the disease
+     * matches the observed pattern of variants. That is, if the disease is
+     * autosomal recessive and we have just one heterozygous mutation, then the
+     * disease is probably not the correct diagnosis, and we assign it a factor
+     * of 0.5. Note that hemizygous X chromosomal variants are usually called as
+     * homozygous ALT in VCF files, and thus it is not reliable to distinguish
+     * between X-linked recessive and dominant inheritance. Therefore, we return
+     * 1 for any gene with X-linked inheritance if the disease in question is
+     * listed as X chromosomal.
+     */
+    private ToDoubleFunction<InheritanceMode> scoreInheritanceMode(Gene gene, ModeOfInheritance currentMode) {
+        return inheritanceMode -> {
+            // not likely a rare-disease
+            // gene only associated with somatic mutations or is polygenic
+            if (inheritanceMode == InheritanceMode.SOMATIC || inheritanceMode == InheritanceMode.POLYGENIC) {
+                return 0.5;
+            }
 
-                // Y chromosomal, rare.
-                if (inheritanceMode == InheritanceMode.Y_LINKED) {
-                    return 1;
-                }
+            // Y chromosomal, rare.
+            if (inheritanceMode == InheritanceMode.Y_LINKED) {
+                return 1;
+            }
 
-                // Gene compatible with any known mode of inheritance for this disease?
-                // If yes, we're good, otherwise down-rank this gene.
-                return geneCompatibleWithInheritanceMode(gene, inheritanceMode)? 1 : 0.5;
-            };
-        }
+            // Gene compatible with any known mode of inheritance for this disease?
+            // If yes, we're good, otherwise down-rank this gene-disease-inheritance mode association.
+            return geneCompatibleWithInheritanceMode(gene, inheritanceMode, currentMode) ? 1 : 0.5;
+        };
+    }
 
-    private boolean geneCompatibleWithInheritanceMode(Gene gene, InheritanceMode inheritanceMode) {
+    private boolean geneCompatibleWithInheritanceMode(Gene gene, InheritanceMode inheritanceMode, ModeOfInheritance currentMode) {
         /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
         if (gene.getInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
             return true;
@@ -144,7 +144,7 @@ class GenePriorityScoreCalculator {
         //as long as the gene is compatible with at least one of the known modes for the disease we'll return the
         //default score
         for (ModeOfInheritance mode : compatibleDiseaseModes) {
-            if (gene.isCompatibleWith(mode)) {
+            if (gene.isCompatibleWith(mode) && mode == currentMode) {
                 return true;
             }
         }

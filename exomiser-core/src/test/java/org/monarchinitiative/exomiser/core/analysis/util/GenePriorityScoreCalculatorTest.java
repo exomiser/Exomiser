@@ -219,10 +219,31 @@ public class GenePriorityScoreCalculatorTest {
 
         addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.AUTOSOMAL_DOMINANT);
 
-        double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(score, equalTo(PHENOTYPE_SCORE));
+        double adScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(adScore, equalTo(PHENOTYPE_SCORE));
+
+        double arScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        assertThat(arScore, equalTo(0.5 * PHENOTYPE_SCORE));
     }
 
+    @Test
+    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesDiseaseWithUnknownGeneInheritance() {
+        // Here we have a gene with a possible dominant or compound het compatible set of variants
+        Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
+
+        // This simulates frequent cases where there is an OMIM and Orphanet entry for the same disorder, but Orphanet
+        // does not indicate an inheritance mode.
+        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.UNKNOWN);
+
+        // Under AD the known associated diseases are incompatible so the score should be reduced
+        double adScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(adScore, equalTo(0.5 * PHENOTYPE_SCORE));
+
+        // Under AR all modes are compatible so we expect the full phenotype score
+        double arScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        assertThat(arScore, equalTo(PHENOTYPE_SCORE));
+    }
 
     @Test
     public void prioritisedGeneWithKnownDiseasePolygenicInheritance() {
