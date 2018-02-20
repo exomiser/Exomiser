@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -92,7 +92,7 @@ public class HiPhiveProteinInteractionScorer {
         return Collections.unmodifiableMap(highestGeneIdPhenoScores);
     }
 
-    //todo: If this returned a DataMatrix things might be a bit more convenient later on...
+    //If this returned a DataMatrix things might be a bit more convenient later on...
     private FloatMatrix makeWeightedProteinInteractionMatrix() {
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
         logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getMatrix()
@@ -103,7 +103,7 @@ public class HiPhiveProteinInteractionScorer {
         int c = 0;
         for (Map.Entry<Integer, Double> entry : highQualityPhenoMatchedGeneScores.entrySet()) {
             Integer seedGeneEntrezId = entry.getKey();
-            //TODO: the original DataMatrix is a symmetrical matrix this new one is asymmetrical with the original rows but only high-quality columns.
+            //The original DataMatrix is a symmetrical matrix this new one is asymmetrical with the original rows but only high-quality columns.
             if (dataMatrix.containsGene(seedGeneEntrezId)) {
                 FloatMatrix column = dataMatrix.getColumnMatrixForGene(seedGeneEntrezId);
                 // weight column by phenoScore
@@ -154,20 +154,40 @@ public class HiPhiveProteinInteractionScorer {
      *
      * @param entrezGeneId for which the random walk score is to be retrieved
      */
-    //TODO: speed this up? This bit is slow. This can be done in a single operation without having to pre-compute the high-quality matrix.
+    // Can this can be done in a single operation without having to pre-compute the high-quality matrix?
     private int getColumnIndexOfMostPhenotypicallySimilarGene(int entrezGeneId) {
-        int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
-        int columnIndex = 0;
-        double bestScore = 0;
-        int bestHitIndex = -1;
-        //TODO: here were walking along all the columns of a row from the high quality matches, i.e. traversing a list to find the value and position of the highest value in that list.
-        //The matrix is (12511 rows * 303 columns)
+        // Here were walking along all the columns of a row from the high quality matches,
+        // i.e. traversing a list to find the value and position of the highest value in that list.
+        // The matrix is (12511 rows * 303 columns)
         // The output of this function (assigned to columnIndex) is used to:
         // define the walkerScore:
         // walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
         //
         // Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
         // closestPhysicallyInteractingGeneModels = bestGeneModels.get(closestGeneId);
+        int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
+        int bestHitIndex = -1;
+        double bestScore = 0;
+        for (int i = 0; i < highQualityPhenoMatchedGeneIds.size(); i++) {
+            //slow auto-unboxing
+            int geneId = highQualityPhenoMatchedGeneIds.get(i);
+            //avoid self-hits now are testing genes with direct pheno-evidence as well
+            if (geneId != entrezGeneId) {
+                double cellScore = weightedHighQualityMatrix.get(geneIndex, i);
+                bestScore = Math.max(bestScore, cellScore);
+                if (cellScore == bestScore) {
+                    bestHitIndex = i;
+                }
+            }
+        }
+        return bestHitIndex;
+    }
+
+    private int slowFindBestHitIndex(int entrezGeneId) {
+        int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
+        int columnIndex = 0;
+        double bestScore = 0;
+        int bestHitIndex = -1;
         for (Integer similarGeneEntrezId : highQualityPhenoMatchedGeneIds) {
             if (!dataMatrix.containsGene(similarGeneEntrezId) || similarGeneEntrezId == entrezGeneId) {
                 //avoid self-hits now are testing genes with direct pheno-evidence as well
