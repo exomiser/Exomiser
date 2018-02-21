@@ -124,7 +124,7 @@ public class HiPhiveProteinInteractionScorer {
             return GeneMatch.NO_HIT;
         }
         int rowIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
-        int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(entrezGeneId);
+        int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(rowIndex, entrezGeneId);
 
         /* Changed method to return -1 if no hit as otherwise could not distinguish between
         no hit or hit to 1st entry in column (entrezGene 50640). When querying with 50640 this
@@ -155,7 +155,7 @@ public class HiPhiveProteinInteractionScorer {
      * @param entrezGeneId for which the random walk score is to be retrieved
      */
     // Can this can be done in a single operation without having to pre-compute the high-quality matrix?
-    private int getColumnIndexOfMostPhenotypicallySimilarGene(int entrezGeneId) {
+    private int getColumnIndexOfMostPhenotypicallySimilarGene(int geneRowIndex, int entrezGeneId) {
         // Here were walking along all the columns of a row from the high quality matches,
         // i.e. traversing a list to find the value and position of the highest value in that list.
         // The matrix is (12511 rows * 303 columns)
@@ -165,7 +165,6 @@ public class HiPhiveProteinInteractionScorer {
         //
         // Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
         // closestPhysicallyInteractingGeneModels = bestGeneModels.get(closestGeneId);
-        int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
         int bestHitIndex = -1;
         double bestScore = 0;
         for (int i = 0; i < highQualityPhenoMatchedGeneIds.size(); i++) {
@@ -173,7 +172,7 @@ public class HiPhiveProteinInteractionScorer {
             int geneId = highQualityPhenoMatchedGeneIds.get(i);
             //avoid self-hits now are testing genes with direct pheno-evidence as well
             if (geneId != entrezGeneId) {
-                double cellScore = weightedHighQualityMatrix.get(geneIndex, i);
+                double cellScore = weightedHighQualityMatrix.get(geneRowIndex, i);
                 bestScore = Math.max(bestScore, cellScore);
                 if (cellScore == bestScore) {
                     bestHitIndex = i;
@@ -183,8 +182,7 @@ public class HiPhiveProteinInteractionScorer {
         return bestHitIndex;
     }
 
-    private int slowFindBestHitIndex(int entrezGeneId) {
-        int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
+    private int slowFindBestHitIndex(int geneRowIndex, int entrezGeneId) {
         int columnIndex = 0;
         double bestScore = 0;
         int bestHitIndex = -1;
@@ -193,7 +191,7 @@ public class HiPhiveProteinInteractionScorer {
                 //avoid self-hits now are testing genes with direct pheno-evidence as well
                 columnIndex++;
             } else {
-                double cellScore = weightedHighQualityMatrix.get(geneIndex, columnIndex);
+                double cellScore = weightedHighQualityMatrix.get(geneRowIndex, columnIndex);
                 if (cellScore > bestScore) {
                     bestScore = cellScore;
                     bestHitIndex = columnIndex;
