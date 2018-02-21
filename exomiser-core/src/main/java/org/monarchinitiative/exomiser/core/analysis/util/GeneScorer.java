@@ -42,7 +42,6 @@ public interface GeneScorer {
     public Function<Gene, List<GeneScore>> scoreGene();
 
     default List<Gene> scoreGenes(List<Gene> genes) {
-        //TODO! FIX THIS
         genes.forEach(gene -> {
             List<GeneScore> geneScores = scoreGene().apply(gene);
             for (GeneScore score : geneScores) {
