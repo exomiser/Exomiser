@@ -123,8 +123,7 @@ class ContributingAlleleCalculator {
     }
 
     private List<VariantEvaluation> findNonAutosomalRecessiveContributingVariants(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
-        Optional<VariantEvaluation> bestVariant = variantEvaluations
-                .stream()
+        Optional<VariantEvaluation> bestVariant = variantEvaluations.stream()
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 
         bestVariant.ifPresent(variantEvaluation -> variantEvaluation.setContributesToGeneScoreUnderMode(modeOfInheritance));
