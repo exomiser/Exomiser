@@ -60,7 +60,8 @@ public class RawScoreGeneScorer implements GeneScorer {
      */
     public RawScoreGeneScorer(int probandSampleId, Set<ModeOfInheritance> inheritanceModes, Pedigree pedigree) {
         this.inheritanceModes = inheritanceModes;
-        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleId, pedigree);
+        //TODO InheritanceModeMaxMafs should be injected
+        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleId, pedigree, InheritanceModeMaxMafs.defaults());
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
     }
 

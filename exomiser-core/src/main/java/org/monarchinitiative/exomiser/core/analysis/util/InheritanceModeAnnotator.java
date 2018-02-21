@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.genome.VariantContextSampleGenotypeCo
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,11 @@ public class InheritanceModeAnnotator {
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnnotator.class);
 
     private final MendelianInheritanceChecker mendelChecker;
+    private final InheritanceModeMaxMafs moiMaxMafs;
 
-    public InheritanceModeAnnotator(Pedigree pedigree) {
+    public InheritanceModeAnnotator(Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
         this.mendelChecker = new MendelianInheritanceChecker(pedigree);
+        this.moiMaxMafs = inheritanceModeMaxMafs;
     }
 
     /**
@@ -94,11 +97,13 @@ public class InheritanceModeAnnotator {
 
     private Map<ModeOfInheritance, List<VariantEvaluation>> variantsGroupedByCompatibleMode(Map<ModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls) {
         Map<ModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(ModeOfInheritance.class);
-        for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
+        for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
             ModeOfInheritance compatibleMode = entry.getKey();
             if (compatibleMode != ModeOfInheritance.ANY) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
-                List<VariantEvaluation> compatibleVariants = getCompatibleVariants(genotypeCalls);
+                //inheritance maximum minor allele frequency
+                float maxFreqForMode = moiMaxMafs.getMaxFreqForMode(compatibleMode);
+                List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
                 if (!compatibleVariants.isEmpty()) {
                     results.put(compatibleMode, compatibleVariants);
                 }
@@ -109,24 +114,29 @@ public class InheritanceModeAnnotator {
 
     private Map<SubModeOfInheritance, List<VariantEvaluation>> variantsGroupedByCompatibleSubMode(Map<SubModeOfInheritance, ImmutableList<GenotypeCalls>> compatibilityCalls) {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(SubModeOfInheritance.class);
-        for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()){
-            SubModeOfInheritance compatibleMode = entry.getKey();
-            if (compatibleMode != SubModeOfInheritance.ANY) {
+        for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
+            SubModeOfInheritance compatibleSubMode = entry.getKey();
+            if (compatibleSubMode != SubModeOfInheritance.ANY) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
-                List<VariantEvaluation> compatibleVariants = getCompatibleVariants(genotypeCalls);
+                //Add filter for mode of inheritance frequency here
+                float maxFreqForMode = moiMaxMafs.getMaxFreqForSubMode(compatibleSubMode);
+                List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
                 if (!compatibleVariants.isEmpty()) {
-                    results.put(compatibleMode, compatibleVariants);
+                    results.put(compatibleSubMode, compatibleVariants);
                 }
             }
         }
         return results;
     }
 
-    private List<VariantEvaluation> getCompatibleVariants(List<GenotypeCalls> genotypeCalls) {
+    private List<VariantEvaluation> getCompatibleVariantsUnderFrequencyThreshold(List<GenotypeCalls> genotypeCalls, float maxFreqForMode) {
         List<VariantEvaluation> compatibleVariants = new ArrayList<>();
         for (GenotypeCalls callResults : genotypeCalls) {
-            VariantEvaluation payload = (VariantEvaluation) callResults.getPayload();
-            compatibleVariants.add(payload);
+            VariantEvaluation variantEvaluation = (VariantEvaluation) callResults.getPayload();
+            FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+            if (frequencyData.getMaxFreq() <= maxFreqForMode) {
+                compatibleVariants.add(variantEvaluation);
+            }
         }
         return compatibleVariants;
     }

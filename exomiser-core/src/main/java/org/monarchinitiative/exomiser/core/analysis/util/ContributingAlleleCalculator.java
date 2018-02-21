@@ -43,9 +43,9 @@ class ContributingAlleleCalculator {
     private final int probandSampleId;
     private final CompHetAlleleCalculator compHetAlleleCalculator;
 
-    ContributingAlleleCalculator(int probandSampleId, Pedigree pedigree) {
+    ContributingAlleleCalculator(int probandSampleId, Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
         this.probandSampleId = probandSampleId;
-        this.compHetAlleleCalculator = new CompHetAlleleCalculator(pedigree);
+        this.compHetAlleleCalculator = new CompHetAlleleCalculator(pedigree, inheritanceModeMaxMafs);
     }
 
     /**

@@ -33,11 +33,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class InheritanceModeMaxFrequenciesTest {
+public class InheritanceModeMaxMafsTest {
+
+    @Test
+    public void empty() {
+        InheritanceModeMaxMafs instance = InheritanceModeMaxMafs.empty();
+
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.X_DOMINANT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.X_RECESSIVE), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.MITOCHONDRIAL), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForMode(ModeOfInheritance.ANY), equalTo(Float.MAX_VALUE));
+
+        //
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.X_DOMINANT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.X_RECESSIVE_COMP_HET), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.X_RECESSIVE_HOM_ALT), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.MITOCHONDRIAL), equalTo(Float.MAX_VALUE));
+        assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.ANY), equalTo(Float.MAX_VALUE));
+    }
 
     @Test
     public void defaultModeOfInheritanceValues() {
-        InheritanceModeMaxFrequencies instance = InheritanceModeMaxFrequencies.defaultValues();
+        InheritanceModeMaxMafs instance = InheritanceModeMaxMafs.defaults();
 
         float defaultDominantFreq = 0.1f;
         assertThat(instance.getMaxFreqForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(defaultDominantFreq));
@@ -54,7 +76,7 @@ public class InheritanceModeMaxFrequenciesTest {
 
     @Test
     public void defaultSubModeOfInheritanceValues() {
-        InheritanceModeMaxFrequencies instance = InheritanceModeMaxFrequencies.defaultValues();
+        InheritanceModeMaxMafs instance = InheritanceModeMaxMafs.defaults();
 
         float defaultDominantFreq = 0.1f;
         assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(defaultDominantFreq));
@@ -77,36 +99,36 @@ public class InheritanceModeMaxFrequenciesTest {
 
     @Test(expected = NullPointerException.class)
     public void throwsExceptionWithNullInput() {
-        InheritanceModeMaxFrequencies.of(null);
+        InheritanceModeMaxMafs.of(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWithNonPercentageValue() {
         //check upper bounds
         Map<SubModeOfInheritance, Float> tooHigh = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
-        InheritanceModeMaxFrequencies.of(tooHigh);
+        InheritanceModeMaxMafs.of(tooHigh);
 
         //check lower bounds
         Map<SubModeOfInheritance, Float> tooLow = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
-        InheritanceModeMaxFrequencies.of(tooLow);
+        InheritanceModeMaxMafs.of(tooLow);
     }
 
     @Test
     public void testMaxAndMinValues() {
         //check max
         Map<SubModeOfInheritance, Float> max = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 100f);
-        InheritanceModeMaxFrequencies.of(max);
+        InheritanceModeMaxMafs.of(max);
 
         //check min
         Map<SubModeOfInheritance, Float> min = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0f);
-        InheritanceModeMaxFrequencies.of(min);
+        InheritanceModeMaxMafs.of(min);
     }
 
     @Test
     public void userDefinedFrequencyCutoffs() {
         Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
         //should we allow this to happen? If people don't define the COMP_HET and HOM_ALT then the recessive modes won't
-        InheritanceModeMaxFrequencies instance = InheritanceModeMaxFrequencies.of(userDefinedThresholds);
+        InheritanceModeMaxMafs instance = InheritanceModeMaxMafs.of(userDefinedThresholds);
 
         assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET), equalTo(1f));
         assertThat(instance.getMaxFreqForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(1f));
@@ -116,6 +138,6 @@ public class InheritanceModeMaxFrequenciesTest {
 
     @Test
     public void testToString() {
-        System.out.println(InheritanceModeMaxFrequencies.defaultValues());
+        System.out.println(InheritanceModeMaxMafs.defaults());
     }
 }

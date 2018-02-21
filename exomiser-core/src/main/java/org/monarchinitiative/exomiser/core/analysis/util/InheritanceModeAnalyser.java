@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toMap;
  * it i.e., to determine if they are compatible with autosomal recessive,
  * autosomal dominant, or X-linked recessive inheritance.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class InheritanceModeAnalyser {
 
@@ -53,8 +53,9 @@ public class InheritanceModeAnalyser {
     private final InheritanceModeAnnotator inheritanceAnnotator;
 
     public InheritanceModeAnalyser(Set<ModeOfInheritance> wantedModes, Pedigree pedigree) {
+        //TODO: InheritanceModeMaxMafs ought to be injected
         this.wantedModes = Sets.immutableEnumSet(wantedModes);
-        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree);
+        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
     }
 
     /**

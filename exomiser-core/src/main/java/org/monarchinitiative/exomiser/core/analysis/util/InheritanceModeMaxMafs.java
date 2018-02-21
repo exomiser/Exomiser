@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -35,14 +36,15 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.0.0
  */
-public class InheritanceModeMaxFrequencies {
+public class InheritanceModeMaxMafs {
 
-    private static final InheritanceModeMaxFrequencies DEFAULT = defaultMap();
+    private static final InheritanceModeMaxMafs DEFAULT = defaultMap();
+    private static final InheritanceModeMaxMafs EMPTY = new InheritanceModeMaxMafs(Collections.emptyMap());
 
     private final Map<SubModeOfInheritance, Float> subMoiMaxFreqs;
     private final Map<ModeOfInheritance, Float> moiMaxFreqs;
 
-    private static InheritanceModeMaxFrequencies defaultMap() {
+    private static InheritanceModeMaxMafs defaultMap() {
         Map<SubModeOfInheritance, Float> maxFreqs = new EnumMap<>(SubModeOfInheritance.class);
 
         maxFreqs.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
@@ -55,21 +57,25 @@ public class InheritanceModeMaxFrequencies {
 
         maxFreqs.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
 
-        return new InheritanceModeMaxFrequencies(maxFreqs);
+        return new InheritanceModeMaxMafs(maxFreqs);
     }
 
-    public static InheritanceModeMaxFrequencies defaultValues() {
+    public static InheritanceModeMaxMafs defaults() {
         return DEFAULT;
     }
 
-    public static InheritanceModeMaxFrequencies of(Map<SubModeOfInheritance, Float> values) {
-        Objects.requireNonNull(values);
-        return new InheritanceModeMaxFrequencies(values);
+    public static InheritanceModeMaxMafs empty() {
+        return EMPTY;
     }
 
-    private InheritanceModeMaxFrequencies(Map<SubModeOfInheritance, Float> values) {
+    public static InheritanceModeMaxMafs of(Map<SubModeOfInheritance, Float> values) {
+        Objects.requireNonNull(values);
+        return new InheritanceModeMaxMafs(values);
+    }
+
+    private InheritanceModeMaxMafs(Map<SubModeOfInheritance, Float> values) {
         this.subMoiMaxFreqs = Maps.immutableEnumMap(values);
-        this.subMoiMaxFreqs.forEach(InheritanceModeMaxFrequencies::checkBounds);
+        this.subMoiMaxFreqs.forEach(InheritanceModeMaxMafs::checkBounds);
         this.moiMaxFreqs = createInheritanceModeMaxFreqs(subMoiMaxFreqs);
     }
 
@@ -143,7 +149,7 @@ public class InheritanceModeMaxFrequencies {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        InheritanceModeMaxFrequencies that = (InheritanceModeMaxFrequencies) o;
+        InheritanceModeMaxMafs that = (InheritanceModeMaxMafs) o;
         return Objects.equals(subMoiMaxFreqs, that.subMoiMaxFreqs) &&
                 Objects.equals(moiMaxFreqs, that.moiMaxFreqs);
     }

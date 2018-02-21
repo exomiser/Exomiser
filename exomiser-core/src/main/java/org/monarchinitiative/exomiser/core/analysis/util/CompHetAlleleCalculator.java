@@ -34,8 +34,8 @@ class CompHetAlleleCalculator {
 
     private final InheritanceModeAnnotator inheritanceAnnotator;
 
-    CompHetAlleleCalculator(Pedigree pedigree) {
-        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree);
+    CompHetAlleleCalculator(Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
+        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeMaxMafs);
     }
 
     /**
