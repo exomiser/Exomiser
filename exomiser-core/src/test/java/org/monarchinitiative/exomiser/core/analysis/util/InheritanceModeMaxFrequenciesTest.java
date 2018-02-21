@@ -20,12 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.Test;
 
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -84,37 +83,28 @@ public class InheritanceModeMaxFrequenciesTest {
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWithNonPercentageValue() {
         //check upper bounds
-        Map<SubModeOfInheritance, Float> tooHigh = new HashMap<>();
-        tooHigh.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
-
+        Map<SubModeOfInheritance, Float> tooHigh = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
         InheritanceModeMaxFrequencies.of(tooHigh);
 
         //check lower bounds
-        Map<SubModeOfInheritance, Float> toolow = new HashMap<>();
-        tooHigh.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
-
-        InheritanceModeMaxFrequencies.of(toolow);
+        Map<SubModeOfInheritance, Float> tooLow = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
+        InheritanceModeMaxFrequencies.of(tooLow);
     }
 
     @Test
     public void testMaxAndMinValues() {
         //check max
-        Map<SubModeOfInheritance, Float> max = new HashMap<>();
-        max.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 100f);
-
+        Map<SubModeOfInheritance, Float> max = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 100f);
         InheritanceModeMaxFrequencies.of(max);
 
         //check min
-        Map<SubModeOfInheritance, Float> min = new HashMap<>();
-        max.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0f);
-
+        Map<SubModeOfInheritance, Float> min = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0f);
         InheritanceModeMaxFrequencies.of(min);
     }
 
     @Test
     public void userDefinedFrequencyCutoffs() {
-        Map<SubModeOfInheritance, Float> userDefinedThresholds = new EnumMap<>(SubModeOfInheritance.class);
-        userDefinedThresholds.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
+        Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
         //should we allow this to happen? If people don't define the COMP_HET and HOM_ALT then the recessive modes won't
         InheritanceModeMaxFrequencies instance = InheritanceModeMaxFrequencies.of(userDefinedThresholds);
 
