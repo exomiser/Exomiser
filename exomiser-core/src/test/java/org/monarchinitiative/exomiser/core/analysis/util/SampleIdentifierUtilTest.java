@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.SampleMismatchException;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,67 +33,61 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class SampleNameCheckerTest {
+public class SampleIdentifierUtilTest {
 
     @Test
     public void testGetProbandSampleIdWithEmptyProbandNameAndEmptySampleNames() {
-        int sampleId = SampleNameChecker.getProbandSampleId("", Collections.emptyList());
-        assertThat(sampleId, equalTo(0));
+        SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("", Collections.emptyList());
+        assertThat(sampleId, equalTo(SampleIdentifier.of("Sample", 0)));
     }
 
     @Test
     public void testGetProbandSampleIdWithProbandNameAndSampleNameMatch() {
-        int sampleId = SampleNameChecker.getProbandSampleId("David", Collections.singletonList("David"));
-        assertThat(sampleId, equalTo(0));
+        SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("David", Collections.singletonList("David"));
+        assertThat(sampleId, equalTo(SampleIdentifier.of("David", 0)));
     }
 
     @Test(expected = SampleMismatchException.class)
     public void testGetProbandSampleIdWithProbandNameAndEmptySampleNames() {
-        SampleNameChecker.getProbandSampleId("David", Collections.emptyList());
+        SampleIdentifierUtil.createProbandIdentifier("David", Collections.emptyList());
     }
 
     @Test(expected = SampleMismatchException.class)
     public void testGetProbandSampleIdWithProbandNameAndSampleNameMisMatch() {
-        SampleNameChecker.getProbandSampleId("David", Collections.singletonList("Slartibartfast"));
+        SampleIdentifierUtil.createProbandIdentifier("David", Collections.singletonList("Slartibartfast"));
     }
 
     @Test(expected = SampleMismatchException.class)
     public void testGetProbandSampleIdWithProbandNameAndSampleNamesMisMatch() {
-        SampleNameChecker.getProbandSampleId("David", Arrays.asList("Slartibartfast", "Homer"));
+        SampleIdentifierUtil.createProbandIdentifier("David", Arrays.asList("Slartibartfast", "Homer"));
     }
 
     @Test(expected = SampleMismatchException.class)
     public void testGetProbandSampleIdWithEmptyProbandNameAndSampleNamesMisMatch() {
-        SampleNameChecker.getProbandSampleId("", Arrays.asList("Slartibartfast", "Homer"));
+        SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "Homer"));
     }
 
     @Test
     public void testGetProbandSampleIdWithProbandNameAndSampleNamesMatchFirstInList() {
-        int sampleId = SampleNameChecker.getProbandSampleId("David", Arrays.asList("David", "Slartibartfast"));
-        assertThat(sampleId, equalTo(0));
+        SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("David", Arrays.asList("David", "Slartibartfast"));
+        assertThat(sampleId, equalTo(SampleIdentifier.of("David", 0)));
     }
 
     @Test
     public void testGetProbandSampleIdWithProbandNameAndSampleNamesMatchNotFirstInList() {
-        int sampleId = SampleNameChecker.getProbandSampleId("David", Arrays.asList("Slartibartfast", "David"));
-        assertThat(sampleId, equalTo(1));
-    }
-
-    @Test
-    public void testGetProbandSampleNameWithEmptyProbandNameAndNoSampleNameInList() {
-        String sampleName = SampleNameChecker.getProbandSampleName("", Collections.emptyList());
-        assertThat(sampleName, equalTo(""));
+        SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("David", Arrays.asList("Slartibartfast", "David"));
+        assertThat(sampleId, equalTo(SampleIdentifier.of("David", 1)));
     }
 
     @Test
     public void testGetProbandSampleNameWithEmptyProbandNameAndOneSampleNameInList() {
-        String sampleName = SampleNameChecker.getProbandSampleName("", Collections.singletonList("David"));
-        assertThat(sampleName, equalTo("David"));
+        SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("", Collections.singletonList("David"));
+        assertThat(sampleId, equalTo(SampleIdentifier.of("David", 0)));
     }
 
     @Test(expected = SampleMismatchException.class)
     public void testGetProbandSampleNameWithEmptyProbandNameAndMultipleSampleNamesInList() {
-        SampleNameChecker.getProbandSampleName("", Arrays.asList("Slartibartfast", "David"));
+        SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "David"));
     }
 
 }

@@ -61,7 +61,7 @@ public class SampleIdentifier {
         return id;
     }
 
-    public int getPosition() {
+    public int getGenotypePosition() {
         return position;
     }
 

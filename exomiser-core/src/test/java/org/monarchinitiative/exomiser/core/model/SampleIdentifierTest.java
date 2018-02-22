@@ -44,7 +44,7 @@ public class SampleIdentifierTest {
     public void standardInitialisation() {
         SampleIdentifier instance = SampleIdentifier.of("Slartibartfast", 1);
         assertThat(instance.getId(), equalTo("Slartibartfast"));
-        assertThat(instance.getPosition(), equalTo(1));
+        assertThat(instance.getGenotypePosition(), equalTo(1));
     }
 
     @Test
