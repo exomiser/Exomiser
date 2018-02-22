@@ -25,7 +25,6 @@ import htsjdk.tribble.TribbleException;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -80,12 +79,5 @@ public class VcfFilesTest {
         Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
         VCFHeader header = VcfFiles.readVcfHeader(vcfPath);
         assertThat(header.getGenotypeSamples(), equalTo(ImmutableList.of("sample")));
-    }
-
-    @Test
-    public void testReadVcfSamples() {
-        Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
-        List<SampleIdentifier> samples = VcfFiles.readVcfSamples(vcfPath);
-        assertThat(samples, equalTo(ImmutableList.of(SampleIdentifier.of("sample", 0))));
     }
 }

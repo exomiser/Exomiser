@@ -20,16 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -66,29 +63,6 @@ public class VcfFiles {
      */
     public static VCFHeader readVcfHeader(Path vcfPath) {
         logger.info("Reading VCF header from file {}", vcfPath);
-        return readHeader(vcfPath);
-    }
-
-    /**
-     * Creates an orderd list of {@code SampleIdentifier} created from the genotype sample names as listed in the VCF
-     * header.
-     *
-     * @param vcfPath path to the VCF file.
-     * @return an ordered list of {@code SampleIdentifier} for the genotype sample names in the VCF header.
-     * @since 10.0.0
-     */
-    public static List<SampleIdentifier> readVcfSamples(Path vcfPath) {
-        logger.info("Reading VCF samples from file {}", vcfPath);
-        VCFHeader vcfHeader = readHeader(vcfPath);
-        List<String> genotypeSampleNames = vcfHeader.getGenotypeSamples();
-        ImmutableList.Builder<SampleIdentifier> samples = ImmutableList.builder();
-        for (int i = 0; i < genotypeSampleNames.size(); i++) {
-            samples.add(SampleIdentifier.of(genotypeSampleNames.get(i), i));
-        }
-        return samples.build();
-    }
-
-    private static VCFHeader readHeader(Path vcfPath) {
         try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
             return vcfReader.getFileHeader();
         }
