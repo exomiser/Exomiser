@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -159,14 +159,7 @@ public class FrequencyData {
      * @return
      */
     public float getMaxFreq() {
-        //TODO this is analagous to PathogenicityData.getMostPathogenicScore()
-        //TODO so should really return a Frequency object...
-        float maxFreq = 0f;
-        for (Frequency freq : knownFrequencies.values()) {
-            //TODO ...but frequency needs to implement comparable first
-            maxFreq = Math.max(maxFreq, freq.getFrequency());
-        }
-        return maxFreq;
+        return (float) knownFrequencies.values().stream().mapToDouble(Frequency::getFrequency).max().orElse(0);
     }
 
     @Override
