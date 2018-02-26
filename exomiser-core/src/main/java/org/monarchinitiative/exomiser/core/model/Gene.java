@@ -230,12 +230,12 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     @Override
-    public Set<ModeOfInheritance> getInheritanceModes() {
+    public Set<ModeOfInheritance> getCompatibleInheritanceModes() {
         return inheritanceModes;
     }
 
     @Override
-    public void setInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
+    public void setCompatibleInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
         this.inheritanceModes = Sets.immutableEnumSet(inheritanceModes);
     }
 

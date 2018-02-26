@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
@@ -98,7 +99,11 @@ public class VariantEvaluationTest {
 
     @Before
     public void setUp() {
-        instance = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+        instance = newInstance();
+    }
+
+    private VariantEvaluation newInstance() {
+        return VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
                 .geneId(GENE1_GENE_ID)
@@ -365,6 +370,16 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    public void failedFilterTypesForModeAutosomalDominantPassesFilters() {
+        instance.addFilterResult(PASS_FREQUENCY_RESULT);
+        instance.setCompatibleInheritanceModes(ImmutableSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(instance.getFailedFilterTypesForMode(ModeOfInheritance.ANY), equalTo(Collections.emptySet()));
+        assertThat(instance.getFailedFilterTypesForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(Collections.emptySet()));
+        assertThat(instance.getFailedFilterTypesForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(EnumSet.of(FilterType.INHERITANCE_FILTER)));
+        assertThat(instance.getFailedFilterTypesForMode(ModeOfInheritance.MITOCHONDRIAL), equalTo(EnumSet.of(FilterType.INHERITANCE_FILTER)));
+    }
+
+    @Test
     public void testBuilderFilterResultsGetFailedFilterTypesDontContainPassedFilterTypes() {
         Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.getFilterType());
         VariantEvaluation variantEvaluation = testVariantBuilder()
@@ -466,6 +481,52 @@ public class VariantEvaluationTest {
         instance.addFilterResult(PASS_QUALITY_RESULT);
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
         assertThat(instance.getFilterStatus(), equalTo(FilterStatus.FAILED));
+    }
+
+    @Test
+    public void filterStatusForModePassedAutosomalDominantOnly() {
+        instance.addFilterResult(PASS_QUALITY_RESULT);
+        instance.setCompatibleInheritanceModes(ImmutableSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.ANY), equalTo(FilterStatus.PASSED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(FilterStatus.PASSED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(FilterStatus.FAILED));
+    }
+
+    @Test
+    public void filterStatusForModePassedAutosomalDominantAndRecessive() {
+        instance.addFilterResult(PASS_QUALITY_RESULT);
+        instance.setCompatibleInheritanceModes(ImmutableSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.ANY), equalTo(FilterStatus.PASSED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(FilterStatus.PASSED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(FilterStatus.PASSED));
+    }
+
+    @Test
+    public void filterStatusForModePassedNotFiltered() {
+        instance.addFilterResult(PASS_QUALITY_RESULT);
+
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.ANY), equalTo(FilterStatus.PASSED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(FilterStatus.FAILED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(FilterStatus.FAILED));
+    }
+
+    @Test
+    public void filterStatusForModeUnFiltered() {
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.ANY), equalTo(FilterStatus.UNFILTERED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(FilterStatus.UNFILTERED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(FilterStatus.UNFILTERED));
+    }
+
+    @Test
+    public void filterStatusForFailedModeAutosomalDominantOnly() {
+        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
+        instance.setCompatibleInheritanceModes(ImmutableSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.ANY), equalTo(FilterStatus.FAILED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(FilterStatus.FAILED));
+        assertThat(instance.getFilterStatusForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(FilterStatus.FAILED));
     }
 
     @Test
@@ -598,8 +659,8 @@ public class VariantEvaluationTest {
     @Test
     public void testCompatibleInheritanceModes() {
         Set<ModeOfInheritance> compatibleModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        instance.setInheritanceModes(compatibleModes);
-        assertThat(instance.getInheritanceModes(), equalTo(compatibleModes));
+        instance.setCompatibleInheritanceModes(compatibleModes);
+        assertThat(instance.getCompatibleInheritanceModes(), equalTo(compatibleModes));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
@@ -618,12 +679,7 @@ public class VariantEvaluationTest {
         VariantEvaluation three = VariantEvaluation.builder(2, 1, "C", "T").build();
         VariantEvaluation four = VariantEvaluation.builder(2, 1, "C", "TT").build();
 
-        List<VariantEvaluation> variants = new ArrayList<>();
-        variants.add(zero);
-        variants.add(one);
-        variants.add(two);
-        variants.add(three);
-        variants.add(four);
+        List<VariantEvaluation> variants = Arrays.asList(zero, one, two, three, four);
         Collections.shuffle(variants);
 
         System.out.println("Shuffled:");
@@ -631,12 +687,7 @@ public class VariantEvaluationTest {
 
         Collections.sort(variants);
 
-        List<VariantEvaluation> expected = new ArrayList<>();
-        expected.add(zero);
-        expected.add(one);
-        expected.add(two);
-        expected.add(three);
-        expected.add(four);
+        List<VariantEvaluation> expected = Arrays.asList(zero, one, two, three, four);
 
         System.out.println("Sorted:");
         variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
@@ -665,13 +716,7 @@ public class VariantEvaluationTest {
                 .variantEffect(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)
                 .build();
 
-        List<VariantEvaluation> variants = new ArrayList<>();
-        variants.add(zero);
-        variants.add(one);
-        variants.add(two);
-        variants.add(three);
-        variants.add(four);
-        return variants;
+        return Arrays.asList(zero, one, two, three, four);
     }
 
     @Test

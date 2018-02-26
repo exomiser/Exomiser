@@ -84,7 +84,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
-    private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+    private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
     private VariantEvaluation(Builder builder) {
         genomeAssembly = builder.genomeAssembly;
@@ -287,12 +287,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return addFailedFilterResult(filterResult);
     }
 
-    private boolean addPassedFilterResult(FilterResult filterResult) {
+    private synchronized boolean addPassedFilterResult(FilterResult filterResult) {
         passedFilterTypes.add(filterResult.getFilterType());
         return true;
     }
 
-    private boolean addFailedFilterResult(FilterResult filterResult) {
+    private synchronized boolean addFailedFilterResult(FilterResult filterResult) {
         failedFilterTypes.add(filterResult.getFilterType());
         return false;
     }
@@ -302,7 +302,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * filtering
      */
     public Set<FilterType> getPassedFilterTypes() {
-        return passedFilterTypes;
+        return EnumSet.copyOf(passedFilterTypes);
     }
 
     /**
@@ -310,7 +310,25 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * failed to pass.
      */
     public Set<FilterType> getFailedFilterTypes() {
-        return failedFilterTypes;
+        return EnumSet.copyOf(failedFilterTypes);
+    }
+
+    /**
+     * Under some inheritance modes a variant should not pass, but others it will. For example if a variant is relatively
+     * common it could pass as being compatible under a compound heterozygous model, but might be too common to be
+     * considered as a candidate under an autosomal dominant model. Hence we need to be able to check whether a variant
+     * passed under a specific mode of inheritance otherwise alleles will be reported as having passed under the wrong mode.
+     *
+     * @param modeOfInheritance the mode of inheritance under which the failed filters are required.
+     * @return a set of failed {@code FilterType} for the variant under the {@code ModeOfInheritance} input model.
+     */
+    public synchronized Set<FilterType> getFailedFilterTypesForMode(ModeOfInheritance modeOfInheritance){
+        EnumSet<FilterType> failedFiltersCopy = EnumSet.copyOf(failedFilterTypes);
+        if (!isCompatibleWith(modeOfInheritance)) {
+            failedFiltersCopy.add(FilterType.INHERITANCE_FILTER);
+            return failedFiltersCopy;
+        }
+        return failedFiltersCopy;
     }
 
     /**
@@ -325,16 +343,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return
      */
     @Override
-    public boolean passedFilters() {
+    public synchronized boolean passedFilters() {
         return failedFilterTypes.isEmpty();
     }
 
     @Override
-    public boolean passedFilter(FilterType filterType) {
+    public synchronized boolean passedFilter(FilterType filterType) {
         return !failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType);
     }
 
-    private boolean isUnFiltered() {
+    private synchronized boolean isUnFiltered() {
         return failedFilterTypes.isEmpty() && passedFilterTypes.isEmpty();
     }
 
@@ -343,6 +361,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return FilterStatus.UNFILTERED;
         }
         if (passedFilters()) {
+            return FilterStatus.PASSED;
+        }
+        return FilterStatus.FAILED;
+    }
+
+    public FilterStatus getFilterStatusForMode(ModeOfInheritance modeOfInheritance) {
+        if (isUnFiltered()) {
+            return FilterStatus.UNFILTERED;
+        }
+        if (isCompatibleWith(modeOfInheritance) && passedFilters()) {
             return FilterStatus.PASSED;
         }
         return FilterStatus.FAILED;
@@ -444,22 +472,22 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     @Override
-    public void setInheritanceModes(Set<ModeOfInheritance> compatibleModes) {
+    public void setCompatibleInheritanceModes(Set<ModeOfInheritance> compatibleModes) {
         if (compatibleModes.isEmpty()) {
-            inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+            compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         } else {
-            this.inheritanceModes = EnumSet.copyOf(compatibleModes);
+            this.compatibleInheritanceModes = EnumSet.copyOf(compatibleModes);
         }
     }
     
     @Override
-    public Set<ModeOfInheritance> getInheritanceModes() {
-        return inheritanceModes;
+    public Set<ModeOfInheritance> getCompatibleInheritanceModes() {
+        return EnumSet.copyOf(compatibleInheritanceModes);
     }
 
     @Override
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
-        return modeOfInheritance == ModeOfInheritance.ANY || inheritanceModes.contains(modeOfInheritance);
+        return modeOfInheritance == ModeOfInheritance.ANY || compatibleInheritanceModes.contains(modeOfInheritance);
     }
     
     /**
@@ -543,10 +571,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if(contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
             return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                    + " compatibleWith=" + inheritanceModes + "}";
+                    + " compatibleWith=" + compatibleInheritanceModes + "}";
         }
         return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                + " compatibleWith=" + inheritanceModes + "}";
+                + " compatibleWith=" + compatibleInheritanceModes + "}";
     }
 
     public static Builder builder(int chr, int pos, String ref, String alt) {

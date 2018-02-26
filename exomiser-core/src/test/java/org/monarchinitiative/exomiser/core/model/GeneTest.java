@@ -411,17 +411,17 @@ public class GeneTest {
 
     @Test
     public void defaultInheritanceModesAreEmpty() {
-        assertThat(instance.getInheritanceModes(), notNullValue());
-        assertThat(instance.getInheritanceModes().isEmpty(), is(true));
+        assertThat(instance.getCompatibleInheritanceModes(), notNullValue());
+        assertThat(instance.getCompatibleInheritanceModes().isEmpty(), is(true));
     }
 
     @Test
     public void canSetAndGetInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
-        assertThat(instance.getInheritanceModes(), equalTo(inheritanceModes));
+        assertThat(instance.getCompatibleInheritanceModes(), equalTo(inheritanceModes));
     }
 
     @Test
@@ -429,7 +429,7 @@ public class GeneTest {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
                 ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -445,7 +445,7 @@ public class GeneTest {
     public void isConsistentWithDominantInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -461,7 +461,7 @@ public class GeneTest {
     public void isConsistentWithRecessiveInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -477,7 +477,7 @@ public class GeneTest {
     public void isConsistentWithXRecessiveInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -493,7 +493,7 @@ public class GeneTest {
     public void isConsistentWithXDominantInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
