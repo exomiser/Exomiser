@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -49,6 +50,7 @@ public class VcfFiles {
      * @return a {@code Stream} of {@code VariantContext}
      */
     public static Stream<VariantContext> readVariantContexts(Path vcfPath) {
+        Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
         logger.info("Reading variants from VCF file {}", vcfPath);
         try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
             return vcfReader.iterator().stream();
@@ -62,6 +64,7 @@ public class VcfFiles {
      * @return the {@code VCFHeader} object parsed from the file
      */
     public static VCFHeader readVcfHeader(Path vcfPath) {
+        Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
         logger.info("Reading VCF header from file {}", vcfPath);
         try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
             return vcfReader.getFileHeader();

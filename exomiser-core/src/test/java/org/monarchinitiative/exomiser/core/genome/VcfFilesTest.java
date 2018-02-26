@@ -41,6 +41,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class VcfFilesTest {
 
+    @Test(expected = NullPointerException.class)
+    public void testCreateVariantContextsNullPath() {
+        VcfFiles.readVariantContexts(null);
+    }
+
     @Test(expected = TribbleException.class)
     public void testCreateVariantContexts_NonExistentFile() {
         Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
