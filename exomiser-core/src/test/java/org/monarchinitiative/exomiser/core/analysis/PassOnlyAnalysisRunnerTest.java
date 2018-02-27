@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -180,7 +181,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(qualityFilter)
                 .addStep(mockHiPhivePrioritiser)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -278,7 +279,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(priorityScoreFilter)
                 .addStep(intervalFilter)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -313,7 +314,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(childAffectedPedPath)
                 .probandSampleName("Seth")
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
@@ -325,7 +326,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Gene passedGene = results.get("GNRHR2");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(passedGene.getEntrezGeneID(), equalTo(114814));
         assertThat(passedGene.getGeneSymbol(), equalTo("GNRHR2"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
@@ -341,7 +342,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(twoAffectedPedPath)
                 .probandSampleName("Seth")
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
@@ -353,7 +354,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
@@ -369,7 +370,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(childAffectedPedPath)
                 .probandSampleName("Seth")
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
@@ -382,7 +383,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(2));
@@ -393,7 +394,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         passedGene = results.get("FGFR2");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         assertThat(passedGene.getEntrezGeneID(), equalTo(2263));
         assertThat(passedGene.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));

@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,13 +45,16 @@ public class AnalysisResultsWriter {
         logger.info("Writing results...");
         writeResultsToHtmlFile(analysis, analysisResults, outputSettings);
 
-        //analysis.getModeOfInheritance() is currently empty if marked as UNDEFINED, [] or [ANY] in the yaml file
-        if (analysis.getModeOfInheritance().isEmpty()) {
+        InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
+        if (inheritanceModeOptions.isEmpty()) {
             writeForInheritanceMode(ModeOfInheritance.ANY, analysis, outputSettings, resultsWriterFactory, analysisResults);
         } else {
-            //Change the getModeOfInheritance to getInheritanceModes?
-            for (ModeOfInheritance modeOfInheritance : analysis.getModeOfInheritance()) {
+            for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
                 logger.info("Writing {} results:", modeOfInheritance);
+                // Can't do this in parallel because theses are mutated each time for a different mode here.
+                // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
+                // without interfering with other writes for different modes. Check RAM requirements.
+                // Will only save a few seconds, so is not a rate-limiting step.
                 analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
 
                 writeForInheritanceMode(modeOfInheritance, analysis, outputSettings, resultsWriterFactory, analysisResults);

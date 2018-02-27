@@ -51,7 +51,7 @@ public class GenePriorityScoreCalculatorTest {
 
     private Gene newGeneCompatibleWith(ModeOfInheritance... modes) {
         Gene gene =  TestFactory.newGeneFGFR2();
-        gene.setInheritanceModes(ImmutableSet.copyOf(modes));
+        gene.setCompatibleInheritanceModes(ImmutableSet.copyOf(modes));
         return gene;
     }
 

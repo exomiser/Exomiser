@@ -22,7 +22,9 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -52,6 +54,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static java.nio.file.Files.newInputStream;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @since 7.0.0
@@ -210,7 +213,7 @@ public class AnalysisParser {
                     .pedPath(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
-                    .modeOfInheritance(parseModeOfInheritance(analysisMap))
+                    .inheritanceModeOptions(inheritanceModeOptions(analysisMap))
                     .analysisMode(parseAnalysisMode(analysisMap))
                     .frequencySources(parseFrequencySources(analysisMap))
                     .pathogenicitySources(parsePathogenicitySources(analysisMap))
@@ -286,18 +289,33 @@ public class AnalysisParser {
             return hpoIds;
         }
 
-        private Set<ModeOfInheritance> parseModeOfInheritance(Map<String, Object> analysisMap) {
-            Object modeOfInheritanceInput = analysisMap.get("modeOfInheritance");
+        private InheritanceModeOptions inheritanceModeOptions(Map<String, Object> analysisMap) {
+            String modeOfInheritanceInput = (String) analysisMap.get("modeOfInheritance");
 
-            if (String.class.isInstance(modeOfInheritanceInput)) {
-                //Pre 10.0.0 version - only expected a single string value
-                String value = (String) modeOfInheritanceInput;
-                return parseModesOfInheritanceFromList(Collections.singletonList(value));
+            //Pre 10.0.0 version - only expected a single string value
+            if (modeOfInheritanceInput != null) {
+                throw new AnalysisParserException("modeOfInheritance option no longer supported. Please supply a map of inheritanceModes. See examples for details.");
             }
-            if (List.class.isInstance(modeOfInheritanceInput)) {
-                return parseModesOfInheritanceFromList((List<String>) modeOfInheritanceInput);
+
+            //Version 10.0.0 - expect a map of SubModeOfInheritance
+            Map<String, Double> inheritanceModesInput = (Map<String, Double>) analysisMap.get("inheritanceModes");
+
+            if (inheritanceModesInput != null) {
+                Map<SubModeOfInheritance, Float> inheritanceModes = new EnumMap<>(SubModeOfInheritance.class);
+                for (Entry<String, Double> entry : inheritanceModesInput.entrySet()) {
+                    SubModeOfInheritance subMode = parseValueOfSubInheritanceMode(entry.getKey());
+                    if (subMode == SubModeOfInheritance.ANY) {
+                        logger.info("Ignoring inheritance mode {}", subMode);
+                    } else {
+                        Double value = entry.getValue();
+                        logger.info("Adding inheritance mode {} max MAF {}", subMode, value);
+                        inheritanceModes.put(subMode, value.floatValue());
+                    }
+                }
+
+                return InheritanceModeOptions.of(inheritanceModes);
             }
-            return Analysis.DEFAULT_INHERITANCE_MODES;
+            return InheritanceModeOptions.empty();
         }
 
 
@@ -312,6 +330,17 @@ public class AnalysisParser {
                     .map(this::parseValueOfInheritanceMode)
                     .filter(mode -> mode != ModeOfInheritance.ANY)
                     .collect(Collectors.toSet());
+        }
+
+        private SubModeOfInheritance parseValueOfSubInheritanceMode(String value) {
+            try {
+                return SubModeOfInheritance.valueOf(value);
+            } catch (IllegalArgumentException e) {
+                List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
+                        .filter(mode -> mode != SubModeOfInheritance.ANY)
+                        .collect(toList());
+                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
+            }
         }
 
         private ModeOfInheritance parseValueOfInheritanceMode(String value) {
@@ -373,7 +402,7 @@ public class AnalysisParser {
                 case "pathogenicityFilter":
                     return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
                 case "inheritanceFilter":
-                    return makeInheritanceFilter(parseModeOfInheritance(analysisMap));
+                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap));
                 case "priorityScoreFilter":
                     return makePriorityScoreFilter(analysisStepMap);
                 case "regulatoryFeatureFilter":
@@ -534,12 +563,12 @@ public class AnalysisParser {
             return new RegulatoryFeatureFilter();
         }
 
-        private InheritanceFilter makeInheritanceFilter(Set<ModeOfInheritance> modeOfInheritance) {
-            if (modeOfInheritance.isEmpty() || modeOfInheritance.equals(InheritanceFilter.JUST_ANY)) {
-                logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
+        private InheritanceFilter makeInheritanceFilter(InheritanceModeOptions inheritanceModeOptions) {
+            if (inheritanceModeOptions.isEmpty()) {
+                logger.info("Not making an inheritance filter for undefined mode of inheritance");
                 return null;
             }
-            return new InheritanceFilter(modeOfInheritance);
+            return new InheritanceFilter(inheritanceModeOptions.getDefinedModes());
         }
 
         private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options) {

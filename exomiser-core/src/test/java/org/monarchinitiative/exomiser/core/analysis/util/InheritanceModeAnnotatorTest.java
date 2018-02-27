@@ -58,7 +58,7 @@ public class InheritanceModeAnnotatorTest {
     public void testAnalyseInheritanceModesEmptyInput() {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Nemo");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
 
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(Collections.emptyList());
         assertThat(results, equalTo(Collections.emptyMap()));
@@ -75,7 +75,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -96,7 +96,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -117,7 +117,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -145,7 +145,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -175,7 +175,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, sisterPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -196,7 +196,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -224,7 +224,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -252,7 +252,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -281,7 +281,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -309,7 +309,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -342,7 +342,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -364,7 +364,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -390,7 +390,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
         //Both alleles are potentially dominant, but they are deemed too common in the population to be causative of a rare disease
@@ -413,7 +413,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -452,7 +452,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, Set<VariantEvaluation>> expected = ImmutableMap.of(
@@ -490,7 +490,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         //TODO Something's up with alt alleles with a 0/2 genotype - the 0/1 genotype shouldn't be HET in this case?
@@ -524,7 +524,7 @@ public class InheritanceModeAnnotatorTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -545,7 +545,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
@@ -567,6 +567,7 @@ public class InheritanceModeAnnotatorTest {
         alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq, FrequencySource.LOCAL)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq / 2f, FrequencySource.LOCAL)));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
@@ -574,8 +575,8 @@ public class InheritanceModeAnnotatorTest {
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
         );
-        InheritanceModeMaxMafs inheritanceModeMaxMafs = InheritanceModeMaxMafs.of(maxMafMap);
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeMaxMafs);
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
@@ -605,8 +606,8 @@ public class InheritanceModeAnnotatorTest {
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
         );
-        InheritanceModeMaxMafs inheritanceModeMaxMafs = InheritanceModeMaxMafs.of(maxMafMap);
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeMaxMafs);
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
@@ -632,7 +633,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.empty());
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.empty());
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 

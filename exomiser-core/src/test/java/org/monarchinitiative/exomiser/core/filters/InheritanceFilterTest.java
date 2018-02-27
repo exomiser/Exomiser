@@ -52,16 +52,16 @@ public class InheritanceFilterTest {
     public void setUp() {
 
         compatibleWithAutosomalDominant = new Gene("mockGeneId", 12345);
-        compatibleWithAutosomalDominant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        compatibleWithAutosomalDominant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         compatibleWithAutosomalRecessive = new Gene("mockGeneId", 12345);
-        compatibleWithAutosomalRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        compatibleWithAutosomalRecessive.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         compatibleWithAutosomalDominantAndRecessive = new Gene("mockGeneId", 12345);
-        compatibleWithAutosomalDominantAndRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        compatibleWithAutosomalDominantAndRecessive.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         compatibleWithXLinked = new Gene("mockGeneId", 12345);
-        compatibleWithXLinked.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
+        compatibleWithXLinked.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
     }
 
     @Test

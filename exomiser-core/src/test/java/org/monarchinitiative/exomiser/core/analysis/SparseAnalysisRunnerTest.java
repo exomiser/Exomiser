@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -136,7 +137,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(qualityFilter)
                 .addStep(mockHiPhivePrioritiser)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -181,7 +182,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(qualityFilter)
                 .addStep(mockHiPhivePrioritiser)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -320,7 +321,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(priorityScoreFilter)
                 .addStep(intervalFilter)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);

@@ -42,6 +42,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -100,27 +101,33 @@ public class RawScoreGeneScorerTest {
     }
 
     private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId) {
-        return scoreGene(gene, modeOfInheritance, sampleId, Pedigree.constructSingleSamplePedigree("sample"));
+        return scoreGene(gene, modeOfInheritance, SampleIdentifier.of("sample", sampleId), Pedigree.constructSingleSamplePedigree("sample"));
     }
 
-    private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId, Pedigree pedigree) {
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(sampleId, EnumSet.of(modeOfInheritance), pedigree);
+    private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, SampleIdentifier probandSample, Pedigree pedigree) {
+        InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaultForModes(modeOfInheritance));
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(probandSample, inheritanceModeAnnotator);
         return instance.scoreGene().apply(gene);
     }
 
-    private List<GeneScore> scoreGene(Gene gene, Set<ModeOfInheritance> inheritanceModes, int sampleId) {
-        return scoreGene(gene, inheritanceModes, sampleId, Pedigree.constructSingleSamplePedigree("sample"));
+    private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, int sampleId) {
+        return scoreGene(gene, inheritanceModeOptions, SampleIdentifier.of("sample", sampleId), Pedigree.constructSingleSamplePedigree("sample"));
     }
 
-    private List<GeneScore> scoreGene(Gene gene, Set<ModeOfInheritance> inheritanceModes, int sampleId, Pedigree pedigree) {
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(sampleId, inheritanceModes, pedigree);
+    private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample) {
+        return scoreGene(gene, inheritanceModeOptions, probandSample, Pedigree.constructSingleSamplePedigree("sample"));
+    }
+
+    private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample, Pedigree pedigree) {
+        InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(probandSample, inheritanceModeAnnotator);
         return instance.scoreGene().apply(gene);
     }
 
     @Test
     public void testScoreGeneWithoutPriorityResultsOrVariants_UNINITIALIZED() {
         Gene gene = newGene();
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         GeneScore expected = GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -169,7 +176,7 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithSingleFailedVariant_UNINITIALIZED() {
         Gene gene = newGene(failFreq());
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         GeneScore expected = GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -221,7 +228,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithSinglePassedVariant_UNINITIALIZED() {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
         Gene gene = newGene(passAllFrameshift);
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -240,7 +247,7 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_DOMINANT() {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
-        passAllFrameshift.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Gene gene = newGene(passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, 0);
@@ -283,11 +290,11 @@ public class RawScoreGeneScorerTest {
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
         VariantEvaluation probandHomAlt = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext, VariantEffect.MISSENSE_VARIANT);
-        probandHomAlt.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        probandHomAlt.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         Gene gene = newGene(probandHomAlt);
 
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0, pedigree);
+        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, SampleIdentifier.of(probandPerson.getName(), 0), pedigree);
 
         float variantScore = probandHomAlt.getVariantScore();
 
@@ -331,7 +338,7 @@ public class RawScoreGeneScorerTest {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
 
         Gene gene = newGene(passAllFrameshift, failFreq());
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -355,7 +362,7 @@ public class RawScoreGeneScorerTest {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
 
         Gene gene = newGene(passAllFrameshift, passAllMissense);
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -376,10 +383,10 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_DOMINANT_inheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
-        passAllMissense.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         VariantEvaluation passAllFrameshift = passAllFrameShift();
-        passAllFrameshift.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Gene gene = newGene(passAllFrameshift, passAllMissense);
 
@@ -405,10 +412,10 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithTwoPassedVariants_X_DOMINANT_inheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
-        passAllMissense.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_DOMINANT));
+        passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
         VariantEvaluation passAllFrameshift = passAllFrameShift();
-        passAllFrameshift.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_DOMINANT));
+        passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
         Gene gene = newGene(passAllFrameshift, passAllMissense);
 
@@ -432,10 +439,10 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
-        passAllMissense.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         VariantEvaluation passAllFrameshift = passAllFrameShift();
-        passAllFrameshift.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         Gene gene = newGene(passAllMissense, passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
@@ -457,13 +464,13 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithThreePassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
-        passAllMissense.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         VariantEvaluation passAllSynonymous = passAllSynonymous();
-        passAllSynonymous.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        passAllSynonymous.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         VariantEvaluation passAllFrameshift = passAllFrameShift();
-        passAllFrameshift.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         Gene gene = newGene(passAllMissense, passAllSynonymous, passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
@@ -508,7 +515,7 @@ public class RawScoreGeneScorerTest {
         List<Gene> genes = Lists.newArrayList(last, first, middle);
         Collections.shuffle(genes);
 
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(0, EnumSet.of(ModeOfInheritance.ANY), Pedigree.constructSingleSamplePedigree("Nemo"));
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(SampleIdentifier.of("sample", 0), new InheritanceModeAnnotator(Pedigree.constructSingleSamplePedigree("Nemo"), InheritanceModeOptions.empty()));
         instance.scoreGenes(genes);
 
         genes.forEach(System.out::println);
@@ -524,7 +531,7 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene();
         gene.addPriorityResult(new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), 1d));
 
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.ANY, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         GeneScore expected = GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -541,7 +548,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithoutPriorityResultsOrVariantsAllInheritanceModes() {
         Gene gene = newGene();
         EnumSet<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.X_DOMINANT, ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.MITOCHONDRIAL);
-        List<GeneScore> geneScores = scoreGene(gene, inheritanceModes, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.defaults(), 0);
 
         List<GeneScore> expected = inheritanceModes.stream()
                 .map(mode ->  GeneScore.builder()
@@ -560,8 +567,7 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithoutPriorityResultsOrVariantsOrInheritanceModes() {
         Gene gene = newGene();
-        EnumSet<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        List<GeneScore> geneScores = scoreGene(gene, inheritanceModes, 0);
+        List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
         List<GeneScore> expected = ImmutableList.of(
                 GeneScore.builder()

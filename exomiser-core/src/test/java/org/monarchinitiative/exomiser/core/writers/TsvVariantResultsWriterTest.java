@@ -145,10 +145,10 @@ public class TsvVariantResultsWriterTest {
         OutputSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
 
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         VariantEvaluation passVariant = makePassVariant();
-        passVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         fgfr2.addVariant(passVariant);
 
         AnalysisResults results = AnalysisResults.builder()
@@ -165,10 +165,10 @@ public class TsvVariantResultsWriterTest {
     public void testContributingVariantIsIndicated() {
         OutputSettings settings = settingsBuilder.build();
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         VariantEvaluation passVariant = makePassVariant();
-        passVariant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         passVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         fgfr2.addVariant(passVariant);
 

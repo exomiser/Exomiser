@@ -25,13 +25,15 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
@@ -82,7 +84,16 @@ public class AnalysisParserTest {
                 + "    vcf: test.vcf\n"
                 + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
-                + "    modeOfInheritance: [AUTOSOMAL_DOMINANT]\n"
+//                + "    modeOfInheritance: [AUTOSOMAL_DOMINANT]\n"
+                + "    inheritanceModes: {\n" +
+                "            AUTOSOMAL_DOMINANT: 0.1,\n" +
+                "            AUTOSOMAL_RECESSIVE_HOM_ALT: 1.0,\n" +
+                "            AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,\n" +
+                "            X_DOMINANT: 0.1,\n" +
+                "            X_RECESSIVE_HOM_ALT: 1.0,\n" +
+                "            X_RECESSIVE_COMP_HET: 2.0,\n" +
+                "            MITOCHONDRIAL: 0.2 \n" +
+                "      }\n"
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
                 + "    analysisMode: PASS_ONLY \n"
                 + "    frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN, EXAC_AFRICAN_INC_AFRICAN_AMERICAN]\n"
@@ -99,7 +110,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getProbandSampleName(), equalTo(""));
-        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
@@ -214,9 +225,12 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: [AUTOSOMAL_DOMINANT] \n"
+                        + "    inheritanceModes: {\n"
+                        + "        AUTOSOMAL_DOMINANT: 0.1 \n"
+                        + "}\n"
                         + "    ");
-        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
     @Test
@@ -224,9 +238,14 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: [AUTOSOMAL_DOMINANT, ANY] \n"
+                        + "    inheritanceModes: {\n"
+                        + "        AUTOSOMAL_DOMINANT: 0.1,\n"
+                        + "        ANY: 0.1 \n"
+                        + "}\n"
                         + "    ");
-        assertThat(analysis.getModeOfInheritance(), equalTo(Sets.immutableEnumSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+
+        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
     @Test(expected = AnalysisParserException.class)
@@ -234,8 +253,8 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: [AD]\n"
-                        + "    ");
+                        + "    modeOfInheritance: AD\n"
+                        );
     }
 
     /**
@@ -248,7 +267,7 @@ public class AnalysisParserTest {
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    geneScoreMode: RAW_SCORE\n"
-                        + "    ");
+                        );
         Analysis expected = Analysis.builder().vcfPath(Paths.get("test.vcf")).build();
         assertThat(analysis, equalTo(expected));
     }
@@ -363,7 +382,8 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
-                + "    modeOfInheritance: UNINITIALIZED\n"
+//                + "    modeOfInheritance: UNINITIALIZED\n"
+                + "    inheritanceModes: {}\n"
                 + "    hpoIds: []\n"
                 + "    analysisMode: PASS_ONLY \n"
                 + "    pathogenicitySources: []\n"
@@ -380,14 +400,15 @@ public class AnalysisParserTest {
         instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    modeOfInheritance: [WIBBLE!]"
+//                        + "    modeOfInheritance: [WIBBLE!]"
+                        + "    inheritanceModes: {WIBBLE: 0.0}\n"
         );
     }
 
     @Test
     public void testParseAnalysisStep_InheritanceFilterDefinedMode() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("inheritanceFilter: {}"));
-        analysisSteps.add(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        analysisSteps.add(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.X_DOMINANT, ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.MITOCHONDRIAL));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -443,7 +464,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(EnumSet.of(modeOfInheritance)));
+        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(modeOfInheritance)));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));

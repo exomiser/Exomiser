@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.base.Joiner;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.commons.csv.CSVFormat;
@@ -106,9 +105,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
             }
         } else {
             for (Gene gene : analysisResults.getGenes()) {
-                if (gene.isCompatibleWith(modeOfInheritance)) {
-                    writeAllVariantsOfGene(modeOfInheritance, gene, printer);
-                }
+                writeAllVariantsOfGene(modeOfInheritance, gene, printer);
             }
         }
     }
@@ -116,7 +113,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private void writeOnlyPassVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
         for (VariantEvaluation ve : gene.getPassedVariantEvaluations()) {
             if (ve.isCompatibleWith(modeOfInheritance)) {
-                List<Object> record = getRecordOfVariant(modeOfInheritance, ve, gene);
+                List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
                 printer.printRecord(record);
             }
         }
@@ -125,12 +122,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private void writeAllVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
         for (VariantEvaluation ve : gene.getVariantEvaluations()) {
             //don't check that the variant is compatible under a particular mode of inheritance as otherwise a failing variant won't appear in the output.
-            List<Object> record = getRecordOfVariant(modeOfInheritance, ve, gene);
+            List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
             printer.printRecord(record);
         }
     }
 
-    private List<Object> getRecordOfVariant(ModeOfInheritance modeOfInheritance, VariantEvaluation ve, Gene gene) {
+    private List<Object> buildVariantRecord(ModeOfInheritance modeOfInheritance, VariantEvaluation ve, Gene gene) {
         List<Object> record = new ArrayList<>();
         VariantContext variantContext = ve.getVariantContext();
         // CHROM
@@ -144,7 +141,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // QUAL
         record.add(formatter.format(ve.getPhredScore()));
         // FILTER
-        record.add(makeFiltersField(ve));
+        record.add(makeFiltersField(modeOfInheritance, ve));
         // GENOTYPE
         record.add(ve.getGenotypeString());
         // COVERAGE
@@ -223,17 +220,19 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-    private String makeFiltersField(VariantEvaluation variantEvaluation) {
-        switch (variantEvaluation.getFilterStatus()) {
+    private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
+        //under some modes a variant should not pass, but others it will, so we need to check this here
+        //otherwise when running FULL or SPARSE modes alleles will be reported as having passed under the wrong MOI
+        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
             case FAILED:
-                return formatFailedFilters(variantEvaluation.getFailedFilterTypes());
+                Set<FilterType> failedFilterTypes = variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance);
+                return formatFailedFilters(failedFilterTypes);
             case PASSED:
                 return "PASS";
             case UNFILTERED:
             default:
                 return ".";
         }
-
     }
 
     private String formatFailedFilters(Set<FilterType> failedFilters) {
@@ -255,11 +254,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
         TranscriptAnnotation anno = annotations.get(0);
 
-        final Joiner joiner = Joiner.on(":").skipNulls();
-        return joiner.join(anno.getGeneSymbol(),
-                anno.getAccession(),
-                anno.getHgvsCdna(),
-                anno.getHgvsProtein());
+        StringJoiner stringJoiner = new StringJoiner(":");
+        stringJoiner.add(anno.getGeneSymbol());
+        stringJoiner.add(anno.getAccession());
+        stringJoiner.add(anno.getHgvsCdna());
+        stringJoiner.add(anno.getHgvsProtein());
+        return stringJoiner.toString();
     }
 
 }

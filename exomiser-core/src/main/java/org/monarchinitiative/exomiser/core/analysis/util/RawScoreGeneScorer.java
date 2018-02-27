@@ -26,9 +26,9 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -54,14 +54,16 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
     /**
-     * @param probandSampleId   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
-     * @param inheritanceModes  Inheritance modes which the genes should be scored for.
-     * @param pedigree          Pedigree containing the proband - either a single sample pedigree or the proband and their family.
+     * @param probandSampleIdentifier   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
+     * @param inheritanceModeAnnotator  An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
+     * @throws NullPointerException if any input arguments are null.
+     * @since 10.0.0
      */
-    public RawScoreGeneScorer(int probandSampleId, Set<ModeOfInheritance> inheritanceModes, Pedigree pedigree) {
-        this.inheritanceModes = inheritanceModes;
-        //TODO InheritanceModeMaxMafs should be injected
-        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleId, pedigree, InheritanceModeMaxMafs.defaults());
+    public RawScoreGeneScorer(SampleIdentifier probandSampleIdentifier, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        Objects.requireNonNull(probandSampleIdentifier);
+        Objects.requireNonNull(inheritanceModeAnnotator);
+        this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
+        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleIdentifier, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
     }
 

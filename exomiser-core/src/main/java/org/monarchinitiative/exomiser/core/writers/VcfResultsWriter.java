@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -114,8 +115,9 @@ public class VcfResultsWriter implements ResultsWriter {
         // create a VariantContextWriter writing to the output file path
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults
-                        .getVcfHeader(),
+        VCFHeader vcfHeader = getVcfHeader(analysis);
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(
+                vcfHeader,
                 outFile.toString(),
                 getAdditionalHeaderLines(),
                 false)) {
@@ -124,12 +126,22 @@ public class VcfResultsWriter implements ResultsWriter {
         logger.info("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
+    private VCFHeader getVcfHeader(Analysis analysis) {
+        Path vcfPath = analysis.getVcfPath();
+        try {
+            return VcfFiles.readVcfHeader(vcfPath);
+        } catch (Exception e) {
+            logger.error("Unable to read vcf file - using empty header instead", e);
+        }
+        return new VCFHeader();
+    }
+
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(analysis.getVcfPath());
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults
-                        .getVcfHeader(), baos, getAdditionalHeaderLines())) {
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos, getAdditionalHeaderLines())) {
             writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
@@ -176,11 +188,9 @@ public class VcfResultsWriter implements ResultsWriter {
      */
     private void writeAllSampleData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
         for (Gene gene : analysisResults.getGenes()) {
-            if (gene.isCompatibleWith(modeOfInheritance)) {
                 logger.debug("updating variant records for gene {}", gene);
                 List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, gene.getVariantEvaluations());
                 updatedRecords.forEach(writer::add);
-            }
         }
     }
 
@@ -232,7 +242,7 @@ public class VcfResultsWriter implements ResultsWriter {
         VariantContext variantContext = variantEvaluation.getVariantContext();
         VariantContextBuilder builder = new VariantContextBuilder(variantContext);
         // update filter and info fields and write out to writer.
-        updateFilterField(builder, variantEvaluation);
+        updateFilterField(builder, variantEvaluation, modeOfInheritance);
         updateInfoField(builder, variantEvaluations, gene, modeOfInheritance);
         return builder.make();
     }
@@ -241,10 +251,10 @@ public class VcfResultsWriter implements ResultsWriter {
      * Update the FILTER field of <code>builder</code> given the
      * {@link VariantEvaluation}.
      */
-    private void updateFilterField(VariantContextBuilder builder, VariantEvaluation ve) {
-        switch (ve.getFilterStatus()) {
+    private void updateFilterField(VariantContextBuilder builder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance) {
+        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
             case FAILED:
-                builder.filters(makeFailedFilters(ve.getFailedFilterTypes()));
+                builder.filters(makeFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance)));
                 break;
             case PASSED:
                 builder.filter("PASS");
@@ -295,7 +305,8 @@ public class VcfResultsWriter implements ResultsWriter {
             builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), gene.getCombinedScoreForMode(modeOfInheritance));
             builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), gene.getPriorityScoreForMode(modeOfInheritance));
             builder.attribute(ExomiserVcfInfoField.GENE_VARIANT_SCORE.getId(), gene.getVariantScoreForMode(modeOfInheritance));
-            builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
+            //variant scores need a list of VariantEvaluations so as to concatenate the fields in Allele order
+            builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations));
             builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
             builder.attribute(ExomiserVcfInfoField.VARIANT_HGVS.getId(), buildHgvs(variantEvaluations));
             for (VariantEvaluation variantEvaluation : variantEvaluations) {

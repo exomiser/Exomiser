@@ -77,7 +77,7 @@ class GenePriorityScoreCalculator {
 
 
     private double calculateknownDiseaseInheritanceModeModifier(Gene gene, ModeOfInheritance modeOfInheritance) {
-        if (gene.getInheritanceModes().isEmpty() || modeOfInheritance == ModeOfInheritance.ANY) {
+        if (gene.getCompatibleInheritanceModes().isEmpty() || modeOfInheritance == ModeOfInheritance.ANY) {
             return 1;
         }
 
@@ -137,7 +137,7 @@ class GenePriorityScoreCalculator {
 
     private boolean geneCompatibleWithInheritanceMode(Gene gene, InheritanceMode inheritanceMode, ModeOfInheritance currentMode) {
         /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
-        if (gene.getInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
+        if (gene.getCompatibleInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
             return true;
         }
         Set<ModeOfInheritance> compatibleDiseaseModes = toCompatibleModes(inheritanceMode);

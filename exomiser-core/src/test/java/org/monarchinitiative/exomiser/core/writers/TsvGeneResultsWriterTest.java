@@ -81,9 +81,9 @@ public class TsvGeneResultsWriterTest {
     @Before
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         Gene rbm8a = TestFactory.newGeneRBM8A();
-        rbm8a.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        rbm8a.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         analysisResults = AnalysisResults.builder().genes(Arrays.asList(fgfr2, rbm8a)).build();
     }
 

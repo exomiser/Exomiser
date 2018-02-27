@@ -117,8 +117,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
         List<String> sampleNames = analysisResults.getSampleNames();
         String sampleName = "Anonymous";
-        if (!analysisResults.getProbandSampleName().isEmpty()) {
-            sampleName = analysisResults.getProbandSampleName();
+        if (!analysis.getProbandSampleName().isEmpty()) {
+            sampleName = analysis.getProbandSampleName();
         }
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
@@ -132,7 +132,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         // For the time being we're going to maintain the original behaviour (UCSC)
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
-        context.setVariable("transcriptDb", "UCSC");
+        context.setVariable("transcriptDb", "ENSEMBL");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return context;
     }

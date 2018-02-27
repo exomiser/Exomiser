@@ -112,7 +112,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
     private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, CSVPrinter printer) throws IOException {
         for (Gene gene : analysisResults.getGenes()) {
-            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
+            if (gene.passedFilters()) {
                 List<String> geneRecord = makeGeneRecord(modeOfInheritance, gene);
                 printer.printRecord(geneRecord);
             }

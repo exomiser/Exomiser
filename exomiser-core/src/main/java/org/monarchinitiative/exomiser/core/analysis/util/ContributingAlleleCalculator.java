@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +34,21 @@ import java.util.function.Predicate;
 import static java.util.stream.Collectors.toList;
 
 /**
+ * Non-public helper class for finding contributing alleles.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 10.0.0
  */
 class ContributingAlleleCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(ContributingAlleleCalculator.class);
 
-    private final int probandSampleId;
+    private final SampleIdentifier probandSampleIdentifier;
     private final CompHetAlleleCalculator compHetAlleleCalculator;
 
-    ContributingAlleleCalculator(int probandSampleId, Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
-        this.probandSampleId = probandSampleId;
-        this.compHetAlleleCalculator = new CompHetAlleleCalculator(pedigree, inheritanceModeMaxMafs);
+    ContributingAlleleCalculator(SampleIdentifier probandSampleIdentifier, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        this.probandSampleIdentifier = probandSampleIdentifier;
+        this.compHetAlleleCalculator = new CompHetAlleleCalculator(inheritanceModeAnnotator);
     }
 
     /**
@@ -91,7 +94,7 @@ class ContributingAlleleCalculator {
                 .max(Comparator.comparing(CompHetPair::getScore));
 
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt(probandSampleId))
+                .filter(variantIsHomozygousAlt(probandSampleIdentifier))
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
@@ -131,10 +134,10 @@ class ContributingAlleleCalculator {
         return bestVariant.map(Collections::singletonList).orElseGet(Collections::emptyList);
     }
 
-    private Predicate<VariantEvaluation> variantIsHomozygousAlt(int sampleId) {
+    private Predicate<VariantEvaluation> variantIsHomozygousAlt(SampleIdentifier probandSampleIdentifier) {
         // can be replaced by native exomiser API using the VariantContextSampleGenotypeConverter, but will require the
         // sample name instead of the id
-        return ve -> ve.getVariantContext().getGenotype(sampleId).isHomVar();
+        return ve -> ve.getVariantContext().getGenotype(probandSampleIdentifier.getGenotypePosition()).isHomVar();
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,15 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import htsjdk.variant.vcf.VCFHeader;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,48 +74,12 @@ public class AnalysisResultsTest {
     }
 
     @Test
-    public void testCanSetAndGetVcfFilePath() {
-        Path vcfPath = Paths.get("vcf");
-        AnalysisResults instance = AnalysisResults.builder()
-                .vcfPath(vcfPath)
-                .build();
-        assertThat(instance.getVcfPath(), equalTo(vcfPath));
-    }
-
-    @Test
-    public void testCanSetAndGetPedFilePath() {
-        Path pedPath = Paths.get("ped");
-        AnalysisResults instance = AnalysisResults.builder()
-                .pedPath(pedPath)
-                .build();
-        assertThat(instance.getPedPath(), equalTo(pedPath));
-    }
-
-    @Test
-    public void testCanSetAndGetVcfHeader() {
-        VCFHeader vcfHeader = new VCFHeader();
-        AnalysisResults instance = AnalysisResults.builder()
-                .vcfHeader(vcfHeader)
-                .build();
-        assertThat(instance.getVcfHeader(), equalTo(vcfHeader));
-    }
-
-    @Test
     public void testCanSetAndGetVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
         AnalysisResults instance = AnalysisResults.builder()
                 .variantEvaluations(variantEvaluations)
                 .build();
         assertThat(instance.getVariantEvaluations(), equalTo(variantEvaluations));
-    }
-
-    @Test
-    public void testCanSetAndGetPedigree() {
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Individual");
-        AnalysisResults instance = AnalysisResults.builder()
-                .pedigree(pedigree)
-                .build();
-        assertThat(instance.getPedigree(), equalTo(pedigree));
     }
 
     @Test
@@ -159,22 +119,21 @@ public class AnalysisResultsTest {
 
     @Test
     public void testEquals() {
-        Path vcf = Paths.get("test.vcf");
-        AnalysisResults instance = AnalysisResults.builder().vcfPath(vcf).build();
-        AnalysisResults other = AnalysisResults.builder().vcfPath(vcf).build();
+        AnalysisResults instance = AnalysisResults.builder().probandSampleName("wibble").build();
+        AnalysisResults other = AnalysisResults.builder().probandSampleName("wibble").build();
         assertThat(instance, equalTo(other));
     }
 
     @Test
     public void testNotEquals() {
-        AnalysisResults instance = AnalysisResults.builder().vcfPath(Paths.get("test.vcf")).build();
-        AnalysisResults other = AnalysisResults.builder().pedPath(Paths.get("other.ped")).build();
+        AnalysisResults instance = AnalysisResults.builder().probandSampleName("wibble").build();
+        AnalysisResults other = AnalysisResults.builder().probandSampleName("wibble").sampleNames(Arrays.asList("Fred", "Wilma")).build();
         assertThat(instance, not(equalTo(other)));
     }
 
     @Test
     public void testString() {
-        AnalysisResults instance = AnalysisResults.builder().vcfPath(Paths.get("test.vcf")).pedPath(Paths.get("test.ped")).build();
+        AnalysisResults instance = AnalysisResults.builder().probandSampleName("Zaphod_Beeblebrox").build();
 
         System.out.println(instance);
     }

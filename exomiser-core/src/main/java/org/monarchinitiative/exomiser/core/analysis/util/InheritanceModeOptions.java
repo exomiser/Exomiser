@@ -21,13 +21,11 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Immutable data class for holding the maximum minor allele frequency allowed for the {@code ModeOfInheritance} or
@@ -36,46 +34,75 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.0.0
  */
-public class InheritanceModeMaxMafs {
+public class InheritanceModeOptions {
 
-    private static final InheritanceModeMaxMafs DEFAULT = defaultMap();
-    private static final InheritanceModeMaxMafs EMPTY = new InheritanceModeMaxMafs(Collections.emptyMap());
+    private static final Map<SubModeOfInheritance, Float> DEFAULT_FREQ = new EnumMap<>(SubModeOfInheritance.class);
+    static {
+        DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 1.0f); //presumably hom alts need to be a lot rarer
+
+        DEFAULT_FREQ.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
+        DEFAULT_FREQ.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, 2.0f);
+        DEFAULT_FREQ.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 1.0f);
+
+        DEFAULT_FREQ.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
+    }
+
+    private static final InheritanceModeOptions DEFAULT = new InheritanceModeOptions(DEFAULT_FREQ);
+    private static final InheritanceModeOptions EMPTY = new InheritanceModeOptions(Collections.emptyMap());
 
     private final Map<SubModeOfInheritance, Float> subMoiMaxFreqs;
     private final Map<ModeOfInheritance, Float> moiMaxFreqs;
 
-    private static InheritanceModeMaxMafs defaultMap() {
-        Map<SubModeOfInheritance, Float> maxFreqs = new EnumMap<>(SubModeOfInheritance.class);
-
-        maxFreqs.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
-        maxFreqs.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
-        maxFreqs.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 2.0f); //presumably hom alts need to be a lot rarer
-
-        maxFreqs.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
-        maxFreqs.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, 2.0f);
-        maxFreqs.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 2.0f);
-
-        maxFreqs.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
-
-        return new InheritanceModeMaxMafs(maxFreqs);
-    }
-
-    public static InheritanceModeMaxMafs defaults() {
+    public static InheritanceModeOptions defaults() {
         return DEFAULT;
     }
 
-    public static InheritanceModeMaxMafs empty() {
+    public static InheritanceModeOptions empty() {
         return EMPTY;
     }
 
-    public static InheritanceModeMaxMafs of(Map<SubModeOfInheritance, Float> values) {
+    public static InheritanceModeOptions of(Map<SubModeOfInheritance, Float> values) {
         Objects.requireNonNull(values);
-        return new InheritanceModeMaxMafs(values);
+        if (values.keySet().contains(SubModeOfInheritance.ANY)) {
+            throw new IllegalArgumentException("values cannot contain key " + SubModeOfInheritance.ANY);
+        }
+        return new InheritanceModeOptions(values);
     }
 
-    private InheritanceModeMaxMafs(Map<SubModeOfInheritance, Float> values) {
+    public static InheritanceModeOptions defaultForModes(ModeOfInheritance... modesOfInheritance) {
+        Objects.requireNonNull(modesOfInheritance);
+        Map<SubModeOfInheritance, Float> translated = new EnumMap<>(SubModeOfInheritance.class);
+        for (ModeOfInheritance mode : modesOfInheritance) {
+            switch (mode) {
+                case AUTOSOMAL_DOMINANT:
+                    translated.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_DOMINANT));
+                    break;
+                case AUTOSOMAL_RECESSIVE:
+                    translated.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET));
+                    translated.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT));
+                    break;
+                case X_DOMINANT:
+                    translated.put(SubModeOfInheritance.X_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.X_DOMINANT));
+                    break;
+                case X_RECESSIVE:
+                    translated.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, DEFAULT_FREQ.get(SubModeOfInheritance.X_RECESSIVE_COMP_HET));
+                    translated.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, DEFAULT_FREQ.get(SubModeOfInheritance.X_RECESSIVE_HOM_ALT));
+                    break;
+                case MITOCHONDRIAL:
+                    translated.put(SubModeOfInheritance.MITOCHONDRIAL, DEFAULT_FREQ.get(SubModeOfInheritance.MITOCHONDRIAL));
+                    break;
+                case ANY:
+                    throw new IllegalArgumentException(ModeOfInheritance.ANY + " is not a valid argument");
+            }
+        }
+        return new InheritanceModeOptions(translated);
+    }
+
+    private InheritanceModeOptions(Map<SubModeOfInheritance, Float> values) {
         this.subMoiMaxFreqs = Maps.immutableEnumMap(values);
-        this.subMoiMaxFreqs.forEach(InheritanceModeMaxMafs::checkBounds);
+        this.subMoiMaxFreqs.forEach(InheritanceModeOptions::checkBounds);
         this.moiMaxFreqs = createInheritanceModeMaxFreqs(subMoiMaxFreqs);
     }
 
@@ -145,11 +172,19 @@ public class InheritanceModeMaxMafs {
         return subMoiMaxFreqs.getOrDefault(subModeOfInheritance, Float.MAX_VALUE);
     }
 
+    public Set<ModeOfInheritance> getDefinedModes() {
+        return Sets.immutableEnumSet(moiMaxFreqs.keySet());
+    }
+
+    public boolean isEmpty() {
+        return subMoiMaxFreqs.isEmpty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        InheritanceModeMaxMafs that = (InheritanceModeMaxMafs) o;
+        InheritanceModeOptions that = (InheritanceModeOptions) o;
         return Objects.equals(subMoiMaxFreqs, that.subMoiMaxFreqs) &&
                 Objects.equals(moiMaxFreqs, that.moiMaxFreqs);
     }

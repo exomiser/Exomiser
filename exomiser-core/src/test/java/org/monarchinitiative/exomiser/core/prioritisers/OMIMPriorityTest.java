@@ -69,7 +69,7 @@ public class OMIMPriorityTest {
 
         genes.forEach(gene -> {
             OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
             assertThat(result.getScore(), equalTo(1d));
             assertThat(result.getAssociatedDiseases().isEmpty(), is(true));
         });
@@ -81,7 +81,7 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(Collections.emptyList(), genes);
         genes.forEach(gene -> {
             OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
             assertThat(result.getScore(), equalTo(1d));
         });
     }
@@ -104,7 +104,7 @@ public class OMIMPriorityTest {
         //ROR2 has two associated conditions, one recessive, the other dominant.
         // We're going to simulate this matching the recessive one.
         Gene ror2 = new Gene("ROR2", 4920);
-        ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        ror2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         List<Gene> genes = Lists.newArrayList(ror2);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
@@ -119,7 +119,7 @@ public class OMIMPriorityTest {
         //ROR2 has two associated conditions, one recessive, the other dominant.
         // We're going to simulate this matching the dominant one.
         Gene ror2 = new Gene("ROR2", 4920);
-        ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        ror2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         List<Gene> genes = Lists.newArrayList(ror2);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
@@ -147,7 +147,7 @@ public class OMIMPriorityTest {
     public void prioritizeGenes_InheritanceModeIsNotCompatible() throws Exception {
         //FREM2 has only one associated condition (recessive). We're going to simulate this not matching.
         Gene frem2 = new Gene("FREM2", 341640);
-        frem2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        frem2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         List<Gene> genes = Lists.newArrayList(frem2);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
@@ -159,7 +159,7 @@ public class OMIMPriorityTest {
 
     private void checkOmimScoreAndHasAssociatedDiseases(Gene gene, double score, boolean associatedDiseasesIsEmpty) {
         OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+        System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
         assertThat(result.getScore(), equalTo(score));
         assertThat(result.getAssociatedDiseases().isEmpty(), is(associatedDiseasesIsEmpty));
     }

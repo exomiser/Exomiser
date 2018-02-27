@@ -44,12 +44,29 @@ public class InheritanceModeAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnnotator.class);
 
-    private final MendelianInheritanceChecker mendelChecker;
-    private final InheritanceModeMaxMafs moiMaxMafs;
+    private final Pedigree pedigree;
+    private final InheritanceModeOptions inheritanceModeOptions;
 
-    public InheritanceModeAnnotator(Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
+    private final MendelianInheritanceChecker mendelChecker;
+
+    public InheritanceModeAnnotator(Pedigree pedigree, InheritanceModeOptions inheritanceModeOptions) {
+        Objects.requireNonNull(pedigree);
+        this.pedigree = pedigree;
+        Objects.requireNonNull(inheritanceModeOptions);
+        this.inheritanceModeOptions = inheritanceModeOptions;
         this.mendelChecker = new MendelianInheritanceChecker(pedigree);
-        this.moiMaxMafs = inheritanceModeMaxMafs;
+    }
+
+    public Pedigree getPedigree() {
+        return pedigree;
+    }
+
+    public InheritanceModeOptions getInheritanceModeOptions() {
+        return inheritanceModeOptions;
+    }
+
+    public Set<ModeOfInheritance> getDefinedModes() {
+        return inheritanceModeOptions.getDefinedModes();
     }
 
     /**
@@ -101,8 +118,7 @@ public class InheritanceModeAnnotator {
             ModeOfInheritance compatibleMode = entry.getKey();
             if (compatibleMode != ModeOfInheritance.ANY) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
-                //inheritance maximum minor allele frequency
-                float maxFreqForMode = moiMaxMafs.getMaxFreqForMode(compatibleMode);
+                float maxFreqForMode = inheritanceModeOptions.getMaxFreqForMode(compatibleMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
                 if (!compatibleVariants.isEmpty()) {
                     results.put(compatibleMode, compatibleVariants);
@@ -118,8 +134,7 @@ public class InheritanceModeAnnotator {
             SubModeOfInheritance compatibleSubMode = entry.getKey();
             if (compatibleSubMode != SubModeOfInheritance.ANY) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
-                //Add filter for mode of inheritance frequency here
-                float maxFreqForMode = moiMaxMafs.getMaxFreqForSubMode(compatibleSubMode);
+                float maxFreqForMode = inheritanceModeOptions.getMaxFreqForSubMode(compatibleSubMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
                 if (!compatibleVariants.isEmpty()) {
                     results.put(compatibleSubMode, compatibleVariants);
@@ -201,5 +216,4 @@ public class InheritanceModeAnnotator {
                 return ChromosomeType.AUTOSOMAL;
         }
     }
-
 }

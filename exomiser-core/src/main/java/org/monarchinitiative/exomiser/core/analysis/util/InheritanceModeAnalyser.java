@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -52,10 +51,10 @@ public class InheritanceModeAnalyser {
     private final Set<ModeOfInheritance> wantedModes;
     private final InheritanceModeAnnotator inheritanceAnnotator;
 
-    public InheritanceModeAnalyser(Set<ModeOfInheritance> wantedModes, Pedigree pedigree) {
-        //TODO: InheritanceModeMaxMafs ought to be injected
-        this.wantedModes = Sets.immutableEnumSet(wantedModes);
-        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree, InheritanceModeMaxMafs.defaults());
+    public InheritanceModeAnalyser(InheritanceModeAnnotator inheritanceModeAnnotator) {
+        Objects.requireNonNull(inheritanceModeAnnotator);
+        this.wantedModes = inheritanceModeAnnotator.getDefinedModes();
+        this.inheritanceAnnotator = inheritanceModeAnnotator;
     }
 
     /**
@@ -113,9 +112,9 @@ public class InheritanceModeAnalyser {
 
     private void setCompatibleInheritanceModes(Gene gene, Map<ModeOfInheritance, List<VariantEvaluation>> filteredModes) {
         logger.debug("Gene {} has variants compatible with {}:", gene.getGeneSymbol(), filteredModes.keySet());
-        gene.setInheritanceModes(filteredModes.keySet());
+        gene.setCompatibleInheritanceModes(filteredModes.keySet());
         Map<VariantEvaluation, Set<ModeOfInheritance>> variantCompatibilities = mapVariantsToCompatibleModes(filteredModes);
-        variantCompatibilities.forEach(VariantEvaluation::setInheritanceModes);
+        variantCompatibilities.forEach(VariantEvaluation::setCompatibleInheritanceModes);
     }
 
     private Map<VariantEvaluation, Set<ModeOfInheritance>> mapVariantsToCompatibleModes(Map<ModeOfInheritance, List<VariantEvaluation>> compatibleMap) {

@@ -21,9 +21,12 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -96,38 +99,38 @@ public class AnalysisTest {
 
     @Test
     public void modeOfInheritanceDefaultsToEmpty() {
-        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(EnumSet.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT,
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-                ModeOfInheritance.X_DOMINANT,
-                ModeOfInheritance.X_RECESSIVE,
-                ModeOfInheritance.MITOCHONDRIAL)
-        ));
+        assertThat(DEFAULT_ANALYSIS.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
     }
 
     @Test
-    public void testCanMakeAnalysisWithJustOneModeOfInheritance() {
+    public void canSetModeOfInheritanceDefaults() {
         Analysis instance = newBuilder()
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
     }
 
     @Test
-    public void testCanMakeAnalysisUseVarArgsForModeOfInheritance() {
+    public void testCanMakeAnalysisWithInheritanceModesFromMap() {
+        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+
         Analysis instance = newBuilder()
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .inheritanceModeOptions(inheritanceMap)
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+
+        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(inheritanceMap)));
     }
 
     @Test
-    public void testCanMakeAnalysisUseSetForModeOfInheritance() {
-        EnumSet<ModeOfInheritance> modeOfInheritances = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+    public void testCanMakeAnalysisWithInheritanceModesFromInheritanceModeOptions() {
+        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(inheritanceMap);
+
         Analysis instance = newBuilder()
-                .modeOfInheritance(modeOfInheritances)
+                .inheritanceModeOptions(inheritanceModeOptions)
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritances));
+
+        assertThat(instance.getInheritanceModeOptions(), equalTo(inheritanceModeOptions));
     }
 
     @Test
