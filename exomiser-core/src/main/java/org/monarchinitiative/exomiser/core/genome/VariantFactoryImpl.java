@@ -100,7 +100,7 @@ public class VariantFactoryImpl implements VariantFactory {
         };
     }
 
-    private boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
+    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
         return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(allele));
     }
 
