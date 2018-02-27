@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -193,7 +194,7 @@ public class SubmitJobController {
                 .pedPath(pedPath)
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
-                .modeOfInheritance(EnumSet.of(ModeOfInheritance.valueOf(modeOfInheritance)))
+                .inheritanceModes(InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
 
