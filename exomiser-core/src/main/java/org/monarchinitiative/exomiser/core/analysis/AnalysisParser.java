@@ -51,7 +51,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import static java.nio.file.Files.newInputStream;
 import static java.util.stream.Collectors.toList;
@@ -294,7 +293,14 @@ public class AnalysisParser {
 
             //Pre 10.0.0 version - only expected a single string value
             if (modeOfInheritanceInput != null) {
-                throw new AnalysisParserException("modeOfInheritance option no longer supported. Please supply a map of inheritanceModes. See examples for details.");
+                logger.info("modeOfInheritance option no longer supported. Please supply a map of inheritanceModes. See examples for details.");
+                if (modeOfInheritanceInput.equals("UNDEFINED") || modeOfInheritanceInput.equals("UNINITIALIZED") || modeOfInheritanceInput.equals("ANY")) {
+                    return InheritanceModeOptions.empty();
+                }
+                ModeOfInheritance moi = parseValueOfInheritanceMode(modeOfInheritanceInput);
+                InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.defaultForModes(moi);
+                logger.info("'modeOfInheritance: {}' has been converted to 'inheritanceModes: {{}: {}}'", modeOfInheritanceInput, moi, inheritanceModeOptions.getMaxFreqForMode(moi));
+                return inheritanceModeOptions;
             }
 
             //Version 10.0.0 - expect a map of SubModeOfInheritance
@@ -308,7 +314,7 @@ public class AnalysisParser {
                         logger.info("Ignoring inheritance mode {}", subMode);
                     } else {
                         Double value = entry.getValue();
-                        logger.info("Adding inheritance mode {} max MAF {}", subMode, value);
+                        logger.debug("Adding inheritance mode {} max MAF {}", subMode, value);
                         inheritanceModes.put(subMode, value.floatValue());
                     }
                 }
@@ -316,20 +322,6 @@ public class AnalysisParser {
                 return InheritanceModeOptions.of(inheritanceModes);
             }
             return InheritanceModeOptions.empty();
-        }
-
-
-        private Set<ModeOfInheritance> parseModesOfInheritanceFromList(List<String> inheritanceModes) {
-            if (inheritanceModes == null || inheritanceModes.isEmpty()) {
-                return Collections.emptySet();
-            }
-            if (inheritanceModes.equals(Collections.singletonList("UNDEFINED")) || inheritanceModes.equals(Collections.singletonList("UNINITIALIZED")) || inheritanceModes.equals(Collections.singletonList("ANY"))) {
-                return Collections.emptySet();
-            }
-            return inheritanceModes.stream()
-                    .map(this::parseValueOfInheritanceMode)
-                    .filter(mode -> mode != ModeOfInheritance.ANY)
-                    .collect(Collectors.toSet());
         }
 
         private SubModeOfInheritance parseValueOfSubInheritanceMode(String value) {
@@ -347,7 +339,10 @@ public class AnalysisParser {
             try {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, Arrays.toString(ModeOfInheritance.values())));
+                List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
+                        .filter(mode -> mode != ModeOfInheritance.ANY)
+                        .collect(toList());
+                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
 

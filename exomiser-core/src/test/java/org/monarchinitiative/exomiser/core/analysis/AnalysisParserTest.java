@@ -248,6 +248,16 @@ public class AnalysisParserTest {
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
+    @Test
+    public void testParseAnalysisOldModeOfInheritanceConvertsToInheritanceModes() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    modeOfInheritance: AUTOSOMAL_DOMINANT\n"
+                        + "    ");
+        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+    }
+
     @Test(expected = AnalysisParserException.class)
     public void testParseAnalysisModeOfInheritanceUserUsesWrongValue() {
         Analysis analysis = instance.parseAnalysis(
