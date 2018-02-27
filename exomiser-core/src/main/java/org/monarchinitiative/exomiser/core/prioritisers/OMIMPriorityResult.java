@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class is used to annotate with OMIM data based on the link between the
@@ -128,6 +129,19 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
         return String.format("<a href=\"%s\">%s</a>", url, displayText);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        OMIMPriorityResult that = (OMIMPriorityResult) o;
+        return Objects.equals(diseases, that.diseases);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), diseases);
+    }
 
     @Override
     public String toString() {

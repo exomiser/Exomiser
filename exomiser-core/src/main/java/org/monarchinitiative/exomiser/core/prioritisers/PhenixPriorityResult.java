@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@
  */
 
 package org.monarchinitiative.exomiser.core.prioritisers;
+
+import java.util.Objects;
 
 /**
  * Semantic Similarity in HPO
@@ -54,4 +56,29 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
                 this.hpoSemSimScore, Math.exp(-1 * this.negativeLogP));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        PhenixPriorityResult that = (PhenixPriorityResult) o;
+        return Double.compare(that.hpoSemSimScore, hpoSemSimScore) == 0 &&
+                Double.compare(that.negativeLogP, negativeLogP) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), hpoSemSimScore, negativeLogP);
+    }
+
+    @Override
+    public String toString() {
+        return "PhenixPriorityResult{" +
+                "geneId=" + geneId +
+                ", geneSymbol='" + geneSymbol + '\'' +
+                ", score=" + score +
+                ", hpoSemSimScore=" + hpoSemSimScore +
+                ", negativeLogP=" + negativeLogP +
+                '}';
+    }
 }

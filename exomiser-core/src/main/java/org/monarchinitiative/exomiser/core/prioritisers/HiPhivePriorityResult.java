@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotype
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
@@ -281,6 +282,24 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         } else {
             return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id + "\">" + diseaseTerm + "</a>";
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        HiPhivePriorityResult that = (HiPhivePriorityResult) o;
+        return Double.compare(that.humanScore, humanScore) == 0 &&
+                Double.compare(that.mouseScore, mouseScore) == 0 &&
+                Double.compare(that.fishScore, fishScore) == 0 &&
+                Double.compare(that.ppiScore, ppiScore) == 0 &&
+                candidateGeneMatch == that.candidateGeneMatch;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), humanScore, mouseScore, fishScore, ppiScore, candidateGeneMatch);
     }
 
     @Override
