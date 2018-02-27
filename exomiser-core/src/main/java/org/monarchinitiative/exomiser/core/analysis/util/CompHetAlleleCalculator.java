@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.*;
@@ -34,8 +33,8 @@ class CompHetAlleleCalculator {
 
     private final InheritanceModeAnnotator inheritanceAnnotator;
 
-    CompHetAlleleCalculator(Pedigree pedigree, InheritanceModeMaxMafs inheritanceModeMaxMafs) {
-        this.inheritanceAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeMaxMafs);
+    CompHetAlleleCalculator(InheritanceModeAnnotator inheritanceAnnotator) {
+        this.inheritanceAnnotator = inheritanceAnnotator;
     }
 
     /**

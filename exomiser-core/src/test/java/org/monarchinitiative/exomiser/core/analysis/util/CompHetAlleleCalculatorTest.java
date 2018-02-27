@@ -108,7 +108,7 @@ public class CompHetAlleleCalculatorTest {
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson);
 
-        CompHetAlleleCalculator instance = new CompHetAlleleCalculator(pedigree, InheritanceModeMaxMafs.defaults());
+        CompHetAlleleCalculator instance = new CompHetAlleleCalculator(new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults()));
         List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.getPassedVariantEvaluations());
 
         assertThat(compHetAlleles.size(), equalTo(2));
