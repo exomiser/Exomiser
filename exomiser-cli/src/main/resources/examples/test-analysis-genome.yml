@@ -14,7 +14,7 @@ analysis:
     # If you just want to analyse a sample under a single inheritance mode, delete/comment-out the others. For AUTOSOMAL_RECESSIVE
     # or X_RECESSIVE ensure *both* relevant HOM_ALT and COMP_HET modes are present.
     # In cases where you do not want any cut-offs applied an empty map should be used e.g. inheritanceModes: {}
-   inheritanceModes: {
+    inheritanceModes: {
             AUTOSOMAL_DOMINANT: 0.1,
             AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
             AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
