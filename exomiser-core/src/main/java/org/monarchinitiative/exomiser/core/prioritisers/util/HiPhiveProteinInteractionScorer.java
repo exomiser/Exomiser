@@ -22,20 +22,17 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
 import org.jblas.FloatMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class HiPhiveProteinInteractionScorer {
 
@@ -44,43 +41,48 @@ public class HiPhiveProteinInteractionScorer {
     public static final HiPhiveProteinInteractionScorer EMPTY = new HiPhiveProteinInteractionScorer();
 
     private final DataMatrix dataMatrix;
-
     private final ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels;
-    private final double highQualityPhenoScoreCutOff;
 
-    private final Map<Integer, Double> highQualityPhenoMatchedGeneScores;
-    private final List<Integer> highQualityPhenoMatchedGeneIds;
+    private final List<GeneColumnIndex> weightedHighQualityMatrixIndex;
     private final FloatMatrix weightedHighQualityMatrix;
 
     private HiPhiveProteinInteractionScorer() {
         this.dataMatrix = DataMatrix.EMPTY;
-
-        //This isn't quite right... these:
         this.bestGeneModels = ArrayListMultimap.create();
-        this.highQualityPhenoScoreCutOff = 0.0;
-        //should be used to produce these wrapped in some matcher or some-such:
-        highQualityPhenoMatchedGeneScores = Collections.emptyMap();
-        highQualityPhenoMatchedGeneIds = Collections.emptyList();
-        weightedHighQualityMatrix = FloatMatrix.EMPTY;
+
+        this.weightedHighQualityMatrixIndex = Collections.emptyList();
+        this.weightedHighQualityMatrix = FloatMatrix.EMPTY;
     }
 
     public HiPhiveProteinInteractionScorer(DataMatrix dataMatrix, ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, double highQualityPhenoScoreCutOff) {
         this.dataMatrix = dataMatrix;
         this.bestGeneModels = bestGeneModels;
-        this.highQualityPhenoScoreCutOff = highQualityPhenoScoreCutOff;
 
-        highQualityPhenoMatchedGeneScores = getHighestGeneIdPhenoScores();
-        highQualityPhenoMatchedGeneIds = Lists.newArrayList(highQualityPhenoMatchedGeneScores.keySet());
-        weightedHighQualityMatrix = makeWeightedProteinInteractionMatrix();
+        this.weightedHighQualityMatrixIndex = makeWeightedHighQualityMatrixIndex(highQualityPhenoScoreCutOff, dataMatrix, bestGeneModels.values());
+        this.weightedHighQualityMatrix = makeWeightedHighQualityProteinInteractionMatrix(dataMatrix, weightedHighQualityMatrixIndex);
     }
 
-    private Map<Integer, Double> getHighestGeneIdPhenoScores() {
+    private List<GeneColumnIndex> makeWeightedHighQualityMatrixIndex(double highQualityPhenoScoreCutOff, DataMatrix dataMatrix, Collection<GeneModelPhenotypeMatch> values) {
+        List<GeneColumnIndex> highQualityMappings = new ArrayList<>();
+        Map<Integer, Double> highQualityPhenoMatchedGeneScoreMap = getHighestGeneIdPhenoScoresInDataMatrix(highQualityPhenoScoreCutOff, dataMatrix, bestGeneModels.values());
+        int column = 0;
+        for (Map.Entry<Integer, Double> entry : highQualityPhenoMatchedGeneScoreMap.entrySet()) {
+            Integer entrezGeneId = entry.getKey();
+            Double score = entry.getValue();
+            GeneColumnIndex geneColumnIndex = new GeneColumnIndex(entrezGeneId, score, column++);
+            logger.debug("Added {}", geneColumnIndex);
+            highQualityMappings.add(geneColumnIndex);
+        }
+        return highQualityMappings;
+    }
+
+    private Map<Integer, Double> getHighestGeneIdPhenoScoresInDataMatrix(double highQualityPhenoScoreCutOff, DataMatrix dataMatrix, Collection<GeneModelPhenotypeMatch> bestGeneModelPhenoMatches) {
         Map<Integer, Double> highestGeneIdPhenoScores = new LinkedHashMap<>();
-        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : bestGeneModels.values()) {
+        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : bestGeneModelPhenoMatches) {
             Integer entrezId = geneModelPhenotypeMatch.getEntrezGeneId();
             Double score = geneModelPhenotypeMatch.getScore();
-            // only build PPI network for high quality hits
-            if (score > highQualityPhenoScoreCutOff) {
+            // only build PPI network for high quality hits contained in the matrix
+            if (score > highQualityPhenoScoreCutOff && dataMatrix.containsGene(entrezId)) {
                 logger.debug("Adding high quality score for {} score={}", geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch
                         .getScore());
                 if (!highestGeneIdPhenoScores.containsKey(entrezId) || score > highestGeneIdPhenoScores.get(entrezId)) {
@@ -92,27 +94,18 @@ public class HiPhiveProteinInteractionScorer {
         return Collections.unmodifiableMap(highestGeneIdPhenoScores);
     }
 
-    //If this returned a DataMatrix things might be a bit more convenient later on...
-    private FloatMatrix makeWeightedProteinInteractionMatrix() {
+    private FloatMatrix makeWeightedHighQualityProteinInteractionMatrix(DataMatrix dataMatrix, List<GeneColumnIndex> highQualityPhenotypeMappings) {
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
-        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getMatrix()
-                .getRows(), dataMatrix.getMatrix().getColumns());
-        int rows = dataMatrix.getMatrix().getRows();
-        int cols = highQualityPhenoMatchedGeneScores.size();
+        FloatMatrix originalDataMatrix = dataMatrix.getMatrix();
+        logger.info("Original data matrix ({} rows * {} columns)", originalDataMatrix.getRows(), originalDataMatrix.getColumns());
+        int rows = originalDataMatrix.getRows();
+        int cols = highQualityPhenotypeMappings.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
-        int c = 0;
-        for (Map.Entry<Integer, Double> entry : highQualityPhenoMatchedGeneScores.entrySet()) {
-            Integer seedGeneEntrezId = entry.getKey();
+        for (GeneColumnIndex geneColumnIndex : highQualityPhenotypeMappings) {
             //The original DataMatrix is a symmetrical matrix this new one is asymmetrical with the original rows but only high-quality columns.
-            if (dataMatrix.containsGene(seedGeneEntrezId)) {
-                FloatMatrix column = dataMatrix.getColumnMatrixForGene(seedGeneEntrezId);
-                // weight column by phenoScore
-                //get the best model score for the gene from the highQualityPhenoMatchedGenes
-                Double score = entry.getValue();
-                column = column.mul(score.floatValue());
-                highQualityPpiMatrix.putColumn(c, column);
-            }
-            c++;
+            FloatMatrix column = dataMatrix.getColumnMatrixForGene(geneColumnIndex.geneId);
+            FloatMatrix weightedColumn = column.mul((float) geneColumnIndex.phenoScore);
+            highQualityPpiMatrix.putColumn(geneColumnIndex.columnIndex, weightedColumn);
         }
         logger.info("Made high quality interaction matrix ({} rows * {} columns)", highQualityPpiMatrix.getRows(), highQualityPpiMatrix
                 .getColumns());
@@ -120,25 +113,24 @@ public class HiPhiveProteinInteractionScorer {
     }
 
     public GeneMatch getClosestPhenoMatchInNetwork(Integer entrezGeneId) {
-        if (!dataMatrix.containsGene(entrezGeneId) || highQualityPhenoMatchedGeneIds.isEmpty()) {
+        if (!dataMatrix.containsGene(entrezGeneId) || weightedHighQualityMatrixIndex.isEmpty()) {
             return GeneMatch.NO_HIT;
         }
         int rowIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
-        int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(rowIndex, entrezGeneId);
-
+        GeneColumnIndex topHighQualityGene = getGeneColumnIndexOfMostPhenotypicallySimilarGene(rowIndex, entrezGeneId);
         /* Changed method to return -1 if no hit as otherwise could not distinguish between
         no hit or hit to 1st entry in column (entrezGene 50640). When querying with 50640 this
         resulted in a self-hit being returned with a PPI score of 0.5+0.7=1.2 and also lots of
         low-scoring (0.5) PPI hits to 50640 for other genes with no PPI match
          */
-        if (columnIndex == -1) {
+        if (topHighQualityGene == null) {
             return GeneMatch.NO_HIT;
         }
 
         // optimal adjustment based on benchmarking to allow walker scores to compete with low phenotype scores
-        double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
+        double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, topHighQualityGene.columnIndex);
 
-        Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
+        Integer closestGeneId = topHighQualityGene.geneId;
         List<GeneModelPhenotypeMatch> models = bestGeneModels.get(closestGeneId);
 
         return GeneMatch.builder()
@@ -149,57 +141,58 @@ public class HiPhiveProteinInteractionScorer {
                 .build();
     }
 
-    /**
-     * This function retrieves the random walk similarity score for the gene
-     *
-     * @param entrezGeneId for which the random walk score is to be retrieved
-     */
-    // Can this can be done in a single operation without having to pre-compute the high-quality matrix?
-    private int getColumnIndexOfMostPhenotypicallySimilarGene(int geneRowIndex, int entrezGeneId) {
-        // Here were walking along all the columns of a row from the high quality matches,
-        // i.e. traversing a list to find the value and position of the highest value in that list.
-        // The matrix is (12511 rows * 303 columns)
-        // The output of this function (assigned to columnIndex) is used to:
-        // define the walkerScore:
-        // walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
-        //
-        // Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
-        // closestPhysicallyInteractingGeneModels = bestGeneModels.get(closestGeneId);
-        int bestHitIndex = -1;
+    private GeneColumnIndex getGeneColumnIndexOfMostPhenotypicallySimilarGene(int rowIndex, Integer entrezGeneId) {
+        GeneColumnIndex bestGeneColumnIndex = null;
         double bestScore = 0;
-        for (int i = 0; i < highQualityPhenoMatchedGeneIds.size(); i++) {
-            //slow auto-unboxing
-            int geneId = highQualityPhenoMatchedGeneIds.get(i);
+        for (GeneColumnIndex geneColumnIndex : weightedHighQualityMatrixIndex) {
             //avoid self-hits now are testing genes with direct pheno-evidence as well
-            if (geneId != entrezGeneId) {
-                double cellScore = weightedHighQualityMatrix.get(geneRowIndex, i);
-                bestScore = Math.max(bestScore, cellScore);
-                if (cellScore == bestScore) {
-                    bestHitIndex = i;
-                }
-            }
-        }
-        return bestHitIndex;
-    }
-
-    private int slowFindBestHitIndex(int geneRowIndex, int entrezGeneId) {
-        int columnIndex = 0;
-        double bestScore = 0;
-        int bestHitIndex = -1;
-        for (Integer similarGeneEntrezId : highQualityPhenoMatchedGeneIds) {
-            if (!dataMatrix.containsGene(similarGeneEntrezId) || similarGeneEntrezId == entrezGeneId) {
-                //avoid self-hits now are testing genes with direct pheno-evidence as well
-                columnIndex++;
-            } else {
-                double cellScore = weightedHighQualityMatrix.get(geneRowIndex, columnIndex);
+            if (!geneColumnIndex.geneId.equals(entrezGeneId)) {
+                double cellScore = weightedHighQualityMatrix.get(rowIndex, geneColumnIndex.columnIndex);
                 if (cellScore > bestScore) {
                     bestScore = cellScore;
-                    bestHitIndex = columnIndex;
+                    bestGeneColumnIndex = geneColumnIndex;
                 }
-                columnIndex++;
             }
         }
-        return bestHitIndex;
+        return bestGeneColumnIndex;
     }
 
+    /**
+     * Mapping between an entrez gene id, its phenotype score and a column in the high-quality matrix
+     */
+    class GeneColumnIndex {
+        private final Integer geneId;
+        private final double phenoScore;
+        private final int columnIndex;
+
+        GeneColumnIndex(Integer geneId, double phenoScore, int columnIndex) {
+            this.geneId = geneId;
+            this.phenoScore = phenoScore;
+            this.columnIndex = columnIndex;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            GeneColumnIndex that = (GeneColumnIndex) o;
+            return Double.compare(that.phenoScore, phenoScore) == 0 &&
+                    columnIndex == that.columnIndex &&
+                    Objects.equals(geneId, that.geneId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(geneId, phenoScore, columnIndex);
+        }
+
+        @Override
+        public String toString() {
+            return "GeneColumnMapping{" +
+                    "geneId=" + geneId +
+                    ", phenoScore=" + phenoScore +
+                    ", columnIndex=" + columnIndex +
+                    '}';
+        }
+    }
 }
