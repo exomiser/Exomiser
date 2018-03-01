@@ -32,6 +32,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -112,7 +113,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
     private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, CSVPrinter printer) throws IOException {
         for (Gene gene : analysisResults.getGenes()) {
-            if (gene.passedFilters()) {
+            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
                 List<String> geneRecord = makeGeneRecord(modeOfInheritance, gene);
                 printer.printRecord(geneRecord);
             }
@@ -145,7 +146,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                     matchesCandidateGene = 1;
                 }
             } else if (type == PriorityType.OMIM_PRIORITY) {
-                omimScore = prioritiserResult.getScore();
+                OMIMPriorityResult omimPriorityResult = (OMIMPriorityResult) prioritiserResult;
+                omimScore = omimPriorityResult.getScoreForMode(modeOfInheritance);
             } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
                 walkerScore = prioritiserResult.getScore();
             }

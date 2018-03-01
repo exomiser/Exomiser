@@ -25,11 +25,16 @@ import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
+ * Set of constants for use as default pathogenicity scores for a given {@link VariantEffect}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public abstract class VariantTypePathogenicityScores {
+public abstract class VariantEffectPathogenicityScore {
+
+    private VariantEffectPathogenicityScore() {
+        //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
+    }
 
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)

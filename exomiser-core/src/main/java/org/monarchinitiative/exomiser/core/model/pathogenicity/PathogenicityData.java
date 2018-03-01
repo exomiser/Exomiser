@@ -117,7 +117,7 @@ public class PathogenicityData {
      */
     public float getScore() {
         if (pathogenicityScores.isEmpty()) {
-            return VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE;
+            return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }
 
         PathogenicityScore mostPathogenicPredictedScore = getMostPathogenicScore();

@@ -299,7 +299,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
+        float expected = VariantEffectPathogenicityScore.getPathogenicityScoreOf(type);
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 
@@ -317,7 +317,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
+        float expected = VariantEffectPathogenicityScore.getPathogenicityScoreOf(type);
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 

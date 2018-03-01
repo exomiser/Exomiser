@@ -30,7 +30,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -415,7 +415,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
         //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
         //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-        return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
+        return VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
     }
 
     /*
@@ -425,7 +425,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if (pathogenicityData.hasPredictedScore()) {
             return pathogenicityData.getScore();
         }
-        return VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE;
+        return VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE;
     }
 
     public FrequencyData getFrequencyData() {
