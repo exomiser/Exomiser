@@ -111,7 +111,9 @@ public abstract class VariantTypePathogenicityScores {
                 return STOPLOSS_SCORE;
             case STOP_GAINED:
                 return NONSENSE_SCORE;
-                //NO REGULATORY_REGION?
+            // NO REGULATORY_REGION, FIVE_PRIME_UTR_EXON_VARIANT, FIVE_PRIME_UTR_TRUNCATION
+            // FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT.... ?
+            // There, are many other missing cases which really need default scores!
             default:
                 return NON_PATHOGENIC_SCORE;
         }
