@@ -33,6 +33,8 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 
+import java.util.*;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -50,7 +52,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     private Gene newGeneCompatibleWith(ModeOfInheritance... modes) {
-        Gene gene =  TestFactory.newGeneFGFR2();
+        Gene gene = TestFactory.newGeneFGFR2();
         gene.setCompatibleInheritanceModes(ImmutableSet.copyOf(modes));
         return gene;
     }
@@ -60,22 +62,19 @@ public class GenePriorityScoreCalculatorTest {
         gene.addPriorityResult(hiPhiveResult);
     }
 
-    private void addOmimResultWithCompatibleModes(Gene gene, InheritanceMode... inheritanceModes) {
-        PriorityResult diseasePriorityResult = omimPriorityResult(gene, inheritanceModes);
-        gene.addPriorityResult(diseasePriorityResult);
-    }
-
     private PriorityResult hiPhiveResult(Gene gene, double score) {
         return new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
     }
 
-    private PriorityResult omimPriorityResult(Gene gene, InheritanceMode... inheritanceModes) {
-        ImmutableList<Disease> knownDiseases = diseasesCompatibleWith(inheritanceModes);
-        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 0d, knownDiseases);
+    private void addOmimResultToGene(Gene gene, Map<ModeOfInheritance, Double> scores, InheritanceMode... inheritanceModes) {
+        double maxScore = scores.values().stream().max(Comparator.naturalOrder()).orElse(1.0);
+        List<Disease> knownDiseases = diseasesCompatibleWith(inheritanceModes);
+        PriorityResult omimResult = new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), maxScore, knownDiseases, scores);
+        gene.addPriorityResult(omimResult);
     }
 
-    private ImmutableList<Disease> diseasesCompatibleWith(InheritanceMode... inheritanceModes) {
-        ImmutableList.Builder<Disease> diseaseListBuilder  = ImmutableList.builder();
+    private List<Disease> diseasesCompatibleWith(InheritanceMode... inheritanceModes) {
+        ImmutableList.Builder<Disease> diseaseListBuilder = ImmutableList.builder();
         for (InheritanceMode inheritanceMode : inheritanceModes) {
             Disease disease = Disease.builder()
                     .inheritanceMode(inheritanceMode)
@@ -108,7 +107,14 @@ public class GenePriorityScoreCalculatorTest {
     public void omimPrioritisedOnlyGeneWithKnownDiseaseCurrentInheritanceMatchesOneDiseaseInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.AUTOSOMAL_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.AUTOSOMAL_DOMINANT};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.0));
@@ -119,7 +125,10 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene);
+//        addOmimResultWithCompatibleModes(gene);
+
+        InheritanceMode[] inheritanceModes = {};
+        addOmimResultToGene(gene, Collections.emptyMap(), inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.ANY);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -130,7 +139,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene);
+        InheritanceMode[] inheritanceModes = {};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.5 * PHENOTYPE_SCORE));
@@ -150,7 +166,9 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.UNKNOWN);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.UNKNOWN};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -161,18 +179,30 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.ANY);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
     }
 
+    // there are probably too many combinations tested here as this was previously testing the OmimPrioritiser behaviour
+    // in conjunction with the rest of the gene scoring. Now it's much simpler internally, but still depends on the output
+    // of the OmimPrioritiser
     @Test
     public void prioritisedGeneWithInheritanceModesKnownDiseasesUnknownInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.UNKNOWN);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.UNKNOWN};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 1.0);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -183,7 +213,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -195,7 +232,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.5 * PHENOTYPE_SCORE));
@@ -206,7 +250,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_RECESSIVE};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.5 * PHENOTYPE_SCORE));
@@ -217,7 +268,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.AUTOSOMAL_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT, InheritanceMode.AUTOSOMAL_RECESSIVE};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double adScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(adScore, equalTo(PHENOTYPE_SCORE));
@@ -234,7 +292,15 @@ public class GenePriorityScoreCalculatorTest {
 
         // This simulates frequent cases where there is an OMIM and Orphanet entry for the same disorder, but Orphanet
         // does not indicate an inheritance mode.
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.UNKNOWN);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.UNKNOWN};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5); //does not match disease inheritance pattern
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0); //matches known disease and gene inheritance patterns
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
+
 
         // Under AD the known associated diseases are incompatible so the score should be reduced
         double adScore = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
@@ -250,7 +316,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.POLYGENIC);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.POLYGENIC};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.5 * PHENOTYPE_SCORE));
@@ -261,8 +334,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.SOMATIC);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.SOMATIC};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(0.5 * PHENOTYPE_SCORE));
@@ -273,7 +352,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.Y_LINKED);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.Y_LINKED};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 1.0);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -284,7 +370,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.MITOCHONDRIAL);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.MITOCHONDRIAL);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.MITOCHONDRIAL};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 1.0);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.MITOCHONDRIAL);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -295,7 +388,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -306,7 +406,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.X_LINKED);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.X_LINKED};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.X_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -317,7 +424,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.X_DOMINANT);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.X_DOMINANT};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_DOMINANT, 1.0);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.X_DOMINANT);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -328,7 +442,14 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        addOmimResultWithCompatibleModes(gene, InheritanceMode.X_RECESSIVE);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.X_RECESSIVE};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0.5);
+        scores.put(ModeOfInheritance.X_RECESSIVE, 1.0);
+        scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
+        scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.X_RECESSIVE);
         assertThat(score, equalTo(PHENOTYPE_SCORE));
@@ -340,10 +461,9 @@ public class GenePriorityScoreCalculatorTest {
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
         //this is currently the case with Orphanet
-        Disease diseaseWithNoSpecifiedInheritanceMode = Disease.builder().diseaseId("ORPHA:12345").build();
-
-        PriorityResult omimResult = new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 0d, ImmutableList.of(diseaseWithNoSpecifiedInheritanceMode));
-        gene.addPriorityResult(omimResult);
+        InheritanceMode[] inheritanceModes = {InheritanceMode.UNKNOWN};
+        Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
+        addOmimResultToGene(gene, scores, inheritanceModes);
 
         double score = instance.calculateGenePriorityScoreForMode(gene, ModeOfInheritance.X_RECESSIVE);
         assertThat(score, equalTo(PHENOTYPE_SCORE));

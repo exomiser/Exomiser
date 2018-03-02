@@ -25,15 +25,10 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
-import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
 
 /**
  * IMPORTANT: It is required that all genes have been filtered and the {@link InheritanceModeAnalyser} has been run.
@@ -63,113 +58,25 @@ class GenePriorityScoreCalculator {
                 .orElseGet(ZeroScorePrioritserResult::new)
                 .getScore();
 
-        // Calculate the modifier here to down-rank genes where the mode of inheritance of known diseases doesn't match
+        // Get the modifier from OmimPrioritiser to down-rank genes where the mode of inheritance of known diseases doesn't match
         // that of the gene, based on the filtered variants or the current inheritance mode.
         // This will be between 0 and 1
-        double knownDiseaseInheritanceModeModifier = calculateknownDiseaseInheritanceModeModifier(gene, modeOfInheritance);
-        // if running OMIM only, do want to always return 0 or a 1 or 0.5 score?
+        Map<ModeOfInheritance, Double> diseaseScoresByMode = getOmimPriorityResultScoresOrEmpty(gene);
+        double knownDiseaseInheritanceModeModifier = diseaseScoresByMode.getOrDefault(modeOfInheritance, 1d);
         return phenotypePrioritiserScore * knownDiseaseInheritanceModeModifier;
+    }
+
+    private Map<ModeOfInheritance, Double> getOmimPriorityResultScoresOrEmpty(Gene gene) {
+        PriorityResult omimPrioritiserResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        if (omimPrioritiserResult == null) {
+            return Collections.emptyMap();
+        }
+        OMIMPriorityResult omimPriorityResult = (OMIMPriorityResult) omimPrioritiserResult;
+        return omimPriorityResult.getScoresByMode();
     }
 
     private Predicate<PriorityResult> isNonOmimPriorityResult() {
         return priorityResult -> !OMIMPriorityResult.class.isInstance(priorityResult);
-    }
-
-
-    private double calculateknownDiseaseInheritanceModeModifier(Gene gene, ModeOfInheritance modeOfInheritance) {
-        if (gene.getCompatibleInheritanceModes().isEmpty() || modeOfInheritance == ModeOfInheritance.ANY) {
-            return 1;
-        }
-
-        if (!gene.isCompatibleWith(modeOfInheritance)) {
-            return 0.5;
-        }
-
-        // if we're still here check the compatibility of the gene against the known modes for the disease
-        // under the current mode of inheritance
-        List<Disease> knownAssociatedDiseases = getAssociatedDiseasesForGene(gene);
-
-        return knownAssociatedDiseases.stream()
-                .filter(disease -> disease.getInheritanceMode() != InheritanceMode.UNKNOWN)
-                .map(Disease::getInheritanceMode)
-                .mapToDouble(scoreInheritanceMode(gene, modeOfInheritance))
-                .max()
-                .orElse(1);
-    }
-
-    private List<Disease> getAssociatedDiseasesForGene(Gene gene) {
-        OMIMPriorityResult omimPriorityResult = (OMIMPriorityResult) gene.getPriorityResults().get(PriorityType.OMIM_PRIORITY);
-        if (null == omimPriorityResult) {
-            return Collections.emptyList();
-        }
-        return omimPriorityResult.getAssociatedDiseases();
-    }
-
-    /**
-     * This function checks whether the mode of inheritance of the disease
-     * matches the observed pattern of variants. That is, if the disease is
-     * autosomal recessive and we have just one heterozygous mutation, then the
-     * disease is probably not the correct diagnosis, and we assign it a factor
-     * of 0.5. Note that hemizygous X chromosomal variants are usually called as
-     * homozygous ALT in VCF files, and thus it is not reliable to distinguish
-     * between X-linked recessive and dominant inheritance. Therefore, we return
-     * 1 for any gene with X-linked inheritance if the disease in question is
-     * listed as X chromosomal.
-     */
-    private ToDoubleFunction<InheritanceMode> scoreInheritanceMode(Gene gene, ModeOfInheritance currentMode) {
-        return inheritanceMode -> {
-            // not likely a rare-disease
-            // gene only associated with somatic mutations or is polygenic
-            if (inheritanceMode == InheritanceMode.SOMATIC || inheritanceMode == InheritanceMode.POLYGENIC) {
-                return 0.5;
-            }
-
-            // Y chromosomal, rare.
-            if (inheritanceMode == InheritanceMode.Y_LINKED) {
-                return 1;
-            }
-
-            // Gene compatible with any known mode of inheritance for this disease?
-            // If yes, we're good, otherwise down-rank this gene-disease-inheritance mode association.
-            return geneCompatibleWithInheritanceMode(gene, inheritanceMode, currentMode) ? 1 : 0.5;
-        };
-    }
-
-    private boolean geneCompatibleWithInheritanceMode(Gene gene, InheritanceMode inheritanceMode, ModeOfInheritance currentMode) {
-        /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
-        if (gene.getCompatibleInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
-            return true;
-        }
-        Set<ModeOfInheritance> compatibleDiseaseModes = toCompatibleModes(inheritanceMode);
-        //as long as the gene is compatible with at least one of the known modes for the disease we'll return the
-        //default score
-        for (ModeOfInheritance mode : compatibleDiseaseModes) {
-            if (gene.isCompatibleWith(mode) && mode == currentMode) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Set<ModeOfInheritance> toCompatibleModes(InheritanceMode inheritanceMode) {
-        switch (inheritanceMode) {
-            case AUTOSOMAL_DOMINANT:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-            case AUTOSOMAL_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            case X_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.X_RECESSIVE);
-            case X_DOMINANT:
-                return EnumSet.of(ModeOfInheritance.X_DOMINANT);
-            case X_LINKED:
-                return EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
-            case MITOCHONDRIAL:
-                return EnumSet.of(ModeOfInheritance.MITOCHONDRIAL);
-            default:
-                return EnumSet.noneOf(ModeOfInheritance.class);
-        }
     }
 
     /**
