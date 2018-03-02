@@ -75,7 +75,7 @@ public class PriorityFactoryImplTest {
 
     @Test
     public void testMakeOmimPrioritiser() {
-        assertThat(instance.makeOmimPrioritiser(), instanceOf(OMIMPriority.class));
+        assertThat(instance.makeOmimPrioritiser(), instanceOf(OmimPriority.class));
     }
 
     @Test

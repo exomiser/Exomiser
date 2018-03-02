@@ -29,7 +29,7 @@ import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.KnownVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriority;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
@@ -55,7 +55,7 @@ public class AnalysisStepCheckerTest {
     private static final KnownVariantFilter KNOWN_VARIANT_FILTER = new KnownVariantFilter();
     private static final FrequencyFilter FREQUENCY_FILTER = new FrequencyFilter(0.1f);
     private static final InheritanceFilter INHERITANCE_FILTER = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-    private static final OMIMPriority OMIM_PRIORITISER = new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
+    private static final OmimPriority OMIM_PRIORITISER = new OmimPriority(TestPriorityServiceFactory.STUB_SERVICE);
     private static final PriorityScoreFilter OMIM_PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.OMIM_PRIORITY, 0f);
     private static final MockPrioritiser NONE_TYPE_PRIORITISER = new MockPrioritiser(PriorityType.NONE, new HashMap<>());
     private static final PriorityScoreFilter NONE_TYPE_PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.NONE, 0f);

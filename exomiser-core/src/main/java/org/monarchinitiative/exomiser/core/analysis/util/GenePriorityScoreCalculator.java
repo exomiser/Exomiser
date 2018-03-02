@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
@@ -68,15 +68,15 @@ class GenePriorityScoreCalculator {
 
     private Map<ModeOfInheritance, Double> getOmimPriorityResultScoresOrEmpty(Gene gene) {
         PriorityResult omimPrioritiserResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        if (omimPrioritiserResult == null || !OMIMPriorityResult.class.isInstance(omimPrioritiserResult)) {
+        if (omimPrioritiserResult == null || !OmimPriorityResult.class.isInstance(omimPrioritiserResult)) {
             return Collections.emptyMap();
         }
-        OMIMPriorityResult omimPriorityResult = (OMIMPriorityResult) omimPrioritiserResult;
+        OmimPriorityResult omimPriorityResult = (OmimPriorityResult) omimPrioritiserResult;
         return omimPriorityResult.getScoresByMode();
     }
 
     private Predicate<PriorityResult> isNonOmimPriorityResult() {
-        return priorityResult -> !OMIMPriorityResult.class.isInstance(priorityResult);
+        return priorityResult -> !OmimPriorityResult.class.isInstance(priorityResult);
     }
 
     /**

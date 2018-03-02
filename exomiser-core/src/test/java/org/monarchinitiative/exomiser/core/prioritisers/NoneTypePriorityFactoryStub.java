@@ -40,8 +40,8 @@ import java.util.Map;
 public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
-    public OMIMPriority makeOmimPrioritiser() {
-        return new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
+    public OmimPriority makeOmimPrioritiser() {
+        return new OmimPriority(TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     @Override

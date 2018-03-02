@@ -61,8 +61,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
     }
 
     @Override
-    public OMIMPriority makeOmimPrioritiser() {
-        return new OMIMPriority(priorityService);
+    public OmimPriority makeOmimPrioritiser() {
+        return new OmimPriority(priorityService);
     }
 
     @Override

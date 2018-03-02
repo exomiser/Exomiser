@@ -41,13 +41,13 @@ import java.util.stream.Stream;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
+public class OmimPriority implements Prioritiser<OmimPriorityResult> {
 
-    private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(OmimPriority.class);
 
     private final PriorityService priorityService;
 
-    public OMIMPriority(PriorityService priorityService) {
+    public OmimPriority(PriorityService priorityService) {
         this.priorityService = priorityService;
     }
 
@@ -70,13 +70,13 @@ public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
     @Override
     public void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
         for (Gene gene : genes) {
-            OMIMPriorityResult result = prioritiseGene().apply(gene);
+            OmimPriorityResult result = prioritiseGene().apply(gene);
             gene.addPriorityResult(result);
         }
     }
 
     @Override
-    public Stream<OMIMPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<OmimPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 
@@ -86,7 +86,7 @@ public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
      * all OMIM and Orphanet diseases associated with the entrez Gene.
      *
      **/
-    private Function<Gene, OMIMPriorityResult> prioritiseGene() {
+    private Function<Gene, OmimPriorityResult> prioritiseGene() {
         return gene -> {
             List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
             // This is a non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
@@ -95,7 +95,7 @@ public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
             Map<ModeOfInheritance, Double> scoresByMode = calculateScoresForModes(gene, diseases);
             double score = scoresByMode.values().stream().max(Comparator.naturalOrder()).orElse(0d);
 
-            return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases, scoresByMode);
+            return new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases, scoresByMode);
         };
     }
 
@@ -177,7 +177,7 @@ public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(OMIMPriority.class.getName());
+        return Objects.hashCode(OmimPriority.class.getName());
     }
 
     @Override

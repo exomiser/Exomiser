@@ -45,7 +45,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
@@ -101,8 +101,8 @@ public class HtmlResultsWriterTest {
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariantEvaluation);
 
-        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
-        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
 
         unAnnotatedVariantEvaluation1 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         unAnnotatedVariantEvaluation2 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);

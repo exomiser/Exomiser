@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
@@ -69,7 +69,7 @@ public class GenePriorityScoreCalculatorTest {
     private void addOmimResultToGene(Gene gene, Map<ModeOfInheritance, Double> scores, InheritanceMode... inheritanceModes) {
         double maxScore = scores.values().stream().max(Comparator.naturalOrder()).orElse(1.0);
         List<Disease> knownDiseases = diseasesCompatibleWith(inheritanceModes);
-        PriorityResult omimResult = new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), maxScore, knownDiseases, scores);
+        PriorityResult omimResult = new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), maxScore, knownDiseases, scores);
         gene.addPriorityResult(omimResult);
     }
 

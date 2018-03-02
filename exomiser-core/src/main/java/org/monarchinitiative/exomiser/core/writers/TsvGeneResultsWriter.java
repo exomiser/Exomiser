@@ -32,7 +32,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -146,7 +146,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                     matchesCandidateGene = 1;
                 }
             } else if (type == PriorityType.OMIM_PRIORITY) {
-                OMIMPriorityResult omimPriorityResult = (OMIMPriorityResult) prioritiserResult;
+                OmimPriorityResult omimPriorityResult = (OmimPriorityResult) prioritiserResult;
                 omimScore = omimPriorityResult.getScoreForMode(modeOfInheritance);
             } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
                 walkerScore = prioritiserResult.getScore();

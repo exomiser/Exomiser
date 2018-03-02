@@ -36,11 +36,11 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OMIMPriorityTest {
+public class OmimPriorityTest {
 
     private final PriorityService priorityService = TestPriorityServiceFactory.TEST_SERVICE;
 
-    private final OMIMPriority instance = new OMIMPriority(priorityService);
+    private final OmimPriority instance = new OmimPriority(priorityService);
 
     private List<Gene> getGenes() {
         return Lists.newArrayList(
@@ -51,8 +51,8 @@ public class OMIMPriorityTest {
         );
     }
 
-    private OMIMPriorityResult omimResultForGene(Gene gene, double score, Map<ModeOfInheritance, Double> scoresByMode) {
-        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, getDiseasesForGene(gene), scoresByMode);
+    private OmimPriorityResult omimResultForGene(Gene gene, double score, Map<ModeOfInheritance, Double> scoresByMode) {
+        return new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, getDiseasesForGene(gene), scoresByMode);
     }
 
     private List<Disease> getDiseasesForGene(Gene gene) {
@@ -81,9 +81,9 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
             System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
-            OMIMPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
+            OmimPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
             assertThat(result, equalTo(expected));
         });
     }
@@ -93,9 +93,9 @@ public class OMIMPriorityTest {
         List<Gene> genes = getGenes();
         instance.prioritizeGenes(Collections.emptyList(), genes);
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
             System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
-            OMIMPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
+            OmimPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
             assertThat(result, equalTo(expected));
         });
     }
@@ -107,9 +107,9 @@ public class OMIMPriorityTest {
         List<Gene> genes = Lists.newArrayList(gene);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
+        OmimPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
         assertThat(result, equalTo(expected));
     }
 
@@ -122,7 +122,7 @@ public class OMIMPriorityTest {
         List<Gene> genes = Lists.newArrayList(gene);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
         scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
@@ -131,7 +131,7 @@ public class OMIMPriorityTest {
         scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
         scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 1.0, scores);
+        OmimPriorityResult expected = omimResultForGene(gene, 1.0, scores);
         assertThat(result, equalTo(expected));
     }
 
@@ -144,7 +144,7 @@ public class OMIMPriorityTest {
         List<Gene> genes = Lists.newArrayList(gene);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
         scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
@@ -153,7 +153,7 @@ public class OMIMPriorityTest {
         scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
         scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 1.0, scores);
+        OmimPriorityResult expected = omimResultForGene(gene, 1.0, scores);
         assertThat(result, equalTo(expected));
     }
 
@@ -166,7 +166,7 @@ public class OMIMPriorityTest {
         List<Gene> genes = Lists.newArrayList(gene);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
         scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
@@ -175,7 +175,7 @@ public class OMIMPriorityTest {
         scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
         scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 1.0, scores);
+        OmimPriorityResult expected = omimResultForGene(gene, 1.0, scores);
         assertThat(result, equalTo(expected));
     }
 
@@ -188,11 +188,11 @@ public class OMIMPriorityTest {
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
 
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = allModesScoreOne();
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 1.0, scores);
+        OmimPriorityResult expected = omimResultForGene(gene, 1.0, scores);
         assertThat(result, equalTo(expected));
     }
 
@@ -205,7 +205,7 @@ public class OMIMPriorityTest {
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
 
-        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
         scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 0.5);
@@ -214,7 +214,7 @@ public class OMIMPriorityTest {
         scores.put(ModeOfInheritance.X_DOMINANT, 0.5);
         scores.put(ModeOfInheritance.MITOCHONDRIAL, 0.5);
 
-        OMIMPriorityResult expected = omimResultForGene(gene, 0.5, scores);
+        OmimPriorityResult expected = omimResultForGene(gene, 0.5, scores);
         assertThat(result, equalTo(expected));
     }
 

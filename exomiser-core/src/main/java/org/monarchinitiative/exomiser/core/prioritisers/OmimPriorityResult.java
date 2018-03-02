@@ -32,18 +32,18 @@ import java.util.Objects;
 
 /**
  * Class for holding the results of the prioritisation of a {@link org.monarchinitiative.exomiser.core.model.Gene} by
- * the {@link OMIMPriority}.
+ * the {@link OmimPriority}.
  *
  * @author Peter N Robinson
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @version 0.08 (9 February, 2014).
  */
-public class OMIMPriorityResult extends AbstractPriorityResult {
+public class OmimPriorityResult extends AbstractPriorityResult {
 
     private final List<Disease> diseases;
     private final Map<ModeOfInheritance, Double> scoresByMode;
 
-    public OMIMPriorityResult(int geneId, String geneSymbol, double score, List<Disease> diseases, Map<ModeOfInheritance, Double> scoresByMode) {
+    public OmimPriorityResult(int geneId, String geneSymbol, double score, List<Disease> diseases, Map<ModeOfInheritance, Double> scoresByMode) {
         super(PriorityType.OMIM_PRIORITY, geneId, geneSymbol, score);
         this.diseases = ImmutableList.copyOf(diseases);
         this.scoresByMode = Maps.immutableEnumMap(scoresByMode);
@@ -167,7 +167,7 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        OMIMPriorityResult that = (OMIMPriorityResult) o;
+        OmimPriorityResult that = (OmimPriorityResult) o;
         return Objects.equals(diseases, that.diseases) &&
                 Objects.equals(scoresByMode, that.scoresByMode);
     }

@@ -34,17 +34,17 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OMIMPriorityResultTest {
+public class OmimPriorityResultTest {
 
     @Test
     public void testType() {
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0, Collections.emptyList(), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0, Collections.emptyList(), Collections.emptyMap());
         assertThat(instance.getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
     @Test
     public void testGetScore() {
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
         assertThat(instance.getScore(), equalTo(1d));
     }
 
@@ -52,13 +52,13 @@ public class OMIMPriorityResultTest {
     public void testAssociatedDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
         List<Disease> diseases = Lists.newArrayList(disease);
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, diseases, Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, diseases, Collections.emptyMap());
         assertThat(instance.getAssociatedDiseases(), equalTo(diseases));
     }
 
     @Test
     public void testToHtml_noDiseases() {
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
@@ -66,38 +66,38 @@ public class OMIMPriorityResultTest {
     public void testToHtml_OmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
         Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).inheritanceModeCode("U").build();
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_IncompatibleOmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Incompatible OMIM disease name").build();
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_IncompatibleOrphanetDiseases() {
         Disease disease = Disease.builder().diseaseId("ORPHANET:12345").diseaseName("Incompatible Orphanet disease name").build();
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_UnknownDiseaseId() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
-        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease), Collections.emptyMap());
+        OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testOrdering() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
-        PriorityResult one = new OMIMPriorityResult(1111, "BEST", 1d, Lists.newArrayList(disease), Collections.emptyMap());
-        PriorityResult two = new OMIMPriorityResult(22222, "MIDDLE_A", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
-        PriorityResult three = new OMIMPriorityResult(33333, "MIDDLE_B", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
-        PriorityResult four = new OMIMPriorityResult(44444, "WORST", 0.1d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult one = new OmimPriorityResult(1111, "BEST", 1d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult two = new OmimPriorityResult(22222, "MIDDLE_A", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult three = new OmimPriorityResult(33333, "MIDDLE_B", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult four = new OmimPriorityResult(44444, "WORST", 0.1d, Lists.newArrayList(disease), Collections.emptyMap());
 
         List<PriorityResult> actual = Arrays.asList(two, four, three, one);
         Collections.sort(actual);

@@ -33,7 +33,7 @@ import java.util.List;
  */
 public interface PriorityFactory {
 
-    OMIMPriority makeOmimPrioritiser();
+    OmimPriority makeOmimPrioritiser();
 
     PhenixPriority makePhenixPrioritiser();
 
