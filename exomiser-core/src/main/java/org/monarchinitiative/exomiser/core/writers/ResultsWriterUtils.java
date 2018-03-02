@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -57,21 +58,27 @@ public class ResultsWriterUtils {
     }
 
     /**
-     * Determines the correct file extension for a file given what was specified
-     * in the {@link org.monarchinitiative.exomiser.core.ExomiserSettings}.
+     * Determines the correct file extension for a file given that was specified by the user, or a sensible default if not.
      *
      * @param vcfPath
      * @param outputPrefix
      * @param outputFormat
-     * @return
+     * @param modeOfInheritance
+     * @return A filename based on either the user input, or one generated from the sample.
      */
-    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat) {
+    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat, ModeOfInheritance modeOfInheritance) {
+        String moiAbbreviation = moiAbbreviation(modeOfInheritance);
         if (outputPrefix.isEmpty()) {
-            String defaultOutputPrefix = String.format("%s/%s-exomiser-results", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, vcfPath.getFileName());
+            String defaultOutputPrefix = String.format("%s/%s_exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, vcfPath.getFileName());
             logger.debug("Output prefix was unspecified. Will write out to: {}", defaultOutputPrefix);
-            outputPrefix = defaultOutputPrefix;
+            return String.format("%s%s.%s", defaultOutputPrefix, moiAbbreviation, outputFormat.getFileExtension());
         }
-        return String.format("%s.%s", outputPrefix, outputFormat.getFileExtension());
+        return String.format("%s%s.%s", outputPrefix, moiAbbreviation, outputFormat.getFileExtension());
+    }
+
+    private static String moiAbbreviation(ModeOfInheritance modeOfInheritance) {
+        String moiAbbreviation = modeOfInheritance.getAbbreviation();
+        return moiAbbreviation == null ? "" : "_" + moiAbbreviation;
     }
 
     /**
@@ -155,7 +162,7 @@ public class ResultsWriterUtils {
     public static List<Gene> getMaxPassedGenes(List<Gene> genes, int maxGenes) {
         List<Gene> passedGenes = getPassedGenes(genes);
         if (maxGenes == 0) {
-            logger.info("Maximum gene limit set to {} - Returning all {} genes which have passed filtering.", maxGenes, passedGenes.size());
+            logger.debug("Maximum gene limit set to {} - Returning all {} genes which have passed filtering.", maxGenes, passedGenes.size());
             return passedGenes;
         }
         return getMaxGenes(passedGenes, maxGenes);
@@ -165,7 +172,7 @@ public class ResultsWriterUtils {
         List<Gene> passedGenes = genes.stream()
                 .filter(Gene::passedFilters)
                 .collect(Collectors.toList());
-        logger.info("{} of {} genes passed filters", passedGenes.size(), genes.size());
+        logger.debug("{} of {} genes passed filters", passedGenes.size(), genes.size());
         return passedGenes;
     }
 
@@ -173,7 +180,7 @@ public class ResultsWriterUtils {
         List<Gene> passedGenes = genes.stream()
                 .limit(maxGenes)
                 .collect(Collectors.toList());
-        logger.info("Maximum gene limit set to {} - Returning first {} of {} genes which have passed filtering.", maxGenes, maxGenes, genes.size());
+        logger.debug("Maximum gene limit set to {} - Returning first {} of {} genes which have passed filtering.", maxGenes, maxGenes, genes.size());
         return passedGenes;
     }
 

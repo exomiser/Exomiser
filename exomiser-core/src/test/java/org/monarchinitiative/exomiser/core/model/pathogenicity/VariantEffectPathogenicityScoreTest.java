@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,27 +36,27 @@ import static org.junit.Assert.assertThat;
  *
  * @author jj8
  */
-public class VariantTypePathogenicityScoresTest {
+public class VariantEffectPathogenicityScoreTest {
 
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {
         VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE));
+        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        assertThat(result, equalTo(VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForStartLoss() {
         VariantEffect variantEffect = VariantEffect.START_LOST;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantTypePathogenicityScores.STARTLOSS_SCORE));
+        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        assertThat(result, equalTo(VariantEffectPathogenicityScore.STARTLOSS_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForNonPathogenicVariantType() {
         VariantEffect variantEffect = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE));
+        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        assertThat(result, equalTo(VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE));
     }
 
 }

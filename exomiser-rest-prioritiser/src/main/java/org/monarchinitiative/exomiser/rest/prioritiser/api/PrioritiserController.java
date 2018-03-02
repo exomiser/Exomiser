@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -59,9 +59,9 @@ public class PrioritiserController {
     private final Map<Integer, GeneIdentifier> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService genomeAnalysisService) {
+    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService hg38GenomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
+        this.geneIdentifiers = hg38GenomeAnalysisService.getKnownGeneIdentifiers().stream()
                 .filter(GeneIdentifier::hasEntrezId)
                 .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());

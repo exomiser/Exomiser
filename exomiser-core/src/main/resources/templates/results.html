@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -153,8 +153,8 @@
                 <div class="col-sm-3">
                     <h4 th:switch="${transcriptDb}" th:with="geneIdentifier=${gene.getGeneIdentifier()}">
                         <b><a th:case="'UCSC'"
-                           th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
-                           th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a></b>
+                              th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
+                              th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a></b>
                         <a th:case="'ENSEMBL'"
                            th:href="@{http://grch37.ensembl.org/Homo_sapiens/Gene/Summary(g=${geneIdentifier.getEnsemblId()})}"
                            th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
@@ -164,13 +164,13 @@
                     </h4>
                 </div>
                 <div class="col-sm-3">
-                    <h4>Exomiser Score: <b th:text="${#numbers.formatDecimal(gene.combinedScore,1,3)}">1.005</b></h4>
+                    <h4>Exomiser Score: <b th:text="${#numbers.formatDecimal(gene.getCombinedScore(), 1, 3)}">1.005</b></h4>
                 </div>
                 <div class="col-sm-3">
-                    <h4>Phenotype Score: <b th:text="${#numbers.formatDecimal(gene.priorityScore,1,3)}">1.005</b></h4>
+                    <h4>Phenotype Score: <b th:text="${#numbers.formatDecimal(gene.getPriorityScore(), 1, 3)}">1.005</b></h4>
                 </div>
                 <div class="col-sm-3">
-                    <h4>Variant Score: <b th:text="${#numbers.formatDecimal(gene.variantScore,1,3)}">1.005</b></h4>
+                    <h4>Variant Score: <b th:text="${#numbers.formatDecimal(gene.getVariantScore(), 1, 3)}">1.005</b></h4>
                 </div>
             </div>
         </div>
@@ -188,13 +188,135 @@
                     </th:block>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-sm-12">
-                    <b>Top ranked variants:</b>
+                    <b>Gene scores under compatible inheritance modes:</b>
+                </div>
+            </div>
+
+            <!-- TODO: implement comparable on GeneScore th:each="geneScore: ${#lists.sort(gene.getGeneScores(), geneScoreComparator)}">-->
+            <div class="panel panel-default" th:each="geneScore: ${gene.getGeneScores()}" th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">
+
+                <!--<div th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">-->
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <h4 th:text="${geneScore.getModeOfInheritance()}">
+                                    <b><a th:case="'AUTOSOMAL_DOMINANT'"
+                                          th:text="'AD'">AUTOSOMAL_DOMINANT</a>
+                                    </b>
+                                    <!--<a th:case="'ENSEMBL'"-->
+                                    <!--th:href="@{http://grch37.ensembl.org/Homo_sapiens/Gene/Summary(g=${geneIdentifier.getEnsemblId()})}"-->
+                                    <!--th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>-->
+                                    <!--<a th:case="*"-->
+                                    <!--th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"-->
+                                    <!--th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>-->
+                                </h4>
+                            </div>
+                            <div class="col-sm-3">
+                                <h4>Exomiser Score: <b
+                                        th:text="${#numbers.formatDecimal(geneScore.getCombinedScore(), 1, 3)}">1.005</b>
+                                </h4>
+                            </div>
+                            <div class="col-sm-3">
+                                <h4>Phenotype Score: <b
+                                        th:text="${#numbers.formatDecimal(geneScore.getPhenotypeScore(), 1, 3)}">1.005</b>
+                                </h4>
+                            </div>
+                            <div class="col-sm-3">
+                                <h4>Variant Score: <b
+                                        th:text="${#numbers.formatDecimal(geneScore.getVariantScore(), 1, 3)}">1.005</b>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <b>Variants contributing to score:</b>
+                            </div>
+                        </div>
+                        <div class="row"
+                             th:each="variantEvaluation: ${#lists.sort(geneScore.getContributingVariants(), variantRankComparator)}">
+                            <div class="col-sm-12">
+                                <span class="label label-danger"
+                                      th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+                                <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
+                                    chr10:g.123256215T>G [0/1]</b>
+                                <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
+                                          th:if="not ${rsId.isEmpty()}">
+                                    <a th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
+                                       th:text="${rsId}">rs141235720
+                                    </a>
+                                    <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
+                                        (variation
+                                        viewer)
+                                    </a>
+                                    <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                                </th:block>
+                            </div>
+                            <div class="col-sm-6">
+                                <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
+                                    score: 0.600</b>
+                                <span class="label label-info"
+                                      th:if="${variantEvaluation.contributesToGeneScore()}"
+                                      th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
+                                <dl class="list-unstyled">
+                                    <dt>Transcripts:</dt>
+                                    <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
+                                        th:switch="${transcriptDb}">
+                                        <a th:case="'UCSC'"
+                                           th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                           th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                        <a th:case="'ENSEMBL'"
+                                           th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                           th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                        <a th:case="'REFSEQ'"
+                                           th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                                           th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="col-sm-3">
+                                <!--<b>Pathogenicity Score: 1.00</b>-->
+                                <dl class="list-unstyled"
+                                    th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
+                                    <dt>Pathogenicity Data:</dt>
+                                    <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
+                                        th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
+                                    </dd>
+                                    <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No
+                                        pathogenicity data
+                                    </dd>
+                                    <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}"
+                                        th:text="${pathScore}">Mutation Taster: 0.999 (P)
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="col-sm-3">
+                                <!--<b>Frequency Score: 0.95</b>-->
+                                <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                    <dt>Frequency Data:</dt>
+                                    <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
+                                    <dd th:each="freq: ${frequencyData.knownFrequencies}"
+                                        th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">
+                                        1000Genomes: 0.02%
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div> <!-- end variant row -->
+                    </div> <!-- end panel-body -->
+                <!--</div> &lt;!&ndash; end gene score section&ndash;&gt;-->
+            </div> <!-- end gene scores -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <b>Other passed variants:</b>
                 </div>
             </div>
             <div class="row"
-                 th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}">
+                 th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}"
+                 th:if="not ${variantEvaluation.contributesToGeneScore()}">
                 <div class="col-sm-12">
             <span class="label label-danger"
                   th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
@@ -214,8 +336,6 @@
                 <div class="col-sm-6">
                     <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
                         score: 0.600</b>
-                    <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}"
-                          th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
                     <dl class="list-unstyled">
                         <dt>Transcripts:</dt>
                         <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"

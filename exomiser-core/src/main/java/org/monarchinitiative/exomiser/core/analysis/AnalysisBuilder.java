@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -57,7 +57,7 @@ public class AnalysisBuilder {
 
     //Sample-related variables
     private List<String> hpoIds = new ArrayList<>();
-    private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
+    private InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.empty();
     //Source-data-related variables
     private GenomeAnalysisService genomeAnalysisService;
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -104,9 +104,9 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
-        builder.modeOfInheritance(modeOfInheritance);
+    public AnalysisBuilder inheritanceModes(InheritanceModeOptions inheritanceModeOptions) {
+        this.inheritanceModeOptions = inheritanceModeOptions;
+        builder.inheritanceModeOptions(this.inheritanceModeOptions);
         return this;
     }
 
@@ -209,11 +209,11 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addInheritanceFilter() {
-        if (modeOfInheritance == ModeOfInheritance.ANY) {
-            logger.info("Not adding an inheritance filter for {} mode of inheritance", modeOfInheritance);
+        if (inheritanceModeOptions == null || inheritanceModeOptions.isEmpty()) {
+            logger.info("Not adding an inheritance filter for undefined mode of inheritance");
             return this;
         }
-        analysisSteps.add(new InheritanceFilter(modeOfInheritance));
+        analysisSteps.add(new InheritanceFilter(inheritanceModeOptions.getDefinedModes()));
         return this;
     }
 

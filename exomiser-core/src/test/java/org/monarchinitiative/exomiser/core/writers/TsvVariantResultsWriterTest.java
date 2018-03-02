@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,17 +41,17 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Max Schubach <max.schubach@charite.de>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -59,15 +60,15 @@ public class TsvVariantResultsWriterTest {
     private final TestVariantFactory varFactory = new TestVariantFactory();
 
     private final TsvVariantResultsWriter instance = new TsvVariantResultsWriter();
-    
+
     private static final String VARIANT_DETAILS_HEADER = "#CHROM\tPOS\tREF\tALT\tQUAL\tFILTER\tGENOTYPE\tCOVERAGE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_GENE\t";
     private static final String PATHOGENICITY_SCORES_HEADER = "CADD(>0.483)\tPOLYPHEN(>0.956|>0.446)\tMUTATIONTASTER(>0.94)\tSIFT(<0.06)\tREMM\t";
-    private static final String FREQUENCY_DATA_HEADER =  "DBSNP_ID\tMAX_FREQUENCY\tDBSNP_FREQUENCY\t"
+    private static final String FREQUENCY_DATA_HEADER = "DBSNP_ID\tMAX_FREQUENCY\tDBSNP_FREQUENCY\t"
             + "EVS_EA_FREQUENCY\tEVS_AA_FREQUENCY\t"
             + "EXAC_AFR_FREQ\tEXAC_AMR_FREQ\tEXAC_EAS_FREQ\tEXAC_FIN_FREQ\tEXAC_NFE_FREQ\tEXAC_SAS_FREQ\tEXAC_OTH_FREQ\t";
-    private static final String EXOMISER_SCORES_HEADER = 
+    private static final String EXOMISER_SCORES_HEADER =
             "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\tCONTRIBUTING_VARIANT\n";
-    
+
     private static final String HEADER = VARIANT_DETAILS_HEADER + PATHOGENICITY_SCORES_HEADER + FREQUENCY_DATA_HEADER + EXOMISER_SCORES_HEADER;
 
     private static final String PASS_VARIANT_DETAILS = "chr10\t123256215\tT\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)\tFGFR2";
@@ -80,10 +81,11 @@ public class TsvVariantResultsWriterTest {
     private static final String CONTRIBUTING_VARIANT_FIELD = "\tCONTRIBUTING_VARIANT";
     private static final String NON_CONTRIBUTING_VARIANT_FIELD = "\t.";
 
-    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD +"\n";
+    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD + "\n";
     private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD + "\n";
 
-    private final OutputSettingsBuilder settingsBuilder = OutputSettings.builder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
+    private final OutputSettingsBuilder settingsBuilder = OutputSettings.builder()
+            .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
     private final Analysis analysis = Analysis.builder().build();
     private AnalysisResults analysisResults;
 
@@ -106,7 +108,7 @@ public class TsvVariantResultsWriterTest {
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
         return variant;
     }
-    
+
     private VariantEvaluation makeFailVariant() {
         VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
@@ -114,27 +116,46 @@ public class TsvVariantResultsWriterTest {
     }
 
     @Test
-    public void testWrite() {
+    public void testWriteProducesFileWithCorrectName() {
         OutputSettings settings = settingsBuilder.outputPrefix("testWrite").build();
-        instance.writeFile(analysis, analysisResults, settings);
-        assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
-        assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, settings);
+        Path arOutputPath = Paths.get("testWrite_AR.variants.tsv");
+        assertThat(arOutputPath.toFile().exists(), is(true));
+        assertThat(arOutputPath.toFile().delete(), is(true));
+
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        Path adOutputPath = Paths.get("testWrite_AD.variants.tsv");
+        assertThat(adOutputPath.toFile().exists(), is(true));
+        assertThat(adOutputPath.toFile().delete(), is(true));
     }
 
     @Test
-    public void testWriteStringContainsAllVariants() {
+    public void testWriteStringUnderAnyInheritanceModeContainsAllVariants() {
         OutputSettings settings = settingsBuilder.build();
-        String outString = instance.writeString(analysis, analysisResults, settings);
+
+        String outString = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
         assertThat(outString, equalTo(expected));
     }
-    
+
     @Test
     public void testWritePassVariantsOnlyStringContainsOnlyPassedVariants() {
         OutputSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
-        String outString = instance.writeString(analysis, analysisResults, settings);
+
+        Gene fgfr2 = TestFactory.newGeneFGFR2();
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        VariantEvaluation passVariant = makePassVariant();
+        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2.addVariant(passVariant);
+
+        AnalysisResults results = AnalysisResults.builder()
+                .genes(Collections.singletonList(fgfr2))
+                .build();
+
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, results, settings);
         String expected = HEADER +
                 PASS_VARIANT_LINE;
         assertThat(outString, equalTo(expected));
@@ -144,16 +165,18 @@ public class TsvVariantResultsWriterTest {
     public void testContributingVariantIsIndicated() {
         OutputSettings settings = settingsBuilder.build();
         Gene fgfr2 = TestFactory.newGeneFGFR2();
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         VariantEvaluation passVariant = makePassVariant();
-        passVariant.setAsContributingToGeneScore();
+        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        passVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         fgfr2.addVariant(passVariant);
 
         AnalysisResults results = AnalysisResults.builder()
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(analysis, results, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, results, settings);
         String expected = HEADER +
                 PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + CONTRIBUTING_VARIANT_FIELD + "\n";
         assertThat(outString, equalTo(expected));

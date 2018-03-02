@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -55,7 +56,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
-@JsonPropertyOrder({"vcf", "genomeAssembly", "ped", "proband", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
+@JsonPropertyOrder({"vcf", "genomeAssembly", "ped", "proband", "hpoIds", "inheritanceModes", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
@@ -73,7 +74,9 @@ public class Analysis {
 
     //these are more optional variables
     private final List<String> hpoIds;
-    private final ModeOfInheritance modeOfInheritance;
+
+    @JsonProperty("inheritanceModes")
+    private final InheritanceModeOptions inheritanceModeOptions;
 
     private final AnalysisMode analysisMode;
     private final Set<FrequencySource> frequencySources;
@@ -86,7 +89,7 @@ public class Analysis {
         this.pedPath = builder.pedPath;
         this.probandSampleName = builder.probandSampleName;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
-        this.modeOfInheritance = builder.modeOfInheritance;
+        this.inheritanceModeOptions = builder.inheritanceModeOptions;
 
         this.analysisMode = builder.analysisMode;
         this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
@@ -110,8 +113,8 @@ public class Analysis {
         return probandSampleName;
     }
 
-    public ModeOfInheritance getModeOfInheritance() {
-        return modeOfInheritance;
+    public InheritanceModeOptions getInheritanceModeOptions() {
+        return inheritanceModeOptions;
     }
 
     public List<String> getHpoIds() {
@@ -205,7 +208,7 @@ public class Analysis {
                 .pedPath(pedPath)
                 .probandSampleName(probandSampleName)
                 .hpoIds(hpoIds)
-                .modeOfInheritance(modeOfInheritance)
+                .inheritanceModeOptions(inheritanceModeOptions)
 
                 .analysisMode(analysisMode)
                 .frequencySources(frequencySources)
@@ -222,7 +225,7 @@ public class Analysis {
         private String probandSampleName = "";
         //these are more optional variables
         private List<String> hpoIds = new ArrayList<>();
-        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
+        private InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.empty();
 
         private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
         private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -263,8 +266,15 @@ public class Analysis {
             return this;
         }
 
-        public Builder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-            this.modeOfInheritance = modeOfInheritance;
+        public Builder inheritanceModeOptions(InheritanceModeOptions inheritanceModeOptions) {
+            Objects.requireNonNull(inheritanceModeOptions, "inheritanceModeOptions cannot be null");
+            this.inheritanceModeOptions = inheritanceModeOptions;
+            return this;
+        }
+
+        public Builder inheritanceModeOptions(Map<SubModeOfInheritance, Float> inheritanceModes) {
+            Objects.requireNonNull(inheritanceModes, "inheritanceModes cannot be null");
+            this.inheritanceModeOptions = InheritanceModeOptions.of(inheritanceModes);
             return this;
         }
 
@@ -305,7 +315,7 @@ public class Analysis {
                 Objects.equals(pedPath, analysis.pedPath) &&
                 Objects.equals(probandSampleName, analysis.probandSampleName) &&
                 Objects.equals(hpoIds, analysis.hpoIds) &&
-                modeOfInheritance == analysis.modeOfInheritance &&
+                inheritanceModeOptions == analysis.inheritanceModeOptions &&
                 analysisMode == analysis.analysisMode &&
                 Objects.equals(frequencySources, analysis.frequencySources) &&
                 Objects.equals(pathogenicitySources, analysis.pathogenicitySources) &&
@@ -314,11 +324,11 @@ public class Analysis {
 
     @Override
     public int hashCode() {
-        return Objects.hash(vcfPath, genomeAssembly, pedPath, probandSampleName, hpoIds, modeOfInheritance, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
+        return Objects.hash(vcfPath, genomeAssembly, pedPath, probandSampleName, hpoIds, inheritanceModeOptions, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
     }
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", genomeAssembly=" + genomeAssembly + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", genomeAssembly=" + genomeAssembly + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", inheritanceModeOptions=" + inheritanceModeOptions + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 }

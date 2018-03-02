@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,9 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -51,6 +53,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static java.nio.file.Files.newInputStream;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @since 7.0.0
@@ -209,7 +212,7 @@ public class AnalysisParser {
                     .pedPath(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
-                    .modeOfInheritance(parseModeOfInheritance(analysisMap))
+                    .inheritanceModeOptions(inheritanceModeOptions(analysisMap))
                     .analysisMode(parseAnalysisMode(analysisMap))
                     .frequencySources(parseFrequencySources(analysisMap))
                     .pathogenicitySources(parsePathogenicitySources(analysisMap))
@@ -277,7 +280,7 @@ public class AnalysisParser {
             return probandSampleName;
         }
 
-        private List<String> parseHpoIds(Map<String, List> analysisMap) {
+        private List<String> parseHpoIds(Map<String, List<String>> analysisMap) {
             List<String> hpoIds = analysisMap.get("hpoIds");
             if (hpoIds == null) {
                 return new ArrayList<>();
@@ -285,18 +288,61 @@ public class AnalysisParser {
             return hpoIds;
         }
 
-        private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
-            String value = analysisMap.get("modeOfInheritance");
-            if (value == null || value.isEmpty()) {
-                return ModeOfInheritance.ANY;
+        private InheritanceModeOptions inheritanceModeOptions(Map<String, Object> analysisMap) {
+            String modeOfInheritanceInput = (String) analysisMap.get("modeOfInheritance");
+
+            //Pre 10.0.0 version - only expected a single string value
+            if (modeOfInheritanceInput != null) {
+                logger.info("modeOfInheritance option no longer supported. Please supply a map of inheritanceModes. See examples for details.");
+                if (modeOfInheritanceInput.equals("UNDEFINED") || modeOfInheritanceInput.equals("UNINITIALIZED") || modeOfInheritanceInput.equals("ANY")) {
+                    return InheritanceModeOptions.empty();
+                }
+                ModeOfInheritance moi = parseValueOfInheritanceMode(modeOfInheritanceInput);
+                InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.defaultForModes(moi);
+                logger.info("'modeOfInheritance: {}' has been converted to 'inheritanceModes: {{}: {}}'", modeOfInheritanceInput, moi, inheritanceModeOptions.getMaxFreqForMode(moi));
+                return inheritanceModeOptions;
             }
-            if (value.equals("UNDEFINED") || value.equals("UNINITIALIZED")) {
-                return ModeOfInheritance.ANY;
+
+            //Version 10.0.0 - expect a map of SubModeOfInheritance
+            Map<String, Double> inheritanceModesInput = (Map<String, Double>) analysisMap.get("inheritanceModes");
+
+            if (inheritanceModesInput != null) {
+                Map<SubModeOfInheritance, Float> inheritanceModes = new EnumMap<>(SubModeOfInheritance.class);
+                for (Entry<String, Double> entry : inheritanceModesInput.entrySet()) {
+                    SubModeOfInheritance subMode = parseValueOfSubInheritanceMode(entry.getKey());
+                    if (subMode == SubModeOfInheritance.ANY) {
+                        logger.info("Ignoring inheritance mode {}", subMode);
+                    } else {
+                        Double value = entry.getValue();
+                        logger.debug("Adding inheritance mode {} max MAF {}", subMode, value);
+                        inheritanceModes.put(subMode, value.floatValue());
+                    }
+                }
+
+                return InheritanceModeOptions.of(inheritanceModes);
             }
+            return InheritanceModeOptions.empty();
+        }
+
+        private SubModeOfInheritance parseValueOfSubInheritanceMode(String value) {
+            try {
+                return SubModeOfInheritance.valueOf(value);
+            } catch (IllegalArgumentException e) {
+                List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
+                        .filter(mode -> mode != SubModeOfInheritance.ANY)
+                        .collect(toList());
+                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
+            }
+        }
+
+        private ModeOfInheritance parseValueOfInheritanceMode(String value) {
             try {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, Arrays.toString(ModeOfInheritance.values())));
+                List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
+                        .filter(mode -> mode != ModeOfInheritance.ANY)
+                        .collect(toList());
+                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
 
@@ -351,7 +397,7 @@ public class AnalysisParser {
                 case "pathogenicityFilter":
                     return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
                 case "inheritanceFilter":
-                    return makeInheritanceFilter(parseModeOfInheritance(analysisMap));
+                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap));
                 case "priorityScoreFilter":
                     return makePriorityScoreFilter(analysisStepMap);
                 case "regulatoryFeatureFilter":
@@ -512,12 +558,12 @@ public class AnalysisParser {
             return new RegulatoryFeatureFilter();
         }
 
-        private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-            if (modeOfInheritance == ModeOfInheritance.ANY) {
-                logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
+        private InheritanceFilter makeInheritanceFilter(InheritanceModeOptions inheritanceModeOptions) {
+            if (inheritanceModeOptions.isEmpty()) {
+                logger.info("Not making an inheritance filter for undefined mode of inheritance");
                 return null;
             }
-            return new InheritanceFilter(modeOfInheritance);
+            return new InheritanceFilter(inheritanceModeOptions.getDefinedModes());
         }
 
         private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options) {

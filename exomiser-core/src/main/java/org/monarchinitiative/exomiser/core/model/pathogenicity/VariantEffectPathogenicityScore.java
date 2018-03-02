@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,16 @@ import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
+ * Set of constants for use as default pathogenicity scores for a given {@link VariantEffect}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public abstract class VariantTypePathogenicityScores {
+public abstract class VariantEffectPathogenicityScore {
+
+    private VariantEffectPathogenicityScore() {
+        //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
+    }
 
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)
@@ -111,6 +116,9 @@ public abstract class VariantTypePathogenicityScores {
                 return STOPLOSS_SCORE;
             case STOP_GAINED:
                 return NONSENSE_SCORE;
+            // NO REGULATORY_REGION, FIVE_PRIME_UTR_EXON_VARIANT, FIVE_PRIME_UTR_TRUNCATION
+            // FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT.... ?
+            // There, are many other missing cases which really need default scores!
             default:
                 return NON_PATHOGENIC_SCORE;
         }

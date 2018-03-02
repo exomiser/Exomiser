@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
@@ -31,10 +30,7 @@ import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -79,7 +75,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     public AnalysisResults run(Analysis analysis) {
         logger.info("Starting analysis");
         logger.info("Using genome assembly {}", analysis.getGenomeAssembly());
-
+        //all the sample-related bits, might be worth encapsulating
         Path vcfPath = analysis.getVcfPath();
         Path pedigreeFilePath = analysis.getPedPath();
 
@@ -87,15 +83,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         List<String> sampleNames = vcfHeader.getGenotypeSamples();
 
-        String probandSampleName = SampleNameChecker.getProbandSampleName(analysis.getProbandSampleName(), sampleNames);
-        int probandSampleId = SampleNameChecker.getProbandSampleId(probandSampleName, sampleNames);
-
+        SampleIdentifier proband = SampleIdentifierUtil.createProbandIdentifier(analysis.getProbandSampleName(), sampleNames);
         Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames);
-        ModeOfInheritance modeOfInheritance = analysis.getModeOfInheritance();
+        InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
 
-        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSampleName, probandSampleId + 1, sampleNames);
-        Instant timeStart = Instant.now();
+        InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
         List<String> hpoIds = analysis.getHpoIds();
+        //now run the analysis on the sample
+        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", proband.getId(), proband.getGenotypePosition() + 1, sampleNames);
+        Instant timeStart = Instant.now();
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
@@ -115,7 +111,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, modeOfInheritance);
+                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), inheritanceModeAnnotator);
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -131,19 +127,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         logger.info("Scoring genes");
-        GeneScorer geneScorer = new RawScoreGeneScorer(probandSampleId, modeOfInheritance, pedigree);
+        GeneScorer geneScorer = new RawScoreGeneScorer(proband, inheritanceModeAnnotator);
         List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()));
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
         logger.info("Creating analysis results from VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
         AnalysisResults analysisResults = AnalysisResults.builder()
-                .vcfPath(vcfPath)
-                .pedPath(pedigreeFilePath)
-                .vcfHeader(vcfHeader)
-                .probandSampleName(probandSampleName)
+                .probandSampleName(proband.getId())
                 .sampleNames(sampleNames)
-                .pedigree(pedigree)
                 .genes(genes)
                 .variantEvaluations(variants)
                 .build();
@@ -286,15 +278,21 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+    private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
-                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritance);
+                analyseGeneCompatibilityWithInheritanceMode(genes, inheritanceModeAnnotator);
                 inheritanceModesCalculated = true;
             }
             runStep(analysisStep, hpoIds, genes);
         }
+    }
+
+    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        logger.info("Checking inheritance mode compatibility with {} for genes which passed filters", inheritanceModeAnnotator.getDefinedModes());
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(inheritanceModeAnnotator);
+        inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
     private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
@@ -319,13 +317,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             logger.info("Running Prioritiser: {}", prioritiser);
             prioritiser.prioritizeGenes(hpoIds, genes);
         }
-    }
-
-    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(modeOfInheritance, pedigree);
-        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
-        inheritanceModeAnalyser.analyseInheritanceModes(genes);
-        //could add the OmimPrioritiser in here too - it requires the InheritanceModes in order to run correctly, as does the GeneScorer
     }
 
     /**

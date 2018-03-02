@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,31 +36,29 @@ import static org.junit.Assert.assertThat;
  */
 public class OMIMPriorityResultTest {
 
-    private OMIMPriorityResult instance;
-
     @Test
     public void testType() {
-        instance = new OMIMPriorityResult(1234, "GENE1", 0, Collections.emptyList());
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0, Collections.emptyList(), Collections.emptyMap());
         assertThat(instance.getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
     @Test
     public void testGetScore() {
-        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList());
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
         assertThat(instance.getScore(), equalTo(1d));
     }
 
     @Test
     public void testAssociatedDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
-        ArrayList<Disease> diseases = Lists.newArrayList(disease);
-        instance = new OMIMPriorityResult(1234, "GENE1", 1d, diseases);
+        List<Disease> diseases = Lists.newArrayList(disease);
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, diseases, Collections.emptyMap());
         assertThat(instance.getAssociatedDiseases(), equalTo(diseases));
     }
 
     @Test
     public void testToHtml_noDiseases() {
-        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList());
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
@@ -69,38 +66,38 @@ public class OMIMPriorityResultTest {
     public void testToHtml_OmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
         Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).inheritanceModeCode("U").build();
-        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease));
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_IncompatibleOmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Incompatible OMIM disease name").build();
-        instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease));
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_IncompatibleOrphanetDiseases() {
         Disease disease = Disease.builder().diseaseId("ORPHANET:12345").diseaseName("Incompatible Orphanet disease name").build();
-        instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease));
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtml_UnknownDiseaseId() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
-        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease));
+        OMIMPriorityResult instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testOrdering() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
-        PriorityResult one = new OMIMPriorityResult(1111, "BEST", 1d, Lists.newArrayList(disease));
-        PriorityResult two = new OMIMPriorityResult(22222, "MIDDLE_A", 0.5d, Lists.newArrayList(disease));
-        PriorityResult three = new OMIMPriorityResult(33333, "MIDDLE_B", 0.5d, Lists.newArrayList(disease));
-        PriorityResult four = new OMIMPriorityResult(44444, "WORST", 0.1d, Lists.newArrayList(disease));
+        PriorityResult one = new OMIMPriorityResult(1111, "BEST", 1d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult two = new OMIMPriorityResult(22222, "MIDDLE_A", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult three = new OMIMPriorityResult(33333, "MIDDLE_B", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
+        PriorityResult four = new OMIMPriorityResult(44444, "WORST", 0.1d, Lists.newArrayList(disease), Collections.emptyMap());
 
         List<PriorityResult> actual = Arrays.asList(two, four, three, one);
         Collections.sort(actual);

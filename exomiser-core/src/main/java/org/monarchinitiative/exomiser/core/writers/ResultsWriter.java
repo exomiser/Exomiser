@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
@@ -36,19 +37,22 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 public interface ResultsWriter {
     
     /**
-     * Writes the result data out to the file specified in the ExomiserSettings object.
-     * 
+     * Writes the result data out to the file specified in the ExomiserSettings object for the specified mode of inheritance.
+     *
+     * @param modeOfInheritance
      * @param analysis
      * @param settings
      */
-    void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
+    void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
        
     /**
-     * Writes the result data out to a String.
+     * Writes the result data out to a String for the specified mode of inheritance.
      * 
+     * @param modeOfInheritance
      * @param analysis
      * @param settings
-     * @return  
+     * @return The string value of the analysis results for the given inheritance model
      */
-    String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
+    String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
+
 }

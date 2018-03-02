@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import org.jblas.DoubleMatrix;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
@@ -291,24 +289,6 @@ public class HiPhivePriorityTest {
 
         results.forEach(checkScores(expectedScores));
 
-    }
-
-    @Ignore
-    @Test
-    public void testSetPriorityService() {
-        ArrayListMultimap<Integer, Double>  multimapInsertOrderTest = ArrayListMultimap.create();
-        multimapInsertOrderTest.put(1, 1.0);
-        multimapInsertOrderTest.put(1, 2.0);
-        multimapInsertOrderTest.put(1, 3.0);
-
-        multimapInsertOrderTest.put(3, 1.0);
-
-        multimapInsertOrderTest.put(2, 1.0);
-        multimapInsertOrderTest.put(2, 1.0);
-
-        System.out.println(multimapInsertOrderTest);
-        List<Integer> expectedOrder = Lists.newArrayList(1, 3, 2);
-        assertThat(multimapInsertOrderTest.keySet(), equalTo(expectedOrder));
     }
 
     @Test

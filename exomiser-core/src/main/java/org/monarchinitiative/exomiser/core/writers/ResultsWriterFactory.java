@@ -26,25 +26,13 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.thymeleaf.TemplateEngine;
-
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-@Component
 public class ResultsWriterFactory {
-
-    private final TemplateEngine coreTemplateEngine;
-
-    @Autowired
-    public ResultsWriterFactory(TemplateEngine coreTemplateEngine) {
-        this.coreTemplateEngine = coreTemplateEngine;
-    }
 
     /**
      * Build {@link ResultsWriter} for the given {@link OutputFormat}.
@@ -65,7 +53,7 @@ public class ResultsWriterFactory {
                 return new PhenogridWriter();
             case HTML:
             default:
-                return new HtmlResultsWriter(coreTemplateEngine);
+                return new HtmlResultsWriter();
         }
     }
 

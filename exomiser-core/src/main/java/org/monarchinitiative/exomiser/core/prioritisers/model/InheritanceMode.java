@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,11 @@
  */
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
+
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Enum representing the different modes on inheritance for a disease.
@@ -111,6 +116,30 @@ public enum InheritanceMode {
         }
     }
 
+    /**
+     *
+     * @return a set of {@code ModeOfInheritance} which are equivalent to the {@code InheritanceMode)
+     */
+    public Set<ModeOfInheritance> toModeOfInheritance() {
+        switch (this) {
+            case AUTOSOMAL_DOMINANT:
+                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+            case AUTOSOMAL_RECESSIVE:
+                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+            case X_RECESSIVE:
+                return EnumSet.of(ModeOfInheritance.X_RECESSIVE);
+            case X_DOMINANT:
+                return EnumSet.of(ModeOfInheritance.X_DOMINANT);
+            case X_LINKED:
+                return EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
+            case MITOCHONDRIAL:
+                return EnumSet.of(ModeOfInheritance.MITOCHONDRIAL);
+            default:
+                return EnumSet.noneOf(ModeOfInheritance.class);
+        }
+    }
 
     @Override
     public String toString() {

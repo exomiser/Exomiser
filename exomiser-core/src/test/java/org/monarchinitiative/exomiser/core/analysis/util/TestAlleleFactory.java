@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,12 +60,7 @@ public final class TestAlleleFactory {
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext) {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
-        int altAlleleId = 0;
-        for (int i = 0; i < altAlleles.size(); i++) {
-            if (alt.equalsIgnoreCase(altAlleles.get(i).getBaseString())) {
-                altAlleleId = i;
-            }
-        }
+        int altAlleleId = findAltAlleleId(alt, altAlleles);
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
@@ -76,12 +71,7 @@ public final class TestAlleleFactory {
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext, VariantEffect variantEffect) {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
-        int altAlleleId = 0;
-        for (int i = 0; i < altAlleles.size(); i++) {
-            if (alt.equalsIgnoreCase(altAlleles.get(i).getBaseString())) {
-                altAlleleId = i;
-            }
-        }
+        int altAlleleId = findAltAlleleId(alt, altAlleles);
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
@@ -91,20 +81,36 @@ public final class TestAlleleFactory {
                 .build();
     }
 
+    private static int findAltAlleleId(String alt, List<Allele> altAlleles) {
+        for (int i = 0; i < altAlleles.size(); i++) {
+            if (alt.equalsIgnoreCase(altAlleles.get(i).getBaseString())) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     public static List<Allele> buildAlleles(String ref, String... alts) {
         Allele refAllele = Allele.create(ref, true);
 
-        List<Allele> altAlleles = Arrays.asList(alts).stream().map(Allele::create).collect(toList());
+        List<Allele> altAlleles = Arrays.stream(alts).map(Allele::create).collect(toList());
         List<Allele> alleles = new ArrayList<>();
         alleles.add(refAllele);
         alleles.addAll(altAlleles);
         return alleles;
     }
 
-    public static Genotype buildSampleGenotype(String sampleName, Allele ref, Allele alt) {
+    public static Genotype buildPhasedSampleGenotype(String sampleName, Allele ref, Allele alt) {
         GenotypeBuilder gtBuilder = new GenotypeBuilder(sampleName).noAttributes()
                 .alleles(Arrays.asList(ref, alt))
                 .phased(true);
+        return gtBuilder.make();
+    }
+
+    public static Genotype buildUnPhasedSampleGenotype(String sampleName, Allele ref, Allele alt) {
+        GenotypeBuilder gtBuilder = new GenotypeBuilder(sampleName).noAttributes()
+                .alleles(Arrays.asList(ref, alt))
+                .phased(false);
         return gtBuilder.make();
     }
 

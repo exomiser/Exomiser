@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,13 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
@@ -42,7 +44,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneTest {
@@ -158,9 +159,7 @@ public class GeneTest {
         assertThat(instance.passedFilters(), is(true));
         assertThat(instance.getPriorityResults().isEmpty(), is(true));
 
-        assertThat(instance.getVariantScore(), equalTo(0f));
-        assertThat(instance.getPriorityScore(), equalTo(0f));
-        assertThat(instance.getCombinedScore(), equalTo(0f));
+        assertThat(instance.getGeneScores().isEmpty(), is(true));
     }
 
     @Test
@@ -177,9 +176,7 @@ public class GeneTest {
         assertThat(emptyGene.passedFilters(), is(true));
         assertThat(emptyGene.getPriorityResults().isEmpty(), is(true));
 
-        assertThat(emptyGene.getVariantScore(), equalTo(0f));
-        assertThat(emptyGene.getPriorityScore(), equalTo(0f));
-        assertThat(emptyGene.getCombinedScore(), equalTo(0f));
+        assertThat(instance.getGeneScores().isEmpty(), is(true));
     }
 
     @Test
@@ -196,8 +193,8 @@ public class GeneTest {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneTwo();
 
-        gene1.setCombinedScore(0.0f);
-        gene2.setCombinedScore(1.0f);
+        gene1.addGeneScore(GeneScore.builder().combinedScore(0.5f).build());
+        gene2.addGeneScore(GeneScore.builder().combinedScore(1).build());
 
         assertTrue(gene1.compareTo(gene2) > 0);
         assertTrue(gene2.compareTo(gene1) < 0);
@@ -217,8 +214,8 @@ public class GeneTest {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneOne();
 
-        gene1.setCombinedScore(0.0f);
-        gene2.setCombinedScore(1.0f);
+        gene1.addGeneScore(GeneScore.builder().combinedScore(0.5f).build());
+        gene2.addGeneScore(GeneScore.builder().combinedScore(1).build());
 
         assertTrue(gene1.compareTo(gene2) > 0);
         assertTrue(gene2.compareTo(gene1) < 0);
@@ -288,30 +285,30 @@ public class GeneTest {
 //        //but that the variant also passes the gene filter - this is OK behaviour as Variants fail fast - i.e. we really only care if a variant passed ALL filters
 //        assertThat(variantEvaluation1.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
 //    }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGenePassesAndVariantsFailFilterOfThatType() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(FAIL_GENE_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGeneUnfilteredAndVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_FalseWhenGeneUnfilteredAndVariantsFailFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
     }
-    
-    @Test 
+
+    @Test
     public void testPassedFilter_TrueWhenGeneUnfilteredAndAtLeastOneVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -369,39 +366,39 @@ public class GeneTest {
     public void testAddVariant_AfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
     }
-    
+
     @Test
     public void testAddVariant_AfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.fail(FilterType.PRIORITY_SCORE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(false));
         assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
     }
-    
+
     @Test
     public void testAddVariant_AfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
-        
+
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
         instance.addFilterResult(FilterResult.fail(FilterType.INHERITANCE_FILTER));
-        
+
         instance.addVariant(variantEvaluation1);
-        
+
         assertThat(variantEvaluation1.passedFilters(), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
         assertThat(variantEvaluation1.getFailedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
     }
-    
+
     @Test
     public void testCanAddAndRetrievePriorityScoreByPriorityType() {
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
@@ -413,30 +410,32 @@ public class GeneTest {
     }
 
     @Test
-    public void canInheritanceModes() {
-        assertThat(instance.getInheritanceModes(), notNullValue());
-        assertThat(instance.getInheritanceModes().isEmpty(), is(true));
+    public void defaultInheritanceModesAreEmpty() {
+        assertThat(instance.getCompatibleInheritanceModes(), notNullValue());
+        assertThat(instance.getCompatibleInheritanceModes().isEmpty(), is(true));
     }
 
     @Test
     public void canSetAndGetInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
-        assertThat(instance.getInheritanceModes(), equalTo(inheritanceModes));
+        assertThat(instance.getCompatibleInheritanceModes(), equalTo(inheritanceModes));
     }
 
     @Test
     public void isConsistentWithInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-                ModeOfInheritance.X_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
         assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(true));
@@ -444,13 +443,15 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithDominantInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(false));
@@ -458,13 +459,15 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithRecessiveInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(false));
         assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(false));
@@ -472,14 +475,32 @@ public class GeneTest {
 
     @Test
     public void isConsistentWithXRecessiveInheritanceModes() {
-        Set inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
 
-        instance.setInheritanceModes(inheritanceModes);
+        instance.setCompatibleInheritanceModes(inheritanceModes);
 
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
         assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
+        assertThat(instance.isConsistentWithX(), is(true));
+    }
+
+    @Test
+    public void isConsistentWithXDominantInheritanceModes() {
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_DOMINANT);
+
+        instance.setCompatibleInheritanceModes(inheritanceModes);
+
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
         assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }
@@ -527,25 +548,154 @@ public class GeneTest {
     }
 
     @Test
-    public void testCanSetAndChangePriorityScore() {
-        float firstScore = 0f;
-        instance.setPriorityScore(firstScore);
-        assertThat(instance.getPriorityScore(), equalTo(firstScore));
+    public void testGetGeneScoreForMode() {
+        assertThat(instance.getGeneScores().isEmpty(), is(true));
 
-        float secondScore = 1.0f;
-        instance.setPriorityScore(secondScore);
-        assertThat(instance.getPriorityScore(), equalTo(secondScore));
+        ModeOfInheritance modeOfInheritanceAD = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        GeneScore geneScoreAD = GeneScore.builder()
+                .combinedScore(1f)
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(modeOfInheritanceAD)
+                .build();
+        instance.addGeneScore(geneScoreAD);
+
+        assertThat(instance.getGeneScoreForMode(modeOfInheritanceAD), equalTo(geneScoreAD));
+        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(geneScoreAD)));
+
+        ModeOfInheritance modeOfInheritanceAR = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
+        GeneScore geneScoreAR = GeneScore.builder()
+                .combinedScore(1f)
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(modeOfInheritanceAR)
+                .build();
+        instance.addGeneScore(geneScoreAR);
+
+        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(geneScoreAD, geneScoreAR)));
+
     }
 
     @Test
-    public void testCanSetAndChangeVariantScore() {
-        float firstScore = 0f;
-        instance.setVariantScore(firstScore);
-        assertThat(instance.getVariantScore(), equalTo(firstScore));
+    public void testScoresChangeWhenHigherGeneScoreAdded() {
+
+        GeneScore defaultGeneScore = GeneScore.builder()
+                .modeOfInheritance(ModeOfInheritance.ANY)
+                .geneIdentifier(instance.getGeneIdentifier())
+                .build();
+
+        assertThat(instance.getTopGeneScore(), equalTo(defaultGeneScore));
+
+        assertThat(instance.getVariantScore(), equalTo(defaultGeneScore.getVariantScore()));
+        assertThat(instance.getPriorityScore(), equalTo(defaultGeneScore.getPhenotypeScore()));
+        assertThat(instance.getCombinedScore(), equalTo(defaultGeneScore.getCombinedScore()));
+        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of()));
+
+        //test returns zero with no score
+        assertThat(instance.getPriorityScoreForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(0f));
+
+        float phenotypeScore = 1f;
+        GeneScore firstGeneScore = GeneScore.builder()
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .phenotypeScore(0.5f)
+                .variantScore(0.5f)
+                .combinedScore(0.5f)
+                .build();
+        instance.addGeneScore(firstGeneScore);
+
+        assertThat(instance.getTopGeneScore(), equalTo(firstGeneScore));
+
+        assertThat(instance.getVariantScore(), equalTo(firstGeneScore.getVariantScore()));
+        assertThat(instance.getPriorityScore(), equalTo(firstGeneScore.getPhenotypeScore()));
+        assertThat(instance.getCombinedScore(), equalTo(firstGeneScore.getCombinedScore()));
+        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(firstGeneScore)));
+
+        GeneScore secondGeneScore = GeneScore.builder()
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .phenotypeScore(1f)
+                .variantScore(1f)
+                .combinedScore(1f)
+                .build();
+        instance.addGeneScore(secondGeneScore);
+
+        assertThat(instance.getTopGeneScore(), equalTo(secondGeneScore));
+
+        assertThat(instance.getVariantScore(), equalTo(secondGeneScore.getVariantScore()));
+        assertThat(instance.getPriorityScore(), equalTo(secondGeneScore.getPhenotypeScore()));
+        assertThat(instance.getCombinedScore(), equalTo(secondGeneScore.getCombinedScore()));
+        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(firstGeneScore, secondGeneScore)));
+    }
+
+    @Test
+    public void testCanSetAndChangeGeneScore() {
+        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        assertThat(instance.getGeneScores().isEmpty(), is(true));
+        //test returns zero with no score
+        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(0f));
+
+        float phenotypeScore = 1f;
+        GeneScore firstGeneScore = GeneScore.builder()
+                .phenotypeScore(phenotypeScore)
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(modeOfInheritance)
+                .build();
+        instance.addGeneScore(firstGeneScore);
+        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(phenotypeScore));
 
         float secondScore = 1.0f;
-        instance.setVariantScore(secondScore);
-        assertThat(instance.getVariantScore(), equalTo(secondScore));
+        GeneScore secondGeneScore = GeneScore.builder()
+                .phenotypeScore(phenotypeScore)
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(modeOfInheritance)
+                .build();
+        instance.addGeneScore(secondGeneScore);
+        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(secondScore));
+    }
+
+    @Test
+    public void testInheritanceModeComparator() {
+        Gene topAutosomalDominant = TestFactory.newGeneFGFR2();
+        //add gene scores for mois
+        GeneScore fgfr2AutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+                .combinedScore(1f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        topAutosomalDominant.addGeneScore(fgfr2AutoDomScore);
+
+        GeneScore fgfr2AutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+                .combinedScore(0.5f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        topAutosomalDominant.addGeneScore(fgfr2AutoRecScore);
+
+        Gene topAutosomalRecessive = TestFactory.newGeneRBM8A();
+        GeneScore rbm8aAutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+                .combinedScore(0.5f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        topAutosomalRecessive.addGeneScore(rbm8aAutoDomScore);
+
+        GeneScore rbm8aAutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+                .combinedScore(1f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        topAutosomalRecessive.addGeneScore(rbm8aAutoRecScore);
+
+        Gene noScores = TestFactory.newGeneSHH();
+
+        List<Gene> genes = Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores);
+        //test sorting by AD
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores)));
+
+        // test sorting by AR
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalRecessive, topAutosomalDominant, noScores)));
+
+        // test sort by ANY
+        genes.sort(Gene.comparingScoreForInheritanceMode(ModeOfInheritance.ANY));
+        //these should be sorted by combined score desc, gene symbols asc
+        assertThat(genes, equalTo(Arrays.asList(topAutosomalDominant, topAutosomalRecessive, noScores)));
     }
 
     @Test

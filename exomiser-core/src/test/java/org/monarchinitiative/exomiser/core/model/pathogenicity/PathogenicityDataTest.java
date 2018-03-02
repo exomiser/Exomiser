@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,10 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
+import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -158,11 +158,8 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScores() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = new ArrayList<>();
-        expResult.add(POLYPHEN_PASS);
-        expResult.add(MTASTER_PASS);
-        expResult.add(SIFT_FAIL);
-        
+        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+
         List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
         assertThat(result, equalTo(expResult));
     }
@@ -170,10 +167,7 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScores_isImmutable() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = new ArrayList<>();
-        expResult.add(POLYPHEN_PASS);
-        expResult.add(MTASTER_PASS);
-        expResult.add(SIFT_FAIL);
+        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         //try and add another score to the instance post-construction
         instance.getPredictedPathogenicityScores().add(SIFT_PASS);
         
