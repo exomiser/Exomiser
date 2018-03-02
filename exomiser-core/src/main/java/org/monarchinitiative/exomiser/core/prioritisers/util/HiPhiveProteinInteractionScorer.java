@@ -64,7 +64,7 @@ public class HiPhiveProteinInteractionScorer {
 
     private List<GeneColumnIndex> makeWeightedHighQualityMatrixIndex(double highQualityPhenoScoreCutOff, DataMatrix dataMatrix, Collection<GeneModelPhenotypeMatch> values) {
         List<GeneColumnIndex> highQualityMappings = new ArrayList<>();
-        Map<Integer, Double> highQualityPhenoMatchedGeneScoreMap = getHighestGeneIdPhenoScoresInDataMatrix(highQualityPhenoScoreCutOff, dataMatrix, bestGeneModels.values());
+        Map<Integer, Double> highQualityPhenoMatchedGeneScoreMap = getHighestGeneIdPhenoScoresInDataMatrix(highQualityPhenoScoreCutOff, dataMatrix, values);
         int column = 0;
         for (Map.Entry<Integer, Double> entry : highQualityPhenoMatchedGeneScoreMap.entrySet()) {
             Integer entrezGeneId = entry.getKey();
