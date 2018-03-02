@@ -147,7 +147,7 @@ public class VcfResultsWriterTest {
 
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariant);
-        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList()));
+        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
     }
 
     private void setUpFgfr2Gene() {
@@ -156,7 +156,7 @@ public class VcfResultsWriterTest {
 
         fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2MissenseVariant);
-        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
+        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
     }
 
     private AnalysisResults buildAnalysisResults(Gene... genes) {
@@ -217,7 +217,7 @@ public class VcfResultsWriterTest {
 
         Gene gene = new Gene(incorrectGeneSymbol);
         gene.addVariant(shhIndelVariant);
-        gene.addPriorityResult(new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList()));
+        gene.addPriorityResult(new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(gene);

@@ -20,27 +20,33 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class is used to annotate with OMIM data based on the link between the
- * entrez Gene and the OMIM data in the exomizer database table called omim.
- * There is no actual filtering out of variants.
+ * Class for holding the results of the prioritisation of a {@link org.monarchinitiative.exomiser.core.model.Gene} by
+ * the {@link OMIMPriority}.
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @version 0.08 (9 February, 2014).
  */
 public class OMIMPriorityResult extends AbstractPriorityResult {
 
     private final List<Disease> diseases;
+    private final Map<ModeOfInheritance, Double> scoresByMode;
 
-    public OMIMPriorityResult(int geneId,  String geneSymbol, double score, List<Disease> diseases) {
+    public OMIMPriorityResult(int geneId, String geneSymbol, double score, List<Disease> diseases, Map<ModeOfInheritance, Double> scoresByMode) {
         super(PriorityType.OMIM_PRIORITY, geneId, geneSymbol, score);
-        this.diseases = diseases;
+        this.diseases = ImmutableList.copyOf(diseases);
+        this.scoresByMode = Maps.immutableEnumMap(scoresByMode);
     }
 
     /**
@@ -48,6 +54,33 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
      */
     public List<Disease> getAssociatedDiseases() {
         return diseases;
+    }
+
+    /**
+     * Returns the map of {@code ModeOfInheritance} to prioritiser score. If the mode of inheritance hasn't been
+     * scored it will be missing. This score is intended to be used as a modifier for another phenotype specific score,
+     * in conjunction with a specific {@code ModeOfInheritance}, as a means of prioritising a gene based on the compatible
+     * modes of inheritance for the argument gene and the modes of inheritance for known diseases associated with that gene.
+     *
+     * @return the map of {@code ModeOfInheritance} and the prioritiser modifier score for that mode.
+     * @since 10.0.0
+     */
+    public Map<ModeOfInheritance, Double> getScoresByMode() {
+        return scoresByMode;
+    }
+
+    /**
+     * Returns the prioritiser score for this specific mode of inheritance. If the mode of inheritance hasn't been
+     * scored a default value of 1.0 will be returned. This score is intended to be used as a modifier for another
+     * phenotype specific score as a means of prioritising a gene based on the compatible modes of inheritance for the
+     * argument gene and the modes of inheritance for known diseases associated with that gene.
+     *
+     * @param modeOfInheritance The {@code ModeOfInheritance} under which you want the score.
+     * @return the value 0.0, 0.5 or 1.0
+     * @since 10.0.0
+     */
+    public double getScoreForMode(ModeOfInheritance modeOfInheritance) {
+        return scoresByMode.getOrDefault(modeOfInheritance, 1d);
     }
 
     /**
@@ -91,14 +124,14 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
 
     private String makeDisplayString(Disease disease) {
         String diseaseId = disease.getDiseaseId();
-        if (diseaseId.startsWith("OMIM:")){
+        if (diseaseId.startsWith("OMIM:")) {
             return makeOmimDisplayString(disease);
         }
         if (diseaseId.startsWith("ORPHA:")) {
             return makeOrphanetDisplayString(disease);
         }
         //default return non-formatted disease id
-        return String.format("%s %s",  disease.getDiseaseId(), disease.getDiseaseName());
+        return String.format("%s %s", disease.getDiseaseId(), disease.getDiseaseName());
     }
 
     private String makeOmimDisplayString(Disease disease) {
@@ -112,9 +145,9 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
         InheritanceMode inheritanceMode = disease.getInheritanceMode();
         Disease.DiseaseType diseaseType = disease.getDiseaseType();
         if (diseaseType == Disease.DiseaseType.DISEASE) {
-            return String.format("%s %s - %s",  href, disease.getDiseaseName(), inheritanceMode.getTerm());
+            return String.format("%s %s - %s", href, disease.getDiseaseName(), inheritanceMode.getTerm());
         }
-        return String.format("%s %s (%s)",  href, disease.getDiseaseName(), diseaseType.getValue());
+        return String.format("%s %s (%s)", href, disease.getDiseaseName(), diseaseType.getValue());
 
     }
 
@@ -135,12 +168,13 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         OMIMPriorityResult that = (OMIMPriorityResult) o;
-        return Objects.equals(diseases, that.diseases);
+        return Objects.equals(diseases, that.diseases) &&
+                Objects.equals(scoresByMode, that.scoresByMode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), diseases);
+        return Objects.hash(super.hashCode(), diseases, scoresByMode);
     }
 
     @Override
@@ -149,7 +183,8 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
                 "geneId=" + geneId +
                 ", geneSymbol='" + geneSymbol + '\'' +
                 ", score=" + score +
+                ", scoresByMode=" + scoresByMode +
                 ", diseases=" + diseases +
-                "} ";
+                '}';
     }
 }
