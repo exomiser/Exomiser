@@ -198,7 +198,7 @@ public class VcfResultsWriterTest {
         String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -224,7 +224,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -362,7 +362,7 @@ public class VcfResultsWriterTest {
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER
-                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=0.95,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=1.0,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
     }
 }

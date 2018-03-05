@@ -76,7 +76,7 @@ public class TsvVariantResultsWriterTest {
     private static final String NO_PATH_SCORES = "\t.\t.\t.\t.\t.";
     private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";
     private static final String PASS_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
-    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t0.95\t0.0\t0.0\t0.0";
+    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
 
     private static final String CONTRIBUTING_VARIANT_FIELD = "\tCONTRIBUTING_VARIANT";
     private static final String NON_CONTRIBUTING_VARIANT_FIELD = "\t.";
