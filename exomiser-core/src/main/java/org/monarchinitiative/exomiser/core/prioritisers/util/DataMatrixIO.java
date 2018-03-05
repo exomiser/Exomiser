@@ -20,11 +20,14 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -43,6 +46,59 @@ public class DataMatrixIO {
      * This shouldn't be instantiated.
      */
     private DataMatrixIO() {}
+
+    public static void convertToMap(String matrixFileZip, String entrezId2indexFileZip, Path outfileName) {
+        //load original data matrix from file sources (*really* slow)
+        Map<Integer, Integer> index = createIndex(entrezId2indexFileZip);
+        DataMatrix dataMatrix = loadDataMatrix(matrixFileZip, entrezId2indexFileZip, true);
+
+        //create the new MVStore (fast!)
+        MVStore mvStore = MVStore.open(outfileName.toAbsolutePath().toString());
+        MVMap<Integer, Integer> rowIndex = mvStore.openMap("gene_id_row_index");
+        MVMap<Integer, float[]> columns = mvStore.openMap("columns");
+        // transpose the matrix and store the columns as rows in the map using the index key as the key.
+        FloatMatrix floatMatrix = dataMatrix.getMatrix();
+        for (Map.Entry<Integer, Integer> geneIdToIndex : index.entrySet()) {
+            Integer geneId = geneIdToIndex.getKey();
+            Integer indexKey = geneIdToIndex.getValue();
+            //make the row index
+            rowIndex.put(geneId, indexKey);
+            //make the columns
+            FloatMatrix col = floatMatrix.getColumn(indexKey);
+            float[] colVals = col.toArray();
+            columns.put(geneId, colVals);
+        }
+        mvStore.commit();
+        mvStore.close();
+    }
+
+    public static DataMatrix loadDataMatrix(Path ppiMapPath) {
+        logger.info("Loading PPI data matrix from map...");
+        MVStore s = MVStore.open(ppiMapPath.toAbsolutePath().toString());
+        Map<Integer, Integer> rowIndex = s.openMap("gene_id_row_index");
+        Map<Integer, float[]> columns = s.openMap("columns");
+        Map<Integer, Integer> index = new HashMap<>(rowIndex);
+        FloatMatrix floatMatrix = createMatrixfromMap(rowIndex, columns);
+        logger.info("Done - loaded {} * {} interactions.", floatMatrix.getRows(), floatMatrix.getColumns());
+        return new DataMatrix(floatMatrix, index);
+    }
+
+    private static FloatMatrix createMatrixfromMap(Map<Integer, Integer> rowIndex, Map<Integer, float[]> columns) {
+        FloatMatrix floatMatrix = new FloatMatrix(rowIndex.size(), rowIndex.size());
+
+        for (Map.Entry<Integer, float[]> column : columns.entrySet()){
+            Integer row = rowIndex.get(column.getKey());
+            float[] columnValues = column.getValue();
+            for (int i = 0; i < columnValues.length; i++) {
+                float value = columnValues[i];
+                //the matrix is stored as a list of columns, so we need to transpose the row and column values here
+                floatMatrix.put(i, row, value);
+            }
+        }
+
+        return floatMatrix;
+
+    }
 
     public static DataMatrix loadDataMatrix(String matrixFileZip, String entrezId2indexFileZip, boolean shouldUseExponent) {
         Map<Integer, Integer> index = createIndex(entrezId2indexFileZip);
@@ -76,13 +132,13 @@ public class DataMatrixIO {
 
         File matrixFile = new File(matrixFileZip);
         try (BufferedReader in = gzippedFileBufferedReader(matrixFile)) {
-            int i = 0;
+            int row = 0;
             String line;
             while ((line = in.readLine()) != null) {
                 //just a nicety to stop you wondering if anything is going on - this stage takes a minute or two
-                logLineNumberIfMultipleOf(i, 500);
-                addLineDataToMatrixRow(floatMatrix, line, i, shouldUseExponent);
-                i++;
+                logLineNumberIfMultipleOf(row, 500);
+                addLineDataToMatrixRow(floatMatrix, line, row, shouldUseExponent);
+                row++;
             }
         } catch (IOException e) {
             throw new DataMatrixIoException(e);
@@ -96,15 +152,15 @@ public class DataMatrixIO {
         }
     }
 
-    private static void addLineDataToMatrixRow(FloatMatrix floatMatrix, String line, int i, boolean shouldUseExponent) {
-        String[] row = line.split(TAB_DELIMITER);
+    private static void addLineDataToMatrixRow(FloatMatrix floatMatrix, String line, int row, boolean shouldUseExponent) {
+        String[] rowData = line.split(TAB_DELIMITER);
         int matrixSize = floatMatrix.rows;
         for (int j = 0; j < matrixSize; j++) {
-            float entry = Float.parseFloat(row[j]);
+            float entry = Float.parseFloat(rowData[j]);
             if (shouldUseExponent) {
                 entry = (float) Math.exp(entry);
             }
-            floatMatrix.put(i, j, entry);
+            floatMatrix.put(row, j, entry);
         }
     }
 
@@ -150,7 +206,7 @@ public class DataMatrixIO {
 
             for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
                 String entrezId = entry.getKey();
-                outIndexMap.write(new StringBuilder().append(entrezId).append("\t").append(entry.getValue()).append("\n").toString());
+                outIndexMap.write(entrezId + "\t" + entry.getValue() + "\n");
             }
 
             for (int i = 0; i < matrix.rows; i++) {

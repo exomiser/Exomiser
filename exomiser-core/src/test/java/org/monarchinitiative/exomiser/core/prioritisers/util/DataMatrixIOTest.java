@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,12 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
+import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +34,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -37,6 +42,14 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class DataMatrixIOTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @After
+    public void tearDown() {
+        tempFolder.delete();
+    }
 
     private final DataMatrix dataMatrix = loadMatrix();
 
@@ -80,6 +93,40 @@ public class DataMatrixIOTest {
         entrezIdToRowIndex.put(3333, 3);
 
         return new DataMatrix(floatMatrix, entrezIdToRowIndex);
+    }
+
+    @Test
+    public void testConvertToMap() throws Exception{
+        String dataPath = "src/test/resources/prioritisers/";
+        String indexPath = dataPath + "test_ppi_matrix_id2index.gz";
+        String matrixPath = dataPath + "test_ppi_matrix.gz";
+
+        File matrixMapFile = tempFolder.newFile("test_ppi_matrix.mv");
+        DataMatrixIO.convertToMap(matrixPath, indexPath, matrixMapFile.toPath());
+
+        DataMatrix fromMap = DataMatrixIO.loadDataMatrix(matrixMapFile.toPath());
+        FloatMatrix mapMatrix = fromMap.getMatrix();
+
+        DataMatrix fromFile = DataMatrixIO.loadDataMatrix(matrixPath, indexPath, true);
+        FloatMatrix fileMatrix = fromFile.getMatrix();
+
+        assertThat(fromMap.getEntrezIdToRowIndex(), equalTo(fromFile.getEntrezIdToRowIndex()));
+
+        int rows = mapMatrix.getRows();
+        int cols = mapMatrix.getColumns();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                assertThat(fileMatrix.get(i, j), equalTo(mapMatrix.get(i, j)));
+            }
+        }
+    }
+
+    @Test
+    public void loadDataMatrixFromMap() {
+        Path mapPath = Paths.get("src/test/resources/prioritisers/test_ppi_matrix.mv");
+        DataMatrix dataMatrix = DataMatrixIO.loadDataMatrix(mapPath);
+        assertThat(dataMatrix.getRows(), equalTo(10));
+        assertThat(dataMatrix.getColumns(), equalTo(10));
     }
 
     @Test

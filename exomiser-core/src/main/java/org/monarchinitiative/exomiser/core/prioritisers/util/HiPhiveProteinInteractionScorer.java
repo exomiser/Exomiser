@@ -96,9 +96,8 @@ public class HiPhiveProteinInteractionScorer {
 
     private FloatMatrix makeWeightedHighQualityProteinInteractionMatrix(DataMatrix dataMatrix, List<GeneColumnIndex> highQualityPhenotypeMappings) {
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
-        FloatMatrix originalDataMatrix = dataMatrix.getMatrix();
-        logger.info("Original data matrix ({} rows * {} columns)", originalDataMatrix.getRows(), originalDataMatrix.getColumns());
-        int rows = originalDataMatrix.getRows();
+        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getRows(), dataMatrix.getColumns());
+        int rows = dataMatrix.getRows();
         int cols = highQualityPhenotypeMappings.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
         for (GeneColumnIndex geneColumnIndex : highQualityPhenotypeMappings) {
