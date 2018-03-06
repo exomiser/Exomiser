@@ -90,7 +90,7 @@ public class PriorityService {
 
     @Cacheable(value = "models", key = "#species", cacheResolver = "modelCacheResolver")
     public List<GeneModel> getModelsForOrganism(Organism species) {
-        logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
+        logger.debug("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:
                 return modelService.getHumanGeneDiseaseModels();

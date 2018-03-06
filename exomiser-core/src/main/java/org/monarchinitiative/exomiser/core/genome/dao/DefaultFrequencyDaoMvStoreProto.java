@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
         if (map.isEmpty()) {
             logger.warn("MVStore map {} does not contain any data", frequencyMapName);
         } else {
-            logger.info("MVStore map {} opened with {} entries", frequencyMapName, map.size());
+            logger.debug("MVStore map {} opened with {} entries", frequencyMapName, map.size());
         }
     }
 

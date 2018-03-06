@@ -80,7 +80,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
     @Override
     public Stream<HiPhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         if (options.isBenchmarkingEnabled()) {
-            logger.info("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options.getCandidateGeneSymbol());
+            logger.debug("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options.getCandidateGeneSymbol());
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
@@ -91,7 +91,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
 
         HiPhiveProteinInteractionScorer ppiScorer = makeHiPhiveProteinInteractionScorer(bestGeneModels, options.runPpi());
 
-        logger.info("Prioritising genes...");
+        logger.debug("Prioritising genes...");
         return genes.stream().map(makeHiPhivePriorityResult(hpoPhenotypeTerms, bestGeneModels, ppiScorer));
     }
 
@@ -124,7 +124,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
 
     private HiPhiveProteinInteractionScorer makeHiPhiveProteinInteractionScorer(ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, boolean runPpi) {
         if (runPpi) {
-            logger.info("Creating PPI scorer ");
+            logger.debug("Creating PPI scorer ");
             return new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
         }
         return HiPhiveProteinInteractionScorer.empty();
@@ -203,7 +203,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
 
         ModelScorer<GeneModel> modelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, organismPhenotypeMatcher);
 
-        logger.info("Scoring {} models", organism);
+        logger.debug("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
@@ -212,7 +212,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());
-        logger.info("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());
+        logger.debug("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());
         return geneModelPhenotypeMatches;
     }
 

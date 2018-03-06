@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -58,7 +58,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
-        logger.info("Configuring {} assembly (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
+        logger.debug("Configuring {} assembly (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
                 .getDataVersion(), genomeProperties.getTranscriptSource());
         this.genomeData = new GenomeData(genomeProperties, exomiserDataDirectory);
 
@@ -66,7 +66,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         this.dataSource = loadGenomeDataSource();
         this.mvStore = openMvStore();
 
-        logger.info("{}", genomeProperties.getDatasource());
+        logger.debug("{}", genomeProperties.getDatasource());
     }
 
     private VariantFactory variantFactory() {
@@ -99,13 +99,13 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        logger.info("Using MVStore for frequency defaults");
+        logger.debug("Using MVStore for frequency defaults");
         return new DefaultFrequencyDaoMvStoreProto(mvStore);
     }
 
     @Override
     public PathogenicityDao pathogenicityDao() {
-        logger.info("Using MVStore for pathogenicity defaults");
+        logger.debug("Using MVStore for pathogenicity defaults");
         return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
@@ -198,19 +198,19 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", genomeData.getVersionAssemblyPrefix(), transcriptSource
                 .toString());
         Path transcriptFilePath = genomeData.getPath().resolve(transcriptFileNameValue);
-        logger.info("Using {} transcript source for {}", transcriptSource, genomeProperties.getAssembly());
+        logger.debug("Using {} transcript source for {}", transcriptSource, genomeProperties.getAssembly());
         return transcriptFilePath;
     }
 
     private MVStore openMvStore() {
         String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
         Path mvStoreAbsolutePath = genomeData.resolveAbsoluteResourcePath(mvStoreFileName);
-        logger.info("Opening MVStore from {}", mvStoreAbsolutePath);
+        logger.debug("Opening MVStore from {}", mvStoreAbsolutePath);
         MVStore store = new MVStore.Builder()
                 .fileName(mvStoreAbsolutePath.toString())
                 .readOnly()
                 .open();
-        logger.info("MVStore opened with maps: {}", store.getMapNames());
+        logger.debug("MVStore opened with maps: {}", store.getMapNames());
         return store;
     }
 

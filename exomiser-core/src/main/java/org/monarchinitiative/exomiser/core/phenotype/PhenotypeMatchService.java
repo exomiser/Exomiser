@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,7 +64,7 @@ public class PhenotypeMatchService {
     }
 
     private PhenotypeMatcher getOrganismPhenotypeMatcherFromTerms(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
-        logger.info("Fetching HUMAN-{} phenotype matches...", organism);
+        logger.debug("Fetching HUMAN-{} phenotype matches...", organism);
         Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
         for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
             Set<PhenotypeMatch> termMatches = getSpeciesMatchesForHpoTerm(hpoTerm, organism);

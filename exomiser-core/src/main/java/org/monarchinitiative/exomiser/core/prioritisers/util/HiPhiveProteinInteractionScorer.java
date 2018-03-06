@@ -94,13 +94,13 @@ public class HiPhiveProteinInteractionScorer {
                 }
             }
         }
-        logger.info("Using {} high quality phenotypic gene match scores (score > {})", highestGeneIdPhenoScores.size(), highQualityPhenoScoreCutOff);
+        logger.debug("Using {} high quality phenotypic gene match scores (score > {})", highestGeneIdPhenoScores.size(), highQualityPhenoScoreCutOff);
         return Collections.unmodifiableMap(highestGeneIdPhenoScores);
     }
 
     private FloatMatrix makeWeightedHighQualityProteinInteractionMatrix(DataMatrix dataMatrix, List<GeneColumnIndex> highQualityPhenotypeMappings) {
-        logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
-        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.numRows(), dataMatrix.numColumns());
+        logger.debug("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
+        logger.debug("Original data matrix ({} rows * {} columns)", dataMatrix.numRows(), dataMatrix.numColumns());
         int rows = dataMatrix.numRows();
         int cols = highQualityPhenotypeMappings.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
@@ -110,7 +110,7 @@ public class HiPhiveProteinInteractionScorer {
             FloatMatrix weightedColumn = column.mul((float) geneColumnIndex.phenoScore);
             highQualityPpiMatrix.putColumn(geneColumnIndex.columnIndex, weightedColumn);
         }
-        logger.info("Made high quality interaction matrix ({} rows * {} columns)", highQualityPpiMatrix.getRows(), highQualityPpiMatrix
+        logger.debug("Made high quality interaction matrix ({} rows * {} columns)", highQualityPpiMatrix.getRows(), highQualityPpiMatrix
                 .getColumns());
         return highQualityPpiMatrix;
     }

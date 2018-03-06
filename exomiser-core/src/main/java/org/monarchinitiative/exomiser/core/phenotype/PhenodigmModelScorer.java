@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,10 @@ package org.monarchinitiative.exomiser.core.phenotype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Class implementing the Phenodigm (PHENOtype comparisons for DIsease Genes and Models) algorithm for scoring the
@@ -107,21 +110,21 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
     }
 
     private void logOrganismPhenotypeMatches() {
-        logger.info("Best {} phenotype matches:", organismPhenotypeMatcher.getOrganism());
+        logger.debug("Best {} phenotype matches:", organismPhenotypeMatcher.getOrganism());
         Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches = organismPhenotypeMatcher.getTermPhenotypeMatches();
         for (Map.Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
             PhenotypeTerm queryTerm = entry.getKey();
             Set<PhenotypeMatch> matches = entry.getValue();
             if (matches.isEmpty()) {
-                logger.info("{}-NOT MATCHED", queryTerm.getId());
+                logger.debug("{}-NOT MATCHED", queryTerm.getId());
             } else {
                 matches.stream()
                         .max(Comparator.comparingDouble(PhenotypeMatch::getScore))
-                        .ifPresent(bestMatch -> logger.info("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
+                        .ifPresent(bestMatch -> logger.debug("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
             }
         }
         QueryPhenotypeMatch organismQueryPhenotypeMatch = organismPhenotypeMatcher.getQueryPhenotypeMatch();
-        logger.info("bestMaxScore={} bestAvgScore={}", organismQueryPhenotypeMatch.getMaxMatchScore(), organismQueryPhenotypeMatch
+        logger.debug("bestMaxScore={} bestAvgScore={}", organismQueryPhenotypeMatch.getMaxMatchScore(), organismQueryPhenotypeMatch
                 .getBestAvgScore());
     }
 
