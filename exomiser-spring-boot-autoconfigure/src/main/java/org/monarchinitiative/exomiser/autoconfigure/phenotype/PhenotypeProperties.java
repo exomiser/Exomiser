@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,9 @@ public class PhenotypeProperties {
     private DataSourceProperties datasource = new DataSourceProperties();
 
     //Random walk matrix for hiPhive and exomeWalker
-    private String randomWalkFileName = "rw_string_9_05.gz";
+    // pre 10.0.0. the randomWalkFileName ended with a .gz extension
+    // this was changed to use an MVStore with a .mv extension in version 10.0.0
+    private String randomWalkFileName = "rw_string_9_05.mv";
     private String randomWalkIndexFileName = "rw_string_9_05_id2index.gz";
 
     //Phenix data
