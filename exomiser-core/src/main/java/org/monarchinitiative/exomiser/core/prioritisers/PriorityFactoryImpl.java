@@ -30,7 +30,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -50,9 +49,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private final DataMatrix randomWalkMatrix;
     private final Path phenixDataDirectory;
 
-    // The randomWalkMatrix takes about 1min to load into RAM and isn't always required, so @Lazy is used to defer loading
-    // until it is required.
-    @Lazy
     @Autowired
     public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory) {
         this.priorityService = priorityService;
