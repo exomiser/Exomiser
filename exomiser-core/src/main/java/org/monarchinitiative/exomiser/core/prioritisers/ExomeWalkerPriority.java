@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,10 +94,9 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
      * Hudson page</a>
      */
     public ExomeWalkerPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip) {
-
         if (randomWalkMatrix == null) {
             try {
-                randomWalkMatrix = DataMatrixIO.loadDataMatrix(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
+                randomWalkMatrix = DataMatrixIO.loadInMemoryDataMatrixFromFile(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
             } catch (Exception e) {
                 /* This exception is thrown if the files for the random walk cannot be found. */
                 logger.error("Unable to initialize the random walk matrix", e);

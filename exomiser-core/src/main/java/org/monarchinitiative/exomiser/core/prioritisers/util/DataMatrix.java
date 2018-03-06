@@ -21,74 +21,73 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 /**
- * Contains the random walk relationships and the entrez-id to index relations.
+ * Interface defining how classes can access PPI matrix data.
  *
- * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 10.0.0
  */
-public class DataMatrix {
+public interface DataMatrix {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataMatrix.class);
-
-    public static final DataMatrix EMPTY = new DataMatrix(FloatMatrix.EMPTY, Collections.emptyMap());
-
-    private final FloatMatrix matrix;
-    private final Map<Integer, Integer> entrezIdToRowIndex;
-
-    public DataMatrix(FloatMatrix matrix, Map<Integer, Integer> entrezIdToRowIndex) {
-        this.matrix = matrix;
-        this.entrezIdToRowIndex = entrezIdToRowIndex;
+    /**
+     * Returns a empty, immutable {@code DataMatrix}
+     * @return an immutable, empty {@code DataMatrix}
+     * @since 10.0.0
+     */
+    public static DataMatrix empty() {
+        return StubDataMatrix.empty();
     }
 
-    public Map<Integer, Integer> getEntrezIdToRowIndex() {
-        return entrezIdToRowIndex;
-    }
+    /**
+     * Returns the Entrez gene id to row index.
+     *
+     * @return a map representation of the entrez gene id of a gene and its row position in the {@code DataMatrix}
+     */
+    public Map<Integer, Integer> getEntrezIdToRowIndex();
 
-    public FloatMatrix getMatrix() {
-        return matrix;
-    }
+    /**
+     * The {@code FloatMatrix} representation of the data, without an index.
+     *
+     * @return a {@code FloatMatrix} representation of the data, without an index.
+     */
+    public FloatMatrix getMatrix();
 
-    public int getRows() {
-        return matrix.getRows();
-    }
+    /**
+     *
+     * @return the number of rows in this {@code DataMatrix}
+     */
+    public int numRows();
 
-    public int getColumns() {
-        return matrix.getColumns();
-    }
+    /**
+     *
+     * @return the number of columns in this {@code DataMatrix}
+     */
+    public int numColumns();
 
-    public boolean containsGene(Integer entrezGeneId) {
-        return entrezIdToRowIndex.containsKey(entrezGeneId);
-    }
+    /**
+     *
+     * @param entrezGeneId the entrez gene identifier of the gene
+     * @return true if the argument {@code entrezGeneId} is contained in the matrix
+     */
+    public boolean containsGene(Integer entrezGeneId);
 
-    public Integer getRowIndexForGene(int entrezGeneId) {
-        return entrezIdToRowIndex.get(entrezGeneId);
-    }
+    /**
+     * Finds the {@code Integer} row index for the argument gene identifier.
+     *
+     * @param entrezGeneId the entrez gene identifier of the gene
+     * @return the {@code Integer} row index for this gene identifier or {@code null} if not present.
+     */
+    public Integer getRowIndexForGene(int entrezGeneId);
 
-    public FloatMatrix getColumnMatrixForGene(int entrezGeneId) {
-        //the PPI float matrix is symmetrical so this will work here.
-        Integer rowIndex = entrezIdToRowIndex.get(entrezGeneId);
-        return matrix.getColumn(rowIndex);
-    }
+    /**
+     * Finds the {@code FloatMatrix} column for the argument gene identifier.
+     *
+     * @param entrezGeneId the entrez gene identifier of the gene
+     * @return the {@code FloatMatrix} column for this gene identifier or {@code null} if not present.
+     */
+    public FloatMatrix getColumnMatrixForGene(int entrezGeneId);
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DataMatrix)) return false;
-        DataMatrix that = (DataMatrix) o;
-        return Objects.equals(matrix, that.matrix) &&
-                Objects.equals(entrezIdToRowIndex, that.entrezIdToRowIndex);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(matrix, entrezIdToRowIndex);
-    }
 }

@@ -53,7 +53,7 @@ public class DataMatrixIOTest {
 
     private final DataMatrix dataMatrix = loadMatrix();
 
-    public DataMatrix loadMatrix() {
+    private DataMatrix loadMatrix() {
         FloatMatrix floatMatrix = new FloatMatrix(4, 4);
 
         //produce the following matrix:
@@ -92,7 +92,7 @@ public class DataMatrixIOTest {
         entrezIdToRowIndex.put(2222, 2);
         entrezIdToRowIndex.put(3333, 3);
 
-        return new DataMatrix(floatMatrix, entrezIdToRowIndex);
+        return new InMemoryDataMatrix(floatMatrix, entrezIdToRowIndex);
     }
 
     @Test
@@ -104,14 +104,20 @@ public class DataMatrixIOTest {
         File matrixMapFile = tempFolder.newFile("test_ppi_matrix.mv");
         DataMatrixIO.convertToMap(matrixPath, indexPath, matrixMapFile.toPath());
 
-        DataMatrix fromMap = DataMatrixIO.loadDataMatrix(matrixMapFile.toPath());
-        FloatMatrix mapMatrix = fromMap.getMatrix();
+        // load the in memory version first as this copies all the data and closes the map otherwise it will throw an
+        // IllegalStateException caused by an OverlappingFileLockException
+        DataMatrix inMemoryMapMatrix = DataMatrixIO.loadInMemoryDataMatrix(matrixMapFile.toPath());
+        DataMatrix offHeapMapMatrix = DataMatrixIO.loadOffHeapDataMatrix(matrixMapFile.toPath());
 
-        DataMatrix fromFile = DataMatrixIO.loadDataMatrix(matrixPath, indexPath, true);
-        FloatMatrix fileMatrix = fromFile.getMatrix();
+        DataMatrix fromFile = DataMatrixIO.loadInMemoryDataMatrixFromFile(matrixPath, indexPath, true);
 
-        assertThat(fromMap.getEntrezIdToRowIndex(), equalTo(fromFile.getEntrezIdToRowIndex()));
+        assertThat(offHeapMapMatrix.getEntrezIdToRowIndex(), equalTo(fromFile.getEntrezIdToRowIndex()));
 
+        testMatrixEquality(offHeapMapMatrix.getMatrix(), fromFile.getMatrix());
+        testMatrixEquality(inMemoryMapMatrix.getMatrix(), fromFile.getMatrix());
+    }
+
+    private void testMatrixEquality(FloatMatrix mapMatrix, FloatMatrix fileMatrix) {
         int rows = mapMatrix.getRows();
         int cols = mapMatrix.getColumns();
         for (int i = 0; i < rows; i++) {
@@ -124,9 +130,9 @@ public class DataMatrixIOTest {
     @Test
     public void loadDataMatrixFromMap() {
         Path mapPath = Paths.get("src/test/resources/prioritisers/test_ppi_matrix.mv");
-        DataMatrix dataMatrix = DataMatrixIO.loadDataMatrix(mapPath);
-        assertThat(dataMatrix.getRows(), equalTo(10));
-        assertThat(dataMatrix.getColumns(), equalTo(10));
+        DataMatrix dataMatrix = DataMatrixIO.loadOffHeapDataMatrix(mapPath);
+        assertThat(dataMatrix.numRows(), equalTo(10));
+        assertThat(dataMatrix.numColumns(), equalTo(10));
     }
 
     @Test

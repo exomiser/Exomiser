@@ -38,7 +38,7 @@ public class HiPhiveProteinInteractionScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(HiPhiveProteinInteractionScorer.class);
 
-    public static final HiPhiveProteinInteractionScorer EMPTY = new HiPhiveProteinInteractionScorer();
+    private static final HiPhiveProteinInteractionScorer EMPTY = new HiPhiveProteinInteractionScorer();
 
     private final DataMatrix dataMatrix;
     private final ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels;
@@ -46,8 +46,12 @@ public class HiPhiveProteinInteractionScorer {
     private final List<GeneColumnIndex> weightedHighQualityMatrixIndex;
     private final FloatMatrix weightedHighQualityMatrix;
 
+    public static HiPhiveProteinInteractionScorer empty() {
+        return EMPTY;
+    }
+
     private HiPhiveProteinInteractionScorer() {
-        this.dataMatrix = DataMatrix.EMPTY;
+        this.dataMatrix = DataMatrix.empty();
         this.bestGeneModels = ArrayListMultimap.create();
 
         this.weightedHighQualityMatrixIndex = Collections.emptyList();
@@ -96,8 +100,8 @@ public class HiPhiveProteinInteractionScorer {
 
     private FloatMatrix makeWeightedHighQualityProteinInteractionMatrix(DataMatrix dataMatrix, List<GeneColumnIndex> highQualityPhenotypeMappings) {
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
-        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getRows(), dataMatrix.getColumns());
-        int rows = dataMatrix.getRows();
+        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.numRows(), dataMatrix.numColumns());
+        int rows = dataMatrix.numRows();
         int cols = highQualityPhenotypeMappings.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
         for (GeneColumnIndex geneColumnIndex : highQualityPhenotypeMappings) {

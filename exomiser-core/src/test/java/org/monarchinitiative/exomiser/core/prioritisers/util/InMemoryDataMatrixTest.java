@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.jblas.ranges.IntervalRange;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,9 +41,9 @@ import static org.junit.Assert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class DataMatrixTest {
+public class InMemoryDataMatrixTest {
     
-    private DataMatrix instance;
+    private InMemoryDataMatrix instance;
     
     private FloatMatrix floatMatrix;
     private Map<Integer, Integer> entrezIdToRowIndex;
@@ -68,15 +67,7 @@ public class DataMatrixTest {
         entrezIdToRowIndex.put(2222, 2);
         entrezIdToRowIndex.put(3333, 3);
 
-        instance = new DataMatrix(floatMatrix, entrezIdToRowIndex);
-    }
-
-    @Test
-    public void testEmptyMatrix() {
-        DataMatrix emptyMatrix = DataMatrix.EMPTY;
-        assertThat(emptyMatrix.containsGene(112), is(false));
-        assertThat(emptyMatrix.getEntrezIdToRowIndex(), equalTo(Collections.emptyMap()));
-        assertThat(emptyMatrix.getMatrix().isEmpty(), is(true));
+        instance = new InMemoryDataMatrix(floatMatrix, entrezIdToRowIndex);
     }
 
     @Test
@@ -164,7 +155,7 @@ public class DataMatrixTest {
 
     @Test
     public void testEquals() {
-        DataMatrix identicalMatrix = new DataMatrix(floatMatrix, entrezIdToRowIndex);
+        InMemoryDataMatrix identicalMatrix = new InMemoryDataMatrix(floatMatrix, entrezIdToRowIndex);
         assertThat(instance, equalTo(identicalMatrix));
     }
     

@@ -78,7 +78,7 @@ public class HiPhiveProteinInteractionScorerTest {
         geneIdToRowIndex.put(5, 4);
         geneIdToRowIndex.put(6, 5);
 
-        return new DataMatrix(testMatrix, geneIdToRowIndex);
+        return new InMemoryDataMatrix(testMatrix, geneIdToRowIndex);
     }
 
     private GeneModelPhenotypeMatch geneModelMatch(int entrezGeneId, double phenoScore, String modelId) {
@@ -93,13 +93,13 @@ public class HiPhiveProteinInteractionScorerTest {
 
     @Test
     public void testEmpty() {
-        HiPhiveProteinInteractionScorer instance = HiPhiveProteinInteractionScorer.EMPTY;
+        HiPhiveProteinInteractionScorer instance = HiPhiveProteinInteractionScorer.empty();
         assertThat(instance.getClosestPhenoMatchInNetwork(123), equalTo(GeneMatch.NO_HIT));
     }
 
     @Test
     public void testEmptyInputValues() {
-        HiPhiveProteinInteractionScorer instance = new HiPhiveProteinInteractionScorer(DataMatrix.EMPTY, ArrayListMultimap.create(), 0.0);
+        HiPhiveProteinInteractionScorer instance = new HiPhiveProteinInteractionScorer(DataMatrix.empty(), ArrayListMultimap.create(), 0.0);
         assertThat(instance.getClosestPhenoMatchInNetwork(123), equalTo(GeneMatch.NO_HIT));
     }
 

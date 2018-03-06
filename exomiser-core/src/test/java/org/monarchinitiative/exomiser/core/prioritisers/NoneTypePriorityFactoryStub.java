@@ -25,13 +25,10 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.jblas.FloatMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 
@@ -56,26 +53,11 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
-        DataMatrix stubDataMatrix = makeDataMatrixWithGeneIds(entrezSeedGenes);
-        return new ExomeWalkerPriority(stubDataMatrix, entrezSeedGenes);
+        return new ExomeWalkerPriority(DataMatrix.empty(), entrezSeedGenes);
     }
 
     @Override
     public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hiPhiveOptions, null, TestPriorityServiceFactory.STUB_SERVICE);
+        return new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), TestPriorityServiceFactory.STUB_SERVICE);
     }
-
-    private DataMatrix makeDataMatrixWithGeneIds(List<Integer> entrezSeedGenes) {
-        Map<Integer, Integer> matrixMap = new LinkedHashMap<>();
-        
-        for (int i = 0; i < entrezSeedGenes.size(); i++) {
-            Integer geneId = entrezSeedGenes.get(i);
-            matrixMap.put(geneId, i);
-        }
-                    
-        DataMatrix dataMatrix = new DataMatrix(FloatMatrix.zeros(entrezSeedGenes.size(), entrezSeedGenes.size()), matrixMap);
-        
-        return dataMatrix;
-    }
-
 }
