@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
@@ -136,16 +135,18 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         assertThat(path.getParent(), equalTo((Paths.get("/another/data/dir"))));
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void randomWalkMatrixDefault() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
         assertThat(dataMatrix, not(nullValue()));
+        assertThat(dataMatrix.numRows(), equalTo(10));
+        assertThat(dataMatrix.numColumns(), equalTo(10));
     }
 
     @Test
     public void randomWalkMatrixCanBeOverriden() {
-        load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.randomWalkFileName=wibble", "exomiser.randomWalkIndexFileName=wibbleIndex");
+        load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.randomWalkFileName=wibble.gz", "exomiser.randomWalkIndexFileName=wibbleIndex.gz");
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
         assertThat(dataMatrix, not(nullValue()));
     }
@@ -182,7 +183,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
         @Bean
         public DataMatrix randomWalkMatrix() {
-            return Mockito.mock(DataMatrix.class);
+            return DataMatrix.empty();
         }
     }
 }

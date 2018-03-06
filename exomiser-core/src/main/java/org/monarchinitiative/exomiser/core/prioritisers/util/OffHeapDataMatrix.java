@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import org.h2.mvstore.MVStore;
 import org.jblas.FloatMatrix;
 
+import javax.annotation.PreDestroy;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -36,23 +37,39 @@ import java.util.Objects;
  */
 public class OffHeapDataMatrix implements DataMatrix {
 
+    private final MVStore mvStore;
+
     private final Map<Integer, float[]> columns;
     private final Map<Integer, Integer> rowIndex;
 
     private FloatMatrix floatMatrix = null;
 
     public static OffHeapDataMatrix load(Path ppiMapPath) {
+        System.out.println("Loading PPI matrix from "+ ppiMapPath);
         Objects.requireNonNull(ppiMapPath);
-        MVStore mvStore = new MVStore.Builder().fileName(ppiMapPath.toAbsolutePath().toString()).readOnly().open();
+        MVStore mvStore = new MVStore.Builder()
+                .fileName(ppiMapPath.toAbsolutePath().toString())
+                .readOnly()
+                .open();
 
         return new OffHeapDataMatrix(mvStore);
     }
 
     public OffHeapDataMatrix(MVStore mvStore) {
         Objects.requireNonNull(mvStore);
+        this.mvStore = mvStore;
         this.columns = mvStore.openMap("columns");
         this.rowIndex = mvStore.openMap("gene_id_row_index");
         DataMatrixUtil.checkKeys(columns, rowIndex);
+    }
+
+    /**
+     * Only one {@linkplain MVStore} backing this class can be open at a time in any one JVM. This method is required to
+     * ensure the class is properly closed by any IOC containers.
+     */
+    @PreDestroy
+    public void close() {
+        mvStore.close();
     }
 
     public Map<Integer, float[]> getColumns() {
