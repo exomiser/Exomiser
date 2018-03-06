@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,13 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import htsjdk.tribble.readers.TabixReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -55,6 +59,12 @@ public class ExomiserStubDataConfigTest {
     @Autowired
     private TabixReader localFrequencyTabixReader;
 
+    @Autowired
+    private DataMatrix dataMatrix;
+
+    @Autowired
+    private Path phenixDataDirectory;
+
     @Test
     public void testJannovarData() {
         assertThat(jannovarData.getChromosomes().size(), equalTo(25));
@@ -78,5 +88,15 @@ public class ExomiserStubDataConfigTest {
     @Test
     public void testLocalFrequencyTabixReader() {
         assertThat(localFrequencyTabixReader, instanceOf(TabixReader.class));
+    }
+
+    @Test
+    public void testDataMatrix() {
+        assertThat(dataMatrix, instanceOf(DataMatrix.class));
+    }
+
+    @Test
+    public void phenixDataDirectory() {
+        assertThat(phenixDataDirectory, equalTo(Paths.get("phenix")));
     }
 }

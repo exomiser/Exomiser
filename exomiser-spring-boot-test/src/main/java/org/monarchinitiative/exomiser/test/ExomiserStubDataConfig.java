@@ -65,7 +65,7 @@ public class ExomiserStubDataConfig {
 
     @Bean
     public JannovarData jannovarData() {
-        logger.info("Creating stub Jannovar data");
+        logger.info("Stubbing Jannovar data");
         return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
     }
 
@@ -99,11 +99,13 @@ public class ExomiserStubDataConfig {
 
     @Bean
     public DataMatrix dataMatrix() {
+        logger.info("Stubbing dataMatrix");
         return DataMatrix.empty();
     }
 
     @Bean
     Path phenixDataDirectory() {
+        logger.info("Stubbing phenixDataDirectory");
         return Paths.get("phenix");
     }
 }
