@@ -45,7 +45,6 @@ public class OffHeapDataMatrix implements DataMatrix {
     private FloatMatrix floatMatrix = null;
 
     public static OffHeapDataMatrix load(Path ppiMapPath) {
-        System.out.println("Loading PPI matrix from "+ ppiMapPath);
         Objects.requireNonNull(ppiMapPath);
         MVStore mvStore = new MVStore.Builder()
                 .fileName(ppiMapPath.toAbsolutePath().toString())
