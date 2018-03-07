@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -78,14 +78,14 @@ public class SimpleGeneFilterRunnerTest {
 
     private Gene makeGeneWithVariants(String geneSymbol, int geneId, Set<ModeOfInheritance> inheritanceModes) {
         Gene gene = new Gene(geneSymbol, geneId);
-        gene.setInheritanceModes(inheritanceModes);
+        gene.setCompatibleInheritanceModes(inheritanceModes);
         //Add some variants. For the purposes of this test these are required to
         //have the same inheritance mode as the gene to satisfy the unique bahaviour of the Inheritance filter. 
         //TODO: change this - mock filter required? We're not trying to test the functionality of the InheritanceFilter here.
         gene.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
         gene.addVariant(VariantEvaluation.builder(1, 2, "G", "T").build());
         for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-            variantEvaluation.setInheritanceModes(inheritanceModes);
+            variantEvaluation.setCompatibleInheritanceModes(inheritanceModes);
         }
         return gene;
     }

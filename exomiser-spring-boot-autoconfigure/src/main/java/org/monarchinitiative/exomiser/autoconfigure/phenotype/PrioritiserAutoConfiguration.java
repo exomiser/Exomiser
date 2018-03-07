@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -62,7 +65,7 @@ public class PrioritiserAutoConfiguration {
     private final Path phenotypeDataDirectory;
 
     public PrioritiserAutoConfiguration(PhenotypeProperties phenotypeProperties, Path exomiserDataDirectory) {
-        logger.info("Configuring prioritisers for version {}", phenotypeProperties.getDataVersion());
+        logger.debug("Configuring prioritisers for version {}", phenotypeProperties.getDataVersion());
         this.phenotypeProperties = phenotypeProperties;
         this.phenotypeDataDirectory = determinePhenotypeDataDirectory(phenotypeProperties, exomiserDataDirectory);
     }
@@ -70,41 +73,40 @@ public class PrioritiserAutoConfiguration {
     private Path determinePhenotypeDataDirectory(PhenotypeProperties phenotypeProperties, Path exomiserDataDirectory) {
         Path originalPath = phenotypeProperties.getDataDirectory();
         if (originalPath == null) {
-            logger.info("exomiser.phenotype.data-directory not defined - searching for candidate...");
+            logger.debug("exomiser.phenotype.data-directory not defined - searching for candidate...");
             String version = phenotypeProperties.getDataVersion();
             if (version.isEmpty()) {
-//                throw new IllegalArgumentException("exomiser.phenotype.data-version cannot be undefined");
-                logger.info("Searching for phenotype data releases in {}", exomiserDataDirectory);
+                logger.debug("Searching for phenotype data releases in {}", exomiserDataDirectory);
                 //try searching for directories ending in "_phenotype", return the latest version based on the directory name
                 List<Path> phenotypeDataDirectories = listPhenotypeDataDirectories(exomiserDataDirectory);
                 if (phenotypeDataDirectories.isEmpty()) {
                     //otherwise return the root exomiser data directory - this could be a legacy setup.
-                    logger.info("Unable to find any phenotype data releases.");
+                    logger.debug("Unable to find any phenotype data releases.");
                 }
                 Path latestPhenotypeDataDir = phenotypeDataDirectories.stream().sorted(Comparator.reverseOrder())
                         .findFirst()
                         .orElse(exomiserDataDirectory);
-                logger.info("Using phenotype data directory: {}", latestPhenotypeDataDir);
+                logger.debug("Using phenotype data directory: {}", latestPhenotypeDataDir);
                 return latestPhenotypeDataDir;
 
             } else {
-                logger.info("Searching based on phenotype.data-version {}", version);
+                logger.debug("Searching based on phenotype.data-version {}", version);
                 String directoryName = String.format("%s_phenotype", version);
                 Path automaticallyDefinedPath = exomiserDataDirectory.resolve(directoryName);
-                logger.info("exomiser.phenotype.data-directory defined as: {}", automaticallyDefinedPath);
+                logger.debug("exomiser.phenotype.data-directory defined as: {}", automaticallyDefinedPath);
                 return automaticallyDefinedPath;
             }
         }
-        logger.info("exomiser.phenotype.data-directory defined as: {}", originalPath);
+        logger.debug("exomiser.phenotype.data-directory defined as: {}", originalPath);
         return originalPath;
     }
 
-    List<Path> listPhenotypeDataDirectories(Path dir) {
+    private List<Path> listPhenotypeDataDirectories(Path dir) {
         List<Path> result = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
                 if (entry.toString().endsWith("_phenotype")) {
-                    logger.info("Found phenotype data directory {}", entry);
+                    logger.debug("Found phenotype data directory {}", entry);
                     result.add(entry);
                 }
             }
@@ -154,17 +156,19 @@ public class PrioritiserAutoConfiguration {
      *
      * @return
      */
-    @Lazy
     @Bean
     @ConditionalOnMissingBean(name = "randomWalkMatrix")
     public DataMatrix randomWalkMatrix() {
         String randomWalkFileNameValue = phenotypeProperties.getRandomWalkFileName();
         Path randomWalkFilePath = phenotypeDataDirectory().resolve(randomWalkFileNameValue);
 
-        String randomWalkIndexFileNameValue = phenotypeProperties.getRandomWalkIndexFileName();
-        Path randomWalkIndexFilePath = phenotypeDataDirectory().resolve(randomWalkIndexFileNameValue);
-
-        return DataMatrixIO.loadDataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
+        //backwards compatibility - pre 10.0.0 did not have a .mv
+        if (randomWalkFileNameValue.endsWith(".gz")){
+            String randomWalkIndexFileNameValue = phenotypeProperties.getRandomWalkIndexFileName();
+            Path randomWalkIndexFilePath = phenotypeDataDirectory().resolve(randomWalkIndexFileNameValue);
+            return DataMatrixIO.loadInMemoryDataMatrixFromFile(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
+        }
+        return DataMatrixIO.loadOffHeapDataMatrix(randomWalkFilePath);
     }
 
     @Bean
@@ -191,7 +195,7 @@ public class PrioritiserAutoConfiguration {
         config.setPassword("");
         config.setMaximumPoolSize(3);
         config.setPoolName(String.format("exomiser-phenotype-%s", version));
-        logger.info("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
+        logger.debug("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
         return config;
     }
 }

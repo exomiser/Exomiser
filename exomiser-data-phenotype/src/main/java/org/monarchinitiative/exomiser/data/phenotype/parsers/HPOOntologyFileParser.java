@@ -45,8 +45,8 @@ import java.util.Map;
  * cased names for the autosuggestion. However, we want to display the preferred
  * name in the end.
  *
- * @version 0.04 (27 November, 2013)
  * @author Peter Robinson
+ * @version 0.04 (27 November, 2013)
  */
 public class HPOOntologyFileParser implements ResourceParser {
 
@@ -67,8 +67,8 @@ public class HPOOntologyFileParser implements ResourceParser {
      * This function does the actual work of parsing the HPO file.
      *
      * @param resource
-     * @param inDir Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
-     * @param outDir Directory where output file is to be written
+     * @param inDir    Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param outDir   Directory where output file is to be written
      * @return
      */
     @Override

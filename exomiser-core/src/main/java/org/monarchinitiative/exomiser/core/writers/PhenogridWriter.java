@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -57,23 +58,22 @@ public class PhenogridWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.PHENOGRID;
     
     @Override
-    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
+    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, ModeOfInheritance.ANY);
         Path outFile = Paths.get(outFileName);
-
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-
-            writer.write(writeString(analysis, analysisResults, settings));
+            //HiPhive phenotype scores are not dependant on the mode of inheritance.
+            writer.write(writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings));
 
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}.", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
+        logger.info("{} results written to file {}", OUTPUT_FORMAT, outFileName);
 
     }
 
     @Override
-    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(analysisResults.getGenes(), settings.getNumberOfGenesToShow());
         List<HiPhivePriorityResult> hiPhiveResults = new ArrayList<>();
         for (Gene gene : passedGenes) {

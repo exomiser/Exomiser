@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,12 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -95,17 +98,39 @@ public class AnalysisTest {
     }
 
     @Test
-    public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
+    public void modeOfInheritanceDefaultsToEmpty() {
+        assertThat(DEFAULT_ANALYSIS.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
     }
 
     @Test
-    public void testCanMakeAnalysis_specifyModeOfInheritance() {
-        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+    public void canSetModeOfInheritanceDefaults() {
         Analysis instance = newBuilder()
-                .modeOfInheritance(modeOfInheritance)
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+    }
+
+    @Test
+    public void testCanMakeAnalysisWithInheritanceModesFromMap() {
+        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+
+        Analysis instance = newBuilder()
+                .inheritanceModeOptions(inheritanceMap)
+                .build();
+
+        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(inheritanceMap)));
+    }
+
+    @Test
+    public void testCanMakeAnalysisWithInheritanceModesFromInheritanceModeOptions() {
+        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(inheritanceMap);
+
+        Analysis instance = newBuilder()
+                .inheritanceModeOptions(inheritanceModeOptions)
+                .build();
+
+        assertThat(instance.getInheritanceModeOptions(), equalTo(inheritanceModeOptions));
     }
 
     @Test

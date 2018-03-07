@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,16 +20,21 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 /**
+ * Class for reading and writing random walk matrix data.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  */
@@ -42,16 +47,98 @@ public class DataMatrixIO {
     /*
      * This shouldn't be instantiated.
      */
-    private DataMatrixIO() {}
+    private DataMatrixIO() {
+    }
 
-    public static DataMatrix loadDataMatrix(String matrixFileZip, String entrezId2indexFileZip, boolean shouldUseExponent) {
+    /**
+     * Loads the {@code matrixFileZip} and {@code entrezId2indexFileZip} into memory and converts them to an {@link MVStore}
+     * off-heap map saved to the {@code outfileName} argument.
+     *
+     * @param matrixFileZip         a {@code String} containing the full system path to the gzipped random walk matrix file.
+     * @param entrezId2indexFileZip a {@code String} containing the full system path to the gzipped index of the random
+     *                              walk matrix file.
+     * @param outfileName           the writable {@code Path} of the desired output file.
+     * @since 10.0.0
+     */
+    public static void convertToMap(String matrixFileZip, String entrezId2indexFileZip, Path outfileName) {
+        //load original data matrix from file sources (*really* slow)
+        Map<Integer, Integer> index = createIndex(entrezId2indexFileZip);
+        DataMatrix dataMatrix = loadInMemoryDataMatrixFromFile(matrixFileZip, entrezId2indexFileZip, true);
+
+        //create the new MVStore (fast!)
+        MVStore mvStore = MVStore.open(outfileName.toAbsolutePath().toString());
+        MVMap<Integer, Integer> rowIndex = mvStore.openMap("gene_id_row_index");
+        MVMap<Integer, float[]> columns = mvStore.openMap("columns");
+        // transpose the matrix and store the columns as rows in the map using the index key as the key.
+        FloatMatrix floatMatrix = dataMatrix.getMatrix();
+        for (Map.Entry<Integer, Integer> geneIdToIndex : index.entrySet()) {
+            Integer geneId = geneIdToIndex.getKey();
+            Integer indexKey = geneIdToIndex.getValue();
+            //make the row index
+            rowIndex.put(geneId, indexKey);
+            //make the columns
+            FloatMatrix col = floatMatrix.getColumn(indexKey);
+            float[] colVals = col.toArray();
+            columns.put(geneId, colVals);
+        }
+        mvStore.commit();
+        mvStore.close();
+    }
+
+    /**
+     * Loads an off-heap {@code DataMatrix} backed by an {@link MVStore} map. This is preferable to use in most scenarios
+     * as it takes no start-up time and has very low memory overhead. For cases where a IO might be an issue in a long-running
+     * process it might be preferable to use the {@code loadInMemoryDataMatrix} method, at the expense of initial start-up
+     * time and high RAM requirements.
+     *
+     * @param ppiMapPath the {@code Path} to the {@link MVStore} containing the {@code DataMatrix) data.
+     * @return an off-heap instance of the {@code DataMatrix)
+     * @since 10.0.0
+     */
+    public static DataMatrix loadOffHeapDataMatrix(Path ppiMapPath) {
+        logger.debug("Loading off-heap PPI data matrix from map...");
+        return OffHeapDataMatrix.load(ppiMapPath);
+    }
+
+    /**
+     * Loads an in memory {@code DataMatrix} from the input {@code Path} argument. This is inferior to using one the off-heap
+     * map-backed method as it takes a few seconds to load and requires ~1GB more RAM however it has zero IO once loaded.
+     *
+     * @param ppiMapPath the {@code Path} to the {@link MVStore} containing the {@code DataMatrix) data.
+     * @return an in-memory instance of the {@code DataMatrix)
+     * @since 10.0.0
+     */
+    public static DataMatrix loadInMemoryDataMatrix(Path ppiMapPath) {
+        logger.debug("Loading in-memory PPI data matrix from map...");
+        MVStore mvStore = new MVStore.Builder().fileName(ppiMapPath.toAbsolutePath().toString()).readOnly().open();
+        OffHeapDataMatrix offHeapMatrix = new OffHeapDataMatrix(mvStore);
+        Map<Integer, float[]> columns = offHeapMatrix.getColumns();
+        Map<Integer, Integer> entrezIdToRowIndex = offHeapMatrix.getEntrezIdToRowIndex();
+        mvStore.close();
+        return InMemoryDataMatrix.fromMap(columns, entrezIdToRowIndex);
+    }
+
+    /**
+     * Loads an in memory {@code DataMatrix} from the input file arguments. This is inferior to using one of the map-backed
+     * implementations as it takes a lot longer to load (typically ~45-60s compared to ~5s) and ~1GB more RAM than the
+     * off-heap method.
+     *
+     * @param matrixFileZip         a {@code String} containing the full system path to the gzipped random walk matrix file.
+     * @param entrezId2indexFileZip a {@code String} containing the full system path to the gzipped index of the random
+     *                              walk matrix file.
+     * @param shouldUseExponent     flag to indicate whether or not to use the exponent of the values
+     * @return an in-memory instance of the {@code DataMatrix)
+     * @since 10.0.0
+     */
+    public static DataMatrix loadInMemoryDataMatrixFromFile(String matrixFileZip, String entrezId2indexFileZip, boolean shouldUseExponent) {
+        logger.debug("Loading in-memory PPI data matrix from file...");
         Map<Integer, Integer> index = createIndex(entrezId2indexFileZip);
         FloatMatrix floatMatrix = createMatrixfromFile(index.size(), matrixFileZip, shouldUseExponent);
-        return new DataMatrix(floatMatrix, index);
+        return new InMemoryDataMatrix(floatMatrix, index);
     }
 
     private static Map<Integer, Integer> createIndex(String object2idxFileZip) {
-        Map<Integer, Integer> index = new HashMap();
+        Map<Integer, Integer> index = new HashMap<>();
         File indexFile = new File(object2idxFileZip);
         try (BufferedReader indexReader = gzippedFileBufferedReader(indexFile)) {
             String line;
@@ -76,13 +163,13 @@ public class DataMatrixIO {
 
         File matrixFile = new File(matrixFileZip);
         try (BufferedReader in = gzippedFileBufferedReader(matrixFile)) {
-            int i = 0;
+            int row = 0;
             String line;
             while ((line = in.readLine()) != null) {
                 //just a nicety to stop you wondering if anything is going on - this stage takes a minute or two
-                logLineNumberIfMultipleOf(i, 500);
-                addLineDataToMatrixRow(floatMatrix, line, i, shouldUseExponent);
-                i++;
+                logLineNumberIfMultipleOf(row, 500);
+                addLineDataToMatrixRow(floatMatrix, line, row, shouldUseExponent);
+                row++;
             }
         } catch (IOException e) {
             throw new DataMatrixIoException(e);
@@ -91,20 +178,19 @@ public class DataMatrixIO {
     }
 
     private static void logLineNumberIfMultipleOf(int lineNumber, int multiple) {
-        if (lineNumber % multiple == 0) {
+        if (lineNumber % multiple == 0 && lineNumber >= multiple) {
             logger.info("reading line {}", lineNumber);
         }
     }
 
-    private static void addLineDataToMatrixRow(FloatMatrix floatMatrix, String line, int i, boolean shouldUseExponent) {
-        String[] row = line.split(TAB_DELIMITER);
-        int matrixSize = floatMatrix.rows;
-        for (int j = 0; j < matrixSize; j++) {
-            float entry = Float.parseFloat(row[j]);
+    private static void addLineDataToMatrixRow(FloatMatrix floatMatrix, String line, int row, boolean shouldUseExponent) {
+        String[] rowData = line.split(TAB_DELIMITER);
+        for (int j = 0; j < floatMatrix.rows; j++) {
+            float entry = Float.parseFloat(rowData[j]);
             if (shouldUseExponent) {
                 entry = (float) Math.exp(entry);
             }
-            floatMatrix.put(i, j, entry);
+            floatMatrix.put(row, j, entry);
         }
     }
 
@@ -123,6 +209,7 @@ public class DataMatrixIO {
 
     /**
      * WARNING! This is a legacy method - it is not known whether this was used to generate the files read by the loadDataMatrix method.
+     *
      * @param dataMatrix
      * @param file
      * @param doLogarithm
@@ -138,6 +225,7 @@ public class DataMatrixIO {
 
     /**
      * WARNING! This is a legacy method - it is not known whether this was used to generate the files read by the loadDataMatrix method.
+     *
      * @param matrix
      * @param file
      * @param id2index
@@ -150,7 +238,7 @@ public class DataMatrixIO {
 
             for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
                 String entrezId = entry.getKey();
-                outIndexMap.write(new StringBuilder().append(entrezId).append("\t").append(entry.getValue()).append("\n").toString());
+                outIndexMap.write(entrezId + "\t" + entry.getValue() + "\n");
             }
 
             for (int i = 0; i < matrix.rows; i++) {
@@ -174,6 +262,7 @@ public class DataMatrixIO {
 
     /**
      * WARNING! This is a legacy method - it is not known whether this was used to generate the files read by the loadDataMatrix method.
+     *
      * @param dataMatrix
      * @param file
      * @param doLogarithm
@@ -189,6 +278,7 @@ public class DataMatrixIO {
 
     /**
      * WARNING! This is a legacy method - it is not known whether this was used to generate the files read by the loadDataMatrix method.
+     *
      * @param matrix
      * @param file
      * @param id2index

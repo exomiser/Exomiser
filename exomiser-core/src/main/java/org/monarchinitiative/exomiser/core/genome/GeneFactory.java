@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,7 +66,7 @@ public class GeneFactory {
                 // If not the entire analysis will fail.
                 .map(Gene::new)
                 .collect(toList());
-        logger.info("Created {} known genes.", knownGenes.size());
+        logger.debug("Created {} known genes.", knownGenes.size());
         return knownGenes;
     }
 
@@ -100,7 +100,7 @@ public class GeneFactory {
             geneIdentifierBuilder.add(geneIdentifier);
         }
         int geneIds = identifiers - noEntrezId;
-        logger.info("Created {} gene identifiers ({} genes, {} without EntrezId)", identifiers, geneIds, noEntrezId);
+        logger.debug("Created {} gene identifiers ({} genes, {} without EntrezId)", identifiers, geneIds, noEntrezId);
         geneIdentifiers = geneIdentifierBuilder.build();
         return geneIdentifiers;
     }

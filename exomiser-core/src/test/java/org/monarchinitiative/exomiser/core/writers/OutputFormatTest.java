@@ -38,9 +38,6 @@ import static org.junit.Assert.assertThat;
  */
 public class OutputFormatTest {
 
-    public OutputFormatTest() {
-    }
-
     @Test
     public void testValues() {
         System.out.println("values");

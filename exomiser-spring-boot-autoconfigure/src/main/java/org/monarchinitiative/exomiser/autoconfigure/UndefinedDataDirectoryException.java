@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ package org.monarchinitiative.exomiser.autoconfigure;
  */
 public class UndefinedDataDirectoryException extends RuntimeException {
 
-    String value;
+    private String value;
 
     public UndefinedDataDirectoryException(String value) {
         super(String.format("Invalid data directory '%s'", value));

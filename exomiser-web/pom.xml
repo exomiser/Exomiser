@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.1</version>
+        <version>10.0.0</version>
     </parent>
 
     <properties>
@@ -41,17 +41,6 @@
         <h2.dir>${data.dir}</h2.dir>
         <warName>exomiser</warName>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>sanger</id>
-            <properties>
-                <data.dir>/www/data/exomiser</data.dir>
-                <h2.dir>/www/data/exomiser/data</h2.dir>
-                <warName>resources#software#exomiser</warName>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>

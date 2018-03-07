@@ -50,9 +50,6 @@ public class GeneticIntervalTest {
 
     ReferenceDictionary refDict;
 
-    public GeneticIntervalTest() {
-    }
-
     @Before
     public void setUp() {
         instance = new GeneticInterval(CHR, START, END);

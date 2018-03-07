@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,8 +83,8 @@ public class ResultsWriterUtilsTest {
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        String expResult = String.format("%s/wibble_exomiser_AD.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(result, equalTo(expResult));
     }
 
@@ -91,8 +92,8 @@ public class ResultsWriterUtilsTest {
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        String expResult = String.format("%s/wibble_exomiser_AR.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         assertThat(result, equalTo(expResult));
     }
 
@@ -101,8 +102,8 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
         OutputSettings settings = OutputSettings.builder().outputPrefix(outputPrefix).build();
-        String expResult = String.format("%s.%s", outputPrefix, testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        String expResult = String.format("%s_XD.%s", outputPrefix, testedFormat.getFileExtension());
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_DOMINANT);
         assertThat(result, equalTo(expResult));
     }
     
@@ -110,19 +111,43 @@ public class ResultsWriterUtilsTest {
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-results.html";
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        String expResult = DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html";
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
         assertThat(result, equalTo(expResult));
     }
     
     @Test
     public void testOutFileNameIsCombinationOfOutPrefixAndOutFormat() {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
-        String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009.vcf";
+        String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009";
         OutputSettings settings = OutputSettings.builder().outputPrefix(outFilePrefix).build();
-        assertThat(ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat), equalTo(outFilePrefix + "." + outFormat.getFileExtension()));
+        assertThat(ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
     }
-    
+
+    @Test
+    public void testOutputFileNameModeOfInheritanceExtensions() {
+        OutputFormat testedFormat = OutputFormat.HTML;
+        OutputSettings settings = OutputSettings.builder().build();
+
+        String any = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
+        assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html"));
+
+        String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AD.html"));
+
+        String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AR.html"));
+
+        String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_DOMINANT);
+        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XD.html"));
+
+        String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_RECESSIVE);
+        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XR.html"));
+
+        String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.MITOCHONDRIAL);
+        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_MT.html"));
+    }
+
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();

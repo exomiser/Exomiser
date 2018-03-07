@@ -21,9 +21,10 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>9.0.1</version>
+    <version>10.0.0</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -79,7 +80,6 @@
         <module>exomiser-data-genome</module>
         <module>exomiser-data-phenotype</module>
         <module>exomiser-rest-prioritiser</module>
-        <module>exomiser-rest-analysis</module>
         <module>exomiser-web</module>
     </modules>
 
@@ -91,7 +91,7 @@
         <sonar.language>java</sonar.language>
         <jannovar.version>0.24</jannovar.version>
         <guava.version>22.0</guava.version>
-        <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
+        <spring-boot.version>1.5.10.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -110,7 +110,7 @@
             <dependency>
                 <groupId>io.spring.platform</groupId>
                 <artifactId>platform-bom</artifactId>
-                <version>Brussels-SR5</version>
+                <version>Brussels-SR7</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -230,10 +230,8 @@
                 <version>0.7.9</version>
                 <configuration>
                     <excludes>
-                        <!--		 Application starter
-                        <exclude>ac/simons/biking2/Application.class</exclude>
-                         Configuration
-                        <exclude>ac/simons/biking2/config/*</exclude>			-->
+                        <exclude>**/resources/**</exclude>
+                        <exclude>**/assemble/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

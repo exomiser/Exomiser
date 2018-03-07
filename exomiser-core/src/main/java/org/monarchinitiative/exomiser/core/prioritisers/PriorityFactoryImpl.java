@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,11 +30,9 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,9 +49,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private final DataMatrix randomWalkMatrix;
     private final Path phenixDataDirectory;
 
-    // The randomWalkMatrix takes about 1min to load into RAM and isn't always required, so @Lazy is used to defer loading
-    // until it is required.
-    @Lazy
     @Autowired
     public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory) {
         this.priorityService = priorityService;
@@ -61,58 +56,9 @@ public class PriorityFactoryImpl implements PriorityFactory {
         this.phenixDataDirectory = phenixDataDirectory;
     }
 
-    /**
-     * Returns a Prioritiser of the given type, ready to run according to the
-     * settings provided. Will return a non-functional prioritiser in cases
-     * where the type is not recognised.
-     *
-     * @param settings
-     * @return
-     */
     @Override
-    public Prioritiser makePrioritiser(PrioritiserSettings settings) {
-        PriorityType priorityType = settings.getPrioritiserType();
-        List<Integer> entrezSeedGenes = settings.getSeedGeneList();
-        String diseaseId = settings.getDiseaseId();
-        String candidateGene = settings.getCandidateGene();
-        String hiPhiveParams = settings.getHiPhiveParams();
-
-        switch (priorityType) {
-            case OMIM_PRIORITY:
-                return makeOmimPrioritiser();
-            case PHENIX_PRIORITY:
-                return makePhenixPrioritiser();
-            case HIPHIVE_PRIORITY:
-                HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
-                        .diseaseId(diseaseId)
-                        .candidateGeneSymbol(candidateGene)
-                        .runParams(hiPhiveParams)
-                        .build();
-                return makeHiPhivePrioritiser(hiPhiveOptions);
-            case PHIVE_PRIORITY:
-                return makePhivePrioritiser();
-            case EXOMEWALKER_PRIORITY:
-                return makeExomeWalkerPrioritiser(entrezSeedGenes);
-            case NONE:
-                return new NoneTypePrioritiser();
-            default:
-                logger.warn("Prioritiser: '{}' not supported. Returning '{}' type", priorityType, PriorityType.NONE);
-                return new NoneTypePrioritiser();
-        }
-
-    }
-
-    @Override
-    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        if (diseaseId == null || diseaseId.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return priorityService.getHpoIdsForDiseaseId(diseaseId);
-    }
-
-    @Override
-    public OMIMPriority makeOmimPrioritiser() {
-        return new OMIMPriority(priorityService);
+    public OmimPriority makeOmimPrioritiser() {
+        return new OmimPriority(priorityService);
     }
 
     @Override

@@ -46,9 +46,9 @@ import java.util.Set;
  * parsed. These scripts are currently not very pretty, since the phenoseries
  * information is delivered as an HTML page with subtly inconsistent formatting,
  * it requires some "hacks" to parseResource with a perl script.
- * <P>
+ * <p>
  * This program is thus part of the ExomeWalker subproject of the Exomizer.
- * <P>
+ * <p>
  * The format of the pheno2gene.txt file is as follows:
  * <PRE>
  * Warburg micro syndrome|600118|10p12.1|Warburg micro syndrome 3|3|614222|RAB18, WARBM3|602207|22931|RAB18
@@ -71,7 +71,6 @@ import java.util.Set;
  *
  * @author Peter Robinson
  * @version 0.06 (2 January, 2014)
- *
  */
 public class PhenoSeriesParser implements ResourceParser {
 
@@ -79,7 +78,7 @@ public class PhenoSeriesParser implements ResourceParser {
 
     /**
      * ResourceParser for the pheno2gene.txt file which produces the phenoseries.pg dump file, assuming you want to call them that.
-     * 
+     * <p>
      * Note that OMIM has some entries such as 61206
      * <ul>
      * <li>Frontotemporal lobar degeneration, TARDBP-related
@@ -94,6 +93,7 @@ public class PhenoSeriesParser implements ResourceParser {
      * and are in a sense duplicates, more or less two versions of the same
      * disease. To keep things simple, we take only one of these entries, and we
      * discard the rest.
+     *
      * @param resource
      * @param inDir
      * @param outDir
@@ -106,26 +106,26 @@ public class PhenoSeriesParser implements ResourceParser {
         //But done to fit the parseResource() paradigm. Peter did it better before-hand 
         //(i.e. one class only), but it produced two different tables. Given this is static data we're parsing
         //and it's likely to be depricated at some point this is hopefully not too evil.
-        
+
         Path inFile = inDir.resolve(resource.getExtractedFileName());
         Path outFile = outDir.resolve(resource.getParsedFileName());
 
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
-        
+
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-        
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+
             Set<String> uniqueSeriesIds = new HashSet<>();
             Map<String, Phenoseries> phenoseriesMap = new HashMap<>();
 
             String line;
             Phenoseries ps;
-            
-            while((line = reader.readLine()) != null) {
-              logger.debug(line);
+
+            while ((line = reader.readLine()) != null) {
+                logger.debug(line);
                 String[] fields = line.split("\\|");
-        //        "INSERT INTO omim2gene(mimDiseaseID, mimDiseaseName,cytoBand,mimGeneID,entrezGeneID,geneSymbol,seriesID) "+
+                //        "INSERT INTO omim2gene(mimDiseaseID, mimDiseaseName,cytoBand,mimGeneID,entrezGeneID,geneSymbol,seriesID) "+
                 final int expectedFields = 10;
                 if (fields.length != expectedFields) {
                     logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
@@ -140,19 +140,19 @@ public class PhenoSeriesParser implements ResourceParser {
                 String mimGeneId = fields[7];
                 String entrezGeneId = fields[8];
                 String geneSymbol = fields[9];
-                
+
                 String uniqueSeriesId = String.format("%s-%s", seriesId, mimDiseaseId);
-                
+
                 if (entrezGeneId.equals("?")) {
-                    logger.debug("No Entrez gene mapped for phenoseries: {} MIM gene: {} location: {} disease: {} {}", seriesId,  mimGeneId, cytoBand, mimDiseaseId , mimDiseaseName); // No gene for this entry
+                    logger.debug("No Entrez gene mapped for phenoseries: {} MIM gene: {} location: {} disease: {} {}", seriesId, mimGeneId, cytoBand, mimDiseaseId, mimDiseaseName); // No gene for this entry
                 } else if (uniqueSeriesIds.contains(uniqueSeriesId)) {
                     //is this a bug with the original data?
-                    logger.debug("seriesId-diseaseId {} has already been mapped, skipping phenoseries: {} MIM gene: {} location: {} disease: {} {}", uniqueSeriesId, seriesId,  mimGeneId, cytoBand, mimDiseaseId , mimDiseaseName);
+                    logger.debug("seriesId-diseaseId {} has already been mapped, skipping phenoseries: {} MIM gene: {} location: {} disease: {} {}", uniqueSeriesId, seriesId, mimGeneId, cytoBand, mimDiseaseId, mimDiseaseName);
                 } else {
                     uniqueSeriesIds.add(uniqueSeriesId);
                     logger.debug("{}|{}|{}|{}|{}|{}|{}", mimDiseaseId, mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId);
-                } 
-                
+                }
+
                 if (phenoseriesMap.containsKey(seriesId)) {
                     ps = phenoseriesMap.get(seriesId);
                     ps.addEntrezGene(entrezGeneId);
@@ -163,11 +163,13 @@ public class PhenoSeriesParser implements ResourceParser {
             }
             //now we should have a nicely populated map of phenoseries, time to write them to file
             for (Phenoseries phenoseries : phenoseriesMap.values()) {
-                logger.debug("Writing series: {} {} {}", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries.getGeneCount());
-                writer.write(String.format("%s|%s|%s%n", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries.getGeneCount()));
+                logger.debug("Writing series: {} {} {}", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries
+                        .getGeneCount());
+                writer.write(String.format("%s|%s|%s%n", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries
+                        .getGeneCount()));
             }
             status = ResourceOperationStatus.SUCCESS;
-        }  catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             logger.error("{}", ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {

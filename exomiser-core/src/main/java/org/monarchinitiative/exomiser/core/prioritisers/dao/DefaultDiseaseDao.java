@@ -26,6 +26,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +38,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Repository
@@ -57,58 +59,55 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Cacheable(value = "diseaseHp")
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
-        String hpoListString = "";
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?")
-        ) {
-            hpoIdsStatement.setString(1, diseaseId);
-            ResultSet rs = hpoIdsStatement.executeQuery();
-            rs.next();
-            hpoListString = rs.getString(1);
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?")) {
+                statement.setString(1, diseaseId);
+                ResultSet rs = statement.executeQuery();
+                Set<String> diseaseHpoIds = parseHpoIds(rs);
+                logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), diseaseId, diseaseHpoIds);
+                return diseaseHpoIds;
+
+            }
         } catch (SQLException e) {
             logger.error("Unable to retrieve HPO terms for disease {}", diseaseId, e);
         }
-        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
-        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), diseaseId, diseaseHpoIds);
-        return new TreeSet<>(diseaseHpoIds);
+        return Collections.emptySet();
     }
 
-    private List<String> parseHpoIdListFromString(String hpoIdsString) {
-        String[] hpoArray = hpoIdsString.split(",");
-        List<String> hpoIdList = new ArrayList<>();
-        for (String string : hpoArray) {
-            hpoIdList.add(string.trim());
+    private Set<String> parseHpoIds(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            String hpoListString = rs.getString("hp_id");
+            String[] hpoArray = hpoListString.split(",");
+            ImmutableSet.Builder<String> hpoIdSetBuilder = new ImmutableSet.Builder<>();
+            for (String string : hpoArray) {
+                hpoIdSetBuilder.add(string.trim());
+            }
+            return hpoIdSetBuilder.build();
         }
-        return hpoIdList;
+        return Collections.emptySet();
     }
 
-    @Cacheable(value="diseases")
+    @Cacheable(value = "diseases")
     @Override
     public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
-        String query = "SELECT gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_name, d.TYPE AS disease_type, d.INHERITANCE as inheritance_code, hp_id as pheno_ids FROM entrez2sym e, disease_hp dhp, disease d  WHERE dhp.disease_id = d.DISEASE_ID and e.entrezid = d.GENE_ID and d.GENE_ID = ?";
+        String query = "SELECT gene_id AS entrez_id, symbol AS human_gene_symbol, d.disease_id AS disease_id, d.diseasename AS disease_name, d.TYPE AS disease_type, d.INHERITANCE AS inheritance_code, hp_id AS pheno_ids FROM entrez2sym e, disease_hp dhp, disease d  WHERE dhp.disease_id = d.DISEASE_ID AND e.entrezid = d.GENE_ID AND d.GENE_ID = ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = setQueryGeneId(connection, query, geneId);
-             ResultSet rs = statement.executeQuery()){
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, geneId);
+                ResultSet rs = statement.executeQuery();
+                return processDiseaseResults(rs);
 
-            return processDiseaseResults(rs);
-
+            }
         } catch (SQLException e) {
             logger.error("Unable to execute query '{}' for geneId: '{}'", query, geneId, e);
         }
         return Collections.emptyList();
     }
 
-    private PreparedStatement setQueryGeneId(Connection connection, String query, int geneId) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(query);
-        ps.setInt(1, geneId);
-        return ps;
-    }
-
-    private List<Disease> processDiseaseResults(ResultSet rs) throws SQLException{
+    private List<Disease> processDiseaseResults(ResultSet rs) throws SQLException {
         ImmutableList.Builder<Disease> listBuilder = ImmutableList.builder();
-        while(rs.next()) {
+        while (rs.next()) {
             List<String> phenotypes = ImmutableList.copyOf(rs.getString("pheno_ids").split(","));
             Disease disease = Disease.builder()
                     .diseaseId(rs.getString("disease_id"))

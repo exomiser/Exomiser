@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,10 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
+
+import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -34,7 +37,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class InheritanceModeTest {
 
@@ -104,6 +107,18 @@ public class InheritanceModeTest {
         assertThat(InheritanceMode.X_RECESSIVE.isXlinked(), is(true));
 
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isXlinked(), is(false));
+    }
+
+    @Test
+    public void testToModeOfInheritance() {
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(InheritanceMode.X_DOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_DOMINANT)));
+        assertThat(InheritanceMode.X_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE)));
+        assertThat(InheritanceMode.MITOCHONDRIAL.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.MITOCHONDRIAL)));
+        assertThat(InheritanceMode.X_LINKED.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT)));
+        assertThat(InheritanceMode.POLYGENIC.toModeOfInheritance(), equalTo(EnumSet.noneOf(ModeOfInheritance.class)));
     }
 
     @Test

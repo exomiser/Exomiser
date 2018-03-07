@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class, TestDaoConfig.class})
 public class DataControllerTest {
-    
+
     @Autowired
     private MockMvc mockMvc;
 

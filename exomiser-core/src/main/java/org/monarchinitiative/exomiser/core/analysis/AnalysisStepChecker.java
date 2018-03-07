@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriority;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -82,14 +82,14 @@ class AnalysisStepChecker {
         }
 
         int originalInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
-        int originalOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
+        int originalOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OmimPriority.class);
 
         List<AnalysisStep> inheritanceModeDependentSteps = moveInheritanceModeStepsIntoList(analysisSteps);
         int lastVariantFilterPos = getLastPositionOfClass(analysisSteps, VariantFilter.class);
         analysisSteps.addAll(lastVariantFilterPos + 1, inheritanceModeDependentSteps);
 
         int sortedInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
-        int sortedOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
+        int sortedOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OmimPriority.class);
 
         if (sortedInheritanceFilterPosition != originalInheritanceFilterPosition) {
             logger.info("WARNING: Moved InheritanceFilter. This must run after all variant filter steps. AnalysisSteps have been changed.");
@@ -232,10 +232,10 @@ class AnalysisStepChecker {
             }
 
             //OmimPrioritiser must run after InheritanceFilter.
-            if (InheritanceFilter.class.isInstance(o1) && OMIMPriority.class.isInstance(o2)) {
+            if (InheritanceFilter.class.isInstance(o1) && OmimPriority.class.isInstance(o2)) {
                 return BEFORE;
             }
-            if (OMIMPriority.class.isInstance(o1) && InheritanceFilter.class.isInstance(o2)) {
+            if (OmimPriority.class.isInstance(o1) && InheritanceFilter.class.isInstance(o2)) {
                 return AFTER;
             }
 

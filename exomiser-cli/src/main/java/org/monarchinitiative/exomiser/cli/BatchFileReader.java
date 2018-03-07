@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -44,21 +44,29 @@ public class BatchFileReader {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchFileReader.class);
 
-    public List<Path> readPathsFromBatchFile(Path batchFile) {
+    private BatchFileReader() {
+        //non-instantiable static utility class
+    }
+
+    public static List<Path> readPathsFromBatchFile(Path batchFile) {
         logger.info("Processing batch file {}", batchFile);
         try (Stream<String> lines = Files.lines(batchFile, Charset.defaultCharset())) {
-            return lines.filter(commentLines()).filter(emptyLines()).map(line -> Paths.get(line.trim())).collect(toList());
+            return lines
+                    .filter(commentLines())
+                    .filter(emptyLines())
+                    .map(line -> Paths.get(line.trim()))
+                    .collect(toList());
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
-    private Predicate<String> commentLines() {
+    private static Predicate<String> commentLines() {
         return line -> !line.startsWith("#");
     }
 
-    private Predicate<String> emptyLines() {
+    private static Predicate<String> emptyLines() {
         return line -> !line.isEmpty();
     }
 

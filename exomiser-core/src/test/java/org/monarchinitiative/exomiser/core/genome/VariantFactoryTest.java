@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -232,7 +232,6 @@ public class VariantFactoryTest {
         List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
-        //TODO: Should this really be 1? Genotype is [Sample TCCGCCG/TCCTCCGCCG]
         assertThat(variants.size(), equalTo(2));
     }
 
@@ -294,8 +293,11 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
     }
 
-    @Test
+    /**
+     * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
+     */
     @Ignore
+    @Test
     public void testGenome() {
 
         VariantAnnotator variantAnnotator = new StubVariantAnnotator();

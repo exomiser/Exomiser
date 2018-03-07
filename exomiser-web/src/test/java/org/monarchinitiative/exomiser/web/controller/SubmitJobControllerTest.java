@@ -19,6 +19,7 @@
  */
 package org.monarchinitiative.exomiser.web.controller;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
@@ -34,7 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 /**
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @RunWith(SpringRunner.class)
@@ -45,8 +45,9 @@ public class SubmitJobControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Ignore
     @Test
-    public void submitJobControllerGetReturnsOkStatusAndSubmitPage() throws Exception {      
+    public void submitJobControllerGetReturnsOkStatusAndSubmitPage() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/submit"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("submit"));

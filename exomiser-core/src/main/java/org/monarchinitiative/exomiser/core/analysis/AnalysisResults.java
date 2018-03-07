@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,12 +27,9 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -46,48 +43,26 @@ import static java.util.stream.Collectors.toList;
  */
 public class AnalysisResults {
 
-    private final Path vcfPath;
-    private final Path pedPath;
     private final String probandSampleName;
 
     @JsonIgnore
-    private final VCFHeader vcfHeader;
-    @JsonIgnore
     private final List<String> sampleNames;
-    @JsonIgnore
-    private final Pedigree pedigree;
 
     private final List<Gene> genes;
     @JsonIgnore
     private final List<VariantEvaluation> variantEvaluations;
 
     public AnalysisResults(Builder builder) {
-        this.vcfPath = builder.vcfPath;
-        this.pedPath = builder.pedPath;
         this.probandSampleName = builder.probandSampleName;
 
-        this.vcfHeader = builder.vcfHeader;
         this.sampleNames = builder.sampleNames;
-        this.pedigree = builder.pedigree;
 
         this.genes = builder.genes;
         this.variantEvaluations = builder.variantEvaluations;
     }
-    
-    public Path getVcfPath() {
-        return vcfPath;
-    }
-
-    public Path getPedPath() {
-        return pedPath;
-    }
 
     public String getProbandSampleName() {
         return probandSampleName;
-    }
-
-    public VCFHeader getVcfHeader() {
-        return vcfHeader;
     }
 
     /**
@@ -95,10 +70,6 @@ public class AnalysisResults {
      */
     public List<String> getSampleNames() {
         return sampleNames;
-    }
-
-    public Pedigree getPedigree() {
-        return pedigree;
     }
 
     public List<Gene> getGenes() {
@@ -116,7 +87,7 @@ public class AnalysisResults {
 
     @Override
     public int hashCode() {
-        return Objects.hash(vcfPath, pedPath, probandSampleName, sampleNames, variantEvaluations, genes);
+        return Objects.hash(probandSampleName, sampleNames, variantEvaluations, genes);
     }
 
     @Override
@@ -124,9 +95,7 @@ public class AnalysisResults {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AnalysisResults that = (AnalysisResults) o;
-        return Objects.equals(vcfPath, that.vcfPath) &&
-                Objects.equals(pedPath, that.pedPath) &&
-                Objects.equals(probandSampleName, that.probandSampleName) &&
+        return Objects.equals(probandSampleName, that.probandSampleName) &&
                 Objects.equals(sampleNames, that.sampleNames) &&
                 Objects.equals(variantEvaluations, that.variantEvaluations) &&
                 Objects.equals(genes, that.genes);
@@ -134,7 +103,12 @@ public class AnalysisResults {
 
     @Override
     public String toString() {
-        return "AnalysisResults{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + '}';
+        return "AnalysisResults{" +
+                "probandSampleName='" + probandSampleName + '\'' +
+                ", sampleNames=" + sampleNames +
+                ", genes=" + genes.size() +
+                ", variantEvaluations=" + variantEvaluations.size() +
+                '}';
     }
 
     public static Builder builder() {
@@ -143,13 +117,9 @@ public class AnalysisResults {
 
     public static class Builder {
 
-        private Path vcfPath;
-        private Path pedPath = null;
         private String probandSampleName = "";
 
-        private VCFHeader vcfHeader = new VCFHeader();
         private List<String> sampleNames = Collections.emptyList();
-        private Pedigree pedigree = Pedigree.constructSingleSamplePedigree("unknown sample");
 
         private List<VariantEvaluation> variantEvaluations = Collections.emptyList();
         private List<Gene> genes = Collections.emptyList();
@@ -163,28 +133,9 @@ public class AnalysisResults {
             this.sampleNames = sampleNames;
             return this;
         }
-        public Builder vcfPath(Path vcfPath) {
-            this.vcfPath = vcfPath;
-            return this;
-        }
-
-        public Builder pedPath(Path pedPath) {
-            this.pedPath = pedPath;
-            return this;
-        }
-
-        public Builder vcfHeader(VCFHeader vcfHeader) {
-            this.vcfHeader = vcfHeader;
-            return this;
-        }
 
         public Builder variantEvaluations(List<VariantEvaluation> variantList) {
             this.variantEvaluations = variantList;
-            return this;
-        }
-
-        public Builder pedigree(Pedigree pedigree) {
-            this.pedigree = pedigree;
             return this;
         }
 

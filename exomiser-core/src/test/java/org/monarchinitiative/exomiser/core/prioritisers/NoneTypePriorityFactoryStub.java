@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,10 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.jblas.FloatMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 
@@ -41,13 +37,8 @@ import java.util.Map;
 public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
-    public Prioritiser makePrioritiser(PrioritiserSettings settings) {
-        return new NoneTypePrioritiser();
-    }
-
-    @Override
-    public OMIMPriority makeOmimPrioritiser() {
-        return new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
+    public OmimPriority makeOmimPrioritiser() {
+        return new OmimPriority(TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     @Override
@@ -62,30 +53,11 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
-        DataMatrix stubDataMatrix = makeDataMatrixWithGeneIds(entrezSeedGenes);
-        return new ExomeWalkerPriority(stubDataMatrix, entrezSeedGenes);
+        return new ExomeWalkerPriority(DataMatrix.empty(), entrezSeedGenes);
     }
 
     @Override
     public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hiPhiveOptions, null, TestPriorityServiceFactory.STUB_SERVICE);
-    }
-
-    private DataMatrix makeDataMatrixWithGeneIds(List<Integer> entrezSeedGenes) {
-        Map<Integer, Integer> matrixMap = new LinkedHashMap<>();
-        
-        for (int i = 0; i < entrezSeedGenes.size(); i++) {
-            Integer geneId = entrezSeedGenes.get(i);
-            matrixMap.put(geneId, i);
-        }
-                    
-        DataMatrix dataMatrix = new DataMatrix(FloatMatrix.zeros(entrezSeedGenes.size(), entrezSeedGenes.size()), matrixMap);
-        
-        return dataMatrix;
-    }
-
-    @Override
-    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        return Collections.emptyList();
+        return new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), TestPriorityServiceFactory.STUB_SERVICE);
     }
 }

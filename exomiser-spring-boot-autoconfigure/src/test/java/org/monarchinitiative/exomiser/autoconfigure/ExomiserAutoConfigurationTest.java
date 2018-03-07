@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,16 +21,13 @@
 package org.monarchinitiative.exomiser.autoconfigure;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.sql.DataSource;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -41,15 +38,16 @@ import static org.junit.Assert.assertThat;
 public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
-    public void testExomiserIsAutoConfigured() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+    public void testExomiserIsAutoConfigured() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.phenotype.data-version=1710");
         Exomiser exomiser = (Exomiser) context.getBean("exomiser");
         assertThat(exomiser, instanceOf(Exomiser.class));
     }
+    // n.b there are issues with the @PreDestroy shutdown hooks for classes in the GenomeAnalysisServiceConfigurer using the MVStore
 
     @Test
-    public void testGenomeAnalysisServiceProviderIsAutoConfigured() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+    public void testGenomeAnalysisServiceProviderIsAutoConfigured() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.phenotype.data-version=1710");
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
         assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
     }
@@ -57,17 +55,6 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
     @Configuration
     @ImportAutoConfiguration(value = ExomiserAutoConfiguration.class)
     protected static class EmptyConfiguration {
-
-        @Bean
-        public GenomeAnalysisService genomeAnalysisService() {
-            return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, Mockito.mock(GenomeAnalysisService.class), Mockito
-                    .mock(VariantDataService.class), Mockito.mock(VariantFactory.class));
-        }
-
-        @Bean
-        public DataSource phenotypeDataSource() {
-            return Mockito.mock(DataSource.class);
-        }
 
         @Bean
         public CacheManager noOpCacheManager() {

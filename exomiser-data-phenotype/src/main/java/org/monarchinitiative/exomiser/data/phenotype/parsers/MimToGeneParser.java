@@ -51,7 +51,7 @@ import java.util.TreeSet;
  * which has the NCBI Entrez Gene id 57514. The next line shows 100188340, which
  * is the Entrez gene id for Adams Oliver syndrome (Note: It is strange and
  * unhelpful that Entrez Gene now seems to be giving some diseases gene ids...).
- * <P>
+ * <p>
  * The morbidmap file has the following format
  * <PRE>
  * Abetalipoproteinemia, 200100 (3)  |MTP|157147|4q22-q24

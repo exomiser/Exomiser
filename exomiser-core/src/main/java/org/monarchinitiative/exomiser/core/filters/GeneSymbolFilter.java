@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * VariantFilter to remove any variants belonging to genes not on a user-entered
  * list of genes. This filter will match on gene symbol.
- *
+ * <p>
  * Note: this could be done as a GeneFilter but will be most efficient to run as
  * the first variantFilter
  *

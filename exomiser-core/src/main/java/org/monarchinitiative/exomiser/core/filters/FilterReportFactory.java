@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -203,7 +204,10 @@ public class FilterReportFactory {
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {
         FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
 
-        report.addMessage(String.format("Genes filtered for compatibility with %s inheritance.", filter.getModeOfInheritance()));
+        StringJoiner stringJoiner = new StringJoiner(",");
+        filter.getCompatibleModes().forEach(modeOfInheritance -> stringJoiner.add(modeOfInheritance.toString()));
+
+        report.addMessage(String.format("Genes filtered for compatibility with %s inheritance.", stringJoiner.toString()));
 
         return report;
     }

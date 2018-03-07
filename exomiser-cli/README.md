@@ -2,7 +2,7 @@
 
 The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
  
-To perform ana analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also provided. 
+To perform an analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also provided. 
 See [Usage](#usage) section for info on running an analysis.
 
 Further information can be found in the [online documentation](http://exomiser.github.io/Exomiser/).
@@ -35,18 +35,18 @@ The following shell script should work-
     #download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/11802_phenotype.zip
 
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    unzip 1711_*.zip -d exomiser-cli-${project.version}/data
+    unzip 1802_*.zip -d exomiser-cli-${project.version}/data
 
     #Check the application.properties are pointing to the correct versions
-    #exomiser.hg19.data-version=1711
-    #exomiser.hg38.data-version=1711
-    #exomiser.phenotype.data-version=1711
+    #exomiser.hg19.data-version=1802
+    #exomiser.hg38.data-version=1802
+    #exomiser.phenotype.data-version=1802
     
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
@@ -81,9 +81,9 @@ with
 
 ## <a name="usage"></a>Usage
 
-The Exomiser can be run via simply via command line switches (see cli only) or via a yaml analysis file. We strongly recommended using the yaml option as it provides full control over the application. The cli only options are currently a legacy hangover *only* capable of exome analysis.    
+The Exomiser can be run via simply via a yaml analysis file. The extended cli capability was removed in version 10.0.0 as this was less capable than the yaml scripts and only supported hg19 exome analysis.
 
-### Analysis file (recommended)
+### Analysis file
 
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed. 
@@ -99,45 +99,11 @@ setting the analysisMode option to PASS_ONLY. This will also aid your ability to
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
+    
+If you're running the exomiser from a different directory to the one the jar file is located in, you will need to specify the path to the ```application.properties``` file in the start-up command. For example:
 
-### CLI only (limited to hg19 exome analysis only)
+     java -Xms2g -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
 
-(a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
-
-(b) Exomiser PHIVE algorithm - phenotype comparisons to mice with disruption of the gene
-
-    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=phive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
-
-(c) Exomiser Phenix algorithm - phenotype comparisons to known human disease genes
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=phenix -v data/Pfeiffer.vcf -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
-
-(d) Exomiser ExomeWalker algorithm - prioritisation by proximity in interactome to the seed genes
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
-
-
-## Other useful params:
-
-### Multiple output formats:
-
-    --output-format HTML (default)
-    --output-format TSV-GENE (TSV summary of genes)
-    --output-format TSV-VARIANT (TSV summary of variants)
-    --output-format VCF (VCF summary)
-
-Output options can be combined, for example:
-
-    --output-format TSV-GENE,VCF (TSV-GENE and VCF)
-    --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
-
-### Settings file (deprecated)
-
-This feature is now deprecated and may be subject to removal at a later time. We recommend switching to using an analysis yml file instead.
     
 ### Want help?
 
@@ -149,7 +115,7 @@ This feature is now deprecated and may be subject to removal at a later time. We
   If you get the following error message:
   
     Exception in thread "main" java.lang.UnsupportedClassVersionError:
-    de/charite/compbio/exomiser/cli/Main : Unsupported major.minor version
+    org/monarchinitiative/exomiser/cli/Main : Unsupported major.minor version
 
   You are running an older unsupported version of Java. Exomiser requires java version 8 or higher. This can be checked by running:
     

@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -60,7 +59,8 @@ public class OmimResourceGroupParser extends AbstractResourceGroupParser {
 
         //Check everything is present before trying to parse them
         if (!requiredResourcesPresent(resourceGroup)) {
-            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup
+                    .getName());
             return;
         }
 

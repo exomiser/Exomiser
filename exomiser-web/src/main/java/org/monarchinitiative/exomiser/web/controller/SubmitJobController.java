@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,23 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.*;
+import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.writers.*;
@@ -55,6 +64,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static org.monarchinitiative.exomiser.core.prioritisers.PriorityType.*;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -65,6 +76,16 @@ public class SubmitJobController {
     private static final Logger logger = LoggerFactory.getLogger(SubmitJobController.class);
 
     private static final String SUBMIT_PAGE = "submit";
+    private static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = Sets.immutableEnumSet(
+            VariantEffect.UPSTREAM_GENE_VARIANT,
+            VariantEffect.INTERGENIC_VARIANT,
+            VariantEffect.DOWNSTREAM_GENE_VARIANT,
+            VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.SYNONYMOUS_VARIANT,
+            VariantEffect.SPLICE_REGION_VARIANT,
+            VariantEffect.REGULATORY_REGION_VARIANT
+    );
 
     @Autowired
     private Integer maxVariants;
@@ -75,12 +96,9 @@ public class SubmitJobController {
 
     @Autowired
     private Exomiser exomiser;
-    @Autowired
-    private SettingsParser settingsParser;
+
     @Autowired
     private PriorityService priorityService;
-    @Autowired
-    private ResultsWriterFactory resultsWriterFactory;
 
     @GetMapping(value = SUBMIT_PAGE)
     public String submit() {
@@ -94,8 +112,8 @@ public class SubmitJobController {
             @RequestParam(value = "proband", required = false) String proband,
             @RequestParam(value = "disease", required = false) String diseaseId,
             @RequestParam(value = "phenotypes", required = false) List<String> phenotypes,
-            @RequestParam(value = "min-call-quality", required = false) Float minimumQuality,
-            @RequestParam(value = "genetic-interval", required = false) String geneticInterval,
+            @RequestParam(value = "min-call-quality", required = false, defaultValue = "0") Float minimumQuality,
+            @RequestParam(value = "genetic-interval", required = false, defaultValue = "") String geneticInterval,
             @RequestParam("frequency") String frequency,
             @RequestParam("remove-dbsnp") Boolean removeDbSnp,
             @RequestParam("keep-non-pathogenic") Boolean keepNonPathogenic,
@@ -140,28 +158,10 @@ public class SubmitJobController {
             logger.info("{} contains {} variants - within set limit of {}", vcfPath, numVariantsInSample, maxVariants);
         }
 
-        Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
+        Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(analysis);
 
-        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
-        try {
-            Files.createDirectory(outputDir);
-        } catch (IOException e) {
-            logger.error("Unable to create directory {}", outputDir, e);
-        }
-        logger.info("Output dir: {}", outputDir);
-        String outFileName = outputDir.toString() + "/results";
-        OutputSettings outputSettings = OutputSettings.builder()
-                .numberOfGenesToShow(20)
-                .outputPrefix(outFileName)
-                //OutputFormat.HTML, causes issues due to thymeleaf templating
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
-                .build();
-
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
-        }
+        writeResultsToFile(analysisId, analysis, analysisResults);
 
         buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
@@ -185,31 +185,88 @@ public class SubmitJobController {
         return Stream.empty();
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
-        Settings settings = Settings.builder()
-                .vcfFilePath(vcfPath)
-                .pedFilePath(pedPath)
-                .probandSampleName(proband)
-                .hpoIdList(phenotypes)
-                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
-                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
-                .removeKnownVariants(removeDbSnp)
-                .keepOffTargetVariants(keepOffTarget)
-                .keepNonPathogenic(keepNonPathogenic)
-                .maximumFrequency(Float.valueOf(frequency))
-                .genesToKeep(genesToKeep)
-                .geneticInterval(geneticInterval != null ? GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval) : null)
-                .usePrioritiser(PriorityType.valueOf(prioritiser))
-                .diseaseId(diseaseId)
-                .build();
-
-        Analysis sparseAnalysis = settingsParser.parse(settings);
-
-        return sparseAnalysis
-                .copy()
+        AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder()
                 .analysisMode(AnalysisMode.PASS_ONLY)
+                .genomeAssembly(GenomeAssembly.HG19)
+                .vcfPath(vcfPath)
+                .pedPath(pedPath)
+                .probandSampleName(proband)
+                .hpoIds(phenotypes)
+                .inheritanceModes(InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
+                .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
+                .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
+
+        addFilters(analysisBuilder, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, frequency, genesToKeep, geneticInterval);
+        //soon these will run by default
+        analysisBuilder.addInheritanceFilter();
+        analysisBuilder.addOmimPrioritiser();
+        //add the users choice of prioritiser
+        addPrioritiser(analysisBuilder, prioritiser);
+
+        return analysisBuilder.build();
+    }
+
+    private void addFilters(AnalysisBuilder analysisBuilder, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String frequency, Set<String> genesToKeep, String geneticInterval) {
+        //This is the original Exomiser analysis step order, as found in the SettingsParser
+        //Filter for genes:
+        if (!genesToKeep.isEmpty()) {
+            analysisBuilder.addGeneIdFilter(genesToKeep);
+        }
+        //Genetic interval:
+        if (!geneticInterval.isEmpty()) {
+            analysisBuilder.addIntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
+        }
+        //Keep off-target variants:
+        if (!keepOffTarget) {
+            analysisBuilder.addVariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS);
+        }
+        //Minimum variant call quality:
+        if (minimumQuality != null && minimumQuality != 0) {
+            analysisBuilder.addQualityFilter(minimumQuality);
+        }
+        //Remove all dbSNP variants:
+        if (removeDbSnp) {
+            analysisBuilder.addKnownVariantFilter();
+        }
+        //Maximum minor allele frequency:
+        analysisBuilder.addFrequencyFilter(Float.valueOf(frequency));
+        //Keep non-pathogenic variants:
+        analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
+    }
+
+    private void addPrioritiser(AnalysisBuilder analysisBuilder, String prioritiser) {
+        PriorityType priorityType = PriorityType.valueOf(prioritiser);
+
+        if (priorityType == PHENIX_PRIORITY) {
+            analysisBuilder.addPhenixPrioritiser();
+        }
+        else if (priorityType == HIPHIVE_PRIORITY) {
+            analysisBuilder.addHiPhivePrioritiser();
+        }
+        else if (priorityType == PHIVE_PRIORITY) {
+            analysisBuilder.addPhivePrioritiser();
+        }
+    }
+
+    private void writeResultsToFile(UUID analysisId, Analysis analysis, AnalysisResults analysisResults) {
+        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
+        try {
+            Files.createDirectory(outputDir);
+        } catch (IOException e) {
+            logger.error("Unable to create directory {}", outputDir, e);
+        }
+        logger.info("Output dir: {}", outputDir);
+        String outFileName = outputDir.toString() + "/results";
+        OutputSettings outputSettings = OutputSettings.builder()
+                .numberOfGenesToShow(20)
+                .outputPrefix(outFileName)
+                //OutputFormat.HTML, causes issues due to thymeleaf templating
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
                 .build();
+
+        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
     }
 
     private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {

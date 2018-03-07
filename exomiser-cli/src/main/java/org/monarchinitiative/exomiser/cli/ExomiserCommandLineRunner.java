@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@ package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.*;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.*;
-import org.monarchinitiative.exomiser.core.writers.OutputFormat;
+import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisParser;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
-import org.monarchinitiative.exomiser.core.writers.ResultsWriter;
-import org.monarchinitiative.exomiser.core.writers.ResultsWriterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,25 +47,18 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCommandLineRunner.class);
 
     @Autowired
-    private CommandLineOptionsParser commandLineOptionsParser;
-    @Autowired
     private Options options;
 
     @Autowired
     private AnalysisParser analysisParser;
     @Autowired
-    private SettingsParser settingsParser;
-    @Autowired
     private Exomiser exomiser;
-    @Autowired
-    private ResultsWriterFactory resultsWriterFactory;
 
     @Value("buildVersion")
     private String buildVersion;
 
     @Override
     public void run(String... strings) {
-        logger.info("Exomiser running...");
         if (strings.length == 0) {
             logger.error("Please supply some command line arguments - none found");
             printHelpAndExit();
@@ -74,6 +67,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         if (commandLine.hasOption("help")) {
             printHelpAndExit();
         }
+        logger.info("Exomiser running...");
         runAnalyses(commandLine);
     }
 
@@ -83,7 +77,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             runAnalysisFromScript(analysisScript);
         } else if (commandLine.hasOption("analysis-batch")) {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
-            List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+            List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
             //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //like this:
@@ -93,21 +87,6 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
                 logger.info("Running analysis: {}", analysis);
                 runAnalysisFromScript(analysis);
             });
-        }
-        //check the args for a batch file first as this option is otherwise ignored
-        else if (commandLine.hasOption("batch-file")) {
-            Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-            List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
-            logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
-            for (Path settingsFile : settingsFiles) {
-                logger.info("Running settings: {}", settingsFile);
-                Settings settings = commandLineOptionsParser.parseSettingsFile(settingsFile);
-                runAnalysisFromSettings(settings);
-            }
-        } else {
-            //make a single SettingsBuilder
-            Settings settings = commandLineOptionsParser.parseCommandLine(commandLine);
-            runAnalysisFromSettings(settings);
         }
     }
 
@@ -137,24 +116,9 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         runAnalysisAndWriteResults(analysis, outputSettings);
     }
 
-    private void runAnalysisFromSettings(Settings settings) {
-        if (settings.isValid()) {
-            Analysis analysis = settingsParser.parse(settings);
-            runAnalysisAndWriteResults(analysis, settings);
-        }
-    }
-
     private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
         AnalysisResults analysisResults = exomiser.run(analysis);
-        writeResults(analysis, analysisResults, outputSettings);
-    }
-
-    private void writeResults(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
-        logger.info("Writing results");
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
-        }
+        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
     }
 
 }

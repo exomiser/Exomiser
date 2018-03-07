@@ -1,5 +1,26 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 10.0.0 2018-03-07
+- Deprecated extended cli options as these were less capable than the analysis file. Options are now ```--analysis``` or ```--analysis-batch``` only. See the ```.yml``` files in the ```examples``` directory for recommended scripts.
+- Exomiser can now analyse samples against multiple inheritance modes in one run using the new ```inheritanceModes``` field. This also allows variants to be considered under a model with a maximum frequency (%) cut-off. See example ```.yml``` files for more details. 
+     ```yaml
+        inheritanceModes: {
+             AUTOSOMAL_DOMINANT: 0.1,
+             AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
+             AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
+             X_DOMINANT: 0.1,
+             X_RECESSIVE_HOM_ALT: 0.1,
+             X_RECESSIVE_COMP_HET: 2.0,
+             MITOCHONDRIAL: 0.2
+        }
+     ```
+- The old ```modeOfInheritance``` option will still work, although it will only run with default frequency cut-offs and may be removed in a later release, so please update your analyses.
+- The new ```1802_phenotype``` data release will not work on older exomiser versions as the PPI data is now shipped in a much more efficient storage format. This reduces the startup time to zero and reduces the memory footprint by approx 1 GB. We *highly* recommend you update older releases to the latest version in order to benefit from more recent phenotype data.
+- Default variant scores for ```FRAMESHIFT```, ```NONSENSE```, ```SPLICING```, ```STOPLOSS``` and ```STARTLOSS``` have been increased from 0.95 to the maximum score of 1.0 to reflect clinical interpretation of these variant consequences.
+
+## 9.0.1 2018-01-15
+- Now able to analyse ```MITOCHONDRIAL``` inheritance mode.
+
 ## 9.0.0 2017-12-12
 - Exomiser can now analyse hg19 or hg38 samples - see ```application.properties``` for setup details.
 - Analysis file has new ```genomeAssembly:``` field - see example ```.yml``` files. Will default to hg19 if not specified.

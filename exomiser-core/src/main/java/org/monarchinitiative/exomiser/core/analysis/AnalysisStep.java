@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
-import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriority;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 
 /**
@@ -39,7 +39,7 @@ public interface AnalysisStep {
 
     @JsonIgnore
     default boolean isInheritanceModeDependent() {
-        return InheritanceFilter.class.isInstance(this) || OMIMPriority.class.isInstance(this);
+        return InheritanceFilter.class.isInstance(this) || OmimPriority.class.isInstance(this);
     }
 
     @JsonIgnore

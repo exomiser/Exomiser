@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,27 +26,13 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.thymeleaf.TemplateEngine;
-
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-@Component
-public class ResultsWriterFactory implements ResultsWriter {
-
-    private final TemplateEngine coreTemplateEngine;
-
-    @Autowired
-    public ResultsWriterFactory(TemplateEngine coreTemplateEngine) {
-        this.coreTemplateEngine = coreTemplateEngine;
-    }
+public class ResultsWriterFactory {
 
     /**
      * Build {@link ResultsWriter} for the given {@link OutputFormat}.
@@ -67,17 +53,8 @@ public class ResultsWriterFactory implements ResultsWriter {
                 return new PhenogridWriter();
             case HTML:
             default:
-                return new HtmlResultsWriter(coreTemplateEngine);
+                return new HtmlResultsWriter();
         }
     }
 
-    @Override
-    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-
-    }
-
-    @Override
-    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        return null;
-    }
 }

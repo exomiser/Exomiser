@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -100,7 +100,7 @@ public class VariantFactoryImpl implements VariantFactory {
         };
     }
 
-    private boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
+    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
         return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(allele));
     }
 
@@ -131,6 +131,9 @@ public class VariantFactoryImpl implements VariantFactory {
     }
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotation variantAnnotation) {
+
+        //Add this in here...? If so see notes in InheritanceModeAnnotator.
+//        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeAdaptor.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();

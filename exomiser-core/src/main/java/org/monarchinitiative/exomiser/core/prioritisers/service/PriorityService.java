@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -65,6 +65,9 @@ public class PriorityService {
     }
 
     public List<String> getHpoIdsForDiseaseId(String diseaseId) {
+        if (diseaseId == null || diseaseId.isEmpty()) {
+            return Collections.emptyList();
+        }
         return ImmutableList.copyOf(diseaseDao.getHpoIdsForDiseaseId(diseaseId));
     }
 
@@ -87,7 +90,7 @@ public class PriorityService {
 
     @Cacheable(value = "models", key = "#species", cacheResolver = "modelCacheResolver")
     public List<GeneModel> getModelsForOrganism(Organism species) {
-        logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
+        logger.debug("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:
                 return modelService.getHumanGeneDiseaseModels();

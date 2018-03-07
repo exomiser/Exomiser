@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,16 +25,14 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import org.jblas.DoubleMatrix;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.monarchinitiative.exomiser.core.prioritisers.util.InMemoryDataMatrix;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -55,10 +53,9 @@ public class HiPhivePriorityTest {
     private List<String> hpoIds = getHpoIds();
 
     private PriorityService priorityService = TestPriorityServiceFactory.TEST_SERVICE;
-    private DataMatrix testMatrix;
+    private DataMatrix testMatrix = setUpMatrix();
 
-    @Before
-    public void setUp() {
+    private DataMatrix setUpMatrix() {
         double[][] ppiMatrix = {
                 {0.707653999329, 0.000000009625, 0.000000008875, 0.000000372898, 0.000000268611, 0.000000023074, 0.000000040680, 0.000000133227, 0.000000064774, 0.000000113817},
                 {0.000000005477, 0.713751792908, 0.000008168789, 0.000000000210, 0.000000001862, 0.000000013144, 0.000000000679, 0.000000001696, 0.000000001134, 0.000000002901},
@@ -72,9 +69,19 @@ public class HiPhivePriorityTest {
                 {0.000000034608, 0.000000001550, 0.000000097330, 0.000000008808, 0.000000005737, 0.000000011863, 0.000000003720, 0.000000007706, 0.000000525256, 0.705851793289}
         };
         DoubleMatrix doubleMatrix = new DoubleMatrix(ppiMatrix);
+        Map<Integer, Integer> rowIndex = new HashMap<>();
+        rowIndex.put(1, 0);
+        rowIndex.put(2, 1);
+        rowIndex.put(3, 2);
+        rowIndex.put(4, 3);
+        rowIndex.put(5, 4);
+        rowIndex.put(6, 5);
+        rowIndex.put(7, 6);
+        rowIndex.put(8, 7);
+        rowIndex.put(9, 8);
+        rowIndex.put(10, 9);
 
-        testMatrix = new DataMatrix(doubleMatrix.toFloat(), new HashMap<>());
-
+        return new InMemoryDataMatrix(doubleMatrix.toFloat(), rowIndex);
     }
 
     private List<String> getHpoIds() {
@@ -156,7 +163,7 @@ public class HiPhivePriorityTest {
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
-                .build(), DataMatrix.EMPTY, priorityService);
+                .build(), DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
@@ -173,7 +180,7 @@ public class HiPhivePriorityTest {
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
-                .build(), DataMatrix.EMPTY, priorityService);
+                .build(), DataMatrix.empty(), priorityService);
         List<Gene> genes = getGenes();
 
         List<HiPhivePriorityResult> results = instance.prioritise(hpoIds, genes)
@@ -198,7 +205,7 @@ public class HiPhivePriorityTest {
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
-                .build(), DataMatrix.EMPTY, priorityService);
+                .build(), DataMatrix.empty(), priorityService);
         List<Gene> genes = getGenes();
 
         List<HiPhivePriorityResult> results = instance.prioritise(hpoIds, genes)
@@ -222,7 +229,7 @@ public class HiPhivePriorityTest {
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
-                .build(), DataMatrix.EMPTY, priorityService);
+                .build(), DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
 //        List<PriorityResult> results = instance.prioritizeGenes(genes);
 
@@ -242,7 +249,7 @@ public class HiPhivePriorityTest {
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("mouse")
-                .build(), DataMatrix.EMPTY, priorityService);
+                .build(), DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
 //        List<PriorityResult> results = instance.prioritizeGenes(genes);
 
@@ -272,7 +279,7 @@ public class HiPhivePriorityTest {
                 .runParams("human,mouse,fish")
                 .build();
 
-        HiPhivePriority instance = new HiPhivePriority(hiPhiveOptions, DataMatrix.EMPTY, priorityService);
+        HiPhivePriority instance = new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
@@ -293,27 +300,9 @@ public class HiPhivePriorityTest {
 
     }
 
-    @Ignore
-    @Test
-    public void testSetPriorityService() {
-        ArrayListMultimap<Integer, Double>  multimapInsertOrderTest = ArrayListMultimap.create();
-        multimapInsertOrderTest.put(1, 1.0);
-        multimapInsertOrderTest.put(1, 2.0);
-        multimapInsertOrderTest.put(1, 3.0);
-
-        multimapInsertOrderTest.put(3, 1.0);
-
-        multimapInsertOrderTest.put(2, 1.0);
-        multimapInsertOrderTest.put(2, 1.0);
-
-        System.out.println(multimapInsertOrderTest);
-        List<Integer> expectedOrder = Lists.newArrayList(1, 3, 2);
-        assertThat(multimapInsertOrderTest.keySet(), equalTo(expectedOrder));
-    }
-
     @Test
     public void testToString() {
-        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, DataMatrix.EMPTY, priorityService);
+        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, DataMatrix.empty(), priorityService);
         System.out.println(instance);
     }
     

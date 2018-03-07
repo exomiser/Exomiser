@@ -26,12 +26,13 @@
     <packaging>jar</packaging>
 
     <name>exomiser-cli</name>
-    <url>http://maven.apache.org</url>
+    <description>Exomiser command-line interface</description>
+    <url>https://github.com/exomiser/Exomiser</url>
 
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>9.0.1</version>
+        <version>10.0.0</version>
     </parent>
   
     <properties>
