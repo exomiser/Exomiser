@@ -1,29 +1,64 @@
 # The Exomiser - Core Library Changelog
 
-## 10.0.0 2018...
+## 10.0.0 2018-03-07
 API breaking changes:
 - Removed previously deprecated ```Settings``` and ```SettingsParser``` classes - this was only used by the cli which was also removed.
 - Removed unused ```PrioritiserSettings``` and ```PrioritiserSettingsImpl``` classes - these were only used by the ```SettingsParser```
 - Removed unused ```PrioritiserFactory.makePrioritiser(PrioritiserSettings settings)``` method - this was only used by the ```SettingsParser```
 - Removed unused ```PrioritiserFactory.getHpoIdsForDiseaseId(String diseaseId)``` method. This duplicated/called ```PriorityService.getHpoIdsForDiseaseId(String diseaseId)```
+- Renamed ```VariantTypePathogenicityScore``` to ```VariantEffectPathogenicityScore```
+- Method names of ```Inheritable``` have changed from ```InheritanceModes``` to ```CompatibleInheritanceModes``` to better describe their function.
+- Replaced ```SampleNameChecker``` with new ```SampleIdentifierUtil``` 
+- Changed signature of ```InheritanceModeAnalyser``` to require an ```InheritanceModeAnnotator```. This is now using Exomiser and Jannovar-native calls to analyse inheritance modes instead of the Jannovar mendel-bridge.
+- Changed ```GeneScorer.scoreGene()``` signature from ```Consumer<Gene>``` to ```Function<Gene, List<GeneScore>>``` to allow scoring of multiple inheritance modes in one run.
+- Changed ```Analysis``` and ```AnalysisBuilder``` method ```modeOfInheritance``` to ```inheritanceModes(InheritanceModeOptions inheritanceModeOptions)```
+- Removed unused methods on ```AnalysisResults```
+- Renamed ```OMIMPriority``` to ```OmimPriority```
+- Renamed ```OMIMPriorityResult``` to ```OmimPriorityResult```
+- Changed ```OmimPriorityResult``` constructor to require ```Map<ModeOfInheritance, Double> scoresByMode```, ```getScoresByMode()``` and ```getScoreForMode(modeOfInheritance)``` methods 
+- Changed ```DataMatrix``` from a concrete class to an interface
+- Changed ```ResultsWriter``` signatures to require a ```ModeOfInheritance``` to write results out for.
+- Changed ```ResultsWriterUtils``` now requires a specific ```ModeOfInheritance``` 
+
+New APIs:
+- Added new ```AlleleCall``` class to represent allele calls for alleles from the VCF file
+- Added new ```GeneScore``` class for holding results from the ```GeneScorer```
+- Added new ```SampleIdentifier``` class
+- Added new ```SampleGenotype``` class to represent VCF GenotypeCalls for a sample on a particular allele.
+- ```GeneIdentifier``` now implements ```Comparable``` and has a static ```compare(geneIdentifier1, geneIdentifier2)``` method
+- ```Gene``` now contains ```GeneScore``` having been scored by a ```GeneScorer```
+- ```VariantEvaluation``` now has methods to determine its compatibility and whether or not it contributes to the overall score under a particular ```ModeOfInheritance```
+- Added new ```SampleIdentifierUtil``` to replace deleted ```SampleNameChecker```
+- Added new ```InheritanceModeAnnotator``` and ```InheritanceModeOptions```
+- Added new ```VariantContextSampleGenotypeConverter``` to create ```SampleGenotype``` from a ```VariantContext```
+- Added new ```DataMatrixUtil```, ```InMemoryDataMatrix```, ```OffHeapDataMatrix```, ```StubDataMatrix``` implementations
+- Added new methods on ```DataMatrixIO``` to facilitate loading new ```DataMatrix``` objects from disk.
+- Added new ```AnalysisResultsWriter``` to handle writing out results instead of having to manually specify writers and inheritance modes 
+
+Other changes:
+- Demoted most logging from ```info``` to ```debug```
+- Removed Spring control of Thymeleaf from ```ThymeleafConfig``` and ```HtmlResultsWriter``` so this no longer interferes with web templates
+
+## 9.0.1 2018-01-15
+- Updated the Jannovar library to 0.24 which now enables filtering for mitochondrial inheritance modes.
 
 ## 9.0.0 2017-12-12
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
 - Maven groupId changed from root ```org.monarchinitiative``` to more specific ```org.monarchinitiative.exomiser```.
-- New AlleleProto protobuf class used to store allele data in the new MVstore.
-- Replaced DefaultPathogenicityDao and DefaultFrequencyDao implementations with MvStoreProto implementations.
-- Classes in the genome package are no longer under direct Spring control as the @Component and @Autowired annotations have been removed to enable user-defined genome assemblies on a per-analysis basis.
-- Genome package classes are now configured explicitly in the ```exomiser-spring-boot-autoconfigure``` module.
-- New GenomeAssembly enum
-- New GenomeAnalysisServiceProvider class
-- New GenomeAnalysisService interface - a facade for providing simplified access to the genome module.
-- New VcfFiles utility class for providing access to VCF files with the HTSJDK
-- New VariantAnnotator interface
-- New JannovarVariantAnnotator and JannovarAnnotationService classes
-- VariantFactoryImpl now takes a VariantAnnotator as a constructor argument.
-- VariantDataService getRegulatoryFeatures() and getTopologicalDomains() split out into new GenomeDataService
-- Deprecated Settings class - this will be removed in the next major version.
-- Updated classes in analysis package to enable analyses with user-defined genome assemblies.
+- New ```AlleleProto``` protobuf class used to store allele data in the new MVStore.
+- Replaced ```DefaultPathogenicityDao``` and ```DefaultFrequencyDao``` implementations with ```MvStoreProto``` implementations.
+- Classes in the ```genome``` package are no longer under direct Spring control as the ```@Component``` and ```@Autowired``` annotations have been removed to enable user-defined genome assemblies on a per-analysis basis.
+- ```genome``` package classes are now configured explicitly in the ```exomiser-spring-boot-autoconfigure``` module.
+- New ```GenomeAssembly``` enum
+- New ```GenomeAnalysisServiceProvider``` class
+- New ```GenomeAnalysisService``` interface - a facade for providing simplified access to the genome module.
+- New ```VcfFiles``` utility class for providing access to VCF files with the HTSJDK
+- New ```VariantAnnotator``` interface
+- New ```JannovarVariantAnnotator``` and ```JannovarAnnotationService``` classes
+- ```VariantFactoryImpl``` now takes a ```VariantAnnotator``` as a constructor argument.
+- ```VariantDataService``` getRegulatoryFeatures() and getTopologicalDomains() split out into new ```GenomeDataService```
+- Deprecated ```Settings``` class - this will be removed in the next major version.
+- Updated classes in ```analysis``` package to enable analyses with user-defined genome assemblies.
 
 ## 8.0.0 2017-08-08
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
