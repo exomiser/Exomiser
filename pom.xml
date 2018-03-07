@@ -80,7 +80,6 @@
         <module>exomiser-data-genome</module>
         <module>exomiser-data-phenotype</module>
         <module>exomiser-rest-prioritiser</module>
-        <module>exomiser-rest-analysis</module>
         <module>exomiser-web</module>
     </modules>
 
