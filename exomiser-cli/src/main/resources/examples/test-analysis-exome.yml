@@ -98,7 +98,7 @@ analysis:
             DOWNSTREAM_GENE_VARIANT,
             SPLICE_REGION_VARIANT]},
         #knownVariantFilter: {}, #removes variants represented in the database
-        frequencyFilter: {maxFrequency: 1.0},
+        frequencyFilter: {maxFrequency: 2.0},
         pathogenicityFilter: {keepNonPathogenic: true},
         #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
         #they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
@@ -123,6 +123,6 @@ outputOptions:
     # according to the outputFormats option. If unspecified this will default to the following: 
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-    outputPrefix: results/Pfeiffer-hiphive-exome-SPARSE
+    outputPrefix: results/Pfeiffer-hiphive-exome-PASS_ONLY
     #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
     outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]
