@@ -35,18 +35,18 @@ The following shell script should work-
     #download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1711_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/11802_phenotype.zip
 
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    unzip 1711_*.zip -d exomiser-cli-${project.version}/data
+    unzip 1802_*.zip -d exomiser-cli-${project.version}/data
 
     #Check the application.properties are pointing to the correct versions
-    #exomiser.hg19.data-version=1711
-    #exomiser.hg38.data-version=1711
-    #exomiser.phenotype.data-version=1711
+    #exomiser.hg19.data-version=1802
+    #exomiser.hg38.data-version=1802
+    #exomiser.phenotype.data-version=1802
     
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
@@ -81,7 +81,7 @@ with
 
 ## <a name="usage"></a>Usage
 
-The Exomiser can be run via simply via a yaml analysis file. The extended cli capability has been removed as this was less capable than the yaml scripts and only supported hg19 exome analysis.
+The Exomiser can be run via simply via a yaml analysis file. The extended cli capability was removed in version 10.0.0 as this was less capable than the yaml scripts and only supported hg19 exome analysis.
 
 ### Analysis file
 
@@ -99,6 +99,11 @@ setting the analysisMode option to PASS_ONLY. This will also aid your ability to
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
+    
+If you're running the exomiser from a different directory to the one the jar file is located in, you will need to specify the path to the ```application.properties``` file in the start-up command. For example:
+
+     java -Xms2g -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
+
     
 ### Want help?
 
