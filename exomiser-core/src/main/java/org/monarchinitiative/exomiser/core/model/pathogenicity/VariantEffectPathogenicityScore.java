@@ -32,10 +32,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  */
 public abstract class VariantEffectPathogenicityScore {
 
-    private VariantEffectPathogenicityScore() {
-        //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
-    }
-
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)
      * variants for which we cannot find values for mutationTaster, polyphen2,
@@ -77,7 +73,11 @@ public abstract class VariantEffectPathogenicityScore {
      */
     public static final float STARTLOSS_SCORE = 1.00f;
 
-    public static final float getPathogenicityScoreOf(VariantEffect variantEffect) {
+    private VariantEffectPathogenicityScore() {
+        //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
+    }
+
+    public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
         if (variantEffect == VariantEffect.SEQUENCE_VARIANT) {
             // no effect annotated
             return NON_PATHOGENIC_SCORE; 
