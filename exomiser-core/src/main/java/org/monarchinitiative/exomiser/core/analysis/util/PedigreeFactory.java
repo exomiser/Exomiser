@@ -123,7 +123,7 @@ public class PedigreeFactory {
         if (pedigreeFilePath == null) {
             logger.error("PED file must be be provided for multi-sample VCF files.");
             //terminate the program - we really need one of these.
-            throw new PedigreeCreationException("Pedigree file path cannot be null.", new NullPointerException());
+            throw new PedigreeCreationException("Pedigree file path cannot be null.");
         }
     }
 
