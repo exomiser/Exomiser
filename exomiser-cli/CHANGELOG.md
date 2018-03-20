@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 10.0.1 2018-03-20
+- Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
+
 ## 10.0.0 2018-03-07
 - Deprecated extended cli options as these were less capable than the analysis file. Options are now ```--analysis``` or ```--analysis-batch``` only. See the ```.yml``` files in the ```examples``` directory for recommended scripts.
 - Exomiser can now analyse samples against multiple inheritance modes in one run using the new ```inheritanceModes``` field. This also allows variants to be considered under a model with a maximum frequency (%) cut-off. See example ```.yml``` files for more details. 
