@@ -1,5 +1,8 @@
 # The Exomiser - Core Library Changelog
 
+## 10.0.1 2018-03-20
+- Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
+
 ## 10.0.0 2018-03-07
 API breaking changes:
 - Removed previously deprecated ```Settings``` and ```SettingsParser``` classes - this was only used by the cli which was also removed.

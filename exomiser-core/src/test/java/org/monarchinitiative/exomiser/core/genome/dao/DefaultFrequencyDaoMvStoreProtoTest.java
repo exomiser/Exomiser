@@ -33,13 +33,13 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

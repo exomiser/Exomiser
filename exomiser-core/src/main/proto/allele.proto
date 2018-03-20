@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option java_package = "org.monarchinitiative.exomiser.core.proto";
 option java_outer_classname = "AlleleProto";
-option java_generate_equals_and_hash = true;
+//option java_multiple_files = true;
 
 message AlleleKey {
     int32 chr = 1;

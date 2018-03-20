@@ -23,16 +23,13 @@ package org.monarchinitiative.exomiser.data.genome.indexers;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 /**
  * {@link MVStore} backed {@link AlleleIndexer} implementation.
@@ -40,8 +37,6 @@ import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProper
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
-
-    private static final Logger logger = LoggerFactory.getLogger(MvStoreAlleleIndexer.class);
 
     private final MVStore mvStore;
     private final MVMap<AlleleKey, AlleleProperties> map;

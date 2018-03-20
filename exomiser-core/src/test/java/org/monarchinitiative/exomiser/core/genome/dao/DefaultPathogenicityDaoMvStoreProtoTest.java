@@ -33,7 +33,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.MutationTasterSco
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.SiftScore;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 import java.util.Map;
 
@@ -47,19 +48,19 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
 
     public static final String PATH_MAP_NAME = "alleles";
 
-    private DefaultPathogenicityDaoMvStoreProto getInstance(String mapName, Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> value) {
+    private DefaultPathogenicityDaoMvStoreProto getInstance(String mapName, Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = buildMvStore(mapName, value);
         return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
-    private MVStore buildMvStore(String mapName, Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> value) {
+    private MVStore buildMvStore(String mapName, Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = new MVStore.Builder().open();
 
-        MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMapBuilder = new MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties>()
+        MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = new MVMap.Builder<AlleleKey, AlleleProperties>()
                 .keyType(AlleleKeyDataType.INSTANCE)
                 .valueType(AllelePropertiesDataType.INSTANCE);
 
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> map = mvStore.openMap(mapName, alleleMapBuilder);
+        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap(mapName, alleleMapBuilder);
         map.putAll(value);
         return mvStore;
     }
@@ -95,13 +96,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.getDefaultInstance();
+        AlleleProperties properties = AlleleProperties.getDefaultInstance();
 
         DefaultPathogenicityDaoMvStoreProto instance = getInstance(PATH_MAP_NAME, ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
@@ -113,13 +114,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.newBuilder()
+        AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("KG", 0.04f)
                 .build();
 
@@ -133,13 +134,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.newBuilder()
+        AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("KG", 0.04f)
                 .putProperties("SIFT", 0.0f)
                 .build();
@@ -154,13 +155,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.newBuilder()
+        AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("POLYPHEN", 1.0f)
                 .build();
 
@@ -174,13 +175,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.newBuilder()
+        AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("MUT_TASTER", 1.0f)
                 .build();
 
@@ -194,13 +195,13 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleProto.AlleleKey key = AlleleProto.AlleleKey.newBuilder()
+        AlleleKey key = AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(12345)
                 .setRef("A")
                 .setAlt("T")
                 .build();
-        AlleleProto.AlleleProperties properties = AlleleProto.AlleleProperties.newBuilder()
+        AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("POLYPHEN", 1.0f)
                 .putProperties("MUT_TASTER", 1.0f)
                 .putProperties("SIFT", 0.0f)
