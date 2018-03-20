@@ -19,9 +19,10 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <artifactId>exomiser-core</artifactId>
     <packaging>jar</packaging>
     <name>exomiser-core</name>
@@ -29,9 +30,8 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>10.0.0</version>
+        <version>10.0.1</version>
     </parent>
-
 
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
@@ -47,11 +47,17 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.github.samtools</groupId>
+            <artifactId>htsjdk</artifactId>
+            <version>${htsjdk.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
             <version>1.2.3</version>
         </dependency>
         <!--Phenix dependencies:-->
+        <!-- possibly could be replaced by org.monarchinitiative.phenol-->
         <dependency>
             <groupId>de.sonumina</groupId>
             <artifactId>javautil</artifactId>
@@ -62,19 +68,6 @@
             <artifactId>ontologizer</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <!--One day, maybe these can be replaced by the commented out dependencies, once this issue has been closed:-->
-        <!--https://github.com/ontologizer/ontologizerlib/issues/1-->
-        <!--<dependency>-->
-            <!--<groupId>de.ontologizer</groupId>-->
-            <!--<artifactId>ontologizerlib-core</artifactId>-->
-            <!--<version>0.1</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>de.ontologizer</groupId>-->
-            <!--<artifactId>ontologizerlib-io</artifactId>-->
-            <!--<version>0.1</version>-->
-        <!--</dependency>-->
-
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
@@ -143,14 +136,41 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
-        <resources>          
+        <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.5.0.Final</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.1</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
+                    </protocArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

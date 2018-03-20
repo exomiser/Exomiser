@@ -78,6 +78,10 @@ public final class GeneScore implements Comparable<GeneScore> {
         return contributingVariants;
     }
 
+    public boolean hasContributingVariants(){
+        return !contributingVariants.isEmpty();
+    }
+
     /**
      * Compares the combined score of two {@code GeneScore} objects. Will return the {@code GeneScore} with the highest
      * numerical value or the first if equal.

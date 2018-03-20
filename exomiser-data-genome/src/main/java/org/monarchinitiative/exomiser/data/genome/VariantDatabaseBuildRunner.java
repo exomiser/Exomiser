@@ -23,7 +23,8 @@ package org.monarchinitiative.exomiser.data.genome;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.indexers.AlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.MvStoreAlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
@@ -78,13 +79,13 @@ public class VariantDatabaseBuildRunner {
     }
 
     private void copyToNewInstance(MVStore mvStore, MVStore newStore) {
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
 
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> newMap = newStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        MVMap<AlleleKey, AlleleProperties> newMap = newStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
 
         logger.info("Copying {} entries from temp store to final store",map.size());
         int count = 0;
-        for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : map.entrySet()) {
+        for (Map.Entry<AlleleKey, AlleleProperties> entry : map.entrySet()) {
             newMap.put(entry.getKey(), entry.getValue());
             count++;
             if (count % 10000000 == 0) {

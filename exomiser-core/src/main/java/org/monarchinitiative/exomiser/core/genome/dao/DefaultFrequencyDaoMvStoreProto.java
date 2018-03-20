@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +37,6 @@ import org.springframework.cache.annotation.Cacheable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

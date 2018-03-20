@@ -24,7 +24,8 @@ import org.h2.mvstore.MVMap;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -36,7 +37,7 @@ public class MvStoreUtilTest {
 
     @Test
     public void alleleMapBuilder() throws Exception {
-        MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMapBuilder = MvStoreUtil.alleleMapBuilder();
+        MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = MvStoreUtil.alleleMapBuilder();
         assertThat(alleleMapBuilder.getKeyType(), equalTo(AlleleKeyDataType.INSTANCE));
         assertThat(alleleMapBuilder.getValueType(), equalTo(AllelePropertiesDataType.INSTANCE));
     }
@@ -44,7 +45,7 @@ public class MvStoreUtilTest {
     @Test
     public void generateAlleleKey() throws Exception {
         Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T").build();
-        AlleleProto.AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
 
         assertThat(key.getChr(), equalTo(variant.getChromosome()));
         assertThat(key.getPosition(), equalTo(variant.getPosition()));

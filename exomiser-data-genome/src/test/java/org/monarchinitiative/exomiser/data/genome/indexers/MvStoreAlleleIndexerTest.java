@@ -27,6 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -45,8 +47,6 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-import static org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -186,7 +186,6 @@ public class MvStoreAlleleIndexerTest {
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 0.0023f);
         properties.put("EXAC_NFE", 0.12345f);
-        properties.put("KG", 0.0023f);
         AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
@@ -217,7 +216,6 @@ public class MvStoreAlleleIndexerTest {
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 0.0023f);
         properties.put("EXAC_NFE", 0.12345f);
-        properties.put("KG", 0.0023f);
         AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
