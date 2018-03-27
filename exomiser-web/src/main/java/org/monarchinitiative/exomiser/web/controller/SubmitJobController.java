@@ -37,6 +37,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -57,12 +58,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.monarchinitiative.exomiser.core.prioritisers.PriorityType.*;
 
@@ -147,7 +146,7 @@ public class SubmitJobController {
         logger.info("Using disease: {}", diseaseId);
         logger.info("Using phenotypes: {}", phenotypes);
 
-        long numVariantsInSample = streamLines(vcfPath).filter(line -> !line.startsWith("#")).count();
+        long numVariantsInSample = VcfFiles.readVariantContexts(vcfPath).count();
         if (numVariantsInSample > maxVariants) {
             logger.info("{} contains {} variants - this is more than the allowed maximum of {}."
                     + "Returning user to submit page", vcfPath, numVariantsInSample, maxVariants);
@@ -174,15 +173,6 @@ public class SubmitJobController {
             return Collections.emptyList();
         }
         return priorityService.getHpoIdsForDiseaseId(diseaseId);
-    }
-
-    private Stream<String> streamLines(Path vcfPath) {
-        try {
-            return Files.lines(vcfPath, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            logger.error("Error reading lines from {}", vcfPath, e);
-        }
-        return Stream.empty();
     }
 
     private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
