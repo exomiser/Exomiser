@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
+ * Test utility class for wrapping an {@link AlleleParser} and calling/testing the {@code AlleleParser#parseLine} method.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class AbstractAlleleParserTester<T extends AlleleParser> {
@@ -48,6 +50,7 @@ public abstract class AbstractAlleleParserTester<T extends AlleleParser> {
             Allele expected = expectedAlleles.get(i);
             assertThat(allele, equalTo(expected));
             assertThat(allele.getRsId(), equalTo(expected.getRsId()));
+            assertThat(allele.getClinVarData(), equalTo(expected.getClinVarData()));
             assertThat(allele.getValues(), equalTo(expected.getValues()));
         }
     }
