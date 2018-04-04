@@ -34,6 +34,8 @@ import java.util.*;
  */
 public class ClinVarData {
 
+    private static final ClinVarData EMPTY = new Builder().build();
+
     public enum ClinSig {
         // ACMG/AMP-based
         BENIGN,
@@ -69,6 +71,14 @@ public class ClinVarData {
         this.secondaryInterpretations = Sets.immutableEnumSet(builder.secondaryInterpretations);
         this.reviewStatus = builder.reviewStatus;
         this.includedAlleles = ImmutableMap.copyOf(builder.includedAlleles);
+    }
+
+    public static ClinVarData empty() {
+        return EMPTY;
+    }
+
+    public boolean isEmpty() {
+        return this.equals(EMPTY);
     }
 
     public String getAlleleId() {
@@ -124,7 +134,7 @@ public class ClinVarData {
     }
 
     public static class Builder {
-        private String alleleId;
+        private String alleleId = "";
         private ClinSig primaryInterpretation = ClinSig.NOT_PROVIDED;
         private Set<ClinSig> secondaryInterpretations = EnumSet.noneOf(ClinSig.class);
 
