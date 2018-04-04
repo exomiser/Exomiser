@@ -41,7 +41,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
         ClinVarData clinVarData = parseClinVarData(info);
         for (Allele allele : alleles) {
-            if (clinVarData.getAlleleId() != null) {
+            if (!clinVarData.isEmpty()) {
                 allele.setClinVarData(clinVarData);
             }
             logger.debug("{}", allele);
