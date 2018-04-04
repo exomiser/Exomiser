@@ -25,6 +25,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -68,16 +69,18 @@ public class PathogenicityDataTest {
 
     @Test
     public void testHasPredictedScore_returnsFalseWhenNullsUsedInConstructor() {
-        PathogenicityData instance = PathogenicityData.of(null, null);
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), Collections.emptySet());
+        assertThat(instance.hasClinVarData(), is(false));
         assertThat(instance.hasPredictedScore(), is(false));
     }
-    
+
     @Test
     public void testGetPredictedPathogenicityScores_isEmptyWhenNullsUsedInConstructor() {
-        PathogenicityData instance = PathogenicityData.of(null, null);
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), Collections.emptySet());
+        assertThat(instance.getClinVarData().isEmpty(), is(true));
         assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
     }
-    
+
     @Test
     public void testPathogenicityData_RemovesNullsUsedInConstructor() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL, null);
@@ -217,6 +220,24 @@ public class PathogenicityDataTest {
     @Test
     public void testHasNoPredictedScore() {
         assertThat(EMPTY_DATA.hasPredictedScore(), is(false));
+    }
+
+    @Test
+    public void testHasNoClinVarData() {
+        assertThat(EMPTY_DATA.hasClinVarData(), is(false));
+    }
+
+    @Test
+    public void testEmptyClinVarData() {
+        assertThat(EMPTY_DATA.getClinVarData(), equalTo(ClinVarData.empty()));
+    }
+
+    @Test
+    public void testClinVarData() {
+        ClinVarData clinVarData = ClinVarData.builder().alleleId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        PathogenicityData instance = PathogenicityData.of(clinVarData, POLYPHEN_PASS);
+        assertThat(instance.hasClinVarData(), is(true));
+        assertThat(instance.getClinVarData(), equalTo(clinVarData));
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,12 +66,6 @@ public class AlleleTest {
     }
 
     @Test
-    public void testGenerateKey() {
-        Allele instance = new Allele(1, 123456, "A", "C");
-        assertThat(instance.generateKey(), equalTo("1-123456-A-C"));
-    }
-
-    @Test
     public void testRsId() {
         Allele instance = new Allele(1, 123456, "A", "C");
         instance.setRsId(".");
@@ -78,32 +73,13 @@ public class AlleleTest {
     }
 
     @Test
-    public void testGenerateInfoFieldNoRsId() {
+    public void testAddClinVar() {
         Allele instance = new Allele(1, 123456, "A", "C");
-        assertThat(instance.generateInfoField(), equalTo(""));
-    }
-
-    @Test
-    public void testGenerateInfoFieldRsIdEmpty() {
-        Allele instance = new Allele(1, 123456, "A", "C");
-        instance.setRsId("");
-        assertThat(instance.generateInfoField(), equalTo(""));
-    }
-
-    @Test
-    public void testGenerateInfoFieldWithRsId() {
-        Allele instance = new Allele(1, 123456, "A", "C");
-        instance.setRsId("rs23456");
-        assertThat(instance.generateInfoField(), equalTo("RS=rs23456"));
-    }
-
-    @Test
-    public void testGenerateInfoFieldWithRsIdKgEsp() {
-        Allele instance = new Allele(1, 123456, "A", "C");
-        instance.setRsId("rs23456");
-        instance.addValue(AlleleProperty.ESP_EA, 0.03f);
-        instance.addValue(AlleleProperty.KG, 0.12f);
-        assertThat(instance.generateInfoField(), equalTo("RS=rs23456;KG=0.12;ESP_EA=0.03"));
+        assertThat(instance.hasClinVarData(), is(false));
+        ClinVarData clinVarData = ClinVarData.builder().alleleId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        instance.setClinVarData(clinVarData);
+        assertThat(instance.hasClinVarData(), is(true));
+        assertThat(instance.getClinVarData(), equalTo(clinVarData));
     }
 
     @Test

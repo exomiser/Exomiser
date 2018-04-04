@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -38,10 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Default implementation of the VariantDataService. This is a
@@ -70,22 +70,28 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        List<Frequency> allFrequencies = new ArrayList<>();
         FrequencyData allFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
-        allFrequencies.addAll(allFrequencyData.getKnownFrequencies());
+        // getKnownFrequencies returns a mutable view, so we can use it directly
+        List<Frequency> allFrequencies = allFrequencyData.getKnownFrequencies();
 
         if (frequencySources.contains(FrequencySource.LOCAL)) {
             FrequencyData localFrequencyData = localFrequencyDao.getFrequencyData(variant);
-            allFrequencies.addAll(localFrequencyData.getKnownFrequencies());
+            if (localFrequencyData.hasKnownFrequency()) {
+                allFrequencies.add(localFrequencyData.getFrequencyForSource(FrequencySource.LOCAL));
+            }
         }
 
         return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencies, frequencySources);
     }
 
     protected static FrequencyData frequencyDataFromSpecifiedSources(RsId rsid, List<Frequency> allFrequencies, Set<FrequencySource> frequencySources) {
-        Set<Frequency> wanted = allFrequencies.stream()
-                .filter(frequency -> frequencySources.contains(frequency.getSource()))
-                .collect(toSet());
+        // Using a loop rather than stream here as the loop is quicker and this is a performance-critical class
+        Set<Frequency> wanted = new HashSet<>();
+        for (Frequency frequency : allFrequencies) {
+            if (frequencySources.contains(frequency.getSource())) {
+                wanted.add(frequency);
+            }
+        }
         if (rsid.isEmpty() && wanted.isEmpty()) {
             return FrequencyData.empty();
         }
@@ -99,11 +105,12 @@ public class VariantDataServiceImpl implements VariantDataService {
             return PathogenicityData.empty();
         }
 
+        ClinVarData clinVarData = ClinVarData.empty();
         List<PathogenicityScore> allPathScores = new ArrayList<>();
-        final VariantEffect variantEffect = variant.getVariantEffect();
         //Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+        if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
+            clinVarData = missenseScores.getClinVarData();
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
         }
         else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
@@ -118,17 +125,21 @@ public class VariantDataServiceImpl implements VariantDataService {
             allPathScores.addAll(caddScore.getPredictedPathogenicityScores());
         }
 
-        return pathDataFromSpecifiedDataSources(allPathScores, pathogenicitySources);
+        return pathDataFromSpecifiedDataSources(clinVarData, allPathScores, pathogenicitySources);
     }
 
-    protected static PathogenicityData pathDataFromSpecifiedDataSources(List<PathogenicityScore> allPathScores, Set<PathogenicitySource> pathogenicitySources) {
-        Set<PathogenicityScore> wanted = allPathScores.stream()
-                .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
-                .collect(toSet());
-        if (wanted.isEmpty()) {
+    protected static PathogenicityData pathDataFromSpecifiedDataSources(ClinVarData clinVarData, List<PathogenicityScore> allPathScores, Set<PathogenicitySource> pathogenicitySources) {
+        // Using a loop rather than stream here as the loop is quicker and this is a performance-critical class
+        Set<PathogenicityScore> wanted = new HashSet<>();
+        for (PathogenicityScore pathogenicity : allPathScores) {
+            if (pathogenicitySources.contains(pathogenicity.getSource())) {
+                wanted.add(pathogenicity);
+            }
+        }
+        if (wanted.isEmpty() && clinVarData.isEmpty()) {
             return PathogenicityData.empty();
         }
-        return PathogenicityData.of(wanted);
+        return PathogenicityData.of(clinVarData, wanted);
     }
 
     public static Builder builder() {

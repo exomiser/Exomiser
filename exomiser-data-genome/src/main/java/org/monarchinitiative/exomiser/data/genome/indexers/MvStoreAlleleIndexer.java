@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,12 +23,12 @@ package org.monarchinitiative.exomiser.data.genome.indexers;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -59,6 +59,25 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
         }
     }
 
+    @Override
+    public long count() {
+        return map.size();
+    }
+
+    @Override
+    public void close() {
+        mvStore.close();
+    }
+
+    private AlleleKey toAlleleKey(Allele allele) {
+        return AlleleKey.newBuilder()
+                .setChr(allele.getChr())
+                .setPosition(allele.getPos())
+                .setRef(allele.getRef())
+                .setAlt(allele.getAlt())
+                .build();
+    }
+
     private AlleleProperties getOriginalProperties(AlleleKey key) {
         return map.get(key);
     }
@@ -75,38 +94,72 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
     }
 
     private AlleleProperties toAlleleProperties(Allele allele) {
-        Map<String, Float> properties = convertToStringKeyMap(allele.getValues());
-        return AlleleProperties.newBuilder()
-                .setRsId(allele.getRsId())
-                .putAllProperties(properties)
-                .build();
+        AlleleProperties.Builder builder = AlleleProperties.newBuilder();
+        builder.setRsId(allele.getRsId());
+        addAllelePropertyValues(builder, allele.getValues());
+        addClinVarData(builder, allele);
+        return builder.build();
     }
 
-    private Map<String, Float> convertToStringKeyMap(Map<AlleleProperty, Float> values) {
-        Map<String, Float> properties = new HashMap<>();
+    private void addAllelePropertyValues(AlleleProperties.Builder builder, Map<AlleleProperty, Float> values) {
         for (Map.Entry<AlleleProperty, Float> entry : values.entrySet()) {
-            properties.put(entry.getKey().toString(), entry.getValue());
+            builder.putProperties(entry.getKey().toString(), entry.getValue());
         }
-        return properties;
     }
 
-    private AlleleKey toAlleleKey(Allele allele) {
-        return AlleleKey.newBuilder()
-                .setChr(allele.getChr())
-                .setPosition(allele.getPos())
-                .setRef(allele.getRef())
-                .setAlt(allele.getAlt())
-                .build();
+    private void addClinVarData(AlleleProperties.Builder builder, Allele allele) {
+        if (allele.hasClinVarData()) {
+            AlleleProperties.ClinVar clinVar = toProtoClinVar(allele.getClinVarData());
+            builder.setClinVar(clinVar);
+        }
+    }
+    private AlleleProperties.ClinVar toProtoClinVar(ClinVarData clinVarData) {
+        AlleleProperties.ClinVar.Builder builder = AlleleProperties.ClinVar.newBuilder();
+        builder.setAlleleId(clinVarData.getAlleleId());
+        builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
+        for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
+            builder.addSecondaryInterpretations(toProtoClinSig(clinSig));
+        }
+        builder.setReviewStatus(clinVarData.getReviewStatus());
+        for (Map.Entry<String, ClinVarData.ClinSig> entry : clinVarData.getIncludedAlleles().entrySet()) {
+            builder.putIncludedAlleles(entry.getKey(), toProtoClinSig(entry.getValue()));
+        }
+        return builder.build();
     }
 
-    @Override
-    public long count() {
-        return map.size();
+    private AlleleProperties.ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinSig) {
+        switch (clinSig){
+            case BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.LIKELY_BENIGN;
+            case UNCERTAIN_SIGNIFICANCE:
+                return AlleleProperties.ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case LIKELY_PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
+                return AlleleProperties.ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case AFFECTS:
+                return AlleleProperties.ClinVar.ClinSig.AFFECTS;
+            case ASSOCIATION:
+                return AlleleProperties.ClinVar.ClinSig.ASSOCIATION;
+            case DRUG_RESPONSE:
+                return AlleleProperties.ClinVar.ClinSig.DRUG_RESPONSE;
+            case NOT_PROVIDED:
+                return AlleleProperties.ClinVar.ClinSig.NOT_PROVIDED;
+            case OTHER:
+                return AlleleProperties.ClinVar.ClinSig.OTHER;
+            case PROTECTIVE:
+                return AlleleProperties.ClinVar.ClinSig.PROTECTIVE;
+            case RISK_FACTOR:
+                return AlleleProperties.ClinVar.ClinSig.RISK_FACTOR;
+        }
+        throw new IllegalArgumentException(clinSig + " not a recognised value");
     }
-
-    @Override
-    public void close() {
-        mvStore.close();
-    }
-
 }

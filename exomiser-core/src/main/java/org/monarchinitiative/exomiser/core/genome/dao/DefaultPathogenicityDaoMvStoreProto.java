@@ -24,17 +24,14 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -70,36 +67,8 @@ public class DefaultPathogenicityDaoMvStoreProto implements PathogenicityDao {
         if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();
         }
-        return getPathogenicityData(key);
-    }
-
-    private PathogenicityData getPathogenicityData(AlleleKey key) {
-        AlleleProperties info = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
-        logger.debug("{} {}", key, info);
-        if (info.equals(AlleleProperties.getDefaultInstance())) {
-            return PathogenicityData.empty();
-        }
-        return parsePathogenicityData(info.getPropertiesMap());
-    }
-
-    private PathogenicityData parsePathogenicityData(Map<String, Float> values) {
-
-        List<PathogenicityScore> pathogenicityScores = new ArrayList<>();
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if (key.startsWith("SIFT")) {
-                float value = field.getValue();
-                pathogenicityScores.add(SiftScore.valueOf(value));
-            }
-            if (key.startsWith("POLYPHEN")) {
-                float value = field.getValue();
-                pathogenicityScores.add(PolyPhenScore.valueOf(value));
-            }
-            if (key.startsWith("MUT_TASTER")) {
-                float value = field.getValue();
-                pathogenicityScores.add(MutationTasterScore.valueOf(value));
-            }
-        }
-        return PathogenicityData.of(pathogenicityScores);
+        AlleleProperties alleleProperties = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
+        logger.debug("{} {}", key, alleleProperties);
+        return AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
     }
 }

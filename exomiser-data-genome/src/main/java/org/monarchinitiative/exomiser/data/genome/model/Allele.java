@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,11 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.StringJoiner;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -36,6 +37,7 @@ public class Allele implements Comparable<Allele> {
     private final String alt;
 
     private String rsId = "";
+    private ClinVarData clinVarData = null;
     private Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
 
     public Allele(int chr, int pos, String ref, String alt) {
@@ -69,6 +71,18 @@ public class Allele implements Comparable<Allele> {
         this.rsId = rsId;
     }
 
+    public boolean hasClinVarData() {
+        return clinVarData != null;
+    }
+
+    public ClinVarData getClinVarData() {
+        return this.clinVarData;
+    }
+
+    public void setClinVarData(ClinVarData clinVarData) {
+        this.clinVarData = clinVarData;
+    }
+
     public Map<AlleleProperty, Float> getValues() {
         return values;
     }
@@ -79,26 +93,6 @@ public class Allele implements Comparable<Allele> {
 
     public Float getValue(AlleleProperty key) {
         return values.get(key);
-    }
-
-    public String generateKey() {
-        StringJoiner stringJoiner = new StringJoiner("-");
-        stringJoiner.add(String.valueOf(chr));
-        stringJoiner.add(String.valueOf(pos));
-        stringJoiner.add(ref);
-        stringJoiner.add(alt);
-        return stringJoiner.toString();
-    }
-
-    public String generateInfoField() {
-        StringJoiner stringJoiner = new StringJoiner(";");
-        if (!rsId.isEmpty() && !rsId.equals(".")) {
-            stringJoiner.add("RS=" + rsId);
-        }
-        for (Map.Entry<AlleleProperty, Float> value : values.entrySet()) {
-            stringJoiner.add(value.toString());
-        }
-        return stringJoiner.toString();
     }
 
     @Override
@@ -139,8 +133,8 @@ public class Allele implements Comparable<Allele> {
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", rsId='" + rsId + '\'' +
+                ", clinVarData='" + clinVarData + '\'' +
                 ", values=" + values +
                 '}';
     }
-
 }

@@ -250,10 +250,35 @@
                                        th:text="${rsId}">rs141235720
                                     </a>
                                     <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
-                                        (variation
-                                        viewer)
+                                        (variation viewer)
                                     </a>
                                     <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                                </th:block>
+                                <th:block th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}"
+                                          th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                          th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                    <a th:case="'BENIGN'" class="label label-success"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                       th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</a>
+                                    <a th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                       th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</a>
+                                    <a th:case="'LIKELY_BENIGN'" class="label label-info"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                       th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</a>
+                                    <a th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                    th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</a>
+                                    <a th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                    th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</a>
+                                    <a th:case="'PATHOGENIC'" class="label label-danger"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                    th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</a>
+                                    <a th:case="*" class="label label-default"
+                                       th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                    th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</a>
+                                    <span th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">(criteria_provided,_single_submitter)</span>
                                 </th:block>
                             </div>
                             <div class="col-sm-6">
@@ -327,10 +352,35 @@
                            th:text="${rsId}">rs141235720
                         </a>
                         <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
-                            (variation
-                            viewer)
+                            (variation viewer)
                         </a>
                         <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                    </th:block>
+                    <th:block th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}"
+                              th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                              th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                        <a th:case="'BENIGN'" class="label label-success"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</a>
+                        <a th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</a>
+                        <a th:case="'LIKELY_BENIGN'" class="label label-info"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</a>
+                        <a th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</a>
+                        <a th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</a>
+                        <a th:case="'PATHOGENIC'" class="label label-danger"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</a>
+                        <a th:case="*" class="label label-default"
+                           th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</a>
+                        <span th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">(criteria_provided,_single_submitter)</span>
                     </th:block>
                 </div>
                 <div class="col-sm-6">

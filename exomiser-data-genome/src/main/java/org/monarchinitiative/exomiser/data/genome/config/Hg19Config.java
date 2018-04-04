@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -51,6 +51,7 @@ public class Hg19Config {
                 gnomadExomeAlleleResource(),
                 topmedAlleleResource(),
                 dbSnpAlleleResource(),
+                clinVarAlleleResource(),
                 uk10kAlleleResource(),
                 exacAlleleResource(),
                 espAlleleResource(),
@@ -62,6 +63,12 @@ public class Hg19Config {
         String namespacePrefix = "hg19.dbsnp";
         Path resourcePath = getAlleleResourcePath(namespacePrefix);
         return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new DbSnpAlleleParser());
+    }
+
+    public AlleleResource clinVarAlleleResource() {
+        String namespacePrefix = "hg19.clinvar";
+        Path resourcePath = getAlleleResourcePath(namespacePrefix);
+        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new ClinVarAlleleParser());
     }
 
     public AlleleResource espAlleleResource() {

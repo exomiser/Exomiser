@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,28 +93,10 @@ public class FrequencyFilter implements VariantFilter {
         //frequency data is derived from the database - consequently make sure the data has been fetched otherwise the
         //variant will always pass the filter.
 
-        if (passesFilter(frequencyData)) {
-            return PASS;
+        if (frequencyData.hasFrequencyOverPercentageValue(maxFreq)) {
+            return FAIL;
         }
-        return FAIL;
-    }
-
-    /**
-     * This method returns false if the variant is more common than the
-     * threshold in any one of the dbSNP data, or the ESP data for European
-     * Americans, African Americans, or All comers.
-     *
-     * @param frequencyData
-     * @return true if the variant being analyzed is rarer than the threshold
-     */
-    private boolean passesFilter(FrequencyData frequencyData) {
-
-        for (Frequency frequency : frequencyData.getKnownFrequencies()) {
-            if (frequency.isOverThreshold(maxFreq)) {
-                return false;
-            }
-        }
-        return true;
+        return PASS;
     }
 
     @Override

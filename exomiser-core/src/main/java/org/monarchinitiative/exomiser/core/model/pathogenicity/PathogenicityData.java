@@ -23,39 +23,84 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 import java.util.*;
 
 /**
- * Container for PathogenicityScore data about a variant.
+ * Container for Pathogenicity data about a variant.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @since 3.0.0
  */
 public class PathogenicityData {
 
-    private static final PathogenicityData EMPTY_DATA = new PathogenicityData(Collections.emptyList());
+    private static final PathogenicityData EMPTY_DATA = new PathogenicityData(ClinVarData.empty(), Collections.emptyList());
 
+    private final ClinVarData clinVarData;
     private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
     public static PathogenicityData of(PathogenicityScore pathScore) {
-        return new PathogenicityData(Collections.singletonList(pathScore));
+        return new PathogenicityData(ClinVarData.empty(), Collections.singletonList(pathScore));
     }
 
     public static PathogenicityData of(PathogenicityScore... pathScore) {
-        return new PathogenicityData(Arrays.asList(pathScore));
+        return new PathogenicityData(ClinVarData.empty(), Arrays.asList(pathScore));
     }
 
     public static PathogenicityData of(Collection<PathogenicityScore> pathScores) {
-        return new PathogenicityData(pathScores);
+        return new PathogenicityData(ClinVarData.empty(), pathScores);
+    }
+
+    /**
+     * @since 10.1.0
+     */
+    public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore pathScore) {
+        return new PathogenicityData(clinVarData, Collections.singletonList(pathScore));
+    }
+
+    /**
+     * @since 10.1.0
+     */public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore... pathScore) {
+        return new PathogenicityData(clinVarData, Arrays.asList(pathScore));
+    }
+
+    /**
+     * @since 10.1.0
+     */public static PathogenicityData of(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+        return new PathogenicityData(clinVarData, pathScores);
     }
 
     public static PathogenicityData empty() {
         return EMPTY_DATA;
     }
 
-    private PathogenicityData(Collection<PathogenicityScore> pathScores) {
+    private PathogenicityData(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+        Objects.requireNonNull(clinVarData);
+        Objects.requireNonNull(pathScores);
+        this.clinVarData = clinVarData;
         pathogenicityScores = new EnumMap<>(PathogenicitySource.class);
         for (PathogenicityScore pathScore : pathScores) {
             if (pathScore != null) {
                 pathogenicityScores.put(pathScore.getSource(), pathScore);
             }
         }
+    }
+
+    /**
+     * Returns a {@link ClinVarData} object. It is highly likely that this field will contain a {@code ClinVarData.empty()}
+     * object. For this reason the companion method {@code hasClinVarData()} can be used to check whether there is any real
+     * data. Alternatively {@code clinVarData.isEmpty()} can be called on the object returned from this method.
+     *
+     * @return a {@code ClinVarData} object
+     * @since 10.1.0
+     */
+    public ClinVarData getClinVarData() {
+        return clinVarData;
+    }
+
+    /**
+     * Method used to check whether there is any real ClinVar data associated with this object.
+     *
+     * @return true if there is any associated ClinVar data, otherwise returns false.
+     * @since 10.1.0
+     */public boolean hasClinVarData() {
+        return !clinVarData.isEmpty();
     }
 
     public PolyPhenScore getPolyPhenScore() {
@@ -77,13 +122,13 @@ public class PathogenicityData {
     public RemmScore getRemmScore() {
         return (RemmScore) getPredictedScore(PathogenicitySource.REMM);
     }
-    
+
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
         return new ArrayList<>(pathogenicityScores.values());
     }
 
     public boolean isEmpty() {
-        return pathogenicityScores.isEmpty();
+        return this.equals(EMPTY_DATA);
     }
 
     public boolean hasPredictedScore() {
@@ -128,29 +173,25 @@ public class PathogenicityData {
         return mostPathogenicPredictedScore.getScore();
     }
 
-
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 19 * hash + Objects.hashCode(this.pathogenicityScores);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PathogenicityData that = (PathogenicityData) o;
+        return Objects.equals(clinVarData, that.clinVarData) &&
+                Objects.equals(pathogenicityScores, that.pathogenicityScores);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PathogenicityData other = (PathogenicityData) obj;
-        return Objects.equals(this.pathogenicityScores, other.pathogenicityScores);
+    public int hashCode() {
+        return Objects.hash(clinVarData, pathogenicityScores);
     }
 
     @Override
     public String toString() {
-        return "PathogenicityData" + pathogenicityScores.values();
+        return "PathogenicityData{" +
+                "clinVarData=" + clinVarData +
+                ", pathogenicityScores=" + pathogenicityScores +
+                '}';
     }
-
 }
