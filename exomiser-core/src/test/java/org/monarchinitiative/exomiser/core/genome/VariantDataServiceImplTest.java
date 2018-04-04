@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -68,7 +68,11 @@ public class VariantDataServiceImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
+    private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().alleleId("12345")
+            .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
+            .build();
     private static final PathogenicityData PATH_DATA = PathogenicityData.of(
+            PATH_CLINVAR_DATA,
             PolyPhenScore.valueOf(1),
             MutationTasterScore.valueOf(1),
             SiftScore.valueOf(0)
@@ -131,14 +135,14 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
-        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f))));
     }
 
     @Test
     public void serviceReturnsCaddDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
-        assertThat(result, equalTo(CADD_DATA));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getCaddScore())));
     }
 
     @Test
@@ -146,7 +150,7 @@ public class VariantDataServiceImplTest {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
 
-        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
     }
     
     @Test
