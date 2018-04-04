@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -27,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
@@ -40,10 +43,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -85,6 +88,71 @@ public class MvStoreAlleleIndexerTest {
                 .setRsId(rsId)
                 .putAllProperties(properties)
                 .build();
+    }
+
+    private AlleleProperties alleleProperties(String rsId, ClinVarData clinVarData, Map<String, Float> properties) {
+        //TODO create an AlleleProto.ClinVar clinVar = AlleleProtoAdaptor.toProto(clinVarData);
+        List<AlleleProperties.ClinVar.ClinSig> secondarySigs = clinVarData.getSecondaryInterpretations()
+                .stream()
+                .map(this::toProtoClinSig)
+                .collect(toList());
+
+        Map<String, AlleleProperties.ClinVar.ClinSig> included = clinVarData.getIncludedAlleles()
+                .entrySet()
+                .stream()
+                .collect(toMap(Map.Entry::getKey, o -> toProtoClinSig(o.getValue())));
+
+        AlleleProperties.ClinVar clinVar = AlleleProperties.ClinVar.newBuilder()
+                .setAlleleId(clinVarData.getAlleleId())
+                .setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()))
+                .addAllSecondaryInterpretations(secondarySigs)
+                .putAllIncludedAlleles(included)
+                .setReviewStatus(clinVarData.getReviewStatus())
+                .build();
+
+        return AlleleProperties.newBuilder()
+                .setRsId(rsId)
+                .setClinVar(clinVar)
+                .putAllProperties(properties)
+                .build();
+    }
+
+    private AlleleProto.AlleleProperties.ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinVarDataClinSig) {
+
+        switch (clinVarDataClinSig) {
+            case NOT_PROVIDED:
+                return AlleleProperties.ClinVar.ClinSig.NOT_PROVIDED;
+            case UNCERTAIN_SIGNIFICANCE:
+                return AlleleProperties.ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case OTHER:
+                return AlleleProperties.ClinVar.ClinSig.OTHER;
+            case BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.BENIGN;
+            case AFFECTS:
+                return AlleleProperties.ClinVar.ClinSig.AFFECTS;
+            case PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PROTECTIVE:
+                return AlleleProperties.ClinVar.ClinSig.PROTECTIVE;
+            case ASSOCIATION:
+                return AlleleProperties.ClinVar.ClinSig.ASSOCIATION;
+            case RISK_FACTOR:
+                return AlleleProperties.ClinVar.ClinSig.RISK_FACTOR;
+            case DRUG_RESPONSE:
+                return AlleleProperties.ClinVar.ClinSig.DRUG_RESPONSE;
+            case LIKELY_BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.LIKELY_BENIGN;
+            case LIKELY_PATHOGENIC:
+                return AlleleProperties.ClinVar.ClinSig.LIKELY_PATHOGENIC;
+            case BENIGN_OR_LIKELY_BENIGN:
+                return AlleleProperties.ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
+                return AlleleProperties.ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            default:
+                return AlleleProperties.ClinVar.ClinSig.NOT_PROVIDED;
+        }
     }
 
     @Test
@@ -307,6 +375,14 @@ public class MvStoreAlleleIndexerTest {
         Allele updateAllele = new Allele(1, 12618254, "C", "CAAGAAG");
         updateAllele.setRsId("rs534165942");
         updateAllele.addValue(AlleleProperty.EXAC_NFE, 2.0f);
+        ClinVarData alleleClinVarData = ClinVarData.builder()
+                .alleleId("12345")
+                .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
+                .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))
+                .reviewStatus("conflicting interpretations")
+                .build();
+        updateAllele.setClinVarData(alleleClinVarData);
 
         Allele other = new Allele(23, 36103454, "A", "G");
         other.addValue(AlleleProperty.EXAC_AFR, 0.01f);
@@ -328,7 +404,7 @@ public class MvStoreAlleleIndexerTest {
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 1.0f);
         properties.put("EXAC_NFE", 2.0f);
-        AlleleProperties alleleProperties = alleleProperties("rs534165942", properties);
+        AlleleProperties alleleProperties = alleleProperties("rs534165942", alleleClinVarData, properties);
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
