@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -52,7 +52,7 @@ public class FrequencyDataProvider extends AbstractFilterDataProvider {
     public void provideVariantData(VariantEvaluation variantEvaluation) {
         //check there are no frequencies first - this may be genuine, or possibly the variant hasn't yet had the data added
         //this will cut down on trips to the database if multiple filters require frequency data.
-        if (variantEvaluation.getFrequencyData().getKnownFrequencies().isEmpty()) {
+        if (!variantEvaluation.getFrequencyData().hasKnownFrequency()) {
             FrequencyData frequencyData = variantDataService.getVariantFrequencyData(variantEvaluation, frequencySources);
             variantEvaluation.setFrequencyData(frequencyData);
         }
