@@ -43,7 +43,7 @@ public class ClinVarDataTest {
     public void testEmptyBuilder() {
         ClinVarData instance = ClinVarData.builder().build();
 
-        assertThat(instance.getAlleleId(), equalTo(null));
+        assertThat(instance.getAlleleId(), equalTo(""));
         assertThat(instance.getPrimaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
         assertThat(instance.getSecondaryInterpretations(), equalTo(Collections.emptySet()));
         assertThat(instance.getReviewStatus(), equalTo(""));
