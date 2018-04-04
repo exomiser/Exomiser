@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -210,9 +210,7 @@ public class FrequencyDataTest {
         expResult.add(ESP_EA_PASS);
         expResult.add(ESP_ALL_PASS);
 
-        List<Frequency> result = instance.getKnownFrequencies();
-
-        assertThat(result, equalTo(expResult));
+        assertThat(instance.getKnownFrequencies(), equalTo(expResult));
     }
 
     @Test
@@ -241,6 +239,16 @@ public class FrequencyDataTest {
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
         FrequencyData instance = FrequencyData.of(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
+    }
+
+    @Test
+    public void testHasFrequencyOverPercentageValue() {
+        float maxFreq = 0.05f;
+        Frequency upper = Frequency.valueOf(maxFreq, UNKNOWN);
+        Frequency lower = Frequency.valueOf(0.0001f, UK10K);
+        FrequencyData instance = FrequencyData.of(upper, lower);
+        assertThat(instance.hasFrequencyOverPercentageValue(maxFreq - 0.01f), is(true));
+        assertThat(instance.hasFrequencyOverPercentageValue(maxFreq + 0.01f), is(false));
     }
 
     @Test
