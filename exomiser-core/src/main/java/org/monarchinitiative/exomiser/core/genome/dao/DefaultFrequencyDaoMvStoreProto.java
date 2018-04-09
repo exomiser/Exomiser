@@ -41,8 +41,6 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
 
     private final MVMap<AlleleKey, AlleleProperties> map;
 
-//    private static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP = FrequencySource.FREQUENCY_SOURCE_MAP;
-
     public DefaultFrequencyDaoMvStoreProto(MVStore mvStore) {
         String frequencyMapName = "alleles";
         if (!mvStore.hasMap(frequencyMapName)) {
