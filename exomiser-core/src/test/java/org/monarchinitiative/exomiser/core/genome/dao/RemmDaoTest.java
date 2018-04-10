@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,8 +37,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
-
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -81,12 +79,6 @@ public class RemmDaoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
         assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.empty()));
-    }
-    
-    @Test
-    public void testGetPathogenicityData_unableToReadFromSource() {
-        Mockito.when(remmTabixReader.query("1:1-1")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test

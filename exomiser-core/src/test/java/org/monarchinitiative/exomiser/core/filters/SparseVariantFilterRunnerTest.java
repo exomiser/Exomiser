@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -104,8 +104,6 @@ public class SparseVariantFilterRunnerTest {
         FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
 
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
-        Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
-        Mockito.when(frequencyFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(passesTargetQualityFilter)).thenReturn(failFrequencyResult);
     }
 
@@ -116,9 +114,6 @@ public class SparseVariantFilterRunnerTest {
         FilterResult fail = new FailFilterResult(FilterType.PATHOGENICITY_FILTER);
 
         Mockito.when(pathogenicityFilter.runFilter(passesAllFilters)).thenReturn(pass);
-        Mockito.when(pathogenicityFilter.runFilter(failsAllFilters)).thenReturn(fail);
-        Mockito.when(pathogenicityFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(fail);
-        Mockito.when(pathogenicityFilter.runFilter(passesTargetQualityFilter)).thenReturn(fail);
     }
 
     private void setUpQualityMocks() {

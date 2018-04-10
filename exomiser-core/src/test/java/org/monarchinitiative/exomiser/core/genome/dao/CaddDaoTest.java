@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,8 +35,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,12 +75,6 @@ public class CaddDaoTest {
     }
 
     @Test
-    public void testGetPathogenicityData_unableToReadFromSnvSource() {
-        Mockito.when(snvTabixReader.query("1:2-2")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 2, "A", "T")), equalTo(PathogenicityData.empty()));
-    }
-
-    @Test
     public void testGetPathogenicityData_snvNoData() {
         Mockito.when(snvTabixReader.query("1:2-2")).thenReturn(MockTabixIterator.empty());
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
@@ -94,12 +86,6 @@ public class CaddDaoTest {
         Mockito.when(indelTabixReader.query("1:2-2")).thenReturn(MockTabixIterator.empty());
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "C", "CA"));
         assertThat(result, equalTo(PathogenicityData.empty()));
-    }
-
-    @Test
-    public void testGetPathogenicityData_unableToReadFromInDelSource() {
-        Mockito.when(indelTabixReader.query("2:14985-14985")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(2, 14985, "A", "AT")), equalTo(PathogenicityData.empty()));
     }
 
     @Test
