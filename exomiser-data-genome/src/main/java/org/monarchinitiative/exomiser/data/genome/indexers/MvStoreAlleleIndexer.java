@@ -43,7 +43,7 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
 
     public MvStoreAlleleIndexer(MVStore mvStore) {
         this.mvStore = mvStore;
-        this.map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        this.map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
     @Override
@@ -69,6 +69,12 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
         mvStore.close();
     }
 
+    private AlleleProperties getOriginalProperties(AlleleKey key) {
+        return map.get(key);
+    }
+
+    // TODO: move this to AllelePropertiesConverter for converting Allele <-> AlleleKey + AlleleProperties.
+    // Then can be used for testing Xodus vs MvStore performance
     private AlleleKey toAlleleKey(Allele allele) {
         return AlleleKey.newBuilder()
                 .setChr(allele.getChr())
@@ -76,10 +82,6 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
                 .setRef(allele.getRef())
                 .setAlt(allele.getAlt())
                 .build();
-    }
-
-    private AlleleProperties getOriginalProperties(AlleleKey key) {
-        return map.get(key);
     }
 
     private AlleleProperties mergeProperties(AlleleProperties originalProperties, AlleleProperties properties) {
@@ -113,6 +115,7 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
             builder.setClinVar(clinVar);
         }
     }
+
     private AlleleProperties.ClinVar toProtoClinVar(ClinVarData clinVarData) {
         AlleleProperties.ClinVar.Builder builder = AlleleProperties.ClinVar.newBuilder();
         builder.setAlleleId(clinVarData.getAlleleId());

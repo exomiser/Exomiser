@@ -27,19 +27,24 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
 /**
  * The results of an Exomiser Analysis run.
  * 
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 8.0.0
  */
 public class AnalysisResults {
 
@@ -61,6 +66,11 @@ public class AnalysisResults {
         this.variantEvaluations = builder.variantEvaluations;
     }
 
+    /**
+     * The sample name of the proband as found in the input VCF file.
+     *
+     * @return the proband sample name.
+     */
     public String getProbandSampleName() {
         return probandSampleName;
     }
@@ -72,12 +82,110 @@ public class AnalysisResults {
         return sampleNames;
     }
 
+    /**
+     * A list of {@link Gene} objects resulting from an {@link Analysis}.
+     *
+     * IMPORTANT: A {@link Gene} could have several {@link GeneScore}, with different overall ranks depending on the
+     * {@link ModeOfInheritance} and the scoring from the OmimPrioritiser with the inheritance mode compatibility.
+     * For this reason directly iterating through the genes and their scores in order will result in incorrect overall
+     * rankings. To get the correct variant rankings use the {@code getGeneScores()} or {@code getGeneScoresForMode()}
+     * methods.
+     *
+     * @return a list of {@link Gene} objects resulting from an {@link Analysis}.
+     */
     public List<Gene> getGenes() {
         return genes;
     }
 
+    /**
+     * A list of {@link VariantEvaluation} objects resulting from an {@link Analysis}.
+     *
+     * IMPORTANT: A {@link VariantEvaluation} could be compatible with several {@link ModeOfInheritance} and may or may
+     * not contribute to the overall {@link GeneScore}. For this reason directly iterating through the {@link VariantEvaluation}
+     * and their scores in order will result in incorrect overall rankings. To get the correct contributing variant rankings
+     * use the {@code getContributingVariants()} or {@code getContributingVariantsForMode()} methods.
+     *
+     * @return a list of {@link VariantEvaluation} objects resulting from an {@link Analysis}.
+     */
     public List<VariantEvaluation> getVariantEvaluations() {
         return variantEvaluations;
+    }
+
+    /**
+     * Returns a list of {@link GeneScore} objects computed from the gene results. These {@link GeneScore} will be ranked
+     * by the combined score and will contain the results for all {@link ModeOfInheritance}. The {@link GeneScore} objects
+     * will all contain contributing variants.
+     *
+     * If you require a ranked list of {@link GeneScore} and their contributing variants, use this method.
+     *
+     * @return a ranked list of {@link GeneScore} and their contributing variants.
+     * @since 10.1.0
+     */
+    @JsonIgnore
+    public List<GeneScore> getGeneScores() {
+        return sortedGeneScoresWithContributingVariants()
+                .collect(toList());
+    }
+
+    /**
+     * Returns a list of {@link GeneScore} objects computed from the gene results for the given {@link ModeOfInheritance}.
+     * These {@link GeneScore} will be ranked  by the combined score and will only contain the results for the stated
+     * {@link ModeOfInheritance}. The {@link GeneScore} objects will all contain contributing variants.
+     *
+     * If you require a ranked list of {@link GeneScore} and their contributing variants for a specific
+     * {@link ModeOfInheritance}, use this method.
+     *
+     * @return a ranked list of {@link GeneScore} and their contributing variants for the {@link ModeOfInheritance} argument.
+     * @since 10.1.0
+     */
+    @JsonIgnore
+    public List<GeneScore> getGeneScoresForMode(ModeOfInheritance modeOfInheritance) {
+        return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance)
+                .collect(toList());
+    }
+
+    /**
+     *
+     * @return the ranked variants contributing to the gene score under all modes of inheritance
+     * @since 10.1.0
+     */
+    @JsonIgnore
+    public List<VariantEvaluation> getContributingVariants() {
+        return sortedGeneScoresWithContributingVariants()
+                .map(GeneScore::getContributingVariants)
+                .flatMap(Collection::stream)
+                .collect(toList());
+    }
+
+    /**
+     *
+     * @return
+     * @since 10.1.0
+     */
+    @JsonIgnore
+    public List<VariantEvaluation> getContributingVariantsForMode(ModeOfInheritance modeOfInheritance) {
+        return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance)
+                .map(GeneScore::getContributingVariants)
+                .flatMap(Collection::stream)
+                .sorted()
+                .collect(toList());
+    }
+
+    private Stream<GeneScore> sortedGeneScoresWithContributingVariants() {
+        return genes.stream()
+                .map(Gene::getGeneScores)
+                .flatMap(Collection::stream)
+                // A geneScore can have no contributing variants, so want to skip these
+                .filter(GeneScore::hasContributingVariants)
+                .sorted();
+    }
+
+    private Stream<GeneScore> sortedGeneScoresWithContributingVariantsForMode(ModeOfInheritance modeOfInheritance) {
+        return genes.stream()
+                .map(gene -> gene.getGeneScoreForMode(modeOfInheritance))
+                // A geneScore can have no contributing variants, so want to skip these
+                .filter(GeneScore::hasContributingVariants)
+                .sorted();
     }
 
     @JsonIgnore

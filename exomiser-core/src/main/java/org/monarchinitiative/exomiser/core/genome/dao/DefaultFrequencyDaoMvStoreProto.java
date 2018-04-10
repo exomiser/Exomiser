@@ -42,18 +42,7 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
     private final MVMap<AlleleKey, AlleleProperties> map;
 
     public DefaultFrequencyDaoMvStoreProto(MVStore mvStore) {
-        String frequencyMapName = "alleles";
-        if (!mvStore.hasMap(frequencyMapName)) {
-            logger.warn("MVStore does not contain map {}", frequencyMapName);
-        }
-
-        this.map = mvStore.openMap(frequencyMapName, MvStoreUtil.alleleMapBuilder());
-
-        if (map.isEmpty()) {
-            logger.warn("MVStore map {} does not contain any data", frequencyMapName);
-        } else {
-            logger.debug("MVStore map {} opened with {} entries", frequencyMapName, map.size());
-        }
+        map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
     @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")

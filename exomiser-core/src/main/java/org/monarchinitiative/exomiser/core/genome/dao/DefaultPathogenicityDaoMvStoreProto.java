@@ -43,18 +43,7 @@ public class DefaultPathogenicityDaoMvStoreProto implements PathogenicityDao {
     private final MVMap<AlleleKey, AlleleProperties> map;
 
     public DefaultPathogenicityDaoMvStoreProto(MVStore mvStore) {
-        String pathogenicityMapName = "alleles";
-        if (!mvStore.hasMap(pathogenicityMapName)) {
-            logger.warn("MVStore does not contain map {}", pathogenicityMapName);
-        }
-
-        this.map = mvStore.openMap(pathogenicityMapName, MvStoreUtil.alleleMapBuilder());
-
-        if (map.isEmpty()) {
-            logger.warn("MVStore map {} does not contain any data", pathogenicityMapName);
-        } else {
-            logger.debug("MVStore map {} opened with {} entries", pathogenicityMapName, map.size());
-        }
+        map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
     @Cacheable(value = "pathogenicity", keyGenerator = "variantKeyGenerator")

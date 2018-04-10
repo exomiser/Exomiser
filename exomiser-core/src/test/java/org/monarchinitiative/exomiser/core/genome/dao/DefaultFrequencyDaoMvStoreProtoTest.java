@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,7 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.AlleleKeyDataType;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.AllelePropertiesDataType;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -46,26 +45,10 @@ import static org.junit.Assert.assertThat;
  */
 public class DefaultFrequencyDaoMvStoreProtoTest {
 
-    public static final String FREQ_MAP_NAME = "alleles";
-
-    private DefaultFrequencyDaoMvStoreProto getInstance(String mapName, Map<AlleleKey, AlleleProperties> value) {
-        MVStore mvStore = buildMvStore(mapName, value);
+    private DefaultFrequencyDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
+        MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
         return new DefaultFrequencyDaoMvStoreProto(mvStore);
     }
-
-    private MVStore buildMvStore(String mapName, Map<AlleleKey, AlleleProperties> value) {
-
-        MVStore mvStore = new MVStore.Builder().open();
-
-        MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = new MVMap.Builder<AlleleKey, AlleleProperties>()
-                .keyType(AlleleKeyDataType.INSTANCE)
-                .valueType(AllelePropertiesDataType.INSTANCE);
-
-        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap(mapName, alleleMapBuilder);
-        map.putAll(value);
-        return mvStore;
-    }
-
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
         return VariantAnnotation.builder()
@@ -76,27 +59,17 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                 .build();
     }
 
-
-    private AlleleKey buildAlleleKey(Variant variant) {
-        return AlleleKey.newBuilder()
-                .setChr(variant.getChromosome())
-                .setPosition(variant.getPosition())
-                .setRef(variant.getRef())
-                .setAlt(variant.getAlt())
-                .build();
-    }
-
     @Test
     public void wrongMapName() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        DefaultFrequencyDaoMvStoreProto instance = getInstance("wibble", ImmutableMap.of());
+        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void getFrequencyDataNoData() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        DefaultFrequencyDaoMvStoreProto instance = getInstance(FREQ_MAP_NAME, ImmutableMap.of());
+        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
@@ -108,28 +81,28 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                 .putProperties("KG", 0.04f)
                 .putProperties("ESP_AA", 0.003f)
                 .build();
-        DefaultFrequencyDaoMvStoreProto instance = getInstance(FREQ_MAP_NAME, ImmutableMap.of(key, properties));
+        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void getFrequencyDataJustRsId() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        AlleleKey key = buildAlleleKey(variant);
+        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
-        DefaultFrequencyDaoMvStoreProto instance = getInstance(FREQ_MAP_NAME, ImmutableMap.of(key, properties));
+        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.valueOf("rs54321"))));
     }
 
     @Test
     public void getFrequencyDataWithFrequencies() throws Exception {
         Variant variant = buildVariant(1, 12345, "A", "T");
-        AlleleKey key = buildAlleleKey(variant);
+        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
                 .putProperties("KG", 0.04f)
                 .putProperties("ESP_AA", 0.003f)
                 .build();
-        DefaultFrequencyDaoMvStoreProto instance = getInstance(FREQ_MAP_NAME, ImmutableMap.of(key, properties));
+        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
                 equalTo(FrequencyData.of(RsId.valueOf("rs54321"), Frequency.valueOf(0.04f, FrequencySource.THOUSAND_GENOMES), Frequency
                         .valueOf(0.003f, FrequencySource.ESP_AFRICAN_AMERICAN))));
@@ -143,11 +116,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
 //                .fileName("C:\\Users\\hhx640\\Documents\\exomiser-cli-dev\\data\\1707_hg19\\1707_hg19_variants.mv.db")
                 .open();
 
-        MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = new MVMap.Builder<AlleleKey, AlleleProperties>()
-                .keyType(AlleleKeyDataType.INSTANCE)
-                .valueType(AllelePropertiesDataType.INSTANCE);
-
-        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap("alleles", alleleMapBuilder);
+        MVMap<AlleleKey, AlleleProperties> map = MvStoreUtil.openAlleleMVMap(mvStore);
         System.out.println("Map contains " + map.size() + " entries");
         System.out.println("Map contains " + map.keySet().size() + " keys");
 //processed 12192520 variants total in 341 sec

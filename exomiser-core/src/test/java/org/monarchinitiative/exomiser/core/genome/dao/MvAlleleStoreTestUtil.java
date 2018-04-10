@@ -18,34 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.writers;
+package org.monarchinitiative.exomiser.core.genome.dao;
 
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.ITemplateResolver;
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+
+import java.util.Map;
 
 /**
- * Static utility class to provide a Thymeleaf template engine.
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ThymeleafConfig {
+public class MvAlleleStoreTestUtil {
 
-    private ThymeleafConfig() {
+    private MvAlleleStoreTestUtil() {
     }
 
-    public static TemplateEngine coreTemplateEngine() {
-        TemplateEngine templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
-        return templateEngine;
-    }
+    public static MVStore newMvStoreWithData(Map<AlleleKey, AlleleProperties> value) {
+        MVStore mvStore = new MVStore.Builder().open();
 
-    private static ITemplateResolver templateResolver() {
-        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(true);
-        return templateResolver;
+        MVMap<AlleleKey, AlleleProperties> map = MvStoreUtil.openAlleleMVMap(mvStore);
+        map.putAll(value);
+        return mvStore;
     }
 }
