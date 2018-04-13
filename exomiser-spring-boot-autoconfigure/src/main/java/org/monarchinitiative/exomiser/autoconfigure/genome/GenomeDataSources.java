@@ -229,7 +229,6 @@ public class GenomeDataSources {
             return this;
         }
 
-        // TODO: change this to Path h2DatabasePath?
         public Builder genomeDataSource(DataSource genomeDataSource) {
             Objects.requireNonNull(genomeDataSource);
             this.genomeDataSource = genomeDataSource;
