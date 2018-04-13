@@ -29,6 +29,9 @@ import java.nio.file.Path;
  */
 public class MvStoreDataSourceLoader {
 
+    private MvStoreDataSourceLoader() {
+    }
+
     public static MVStore openMvStore(Path mvStoreAbsolutePath) {
         return new MVStore.Builder()
                 .fileName(mvStoreAbsolutePath.toString())

@@ -32,6 +32,9 @@ import java.nio.file.Path;
  */
 public class JannovarDataSourceLoader {
 
+    private JannovarDataSourceLoader() {
+    }
+
     public static JannovarData loadJannovarData(Path transcriptFilePath){
         try {
             return new JannovarDataSerializer(transcriptFilePath.toString()).load();
