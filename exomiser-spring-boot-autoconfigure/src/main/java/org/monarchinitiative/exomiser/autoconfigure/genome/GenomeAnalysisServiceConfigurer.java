@@ -20,17 +20,12 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
-import de.charite.compbio.jannovar.data.SerializationException;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 import org.monarchinitiative.exomiser.core.genome.*;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
+import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
+import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,23 +46,30 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     private static final Logger logger = LoggerFactory.getLogger(GenomeAnalysisServiceConfigurer.class);
 
     private final GenomeProperties genomeProperties;
-    private final GenomeData genomeData;
 
     protected final DataSource dataSource;
-    private final JannovarData jannovarData;
-    private final MVStore mvStore;
+    protected final JannovarData jannovarData;
+    protected final MVStore mvStore;
+
+    //Optional user-provided TabixDataSources
+    protected final TabixDataSource localFrequencyTabixDataSource;
+    protected final TabixDataSource caddSnvTabixDataSource;
+    protected final TabixDataSource caddIndelTabixDataSource;
+    protected final TabixDataSource remmTabixDataSource;
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
-        logger.debug("Configuring {} assembly (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
-                .getDataVersion(), genomeProperties.getTranscriptSource());
-        this.genomeData = new GenomeData(genomeProperties, exomiserDataDirectory);
+        logger.debug("Loading data sources for {} {} {}", genomeProperties.getDataVersion(), genomeProperties.getAssembly(), genomeProperties.getTranscriptSource());
+        GenomeDataSources genomeDataSources = GenomeDataSources.from(genomeProperties, exomiserDataDirectory);
+        GenomeDataSourceLoader genomeDataSourceLoader = GenomeDataSourceLoader.load(genomeDataSources);
+        this.dataSource = genomeDataSourceLoader.getGenomeDataSource();
+        this.jannovarData = genomeDataSourceLoader.getJannovarData();
+        this.mvStore = genomeDataSourceLoader.getMvStore();
 
-        this.jannovarData = loadJannovarData();
-        this.dataSource = loadGenomeDataSource();
-        this.mvStore = openMvStore();
-
-        logger.debug("{}", genomeProperties.getDatasource());
+        this.localFrequencyTabixDataSource = genomeDataSourceLoader.getLocalFrequencyTabixDataSource();
+        this.caddSnvTabixDataSource = genomeDataSourceLoader.getCaddSnvTabixDataSource();
+        this.caddIndelTabixDataSource = genomeDataSourceLoader.getCaddIndelTabixDataSource();
+        this.remmTabixDataSource = genomeDataSourceLoader.getRemmTabixDataSource();
     }
 
     /**
@@ -75,22 +77,20 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
      * when the store hasn't been properly closed.
      */
     @PreDestroy
-    public void close() {
+    public void closeMvStore() {
         mvStore.close();
     }
 
-    private VariantFactory variantFactory() {
-        return new VariantFactoryImpl(new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData));
+    protected VariantAnnotator buildVariantAnnotator() {
+        return new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData);
     }
 
-    private GenomeDataService genomeDataService() {
-        RegulatoryFeatureDao regulatoryFeatureDao = new RegulatoryFeatureDao(dataSource);
-        TadDao tadDao = new TadDao(dataSource);
-        GeneFactory geneFactory = new GeneFactory(jannovarData);
-        return new GenomeDataServiceImpl(geneFactory, regulatoryFeatureDao, tadDao);
+    protected VariantFactory buildVariantFactory() {
+        return new VariantFactoryImpl(variantAnnotator());
     }
 
-    private VariantDataService variantDataService() {
+    //This method is calling the public interface of the concrete implementation so that the caching works on the DAOs
+    protected VariantDataService buildVariantDataService() {
         return VariantDataServiceImpl.builder()
                 .defaultFrequencyDao(defaultFrequencyDao())
                 .localFrequencyDao(localFrequencyDao())
@@ -100,151 +100,17 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
                 .build();
     }
 
+    protected GenomeDataService buildGenomeDataService() {
+        RegulatoryFeatureDao regulatoryFeatureDao = new RegulatoryFeatureDao(dataSource);
+        TadDao tadDao = new TadDao(dataSource);
+        GeneFactory geneFactory = new GeneFactory(jannovarData);
+        return new GenomeDataServiceImpl(geneFactory, regulatoryFeatureDao, tadDao);
+    }
+
     // The protected methods here are exposed so that the concrete sub-classes can call these as a bean method in order that
     // Spring can intercept any caching annotations, but otherwise keep the duplicated GenomeAnalysisServices separate from
     // any autowiring and autoconfiguration which will cause name clashes.
     protected GenomeAnalysisService buildGenomeAnalysisService() {
         return new GenomeAnalysisServiceImpl(genomeProperties.getAssembly(), genomeDataService(), variantDataService(), variantFactory());
-    }
-
-    @Override
-    public FrequencyDao defaultFrequencyDao() {
-        logger.debug("Using MVStore for frequency defaults");
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
-    }
-
-    @Override
-    public PathogenicityDao pathogenicityDao() {
-        logger.debug("Using MVStore for pathogenicity defaults");
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
-    }
-
-    /**
-     * Optional full system path to CADD InDels.tsv.gz and InDels.tsv.gz.tbi file pair.
-     * These can be downloaded from http://cadd.gs.washington.edu/download - v1.3 has been tested.
-     * <p>
-     * Default is empty and will return no data.
-     *
-     * @return
-     */
-    protected TabixDataSource caddInDelTabixDataSource() {
-        String caddInDelPath = genomeProperties.getCaddInDelPath();
-        logTabixPathIfNotEmpty("Reading CADD InDel file from:", caddInDelPath);
-        return getTabixDataSourceOrDefaultForProperty(caddInDelPath, "CADD InDel");
-    }
-
-
-    /**
-     * Optional full system path to CADD whole_genome_SNVs.tsv.gz and whole_genome_SNVs.tsv.gz.tbi file pair.
-     * These can be downloaded from http://cadd.gs.washington.edu/download - v1.3 has been tested.
-     * <p>
-     * Default is empty and will return no data.
-     *
-     * @return
-     */
-    protected TabixDataSource caddSnvTabixDataSource() {
-        String caddSnvPath = genomeProperties.getCaddSnvPath();
-        logTabixPathIfNotEmpty("Reading CADD snv file from:", caddSnvPath);
-        return getTabixDataSourceOrDefaultForProperty(caddSnvPath, "CADD snv");
-    }
-
-    /**
-     * Optional full system path to REMM remmData.tsv.gz and remmData.tsv.gz.tbi file pair.
-     * <p>
-     * Default is empty and will return no data.
-     *
-     * @return
-     */
-    protected TabixDataSource remmTabixDataSource() {
-        String remmPath = genomeProperties.getRemmPath();
-        logTabixPathIfNotEmpty("Reading REMM data file from:", remmPath);
-        return getTabixDataSourceOrDefaultForProperty(remmPath, PathogenicitySource.REMM.name());
-    }
-
-    /**
-     * Optional full system path to local frequency .tsv.gz and .tsv.gz.tbi file pair.
-     * <p>
-     * Default is empty and will return no data.
-     *
-     * @return
-     */
-    protected TabixDataSource localFrequencyTabixDataSource() {
-        String localFrequencyPath = genomeProperties.getLocalFrequencyPath();
-        logTabixPathIfNotEmpty("Reading LOCAL frequency file from:", localFrequencyPath);
-        return getTabixDataSourceOrDefaultForProperty(localFrequencyPath, FrequencySource.LOCAL.name());
-    }
-
-    private void logTabixPathIfNotEmpty(String prefixMessage, String tabixPath) {
-        if (!tabixPath.isEmpty()) {
-            logger.info("{} {}", prefixMessage, tabixPath);
-        }
-    }
-
-    private TabixDataSource getTabixDataSourceOrDefaultForProperty(String pathToTabixGzFile, String dataSourceName) {
-        if (pathToTabixGzFile.isEmpty()) {
-            logger.warn("Data for {} is not configured. THIS WILL LEAD TO ERRORS IF REQUIRED DURING ANALYSIS. Check the application.properties is pointing to a valid file.", dataSourceName);
-            String message = "Data for " + dataSourceName + " is not configured. Check the application.properties is pointing to a valid file.";
-            return new ErrorThrowingTabixDataSource(message);
-        }
-        Path resourceFilePath = genomeData.resolveAbsoluteResourcePath(pathToTabixGzFile);
-        return TabixDataSourceLoader.load(resourceFilePath);
-    }
-
-    /**
-     * This takes a few seconds to de-serialise. Can be overridden by defining your own bean.
-     */
-    private JannovarData loadJannovarData() {
-        Path transcriptFilePath = transcriptFilePath();
-        try {
-            return new JannovarDataSerializer(transcriptFilePath.toString()).load();
-        } catch (SerializationException e) {
-            throw new ExomiserAutoConfigurationException("Could not load Jannovar data from " + transcriptFilePath, e);
-        }
-    }
-
-    private Path transcriptFilePath() {
-        TranscriptSource transcriptSource = genomeProperties.getTranscriptSource();
-        //e.g 1710_hg19_transcripts_ucsc.ser
-        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", genomeData.getVersionAssemblyPrefix(), transcriptSource
-                .toString());
-        Path transcriptFilePath = genomeData.getPath().resolve(transcriptFileNameValue);
-        logger.debug("Using {} transcript source for {}", transcriptSource, genomeProperties.getAssembly());
-        return transcriptFilePath;
-    }
-
-    private MVStore openMvStore() {
-        String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
-        Path mvStoreAbsolutePath = genomeData.resolveAbsoluteResourcePath(mvStoreFileName);
-        logger.debug("Opening MVStore from {}", mvStoreAbsolutePath);
-        MVStore store = new MVStore.Builder()
-                .fileName(mvStoreAbsolutePath.toString())
-                .readOnly()
-                .open();
-        logger.debug("MVStore opened with maps: {}", store.getMapNames());
-        return store;
-    }
-
-    private DataSource loadGenomeDataSource() {
-        return new HikariDataSource(genomeDataSourceConfig());
-    }
-
-    private HikariConfig genomeDataSourceConfig() {
-        //omit the .h2.db extensions
-        String dbFileName = String.format("%s_genome", genomeData.getVersionAssemblyPrefix());
-
-        Path dbPath = genomeData.resolveAbsoluteResourcePath(dbFileName);
-
-        String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath, startUpArgs);
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setMaximumPoolSize(3);
-        config.setPoolName(String.format("exomiser-genome-%s-%s", genomeProperties.getAssembly(), genomeProperties.getDataVersion()));
-        return config;
     }
 }

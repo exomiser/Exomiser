@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
@@ -30,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -39,7 +41,7 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
 
     @Test
     public void testExomiserIsAutoConfigured() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.phenotype.data-version=1710");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
         Exomiser exomiser = (Exomiser) context.getBean("exomiser");
         assertThat(exomiser, instanceOf(Exomiser.class));
     }
@@ -47,9 +49,11 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
 
     @Test
     public void testGenomeAnalysisServiceProviderIsAutoConfigured() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.phenotype.data-version=1710");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
         assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG19), is(true));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG38), is(true));
     }
 
     @Configuration

@@ -36,32 +36,32 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
+public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
     public void genomeAnalysisService() throws Exception {
 
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.local-frequency-path=../local_freq.tsv.gz");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710");
 
-        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) this.context.getBean("hg19genomeAnalysisService");
-        assertThat(genomeAnalysisService.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) this.context.getBean("hg38genomeAnalysisService");
+        assertThat(genomeAnalysisService.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
 
-        assertThat(context.getBean("hg19jannovarData"), instanceOf(JannovarData.class));
-        assertThat(context.getBean("hg19mvStore"), instanceOf(MVStore.class));
-        assertThat(context.getBean("hg19variantAnnotator"), instanceOf(VariantAnnotator.class));
-        assertThat(context.getBean("hg19variantFactory"), instanceOf(VariantFactory.class));
-        assertThat(context.getBean("hg19variantDataService"), instanceOf(VariantDataService.class));
-        assertThat(context.getBean("hg19genomeDataService"), instanceOf(GenomeDataService.class));
+        assertThat(context.getBean("hg38jannovarData"), instanceOf(JannovarData.class));
+        assertThat(context.getBean("hg38mvStore"), instanceOf(MVStore.class));
+        assertThat(context.getBean("hg38variantAnnotator"), instanceOf(VariantAnnotator.class));
+        assertThat(context.getBean("hg38variantFactory"), instanceOf(VariantFactory.class));
+        assertThat(context.getBean("hg38variantDataService"), instanceOf(VariantDataService.class));
+        assertThat(context.getBean("hg38genomeDataService"), instanceOf(GenomeDataService.class));
 
-        assertThat(context.getBean("hg19defaultFrequencyDao"), instanceOf(DefaultFrequencyDaoMvStoreProto.class));
-        assertThat(context.getBean("hg19pathogenicityDao"), instanceOf(DefaultPathogenicityDaoMvStoreProto.class));
+        assertThat(context.getBean("hg38defaultFrequencyDao"), instanceOf(DefaultFrequencyDaoMvStoreProto.class));
+        assertThat(context.getBean("hg38pathogenicityDao"), instanceOf(DefaultPathogenicityDaoMvStoreProto.class));
 
-        assertThat(context.getBean("hg19remmDao"), instanceOf(RemmDao.class));
-        assertThat(context.getBean("hg19caddDao"), instanceOf(CaddDao.class));
-        assertThat(context.getBean("hg19localFrequencyDao"), instanceOf(LocalFrequencyDao.class));
+        assertThat(context.getBean("hg38remmDao"), instanceOf(RemmDao.class));
+        assertThat(context.getBean("hg38caddDao"), instanceOf(CaddDao.class));
+        assertThat(context.getBean("hg38localFrequencyDao"), instanceOf(LocalFrequencyDao.class));
     }
 
     @Configuration
-    @ImportAutoConfiguration(value = Hg19GenomeAnalysisServiceAutoConfiguration.class)
+    @ImportAutoConfiguration(value = Hg38GenomeAnalysisServiceAutoConfiguration.class)
     protected static class EmptyConfiguration {}
 }
