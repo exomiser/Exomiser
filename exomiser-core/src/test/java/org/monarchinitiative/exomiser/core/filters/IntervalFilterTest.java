@@ -111,6 +111,11 @@ public class IntervalFilterTest {
         System.out.println(multiIntervalFilter);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void throwsExceptionWithEmptyInputList() {
+        new IntervalFilter(ImmutableList.of());
+    }
+
     @Test
     public void testThatWrongChromosomeWrongPositionFailsFilter() {
         FilterResult filterResult = instance.runFilter(wrongChromosomeWrongPosition);
