@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,10 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
@@ -88,6 +90,28 @@ public class IntervalFilterTest {
     }
 
     @Test
+    public void multipleIntervals() {
+        ChromosomalRegion interval1 = new GeneticInterval(1, 20, 30);
+        ChromosomalRegion interval2 = new GeneticInterval(1, 25, 40);
+        ChromosomalRegion interval3 = new GeneticInterval(3, 50, 60);
+        ChromosomalRegion interval4 = new GeneticInterval(3, 51, 55);
+
+        IntervalFilter multiIntervalFilter = new IntervalFilter(ImmutableList.of(interval3, interval2, interval3, interval1, interval4));
+
+        FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(VariantEvaluation.builder(1, 19, "A", "T").build()));
+        FilterTestHelper.assertPassed(multiIntervalFilter.runFilter(VariantEvaluation.builder(1, 20, "A", "T").build()));
+        FilterTestHelper.assertPassed(multiIntervalFilter.runFilter(VariantEvaluation.builder(1, 27, "A", "T").build()));
+        FilterTestHelper.assertPassed(multiIntervalFilter.runFilter(VariantEvaluation.builder(1, 39, "A", "T").build()));
+        FilterTestHelper.assertPassed(multiIntervalFilter.runFilter(VariantEvaluation.builder(3, 51, "A", "T").build()));
+        FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(VariantEvaluation.builder(3, 61, "A", "T").build()));
+
+        FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(VariantEvaluation.builder(2, 233, "A", "T").build()));
+
+        assertThat(multiIntervalFilter.getChromosomalRegions(), equalTo(ImmutableList.of(interval1, interval2, interval3, interval4)));
+        System.out.println(multiIntervalFilter);
+    }
+
+    @Test
     public void testThatWrongChromosomeWrongPositionFailsFilter() {
         FilterResult filterResult = instance.runFilter(wrongChromosomeWrongPosition);
         FilterTestHelper.assertFailed(filterResult);
@@ -105,18 +129,12 @@ public class IntervalFilterTest {
     }
 
     @Test
-    public void testNotEquals() {
-        Object obj = null;
-        assertThat(instance.equals(obj), is(false));
-    }
-
-    @Test
     public void testNotEqualsIntervalDifferent() {
         IntervalFilter otherFilter = new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(),
                 "chr3:12334-67850"));
         assertThat(instance.equals(otherFilter), is(false));
     }
-    
+
     @Test
     public void testIsEquals() {
         IntervalFilter otherFilter = new IntervalFilter(SEARCH_INTERVAL);
