@@ -26,9 +26,11 @@ import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -423,14 +425,35 @@ public class AnalysisParser {
             return new FailedVariantFilter();
         }
 
-        private IntervalFilter makeIntervalFilter(Map<String, String> options) {
-            String interval = options.get("interval");
-            if (interval == null) {
-                throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'}", options);
+        private IntervalFilter makeIntervalFilter(Map<String, Object> options) {
+            if (options.containsKey("interval")) {
+                String interval = (String) options.get("interval");
+                return new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
             }
-            return new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
+            if (options.containsKey("intervals")) {
+                List<String> intervalStrings = (List<String>) options.get("intervals");
+                List<ChromosomalRegion> intervals = new ArrayList<>();
+                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(HG19RefDictBuilder.build(), string)));
+                return new IntervalFilter(intervals);
+            }
+            if (options.containsKey("bed")) {
+                String bedPath = (String) options.get("bed");
+                return getBedFileIntervalFilter(bedPath);
+            }
+            throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}", options);
         }
 
+        /**
+         * @since 10.1.0
+         */
+        private IntervalFilter getBedFileIntervalFilter(String bedPath) {
+            List<ChromosomalRegion> intervals = BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
+            return new IntervalFilter(intervals);
+        }
+
+        /**
+         * @since 10.1.0
+         */
         private GeneSymbolFilter makeGeneSymbolFilter(Map<String, List<String>> options) {
             List<String> geneSymbols = options.get("geneSymbols");
             if (geneSymbols == null || geneSymbols.isEmpty()) {

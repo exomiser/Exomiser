@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -36,6 +37,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParse
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -104,7 +106,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisSteps_NoSteps() {
+    public void testParseAnalysisStepsNoSteps() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis(""));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
@@ -147,7 +149,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysis_FullAnalysisMode() {
+    public void testParseAnalysisFullAnalysisMode() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -272,78 +274,109 @@ public class AnalysisParserTest {
      * scripts will still function.
      */
     @Test
-    public void testParseAnalysis_DeprecatedGeneScoreModeHasNoEffect() {
+    public void testParseAnalysisDeprecatedGeneScoreModeHasNoEffect() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    geneScoreMode: RAW_SCORE\n"
+                        + "    geneScoreMode: RAWSCORE\n"
                         );
         Analysis expected = Analysis.builder().vcfPath(Paths.get("test.vcf")).build();
         assertThat(analysis, equalTo(expected));
     }
 
     @Test
-    public void testParseAnalysisStep_UnsupportedFilterAddsNothingToAnalysisSteps() {
+    public void testParseAnalysisStepUnsupportedFilterAddsNothingToAnalysisSteps() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("wibbleFilter: {}"));
         assertThat(analysis.getAnalysisSteps().isEmpty(), is(true));
     }
 
     @Test
-    public void testParseAnalysisStep_FailedVariantFilter() {
+    public void testParseAnalysisStepFailedVariantFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("failedVariantFilter: {}"));
         analysisSteps.add(new FailedVariantFilter());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_RegulatoryFeatureFilter() {
+    public void testParseAnalysisStepRegulatoryFeatureFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("regulatoryFeatureFilter: {}"));
         analysisSteps.add(new RegulatoryFeatureFilter());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_IntervalFilter() {
+    public void testParseAnalysisStepIntervalFilterFromInterval() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {interval: 'chr10:122892600-122892700'}"));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 122892600, 122892700)));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_GeneIdFilter() {
+    public void testParseAnalysisStepIntervalFilterFromList() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {intervals: ['chr10:122892600-122892700', 'chr10:122892900-122893000']}"));
+        List<ChromosomalRegion> expectedIntervals = ImmutableList.of(
+                new GeneticInterval(10, 122892600, 122892700),
+                new GeneticInterval(10, 122892900, 122893000)
+        );
+
+        analysisSteps.add(new IntervalFilter(expectedIntervals));
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
+    public void testParseAnalysisStepIntervalFilterFromBedFile() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bed: src/test/resources/intervals.bed}"));
+        List<ChromosomalRegion> expectedIntervals = new ArrayList<>();
+        expectedIntervals.add(new GeneticInterval(7, 127471197, 127472363));
+        expectedIntervals.add(new GeneticInterval(7, 127472364, 127473530));
+        expectedIntervals.add(new GeneticInterval(7, 127475865, 127477031));
+        expectedIntervals.add(new GeneticInterval(7, 127479366, 127480532));
+        expectedIntervals.add(new GeneticInterval(7, 127480533, 127481699));
+
+        analysisSteps.add(new IntervalFilter(expectedIntervals));
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test(expected = AnalysisParserException.class)
+    public void testThrowsExceptionWithUnexpectedTokenForIntervalFilter() {
+        instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bod: src/test/resources/intervals.bed}"));
+    }
+
+    @Test
+    public void testParseAnalysisStepGeneIdFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("genePanelFilter: {geneSymbols: [FGFR1, FGFR2]}"));
         analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_QualityFilter() {
+    public void testParseAnalysisStepQualityFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("qualityFilter: {minQuality: 50.0}"));
         analysisSteps.add(new QualityFilter(50.0f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_VariantEffectFilter() {
+    public void testParseAnalysisStepVariantEffectFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [SYNONYMOUS_VARIANT, INTERGENIC_VARIANT]}"));
         analysisSteps.add(new VariantEffectFilter(EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.INTERGENIC_VARIANT)));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test(expected = AnalysisParserException.class)
-    public void testParseAnalysisStep_VariantEffectFilter_illegalVariantEffect() {
+    public void testParseAnalysisStepVariantEffectFilterillegalVariantEffect() {
         instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [WIBBLE]}"));
     }
 
     @Test
-    public void testParseAnalysisStep_KnownVariantFilterFilter() {
+    public void testParseAnalysisStepKnownVariantFilterFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("knownVariantFilter: {}"));
         analysisSteps.add(new KnownVariantFilter());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test(expected = AnalysisParserException.class)
-    public void testParseAnalysisStep_FrequencyFilterNoFrequencySourcesDefined() {
+    public void testParseAnalysisStepFrequencyFilterNoFrequencySourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
                 + "    frequencySources: []\n"
@@ -355,14 +388,14 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisStep_FrequencyFilter() {
+    public void testParseAnalysisStepFrequencyFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {maxFrequency: 1.0}"));
         analysisSteps.add(new FrequencyFilter(1.0f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test(expected = AnalysisParserException.class)
-    public void testParseAnalysisStep_PathogenicityFilterNoPathSourcesDefined() {
+    public void testParseAnalysisStepPathogenicityFilterNoPathSourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
                 + "    pathogenicitySources: []\n"
@@ -374,21 +407,21 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisStep_PathogenicityFilter() {
+    public void testParseAnalysisStepPathogenicityFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("pathogenicityFilter: {keepNonPathogenic: false}"));
         analysisSteps.add(new PathogenicityFilter(false));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_PriorityScoreFilter() {
+    public void testParseAnalysisStepPriorityScoreFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.65}"));
         analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.65f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_InheritanceFilterUndefinedMode() {
+    public void testParseAnalysisStepInheritanceFilterUndefinedMode() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -406,7 +439,7 @@ public class AnalysisParserTest {
     }
 
     @Test(expected = AnalysisParserException.class)
-    public void testParseAnalysisStep_InheritanceFilterUnrecognisedValue() {
+    public void testParseAnalysisStepInheritanceFilterUnrecognisedValue() {
         instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
@@ -416,28 +449,28 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisStep_InheritanceFilterDefinedMode() {
+    public void testParseAnalysisStepInheritanceFilterDefinedMode() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("inheritanceFilter: {}"));
         analysisSteps.add(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.X_DOMINANT, ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.MITOCHONDRIAL));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_OmimPrioritiser() {
+    public void testParseAnalysisStepOmimPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("omimPrioritiser: {}"));
         analysisSteps.add(priorityFactory.makeOmimPrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_HiPhivePrioritiserWithDefaultOptions() {
+    public void testParseAnalysisStepHiPhivePrioritiserWithDefaultOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {}"));
         analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_HiPhivePrioritiserWithUserDefinedOptions() {
+    public void testParseAnalysisStepHiPhivePrioritiserWithUserDefinedOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}"));
         HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder().diseaseId("OMIM:101600").candidateGeneSymbol("FGFR2").runParams("human,mouse,fish,ppi").build();
         analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions));
@@ -445,21 +478,21 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisStep_PhivePrioritiser() {
+    public void testParseAnalysisStepPhivePrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phivePrioritiser: {}"));
         analysisSteps.add(priorityFactory.makePhivePrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_PhenixPrioritiser() {
+    public void testParseAnalysisStepPhenixPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
         analysisSteps.add(priorityFactory.makePhenixPrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
-    public void testParseAnalysisStep_WalkerPrioritiser() {
+    public void testParseAnalysisStepWalkerPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}"));
         analysisSteps.add(priorityFactory.makeExomeWalkerPrioritiser(new ArrayList<>(Arrays.asList(11111, 22222, 33333))));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
@@ -496,24 +529,24 @@ public class AnalysisParserTest {
     }
 
     @Test(expected = AnalysisFileNotFoundException.class)
-    public void testParseAnalysis_NonExistentFile() {
+    public void testParseAnalysisNonExistentFile() {
         instance.parseAnalysis(Paths.get("src/test/resources/wibble"));
     }
 
     @Test(expected = AnalysisFileNotFoundException.class)
-    public void testParseOutputSettings_NonExistentFile() {
+    public void testParseOutputSettingsNonExistentFile() {
         instance.parseOutputSettings(Paths.get("src/test/resources/wibble"));
     }
 
     @Test(expected = AnalysisParserException.class)
-    public void testParseOutputSettings_OutputPassVariantsOnlyThrowsExceptionWithNoValue() {
+    public void testParseOutputSettingsOutputPassVariantsOnlyThrowsExceptionWithNoValue() {
         instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: ");
     }
 
     @Test
-    public void testParseOutputSettings_OutputPassVariantsOnly() {
+    public void testParseOutputSettingsOutputPassVariantsOnly() {
         OutputSettings outputSettings = instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
@@ -524,7 +557,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseOutputSettings_NumGenesToShow() {
+    public void testParseOutputSettingsNumGenesToShow() {
         OutputSettings outputSettings = instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
@@ -535,7 +568,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseOutputSettings_OutputPrefix() {
+    public void testParseOutputSettingsOutputPrefix() {
         OutputSettings outputSettings = instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
