@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -100,6 +100,19 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         }
         IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
         return queryResult.getEntries();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChromosomalRegionIndex<?> that = (ChromosomalRegionIndex<?>) o;
+        return Objects.equals(index, that.index);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index);
     }
 
     private class ChromosomalRegionEndExtractor implements IntervalEndExtractor<T> {
