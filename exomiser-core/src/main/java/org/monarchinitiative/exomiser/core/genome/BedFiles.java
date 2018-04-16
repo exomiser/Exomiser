@@ -93,19 +93,12 @@ public class BedFiles {
 
     private static class BedFileParseException extends RuntimeException {
         public BedFileParseException(String message, Exception ex) {
-            super();
+            super(message, ex);
         }
 
         public BedFileParseException(String message) {
             super(message);
         }
 
-        public BedFileParseException(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public BedFileParseException(Throwable cause) {
-            super(cause);
-        }
     }
 }
