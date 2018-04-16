@@ -49,6 +49,9 @@ public class BedFiles {
 
     private static final ReferenceDictionary referenceDictionary = HG19RefDictBuilder.build();
 
+    private BedFiles() {
+    }
+
     /**
      * Parses the argument file into {@link ChromosomalRegion}. This is a super-simple implementation which will only
      * take into account the first three columns of the file (mandatory according to the spec) and ignore anything after
