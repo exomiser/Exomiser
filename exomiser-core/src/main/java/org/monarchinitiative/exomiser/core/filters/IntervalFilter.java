@@ -125,10 +125,10 @@ public class IntervalFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (intervalIndex.hasRegionContainingVariant(variantEvaluation)) {
-            logger.trace("{} passes filter");
+            logger.trace("{} passes filter", variantEvaluation);
             return PASS;
         }
-        logger.trace("{} fails filter");
+        logger.trace("{} fails filter", variantEvaluation);
         return FAIL;
     }
 
