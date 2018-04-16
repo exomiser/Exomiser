@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_SingleTad() {
+    public void testGetTadsContainingVariantSingleTad() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         createInstance(tad);
 
@@ -57,7 +57,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_SingleTadVariantNotInTad() {
+    public void testGetTadsContainingVariantSingleTadVariantNotInTad() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
@@ -66,7 +66,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_SingleTadVariantNotInChromosomeIndex() {
+    public void testGetTadsContainingVariantSingleTadVariantNotInChromosomeIndex() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
@@ -75,7 +75,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingPosition_PositionOneBeforeStartOfRegion() {
+    public void testGetTadsContainingPositionPositionOneBeforeStartOfRegion() {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
@@ -83,7 +83,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingPosition_PositionAtStartOfRegion() {
+    public void testGetTadsContainingPositionPositionAtStartOfRegion() {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
@@ -91,7 +91,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingPosition_PositionMiddleOfRegion() {
+    public void testGetTadsContainingPositionPositionMiddleOfRegion() {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
@@ -99,7 +99,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingPosition_PositionAtEndOfRegion() {
+    public void testGetTadsContainingPositionPositionAtEndOfRegion() {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
@@ -107,7 +107,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingPosition_PositionOneAfterEndOfRegion() {
+    public void testGetTadsContainingPositionPositionOneAfterEndOfRegion() {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
@@ -115,7 +115,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_TwoNonOverlappingTads() {
+    public void testGetTadsContainingVariantTwoNonOverlappingTads() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         TopologicalDomain tad1 = new TopologicalDomain(2, 200, 300, new HashMap<>());
         createInstance(tad, tad1);
@@ -124,7 +124,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_TwoOverlappingTadsVariantInBoth() {
+    public void testGetTadsContainingVariantTwoOverlappingTadsVariantInBoth() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         TopologicalDomain tad1 = new TopologicalDomain(1, 25, 75, new HashMap<>());
         createInstance(tad, tad1);
@@ -133,7 +133,7 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
-    public void testGetTadsContainingVariant_TwoOverlappingTadsVariantInOne() {
+    public void testGetTadsContainingVariantTwoOverlappingTadsVariantInOne() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         TopologicalDomain tad1 = new TopologicalDomain(1, 75, 200, new HashMap<>());
         createInstance(tad, tad1);

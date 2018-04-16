@@ -125,7 +125,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithoutPriorityResultsOrVariants_UNINITIALIZED() {
+    public void testScoreGeneWithoutPriorityResultsOrVariantsUninitialised() {
         Gene gene = newGene();
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
@@ -140,7 +140,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithoutPriorityResultsOrVariants_AUTOSOMAL_DOMINANT() {
+    public void testScoreGeneWithoutPriorityResultsOrVariantsAutosomalDominant() {
         Gene gene = newGene();
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, 0);
 
@@ -157,7 +157,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithoutPriorityResultsOrVariants_AUTOSOMAL_RECESSIVE() {
+    public void testScoreGeneWithoutPriorityResultsOrVariantsAutosomalRecessive() {
         Gene gene = newGene();
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
 
@@ -174,7 +174,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSingleFailedVariant_UNINITIALIZED() {
+    public void testScoreGeneWithSingleFailedVariantUninitialised() {
         Gene gene = newGene(failFreq());
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
 
@@ -191,7 +191,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSingleFailedVariant_AUTOSOMAL_DOMINANT() {
+    public void testScoreGeneWithSingleFailedVariantAutosomalDominant() {
         Gene gene = newGene(failFreq());
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, 0);
 
@@ -225,7 +225,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSinglePassedVariant_UNINITIALIZED() {
+    public void testScoreGeneWithSinglePassedVariantUninitialised() {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
         Gene gene = newGene(passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty(), 0);
@@ -245,7 +245,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_DOMINANT() {
+    public void testScoreGeneWithSinglePassedVariantAutosomalDominant() {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
         passAllFrameshift.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
@@ -267,7 +267,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_RECESSIVE_HOM_ALT() {
+    public void testScoreGeneWithSinglePassedVariantAutosomalRecessiveHomAlt() {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //Classical recessive inheritance mode
@@ -313,7 +313,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_RECESSIVE_HET() {
+    public void testScoreGeneWithSinglePassedVariantAutosomalRecessiveHet() {
         VariantEvaluation passAllFrameShift = passAllFrameShift();
         Gene gene = newGene(passAllFrameShift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
@@ -357,7 +357,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithTwoPassedVariants_UNINITIALIZED_inheritance() {
+    public void testScoreGeneWithTwoPassedVariantsUninitialisedInheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
         VariantEvaluation passAllFrameshift = passAllFrameShift();
 
@@ -381,7 +381,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_DOMINANT_inheritance() {
+    public void testScoreGeneWithTwoPassedVariantsAutosomalDominantInheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
         passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
@@ -410,7 +410,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithTwoPassedVariants_X_DOMINANT_inheritance() {
+    public void testScoreGeneWithTwoPassedVariantsXDominantInheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
         passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
@@ -437,7 +437,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
+    public void testScoreGeneWithTwoPassedVariantsAutosomalRecessiveInheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
         passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
@@ -462,7 +462,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithThreePassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
+    public void testScoreGeneWithThreePassedVariantsAutosomalRecessiveInheritance() {
         VariantEvaluation passAllMissense = passAllMissense();
         passAllMissense.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 

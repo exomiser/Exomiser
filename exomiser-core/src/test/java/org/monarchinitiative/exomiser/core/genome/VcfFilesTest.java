@@ -47,13 +47,13 @@ public class VcfFilesTest {
     }
 
     @Test(expected = TribbleException.class)
-    public void testCreateVariantContexts_NonExistentFile() {
+    public void testCreateVariantContextsNonExistentFile() {
         Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
         VcfFiles.readVariantContexts(vcfPath);
     }
 
     @Test
-    public void testCreateVariantContexts_SingleAlleles() {
+    public void testCreateVariantContextsSingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         long numVariants;
         try (Stream<VariantContext> variantStream = VcfFiles.readVariantContexts(vcfPath)) {
@@ -63,7 +63,7 @@ public class VcfFilesTest {
     }
 
     @Test
-    public void testStreamVariantContexts_SingleAlleles() {
+    public void testStreamVariantContextsSingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         List<VariantContext> variants = VcfFiles.readVariantContexts(vcfPath)
                 .filter(variantContext -> (variantContext.getContig().equals("1")))
@@ -73,7 +73,7 @@ public class VcfFilesTest {
     }
 
     @Test
-    public void testCreateVariantContexts_MultipleAlleles() {
+    public void testCreateVariantContextsMultipleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
         List<VariantContext> variants = VcfFiles.readVariantContexts(vcfPath).collect(toList());
         assertThat(variants.size(), equalTo(1));

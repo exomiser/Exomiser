@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
     }
 
     @Test
-    public void emptyInputValues() throws Exception {
+    public void emptyInputValues() {
         CrossSpeciesPhenotypeMatcher instance = new CrossSpeciesPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
 
         assertThat(instance.getOrganism(), equalTo(Organism.HUMAN));
@@ -94,7 +94,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
     }
 
     @Test
-    public void testGetBestForwardAndReciprocalMatches_returnsEmptyListFromEmptyQuery() throws Exception {
+    public void testGetBestForwardAndReciprocalMatchesReturnsEmptyListFromEmptyQuery() throws Exception {
         assertThat(instance.calculateBestForwardAndReciprocalMatches(Collections.emptyList()), equalTo(Collections.emptyList()));
     }
 

@@ -57,13 +57,13 @@ public class OmimPriorityResultTest {
     }
 
     @Test
-    public void testToHtml_noDiseases() {
+    public void testToHtmlNoDiseases() {
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
-    public void testToHtml_OmimDiseases() {
+    public void testToHtmlOmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
         Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).inheritanceModeCode("U").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease), Collections.emptyMap());
@@ -71,21 +71,21 @@ public class OmimPriorityResultTest {
     }
 
     @Test
-    public void testToHtml_IncompatibleOmimDiseases() {
+    public void testToHtmlIncompatibleOmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Incompatible OMIM disease name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
-    public void testToHtml_IncompatibleOrphanetDiseases() {
+    public void testToHtmlIncompatibleOrphanetDiseases() {
         Disease disease = Disease.builder().diseaseId("ORPHANET:12345").diseaseName("Incompatible Orphanet disease name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }
 
     @Test
-    public void testToHtml_UnknownDiseaseId() {
+    public void testToHtmlUnknownDiseaseId() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());

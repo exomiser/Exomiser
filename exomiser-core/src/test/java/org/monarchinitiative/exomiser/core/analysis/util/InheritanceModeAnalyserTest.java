@@ -75,7 +75,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_NoVariants() {
+    public void testAnalyseInheritanceModesSingleSampleNoVariants() {
         Gene gene = newGene();
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -87,7 +87,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_NoPassedVariants() {
+    public void testAnalyseInheritanceModesSingleSampleNoPassedVariants() {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 1 , "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER)));
 
@@ -101,7 +101,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HET() {
+    public void testAnalyseInheritanceModesSingleSampleOnePassedVariantHet() {
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(1));
@@ -123,7 +123,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HOM_REF_ShouldBeIncompatibleWith_RECESIVE() {
+    public void testAnalyseInheritanceModesSingleSampleOnePassedVariantHomRefShouldBeIncompatibleWithRecessive() {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //HomRef 0/0 or 0|0 variants really shouldn't be causing rare diseases so we need to ensure these are removed
@@ -146,7 +146,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HOM_REF_ShouldBeIncompatibleWith_DOMINANT() {
+    public void testAnalyseInheritanceModesSingleSampleOnePassedVariantHomRefShouldBeIncompatibleWithDominant() {
         List<Allele> alleles = buildAlleles("A", "T");
 
         //HomRef 0/0 or 0|0 variants really shouldn't be causing rare diseases so we need to ensure these are removed
@@ -173,7 +173,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_OnePassedVariant_HOM_VAR() {
+    public void testAnalyseInheritanceModesSingleSampleOnePassedVariantHomVar() {
         List<Allele> alleles = buildAlleles("A", "T");
         //HOM_ALT
         Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(1));
@@ -198,7 +198,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HOM_VAR_shouldBeCompatibelWith_RECESSIVE() {
+    public void testAnalyseInheritanceModesMultiSampleOnePassedVariantHomVarshouldBeCompatibleWithRecessive() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
@@ -233,7 +233,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HOM_REF_shouldNotBeCompatibleWith_AR() {
+    public void testAnalyseInheritanceModesMultiSampleOnePassedVariantHomRefShouldNotBeCompatibleWithAR() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
@@ -268,7 +268,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
+    public void testAnalyseInheritanceModesMultiSampleOnePassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
@@ -303,7 +303,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_TwoPassedVariant_HOM_VAR_shouldBeCompatibleWith_AR() {
+    public void testAnalyseInheritanceModesMultiSampleMultiAllelicTwoPassedVariantHomVarShouldBeCompatibleWithAR() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
@@ -346,7 +346,7 @@ public class InheritanceModeAnalyserTest {
      */
     @Ignore
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_OnePassedVariant_HOM_VAR_altAllele2_shouldBeCompatibleWith_AR() {
+    public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHomVarAltAllele2shouldBeCompatibleWithAR() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
@@ -389,7 +389,7 @@ public class InheritanceModeAnalyserTest {
      */
     @Ignore
     @Test
-    public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
+    public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
@@ -434,7 +434,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
+    public void testAnalyseInheritanceModesSingleSampleMultiAllelicOnePassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
@@ -463,7 +463,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HET_shouldBeCompatibleWith_AD() {
+    public void testAnalyseInheritanceModesSingleSampleMultiAllelicTwoPassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
@@ -492,7 +492,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HOM_VAR_Allele2_shouldBeCompatibleWith_AR() {
+    public void testAnalyseInheritanceModesSingleSampleMultiAllelicTwoPassedVariantHomVarAllele2shouldBeCompatibleWithAR() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
@@ -521,7 +521,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     @Test
-    public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HOM_VAR_Allele1_shouldBeCompatibleWith_AR() {
+    public void testAnalyseInheritanceModesSingleSampleMultiAllelicTwoPassedVariantHomVarAllele1ShouldBeCompatibleWithAR() {
         Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 

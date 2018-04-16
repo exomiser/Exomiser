@@ -127,7 +127,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderHpoIds_default() {
+    public void testAnalysisBuilderHpoIdsDefault() {
         assertThat(analysisBuilder.build().getHpoIds(), equalTo(Collections.<String>emptyList()));
     }
 
@@ -138,7 +138,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderModeOfInheritance_default() {
+    public void testAnalysisBuilderModeOfInheritanceDefault() {
         assertThat(analysisBuilder.build().getInheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
     }
 
@@ -149,7 +149,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderAnalysisMode_default() {
+    public void testAnalysisBuilderAnalysisModeDefault() {
         assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
 
@@ -160,7 +160,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderFrequencySources_default() {
+    public void testAnalysisBuilderFrequencySourcesDefault() {
         assertThat(analysisBuilder.build().getFrequencySources(), equalTo(Collections.<FrequencySource>emptySet()));
     }
 
@@ -172,7 +172,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderPathogenicitySources_default() {
+    public void testAnalysisBuilderPathogenicitySourcesDefault() {
         assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(Collections.<PathogenicitySource>emptySet()));
     }
 
@@ -386,7 +386,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testCanSpecifyHiPhivePrioritiser_noOptions() {
+    public void testCanSpecifyHiPhivePrioritiserNoOptions() {
         Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
 
         analysisBuilder.hpoIds(hpoIds)
@@ -396,7 +396,7 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testCanSpecifyHiPhivePrioritiser_withOptions() {
+    public void testCanSpecifyHiPhivePrioritiserWithOptions() {
         HiPhiveOptions options = HiPhiveOptions.builder()
                 .diseaseId("DISEASE:123")
                 .candidateGeneSymbol("GENE1")

@@ -124,7 +124,7 @@ public class SimpleGeneFilterRunnerTest {
     }
 
     @Test
-    public void testRun_MultipleFiltersOverGenes() {
+    public void testRunMultipleFiltersOverGenes() {
         assertVariantsUnfilteredAndDoNotPassFilter(genes, filters);
 
         instance.run(filters, genes);
@@ -134,7 +134,7 @@ public class SimpleGeneFilterRunnerTest {
     }
 
     @Test
-    public void testRun_SingleFilterOverGenes() {
+    public void testRunSingleFilterOverGenes() {
         assertVariantsUnfilteredAndDoNotPassFilter(genes, filters);
 
         instance.run(inheritanceFilter, genes);

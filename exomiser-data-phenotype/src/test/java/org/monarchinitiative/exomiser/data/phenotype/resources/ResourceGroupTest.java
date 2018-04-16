@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -77,7 +77,7 @@ public class ResourceGroupTest {
      * Test of addResource method, of class ResourceGroup.
      */
     @Test
-    public void testAddResource_NoParserClass() {
+    public void testAddResourceNoParserClass() {
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
         Resource resource = new Resource("Dave");
         resource.setParserClass(null);
@@ -88,7 +88,7 @@ public class ResourceGroupTest {
      * Test of getResource method, of class ResourceGroup.
      */
     @Test
-    public void testGetResource_Class() {
+    public void testGetResourceClass() {
         Class clazz = ResourceParser.class;
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
         Resource expResult = new Resource("test");
@@ -103,7 +103,7 @@ public class ResourceGroupTest {
      * Test of getResource method, of class ResourceGroup.
      */
     @Test
-    public void testGetResource_IncorrectClassType() {
+    public void testGetResourceIncorrectClassType() {
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
         Resource resource = new Resource("test");
         //shouldn't happen as this is defined in the properties file
@@ -117,7 +117,7 @@ public class ResourceGroupTest {
      * Test of getResource method, of class ResourceGroup.
      */
     @Test
-    public void testGetResource_String() {
+    public void testGetResourceString() {
         String resourceName = "David";
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
         Resource expResult = new Resource(resourceName);

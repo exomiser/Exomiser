@@ -71,12 +71,12 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_EmptyListIsUnchanged() {
+    public void testCheckEmptyListIsUnchanged() {
         assertThat(instance.check(analysisSteps), equalTo(expectedSteps));
     }
 
     @Test
-    public void testCheck_OneStepIsUnchanged() {
+    public void testCheckOneStepIsUnchanged() {
         analysisSteps.add(KNOWN_VARIANT_FILTER);
 
         expectedSteps.add(KNOWN_VARIANT_FILTER);
@@ -85,7 +85,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoStepsInLegalOrderIsUnchanged() {
+    public void testCheckTwoStepsInLegalOrderIsUnchanged() {
         analysisSteps.add(FREQUENCY_FILTER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
 
@@ -96,7 +96,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoVariantFilterStepsInIllegalOrderIsReordered() {
+    public void testCheckTwoVariantFilterStepsInIllegalOrderIsReordered() {
         analysisSteps.add(INHERITANCE_FILTER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
 
@@ -107,7 +107,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoVariantFilterStepsAndInheritanceFilterInLegalOrderIsUnchanged() {
+    public void testCheckTwoVariantFilterStepsAndInheritanceFilterInLegalOrderIsUnchanged() {
         analysisSteps.add(KNOWN_VARIANT_FILTER);
         analysisSteps.add(FREQUENCY_FILTER);
         analysisSteps.add(INHERITANCE_FILTER);
@@ -120,7 +120,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoVariantFilterStepsAndInheritanceFilterInIllegalOrderIsReordered() {
+    public void testCheckTwoVariantFilterStepsAndInheritanceFilterInIllegalOrderIsReordered() {
         analysisSteps.add(INHERITANCE_FILTER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
         analysisSteps.add(FREQUENCY_FILTER);
@@ -133,7 +133,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoInheritanceModeDependentStepsInLegalOrderIsUnchanged() {
+    public void testCheckTwoInheritanceModeDependentStepsInLegalOrderIsUnchanged() {
         analysisSteps.add(INHERITANCE_FILTER);
         analysisSteps.add(OMIM_PRIORITISER);
 
@@ -144,7 +144,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoInheritanceModeDependentStepsInIllegalOrderIsReordered() {
+    public void testCheckTwoInheritanceModeDependentStepsInIllegalOrderIsReordered() {
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(INHERITANCE_FILTER);
 
@@ -155,7 +155,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoInheritanceModeDependentStepsAndVariantFilterInIllegalOrderIsReordered() {
+    public void testCheckTwoInheritanceModeDependentStepsAndVariantFilterInIllegalOrderIsReordered() {
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
         analysisSteps.add(INHERITANCE_FILTER);
@@ -168,7 +168,7 @@ public class AnalysisStepCheckerTest {
     }
     
     @Test
-    public void testCheck_InheritanceModeDependentStepsRunAfterPrioritiserAndVariantFilter() {
+    public void testCheckInheritanceModeDependentStepsRunAfterPrioritiserAndVariantFilter() {
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
@@ -183,7 +183,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoInheritanceModeDependentStepsAndTwoVariantFiltersInIllegalOrderIsReordered() {
+    public void testCheckTwoInheritanceModeDependentStepsAndTwoVariantFiltersInIllegalOrderIsReordered() {
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(FREQUENCY_FILTER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
@@ -198,7 +198,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoPrioritisersAndVariantFiltersInLegalOrderIsUnchanged() {
+    public void testCheckTwoPrioritisersAndVariantFiltersInLegalOrderIsUnchanged() {
         //in principle prioritisers other than OMIM can run at any time as they do not require variants
         analysisSteps.add(FREQUENCY_FILTER);
         analysisSteps.add(NONE_TYPE_PRIORITISER);
@@ -214,7 +214,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_PrioritiserAndCorrectPriorityScoreFilterInLegalOrderIsUnchanged() {
+    public void testCheckPrioritiserAndCorrectPriorityScoreFilterInLegalOrderIsUnchanged() {
         analysisSteps.add(NONE_TYPE_PRIORITISER);
         analysisSteps.add(NONE_TYPE_PRIORITY_SCORE_FILTER);
 
@@ -225,7 +225,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_PrioritiserAndCorrectPriorityScoreFilterInIllegalOrderIsReordered() {
+    public void testCheckPrioritiserAndCorrectPriorityScoreFilterInIllegalOrderIsReordered() {
         analysisSteps.add(NONE_TYPE_PRIORITY_SCORE_FILTER);
         analysisSteps.add(NONE_TYPE_PRIORITISER);
 
@@ -236,7 +236,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_TwoPrioritisersAndCorrectPriorityScoreFilterInLegalOrderIsUnchanged() {
+    public void testCheckTwoPrioritisersAndCorrectPriorityScoreFilterInLegalOrderIsUnchanged() {
         analysisSteps.add(NONE_TYPE_PRIORITISER);
         analysisSteps.add(NONE_TYPE_PRIORITY_SCORE_FILTER);
         analysisSteps.add(OMIM_PRIORITISER);
@@ -249,7 +249,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_PrioritisersAndInCorrectPriorityScoreFilterRemovesUnmatchedPriorityScoreFilter() {
+    public void testCheckPrioritisersAndInCorrectPriorityScoreFilterRemovesUnmatchedPriorityScoreFilter() {
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(NONE_TYPE_PRIORITY_SCORE_FILTER);
 
@@ -259,7 +259,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_PrioritisersAndPriorityScoreFilterRemovesUnmatchedPriorityScoreFilter() {
+    public void testCheckPrioritisersAndPriorityScoreFilterRemovesUnmatchedPriorityScoreFilter() {
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(PHIVE_PRIORITY_SCORE_FILTER);
         analysisSteps.add(NONE_TYPE_PRIORITY_SCORE_FILTER);
@@ -273,7 +273,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_EverythingWrongGetsMadeRight() {
+    public void testCheckEverythingWrongGetsMadeRight() {
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(FREQUENCY_FILTER);
@@ -295,7 +295,7 @@ public class AnalysisStepCheckerTest {
     }
     
     @Test
-    public void testCheck_EverythingWrongGetsMadeRightMoreInsanity() {
+    public void testCheckEverythingWrongGetsMadeRightMoreInsanity() {
         analysisSteps.add(INHERITANCE_FILTER);
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(OMIM_PRIORITISER);
@@ -317,7 +317,7 @@ public class AnalysisStepCheckerTest {
     }
     
     @Test
-    public void testCheck_EverythingWrongGetsMadeRightIdiocyStrikesAgain() {
+    public void testCheckEverythingWrongGetsMadeRightIdiocyStrikesAgain() {
         analysisSteps.add(OMIM_PRIORITY_SCORE_FILTER);
         analysisSteps.add(OMIM_PRIORITISER);
         analysisSteps.add(INHERITANCE_FILTER);
@@ -339,7 +339,7 @@ public class AnalysisStepCheckerTest {
     }
     
     @Test
-    public void testCheck_OriginalExomiserAlgorithmIsntChanged() {
+    public void testCheckOriginalExomiserAlgorithmIsntChanged() {
         analysisSteps.add(KNOWN_VARIANT_FILTER);
         analysisSteps.add(FREQUENCY_FILTER);
         analysisSteps.add(INHERITANCE_FILTER);
@@ -356,7 +356,7 @@ public class AnalysisStepCheckerTest {
     }
     
     @Test
-    public void testCheck_GenomiserAlgorithmIsntChanged() {
+    public void testCheckGenomiserAlgorithmIsntChanged() {
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(PHIVE_PRIORITY_SCORE_FILTER);
         analysisSteps.add(KNOWN_VARIANT_FILTER);
@@ -375,7 +375,7 @@ public class AnalysisStepCheckerTest {
     }
 
     @Test
-    public void testCheck_SlightlyOddYetNotIncorrectSetupIsntChanged() {
+    public void testCheckSlightlyOddYetNotIncorrectSetupIsntChanged() {
         analysisSteps.add(KNOWN_VARIANT_FILTER);
         analysisSteps.add(PHIVE_PRIORITISER);
         analysisSteps.add(PHIVE_PRIORITY_SCORE_FILTER);

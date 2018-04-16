@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -58,7 +58,7 @@ public class FrequencyDataProviderTest {
     }
         
     @Test
-    public void testReturnsFilterTypeOfDecoratedFilter_FrequencyFilter() {
+    public void testReturnsFilterTypeOfDecoratedFilterFrequencyFilter() {
         final VariantFilter decoratedFilter = new FrequencyFilter(100f);
 
         instance = new FrequencyDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
@@ -68,7 +68,7 @@ public class FrequencyDataProviderTest {
     }
 
     @Test
-    public void testReturnsFilterTypeOfDecoratedFilter_KnownVariantFilter() {
+    public void testReturnsFilterTypeOfDecoratedFilterKnownVariantFilter() {
         final KnownVariantFilter decoratedFilter = new KnownVariantFilter();
 
         instance = new FrequencyDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
@@ -101,7 +101,7 @@ public class FrequencyDataProviderTest {
     }
 
     @Test
-    public void testFrequencyDataOnlyContainsSpecifiedSources_NoDataInDatabase() {
+    public void testFrequencyDataOnlyContainsSpecifiedSourcesNoDataInDatabase() {
         final KnownVariantFilter decoratedFilter = new KnownVariantFilter();
 
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(ESP_ALL), decoratedFilter);
@@ -111,7 +111,7 @@ public class FrequencyDataProviderTest {
     }
 
     @Test
-    public void testFrequencyDataOnlyContainsSpecifiedSources_OneSourceSpecifiedAllDataSourcesInDatabase() {
+    public void testFrequencyDataOnlyContainsSpecifiedSourcesOneSourceSpecifiedAllDataSourcesInDatabase() {
 
         Frequency espAll = Frequency.valueOf(0.01f, ESP_ALL);
         FrequencyData variantFrequencyData = FrequencyData.of(RsId.valueOf(123456), espAll, Frequency.valueOf(0.234f, EXAC_AFRICAN_INC_AFRICAN_AMERICAN), Frequency
@@ -126,7 +126,7 @@ public class FrequencyDataProviderTest {
     }
     
     @Test
-    public void testFrequencyDataOnlyContainsSpecifiedSources_TwoSourcesSpecifiedAllDataSourcesInDatabase() {
+    public void testFrequencyDataOnlyContainsSpecifiedSourcesTwoSourcesSpecifiedAllDataSourcesInDatabase() {
 
         Frequency espAll = Frequency.valueOf(0.01f, ESP_ALL);
         Frequency exacAfr = Frequency.valueOf(0.234f, EXAC_AFRICAN_INC_AFRICAN_AMERICAN);

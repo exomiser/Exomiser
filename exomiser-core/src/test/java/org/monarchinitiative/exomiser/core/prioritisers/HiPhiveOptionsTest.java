@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -363,13 +363,13 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRun_AllOrganisms() {
+    public void testGetOrganismsToRunAllOrganisms() {
         HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
         assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE, Organism.FISH)));
     }
 
     @Test
-    public void testGetOrganismsToRun_NoOrganisms() {
+    public void testGetOrganismsToRunNoOrganisms() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("ppi")
                 .build();
@@ -377,7 +377,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRun_NothingDefinedMeansAll() {
+    public void testGetOrganismsToRunNothingDefinedMeansAll() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("")
                 .build();
@@ -385,7 +385,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRun_HumanMouseOnly() {
+    public void testGetOrganismsToRunHumanMouseOnly() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("human,mouse")
                 .build();
@@ -393,7 +393,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRun_FishOnly() {
+    public void testGetOrganismsToRunFishOnly() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("fish")
                 .build();
