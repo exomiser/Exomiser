@@ -48,7 +48,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     private final SimpleAnalysisRunner instance = new SimpleAnalysisRunner(genomeAnalysisService);
 
     @Test
-    public void testRunAnalysis_NoFiltersNoPrioritisers() {
+    public void testRunAnalysisNoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
 
         AnalysisResults analysisResults = instance.run(analysis);
@@ -63,7 +63,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_VariantFilterOnly_OneVariantPasses() {
+    public void testRunAnalysisVariantFilterOnly_OneVariantPasses() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
@@ -90,7 +90,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_TwoVariantFilters_AllVariantsFailFilters_VariantsShouldHaveAllVariantFilterResults() {
+    public void testRunAnalysisTwoVariantFilters_AllVariantsFailFilters_VariantsShouldHaveAllVariantFilterResults() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
@@ -124,7 +124,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_TwoVariantFiltersOnePrioritiser_VariantsShouldHaveAllVariantFilterResults() {
+    public void testRunAnalysisTwoVariantFiltersOnePrioritiser_VariantsShouldHaveAllVariantFilterResults() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();
@@ -163,7 +163,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
     
     @Test
-    public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter_VariantsShouldContainOnlyOneFailedFilterResult() {
+    public void testRunAnalysisTwoVariantFiltersOnePrioritiserRecessiveInheritanceFilterVariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();
@@ -213,7 +213,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
 
     @Test
-    public void testRunAnalysis_PrioritiserAndPriorityScoreFilterOnly() {
+    public void testRunAnalysisPrioritiserAndPriorityScoreFilterOnly() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
@@ -256,7 +256,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant2.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));    }
 
     @Test
-    public void testRunAnalysis_PrioritiserPriorityScoreFilterVariantFilter() {
+    public void testRunAnalysisPrioritiserPriorityScoreFilterVariantFilter() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
@@ -299,7 +299,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_VariantFilterPrioritiserPriorityScoreFilterVariantFilter() {
+    public void testRunAnalysisVariantFilterPrioritiserPriorityScoreFilterVariantFilter() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);

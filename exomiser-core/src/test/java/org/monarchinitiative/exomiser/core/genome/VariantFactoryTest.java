@@ -73,7 +73,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testStreamCreateVariants_SingleAlleles() {
+    public void testStreamCreateVariantsSingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         long numVariants;
         try (Stream<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath)) {
@@ -85,7 +85,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testCreateVariantContexts_MultipleAlleles_DiferentSingleSampleGenotypes() {
+    public void testCreateVariantContextsMultipleAllelesDiferentSingleSampleGenotypes() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(printVariant());
@@ -93,7 +93,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testCreateVariants_SingleAlleles() {
+    public void testCreateVariantsSingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(printVariant());
@@ -102,7 +102,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testCreateVariants_MultipleAllelesProduceOneVariantPerAllele() {
+    public void testCreateVariantsMultipleAllelesProduceOneVariantPerAllele() {
         Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(printVariant());
@@ -110,7 +110,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testCreateVariants_MultipleAlleles_SingleSampleGenotypesShouldOnlyReturnRepresentedVariationFromGenotype() {
+    public void testCreateVariantsMultipleAllelesSingleSampleGenotypesShouldOnlyReturnRepresentedVariationFromGenotype() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(printVariant());
@@ -118,7 +118,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testCreateVariants_NoVariantAnnotationsProduceVariantEvaluationsWithNoAnnotations() {
+    public void testCreateVariantsNoVariantAnnotationsProduceVariantEvaluationsWithNoAnnotations() {
         Path vcfPath = Paths.get("src/test/resources/noAnnotations.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         assertThat(variants.size(), equalTo(2));
@@ -130,7 +130,7 @@ public class VariantFactoryTest {
     }
 
     @Test
-    public void testStreamVariantEvaluations_MultipleAlleles_DifferentSingleSampleGenotypes() {
+    public void testStreamVariantEvaluationsMultipleAllelesDifferentSingleSampleGenotypes() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath).collect(toList());
         assertThat(variants.size(), equalTo(11));

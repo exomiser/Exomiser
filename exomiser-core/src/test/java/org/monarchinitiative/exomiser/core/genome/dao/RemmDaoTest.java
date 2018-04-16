@@ -73,7 +73,7 @@ public class RemmDaoTest {
     }
     
     @Test
-    public void testGetPathogenicityData_missenseVariant() {
+    public void testGetPathogenicityDataMissenseVariant() {
         //missense variants are by definition protein-coding and therefore cannot be non-coding so we expect nothing 
         VariantEvaluation missenseVariant = VariantEvaluation.builder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
@@ -82,28 +82,28 @@ public class RemmDaoTest {
     }
     
     @Test
-    public void testGetPathogenicityData_singleNucleotideVariationNoData() {
+    public void testGetPathogenicityDataSingleNucleotideVariationNoData() {
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(MockTabixIterator.empty());
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
-    public void testGetPathogenicityData_singleNucleotideVariation() {
+    public void testGetPathogenicityDataSingleNucleotideVariation() {
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(MockTabixIterator.of("1\t1\t1.0"));
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
-    public void testGetPathogenicityData_insertion() {
+    public void testGetPathogenicityDataInsertion() {
         Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(MockTabixIterator.of("1\t1\t0.0", "1\t2\t1.0"));
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
-    public void testGetPathogenicityData_deletion() {
+    public void testGetPathogenicityDataDeletion() {
         MockTabixIterator mockIterator = MockTabixIterator.of("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0", "1\t4\t0.0");
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
