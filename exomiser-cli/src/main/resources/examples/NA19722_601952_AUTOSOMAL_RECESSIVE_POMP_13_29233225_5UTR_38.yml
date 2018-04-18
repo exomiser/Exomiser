@@ -84,7 +84,11 @@ analysis:
     #this is the recommended order for a genome-sized analysis.
     #all steps are optional
     steps: [ 
-        #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+        #intervalFilter: {interval: 'chr10:123256200-123256300'},
+        # or for multiple intervals:
+        #intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+        # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+        #intervalFilter: {bed: /full/path/to/bed_file.bed},
         #failedVariantFilter: {},
         #genePanelFilter: {geneSymbols: ['POMP','SUMF1','JUP']},
         hiPhivePrioritiser: {},
