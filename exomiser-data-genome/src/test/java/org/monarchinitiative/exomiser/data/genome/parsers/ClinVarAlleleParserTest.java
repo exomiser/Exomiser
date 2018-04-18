@@ -77,6 +77,20 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         assertParseLineEquals(line, ImmutableList.of(expected));
     }
 
+
+    @Test
+    public void testParseClnSigLikelyPathogenic() {
+        String line = "10	123256215	.	T	C	.	.	ALLELEID=361707;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_pathogenic";
+        Allele expected = new Allele(10, 123256215, "T", "C");
+        expected.setClinVarData(ClinVarData.builder()
+                .alleleId("361707")
+                .primaryInterpretation(ClinVarData.ClinSig.LIKELY_PATHOGENIC)
+                .reviewStatus("criteria_provided,_single_submitter")
+                .build());
+
+        assertParseLineEquals(line, ImmutableList.of(expected));
+    }
+
     @Test
     public void testParseClnSig() {
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIG=Benign/Likely_benign";

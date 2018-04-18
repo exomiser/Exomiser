@@ -126,14 +126,16 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
                 return BENIGN;
             case "Benign/Likely_benign":
                 return BENIGN_OR_LIKELY_BENIGN;
-            case "Conflicting_interpretations_of_pathogenicity":
-                return CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
             case "Likely_benign":
                 return LIKELY_BENIGN;
-            case "Pathogenic":
-                return PATHOGENIC;
+            case "Conflicting_interpretations_of_pathogenicity":
+                return CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case "Likely_pathogenic":
+                return LIKELY_PATHOGENIC;
             case "Pathogenic/Likely_pathogenic":
                 return PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case "Pathogenic":
+                return PATHOGENIC;
             case "Affects":
                 return AFFECTS;
             case "association":
