@@ -125,6 +125,6 @@ outputOptions:
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
     outputPrefix: results/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38
-    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
-    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]
+    #out-format options: HTML, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, TSV_GENE, TSV_VARIANT, VCF]
     

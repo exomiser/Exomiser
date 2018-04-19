@@ -117,5 +117,5 @@ outputOptions:
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis
     outputPrefix: results/Pfeiffer-quartet-hiphive-exome-PASS_ONLY
-    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
-    outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]
+    #out-format options: HTML, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, TSV_GENE, TSV_VARIANT, VCF]
