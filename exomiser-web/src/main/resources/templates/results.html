@@ -246,6 +246,7 @@
                                     </th:block>
                                 </div>
                                 <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                                    <b>ClinVar: </b>
                                     <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
                                               th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
                                         <span th:case="'BENIGN'" class="label label-success"
@@ -263,8 +264,8 @@
                                         <span th:case="*" class="label label-default"
                                               th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
                                         <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
-                                           th:text="'(ClinVar: ' + ${clinVarData.getReviewStatus()} + ')'">
-                                            (ClinVar: criteria_provided,_single_submitter)
+                                           th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                            (criteria_provided,_single_submitter)
                                         </a>
                                     </th:block>
                                 </div>
