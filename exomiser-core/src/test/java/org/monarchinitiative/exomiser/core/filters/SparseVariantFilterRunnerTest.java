@@ -141,7 +141,7 @@ public class SparseVariantFilterRunnerTest {
     }
 
     @Test
-    public void testRun_OnlyReturnsVariantPassingAllFilters() {
+    public void testRunOnlyReturnsVariantPassingAllFilters() {
         List<VariantFilter> filters = new ArrayList<>();
         filters.add(targetFilter);
         filters.add(qualityFilter);
@@ -163,7 +163,7 @@ public class SparseVariantFilterRunnerTest {
     }
 
     @Test
-    public void testRun_WithNoFiltersReturnsOriginalVariantEvaluations() {
+    public void testRunWithNoFiltersReturnsOriginalVariantEvaluations() {
         List<VariantFilter> filters = Collections.emptyList();
 
         List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
@@ -171,7 +171,7 @@ public class SparseVariantFilterRunnerTest {
     }
 
     @Test
-    public void testRunWithOneFilter_OnlyReturnsVariantPassingAllFilters() {
+    public void testRunWithOneFilterOnlyReturnsVariantPassingAllFilters() {
 
         VariantFilter filterToPass = qualityFilter;
 
@@ -190,7 +190,7 @@ public class SparseVariantFilterRunnerTest {
     }
 
     @Test
-    public void testRunWithOneFilterUsingStream_OnlyReturnsVariantPassingAllFilters() {
+    public void testRunWithOneFilterUsingStreamOnlyReturnsVariantPassingAllFilters() {
 
         VariantFilter filterToPass = qualityFilter;
 

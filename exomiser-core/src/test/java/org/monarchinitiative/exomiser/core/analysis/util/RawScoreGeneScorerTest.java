@@ -208,7 +208,7 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSingleFailedVariant_AUTOSOMAL_RECESSIVE() {
+    public void testScoreGeneWithSingleFailedVariantAutosomalRecessive() {
         Gene gene = newGene(failFreq());
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
 

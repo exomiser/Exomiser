@@ -81,7 +81,7 @@ public class PriorityScoreFilterTest {
     }
 
     @Test
-    public void testRunFilterFailsGeneWithWrongPriorityType_ScoreSameAsThreshold() {
+    public void testRunFilterFailsGeneWithWrongPriorityTypeScoreSameAsThreshold() {
         PriorityResult priorityResult = new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
@@ -91,7 +91,7 @@ public class PriorityScoreFilterTest {
     }
     
     @Test
-    public void testRunFilterPassesGeneWithCorrectPriorityType_ScoreSameAsThreshold() {
+    public void testRunFilterPassesGeneWithCorrectPriorityTypeScoreSameAsThreshold() {
         PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
@@ -101,7 +101,7 @@ public class PriorityScoreFilterTest {
     }
     
     @Test
-    public void testRunFilterPassesGeneWithCorrectPriorityType_ScoreOverThreshold() {
+    public void testRunFilterPassesGeneWithCorrectPriorityTypeScoreOverThreshold() {
         PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore + 0.2f);
         gene.addPriorityResult(priorityResult);
 
@@ -111,7 +111,7 @@ public class PriorityScoreFilterTest {
     }
     
     @Test
-    public void testRunFilterFailsGeneWithCorrectPriorityType_ScoreUnderThreshold() {
+    public void testRunFilterFailsGeneWithCorrectPriorityTypeScoreUnderThreshold() {
         PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
         gene.addPriorityResult(priorityResult);
 

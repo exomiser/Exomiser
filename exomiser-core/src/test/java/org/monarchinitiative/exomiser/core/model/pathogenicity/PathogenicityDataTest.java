@@ -199,7 +199,7 @@ public class PathogenicityDataTest {
     }
 
     @Test
-    public void testGetPredictedScore_scorePresent() {
+    public void testGetPredictedScoreWhenScorePresent() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS);
         PathogenicityScore result =  instance.getPredictedScore(PathogenicitySource.POLYPHEN);
         assertThat(result.getScore(), equalTo(POLYPHEN_PASS.getScore()));

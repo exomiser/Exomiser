@@ -63,7 +63,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysisVariantFilterOnly_OneVariantPasses() {
+    public void testRunAnalysisVariantFilterOnlyOneVariantPasses() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
@@ -90,7 +90,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysisTwoVariantFilters_AllVariantsFailFilters_VariantsShouldHaveAllVariantFilterResults() {
+    public void testRunAnalysisTwoVariantFiltersAllVariantsFailFiltersVariantsShouldHaveAllVariantFilterResults() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
@@ -124,7 +124,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysisTwoVariantFiltersOnePrioritiser_VariantsShouldHaveAllVariantFilterResults() {
+    public void testRunAnalysisTwoVariantFiltersOnePrioritiserVariantsShouldHaveAllVariantFilterResults() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();

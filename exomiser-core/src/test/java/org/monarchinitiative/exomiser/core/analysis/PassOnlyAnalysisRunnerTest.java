@@ -48,7 +48,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     private final PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(genomeAnalysisService);
 
     @Test
-    public void testRunAnalysis_NoFiltersNoPrioritisers() {
+    public void testRunAnalysisNoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
 
         AnalysisResults analysisResults = instance.run(analysis);
