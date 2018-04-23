@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
@@ -50,12 +49,8 @@ public class DefaultPathogenicityDaoMvStoreProto implements PathogenicityDao {
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
-        //if a variant is not classified as missense then we don't need to hit
-        //the database as we're going to assign it a constant pathogenicity score.
-        VariantEffect variantEffect = variant.getVariantEffect();
-        if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
-            return PathogenicityData.empty();
-        }
+        // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
+        // gain/loss an other possible SNV scores from the bundled pathogenicity databases.
         AlleleProperties alleleProperties = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
         logger.debug("{} {}", key, alleleProperties);
         return AlleleProtoAdaptor.toPathogenicityData(alleleProperties);

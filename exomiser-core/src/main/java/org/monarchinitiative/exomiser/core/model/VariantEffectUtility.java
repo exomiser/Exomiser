@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -69,6 +69,10 @@ public final class VariantEffectUtility {
 
     private VariantEffectUtility() {
         //not externally instantiable - static utility class
+    }
+
+    public static boolean affectsCodingRegion(VariantEffect variantEffect) {
+        return codingVariantEffects.contains(variantEffect);
     }
 
     public static boolean isNonCodingVariant(VariantEffect variantEffect) {

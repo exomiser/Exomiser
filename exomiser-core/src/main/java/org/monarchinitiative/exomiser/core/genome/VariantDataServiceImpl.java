@@ -21,12 +21,12 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
 import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.VariantEffectUtility;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -107,8 +107,11 @@ public class VariantDataServiceImpl implements VariantDataService {
 
         ClinVarData clinVarData = ClinVarData.empty();
         List<PathogenicityScore> allPathScores = new ArrayList<>();
-        //Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
-        if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
+        // Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
+        // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
+        // gain/loss an other possible SNV scores from the bundled pathogenicity databases.
+        // TODO: this should always be run alongside the frequencies as they are all stored in the same datastore
+        if (VariantEffectUtility.affectsCodingRegion(variant.getVariantEffect())) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             clinVarData = missenseScores.getClinVarData();
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
@@ -147,7 +150,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     public static class Builder {
-
+        //TODO check for null values or provide NoOp implementations?
         private FrequencyDao defaultFrequencyDao;
         private FrequencyDao localFrequencyDao;
 

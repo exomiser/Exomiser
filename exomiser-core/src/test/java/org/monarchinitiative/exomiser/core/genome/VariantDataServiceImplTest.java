@@ -165,9 +165,9 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
         variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
-        //Test that the REMM DAO is only called whe the variant type is of the type REMM is trained against.
+        //Test that the REMM DAO is only called when the variant type is of the type REMM is trained against.
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
-        assertThat(result, equalTo(PathogenicityData.empty()));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA)));
     }
     
     @Test
