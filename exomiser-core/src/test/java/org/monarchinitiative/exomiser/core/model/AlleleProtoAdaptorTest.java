@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties.ClinVar;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import java.util.EnumSet;
 

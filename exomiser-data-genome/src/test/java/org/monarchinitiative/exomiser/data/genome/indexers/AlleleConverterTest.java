@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
@@ -55,13 +56,13 @@ public class AlleleConverterTest {
             .setAlt("C")
             .build();
 
-    private static final AlleleProperties.ClinVar PROTO_CLINVAR = AlleleProperties.ClinVar.newBuilder()
+    private static final ClinVar PROTO_CLINVAR = ClinVar.newBuilder()
             .setAlleleId("12334")
-            .setPrimaryInterpretation(AlleleProperties.ClinVar.ClinSig.PATHOGENIC)
-            .addSecondaryInterpretations(AlleleProperties.ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE)
-            .addSecondaryInterpretations(AlleleProperties.ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+            .setPrimaryInterpretation(ClinVar.ClinSig.PATHOGENIC)
+            .addSecondaryInterpretations(ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE)
+            .addSecondaryInterpretations(ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
             .setReviewStatus("yada-yada")
-            .putIncludedAlleles("455645", AlleleProperties.ClinVar.ClinSig.LIKELY_PATHOGENIC)
+            .putIncludedAlleles("455645", ClinVar.ClinSig.LIKELY_PATHOGENIC)
             .build();
 
     private static final AlleleProperties ALLELE_PROPERTIES = AlleleProperties.newBuilder()

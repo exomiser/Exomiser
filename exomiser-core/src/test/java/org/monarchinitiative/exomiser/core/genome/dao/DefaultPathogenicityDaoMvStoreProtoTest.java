@@ -30,6 +30,7 @@ import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import java.util.Map;
 
@@ -152,7 +153,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .build();
 
         AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
-        AlleleProperties.ClinVar clinVar = AlleleProperties.ClinVar.newBuilder().setAlleleId("54321").setPrimaryInterpretation(AlleleProperties.ClinVar.ClinSig.ASSOCIATION).build();
+        ClinVar clinVar = ClinVar.newBuilder().setAlleleId("54321").setPrimaryInterpretation(ClinVar.ClinSig.ASSOCIATION).build();
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .setClinVar(clinVar)
                 .build();
@@ -172,9 +173,9 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .build();
 
         AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
-        AlleleProperties.ClinVar clinVar = AlleleProperties.ClinVar.newBuilder()
+        ClinVar clinVar = ClinVar.newBuilder()
                 .setAlleleId("54321")
-                .setPrimaryInterpretation(AlleleProperties.ClinVar.ClinSig.PATHOGENIC)
+                .setPrimaryInterpretation(ClinVar.ClinSig.PATHOGENIC)
                 .build();
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("POLYPHEN", 1.0f)

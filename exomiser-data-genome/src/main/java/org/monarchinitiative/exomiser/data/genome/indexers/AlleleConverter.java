@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.indexers;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
@@ -73,13 +74,13 @@ public class AlleleConverter {
 
     private static void addClinVarData(AlleleProperties.Builder builder, Allele allele) {
         if (allele.hasClinVarData()) {
-            AlleleProperties.ClinVar clinVar = toProtoClinVar(allele.getClinVarData());
+            ClinVar clinVar = toProtoClinVar(allele.getClinVarData());
             builder.setClinVar(clinVar);
         }
     }
 
-    public static AlleleProperties.ClinVar toProtoClinVar(ClinVarData clinVarData) {
-        AlleleProperties.ClinVar.Builder builder = AlleleProperties.ClinVar.newBuilder();
+    public static ClinVar toProtoClinVar(ClinVarData clinVarData) {
+        ClinVar.Builder builder = ClinVar.newBuilder();
         builder.setAlleleId(clinVarData.getAlleleId());
         builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
         for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
@@ -92,38 +93,38 @@ public class AlleleConverter {
         return builder.build();
     }
 
-    private static AlleleProperties.ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinSig) {
+    private static ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinSig) {
         switch (clinSig){
             case BENIGN:
-                return AlleleProperties.ClinVar.ClinSig.BENIGN;
+                return ClinVar.ClinSig.BENIGN;
             case BENIGN_OR_LIKELY_BENIGN:
-                return AlleleProperties.ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+                return ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
             case LIKELY_BENIGN:
-                return AlleleProperties.ClinVar.ClinSig.LIKELY_BENIGN;
+                return ClinVar.ClinSig.LIKELY_BENIGN;
             case UNCERTAIN_SIGNIFICANCE:
-                return AlleleProperties.ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
+                return ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
             case LIKELY_PATHOGENIC:
-                return AlleleProperties.ClinVar.ClinSig.LIKELY_PATHOGENIC;
+                return ClinVar.ClinSig.LIKELY_PATHOGENIC;
             case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+                return ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
             case PATHOGENIC:
-                return AlleleProperties.ClinVar.ClinSig.PATHOGENIC;
+                return ClinVar.ClinSig.PATHOGENIC;
             case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
-                return AlleleProperties.ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+                return ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
             case AFFECTS:
-                return AlleleProperties.ClinVar.ClinSig.AFFECTS;
+                return ClinVar.ClinSig.AFFECTS;
             case ASSOCIATION:
-                return AlleleProperties.ClinVar.ClinSig.ASSOCIATION;
+                return ClinVar.ClinSig.ASSOCIATION;
             case DRUG_RESPONSE:
-                return AlleleProperties.ClinVar.ClinSig.DRUG_RESPONSE;
+                return ClinVar.ClinSig.DRUG_RESPONSE;
             case NOT_PROVIDED:
-                return AlleleProperties.ClinVar.ClinSig.NOT_PROVIDED;
+                return ClinVar.ClinSig.NOT_PROVIDED;
             case OTHER:
-                return AlleleProperties.ClinVar.ClinSig.OTHER;
+                return ClinVar.ClinSig.OTHER;
             case PROTECTIVE:
-                return AlleleProperties.ClinVar.ClinSig.PROTECTIVE;
+                return ClinVar.ClinSig.PROTECTIVE;
             case RISK_FACTOR:
-                return AlleleProperties.ClinVar.ClinSig.RISK_FACTOR;
+                return ClinVar.ClinSig.RISK_FACTOR;
         }
         throw new IllegalArgumentException(clinSig + " not a recognised value");
     }

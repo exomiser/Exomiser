@@ -26,11 +26,13 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import java.util.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 10.1.0
  */
 public class AlleleProtoAdaptor {
 
@@ -91,7 +93,7 @@ public class AlleleProtoAdaptor {
         return pathogenicityScores;
     }
 
-    private static ClinVarData parseClinVarData(AlleleProperties.ClinVar clinVar) {
+    private static ClinVarData parseClinVarData(ClinVar clinVar) {
         if (clinVar.equals(clinVar.getDefaultInstanceForType())) {
             return ClinVarData.empty();
         }
@@ -104,31 +106,31 @@ public class AlleleProtoAdaptor {
         return builder.build();
     }
 
-    private static Map<String, ClinVarData.ClinSig> getToIncludedAlleles(Map<String, AlleleProperties.ClinVar.ClinSig> includedAllelesMap) {
+    private static Map<String, ClinVarData.ClinSig> getToIncludedAlleles(Map<String, ClinVar.ClinSig> includedAllelesMap) {
         if (includedAllelesMap.isEmpty()) {
             return Collections.emptyMap();
         }
         Map<String, ClinVarData.ClinSig> converted = new HashMap<>(includedAllelesMap.size());
 
-        for (Map.Entry<String, AlleleProperties.ClinVar.ClinSig> included : includedAllelesMap.entrySet()) {
+        for (Map.Entry<String, ClinVar.ClinSig> included : includedAllelesMap.entrySet()) {
             converted.put(included.getKey(), toClinSig(included.getValue()));
         }
 
         return converted;
     }
 
-    private static Set<ClinVarData.ClinSig> toClinSigSet(List<AlleleProperties.ClinVar.ClinSig> protoClinSigs) {
+    private static Set<ClinVarData.ClinSig> toClinSigSet(List<ClinVar.ClinSig> protoClinSigs) {
         if (protoClinSigs.isEmpty()) {
             return Collections.emptySet();
         }
         Set<ClinVarData.ClinSig> converted = new HashSet<>(protoClinSigs.size());
-        for (AlleleProperties.ClinVar.ClinSig protoClinSig : protoClinSigs) {
+        for (ClinVar.ClinSig protoClinSig : protoClinSigs) {
             converted.add(toClinSig(protoClinSig));
         }
         return converted;
     }
 
-    private static ClinVarData.ClinSig toClinSig(AlleleProperties.ClinVar.ClinSig protoClinSig) {
+    private static ClinVarData.ClinSig toClinSig(ClinVar.ClinSig protoClinSig) {
         switch (protoClinSig) {
             case BENIGN:
                 return ClinVarData.ClinSig.BENIGN;

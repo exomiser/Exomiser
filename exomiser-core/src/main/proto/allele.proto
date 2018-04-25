@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+//import "org/monarchinitiative/exomiser/core/schema/model.proto";
+
 option java_package = "org.monarchinitiative.exomiser.core.proto";
 option java_outer_classname = "AlleleProto";
 //option java_multiple_files = true;
@@ -14,34 +16,35 @@ message AlleleKey {
 message AlleleProperties {
     string rs_id = 1;
     map<string, float> properties = 2;
+    //TODO: move to model or somewhere and then import here - this is also needed for output in results
     ClinVar clinVar = 3;
+}
 
-    message ClinVar {
-        enum ClinSig {
-            //default
-            NOT_PROVIDED = 0;
-            // ACMG/AMP-based
-            BENIGN = 1;
-            BENIGN_OR_LIKELY_BENIGN = 2;
-            LIKELY_BENIGN = 3;
-            UNCERTAIN_SIGNIFICANCE = 4;
-            LIKELY_PATHOGENIC = 5;
-            PATHOGENIC_OR_LIKELY_PATHOGENIC = 6;
-            PATHOGENIC = 7;
-            CONFLICTING_PATHOGENICITY_INTERPRETATIONS = 8;
-            //Non-ACMG-based
-            AFFECTS = 9;
-            ASSOCIATION = 10;
-            DRUG_RESPONSE = 11;
-            OTHER = 12;
-            PROTECTIVE = 13;
-            RISK_FACTOR = 14;
-        }
-
-        string alleleId = 1;
-        ClinSig primaryInterpretation = 2;
-        repeated ClinSig secondaryInterpretations = 3;
-        string reviewStatus = 4;
-        map<string, ClinSig> includedAlleles = 5;
+message ClinVar {
+    enum ClinSig {
+        //default
+        NOT_PROVIDED = 0;
+        // ACMG/AMP-based
+        BENIGN = 1;
+        BENIGN_OR_LIKELY_BENIGN = 2;
+        LIKELY_BENIGN = 3;
+        UNCERTAIN_SIGNIFICANCE = 4;
+        LIKELY_PATHOGENIC = 5;
+        PATHOGENIC_OR_LIKELY_PATHOGENIC = 6;
+        PATHOGENIC = 7;
+        CONFLICTING_PATHOGENICITY_INTERPRETATIONS = 8;
+        //Non-ACMG-based
+        AFFECTS = 9;
+        ASSOCIATION = 10;
+        DRUG_RESPONSE = 11;
+        OTHER = 12;
+        PROTECTIVE = 13;
+        RISK_FACTOR = 14;
     }
+
+    string alleleId = 1;
+    ClinSig primaryInterpretation = 2;
+    repeated ClinSig secondaryInterpretations = 3;
+    string reviewStatus = 4;
+    map<string, ClinSig> includedAlleles = 5;
 }
