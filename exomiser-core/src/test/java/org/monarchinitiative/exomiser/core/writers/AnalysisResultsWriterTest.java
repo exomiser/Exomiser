@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -110,6 +111,41 @@ public class AnalysisResultsWriterTest {
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
+    }
+
+    @Test
+    public void testWriteToFileOutputsSingleJsonFileIfPresentInSettings() throws Exception {
+        String outputPrefix = tmpFolder.newFile("test").toString();
+
+        OutputSettings settings = OutputSettings.builder()
+                .outputPrefix(outputPrefix)
+                .outputFormats(EnumSet.of(OutputFormat.JSON))
+                .build();
+
+        Analysis analysis = Analysis.builder().build();
+        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.getFileExtension()));
+        assertThat(outputPath.toFile().exists(), is(true));
+    }
+
+    @Test
+    public void testWriteToFileOutputsSingleJsonOrHtmlFileIfPresentInSettings() throws Exception {
+        String outputPrefix = tmpFolder.newFile("test").toString();
+
+        Set<OutputFormat> singleFileFormats = EnumSet.of(OutputFormat.JSON, OutputFormat.HTML);
+        OutputSettings settings = OutputSettings.builder()
+                .outputPrefix(outputPrefix)
+                .outputFormats(singleFileFormats)
+                .build();
+
+        Analysis analysis = Analysis.builder().build();
+        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+
+        for (OutputFormat outputFormat : singleFileFormats) {
+            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
+            assertThat(outputPath.toFile().exists(), is(true));
+        }
     }
 
     @Test

@@ -188,8 +188,11 @@ public class AnalysisParser {
                     case "PHENOGRID":
                         parsedOutputFormats.add(OutputFormat.PHENOGRID);
                         break;
+                    case "JSON":
+                        parsedOutputFormats.add(OutputFormat.JSON);
+                        break;
                     default:
-                        logger.info("{} is not a recognised output format. Please choose one or more of HTML, TAB-GENE, TAB-VARIANT, VCF - defaulting to HTML", name);
+                        logger.info("{} is not a recognised output format. Please choose one or more of HTML, TSV_GENE, TSV_VARIANT, VCF, JSON - defaulting to HTML", name);
                         parsedOutputFormats.add(OutputFormat.HTML);
                         break;
                 }

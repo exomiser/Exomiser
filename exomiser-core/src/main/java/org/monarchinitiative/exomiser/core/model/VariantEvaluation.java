@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.Joiner;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -31,8 +33,6 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -44,9 +44,8 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
+@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
-
-    private static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
 
     //threshold over which a variant effect score is considered pathogenic
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
@@ -73,7 +72,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     //VariantAnnotation
     private VariantEffect variantEffect;
     private List<TranscriptAnnotation> annotations;
+    @JsonIgnore
     private String geneSymbol;
+    @JsonIgnore
     private String geneId;
 
     //results from filters
@@ -83,6 +84,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     //score-related stuff - these are mutable
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
+    @JsonProperty("contributingInheritanceModes")
     private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
     private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
@@ -235,10 +237,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a String such as chr6:g.29911092G>T
      */
 //    SPDI?
+    @JsonIgnore
     public String getHgvsGenome() {
         return chr + ":g." + pos + ref + ">" + alt;
     }
 
+    @JsonIgnore
     public String getGenotypeString() {
         // collect genotype string list
         List<String> gtStrings = new ArrayList<>();
@@ -268,6 +272,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * @return the number of individuals with a genotype at this variant.
      */
+    @JsonIgnore
     public int getNumberOfIndividuals() {
         return numIndividuals;
     }

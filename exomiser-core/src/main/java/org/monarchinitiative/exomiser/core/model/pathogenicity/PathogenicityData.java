@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.*;
 
 /**
@@ -99,26 +101,32 @@ public class PathogenicityData {
      *
      * @return true if there is any associated ClinVar data, otherwise returns false.
      * @since 10.1.0
-     */public boolean hasClinVarData() {
+     */
+    public boolean hasClinVarData() {
         return !clinVarData.isEmpty();
     }
 
+    @JsonIgnore
     public PolyPhenScore getPolyPhenScore() {
         return (PolyPhenScore) getPredictedScore(PathogenicitySource.POLYPHEN);
     }
 
+    @JsonIgnore
     public MutationTasterScore getMutationTasterScore() {
         return (MutationTasterScore) getPredictedScore(PathogenicitySource.MUTATION_TASTER);
     }
 
+    @JsonIgnore
     public SiftScore getSiftScore() {
         return (SiftScore) getPredictedScore(PathogenicitySource.SIFT);
     }
 
+    @JsonIgnore
     public CaddScore getCaddScore() {
         return (CaddScore) getPredictedScore(PathogenicitySource.CADD);
     }
 
+    @JsonIgnore
     public RemmScore getRemmScore() {
         return (RemmScore) getPredictedScore(PathogenicitySource.REMM);
     }
@@ -127,10 +135,12 @@ public class PathogenicityData {
         return new ArrayList<>(pathogenicityScores.values());
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return this.equals(EMPTY_DATA);
     }
 
+    @JsonIgnore
     public boolean hasPredictedScore() {
         return !pathogenicityScores.isEmpty();
     }

@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Maps;
 
 import java.util.*;
@@ -99,6 +100,7 @@ public class FrequencyData {
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
      * any frequency data at all, return true, otherwise false.
      */
+    @JsonIgnore
     public boolean isRepresentedInDatabase() {
         return hasDbSnpRsID() || hasKnownFrequency();
     }
@@ -180,6 +182,7 @@ public class FrequencyData {
      *
      * @return
      */
+    @JsonIgnore
     public float getMaxFreq() {
         return (float) knownFrequencies.values().stream().mapToDouble(Frequency::getFrequency).max().orElse(0);
     }

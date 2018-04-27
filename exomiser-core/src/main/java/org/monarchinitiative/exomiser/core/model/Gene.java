@@ -67,11 +67,12 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneIdentifier", "filterResults", "priorityResults", "inheritanceModes", "geneScores", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     private final GeneIdentifier geneIdentifier;
     private final String geneSymbol;
+    @JsonIgnore //cut down on repeated fields
     private final int entrezGeneId;
 
     private final Set<FilterType> failedFilterTypes = new LinkedHashSet<>();
@@ -132,6 +133,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return geneIdentifier.getGeneSymbol();
     }
 
+    @JsonIgnore
     public String getGeneId() {
         return geneIdentifier.getGeneId();
     }
@@ -144,14 +146,15 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the NCBI Entrez Gene ID associated with this gene (extracted from
      * one of the Variant objects)
      */
+    @JsonIgnore
     public int getEntrezGeneID() {
         return geneIdentifier.getEntrezIdAsInteger();
     }
 
-
     /**
      * @return the number of {@link Variant} associated with this gene.
      */
+    @JsonIgnore
     public int getNumberOfVariants() {
         return variantEvaluations.size();
     }
@@ -333,6 +336,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
+    @JsonIgnore
     public GeneScore getTopGeneScore() {
         return topGeneScore;
     }
