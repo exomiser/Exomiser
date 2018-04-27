@@ -54,8 +54,8 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
     /**
-     * @param probandSampleIdentifier   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
-     * @param inheritanceModeAnnotator  An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
+     * @param probandSampleIdentifier  Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
+     * @param inheritanceModeAnnotator An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
      * @throws NullPointerException if any input arguments are null.
      * @since 10.0.0
      */
@@ -90,6 +90,9 @@ public class RawScoreGeneScorer implements GeneScorer {
             for (ModeOfInheritance modeOfInheritance : inheritanceModes) {
                 GeneScore geneScore = calculateGeneScore(gene, modeOfInheritance);
                 logger.debug("{}", geneScore);
+                // IMPORTANT: Do not skip score without variants!
+                // A gene needs to have a score for each MOI as this will effect the overall ranks depending on the inheritance mode
+                // the phenotype score and how omim dealt with the inheritance mode compatibility for known diseases affecting that gene.
                 geneScores.add(geneScore);
             }
             return geneScores;
@@ -119,16 +122,17 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .build();
     }
 
-
     /**
      * Calculate the combined score of this gene based on the relevance of the
      * gene (priorityScore) and the predicted effects of the variants
      * (variantScore).
-     * <P>
+     * <p>
      * Note that this method assumes we have already calculated the filter and variant scores.
-     *
      */
     private float calculateCombinedScore(float variantScore, float priorityScore, Set<PriorityType> prioritiesRun) {
+        if (variantScore == 0 && priorityScore == 0)  {
+            return 0;
+        }
         // its possible that all of these could have been run, but we'll just take the first. Ideally there should be a
         // check somewhere else in the system to prevent more than one prioritiser being run.
         if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
