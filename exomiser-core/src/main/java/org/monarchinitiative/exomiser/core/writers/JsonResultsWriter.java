@@ -42,6 +42,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 10.1.0
  */
 public class JsonResultsWriter implements ResultsWriter {
 
