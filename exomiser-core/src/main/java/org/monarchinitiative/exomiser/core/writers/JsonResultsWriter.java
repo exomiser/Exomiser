@@ -1,19 +1,19 @@
 /*
- * The Exomiser - A tool to annotate and prioritize genomic variants 
- *                           
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
  * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
- *                           
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *                           
- * This program is distributed in the hope that it will be useful, 
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- *                           
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -54,9 +55,9 @@ public class JsonResultsWriter implements ResultsWriter {
     public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
-        ObjectWriter objectMapper = new ObjectMapper().writer();
+        ObjectWriter objectWriter = new ObjectMapper().writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectMapper, bufferedWriter);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectWriter, bufferedWriter);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -64,18 +65,12 @@ public class JsonResultsWriter implements ResultsWriter {
                 .getAbbreviation(), outFileName);
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, boolean outputPassOnly, ObjectWriter objectMapper, Writer writer) throws IOException {
-        List<Gene> genes = analysisResults.getGenes().stream().filter(gene -> gene.isCompatibleWith(modeOfInheritance)).collect(toList());
-        //still need to only write out relevant GeneScore and VariantEvaluations
-        //TODO: implement outputPassOnly functionality
-        objectMapper.writeValue(writer, genes);
-    }
-
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        ObjectWriter objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
+        //Add prettyPrintJson option to outputSettings?
+        ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectMapper, stringWriter);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectWriter, stringWriter);
             stringWriter.flush();
             logger.info("{} {} results written to string", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
                     .getAbbreviation());
@@ -85,4 +80,48 @@ public class JsonResultsWriter implements ResultsWriter {
         }
         return "";
     }
+
+    private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, boolean writeOnlyPassVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
+        List<Gene> compatibleGenes = getCompatibleGene(modeOfInheritance, analysisResults.getGenes());
+
+        if (writeOnlyPassVariants) {
+            logger.info("Writing out only PASS variants");
+            List<Gene> passedGenes = makePassedGenes(modeOfInheritance, compatibleGenes);
+            objectWriter.writeValue(writer, passedGenes);
+        } else {
+            objectWriter.writeValue(writer, compatibleGenes);
+        }
+    }
+
+    private List<Gene> getCompatibleGene(ModeOfInheritance modeOfInheritance, List<Gene> genes) {
+        if (modeOfInheritance == ModeOfInheritance.ANY) {
+            return genes;
+        }
+        return genes.stream()
+                .filter(gene -> gene.isCompatibleWith(modeOfInheritance))
+                .collect(toList());
+    }
+
+    private List<Gene> makePassedGenes(ModeOfInheritance modeOfInheritance, List<Gene> compatibleGenes) {
+        List<Gene> passedGenes = new ArrayList<>();
+        for (Gene gene : compatibleGenes) {
+            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
+                Gene makePassOnlyGene = makePassOnlyGene(modeOfInheritance, gene);
+                passedGenes.add(makePassOnlyGene);
+            }
+        }
+        return passedGenes;
+    }
+
+    private Gene makePassOnlyGene(ModeOfInheritance modeOfInheritance, Gene gene) {
+        Gene passOnlyGene = new Gene(gene.getGeneIdentifier());
+        passOnlyGene.setCompatibleInheritanceModes(gene.getCompatibleInheritanceModes());
+        gene.getVariantEvaluations().stream()
+                .filter(ve -> ve.passedFilters() && ve.isCompatibleWith(modeOfInheritance))
+                .forEach(passOnlyGene::addVariant);
+        gene.getPriorityResults().values().forEach(passOnlyGene::addPriorityResult);
+        gene.getGeneScores().forEach(passOnlyGene::addGeneScore);
+        return passOnlyGene;
+    }
+
 }

@@ -24,43 +24,74 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
+import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class JsonResultsWriterTest {
 
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
     private final TestVariantFactory varFactory = new TestVariantFactory();
 
     private final OutputSettingsImp.OutputSettingsBuilder settingsBuilder = OutputSettings.builder()
             .outputFormats(EnumSet.of(OutputFormat.JSON));
-    private final Analysis analysis = Analysis.builder().build();
-    private AnalysisResults.Builder analysisResults;
+    private final Analysis.Builder analysisBuilder = Analysis.builder();
+    private AnalysisResults.Builder analysisResultsBuilder;
 
     @Before
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.addVariant(makePassVariant());
+        VariantEvaluation passVariant = makePassVariant();
+        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2.addVariant(passVariant);
+        fgfr2.addGeneScore(GeneScore.builder()
+                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .variantScore(1.0f)
+                .phenotypeScore(1.0f)
+                .combinedScore(1.0f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .contributingVariants(ImmutableList.of(passVariant)).build()
+        );
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Gene shh = TestFactory.newGeneSHH();
-        shh.addVariant(makeFailVariant());
+        VariantEvaluation failVariant = makeFailVariant();
+        shh.addVariant(failVariant);
+        shh.addGeneScore(GeneScore.builder()
+                .geneIdentifier(shh.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build()
+        );
 
-        analysisResults = AnalysisResults.builder()
+        analysisResultsBuilder = AnalysisResults.builder()
                 .genes(Arrays.asList(fgfr2, shh));
     }
 
@@ -77,13 +108,94 @@ public class JsonResultsWriterTest {
         return variant;
     }
 
-    @Test
-    public void writeToString() {
-        JsonResultsWriter instance = new JsonResultsWriter();
-        List<Gene> genes = ImmutableList.of();
-        OutputSettings outputSettings = this.settingsBuilder.build();
-        AnalysisResults analysisResults = this.analysisResults.build();
-        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
-        System.out.println(result);
+    private String readFromFile(String filePath) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Files.lines(Paths.get(filePath)).forEach(stringBuilder::append);
+        return stringBuilder.toString();
     }
+
+    @Test
+    public void writeToStringPassOnlyAutosomalDominant() throws Exception {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
+        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void writeToStringPassOnlyAnyModeOfInheritance() throws Exception {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void writeToStringOutputFullAnyModeOfInheritanceAllVariants() throws Exception {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(false).build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String expected = readFromFile("src/test/resources/writers/full_any_moi_test.json");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void writeToStringOutputFullNoModeOfInheritanceMatchAllVariants() throws Exception {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(false).build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        //we have no AR matches in the results set
+        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, outputSettings);
+        String expected = "[]";
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void writeToStringOutputFullAnyModeOfInheritancePassOnlyVariants() throws Exception {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void writeToFileOutputFullAnyModeOfInheritancePassOnlyVariants() throws IOException {
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+
+        Path outPath = tmpFolder.newFile().toPath();
+        OutputSettings outputSettings = settingsBuilder.outputPrefix(outPath + "testWrite").build();
+
+        JsonResultsWriter instance = new JsonResultsWriter();
+        instance.writeFile(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        Path anyOutputPath = Paths.get(outPath + "testWrite.json");
+        assertThat(anyOutputPath.toFile().exists(), is(true));
+        assertThat(anyOutputPath.toFile().delete(), is(true));
+
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, outputSettings);
+        Path arOutputPath = Paths.get(outPath + "testWrite_AR.json");
+        assertThat(arOutputPath.toFile().exists(), is(true));
+        assertThat(arOutputPath.toFile().delete(), is(true));
+
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
+        Path adOutputPath = Paths.get(outPath + "testWrite_AD.json");
+        assertThat(adOutputPath.toFile().exists(), is(true));
+        assertThat(adOutputPath.toFile().delete(), is(true));    }
 }
