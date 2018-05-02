@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,13 +20,14 @@
 package config;
 
 import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.web.dao.ExomiserDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,9 +38,7 @@ import static org.mockito.Mockito.when;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-public class TestDaoConfig {
-    
-    Logger logger = LoggerFactory.getLogger(TestDaoConfig.class);
+public class TestConfig {
 
     @Bean
     public DataSource dataSource() {
@@ -66,5 +65,15 @@ public class TestDaoConfig {
         when(mockExomiserDao.getGenes()).thenReturn(genes);
         
         return mockExomiserDao;
+    }
+
+    @Bean
+    Path phenotypeDataDirectory() {
+        return Paths.get("");
+    }
+
+    @Bean
+    public DataMatrix randomWalkMatrix() {
+        return DataMatrix.empty();
     }
 }

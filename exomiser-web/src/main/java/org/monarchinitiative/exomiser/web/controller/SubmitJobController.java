@@ -160,7 +160,7 @@ public class SubmitJobController {
         Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(analysis);
 
-        writeResultsToFile(analysisId, analysis, analysisResults);
+//        writeResultsToFile(analysisId, analysis, analysisResults);
 
         buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
@@ -252,8 +252,8 @@ public class SubmitJobController {
         OutputSettings outputSettings = OutputSettings.builder()
                 .numberOfGenesToShow(20)
                 .outputPrefix(outFileName)
-                //OutputFormat.HTML, causes issues due to thymeleaf templating
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
+                //OutputFormat.HTML causes issues due to thymeleaf templating - don't use!
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.JSON))
                 .build();
 
         AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
