@@ -57,7 +57,7 @@ public class JsonResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         ObjectWriter objectWriter = new ObjectMapper().writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectWriter, bufferedWriter);
+            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), objectWriter, bufferedWriter);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -70,7 +70,7 @@ public class JsonResultsWriter implements ResultsWriter {
         //Add prettyPrintJson option to outputSettings?
         ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), objectWriter, stringWriter);
+            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), objectWriter, stringWriter);
             stringWriter.flush();
             logger.info("{} {} results written to string", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
                     .getAbbreviation());
@@ -81,7 +81,7 @@ public class JsonResultsWriter implements ResultsWriter {
         return "";
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, boolean writeOnlyPassVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyPassVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
         List<Gene> compatibleGenes = getCompatibleGene(modeOfInheritance, analysisResults.getGenes());
 
         if (writeOnlyPassVariants) {
