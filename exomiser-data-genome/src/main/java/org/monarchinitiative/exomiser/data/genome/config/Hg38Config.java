@@ -51,12 +51,12 @@ public class Hg38Config {
                 gnomadExomeAlleleResource(),
                 topmedAlleleResource(),
                 dbSnpAlleleResource(),
-                clinVarAlleleResource(),
                 uk10kAlleleResource(),
                 exacAlleleResource(),
                 espAlleleResource(),
-                dbnsfpAlleleResource()
-        );
+                dbnsfpAlleleResource(),
+                clinVarAlleleResource()
+                );
     }
 
     public AlleleResource dbSnpAlleleResource() {

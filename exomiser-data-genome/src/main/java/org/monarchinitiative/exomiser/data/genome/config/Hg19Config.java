@@ -51,11 +51,11 @@ public class Hg19Config {
                 gnomadExomeAlleleResource(),
                 topmedAlleleResource(),
                 dbSnpAlleleResource(),
-                clinVarAlleleResource(),
                 uk10kAlleleResource(),
                 exacAlleleResource(),
                 espAlleleResource(),
-                dbnsfpAlleleResource()
+                dbnsfpAlleleResource(),
+                clinVarAlleleResource()
         );
     }
 
