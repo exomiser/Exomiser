@@ -61,12 +61,12 @@ public class Hg38ConfigTest {
                 instance.gnomadExomeAlleleResource(),
                 instance.topmedAlleleResource(),
                 instance.dbSnpAlleleResource(),
-                instance.clinVarAlleleResource(),
                 instance.uk10kAlleleResource(),
                 instance.exacAlleleResource(),
                 instance.espAlleleResource(),
-                instance.dbnsfpAlleleResource()
-        );
+                instance.dbnsfpAlleleResource(),
+                instance.clinVarAlleleResource()
+                );
         assertThat(alleleResources.size(), equalTo(expectedResources.size()));
         for (int i = 0; i < alleleResources.size(); i++) {
             AlleleResource actual = alleleResources.get(i);
