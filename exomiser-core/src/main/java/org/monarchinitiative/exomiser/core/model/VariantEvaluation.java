@@ -406,8 +406,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * amongst variants predicted to be potentially pathogenic, there are different strengths of prediction, which is
      * what this score tries to reflect.
      *
-     * For missense mutations, we use the predictions of MutationTaster, polyphen, and SIFT taken from the data from
-     * the dbNSFP project.
+     * For missense mutations, we use the predictions of MutationTaster, polyphen, and SIFT taken from the dbNSFP
+     * project, if present, or otherwise return a default score.
      *
      * The score returned here is therefore an overall pathogenicity score defined on the basis of
      * "medical genetic intuition".
@@ -415,22 +415,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a score between 0 and 1
      */
     public float getPathogenicityScore() {
-        if (pathogenicityData.hasPredictedScore()) {
-            return pathogenicityData.getScore();
+        float predictedScore = pathogenicityData.getScore();
+        float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
+        // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
+        // In order that missense variants are not over-represented if they have poor predicted scores this clause was added here.
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
+        } else {
+            return Math.max(predictedScore, variantEffectScore);
         }
-        //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
-        //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-        return VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-    }
-
-    /*
-     * Retained in case we have some non-missesnse variants in the database. Shouldn't be needed though.
-     */
-    private float calculateMissenseScore(PathogenicityData pathogenicityData) {
-        if (pathogenicityData.hasPredictedScore()) {
-            return pathogenicityData.getScore();
-        }
-        return VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE;
     }
 
     public FrequencyData getFrequencyData() {

@@ -45,6 +45,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -348,6 +349,20 @@ public class VariantEvaluationTest {
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
         float expected = MTASTER_PASS.getScore();
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
+
+    @Test
+    public void testGetPathogenicityScoreMissensePredictedScoreLessThanDefault() {
+        float expected = 0.1f;
+        assertThat(expected, lessThan(VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE));
+
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.valueOf(expected));
+        VariantEvaluation instance = testVariantBuilder()
+                .pathogenicityData(pathData)
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 

@@ -107,9 +107,8 @@ public class VariantDataServiceImpl implements VariantDataService {
 
         ClinVarData clinVarData = ClinVarData.empty();
         List<PathogenicityScore> allPathScores = new ArrayList<>();
-        // Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
         // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
-        // gain/loss an other possible SNV scores from the bundled pathogenicity databases.
+        // gain/loss an other possible SNV scores from the bundled pathogenicity databases as well as any ClinVar annotations.
         // TODO: this should always be run alongside the frequencies as they are all stored in the same datastore
         if (VariantEffectUtility.affectsCodingRegion(variant.getVariantEffect())) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);

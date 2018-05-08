@@ -50,7 +50,7 @@ public class DefaultPathogenicityDaoMvStoreProto implements PathogenicityDao {
     public PathogenicityData getPathogenicityData(Variant variant) {
         AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
         // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
-        // gain/loss an other possible SNV scores from the bundled pathogenicity databases.
+        // gain/loss an other possible SNV scores from the bundled pathogenicity databases as well as any ClinVar annotations.
         AlleleProperties alleleProperties = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
         logger.debug("{} {}", key, alleleProperties);
         return AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
