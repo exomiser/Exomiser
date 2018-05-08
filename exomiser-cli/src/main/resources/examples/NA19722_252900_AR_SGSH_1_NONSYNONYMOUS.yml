@@ -136,6 +136,6 @@ outputOptions:
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
     outputPrefix: results/NA19722_252900_AR_SGSH_1_NONSYNONYMOUS
-    #out-format options: HTML, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
-    outputFormats: [HTML, TSV_GENE, TSV_VARIANT, VCF]
+    #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
     
