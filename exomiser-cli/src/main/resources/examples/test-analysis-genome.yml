@@ -23,7 +23,7 @@ analysis:
             X_RECESSIVE_COMP_HET: 2.0,
             MITOCHONDRIAL: 0.2
     }
-    #FULL, SPARSE or PASS_ONLY
+    #FULL or PASS_ONLY
     analysisMode: PASS_ONLY
     #Possible frequencySources:
     #Thousand Genomes project - http://www.1000genomes.org/ (THOUSAND_GENOMES)
