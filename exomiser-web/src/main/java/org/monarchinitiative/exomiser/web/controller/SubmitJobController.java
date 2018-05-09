@@ -184,7 +184,7 @@ public class SubmitJobController {
                 .pedPath(pedPath)
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
-                .inheritanceModes(InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
+                .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
 
