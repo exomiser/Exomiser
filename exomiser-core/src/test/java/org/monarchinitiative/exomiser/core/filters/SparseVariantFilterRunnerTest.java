@@ -28,15 +28,13 @@ package org.monarchinitiative.exomiser.core.filters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -50,14 +48,10 @@ import static org.junit.Assert.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class SparseVariantFilterRunnerTest {
 
-    @InjectMocks
-    private SparseVariantFilterRunner instance;
+    private SparseVariantFilterRunner instance = new SparseVariantFilterRunner();
 
     @Mock
-    private VariantDataService variantDataService;
-
-    @Mock
-    private VariantEffectFilter targetFilter;
+    private VariantEffectFilter variantEffectFilter;
     @Mock
     private QualityFilter qualityFilter;
     @Mock
@@ -98,8 +92,6 @@ public class SparseVariantFilterRunnerTest {
     }
 
     private void setUpFrequencyMocks() {
-        Mockito.when(frequencyFilter.getFilterType()).thenReturn(FilterType.FREQUENCY_FILTER);
-
         FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER);
         FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
 
@@ -108,12 +100,13 @@ public class SparseVariantFilterRunnerTest {
     }
 
     private void setUpPathogenicityMocks() {
-        Mockito.when(pathogenicityFilter.getFilterType()).thenReturn(FilterType.PATHOGENICITY_FILTER);
-
         FilterResult pass = new PassFilterResult(FilterType.PATHOGENICITY_FILTER);
         FilterResult fail = new FailFilterResult(FilterType.PATHOGENICITY_FILTER);
 
         Mockito.when(pathogenicityFilter.runFilter(passesAllFilters)).thenReturn(pass);
+        Mockito.when(pathogenicityFilter.runFilter(failsAllFilters)).thenReturn(fail);
+        Mockito.when(pathogenicityFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(fail);
+        Mockito.when(pathogenicityFilter.runFilter(passesTargetQualityFilter)).thenReturn(fail);
     }
 
     private void setUpQualityMocks() {
@@ -129,45 +122,131 @@ public class SparseVariantFilterRunnerTest {
     }
 
     private void setUpTargetMocks() {
-        Mockito.when(targetFilter.getFilterType()).thenReturn(FilterType.VARIANT_EFFECT_FILTER);
-
         FilterResult passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER);
         FilterResult failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER);
 
-        Mockito.when(targetFilter.runFilter(passesAllFilters)).thenReturn(passTargetResult);
-        Mockito.when(targetFilter.runFilter(failsAllFilters)).thenReturn(failTargetResult);
-        Mockito.when(targetFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(failTargetResult);
-        Mockito.when(targetFilter.runFilter(passesTargetQualityFilter)).thenReturn(passTargetResult);
+        Mockito.when(variantEffectFilter.runFilter(passesAllFilters)).thenReturn(passTargetResult);
+        Mockito.when(variantEffectFilter.runFilter(failsAllFilters)).thenReturn(failTargetResult);
+        Mockito.when(variantEffectFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(failTargetResult);
+        Mockito.when(variantEffectFilter.runFilter(passesTargetQualityFilter)).thenReturn(passTargetResult);
     }
 
     @Test
     public void testRunOnlyReturnsVariantPassingAllFilters() {
+        //The order of these filters is important
         List<VariantFilter> filters = new ArrayList<>();
-        filters.add(targetFilter);
+        filters.add(pathogenicityFilter);
+        filters.add(variantEffectFilter);
         filters.add(qualityFilter);
         filters.add(frequencyFilter);
-        filters.add(pathogenicityFilter);
 
-        List<VariantEvaluation> expResult = new ArrayList<>();
-        expResult.add(passesAllFilters);
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
 
-        List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
-        assertThat(result, equalTo(expResult));
         assertThat(passesAllFilters.passedFilters(), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.VARIANT_EFFECT_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.FREQUENCY_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.PATHOGENICITY_FILTER), is(true));
-        //filters not run should return false 
+        //filters not run should return false
         assertThat(passesAllFilters.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
+
+        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+        assertThat(passesQualityFrequencyFilter.getPassedFilterTypes().isEmpty(), is(true));
+
+        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
+        assertThat(passesTargetQualityFilter.getPassedFilterTypes().isEmpty(), is(true));
+
+        assertThat(failsAllFilters.passedFilters(), is(false));
+        assertThat(failsAllFilters.getPassedFilterTypes().isEmpty(), is(true));
     }
 
     @Test
-    public void testRunWithNoFiltersReturnsOriginalVariantEvaluations() {
-        List<VariantFilter> filters = Collections.emptyList();
+    public void testRunOnlyReturnsVariantPassingAllFiltersDifferentOrder() {
+        //The order of these filters is important
+        List<VariantFilter> filters = new ArrayList<>();
+        filters.add(variantEffectFilter);
+        filters.add(qualityFilter);
+        filters.add(frequencyFilter);
+        filters.add(pathogenicityFilter);
 
-        List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
-        assertThat(result, equalTo(variantEvaluations));
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
+
+        assertThat(passesAllFilters.passedFilters(), is(true));
+        assertThat(passesAllFilters.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER,
+                        FilterType.FREQUENCY_FILTER,
+                        FilterType.PATHOGENICITY_FILTER)));
+        //filters not run should return false
+        assertThat(passesAllFilters.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
+
+        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+        assertThat(passesQualityFrequencyFilter.getPassedFilterTypes().isEmpty(), is(true));
+
+        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
+        assertThat(passesTargetQualityFilter.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER)));
+
+        assertThat(failsAllFilters.passedFilters(), is(false));
+        assertThat(failsAllFilters.getPassedFilterTypes().isEmpty(), is(true));
+    }
+
+    @Test
+    public void testRunReturnsVariantsPassingVariantEffectAndQualityFilters() {
+        //The order of these filters is important
+        List<VariantFilter> filters = new ArrayList<>();
+        filters.add(variantEffectFilter);
+        filters.add(qualityFilter);
+
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
+
+        assertThat(passesAllFilters.passedFilters(), is(true));
+        assertThat(passesAllFilters.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER)));
+        //filters not run should return false
+        assertThat(passesAllFilters.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
+
+        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+        assertThat(passesQualityFrequencyFilter.getPassedFilterTypes().isEmpty(), is(true));
+
+        assertThat(passesTargetQualityFilter.passedFilters(), is(true));
+        assertThat(passesTargetQualityFilter.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER)));
+
+        assertThat(failsAllFilters.passedFilters(), is(false));
+        assertThat(failsAllFilters.getPassedFilterTypes().isEmpty(), is(true));
+    }
+
+    @Test
+    public void testRunReturnsVariantsPassingQualityAndVariantEffectFilters() {
+        //The order of these filters is important
+        List<VariantFilter> filters = new ArrayList<>();
+        filters.add(qualityFilter);
+        filters.add(variantEffectFilter);
+
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
+
+        assertThat(passesAllFilters.passedFilters(), is(true));
+        assertThat(passesAllFilters.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER)));
+        //filters not run should return false
+        assertThat(passesAllFilters.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
+
+        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+        assertThat(passesQualityFrequencyFilter.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.QUALITY_FILTER)));
+
+        assertThat(passesTargetQualityFilter.passedFilters(), is(true));
+        assertThat(passesTargetQualityFilter.getPassedFilterTypes(),
+                equalTo(EnumSet.of(FilterType.VARIANT_EFFECT_FILTER,
+                        FilterType.QUALITY_FILTER)));
+
+        assertThat(failsAllFilters.passedFilters(), is(false));
+        assertThat(failsAllFilters.getPassedFilterTypes().isEmpty(), is(true));
     }
 
     @Test

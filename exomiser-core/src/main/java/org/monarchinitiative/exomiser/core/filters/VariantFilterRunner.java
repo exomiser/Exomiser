@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,9 +38,9 @@ public interface VariantFilterRunner extends FilterRunner<VariantFilter, Variant
     @Override
     List<VariantEvaluation> run(VariantFilter variantFilter, List<VariantEvaluation> variantEvaluations);
 
-    @Override
-    List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations);
-
-    FilterResult run(Filter filter, VariantEvaluation variantEvaluation);
-
+    default FilterResult run(VariantFilter filter, VariantEvaluation variantEvaluation) {
+        FilterResult filterResult = filter.runFilter(variantEvaluation);
+        variantEvaluation.addFilterResult(filterResult);
+        return filterResult;
+    }
 }
