@@ -356,6 +356,10 @@ public class AnalysisParser {
             if (value == null) {
                 return AnalysisMode.PASS_ONLY;
             }
+            if ("SPARSE".equalsIgnoreCase(value)) {
+                logger.warn("Analysis mode 'SPARSE' is no longer supported - defaulting to {}", AnalysisMode.PASS_ONLY);
+                return AnalysisMode.PASS_ONLY;
+            }
             return AnalysisMode.valueOf(value);
         }
 

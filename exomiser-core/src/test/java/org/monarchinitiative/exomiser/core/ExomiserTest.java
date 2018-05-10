@@ -73,13 +73,6 @@ public class ExomiserTest {
     }
     
     @Test
-    public void canRunAnalysisSparse() {
-        Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
-        AnalysisResults analysisResults = instance.run(analysis);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
-    }
-    
-    @Test
     public void canRunAnalysisPassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
         AnalysisResults analysisResults = instance.run(analysis);
