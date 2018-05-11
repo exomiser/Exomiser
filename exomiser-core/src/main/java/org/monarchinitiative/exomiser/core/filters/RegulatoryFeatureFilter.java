@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,8 +24,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -34,8 +32,6 @@ import java.util.Objects;
  */
 @JsonRootName("regulatoryFeatureFilter")
 public class RegulatoryFeatureFilter implements VariantFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(RegulatoryFeatureFilter.class);
 
     private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
@@ -51,7 +47,6 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         VariantEffect effect = variantEvaluation.getVariantEffect();
         // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_REGION_VARIANT if in a known region
-        // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
             // GeneReassigner can assign a new empty list
             if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {

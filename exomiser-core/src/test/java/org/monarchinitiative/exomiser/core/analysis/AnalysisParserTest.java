@@ -159,6 +159,27 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisPassOnlyAnalysisMode() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    analysisMode: PASS_ONLY \n"
+                        + "    ");
+        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+    }
+
+    @Test
+    public void testParseAnalysisSparseAnalysisModeReturnsPassOnlyDefault() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    analysisMode: SPARSE \n"
+                        + "    ");
+        // AnalysisMode.SPARSE was removed in version 11.0.0
+        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+    }
+
+    @Test
     public void testParseAnalysisNotSettingGenomeBuildReturnsDefault() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
@@ -425,7 +446,6 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
-//                + "    modeOfInheritance: UNINITIALIZED\n"
                 + "    inheritanceModes: {}\n"
                 + "    hpoIds: []\n"
                 + "    analysisMode: PASS_ONLY \n"
@@ -443,7 +463,6 @@ public class AnalysisParserTest {
         instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-//                        + "    modeOfInheritance: [WIBBLE!]"
                         + "    inheritanceModes: {WIBBLE: 0.0}\n"
         );
     }
@@ -585,8 +604,8 @@ public class AnalysisParserTest {
                 + "    outputPassVariantsOnly: true\n"
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
-                + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
-        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
+                + "    outputFormats: [HTML, JSON, TSV-GENE, TSV-VARIANT, VCF]\n");
+        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
         assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
     }
 

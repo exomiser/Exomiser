@@ -4,6 +4,7 @@ The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 [![GitHub release](https://img.shields.io/github/release/exomiser/Exomiser.svg)](https://github.com/exomiser/Exomiser/releases)
 [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b518a9448b5b4889a40b3dc660ef585a)](https://www.codacy.com/app/monarch-initiative/Exomiser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=exomiser/Exomiser&amp;utm_campaign=Badge_Grade)
+[![Documentation](https://readthedocs.org/projects/exomiser/badge/?version=latest)](http://exomiser.readthedocs.io/en/latest)
 #### Overview:
 
 The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.

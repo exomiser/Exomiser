@@ -151,9 +151,7 @@ public class SimpleVariantFilterRunnerTest {
         filters.add(qualityFilter);
         filters.add(frequencyFilter);
 
-        List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
-
-        assertThat(result, equalTo(variantEvaluations));
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
 
         printVariantFilterStatus("passesAllFilters", passesAllFilters);
         assertThat(passesAllFilters.passedFilters(), is(true));

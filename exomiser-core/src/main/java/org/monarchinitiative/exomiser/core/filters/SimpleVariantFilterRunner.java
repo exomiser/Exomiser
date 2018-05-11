@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.monarchinitiative.exomiser.core.model.Filterable;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Applies the given {@code VariantFilter} to the {@code VariantEvaluation}.
@@ -49,49 +44,12 @@ import java.util.Set;
  */
 public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
-   
     @Override
-    public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using simple filtering...", variantEvaluations.size());
+    public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            run(variantFilters, variantEvaluation);
+            run(filter, variantEvaluation);
         }
-        logger.info("Ran {} filters over {} variants using simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
         return variantEvaluations;
-    }
-
-    @Override
-    public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> filterables) {
-        for (VariantEvaluation variantEvaluation : filterables) {
-            run(filter, variantEvaluation);
-        }
-        return filterables;
-    }
-
-    private void run(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
-        for (VariantFilter filter : variantFilters) {
-            run(filter, variantEvaluation);
-        }
-    }
-
-    @Override
-    public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
-        return runFilterAndAddResult(filter, variantEvaluation);
-    }
-
-    protected FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
-        FilterResult filterResult = filter.runFilter(filterable);
-        filterable.addFilterResult(filterResult);
-        return filterResult;
-    }
-
-    protected Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
-        Set<FilterType> filtersRun = new LinkedHashSet<>();
-        for (Filter filter : filters) {
-            filtersRun.add(filter.getFilterType());
-        }
-        return filtersRun;
     }
 
 }

@@ -127,7 +127,7 @@ public class SimpleGeneFilterRunnerTest {
     public void testRunMultipleFiltersOverGenes() {
         assertVariantsUnfilteredAndDoNotPassFilter(genes, filters);
 
-        instance.run(filters, genes);
+        filters.forEach(filter -> instance.run(filter, genes));
 
         assertFilterStatus(passGene, filters, FilterStatus.PASSED);
         assertFilterStatus(failGene, filters, FilterStatus.FAILED);
