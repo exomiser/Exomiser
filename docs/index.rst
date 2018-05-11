@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to exomiser's documentation!
-====================================
+Welcome to the Exomiser documentation!
+======================================
 
 .. toctree::
    :maxdepth: 2
@@ -18,3 +18,24 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. toctree::
+:caption: Installation & Getting Started
+       :name: getting-started
+       :maxdepth: 1
+       :hidden:
+    installation
+    getting_started
+
+.. toctree::
+:caption: Running the Exomiser
+       :name: running-it
+           :maxdepth: 1
+           :hidden:
+
+
+.. toctree::
+:caption: Interpretation of Results
+       :name: whats-it-all-mean
+           :maxdepth: 1
+           :hidden:
