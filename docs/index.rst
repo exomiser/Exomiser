@@ -11,7 +11,7 @@ Introduction
 ============
 The Exomiser is a Java program, developed as a collaboration between members of the Monarch Initiative for finding potential disease-causing variants in whole-exome or whole-genome sequencing data. It is available for use by all as an offline command-line tool, or on the web as a demo application/teaching tool.
 
-Starting from a VCF file and a set of phenotypes encoded using the Human Phenotype Ontology (HPO) it will annotate, filter and prioritise likely causative variants. The program does this based on user-defined criteria such as a variant's predicted pathogenicity, frequency of occurrence in a population and also how closely the given phenotype matches the known phenotype of diseased genes from human and model organism data.
+It requires a VCF file and a set of phenotypes encoded using the Human Phenotype Ontology (HPO) from which it will annotate, filter and prioritise likely causative variants. The program does this based on user-defined criteria such as a variant's predicted pathogenicity, frequency of occurrence in a population and also how closely the given phenotype matches the known phenotype of diseased genes from human and model organism data.
 
 The functional annotation of variants is handled by the Jannovar library and uses any of UCSC, RefSeq or Ensembl KnownGene transcript definitions and hg19 or hg38 genomic coordinates.
 
