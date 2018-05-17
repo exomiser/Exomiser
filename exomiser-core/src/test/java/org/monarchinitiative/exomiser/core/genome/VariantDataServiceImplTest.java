@@ -180,6 +180,15 @@ public class VariantDataServiceImplTest {
     }
 
     @Test
+    public void serviceQueryForSynonymousVariantReturnsEmptyPathogenicityData() {
+        variant = buildVariantOfType(VariantEffect.SYNONYMOUS_VARIANT);
+        //even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.valueOf(1f)));
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
+        assertThat(result, equalTo(PathogenicityData.empty()));
+    }
+
+    @Test
     public void serviceReturnsEmptyFrequencyDataWithRsIdForVariantWhenNoSourcesAreDefined() {
         FrequencyData result = instance.getVariantFrequencyData(variant, Collections.emptySet());
         assertThat(result, equalTo(FrequencyData.of(RsId.valueOf(1234567))));
