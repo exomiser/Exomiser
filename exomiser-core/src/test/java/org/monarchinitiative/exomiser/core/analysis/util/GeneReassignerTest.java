@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -134,7 +134,7 @@ public class GeneReassignerTest {
      * This is the simplest case happy path test .
      */
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantOriginallyAssociatedWithBestCandidateGene() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchvariantOriginallyAssociatedWithBestCandidateGene() {
 
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
@@ -149,7 +149,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotOriginallyAssociatedWithBestCandidateGene() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchvariantNotOriginallyAssociatedWithBestCandidateGene() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -163,7 +163,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantOriginallyAssociatedWithBestCandidateGeneKeepsOriginalAnnotations() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchvariantOriginallyAssociatedWithBestCandidateGeneKeepsOriginalAnnotations() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -183,7 +183,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotOriginallyAssociatedWithBestCandidateGeneHasMatchingAnnotationsTransferred() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchVariantNotOriginallyAssociatedWithBestCandidateGeneHasMatchingAnnotationsTransferred() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -202,7 +202,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantInTadButNotAssignedToKnownGene() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchVariantInTadButNotAssignedToKnownGene() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -218,7 +218,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotInKnownTadAndNotAssignedToKnownGene() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchVariantNotInKnownTadAndNotAssignedToKnownGene() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -234,7 +234,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_GeneInTadNotInKnownGenes() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchGeneInTadNotInKnownGenes() {
 
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
@@ -277,7 +277,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantAssociatedWithGeneInOtherTad() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchVariantAssociatedWithGeneInOtherTad() {
 
         addPriorityResultWithScore(gene1, 1d);
         TopologicalDomain tad1 = makeTad(1, 1, 20000, gene1);
@@ -294,7 +294,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_ignoresNonRegulatoryVariant() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchIgnoresNonRegulatoryVariant() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -308,7 +308,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotMovedWhenAllGenesHaveEqualScore() {
+    public void assignsRegulatoryVariantToBestPhenotypicMatchVariantNotMovedWhenAllGenesHaveEqualScore() {
         addPriorityResultWithScore(gene1, 0.5d);
         addPriorityResultWithScore(gene2, 0.5d);
 
@@ -322,7 +322,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_variantInUnKnownGeneIsNotAltered() {
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsVariantInUnKnownGeneIsNotAltered() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -339,7 +339,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_variantEffectIsNullIsNotAltered() {
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsVariantEffectIsNullIsNotAltered() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -364,7 +364,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_handlesFusionProteinAnnotationsToTwoKnownGenes() {
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsHandlesFusionProteinAnnotationsToTwoKnownGenes() {
         addPriorityResultWithScore(gene1, 1d);
         addPriorityResultWithScore(gene2, 0d);
 
@@ -396,7 +396,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_MissenseAnnotationsAreNotReassigned() {
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsMissenseAnnotationsAreNotReassigned() {
         Stream<VariantContext> variantContext = TestVcfParser
                 .forSamples("Adam", "Eve")
                 .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
@@ -432,7 +432,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_AnnotationsOverlapTwoGenesShouldOnlyHaveTopPhenotypeGeneMatchAnnotations() {
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsAnnotationsOverlapTwoGenesShouldOnlyHaveTopPhenotypeGeneMatchAnnotations() {
         //in this scenario the annotations for the variant overlap both the GNRHR2 and RBM8A genes.
         Stream<VariantContext> variantContext = TestVcfParser.forSamples("Adam", "Eve")
                 .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");

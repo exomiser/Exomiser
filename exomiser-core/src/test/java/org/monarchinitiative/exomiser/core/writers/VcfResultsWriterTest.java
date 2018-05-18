@@ -161,7 +161,6 @@ public class VcfResultsWriterTest {
 
     private AnalysisResults buildAnalysisResults(Gene... genes) {
         return AnalysisResults.builder()
-//                .vcfHeader(vcfHeader)
                 .genes(Arrays.asList(genes))
                 .build();
     }
@@ -170,7 +169,6 @@ public class VcfResultsWriterTest {
     @Test
     public void testWriteHeaderFile() {
         AnalysisResults analysisResults = AnalysisResults.builder()
-//                .vcfHeader(vcfHeader)
                 .build();
         assertThat(instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings), equalTo(EXPECTED_HEADER));
     }
@@ -179,7 +177,6 @@ public class VcfResultsWriterTest {
     @Test
     public void testWriteUnannotatedVariants() {
         AnalysisResults analysisResults = AnalysisResults.builder()
-//                .vcfHeader(vcfHeader)
                 .variantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2))
                 .build();
         

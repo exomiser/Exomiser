@@ -1,5 +1,21 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 10.1.0 2018-05-09
+- Added support for filtering multiple intervals in the ```intervalFilter``` 
+    ```yaml
+    # single interval
+    intervalFilter: {interval: 'chr10:123256200-123256300'},
+    # or for multiple intervals:
+    intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+    # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+    intervalFilter: {bed: /full/path/to/bed_file.bed}
+    ```
+- Added support for ClinVar annotations - available in the 1805 variant data release. These will appear automatically and are reported for information only. 
+- Added ```JSON``` output format
+    ```yaml
+    outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
+    ```
+
 ## 10.0.1 2018-03-20
 - Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
 

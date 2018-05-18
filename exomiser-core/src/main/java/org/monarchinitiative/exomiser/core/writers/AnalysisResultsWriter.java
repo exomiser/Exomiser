@@ -28,6 +28,9 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * Facade for handling writing out {@link org.monarchinitiative.exomiser.core.analysis.AnalysisResults}
  *
@@ -43,11 +46,19 @@ public class AnalysisResultsWriter {
     public static void writeToFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
         ResultsWriterFactory resultsWriterFactory = new ResultsWriterFactory();
         logger.info("Writing results...");
-        writeResultsToHtmlFile(analysis, analysisResults, outputSettings);
+
+        Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
+        for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
+            if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {
+                writeResultsToFileForMoiWithFormat(ModeOfInheritance.ANY, outputFormat, analysis, analysisResults, outputSettings, resultsWriterFactory);
+            } else {
+                outputFormatsForAnyMoi.add(outputFormat);
+            }
+        }
 
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
         if (inheritanceModeOptions.isEmpty()) {
-            writeForInheritanceMode(ModeOfInheritance.ANY, analysis, outputSettings, resultsWriterFactory, analysisResults);
+            writeForInheritanceMode(ModeOfInheritance.ANY, outputFormatsForAnyMoi, analysis, analysisResults, outputSettings, resultsWriterFactory);
         } else {
             for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
                 logger.info("Writing {} results:", modeOfInheritance);
@@ -56,25 +67,19 @@ public class AnalysisResultsWriter {
                 // without interfering with other writes for different modes. Check RAM requirements.
                 // Will only save a few seconds, so is not a rate-limiting step.
                 analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
-
-                writeForInheritanceMode(modeOfInheritance, analysis, outputSettings, resultsWriterFactory, analysisResults);
+                writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysis, analysisResults, outputSettings, resultsWriterFactory);
             }
         }
     }
 
-    private static void writeForInheritanceMode(ModeOfInheritance modeOfInheritance, Analysis analysis, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory, AnalysisResults analysisResults) {
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            if (outFormat != OutputFormat.HTML) {
-                ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-                resultsWriter.writeFile(modeOfInheritance, analysis, analysisResults, outputSettings);
-            }
+    private static void writeForInheritanceMode(ModeOfInheritance modeOfInheritance, Set<OutputFormat> outputFormats, Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
+        for (OutputFormat outFormat : outputFormats) {
+            writeResultsToFileForMoiWithFormat(modeOfInheritance, outFormat, analysis, analysisResults, outputSettings, resultsWriterFactory);
         }
     }
 
-    private static void writeResultsToHtmlFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
-        if (outputSettings.getOutputFormats().contains(OutputFormat.HTML)) {
-            ResultsWriter htmlResults = new HtmlResultsWriter();
-            htmlResults.writeFile(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
-        }
+    private static void writeResultsToFileForMoiWithFormat(ModeOfInheritance modeOfInheritance, OutputFormat outputFormat, Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
+        ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outputFormat);
+        resultsWriter.writeFile(modeOfInheritance, analysis, analysisResults, outputSettings);
     }
 }

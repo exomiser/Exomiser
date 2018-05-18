@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -27,8 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -41,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,6 +91,16 @@ public class MvStoreAlleleIndexerTest {
                 .build();
     }
 
+    private AlleleProperties alleleProperties(String rsId, ClinVarData clinVarData, Map<String, Float> properties) {
+        ClinVar clinVar = AlleleConverter.toProtoClinVar(clinVarData);
+
+        return AlleleProperties.newBuilder()
+                .setRsId(rsId)
+                .setClinVar(clinVar)
+                .putAllProperties(properties)
+                .build();
+    }
+
     @Test
     public void createsSingleAllelesMap() throws Exception {
         MVStore mvStore = newMvStore();
@@ -109,7 +123,7 @@ public class MvStoreAlleleIndexerTest {
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
         AlleleProperties alleleProperties = alleleProperties(Collections.emptyMap());
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
@@ -130,7 +144,7 @@ public class MvStoreAlleleIndexerTest {
         assertThat(instance.count(), equalTo(1L));
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
         AlleleProperties alleleProperties = alleleProperties("rs12345", Collections.emptyMap());
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
@@ -153,10 +167,8 @@ public class MvStoreAlleleIndexerTest {
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 0.0023f);
-        AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
+        AlleleProperties alleleProperties = AlleleConverter.toAlleleProperties(allele);
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -182,7 +194,7 @@ public class MvStoreAlleleIndexerTest {
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 0.0023f);
         properties.put("EXAC_NFE", 0.12345f);
@@ -212,7 +224,7 @@ public class MvStoreAlleleIndexerTest {
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12345, "A", "T");
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 0.0023f);
         properties.put("EXAC_NFE", 0.12345f);
@@ -243,7 +255,7 @@ public class MvStoreAlleleIndexerTest {
 
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
-        AlleleKey alleleKey = alleleKey(1, 12618254, "C", "CAAGAAG");
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 1.098f);
         AlleleProperties alleleProperties = alleleProperties("rs534165942", properties);
@@ -307,6 +319,14 @@ public class MvStoreAlleleIndexerTest {
         Allele updateAllele = new Allele(1, 12618254, "C", "CAAGAAG");
         updateAllele.setRsId("rs534165942");
         updateAllele.addValue(AlleleProperty.EXAC_NFE, 2.0f);
+        ClinVarData alleleClinVarData = ClinVarData.builder()
+                .alleleId("12345")
+                .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
+                .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))
+                .reviewStatus("conflicting interpretations")
+                .build();
+        updateAllele.setClinVarData(alleleClinVarData);
 
         Allele other = new Allele(23, 36103454, "A", "G");
         other.addValue(AlleleProperty.EXAC_AFR, 0.01f);
@@ -328,7 +348,7 @@ public class MvStoreAlleleIndexerTest {
         Map<String, Float> properties = new HashMap<>();
         properties.put("KG", 1.0f);
         properties.put("EXAC_NFE", 2.0f);
-        AlleleProperties alleleProperties = alleleProperties("rs534165942", properties);
+        AlleleProperties alleleProperties = alleleProperties("rs534165942", alleleClinVarData, properties);
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));

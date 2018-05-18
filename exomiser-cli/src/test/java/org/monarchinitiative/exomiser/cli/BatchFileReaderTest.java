@@ -40,7 +40,7 @@ public class BatchFileReaderTest {
     }
 
     @Test
-    public void testReadPathsFromBatchFile_FileNotFound() {
+    public void testReadPathsFromBatchFileFileNotFound() {
         assertThat(readPaths("wibble.txt").isEmpty(), is(true));
     }
 

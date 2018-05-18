@@ -250,10 +250,33 @@
                                        th:text="${rsId}">rs141235720
                                     </a>
                                     <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
-                                        (variation
-                                        viewer)
+                                        (variation viewer)
                                     </a>
                                     <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                                </th:block>
+                            </div>
+                            <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                                <b>ClinVar: </b>
+                                <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                          th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                    <span th:case="'BENIGN'" class="label label-success"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                                    <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                                    <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                                    <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                                    <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                                    <span th:case="'PATHOGENIC'" class="label label-danger"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                                    <span th:case="*" class="label label-default"
+                                          th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                                    <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                       th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                        (criteria_provided,_single_submitter)
+                                    </a>
                                 </th:block>
                             </div>
                             <div class="col-sm-6">
@@ -318,8 +341,7 @@
                  th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}"
                  th:if="not ${variantEvaluation.contributesToGeneScore()}">
                 <div class="col-sm-12">
-            <span class="label label-danger"
-                  th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+            <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                     <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
                         chr10:g.123256215T>G [0/1]</b>
                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}" th:if="not ${rsId.isEmpty()}">
@@ -327,10 +349,33 @@
                            th:text="${rsId}">rs141235720
                         </a>
                         <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
-                            (variation
-                            viewer)
+                            (variation viewer)
                         </a>
                         <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                    </th:block>
+                </div>
+                <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                    <b>ClinVar: </b>
+                    <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                              th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                        <span th:case="'BENIGN'" class="label label-success"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                        <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                        <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                        <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                        <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                        <span th:case="'PATHOGENIC'" class="label label-danger"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                        <span th:case="*" class="label label-default"
+                           th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                        <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                           th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                            (criteria_provided,_single_submitter)
+                        </a>
                     </th:block>
                 </div>
                 <div class="col-sm-6">

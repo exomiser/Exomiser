@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,21 +66,21 @@ public class ExomiserTest {
     }
     
     @Test
-    public void canRunAnalysis_Full() {
+    public void canRunAnalysisFull() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
         AnalysisResults analysisResults = instance.run(analysis);
         assertThat(analysisResults.getGenes().size(), equalTo(2));
     }
     
     @Test
-    public void canRunAnalysis_Sparse() {
+    public void canRunAnalysisSparse() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
         AnalysisResults analysisResults = instance.run(analysis);
         assertThat(analysisResults.getGenes().size(), equalTo(2));
     }
     
     @Test
-    public void canRunAnalysis_PassOnly() {
+    public void canRunAnalysisPassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
         AnalysisResults analysisResults = instance.run(analysis);
         assertThat(analysisResults.getGenes().size(), equalTo(2));

@@ -47,57 +47,57 @@ public class AnalysisStepTest {
     private static final AnalysisStep INHERITANCE_FILTER = new InheritanceFilter(EnumSet.of(ModeOfInheritance.ANY));
     
     @Test
-    public void testIsInheritanceModeDependent_OMIMPriority() {
+    public void testIsInheritanceModeDependentOMIMPriority() {
         assertThat(OMIM_PRIORITY.isInheritanceModeDependent(), is(true));
     }
 
     @Test
-    public void testIsInheritanceModeDependent_InheritanceModeFilter() {
+    public void testIsInheritanceModeDependentInheritanceModeFilter() {
         assertThat(INHERITANCE_FILTER.isInheritanceModeDependent(), is(true));
     }
 
     @Test
-    public void testIsInheritanceModeDependent_notInheritanceModeDependant() {
+    public void testIsInheritanceModeDependentNotInheritanceModeDependant() {
         assertThat(KNOWN_VARIANT_FILTER.isInheritanceModeDependent(), is(false));
     }
 
     @Test
-    public void testIsOnlyGeneDependent_inheritanceModeDependantGeneFilter() {
+    public void testIsOnlyGeneDependentInheritanceModeDependantGeneFilter() {
         assertThat(INHERITANCE_FILTER.isOnlyGeneDependent(), is(false));
     }
 
     @Test
-    public void testIsOnlyGeneDependent_inheritanceModeDependantPrioritiser() {
+    public void testIsOnlyGeneDependentInheritanceModeDependantPrioritiser() {
         assertThat(OMIM_PRIORITY.isOnlyGeneDependent(), is(false));
     }
 
     @Test
-    public void testIsOnlyGeneDependent_variantFilter() {
+    public void testIsOnlyGeneDependentVariantFilter() {
         assertThat(KNOWN_VARIANT_FILTER.isOnlyGeneDependent(), is(false));
     }
 
     @Test
-    public void testIsOnlyGeneDependent_otherPrioritiser() {
+    public void testIsOnlyGeneDependentOtherPrioritiser() {
         assertThat(PHIVE_PRIORITY.isOnlyGeneDependent(), is(true));
     }
 
     @Test
-    public void testIsOnlyGeneDependent_priorityScoreFilter() {
+    public void testIsOnlyGeneDependentPriorityScoreFilter() {
         assertThat(PRIORITY_SCORE_FILTER.isOnlyGeneDependent(), is(true));
     }
 
     @Test
-    public void testIsVariantFilter_variantFilter() {
+    public void testIsVariantFilterVariantFilter() {
         assertThat(KNOWN_VARIANT_FILTER.isVariantFilter(), is(true));
     }
 
     @Test
-    public void testIsVariantFilter_geneFilter() {
+    public void testIsVariantFilterGeneFilter() {
         assertThat(INHERITANCE_FILTER.isVariantFilter(), is(false));
     }
 
     @Test
-    public void testIsVariantFilter_prioritiser() {
+    public void testIsVariantFilterPrioritiser() {
         assertThat(OMIM_PRIORITY.isVariantFilter(), is(false));
     }
 

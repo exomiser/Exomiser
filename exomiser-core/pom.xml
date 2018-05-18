@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>10.0.1</version>
+        <version>10.1.0</version>
     </parent>
 
     <dependencies>
@@ -72,10 +72,6 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring4</artifactId>
         </dependency>
         <dependency>
             <!-- jsoup HTML parser library @ http://jsoup.org/ -->
@@ -133,6 +129,11 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +38,8 @@ import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyD
 import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,32 +61,18 @@ public class OntologyServiceImplTest {
     @Mock
     private ZebraFishPhenotypeOntologyDao mockZpoDao;
 
-    private List<String> diseaseHpoIds;
-    private Set<PhenotypeTerm> hpoTerms;
-    private Set<PhenotypeTerm> mpoTerms;
-    private Set<PhenotypeTerm> zpoTerms;
-
     private final PhenotypeTerm fingerJointHyperExtensibility = PhenotypeTerm.of("HP:0001187", "Hyperextensibility of the finger joints");
     private final PhenotypeTerm conjunctivalNodule = PhenotypeTerm.of("HP:0009903", "Conjunctival nodule");
     private final PhenotypeTerm cleftHelix = PhenotypeTerm.of("HP:0009902", "Cleft helix");
     private final PhenotypeTerm thinEarHelix = PhenotypeTerm.of("HP:0009905", "Thin ear helix");
 
+    private final Set<PhenotypeTerm> hpoTerms = ImmutableSet.of(fingerJointHyperExtensibility, conjunctivalNodule, cleftHelix, thinEarHelix);
+    private Set<PhenotypeTerm> mpoTerms = Collections.emptySet();
+    private Set<PhenotypeTerm> zpoTerms = Collections.emptySet();
+
     @Before
     public void setUp() {
-        diseaseHpoIds = new ArrayList<>();
-        diseaseHpoIds.addAll(Arrays.asList("HP:000000", "HP:000001", "HP:000002", "HP:000003", "HP:000004"));
-
-        hpoTerms = new HashSet<>();
-        setUpHpoTerms();
-
         setUpDaoMocks();
-    }
-
-    private void setUpHpoTerms() {
-        hpoTerms.add(fingerJointHyperExtensibility);
-        hpoTerms.add(conjunctivalNodule);
-        hpoTerms.add(cleftHelix);
-        hpoTerms.add(thinEarHelix);
     }
 
     private void setUpDaoMocks() {

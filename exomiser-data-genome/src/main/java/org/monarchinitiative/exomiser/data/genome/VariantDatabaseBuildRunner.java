@@ -83,7 +83,7 @@ public class VariantDatabaseBuildRunner {
 
         MVMap<AlleleKey, AlleleProperties> newMap = newStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
 
-        logger.info("Copying {} entries from temp store to final store",map.size());
+        logger.info("Copying {} entries from temp store {} to final store {}", map.size(), mvStore.getFileStore().getFileName(), newStore.getFileStore().getFileName());
         int count = 0;
         for (Map.Entry<AlleleKey, AlleleProperties> entry : map.entrySet()) {
             newMap.put(entry.getKey(), entry.getValue());

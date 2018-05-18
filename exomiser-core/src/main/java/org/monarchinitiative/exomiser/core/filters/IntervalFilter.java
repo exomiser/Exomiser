@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,12 +20,16 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
+import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.exomiser.core.analysis.util.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,6 +42,7 @@ import java.util.Objects;
  * message is given and no filtering is done.
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @version 0.08 (April 28, 2013)
  */
 public class IntervalFilter implements VariantFilter {
@@ -49,20 +54,62 @@ public class IntervalFilter implements VariantFilter {
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final GeneticInterval interval;
+    // Storing a copy of the input intervals for use in the equals, hashCode and toString methods as the
+    // Jannovar class underlying the ChromosomalRegionIndex does not implement these.
+    private final List<ChromosomalRegion> intervals;
+    private final ChromosomalRegionIndex<ChromosomalRegion> intervalIndex;
 
     /**
      * Constructor defining the genetic interval.
      *
-     * @param interval the interval based on a String such as chr2:12345-67890.
+     * @param interval the chromosomal region within which a variant will pass the filter.
      */
-    public IntervalFilter(GeneticInterval interval) {
-        this.interval = interval;
-
+    public IntervalFilter(ChromosomalRegion interval) {
+        this(ImmutableList.of(interval));
     }
 
+    /**
+     * Constructor whose argument defines a set of {@link ChromosomalRegion} within which a variant will pass the filter.
+     * Variants falling outside of one of these regions will fail. It is acceptable for regions to overlap, or be nested.
+     *
+     * @param chromosomalRegions the chromosomal regions within which a variant will pass the filter.
+     * @since 10.1.0
+     */
+    public IntervalFilter(Collection<ChromosomalRegion> chromosomalRegions) {
+        Objects.requireNonNull(chromosomalRegions);
+        //an empty collection will result in nothing ever passing
+        assertNotEmpty(chromosomalRegions);
+        this.intervals = copySortDeDup(chromosomalRegions);
+        this.intervalIndex = new ChromosomalRegionIndex<>(chromosomalRegions);
+    }
+
+    private void assertNotEmpty(Collection<ChromosomalRegion> chromosomalRegions) {
+        if (chromosomalRegions.isEmpty()) {
+            throw new IllegalStateException("chromosomalRegions cannot be empty");
+        }
+    }
+
+    private List<ChromosomalRegion> copySortDeDup(Collection<ChromosomalRegion> geneticIntervals) {
+        return geneticIntervals.stream().distinct().sorted().collect(ImmutableList.toImmutableList());
+    }
+
+    /**
+     * A sorted list of {@code ChromosomalRegion} for which this filter will pass variants.
+     *
+     * @return a sorted list of {@code ChromosomalRegion}
+     * @since 10.1.0
+     */
+    public List<ChromosomalRegion> getChromosomalRegions() {
+        return intervals;
+    }
+
+    /**
+     * @deprecated
+     * @return
+     */
     public GeneticInterval getGeneticInterval() {
-        return interval;
+        ChromosomalRegion chromosomalRegion = intervals.get(0);
+        return new GeneticInterval(chromosomalRegion.getChromosome(), chromosomalRegion.getStart(), chromosomalRegion.getEnd());
     }
 
     /**
@@ -77,52 +124,31 @@ public class IntervalFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (variantIsNotWithinInterval(variantEvaluation)) {
-            return FAIL;
+        if (intervalIndex.hasRegionContainingVariant(variantEvaluation)) {
+            logger.trace("{} passes filter", variantEvaluation);
+            return PASS;
         }
-        return PASS;
+        logger.trace("{} fails filter", variantEvaluation);
+        return FAIL;
     }
 
-    private boolean variantIsNotWithinInterval(Variant variant) {
-        if (variantNotOnSameChromosomeAsInterval(variant.getChromosome())) {
-            return true;
-        } else {
-            return variantPositionOutsideOfIntervalBounds(variant.getPosition());
-        }
-    }
-
-    private boolean variantNotOnSameChromosomeAsInterval(int variantChromosome) {
-        return variantChromosome != interval.getChromosome();
-    }
-
-    private boolean variantPositionOutsideOfIntervalBounds(int variantPosition) {
-        return variantPosition < interval.getStart() || variantPosition > interval.getEnd();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IntervalFilter that = (IntervalFilter) o;
+        return Objects.equals(intervals, that.intervals);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + Objects.hashCode(IntervalFilter.filterType);
-        hash = 97 * hash + Objects.hashCode(this.interval);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IntervalFilter other = (IntervalFilter) obj;
-        return Objects.equals(this.interval, other.interval);
+        return Objects.hash(intervals);
     }
 
     @Override
     public String toString() {
         return "IntervalFilter{" +
-                "interval=" + interval +
+                "intervals=" + intervals +
                 '}';
     }
 }

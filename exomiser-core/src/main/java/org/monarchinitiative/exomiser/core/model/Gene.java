@@ -67,13 +67,13 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "geneScores", "inheritanceModes", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
-    /**
-     * A list of all of the variants that affect this gene.
-     */
-    private final List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+    private final GeneIdentifier geneIdentifier;
+    private final String geneSymbol;
+    @JsonIgnore //cut down on repeated fields
+    private final int entrezGeneId;
 
     private final Set<FilterType> failedFilterTypes = new LinkedHashSet<>();
     private final Set<FilterType> passedFilterTypes = new LinkedHashSet<>();
@@ -83,11 +83,11 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private final Map<ModeOfInheritance, GeneScore> geneScoreMap = new EnumMap<>(ModeOfInheritance.class);
 
     private final Map<PriorityType, PriorityResult> priorityResultsMap = new EnumMap<>(PriorityType.class);
+    /**
+     * A list of all of the variants that affect this gene.
+     */
+    private final List<VariantEvaluation> variantEvaluations = new ArrayList<>();
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-
-    private final GeneIdentifier geneIdentifier;
-    private final String geneSymbol;
-    private final int entrezGeneId;
 
     /**
      * Preferred constructor. Given the {@link GeneIdentifier} contains all the data it can
@@ -133,6 +133,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return geneIdentifier.getGeneSymbol();
     }
 
+    @JsonIgnore
     public String getGeneId() {
         return geneIdentifier.getGeneId();
     }
@@ -145,14 +146,15 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the NCBI Entrez Gene ID associated with this gene (extracted from
      * one of the Variant objects)
      */
+    @JsonIgnore
     public int getEntrezGeneID() {
         return geneIdentifier.getEntrezIdAsInteger();
     }
 
-
     /**
      * @return the number of {@link Variant} associated with this gene.
      */
+    @JsonIgnore
     public int getNumberOfVariants() {
         return variantEvaluations.size();
     }
@@ -317,7 +319,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the map of {@code PriorityResult} objects that represent the
      * result of filtering
      */
-    @JsonIgnore
+//    @JsonIgnore
     public Map<PriorityType, PriorityResult> getPriorityResults() {
         return priorityResultsMap;
     }
@@ -334,6 +336,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
+    @JsonIgnore
     public GeneScore getTopGeneScore() {
         return topGeneScore;
     }

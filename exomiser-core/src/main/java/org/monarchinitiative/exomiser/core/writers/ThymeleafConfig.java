@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 /**
  * Static utility class to provide a Thymeleaf template engine.
@@ -40,8 +40,8 @@ public class ThymeleafConfig {
         return templateEngine;
     }
 
-    private static TemplateResolver templateResolver() {
-        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+    private static ITemplateResolver templateResolver() {
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode("HTML5");
         templateResolver.setPrefix("templates/");
         templateResolver.setSuffix(".html");

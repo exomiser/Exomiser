@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -52,19 +52,19 @@ public class PolyPhenScoreTest {
     }
     
     @Test
-    public void testCompareTo_Before() {
+    public void testCompareToBefore() {
         PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.valueOf(nonPathogenicScore);
         assertThat(instance.compareTo(nonPathogenicPolyphen), equalTo(-1));
     }
     
     @Test
-    public void testCompareTo_After() {
+    public void testCompareToAfter() {
         PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.valueOf(nonPathogenicScore);
         assertThat(nonPathogenicPolyphen.compareTo(instance), equalTo(1));
     }
     
     @Test
-    public void testCompareTo_Equals() {
+    public void testCompareToEquals() {
         PolyPhenScore sameScore = PolyPhenScore.valueOf(pathogenicScore);
         assertThat(instance.compareTo(sameScore), equalTo(0));
     }

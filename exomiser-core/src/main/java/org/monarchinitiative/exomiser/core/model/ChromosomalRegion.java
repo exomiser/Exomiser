@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,28 @@ package org.monarchinitiative.exomiser.core.model;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface ChromosomalRegion {
+public interface ChromosomalRegion extends Comparable<ChromosomalRegion> {
 
     int getChromosome();
 
     int getStart();
 
     int getEnd();
+
+    @Override
+    default int compareTo(ChromosomalRegion other) {
+        int chr = this.getChromosome();
+        int otherChr = other.getChromosome();
+        if (chr != otherChr) {
+            return Integer.compare(chr, otherChr);
+        }
+
+        int start = this.getStart();
+        int otherStart = other.getStart();
+        if (start != otherStart) {
+            return Integer.compare(start, otherStart);
+        }
+
+        return Integer.compare(this.getEnd(), other.getEnd());
+    }
 }

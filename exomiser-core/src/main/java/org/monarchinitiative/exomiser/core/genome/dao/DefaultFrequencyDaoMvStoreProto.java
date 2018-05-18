@@ -23,20 +23,14 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -47,51 +41,16 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
 
     private final MVMap<AlleleKey, AlleleProperties> map;
 
-    private static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP = FrequencySource.FREQUENCY_SOURCE_MAP;
-
     public DefaultFrequencyDaoMvStoreProto(MVStore mvStore) {
-        String frequencyMapName = "alleles";
-        if (!mvStore.hasMap(frequencyMapName)) {
-            logger.warn("MVStore does not contain map {}", frequencyMapName);
-        }
-
-        this.map = mvStore.openMap(frequencyMapName, MvStoreUtil.alleleMapBuilder());
-
-        if (map.isEmpty()) {
-            logger.warn("MVStore map {} does not contain any data", frequencyMapName);
-        } else {
-            logger.debug("MVStore map {} opened with {} entries", frequencyMapName, map.size());
-        }
+        map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
     @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
         AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
-        AlleleProperties info = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
-        logger.debug("{} {}", key, info);
-        if (info.equals(AlleleProperties.getDefaultInstance())) {
-            return FrequencyData.empty();
-        }
-        return parseFrequencyData(info);
-    }
-
-    private FrequencyData parseFrequencyData(AlleleProperties info) {
-        RsId rsId = RsId.valueOf(info.getRsId());
-        List<Frequency> frequencies = parseFrequencyData(info.getPropertiesMap());
-        return FrequencyData.of(rsId, frequencies);
-    }
-
-    private List<Frequency> parseFrequencyData(Map<String, Float> values) {
-        List<Frequency> frequencies = new ArrayList<>();
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
-                float value = field.getValue();
-                FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
-                frequencies.add(Frequency.valueOf(value, source));
-            }
-        }
-        return frequencies;
+        AlleleProperties alleleProperties = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
+        logger.debug("{} {}", key, alleleProperties);
+        return AlleleProtoAdaptor.toFrequencyData(alleleProperties);
     }
 }

@@ -85,7 +85,11 @@ analysis:
     #this is the standard exomiser order.
     #all steps are optional
     steps: [ 
-        #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+        #intervalFilter: {interval: 'chr10:123256200-123256300'},
+        # or for multiple intervals:
+        #intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+        # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+        #intervalFilter: {bed: /full/path/to/bed_file.bed},
         #genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
         #failedVariantFilter: {},
         #qualityFilter: {minQuality: 50.0},
@@ -124,5 +128,5 @@ outputOptions:
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
     outputPrefix: results/Pfeiffer-hiphive-exome-PASS_ONLY
-    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
-    outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]
+    #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]

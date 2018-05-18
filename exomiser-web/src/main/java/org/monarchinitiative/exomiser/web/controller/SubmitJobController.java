@@ -37,6 +37,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -57,12 +58,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.monarchinitiative.exomiser.core.prioritisers.PriorityType.*;
 
@@ -147,7 +146,7 @@ public class SubmitJobController {
         logger.info("Using disease: {}", diseaseId);
         logger.info("Using phenotypes: {}", phenotypes);
 
-        long numVariantsInSample = streamLines(vcfPath).filter(line -> !line.startsWith("#")).count();
+        long numVariantsInSample = VcfFiles.readVariantContexts(vcfPath).count();
         if (numVariantsInSample > maxVariants) {
             logger.info("{} contains {} variants - this is more than the allowed maximum of {}."
                     + "Returning user to submit page", vcfPath, numVariantsInSample, maxVariants);
@@ -161,7 +160,7 @@ public class SubmitJobController {
         Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(analysis);
 
-        writeResultsToFile(analysisId, analysis, analysisResults);
+//        writeResultsToFile(analysisId, analysis, analysisResults);
 
         buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
@@ -176,15 +175,6 @@ public class SubmitJobController {
         return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
-    private Stream<String> streamLines(Path vcfPath) {
-        try {
-            return Files.lines(vcfPath, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            logger.error("Error reading lines from {}", vcfPath, e);
-        }
-        return Stream.empty();
-    }
-
     private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
         AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder()
@@ -194,7 +184,7 @@ public class SubmitJobController {
                 .pedPath(pedPath)
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
-                .inheritanceModes(InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
+                .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
 
@@ -262,8 +252,8 @@ public class SubmitJobController {
         OutputSettings outputSettings = OutputSettings.builder()
                 .numberOfGenesToShow(20)
                 .outputPrefix(outFileName)
-                //OutputFormat.HTML, causes issues due to thymeleaf templating
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
+                //OutputFormat.HTML causes issues due to thymeleaf templating - don't use!
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.JSON))
                 .build();
 
         AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);

@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 /**
@@ -92,6 +94,7 @@ public final class GeneIdentifier implements Comparable<GeneIdentifier>{
         return entrezId;
     }
 
+    @JsonIgnore
     public Integer getEntrezIdAsInteger() {
         return entrezIdIntValue;
     }

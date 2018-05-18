@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,10 +26,6 @@ import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@link MVStore} backed {@link AlleleIndexer} implementation.
@@ -43,60 +39,20 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
 
     public MvStoreAlleleIndexer(MVStore mvStore) {
         this.mvStore = mvStore;
-        this.map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        this.map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
     @Override
     public void writeAllele(Allele allele) {
-        AlleleKey key = toAlleleKey(allele);
-        AlleleProperties properties = toAlleleProperties(allele);
-        if (map.containsKey(key)) {
-            AlleleProperties originalProperties = getOriginalProperties(key);
-            AlleleProperties mergedValue = mergeProperties(originalProperties, properties);
+        AlleleKey key = AlleleConverter.toAlleleKey(allele);
+        AlleleProperties properties = AlleleConverter.toAlleleProperties(allele);
+        AlleleProperties originalProperties = map.get(key);
+        if (originalProperties != null) {
+            AlleleProperties mergedValue = AlleleConverter.mergeProperties(originalProperties, properties);
             map.put(key, mergedValue);
         } else {
             map.put(key, properties);
         }
-    }
-
-    private AlleleProperties getOriginalProperties(AlleleKey key) {
-        return map.get(key);
-    }
-
-    private AlleleProperties mergeProperties(AlleleProperties originalProperties, AlleleProperties properties) {
-        String updatedRsId = (originalProperties.getRsId()
-                .isEmpty()) ? properties.getRsId() : originalProperties.getRsId();
-        return AlleleProperties.newBuilder()
-                .mergeFrom(originalProperties)
-                .mergeFrom(properties)
-                //original rsid would have been overwritten by the new one - we don't necessarily want that, so re-set it now.
-                .setRsId(updatedRsId)
-                .build();
-    }
-
-    private AlleleProperties toAlleleProperties(Allele allele) {
-        Map<String, Float> properties = convertToStringKeyMap(allele.getValues());
-        return AlleleProperties.newBuilder()
-                .setRsId(allele.getRsId())
-                .putAllProperties(properties)
-                .build();
-    }
-
-    private Map<String, Float> convertToStringKeyMap(Map<AlleleProperty, Float> values) {
-        Map<String, Float> properties = new HashMap<>();
-        for (Map.Entry<AlleleProperty, Float> entry : values.entrySet()) {
-            properties.put(entry.getKey().toString(), entry.getValue());
-        }
-        return properties;
-    }
-
-    private AlleleKey toAlleleKey(Allele allele) {
-        return AlleleKey.newBuilder()
-                .setChr(allele.getChr())
-                .setPosition(allele.getPos())
-                .setRef(allele.getRef())
-                .setAlt(allele.getAlt())
-                .build();
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -68,7 +68,11 @@ public class VariantDataServiceImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
+    private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().alleleId("12345")
+            .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
+            .build();
     private static final PathogenicityData PATH_DATA = PathogenicityData.of(
+            PATH_CLINVAR_DATA,
             PolyPhenScore.valueOf(1),
             MutationTasterScore.valueOf(1),
             SiftScore.valueOf(0)
@@ -131,14 +135,14 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
-        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f))));
     }
 
     @Test
     public void serviceReturnsCaddDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
-        assertThat(result, equalTo(CADD_DATA));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getCaddScore())));
     }
 
     @Test
@@ -146,7 +150,7 @@ public class VariantDataServiceImplTest {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
 
-        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
     }
     
     @Test
@@ -161,10 +165,9 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
         variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
-        //Test that the REMM DAO is only called whe the variant type is of the type REMM is trained against.
-        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(RemmScore.valueOf(1f)));
+        //Test that the REMM DAO is only called when the variant type is of the type REMM is trained against.
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
-        assertThat(result, equalTo(PathogenicityData.empty()));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA)));
     }
     
     @Test
@@ -174,6 +177,15 @@ public class VariantDataServiceImplTest {
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
+    }
+
+    @Test
+    public void serviceQueryForSynonymousVariantReturnsEmptyPathogenicityData() {
+        variant = buildVariantOfType(VariantEffect.SYNONYMOUS_VARIANT);
+        //even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.valueOf(1f)));
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test

@@ -84,7 +84,11 @@ analysis:
     #this is the recommended order for a genome-sized analysis.
     #all steps are optional
     steps: [ 
-        #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+        #intervalFilter: {interval: 'chr10:123256200-123256300'},
+        # or for multiple intervals:
+        #intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+        # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+        #intervalFilter: {bed: /full/path/to/bed_file.bed},
         #failedVariantFilter: {},
         #genePanelFilter: {geneSymbols: ['POMP','SUMF1','JUP']},
         hiPhivePrioritiser: {},
@@ -121,6 +125,6 @@ outputOptions:
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
     outputPrefix: results/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38
-    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
-    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]
+    #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
     

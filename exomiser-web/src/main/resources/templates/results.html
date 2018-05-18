@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -229,8 +229,8 @@
                             <div class="row"
                                  th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}">
                                 <div class="col-sm-12">
-            <span class="label label-danger"
-                  th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+                                    <span class="label label-danger"
+                                          th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                                     <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
                                         chr10:g.123256215T>G [0/1]</b>
                                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
@@ -243,6 +243,30 @@
                                             viewer)
                                         </a>
                                         <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                                    </th:block>
+                                </div>
+                                <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                                    <b>ClinVar: </b>
+                                    <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                              th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                        <span th:case="'BENIGN'" class="label label-success"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                                        <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                                        <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                                        <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                                        <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                                        <span th:case="'PATHOGENIC'" class="label label-danger"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                                        <span th:case="*" class="label label-default"
+                                              th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                                        <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                           th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                            (criteria_provided,_single_submitter)
+                                        </a>
                                     </th:block>
                                 </div>
                                 <div class="col-sm-6">

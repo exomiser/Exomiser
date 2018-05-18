@@ -160,7 +160,7 @@ public class ResultsWriterUtilsTest {
     }
     
     @Test
-    public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
+    public void canMakeFilterReportsFromAnalysisReturnsEmptyListWhenNoFiltersAdded(){
         Analysis analysis = Analysis.builder().build();
         AnalysisResults analysisResults = AnalysisResults.builder().build();
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);

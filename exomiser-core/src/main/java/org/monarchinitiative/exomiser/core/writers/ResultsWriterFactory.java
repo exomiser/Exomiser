@@ -51,6 +51,8 @@ public class ResultsWriterFactory {
                 return new VcfResultsWriter();
             case PHENOGRID:
                 return new PhenogridWriter();
+            case JSON:
+                return new JsonResultsWriter();
             case HTML:
             default:
                 return new HtmlResultsWriter();

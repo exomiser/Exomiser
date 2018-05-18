@@ -175,7 +175,7 @@ public class AnalysisTest {
     }
 
     @Test
-    public void testGetAnalysisSteps_ReturnsEmptyListWhenNoStepsHaveBeedAdded() {
+    public void testGetAnalysisStepsReturnsEmptyListWhenNoStepsHaveBeenAdded() {
         List<AnalysisStep> steps = Collections.emptyList();
         assertThat(DEFAULT_ANALYSIS.getAnalysisSteps(), equalTo(steps));
     }
@@ -208,7 +208,7 @@ public class AnalysisTest {
     }
 
     @Test
-    public void testGetAnalysisSteps_ReturnsListOfStepsAdded() {
+    public void testGetAnalysisStepsReturnsListOfStepsAdded() {
         List<AnalysisStep> steps = getAnalysisSteps();
 
         Analysis.Builder builder = newBuilder();

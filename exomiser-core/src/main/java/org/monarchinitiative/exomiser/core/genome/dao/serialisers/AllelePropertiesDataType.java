@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.h2.mvstore.DataUtils;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.DataType;
+import org.h2.util.Utils;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
 import java.nio.ByteBuffer;
@@ -59,7 +60,7 @@ public class AllelePropertiesDataType implements DataType {
     @Override
     public AlleleProperties read(ByteBuffer buff) {
         int len = DataUtils.readVarInt(buff);
-        byte[] data = DataUtils.newBytes(len);
+        byte[] data = Utils.newBytes(len);
         buff.get(data);
         try {
             return AlleleProperties.parseFrom(data);

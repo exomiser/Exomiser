@@ -79,9 +79,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
-            //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
-            //like this:
-            //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
+            //this *could* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //HOWEVER there may be threading issues so this needs investigation.
             analysisScripts.forEach(analysis ->{
                 logger.info("Running analysis: {}", analysis);

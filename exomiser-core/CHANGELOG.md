@@ -1,5 +1,16 @@
 # The Exomiser - Core Library Changelog
 
+## 10.1.0 2018-05-09
+- Added new simple ```BedFiles``` class for reading in ```ChromosomalRegion``` from an external file. 
+- Added support for filtering multiple intervals in the ```IntervalFilter``` 
+- Added support for parsing multiple intervals in the ```AnalysisParser```
+- Added new ```OutputOption.JSON```
+- Added new JsonResultsWriter - JSON results format should be considered as being in a 'beta' state and may or may not change slightly in the future.
+- Added support for ClinVar annotations 
+- Added ClinVar annotations to ```HTML``` and ```JSON``` output options
+- ```TSV_GENE``` and ```TSV_VARIANT``` output formats have been frozen as adding the new datasources will break the format. Use the JSON output for machines or HTML for humans. 
+- Updated Spring platform to Brussels-SR9. This will be the final Exomiser release on the Brussels release train.
+
 ## 10.0.1 2018-03-20
 - Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
 

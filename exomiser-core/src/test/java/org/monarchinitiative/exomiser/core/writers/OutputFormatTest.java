@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,14 +37,6 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class OutputFormatTest {
-
-    @Test
-    public void testValues() {
-        System.out.println("values");
-        OutputFormat[] expResult = {OutputFormat.HTML, OutputFormat.VCF, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.PHENOGRID};
-        OutputFormat[] result = OutputFormat.values();
-        assertThat(result, equalTo(expResult));
-    }
 
     @Test
     public void testValueOf() {

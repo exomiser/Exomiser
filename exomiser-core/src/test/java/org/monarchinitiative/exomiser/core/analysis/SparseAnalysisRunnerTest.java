@@ -48,7 +48,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     private final SparseAnalysisRunner instance = new SparseAnalysisRunner(genomeAnalysisService);
 
     @Test
-    public void testRunAnalysis_NoFiltersNoPrioritisers() {
+    public void testRunAnalysisNoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
 
         AnalysisResults analysisResults = instance.run(analysis);
@@ -63,7 +63,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
     
     @Test
-    public void testRunAnalysis_VariantFilterOnly_OneVariantPasses() {
+    public void testRunAnalysisVariantFilterOnlyOneVariantPasses() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
@@ -89,7 +89,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_TwoVariantFilters_AllVariantsFail_VariantsShouldContainOnlyOneFailedFilterResult() {
+    public void testRunAnalysisTwoVariantFiltersAllVariantsFailVariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
@@ -122,7 +122,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
     
     @Test
-    public void testRunAnalysis_TwoVariantFiltersOnePrioritiser_VariantsShouldContainOnlyOneFailedFilterResult() {
+    public void testRunAnalysisTwoVariantFiltersOnePrioritiserVariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();
@@ -167,7 +167,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter_VariantsShouldContainOnlyOneFailedFilterResult() {
+    public void testRunAnalysisTwoVariantFiltersOnePrioritiserRecessiveInheritanceFilterVariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();
@@ -212,7 +212,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_PrioritiserAndPriorityScoreFilterOnly() {
+    public void testRunAnalysisPrioritiserAndPriorityScoreFilterOnly() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
@@ -257,7 +257,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_PrioritiserPriorityScoreFilterVariantFilter() {
+    public void testRunAnalysisPrioritiserPriorityScoreFilterVariantFilter() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
@@ -303,7 +303,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_VariantFilterPrioritiserPriorityScoreFilterVariantFilter() {
+    public void testRunAnalysisVariantFilterPrioritiserPriorityScoreFilterVariantFilter() {
         Float desiredPrioritiserScore = 0.9f;
         Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);

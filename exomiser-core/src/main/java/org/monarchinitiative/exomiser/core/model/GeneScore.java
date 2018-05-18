@@ -78,6 +78,12 @@ public final class GeneScore implements Comparable<GeneScore> {
         return contributingVariants;
     }
 
+    /**
+     * Whether or not the {@code GeneScore} has any contributing variants.
+     *
+     * @return whether or not the {@code GeneScore} has any contributing variants.
+     * @since 10.1.0
+     */
     public boolean hasContributingVariants(){
         return !contributingVariants.isEmpty();
     }

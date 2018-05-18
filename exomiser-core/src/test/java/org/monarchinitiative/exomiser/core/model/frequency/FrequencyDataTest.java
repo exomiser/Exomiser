@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -197,7 +197,7 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testGetKnownFrequencies_noFrequencyData() {
+    public void testGetKnownFrequenciesNoFrequencyData() {
         assertThat(EMPTY_DATA.getKnownFrequencies(), equalTo(Collections.emptyList()));
     }
 
@@ -210,13 +210,11 @@ public class FrequencyDataTest {
         expResult.add(ESP_EA_PASS);
         expResult.add(ESP_ALL_PASS);
 
-        List<Frequency> result = instance.getKnownFrequencies();
-
-        assertThat(result, equalTo(expResult));
+        assertThat(instance.getKnownFrequencies(), equalTo(expResult));
     }
 
     @Test
-    public void testGetKnownFrequencies_isImmutable() {
+    public void testGetKnownFrequenciesIsImmutable() {
         FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
@@ -244,12 +242,22 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testGetScore_reallyRareVariant() {
+    public void testHasFrequencyOverPercentageValue() {
+        float maxFreq = 0.05f;
+        Frequency upper = Frequency.valueOf(maxFreq, UNKNOWN);
+        Frequency lower = Frequency.valueOf(0.0001f, UK10K);
+        FrequencyData instance = FrequencyData.of(upper, lower);
+        assertThat(instance.hasFrequencyOverPercentageValue(maxFreq - 0.01f), is(true));
+        assertThat(instance.hasFrequencyOverPercentageValue(maxFreq + 0.01f), is(false));
+    }
+
+    @Test
+    public void testGetScoreReallyRareVariant() {
         assertThat(EMPTY_DATA.getScore(), equalTo(1f));
     }
 
     @Test
-    public void testGetScore_commonVariant() {
+    public void testGetScoreCommonVariant() {
         float maxFreq = 100.0f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, THOUSAND_GENOMES);
         FrequencyData instance = FrequencyData.of(RSID, maxFrequency);
@@ -257,7 +265,7 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testGetScore_rareVariant() {
+    public void testGetScoreRareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
         FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);

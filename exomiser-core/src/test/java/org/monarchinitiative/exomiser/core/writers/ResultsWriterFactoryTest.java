@@ -40,7 +40,6 @@ public class ResultsWriterFactoryTest {
 
     @Before
     public void setUp() {
-//        instance = new ResultsWriterFactory(Mockito.mock(TemplateEngine.class));
         instance = new ResultsWriterFactory();
     }
 
@@ -78,6 +77,13 @@ public class ResultsWriterFactoryTest {
         OutputFormat outputFormat = OutputFormat.PHENOGRID;
         ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(PhenogridWriter.class));
+    }
+
+    @Test
+    public void testGetJsonResultsWriter() {
+        OutputFormat outputFormat = OutputFormat.JSON;
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        assertThat(result, instanceOf(JsonResultsWriter.class));
     }
 
 }

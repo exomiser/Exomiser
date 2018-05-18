@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.web;
 
+import config.TestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
@@ -30,7 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class})
+@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class, TestConfig.class})
 public class ExomiserWebAppTest {
 
     @Test
