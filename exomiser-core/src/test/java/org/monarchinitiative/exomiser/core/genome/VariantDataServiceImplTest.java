@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
@@ -51,7 +51,7 @@ import static org.junit.Assert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class VariantDataServiceImplTest {
 
     private VariantDataServiceImpl instance;
@@ -182,7 +182,9 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceQueryForSynonymousVariantReturnsEmptyPathogenicityData() {
         variant = buildVariantOfType(VariantEffect.SYNONYMOUS_VARIANT);
-        //even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
+        // Even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
+        // This will cause a UnnecessaryStubbingException to be thrown as the result of this stubbing is ignored, but
+        // we're trying to test for exactly that functionality we're running with the MockitoJUnitRunner.Silent.class
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.valueOf(1f)));
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
         assertThat(result, equalTo(PathogenicityData.empty()));
