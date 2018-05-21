@@ -21,6 +21,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
@@ -110,7 +111,10 @@ public class VariantDataServiceImpl implements VariantDataService {
         // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
         // gain/loss an other possible SNV scores from the bundled pathogenicity databases as well as any ClinVar annotations.
         // TODO: this should always be run alongside the frequencies as they are all stored in the same datastore
-        if (VariantEffectUtility.affectsCodingRegion(variant.getVariantEffect())) {
+        VariantEffect variantEffect = variant.getVariantEffect();
+        // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
+        // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
+        if (VariantEffectUtility.affectsCodingRegion(variantEffect) && variantEffect != VariantEffect.SYNONYMOUS_VARIANT) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             clinVarData = missenseScores.getClinVarData();
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
