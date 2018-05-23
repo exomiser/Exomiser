@@ -22,8 +22,10 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
@@ -37,6 +39,50 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class AlleleProtoAdaptorTest {
+
+    @Test
+    public void testToFreqData() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .putProperties("KG", 0.7f)
+                .putProperties("TOPMED", 0.05f)
+                .build();
+        assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
+                equalTo(FrequencyData.of(
+                    Frequency.valueOf(0.7f, FrequencySource.THOUSAND_GENOMES),
+                    Frequency.valueOf(0.05f, FrequencySource.TOPMED))
+                )
+        );
+    }
+
+    @Test
+    public void testToPathDataSift() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("SIFT", 0.2f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(SiftScore.valueOf(0.2f))));
+    }
+
+    @Test
+    public void testToPathDataPolyphen() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("POLYPHEN", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PolyPhenScore.valueOf(0.7f))));
+    }
+
+    @Test
+    public void testToPathDataMutationTaster() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MUT_TASTER", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(MutationTasterScore.valueOf(0.7f))));
+    }
+
+    @Test
+    public void testToPathDataRemm() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REMM", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(RemmScore.valueOf(0.7f))));
+    }
+
+    @Test
+    public void testToPathDataCadd() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("CADD", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(CaddScore.valueOf(0.7f))));
+    }
 
     @Test
     public void parseClinVarDataDefaultInstanceReturnsEmpty() {

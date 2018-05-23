@@ -89,6 +89,14 @@ public class AlleleProtoAdaptor {
                 float value = field.getValue();
                 pathogenicityScores.add(MutationTasterScore.valueOf(value));
             }
+            if (key.startsWith("REMM")) {
+                float value = field.getValue();
+                pathogenicityScores.add(RemmScore.valueOf(value));
+            }
+            if (key.startsWith("CADD")) {
+                float value = field.getValue();
+                pathogenicityScores.add(CaddScore.valueOf(value));
+            }
         }
         return pathogenicityScores;
     }
