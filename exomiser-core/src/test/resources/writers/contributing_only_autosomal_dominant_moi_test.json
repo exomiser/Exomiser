@@ -15,7 +15,8 @@
     "variantScore": 1.0,
     "priorityResults": {},
     "compatibleInheritanceModes": [
-      "AUTOSOMAL_DOMINANT"
+      "AUTOSOMAL_DOMINANT",
+      "AUTOSOMAL_RECESSIVE"
     ],
     "geneScores": [
       {
@@ -82,9 +83,13 @@
               }
             },
             "compatibleInheritanceModes": [
-              "AUTOSOMAL_DOMINANT"
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
             ],
-            "contributingInheritanceModes": [],
+            "contributingInheritanceModes": [
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
+            ],
             "transcriptAnnotations": [
               {
                 "variantEffect": "MISSENSE_VARIANT",
@@ -151,9 +156,13 @@
           }
         },
         "compatibleInheritanceModes": [
-          "AUTOSOMAL_DOMINANT"
+          "AUTOSOMAL_DOMINANT",
+          "AUTOSOMAL_RECESSIVE"
         ],
-        "contributingInheritanceModes": [],
+        "contributingInheritanceModes": [
+          "AUTOSOMAL_DOMINANT",
+          "AUTOSOMAL_RECESSIVE"
+        ],
         "transcriptAnnotations": [
           {
             "variantEffect": "MISSENSE_VARIANT",

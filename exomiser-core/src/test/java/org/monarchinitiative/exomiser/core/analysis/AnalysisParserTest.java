@@ -572,7 +572,7 @@ public class AnalysisParserTest {
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
                 + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
-        assertThat(outputSettings.outputPassVariantsOnly(), is(true));
+        assertThat(outputSettings.outputContributingVariantsOnly(), is(true));
     }
 
     @Test
@@ -637,7 +637,7 @@ public class AnalysisParserTest {
     public void testParseOutputSettings() {
         OutputSettings outputSettings = instance.parseOutputSettings(Paths.get("src/test/resources/analysisExample.yml"));
         OutputSettings expected = OutputSettings.builder()
-                .outputPassVariantsOnly(false)
+                .outputContributingVariantsOnly(false)
                 .numberOfGenesToShow(0)
                 .outputPrefix("results/Pfeiffer-hiphive")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.HTML))

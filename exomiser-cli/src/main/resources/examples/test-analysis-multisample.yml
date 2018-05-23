@@ -109,7 +109,7 @@ analysis:
         #exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}
     ]
 outputOptions:
-    outputPassVariantsOnly: false
+    outputContributingVariantsOnly: false
     #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
     numGenes: 50
     #outputPrefix options: specify the path/filename without an extension and this will be added

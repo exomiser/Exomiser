@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -76,7 +77,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -87,7 +88,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}", output, ex);
         }
@@ -111,11 +112,10 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private void writeOnlyPassVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
-        for (VariantEvaluation ve : gene.getPassedVariantEvaluations()) {
-            if (ve.isCompatibleWith(modeOfInheritance)) {
-                List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
-                printer.printRecord(record);
-            }
+        GeneScore geneScore = gene.getGeneScoreForMode(modeOfInheritance);
+        for (VariantEvaluation ve : geneScore.getContributingVariants()) {
+            List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
+            printer.printRecord(record);
         }
     }
 

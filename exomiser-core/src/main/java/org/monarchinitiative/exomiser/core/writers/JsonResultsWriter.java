@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public class JsonResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         ObjectWriter objectWriter = new ObjectMapper().writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), objectWriter, bufferedWriter);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, bufferedWriter);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -70,7 +71,7 @@ public class JsonResultsWriter implements ResultsWriter {
         //Add prettyPrintJson option to outputSettings?
         ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
-            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), objectWriter, stringWriter);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, stringWriter);
             stringWriter.flush();
             logger.info("{} {} results written to string", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
                     .getAbbreviation());
@@ -106,22 +107,34 @@ public class JsonResultsWriter implements ResultsWriter {
         List<Gene> passedGenes = new ArrayList<>();
         for (Gene gene : compatibleGenes) {
             if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                Gene makePassOnlyGene = makePassOnlyGene(modeOfInheritance, gene);
+                Gene makePassOnlyGene = makeContributingOnlyGene(modeOfInheritance, gene);
                 passedGenes.add(makePassOnlyGene);
             }
         }
         return passedGenes;
     }
 
-    private Gene makePassOnlyGene(ModeOfInheritance modeOfInheritance, Gene gene) {
-        Gene passOnlyGene = new Gene(gene.getGeneIdentifier());
-        passOnlyGene.setCompatibleInheritanceModes(gene.getCompatibleInheritanceModes());
-        gene.getVariantEvaluations().stream()
-                .filter(ve -> ve.passedFilters() && ve.isCompatibleWith(modeOfInheritance))
-                .forEach(passOnlyGene::addVariant);
-        gene.getPriorityResults().values().forEach(passOnlyGene::addPriorityResult);
-        gene.getGeneScores().forEach(passOnlyGene::addGeneScore);
-        return passOnlyGene;
+    private Gene makeContributingOnlyGene(ModeOfInheritance modeOfInheritance, Gene gene) {
+        Gene contributingOnlyGene = new Gene(gene.getGeneIdentifier());
+        contributingOnlyGene.setCompatibleInheritanceModes(gene.getCompatibleInheritanceModes());
+        gene.getPriorityResults().values().forEach(contributingOnlyGene::addPriorityResult);
+
+        if (modeOfInheritance == ModeOfInheritance.ANY) {
+            gene.getVariantEvaluations().stream()
+                    .filter(VariantEvaluation::contributesToGeneScore)
+                    .forEach(contributingOnlyGene::addVariant);
+            gene.getGeneScores()
+                    .forEach(contributingOnlyGene::addGeneScore);
+            return contributingOnlyGene;
+        } else {
+            gene.getVariantEvaluations().stream()
+                    .filter(ve -> ve.contributesToGeneScoreUnderMode(modeOfInheritance))
+                    .forEach(contributingOnlyGene::addVariant);
+            gene.getGeneScores().stream()
+                    .filter(geneScore -> geneScore.getModeOfInheritance() == modeOfInheritance)
+                    .forEach(contributingOnlyGene::addGeneScore);
+            return contributingOnlyGene;
+        }
     }
 
 }
