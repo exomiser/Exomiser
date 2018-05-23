@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,7 @@ public class VariantKeyGenerator implements KeyGenerator {
         }
         if (params.length == 1) {
             Object param = params[0];
-            if (param != null && Variant.class.isInstance(param)) {
+            if (Variant.class.isInstance(param)) {
                 return generateVariantKey((Variant) param);
             }
         }
