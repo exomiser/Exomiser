@@ -65,16 +65,16 @@ public class GenomeDataSources {
         logger.debug("Locating resources for {} assembly (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
                 .getDataVersion(), genomeProperties.getTranscriptSource());
 
-        GenomeData genomeData = new GenomeData(genomeProperties, exomiserDataDirectory);
+        GenomeDataResolver genomeDataResolver = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
 
-        Path transcriptFilePath = buildTranscriptPath(genomeProperties, genomeData);
-        Path mvStoreFilePath = buildMvStorePath(genomeData);
-        DataSource genomeDataSource = buildGenomeDataSource(genomeProperties, genomeData);
+        Path transcriptFilePath = buildTranscriptPath(genomeProperties, genomeDataResolver);
+        Path mvStoreFilePath = buildMvStorePath(genomeDataResolver);
+        DataSource genomeDataSource = buildGenomeDataSource(genomeProperties, genomeDataResolver);
 
-        Path localFreqPath = resolvePathOrNullIfEmpty(genomeProperties.getLocalFrequencyPath(), genomeData);
-        Path caddSnvPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddSnvPath(), genomeData);
-        Path caddIndelPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddInDelPath(), genomeData);
-        Path remmPath = resolvePathOrNullIfEmpty(genomeProperties.getRemmPath(), genomeData);
+        Path localFreqPath = resolvePathOrNullIfEmpty(genomeProperties.getLocalFrequencyPath(), genomeDataResolver);
+        Path caddSnvPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddSnvPath(), genomeDataResolver);
+        Path caddIndelPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddInDelPath(), genomeDataResolver);
+        Path remmPath = resolvePathOrNullIfEmpty(genomeProperties.getRemmPath(), genomeDataResolver);
 
         return GenomeDataSources.builder()
                 .transcriptFilePath(transcriptFilePath)
@@ -87,24 +87,24 @@ public class GenomeDataSources {
                 .build();
     }
 
-    private static Path buildTranscriptPath(GenomeProperties genomeProperties, GenomeData genomeData) {
+    private static Path buildTranscriptPath(GenomeProperties genomeProperties, GenomeDataResolver genomeDataResolver) {
         TranscriptSource transcriptSource = genomeProperties.getTranscriptSource();
         //e.g 1710_hg19_transcripts_ucsc.ser
-        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", genomeData.getVersionAssemblyPrefix(), transcriptSource
+        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", genomeDataResolver.getVersionAssemblyPrefix(), transcriptSource
                 .toString());
-        return genomeData.getPath().resolve(transcriptFileNameValue);
+        return genomeDataResolver.getGenomeAssemblyDataPath().resolve(transcriptFileNameValue);
     }
 
-    private static Path buildMvStorePath(GenomeData genomeData) {
-        String mvStoreFileName = String.format("%s_variants.mv.db", genomeData.getVersionAssemblyPrefix());
-        return genomeData.resolveAbsoluteResourcePath(mvStoreFileName);
+    private static Path buildMvStorePath(GenomeDataResolver genomeDataResolver) {
+        String mvStoreFileName = String.format("%s_variants.mv.db", genomeDataResolver.getVersionAssemblyPrefix());
+        return genomeDataResolver.resolveAbsoluteResourcePath(mvStoreFileName);
     }
 
-    private static DataSource buildGenomeDataSource(GenomeProperties genomeProperties, GenomeData genomeData) {
+    private static DataSource buildGenomeDataSource(GenomeProperties genomeProperties, GenomeDataResolver genomeDataResolver) {
         logger.debug("{}", genomeProperties.getDatasource());
         //omit the .h2.db extensions
-        String dbFileName = String.format("%s_genome", genomeData.getVersionAssemblyPrefix());
-        Path dbPath = genomeData.resolveAbsoluteResourcePath(dbFileName);
+        String dbFileName = String.format("%s_genome", genomeDataResolver.getVersionAssemblyPrefix());
+        Path dbPath = genomeDataResolver.resolveAbsoluteResourcePath(dbFileName);
         String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
         String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath, startUpArgs);
 
@@ -119,11 +119,11 @@ public class GenomeDataSources {
         return new HikariDataSource(config);
     }
 
-    private static Path resolvePathOrNullIfEmpty(String pathToTabixGzFile, GenomeData genomeData) {
+    private static Path resolvePathOrNullIfEmpty(String pathToTabixGzFile, GenomeDataResolver genomeDataResolver) {
         if (pathToTabixGzFile == null || pathToTabixGzFile.isEmpty()) {
             return null;
         }
-        return genomeData.resolveAbsoluteResourcePath(pathToTabixGzFile);
+        return genomeDataResolver.resolveAbsoluteResourcePath(pathToTabixGzFile);
     }
 
     private GenomeDataSources(Builder builder) {

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,23 +20,18 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GenomeData {
-
-    private static final Logger logger = LoggerFactory.getLogger(GenomeData.class);
+public class GenomeDataResolver {
 
     private final String versionAssemblyPrefix;
     private final Path assemblyDataDirectory;
 
-    public GenomeData(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
+    public GenomeDataResolver(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.versionAssemblyPrefix = String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getAssembly());
         this.assemblyDataDirectory = findAssemblyDataDirectory(versionAssemblyPrefix, genomeProperties, exomiserDataDirectory);
     }
@@ -56,7 +51,7 @@ public class GenomeData {
         return versionAssemblyPrefix;
     }
 
-    public Path getPath() {
+    public Path getGenomeAssemblyDataPath() {
         return assemblyDataDirectory;
     }
 
@@ -71,3 +66,4 @@ public class GenomeData {
         return assemblyDataDirectory.resolve(fileResourcePath).toAbsolutePath();
     }
 }
+
