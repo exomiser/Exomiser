@@ -20,21 +20,16 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-/**
- * Enum representing the pathogenicity prediction method/database used to
- * calculate a given score.
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
- */
-public enum PathogenicitySource {
-    //variant type is from Jannovar
-    VARIANT_TYPE,
-    //these guys are calculated from other sources
-    POLYPHEN,
-    MUTATION_TASTER,
-    SIFT,
-    CADD,
-    REMM,
-    REVEL
+import org.junit.Test;
 
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+public class RevelScoreTest {
+
+    @Test
+    public void testRevel() {
+        RevelScore instance = RevelScore.valueOf(1.0f);
+        System.out.println(instance);
+    }
 }

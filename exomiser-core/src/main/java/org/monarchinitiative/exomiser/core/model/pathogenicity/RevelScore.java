@@ -21,20 +21,25 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 /**
- * Enum representing the pathogenicity prediction method/database used to
- * calculate a given score.
+ * Class representing a REVEL pathogenicity predictor score.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885.
+ * http://dx.doi.org/10.1016/j.ajhg.2016.08.016
+ * https://sites.google.com/site/revelgenomics/
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public enum PathogenicitySource {
-    //variant type is from Jannovar
-    VARIANT_TYPE,
-    //these guys are calculated from other sources
-    POLYPHEN,
-    MUTATION_TASTER,
-    SIFT,
-    CADD,
-    REMM,
-    REVEL
+public class RevelScore extends BasePathogenicityScore {
 
+    public static RevelScore valueOf(float score) {
+        return new RevelScore(score);
+    }
+
+    private RevelScore(float score) {
+        super(score, PathogenicitySource.REVEL);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("REVEL: %.3f", score);
+    }
 }
