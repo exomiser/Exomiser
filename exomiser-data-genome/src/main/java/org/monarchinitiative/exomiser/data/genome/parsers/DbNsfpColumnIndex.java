@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ public class DbNsfpColumnIndex {
     private final String polyPhen2HvarHeader;
     private final String mTasterScoreHeader;
     private final String mTasterPredHeader;
-
+    private final String revelScoreHeader;
 
     private DbNsfpColumnIndex(Builder builder) {
         this.chrHeader = builder.chrHeader;
@@ -57,6 +57,7 @@ public class DbNsfpColumnIndex {
         this.polyPhen2HvarHeader = builder.polyPhen2HvarHeader;
         this.mTasterScoreHeader = builder.mTasterScoreHeader;
         this.mTasterPredHeader = builder.mTasterPredHeader;
+        this.revelScoreHeader = builder.revelScoreHeader;
     }
 
     public String getChrHeader() {
@@ -95,6 +96,10 @@ public class DbNsfpColumnIndex {
         return mTasterPredHeader;
     }
 
+    public String getRevelScoreHeader() {
+        return revelScoreHeader;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -108,12 +113,13 @@ public class DbNsfpColumnIndex {
                 Objects.equals(siftHeader, that.siftHeader) &&
                 Objects.equals(polyPhen2HvarHeader, that.polyPhen2HvarHeader) &&
                 Objects.equals(mTasterScoreHeader, that.mTasterScoreHeader) &&
-                Objects.equals(mTasterPredHeader, that.mTasterPredHeader);
+                Objects.equals(mTasterPredHeader, that.mTasterPredHeader) &&
+                Objects.equals(revelScoreHeader, that.revelScoreHeader);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chrHeader, posHeader, rsPrefix, refHeader, altHeader, siftHeader, polyPhen2HvarHeader, mTasterScoreHeader, mTasterPredHeader);
+        return Objects.hash(chrHeader, posHeader, rsPrefix, refHeader, altHeader, siftHeader, polyPhen2HvarHeader, mTasterScoreHeader, mTasterPredHeader, revelScoreHeader);
     }
 
     @Override
@@ -128,6 +134,7 @@ public class DbNsfpColumnIndex {
                 ", polyPhen2HvarHeader='" + polyPhen2HvarHeader + '\'' +
                 ", mTasterScoreHeader='" + mTasterScoreHeader + '\'' +
                 ", mTasterPredHeader='" + mTasterPredHeader + '\'' +
+                ", revelScoreHeader='" + revelScoreHeader + '\'' +
                 '}';
     }
 
@@ -148,6 +155,7 @@ public class DbNsfpColumnIndex {
         private String polyPhen2HvarHeader = "Polyphen2_HVAR_score";
         private String mTasterScoreHeader = "MutationTaster_score";
         private String mTasterPredHeader = "MutationTaster_pred";
+        private String revelScoreHeader = "REVEL_score";
 
         public Builder chrHeader(String chrHeader) {
             this.chrHeader = chrHeader;
@@ -191,6 +199,11 @@ public class DbNsfpColumnIndex {
 
         public Builder mTasterPredHeader(String mTasterPredHeader) {
             this.mTasterPredHeader = mTasterPredHeader;
+            return this;
+        }
+
+        public Builder revelScoreHeader(String revelScoreHeader) {
+            this.revelScoreHeader = revelScoreHeader;
             return this;
         }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
     private int polyPhen2HvarPos;
     private int mTasterScorePos;
     private int mTasterPredPos;
+    private int revelScorePos;
 
     public DbNsfpAlleleParser(DbNsfpColumnIndex columnIndex) {
         this.columnIndex = columnIndex;
@@ -88,6 +89,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
         this.polyPhen2HvarPos = index.get(columnIndex.getPolyPhen2HvarHeader());
         this.mTasterScorePos = index.get(columnIndex.getMTasterScoreHeader());
         this.mTasterPredPos = index.get(columnIndex.getMTasterPredHeader());
+        this.revelScorePos = index.get(columnIndex.getRevelScoreHeader());
     }
 
     private List<Allele> parseAllele(String[] fields) {
@@ -117,12 +119,13 @@ public class DbNsfpAlleleParser implements AlleleParser {
         parseSift(values, AlleleProperty.SIFT, fields[siftPos]);
         parsePolyPhen(values, AlleleProperty.POLYPHEN, fields[polyPhen2HvarPos]);
         parseMutationTaster(values, AlleleProperty.MUT_TASTER, fields[mTasterScorePos], fields[mTasterPredPos]);
+        parseValue(values, AlleleProperty.REVEL, fields[revelScorePos]);
         return values;
     }
 
     //    24	SIFT_score: SIFT score (SIFTori). Scores range from 0 to 1. The smaller the score the
-//    more likely the SNP has damaging effect.
-//    Multiple scores separated by ";", corresponding to Ensembl_proteinid.
+    //    more likely the SNP has damaging effect.
+    //    Multiple scores separated by ";", corresponding to Ensembl_proteinid.
     private Map<AlleleProperty, Float> parseSift(Map<AlleleProperty, Float> values, AlleleProperty key, String field) {
         String[] transcriptPredictions = field.split(";");
         if (transcriptPredictions.length == 1) {
@@ -144,8 +147,8 @@ public class DbNsfpAlleleParser implements AlleleParser {
     }
 
     //    33	Polyphen2_HVAR_score: Polyphen2 score based on HumVar, i.e. hvar_prob.
-//    The score ranges from 0 to 1.
-//    Multiple entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
+    //    The score ranges from 0 to 1.
+    //    Multiple entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
     private Map<AlleleProperty, Float> parsePolyPhen(Map<AlleleProperty, Float> values, AlleleProperty key, String field) {
         String[] transcriptPredictions = field.split(";");
         if (transcriptPredictions.length == 1) {
@@ -157,6 +160,12 @@ public class DbNsfpAlleleParser implements AlleleParser {
         }
         return values;
     }
+
+
+    //    63	REVEL_score: REVEL is an ensemble score based on 13 individual scores for predicting the
+    //    pathogenicity of missense variants. Scores range from 0 to 1. The larger the score the more
+    //    likely the SNP has damaging effect. "REVEL scores are freely available for non-commercial use.
+    //    For other uses, please contact Weiva Sieh" (weiva.sieh@mssm.edu)
 
     private Map<AlleleProperty, Float> parseValue(Map<AlleleProperty, Float> values, AlleleProperty key, String value) {
         if (!EMPTY_VALUE.equals(value)) {
