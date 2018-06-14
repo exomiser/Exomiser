@@ -214,6 +214,16 @@ public class InheritanceModeOptionsTest {
     }
 
     @Test
+    public void getMaxFreq() {
+        assertThat(InheritanceModeOptions.empty().getMaxFreq(), equalTo(Float.MAX_VALUE));
+        assertThat(InheritanceModeOptions.defaults().getMaxFreq(), equalTo(2.0f));
+
+        Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
+        InheritanceModeOptions userDefined = InheritanceModeOptions.of(userDefinedThresholds);
+        assertThat(userDefined.getMaxFreq(), equalTo(1f));
+    }
+
+    @Test
     public void testToString() {
         System.out.println(InheritanceModeOptions.defaults());
     }
