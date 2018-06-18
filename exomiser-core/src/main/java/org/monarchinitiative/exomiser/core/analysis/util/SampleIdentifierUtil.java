@@ -56,9 +56,11 @@ public class SampleIdentifierUtil {
      *                                 names in the list or the proband sample name is not found in the list of sample names.
      */
     public static SampleIdentifier createProbandIdentifier(String probandSampleName, List<String> sampleNames) {
+        logger.debug("Creating sample identifier for proband '{}'", probandSampleName);
         int numSamples = sampleNames.size();
         if (probandSampleName.isEmpty() && numSamples > 1) {
             String message = String.format("proband sample name not specified. Expected single sample VCF but got %d sample names - %s. Please check your sample and analysis files match.", numSamples, sampleNames);
+            logger.error(message);
             throw new SampleMismatchException(message);
         }
         if (probandSampleName.isEmpty() && numSamples == 1) {
