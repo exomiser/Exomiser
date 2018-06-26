@@ -22,10 +22,12 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
@@ -41,6 +43,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AlleleProtoAdaptorTest {
 
     @Test
+    public void generateAlleleKey() {
+        Variant variant = VariantAnnotation.builder()
+                .genomeAssembly(GenomeAssembly.HG19)
+                .chromosome(1)
+                .position(12345)
+                .ref("A")
+                .alt("T")
+                .build();
+
+        AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
+                .setChr(1)
+                .setPosition(12345)
+                .setRef("A")
+                .setAlt("T")
+                .build();
+
+        assertThat(AlleleProtoAdaptor.toAlleleKey(variant), equalTo(expected));
+    }
+
+    @Test
     public void testToFreqData() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
                 .putProperties("KG", 0.7f)
@@ -52,6 +74,12 @@ public class AlleleProtoAdaptorTest {
                     Frequency.valueOf(0.05f, FrequencySource.TOPMED))
                 )
         );
+    }
+
+    @Test
+    public void testToPathDataRevel() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REVEL", 0.2f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(RevelScore.valueOf(0.2f))));
     }
 
     @Test

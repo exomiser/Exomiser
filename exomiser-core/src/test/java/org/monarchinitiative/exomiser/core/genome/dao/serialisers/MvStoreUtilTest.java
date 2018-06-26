@@ -23,8 +23,6 @@ package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
@@ -50,16 +48,5 @@ public class MvStoreUtilTest {
         MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = MvStoreUtil.alleleMapBuilder();
         assertThat(alleleMapBuilder.getKeyType(), equalTo(AlleleKeyDataType.INSTANCE));
         assertThat(alleleMapBuilder.getValueType(), equalTo(AllelePropertiesDataType.INSTANCE));
-    }
-
-    @Test
-    public void generateAlleleKey() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T").build();
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
-
-        assertThat(key.getChr(), equalTo(variant.getChromosome()));
-        assertThat(key.getPosition(), equalTo(variant.getPosition()));
-        assertThat(key.getRef(), equalTo(variant.getRef()));
-        assertThat(key.getAlt(), equalTo(variant.getAlt()));
     }
 }

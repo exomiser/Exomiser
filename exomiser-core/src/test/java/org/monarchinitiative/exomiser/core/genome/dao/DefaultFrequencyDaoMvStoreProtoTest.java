@@ -26,6 +26,7 @@ import org.h2.mvstore.MVStore;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -88,7 +89,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
     @Test
     public void getFrequencyDataJustRsId() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
         DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.valueOf("rs54321"))));
@@ -97,7 +98,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
     @Test
     public void getFrequencyDataWithFrequencies() throws Exception {
         Variant variant = buildVariant(1, 12345, "A", "T");
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
                 .putProperties("KG", 0.04f)
                 .putProperties("ESP_AA", 0.003f)

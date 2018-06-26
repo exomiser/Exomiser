@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVStore;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
@@ -78,7 +78,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.getDefaultInstance();
 
         DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
@@ -91,7 +91,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("KG", 0.04f)
                 .build();
@@ -106,7 +106,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("KG", 0.04f)
                 .putProperties("SIFT", 0.0f)
@@ -122,7 +122,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("POLYPHEN", 1.0f)
                 .build();
@@ -137,7 +137,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .putProperties("MUT_TASTER", 1.0f)
                 .build();
@@ -152,7 +152,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         ClinVar clinVar = ClinVar.newBuilder().setAlleleId("54321").setPrimaryInterpretation(ClinVar.ClinSig.ASSOCIATION).build();
         AlleleProperties properties = AlleleProperties.newBuilder()
                 .setClinVar(clinVar)
@@ -172,7 +172,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         ClinVar clinVar = ClinVar.newBuilder()
                 .setAlleleId("54321")
                 .setPrimaryInterpretation(ClinVar.ClinSig.PATHOGENIC)
