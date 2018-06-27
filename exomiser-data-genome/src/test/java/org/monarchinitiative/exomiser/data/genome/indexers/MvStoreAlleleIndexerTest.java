@@ -175,6 +175,35 @@ public class MvStoreAlleleIndexerTest {
     }
 
     @Test
+    public void writeDuplicateSingleAllele() throws Exception {
+        MVStore mvStore = newMvStore();
+
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
+
+        Allele allele = new Allele(1, 12345, "A", "T");
+        allele.setRsId("rs12345");
+        allele.addValue(AlleleProperty.KG, 0.0023f);
+
+        instance.writeAllele(allele);
+
+        Allele dupAllele = new Allele(1, 12345, "A", "T");
+        dupAllele.setRsId("rs12345");
+        dupAllele.addValue(AlleleProperty.KG, 0.0023f);
+
+        instance.writeAllele(dupAllele);
+
+        assertThat(instance.count(), equalTo(1L));
+
+        MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
+
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
+        AlleleProperties alleleProperties = AlleleConverter.toAlleleProperties(allele);
+
+        assertThat(alleleMap.containsKey(alleleKey), is(true));
+        assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
+    }
+
+    @Test
     public void writeTwoIdenticalAllelesWithRsIdAndOtherInfoMergesInfoField() throws Exception {
         MVStore mvStore = newMvStore();
 
