@@ -111,11 +111,12 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the analysis reports section
-        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, analysisResults);
+        List<FilterReport> analysisStepReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
-        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
         List<String> sampleNames = analysisResults.getSampleNames();
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults
+                .getVariantEvaluations());
         String sampleName = "Anonymous";
         if (!analysis.getProbandSampleName().isEmpty()) {
             sampleName = analysis.getProbandSampleName();
@@ -135,14 +136,6 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("transcriptDb", "ENSEMBL");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return context;
-    }
-
-    private List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
-    }
-
-    private List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
-        return ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
     }
 
     //TODO:

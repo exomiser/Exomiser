@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -42,6 +42,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -150,8 +151,8 @@ public class ResultsWriterUtilsTest {
 
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
+        List<VariantEvaluation> variantEvaluations = Collections.emptyList();
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(Collections.emptyList(), variantEvaluations);
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
         VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);
