@@ -281,11 +281,6 @@ public class SubmitJobController {
         List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         model.addAttribute("filterReports", filterReports);
 
-        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
-        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
-        model.addAttribute("variantTypeCounters", variantEffectCounters);
-
-        //write out the variant type counters
         List<String> sampleNames = analysisResults.getSampleNames();
         String sampleName = "Anonymous";
         if (!sampleNames.isEmpty()) {
@@ -293,6 +288,11 @@ public class SubmitJobController {
         }
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
+
+        //write out the variant type counters
+        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
+        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, variantEvaluations);
+        model.addAttribute("variantTypeCounters", variantEffectCounters);
 
         List<Gene> sampleGenes = analysisResults.getGenes();
         model.addAttribute("geneResultsTruncated", false);
