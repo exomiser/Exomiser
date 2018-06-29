@@ -417,10 +417,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     public float getPathogenicityScore() {
         float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-        // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
-        // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
-        // In order that missense variants are not over-represented if they have poor predicted scores this clause was added here.
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
+            // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
+            // best to check for a REVEL prediction and defer wholly to that if present rather than do the following.
+
+            // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
+            // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
+            // In order that missense variants are not over-represented if they have poor predicted scores this clause was added here.
             return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
         } else {
             return Math.max(predictedScore, variantEffectScore);

@@ -23,6 +23,11 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 /**
  * Class representing a REVEL pathogenicity predictor score.
  *
+ * CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
+ * or the other predicted path scores, yet apparently are more concordant with ClinVar. However we do not yet recommend
+ * using REVEL either in isolation of with other pathogenicity predictors as the REVEL scores tend to be overwhelmed by
+ * the other scores. USE AT YOUR OWN RISK!!!
+ *
  * “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885.
  * http://dx.doi.org/10.1016/j.ajhg.2016.08.016
  * https://sites.google.com/site/revelgenomics/
