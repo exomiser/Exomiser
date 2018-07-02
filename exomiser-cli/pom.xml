@@ -45,10 +45,6 @@
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
         <!--commons-cli used for parsing the command line -->
         <dependency>
             <groupId>commons-cli</groupId>
