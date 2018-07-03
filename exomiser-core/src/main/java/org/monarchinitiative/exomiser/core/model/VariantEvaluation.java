@@ -268,14 +268,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the number of individuals with a genotype at this variant.
-     */
-    @JsonIgnore
-    public int getNumberOfIndividuals() {
-        return numIndividuals;
-    }
-
-    /**
      * This method is used to add a {@code FilterResult} object to this variant.
      * Such objects represent the results of running the variant through a {@code Filter}.
      *
@@ -675,11 +667,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         public Builder quality(double phredScore) {
             this.phredScore = phredScore;
-            return this;
-        }
-
-        public Builder numIndividuals(int numIndividuals) {
-            this.numIndividuals = numIndividuals;
             return this;
         }
 
