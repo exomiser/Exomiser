@@ -157,7 +157,6 @@ public class VariantFactoryImpl implements VariantFactory {
                 //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
-                .numIndividuals(variantContext.getNSamples())
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 //jannovar derived data
