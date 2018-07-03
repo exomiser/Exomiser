@@ -196,18 +196,6 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetNumIndividualsEqualsOneIfNotSet() {
-        assertThat(instance.getNumberOfIndividuals(), equalTo(1));
-    }
-
-    @Test
-    public void testGetNumIndividualsEqualsBuilderValue() {
-        int builderValue = 2;
-        instance = testVariantBuilder().numIndividuals(builderValue).build();
-        assertThat(instance.getNumberOfIndividuals(), equalTo(builderValue));
-    }
-
-    @Test
     public void canGetGeneId() {
         assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
     }
@@ -601,7 +589,6 @@ public class VariantEvaluationTest {
         assertThat(builtContext.getNAlleles(), equalTo(2));
         assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
         assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
-        assertThat(builtContext.getNSamples(), equalTo(instance.getNumberOfIndividuals()));
     }
 
     @Test

@@ -66,7 +66,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final String alt;
 
     //Variant variables, for a richer more VCF-like experience
-    private final int numIndividuals;
     private final double phredScore;
 
     //VariantAnnotation
@@ -96,7 +95,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         ref = builder.ref;
         alt = builder.alt;
 
-        numIndividuals = builder.numIndividuals;
         phredScore = builder.phredScore;
         variantEffect = builder.variantEffect;
         annotations = builder.annotations;
@@ -596,7 +594,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private String ref;
         private String alt;
 
-        private int numIndividuals = 1;
         private double phredScore = 0;
 
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
