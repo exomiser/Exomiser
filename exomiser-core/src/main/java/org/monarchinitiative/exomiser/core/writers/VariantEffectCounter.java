@@ -31,14 +31,13 @@ import java.util.*;
 
 public class VariantEffectCounter {
 
-    /**
-     * counter for each variant effect
-     */
+    private final int numSamples;
     private final List<Map<VariantEffect, Integer>> sampleVariantEffectCounts;
 
     public VariantEffectCounter(List<String> sampleNames, List<VariantEvaluation> variantEvaluations) {
-        this.sampleVariantEffectCounts = new ArrayList<>();
-        for (int i = 0; i < sampleNames.size(); ++i) {
+        numSamples = sampleNames.size();
+        sampleVariantEffectCounts = new ArrayList<>();
+        for (int i = 0; i < numSamples; ++i) {
             sampleVariantEffectCounts.add(new EnumMap<>(VariantEffect.class));
         }
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
@@ -57,8 +56,9 @@ public class VariantEffectCounter {
         if (effect == null) {
             return;
         }
+
+        //TODO could use variant.getSampleGenotypes();
         VariantContext variantContext = variant.getVariantContext();
-        int numSamples = variant.getNumberOfIndividuals();
         for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             final Genotype gt = variantContext.getGenotype(sampleIdx);
             if (gt.getAlleles().size() != 2) {
@@ -85,17 +85,16 @@ public class VariantEffectCounter {
 
     public List<VariantEffectCount> getVariantEffectCounts(Set<VariantEffect> variantEffects) {
         Set<VariantEffect> effects = EnumSet.copyOf(variantEffects);
-        int numIndividuals = sampleVariantEffectCounts.size();
 
         List<Map<VariantEffect, Integer>> freqMaps = getFrequencyMap(variantEffects);
-        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
+        for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             effects.addAll(freqMaps.get(sampleIdx).keySet());
         }
 
         List<VariantEffectCount> result = new ArrayList<>();
         for (VariantEffect effect : effects) {
             List<Integer> typeSpecificCounts = new ArrayList<>();
-            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
+            for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
                 typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
             }
             result.add(new VariantEffectCount(effect, typeSpecificCounts));
