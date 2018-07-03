@@ -171,8 +171,8 @@ public class InheritanceModeAnnotator {
             int altAlleleId = variantEvaluation.getAltAlleleId();
             VariantContext variantContext = variantEvaluation.getVariantContext();
             Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-            logger.debug("Converting {} {} {}", variantContext.getReference(), variantContext.getAlternateAllele(altAlleleId), variantContext
-                    .getGenotypes());
+//            Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
+            logger.debug("Converting {} {} {}", variantEvaluation.getRef(), variantEvaluation.getAlt(), sampleGenotypes);
             for (Map.Entry<String, SampleGenotype> entry : sampleGenotypes.entrySet()) {
                 String sampleName = entry.getKey();
                 SampleGenotype sampleGenotype = entry.getValue();
