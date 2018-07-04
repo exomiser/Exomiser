@@ -82,7 +82,7 @@ public class JannovarProtoConverter {
         return transcriptModel -> JannovarProto.TranscriptModel.newBuilder()
                 .setAccession(transcriptModel.getAccession())
                 .setGeneSymbol(transcriptModel.getGeneSymbol())
-                .setGeneID(transcriptModel.getGeneID())
+                .setGeneID(transcriptModel.getGeneID() == null ? "" : transcriptModel.getGeneID())
                 .putAllAltGeneIds(transcriptModel.getAltGeneIDs())
                 .setTranscriptSupportLevel(transcriptModel.getTranscriptSupportLevel())
                 .setSequence(transcriptModel.getSequence())

@@ -91,8 +91,5 @@ public class JannovarDataProtoSerialiser {
             super(cause);
         }
 
-        private JannovarDataSerializerException(String message) {
-            super(message);
-        }
     }
 }
