@@ -36,8 +36,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class JannovarDataSourceLoaderTest {
 
     @Test
-    public void loadsData() {
+    public void loadsOldFormatData() {
         Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/1710_hg19_transcripts_ensembl.ser");
+        JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(jannovarDataPath);
+        assertThat(jannovarData, instanceOf(JannovarData.class) );
+    }
+
+    @Test
+    public void loadsNewFormatData() {
+        Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/1710_hg19_transcripts_ensembl_new_format.ser");
         JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(jannovarDataPath);
         assertThat(jannovarData, instanceOf(JannovarData.class) );
     }
