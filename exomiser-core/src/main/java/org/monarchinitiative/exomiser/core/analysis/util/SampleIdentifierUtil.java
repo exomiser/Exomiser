@@ -83,6 +83,7 @@ public class SampleIdentifierUtil {
             }
         }
         String message = String.format("proband sample name '%s' is not found in the VCF sample. Expected one of %s. Please check your sample and analysis files match.", probandSampleName, sampleNames);
+        logger.error(message);
         throw new SampleMismatchException(message);
     }
 }
