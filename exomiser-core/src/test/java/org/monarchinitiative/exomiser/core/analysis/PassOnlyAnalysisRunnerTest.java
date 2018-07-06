@@ -33,7 +33,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.nio.file.Paths;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -173,7 +172,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         hiPhiveGeneScores.put("GNRHR2", 0.75f);
         hiPhiveGeneScores.put("RBM8A", 0.65f);
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
-        GeneFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
@@ -270,7 +269,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         
         Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
@@ -309,7 +308,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysisAutosomalDominantTrioDeNovoInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(childAffectedPedPath)
@@ -337,7 +336,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysisAutosomalDominantTrioSharedInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(twoAffectedPedPath)
@@ -365,7 +364,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysisAutosomalRecessiveTrioInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     	Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
                 .pedPath(childAffectedPedPath)
