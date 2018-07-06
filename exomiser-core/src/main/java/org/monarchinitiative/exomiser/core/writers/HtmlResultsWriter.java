@@ -96,15 +96,14 @@ public class HtmlResultsWriter implements ResultsWriter {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        String jsonSettings = "";
+        StringBuilder jsonSettings = new StringBuilder();
         try {
-            jsonSettings = mapper.writeValueAsString(analysis);
-            jsonSettings += mapper.writeValueAsString(settings);
+            jsonSettings.append(mapper.writeValueAsString(analysis));
+            jsonSettings.append(mapper.writeValueAsString(settings));
         } catch (JsonProcessingException ex) {
             logger.error("Unable to process JSON settings", ex);
         }
-        context.setVariable("settings", jsonSettings);
+        context.setVariable("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
