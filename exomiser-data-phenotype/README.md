@@ -6,10 +6,9 @@ This maven project is used to build the Exomiser phenotype database used by the 
 Currently the build relies on a preliminary OWLSim2 file build which in future versions will
 be incorporated into this codebase:
 
-1. OWLTools
-```
-    git clone https://github.com/owlcollab/owltools.git or git pull
-    cd owltools/OWLTools-Parent
+1. OWLTools:
+    ```git clone https://github.com/owlcollab/owltools.git``` or ```git pull```
+    ```cd owltools/OWLTools-Parent
     mvn clean install
     cd ../../
     chmod +x owltools/OWLTools-Runner/bin/owltools
