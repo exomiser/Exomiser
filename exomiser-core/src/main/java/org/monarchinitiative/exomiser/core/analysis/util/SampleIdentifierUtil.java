@@ -36,7 +36,6 @@ import java.util.List;
 public class SampleIdentifierUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SampleIdentifierUtil.class);
-    private static final SampleIdentifier DEFAULT_SAMPLE_IDENTIFIER = SampleIdentifier.of("Sample", 0);
 
     private SampleIdentifierUtil() {
         //deliberately empty - class should not be instantiated
@@ -59,19 +58,20 @@ public class SampleIdentifierUtil {
         logger.debug("Creating sample identifier for proband '{}'", probandSampleName);
         int numSamples = sampleNames.size();
         if (probandSampleName.isEmpty() && numSamples > 1) {
-            String message = String.format("proband sample name not specified. Expected single sample VCF but got %d sample names - %s. Please check your sample and analysis files match.", numSamples, sampleNames);
+            String message = String.format("Proband sample name not specified. Expected single sample VCF but got %d sample names - %s. Please check your sample and analysis files match.", numSamples, sampleNames);
             logger.error(message);
             throw new SampleMismatchException(message);
         }
         if (probandSampleName.isEmpty() && numSamples == 1) {
             String vcfSampleName = sampleNames.get(0);
-            logger.info("proband sample name not specified - using sample name '{}' from VCF", vcfSampleName);
+            logger.info("Proband sample name not specified - using sample name '{}' from VCF", vcfSampleName);
             return SampleIdentifier.of(vcfSampleName, 0);
         }
         if (probandSampleName.isEmpty() && numSamples == 0) {
-            logger.info("proband sample name not specified and none found in sample names - using default sample name '{}'", DEFAULT_SAMPLE_IDENTIFIER
+            SampleIdentifier defaultSampleIdentifier = SampleIdentifier.defaultSample();
+            logger.info("Proband sample name not specified and none found in sample names - using default sample name '{}'", defaultSampleIdentifier
                     .getId());
-            return DEFAULT_SAMPLE_IDENTIFIER;
+            return defaultSampleIdentifier;
         }
         return getMultiSampleProbandSampleIdentifier(probandSampleName, sampleNames);
     }
@@ -82,7 +82,7 @@ public class SampleIdentifierUtil {
                 return SampleIdentifier.of(probandSampleName, i);
             }
         }
-        String message = String.format("proband sample name '%s' is not found in the VCF sample. Expected one of %s. Please check your sample and analysis files match.", probandSampleName, sampleNames);
+        String message = String.format("Proband sample name '%s' is not found in the VCF sample. Expected one of %s. Please check your sample and analysis files match.", probandSampleName, sampleNames);
         logger.error(message);
         throw new SampleMismatchException(message);
     }

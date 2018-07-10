@@ -38,7 +38,7 @@ public class SampleIdentifierUtilTest {
     @Test
     public void testGetProbandSampleIdWithEmptyProbandNameAndEmptySampleNames() {
         SampleIdentifier sampleId = SampleIdentifierUtil.createProbandIdentifier("", Collections.emptyList());
-        assertThat(sampleId, equalTo(SampleIdentifier.of("Sample", 0)));
+        assertThat(sampleId, equalTo(SampleIdentifier.defaultSample()));
     }
 
     @Test
