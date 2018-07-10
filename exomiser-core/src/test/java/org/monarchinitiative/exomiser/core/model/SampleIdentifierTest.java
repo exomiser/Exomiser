@@ -41,6 +41,11 @@ public class SampleIdentifierTest {
     }
 
     @Test
+    public void defaultInstance() {
+        assertThat(SampleIdentifier.of("Sample", 0), equalTo(SampleIdentifier.defaultSample()));
+    }
+
+    @Test
     public void standardInitialisation() {
         SampleIdentifier instance = SampleIdentifier.of("Slartibartfast", 1);
         assertThat(instance.getId(), equalTo("Slartibartfast"));
