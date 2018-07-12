@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
@@ -72,12 +73,12 @@ public class AnalysisTest {
     }
 
     @Test
-    public void testCanSetAndGetPedFilePath() {
-        Path pedPath = Paths.get("ped");
+    public void testCanSetAndGetPedigree() {
+        Pedigree pedigree = Pedigree.empty();
         Analysis instance = newBuilder()
-                .pedPath(pedPath)
+                .pedigree(pedigree)
                 .build();
-        assertThat(instance.getPedPath(), equalTo(pedPath));
+        assertThat(instance.getPedigree(), equalTo(pedigree));
     }
 
     @Test
