@@ -87,6 +87,11 @@ public class Pedigree {
         return new Pedigree(Arrays.asList(individuals));
     }
 
+    public static Pedigree justProband(String id) {
+        Individual individual = Individual.newBuilder().id(id).status(Individual.Status.AFFECTED).build();
+        return Pedigree.of(individual);
+    }
+
     public static Pedigree empty() {
         return EMPTY;
     }

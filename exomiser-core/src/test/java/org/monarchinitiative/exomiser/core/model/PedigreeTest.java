@@ -21,12 +21,12 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableSet;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
@@ -59,7 +59,7 @@ public class PedigreeTest {
     @Test
     public void testEmpty() {
         Pedigree instance = Pedigree.empty();
-        assertThat(instance.getIndividuals().isEmpty(), CoreMatchers.is(true));
+        assertThat(instance.getIndividuals().isEmpty(), is(true));
     }
 
     @Test
@@ -74,6 +74,13 @@ public class PedigreeTest {
         Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
         instance.getIndividuals().forEach(System.out::println);
         assertThat(instance.getIndividuals(), equalTo(ImmutableSet.of(PROBAND, MOTHER, FATHER)));
+    }
+
+    @Test
+    public void testJustProband() {
+        Pedigree instance = Pedigree.justProband("proband");
+        Individual expectedProband = Individual.newBuilder().id("proband").sex(Sex.UNKNOWN).status(Status.AFFECTED).build();
+        assertThat(instance.getIndividuals(), equalTo(ImmutableSet.of(expectedProband)));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -110,5 +117,41 @@ public class PedigreeTest {
         Pedigree.of(PROBAND, incorrectSexMother);
     }
 
-    //TODO other getter methods
+    @Test
+    public void testSize() {
+        assertThat(Pedigree.empty().size(), equalTo(0));
+        assertThat(Pedigree.justProband("Nemo").size(), equalTo(1));
+        assertThat(Pedigree.of(PROBAND, MOTHER, FATHER).size(), equalTo(3));
+    }
+
+    @Test
+    public void testIsEmpty() {
+        assertThat(Pedigree.empty().isEmpty(), is(true));
+        assertThat(Pedigree.justProband("Nemo").isEmpty(), is(false));
+    }
+
+    @Test
+    public void testGetIdentifiers() {
+        Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
+        assertThat(instance.getIdentifiers(), equalTo(ImmutableSet.of(PROBAND.getId(), MOTHER.getId(), FATHER.getId())));
+    }
+
+    @Test
+    public void testContainsId() {
+        Pedigree instance = Pedigree.justProband("Nemo");
+        assertThat(instance.containsId("Nemo"), is(true));
+        assertThat(instance.containsId("Someone"), is(false));
+    }
+
+    @Test
+    public void testGetIndividuals() {
+        Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
+        assertThat(instance.getIndividuals(), equalTo(ImmutableSet.of(PROBAND, MOTHER, FATHER)));
+    }
+
+    @Test
+    public void testGetIndividualById() {
+        Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
+        assertThat(instance.getIndividualById(MOTHER.getId()), equalTo(MOTHER));
+    }
 }
