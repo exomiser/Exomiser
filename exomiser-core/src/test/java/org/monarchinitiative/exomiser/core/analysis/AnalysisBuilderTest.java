@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.UnsupportedGenomeAssemblyException;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
@@ -113,10 +114,10 @@ public class AnalysisBuilderTest {
     }
 
     @Test
-    public void testAnalysisBuilderPedPath() {
-        Path pedPath = Paths.get("ped.ped");
-        analysisBuilder.pedPath(pedPath);
-        assertThat(analysisBuilder.build().getPedPath(), equalTo(pedPath));
+    public void testAnalysisBuilderPedigree() {
+        Pedigree pedigree = Pedigree.empty();
+        analysisBuilder.pedigree(pedigree);
+        assertThat(analysisBuilder.build().getPedigree(), equalTo(pedigree));
     }
 
     @Test
@@ -184,7 +185,8 @@ public class AnalysisBuilderTest {
     }
 
     private List<AnalysisStep> buildAndGetSteps() {
-        return analysisBuilder.build().getAnalysisSteps();
+        Analysis analysis = analysisBuilder.build();
+        return analysis.getAnalysisSteps();
     }
 
     @Test
@@ -248,11 +250,41 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddFrequencyFilter() {
+        float cutOff = 0.01f;
+        analysisBuilder = analysisBuilderWithFrequencyFilter(cutOff);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+    }
+
+    @Test
+    public void testAddFrequencyFilterDoesntChangeIfInheritanceModeOptionsIsEmpty() {
+        float cutOff = 0.01f;
+        analysisBuilder = analysisBuilderWithFrequencyFilter(cutOff);
+        analysisBuilder.inheritanceModes(InheritanceModeOptions.empty());
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+    }
+
+    private AnalysisBuilder analysisBuilderWithFrequencyFilter(float cutOff) {
         analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
         analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
-        float cutOff = 0.01f;
         analysisBuilder.addFrequencyFilter(cutOff);
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+        return analysisBuilder;
+    }
+
+    @Test
+    public void testAddNoArgsFrequencyUsingInheritanceModeCutoffMaxFrequency() {
+        analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
+        analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
+        analysisBuilder.inheritanceModes(InheritanceModeOptions.defaults());
+        analysisBuilder.addFrequencyFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(InheritanceModeOptions.defaults().getMaxFreq()))));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddNoArgsFrequencyWhenInheritanceModeOptionsAreEmpty() {
+        analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
+        analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
+        analysisBuilder.addFrequencyFilter();
+        buildAndGetSteps();
     }
 
     @Test(expected = UndefinedGenomeAssemblyException.class)
@@ -316,7 +348,7 @@ public class AnalysisBuilderTest {
     public void testAnalysisBuilderCanBuildCompleteAnalysis() {
         EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
         EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
-        float frequencyCutOff = 1f;
+        float frequencyCutOff = 2f;
         FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
 
         PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser();

@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -88,8 +89,8 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder pedPath(Path pedPath) {
-        builder.pedPath(pedPath);
+    public AnalysisBuilder pedigree(Pedigree pedigree) {
+        builder.pedigree(pedigree);
         return this;
     }
 
@@ -181,6 +182,24 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addFrequencyFilter(float cutOff) {
+        analysisSteps.add(makeFrequencyDependentStep(new FrequencyFilter(cutOff)));
+        return this;
+    }
+
+    /**
+     * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this
+     * method requires that the {@code inheritanceModes} method has already been called and supplied with a non-empty
+     * {@link InheritanceModeOptions} instance.
+     *
+     * @return an {@link AnalysisBuilder} with an added {@link FrequencyFilter} instantiated with the maximum
+     * frequency taken from the {@link InheritanceModeOptions}.
+     * @since 11.0.0
+     */
+    public AnalysisBuilder addFrequencyFilter() {
+        if (inheritanceModeOptions.isEmpty()) {
+            throw new IllegalArgumentException("Unable to add frequency filter with undefined max frequency without inheritanceModeOptions being set.");
+        }
+        float cutOff = inheritanceModeOptions.getMaxFreq();
         analysisSteps.add(makeFrequencyDependentStep(new FrequencyFilter(cutOff)));
         return this;
     }
