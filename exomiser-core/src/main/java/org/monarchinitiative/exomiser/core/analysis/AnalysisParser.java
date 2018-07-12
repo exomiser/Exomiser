@@ -224,6 +224,7 @@ public class AnalysisParser {
             GenomeAssembly requestedAssembly = parseGenomeAssembly(analysisMap);
             genomeAnalysisService = genomeAnalysisServiceProvider.get(requestedAssembly);
 
+            //TODO: Why not use the AnalysisBuilder?
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
                     .genomeAssembly(requestedAssembly)
@@ -329,13 +330,13 @@ public class AnalysisParser {
                 Map<SubModeOfInheritance, Float> inheritanceModes = new EnumMap<>(SubModeOfInheritance.class);
                 for (Entry<String, Double> entry : inheritanceModesInput.entrySet()) {
                     SubModeOfInheritance subMode = parseValueOfSubInheritanceMode(entry.getKey());
-                    if (subMode == SubModeOfInheritance.ANY) {
-                        logger.info("Ignoring inheritance mode {}", subMode);
-                    } else {
+//                    if (subMode == SubModeOfInheritance.ANY) {
+//                        logger.info("Ignoring inheritance mode {}", subMode);
+//                    } else {
                         Double value = entry.getValue();
                         logger.debug("Adding inheritance mode {} max MAF {}", subMode, value);
                         inheritanceModes.put(subMode, value.floatValue());
-                    }
+//                    }
                 }
 
                 return InheritanceModeOptions.of(inheritanceModes);
@@ -348,7 +349,7 @@ public class AnalysisParser {
                 return SubModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
                 List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
-                        .filter(mode -> mode != SubModeOfInheritance.ANY)
+//                        .filter(mode -> mode != SubModeOfInheritance.ANY)
                         .collect(toList());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
@@ -359,7 +360,7 @@ public class AnalysisParser {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
                 List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
-                        .filter(mode -> mode != ModeOfInheritance.ANY)
+//                        .filter(mode -> mode != ModeOfInheritance.ANY)
                         .collect(toList());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }

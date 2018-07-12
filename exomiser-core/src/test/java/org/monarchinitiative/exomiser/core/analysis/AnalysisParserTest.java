@@ -269,7 +269,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisModeOfInheritanceRemovesAny() {
+    public void testParseAnalysisModeOfInheritanceMultipleModes() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
@@ -279,7 +279,10 @@ public class AnalysisParserTest {
                         + "}\n"
                         + "    ");
 
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f,
+                SubModeOfInheritance.ANY, 0.1f
+        );
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
