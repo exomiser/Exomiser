@@ -66,9 +66,6 @@ public class InheritanceModeOptions {
 
     public static InheritanceModeOptions of(Map<SubModeOfInheritance, Float> values) {
         Objects.requireNonNull(values);
-        if (values.keySet().contains(SubModeOfInheritance.ANY)) {
-            throw new IllegalArgumentException("values cannot contain key " + SubModeOfInheritance.ANY);
-        }
         return new InheritanceModeOptions(values);
     }
 
@@ -95,7 +92,8 @@ public class InheritanceModeOptions {
                     translated.put(SubModeOfInheritance.MITOCHONDRIAL, DEFAULT_FREQ.get(SubModeOfInheritance.MITOCHONDRIAL));
                     break;
                 case ANY:
-                    throw new IllegalArgumentException(ModeOfInheritance.ANY + " is not a valid argument");
+                    translated.put(SubModeOfInheritance.ANY, 2.0f);
+                    break;
             }
         }
         return new InheritanceModeOptions(translated);
@@ -148,6 +146,9 @@ public class InheritanceModeOptions {
                 case MITOCHONDRIAL:
                     maxFreqs.put(ModeOfInheritance.MITOCHONDRIAL, freq);
                     break;
+                case ANY:
+                    maxFreqs.put(ModeOfInheritance.ANY, freq);
+                    break;
                 default:
                     //don't add the value
                     break;
@@ -185,6 +186,10 @@ public class InheritanceModeOptions {
 
     public Set<ModeOfInheritance> getDefinedModes() {
         return Sets.immutableEnumSet(moiMaxFreqs.keySet());
+    }
+
+    public Set<SubModeOfInheritance> getDefinedSubModes() {
+        return Sets.immutableEnumSet(subMoiMaxFreqs.keySet());
     }
 
     public boolean isEmpty() {

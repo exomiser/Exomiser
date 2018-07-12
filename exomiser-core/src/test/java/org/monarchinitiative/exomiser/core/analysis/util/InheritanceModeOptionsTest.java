@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.Test;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -137,9 +138,10 @@ public class InheritanceModeOptionsTest {
         assertThat(instance.getMaxFreqForMode(ModeOfInheritance.ANY), equalTo(Float.MAX_VALUE));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void defaultModeOfInheritanceThrowsExceptionWithAny() {
-        InheritanceModeOptions.defaultForModes(ModeOfInheritance.ANY);
+        InheritanceModeOptions anyDefault = InheritanceModeOptions.defaultForModes(ModeOfInheritance.ANY);
+        assertThat(anyDefault.getMaxFreqForMode(ModeOfInheritance.ANY), equalTo(2.0f));
     }
 
     @Test
@@ -161,6 +163,19 @@ public class InheritanceModeOptionsTest {
     }
 
     @Test
+    public void canGetDefinedSubModes() {
+        InheritanceModeOptions instance = InheritanceModeOptions.defaultForModes(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT,
+                ModeOfInheritance.X_RECESSIVE
+        );
+
+        InheritanceModeOptions empty = InheritanceModeOptions.empty();
+
+        assertThat(instance.getDefinedSubModes(), equalTo(ImmutableSet.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, SubModeOfInheritance.X_RECESSIVE_COMP_HET, SubModeOfInheritance.X_RECESSIVE_HOM_ALT)));
+        assertThat(empty.getDefinedSubModes(), equalTo(ImmutableSet.of()));
+    }
+
+    @Test
     public void isEmpty() {
         assertThat(InheritanceModeOptions.empty().isEmpty(), equalTo(true));
         assertThat(InheritanceModeOptions.defaults().isEmpty(), equalTo(false));
@@ -171,12 +186,13 @@ public class InheritanceModeOptionsTest {
         InheritanceModeOptions.of(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWithAnyValue() {
+    @Test
+    public void acceptsAnyValue() {
         Map<SubModeOfInheritance, Float> withAny = ImmutableMap.of(
                 SubModeOfInheritance.ANY, 100f
         );
-        InheritanceModeOptions.of(withAny);
+        InheritanceModeOptions instance = InheritanceModeOptions.of(withAny);
+        assertThat(instance.getDefinedModes(), equalTo(EnumSet.of(ModeOfInheritance.ANY)));
     }
 
     @Test(expected = IllegalArgumentException.class)
