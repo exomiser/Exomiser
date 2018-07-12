@@ -29,6 +29,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -39,6 +40,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -133,7 +135,7 @@ public class VariantFactoryImpl implements VariantFactory {
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotation variantAnnotation) {
 
         //Add this in here...? If so see notes in InheritanceModeAnnotator.
-//        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeAdaptor.createAlleleSampleGenotypes(variantContext, altAlleleId);
+        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();
@@ -157,6 +159,7 @@ public class VariantFactoryImpl implements VariantFactory {
                 //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
+                .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 //jannovar derived data
