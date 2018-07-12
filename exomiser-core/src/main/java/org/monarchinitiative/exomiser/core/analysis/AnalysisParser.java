@@ -25,6 +25,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
@@ -32,6 +33,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
@@ -225,7 +227,7 @@ public class AnalysisParser {
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
                     .genomeAssembly(requestedAssembly)
-                    .pedPath(parsePed(analysisMap))
+                    .pedigree(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
                     .inheritanceModeOptions(inheritanceModeOptions(analysisMap))
@@ -278,13 +280,14 @@ public class AnalysisParser {
             return GenomeAssembly.fromValue(genomeAssemblyValue);
         }
 
-        private Path parsePed(Map<String, String> analysisMap) {
+        private Pedigree parsePed(Map<String, String> analysisMap) {
             String pedValue = analysisMap.get("ped");
             //PED file paths are allowed to be null
-            if (pedValue == null) {
-                return null;
+            if (pedValue == null || pedValue.isEmpty()) {
+                return Pedigree.empty();
             }
-            return Paths.get(pedValue);
+            Path pedFile = Paths.get(pedValue);
+            return PedFiles.readPedigree(pedFile);
         }
 
         private String parseProbandSampleName(Map<String, String> analysisMap) {
@@ -411,7 +414,7 @@ public class AnalysisParser {
                 case "knownVariantFilter":
                     return makeKnownVariantFilter(analysisStepMap, parseFrequencySources(analysisMap));
                 case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap));
+                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap));
                 case "pathogenicityFilter":
                     return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
                 case "inheritanceFilter":
@@ -511,20 +514,28 @@ public class AnalysisParser {
             return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new KnownVariantFilter());
         }
 
-        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources) {
-            Double maxFreq = getMaxFrequency(options);
+        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources, InheritanceModeOptions inheritanceModeOptions) {
+            Double maxFreq = getMaxFreq(options, inheritanceModeOptions);
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
-            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq
-                    .floatValue()));
+            if (maxFreq == null) {
+                //this shouldn't be the case, but to be on the safe side...
+                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
+            }
+            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq.floatValue()));
         }
 
-        private Double getMaxFrequency(Map<String, Object> options) {
+        private Double getMaxFreq(Map<String, Object> options, InheritanceModeOptions inheritanceModeOptions) {
             Double maxFreq = (Double) options.get("maxFrequency");
-            if (maxFreq == null) {
-                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 1.0}", options);
+            if (maxFreq == null && inheritanceModeOptions.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
             }
+            if (maxFreq == null && !inheritanceModeOptions.isEmpty()) {
+                logger.debug("maxFrequency not defined - using inheritanceModeOptions max frequency.");
+                return (double) inheritanceModeOptions.getMaxFreq();
+            }
+            // maxFreq should not be null at this point
             return maxFreq;
         }
 

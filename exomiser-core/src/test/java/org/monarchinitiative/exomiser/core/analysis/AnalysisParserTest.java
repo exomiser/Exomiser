@@ -35,10 +35,12 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -51,7 +53,8 @@ import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -86,7 +89,6 @@ public class AnalysisParserTest {
                 + "    vcf: test.vcf\n"
                 + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
-//                + "    modeOfInheritance: [AUTOSOMAL_DOMINANT]\n"
                 + "    inheritanceModes: {\n" +
                 "            AUTOSOMAL_DOMINANT: 0.1,\n" +
                 "            AUTOSOMAL_RECESSIVE_HOM_ALT: 1.0,\n" +
@@ -110,7 +112,7 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis(""));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
-        assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
         assertThat(analysis.getProbandSampleName(), equalTo(""));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
@@ -133,9 +135,19 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    ped: test.ped\n"
+                        + "    ped: " + TestPedigrees.trioWithChildAffectedPedPath() +"\n"
                         + "    ");
-        assertThat(analysis.getPedPath(), equalTo(Paths.get("test.ped")));
+        assertThat(analysis.getPedigree(), equalTo(TestPedigrees.trioChildAffected()));
+    }
+
+    @Test
+    public void testParseAnalysisPedPathEmpty() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ped: ''\n"
+                        + "    ");
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
     }
 
     @Test
@@ -415,6 +427,13 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
+    @Test
+    public void testParseAnalysisStepFrequencyFilterNoMaxFreqDefined() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {}"));
+        analysisSteps.add(new FrequencyFilter(2.0f));
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
     @Test(expected = AnalysisParserException.class)
     public void testParseAnalysisStepPathogenicityFilterNoPathSourcesDefined() {
         String script = "analysis:\n"
@@ -524,7 +543,7 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(Paths.get("src/test/resources/analysisExample.yml"));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
-        assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(modeOfInheritance)));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
