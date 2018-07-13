@@ -25,10 +25,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.model.FilterStatus;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -59,6 +56,33 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
             assertThat(gene.passedFilters(), is(true));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
                 assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+            }
+        }
+    }
+
+    @Test
+    public void testRunAnalysisRemovesAllelesUnobservedForProband() {
+        Analysis analysis = Analysis.builder()
+                .vcfPath(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"))
+                .probandSampleName("Seth")
+                .pedigree(TestPedigrees.trioChildAffected())
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
+                //need at least one filter step to trigger the code path
+                .addStep(new FailedVariantFilter())
+                .build();
+
+        AnalysisResults analysisResults = instance.run(analysis);
+
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.getVariantEvaluations().size(), equalTo(1));
+
+        for (Gene gene : analysisResults.getGenes()) {
+            assertThat(gene.passedFilters(), is(true));
+            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+                Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
+                SampleGenotype probandGenotype = sampleGenotypes.get(analysisResults.getProbandSampleName());
+                assertThat(probandGenotype.getCalls().contains(AlleleCall.ALT), is(true));
             }
         }
     }

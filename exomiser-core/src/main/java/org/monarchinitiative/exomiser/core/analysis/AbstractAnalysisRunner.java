@@ -105,7 +105,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             if (firstStep.isVariantFilter() && !variantsLoaded) {
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
-                variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup, analysis);
+                variantEvaluations = loadAndFilterVariants(vcfPath, probandSample, allGenes, analysisGroup, analysis);
                 //this is done here as there are GeneFilter steps which may require Variants in the genes, or the InheritanceModeDependent steps which definitely need them...
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
@@ -145,7 +145,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return analysisResults;
     }
 
-    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
+    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, SampleIdentifier probandSample, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
@@ -154,6 +154,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
                     .peek(variantLogger.logLoadedAndPassedVariants())
+                    .filter(isObservedInProband(probandSample))
                     .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(geneReassigner))
                     .map(reassignNonCodingVariantToBestGeneInTad(geneReassigner))
                     .filter(isAssociatedWithKnownGene(allGenes))
@@ -163,6 +164,16 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
         variantLogger.logResults();
         return filteredVariants;
+    }
+
+    private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
+        return variantEvaluation -> {
+            // need a nicer API for this.
+            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotypes().get(probandSample.getId());
+            // a possible NPE here, but this really shouldn't happen, as the samples and pedigree should have been checked previously
+            // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
+            return probandGenotype.getCalls().contains(AlleleCall.ALT);
+        };
     }
 
     private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
