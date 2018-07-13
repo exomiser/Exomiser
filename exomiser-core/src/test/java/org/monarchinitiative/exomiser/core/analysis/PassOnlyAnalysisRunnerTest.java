@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -158,7 +159,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test(expected = SampleMismatchException.class)
     public void testRunAnalysisWhenProbandSampleNameIsNotInMultiSampleVcf() {
         Analysis analysis = Analysis.builder()
-                .vcfPath(inheritanceFilterVCFPath)
+                .vcfPath(TestPedigrees.trioVcfPath())
                 .probandSampleName("mickyMouse")
                 .build();
         instance.run(analysis);
@@ -220,8 +221,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        //TODO:
-//        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
         System.out.println(passedGene.getGeneScores());    }
 
     @Test
@@ -246,8 +246,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        //TODO:
-//        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
         System.out.println(passedGene.getGeneScores());
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
 
@@ -290,8 +289,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        //TODO:
-//        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
         System.out.println(passedGene.getGeneScores());
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
 
@@ -310,8 +308,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	Analysis analysis = Analysis.builder()
-                .vcfPath(inheritanceFilterVCFPath)
-                .pedPath(childAffectedPedPath)
+                .vcfPath(TestPedigrees.trioVcfPath())
+                .pedigree(TestPedigrees.trioChildAffected())
                 .probandSampleName("Seth")
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
@@ -338,8 +336,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         Analysis analysis = Analysis.builder()
-                .vcfPath(inheritanceFilterVCFPath)
-                .pedPath(twoAffectedPedPath)
+                .vcfPath(TestPedigrees.trioVcfPath())
+                .pedigree(TestPedigrees.trioChildAndFatherAffected())
                 .probandSampleName("Seth")
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
@@ -366,8 +364,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     	Analysis analysis = Analysis.builder()
-                .vcfPath(inheritanceFilterVCFPath)
-                .pedPath(childAffectedPedPath)
+                .vcfPath(TestPedigrees.trioVcfPath())
+                .pedigree(TestPedigrees.trioChildAffected())
                 .probandSampleName("Seth")
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -38,6 +37,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -52,12 +52,7 @@ public abstract class AnalysisRunnerTestBase {
  
     protected final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
 
-    final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
-    final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
-    final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
-
     final GenomeAnalysisService genomeAnalysisService = TestFactory.buildDefaultHg19GenomeAnalysisService();
-    final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
         return Analysis.builder()
@@ -67,7 +62,7 @@ public abstract class AnalysisRunnerTestBase {
         }
 
     Map<String, Gene> makeResults(List<Gene> genes) {
-        return genes.stream().collect(toMap(Gene::getGeneSymbol, gene -> gene));
+        return genes.stream().collect(toMap(Gene::getGeneSymbol, Function.identity()));
     }
 
     void printResults(AnalysisResults analysisResults) {
