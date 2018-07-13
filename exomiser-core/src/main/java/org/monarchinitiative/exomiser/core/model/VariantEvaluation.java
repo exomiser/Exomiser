@@ -577,10 +577,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if(contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
             return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                    + " compatibleWith=" + compatibleInheritanceModes + "}";
+                    + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
         return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                + " compatibleWith=" + compatibleInheritanceModes + "}";
+                + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
     public static Builder builder(int chr, int pos, String ref, String alt) {
