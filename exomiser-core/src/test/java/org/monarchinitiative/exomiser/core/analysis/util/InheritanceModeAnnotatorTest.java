@@ -25,10 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Disease;
-import de.charite.compbio.jannovar.pedigree.PedPerson;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.Sex;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -36,6 +32,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -47,6 +45,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
 
 /**
  *
@@ -54,9 +54,13 @@ import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactor
  */
 public class InheritanceModeAnnotatorTest {
 
+    private Pedigree singleAffectedSample(String id) {
+        return Pedigree.of(Individual.newBuilder().id(id).status(Status.AFFECTED).build());
+    }
+
     @Test
     public void testAnalyseInheritanceModesEmptyInput() {
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Nemo");
+        Pedigree pedigree = singleAffectedSample("Nemo");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
 
@@ -73,7 +77,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         VariantEvaluation variant = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -94,7 +98,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         VariantEvaluation variant = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -115,7 +119,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(23, 12345, alleles, genotype);
         VariantEvaluation variant = filteredVariant(23, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -139,11 +143,12 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(23, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation variant = filteredVariant(23, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.AFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -168,12 +173,13 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(23, 12345, alleles, proband, brother, sister, mother, father);
         VariantEvaluation variant = filteredVariant(23, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.AFFECTED,Collections.emptyList());
-        PedPerson sisterPerson = new PedPerson("Family", "Rachel", "Adam", "Eve", Sex.FEMALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, sisterPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual sisterIndividual = Individual.newBuilder().id("Rachel").fatherId("Adam").motherId("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.AFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual, sisterIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -194,7 +200,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(25, 12345, alleles, genotype);
         VariantEvaluation variant = filteredVariant(25, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -218,11 +224,12 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(25, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation variant = filteredVariant(25, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
@@ -246,11 +253,12 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
@@ -275,11 +283,12 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -303,11 +312,12 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
@@ -336,11 +346,12 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -362,7 +373,7 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -388,7 +399,7 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         alleleTwo.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -411,7 +422,7 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -446,11 +457,12 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext2 = buildVariantContext(1, 12355, alleles2, proband2, brother2, mother2, father2);
         VariantEvaluation alleleTwo = filteredVariant(1, 12355, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext2);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -484,11 +496,12 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED,Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -518,11 +531,12 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -543,7 +557,7 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
@@ -569,7 +583,7 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         alleleTwo.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq / 2f, FrequencySource.LOCAL)));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
@@ -600,7 +614,7 @@ public class InheritanceModeAnnotatorTest {
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
@@ -631,7 +645,7 @@ public class InheritanceModeAnnotatorTest {
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.empty());
 
@@ -640,6 +654,67 @@ public class InheritanceModeAnnotatorTest {
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
                 SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        );
+        assertThat(results, equalTo(expected));
+    }
+
+    @Test
+    public void testAutosomalDominantHetAltIndividualWithJustAnyMaxFrequencies() {
+        List<Allele> alleles = buildAlleles("A", "T", "C");
+
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+
+        VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
+        VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        //Set the frequency data to be over that of the default frequency value
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
+
+        VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+
+        Pedigree pedigree = singleAffectedSample("Cain");
+
+        ImmutableMap<SubModeOfInheritance, Float> modeMaxMafs = ImmutableMap.of(SubModeOfInheritance.ANY, 2.0f);
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.of(modeMaxMafs));
+
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
+                SubModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        );
+        assertThat(results, equalTo(expected));
+    }
+
+    @Test
+    public void testAutosomalDominantHetAltIndividualWithModeOfInheritanceAnyFrequencies() {
+        List<Allele> alleles = buildAlleles("A", "T", "C");
+
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+
+        VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
+        VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        float alleleOneMaxFreq = 1.0f;
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq, FrequencySource.LOCAL)));
+
+        VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+
+        Pedigree pedigree = singleAffectedSample("Cain");
+
+        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+                SubModeOfInheritance.ANY, 2.0f,
+                //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
+        );
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
+
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
+                ModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }

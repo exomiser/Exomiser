@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
@@ -77,20 +76,20 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Using genome assembly {}", analysis.getGenomeAssembly());
         //all the sample-related bits, might be worth encapsulating
         Path vcfPath = analysis.getVcfPath();
-        Path pedigreeFilePath = analysis.getPedPath();
 
-        logger.info("Setting up analysis for VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
         VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         List<String> sampleNames = vcfHeader.getGenotypeSamples();
+        logger.info("Checking proband and pedigree for VCF {}", vcfPath);
 
-        SampleIdentifier proband = SampleIdentifierUtil.createProbandIdentifier(analysis.getProbandSampleName(), sampleNames);
-        Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames);
+        SampleIdentifier probandSample = SampleIdentifierUtil.createProbandIdentifier(analysis.getProbandSampleName(), sampleNames);
+        Pedigree validatedPedigree = PedigreeSampleValidator.validate(analysis.getPedigree(), probandSample, sampleNames);
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
 
-        InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
+        InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(validatedPedigree, inheritanceModeOptions);
+
         List<String> hpoIds = analysis.getHpoIds();
         //now run the analysis on the sample
-        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", proband.getId(), proband.getGenotypePosition() + 1, sampleNames);
+        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSample.getId(), probandSample.getGenotypePosition() + 1, sampleNames);
         Instant timeStart = Instant.now();
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
@@ -127,14 +126,14 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         logger.info("Scoring genes");
-        GeneScorer geneScorer = new RawScoreGeneScorer(proband, inheritanceModeAnnotator);
+        GeneScorer geneScorer = new RawScoreGeneScorer(probandSample, inheritanceModeAnnotator);
         List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()));
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
-        logger.info("Creating analysis results from VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
+        logger.info("Creating analysis results from VCF {}", vcfPath);
         AnalysisResults analysisResults = AnalysisResults.builder()
-                .probandSampleName(proband.getId())
+                .probandSampleName(probandSample.getId())
                 .sampleNames(sampleNames)
                 .genes(genes)
                 .variantEvaluations(variants)
@@ -193,7 +192,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
-        //todo: this won't function correctly if run before a prioritiser has been run
+        // Caution! This won't function correctly if run before a prioritiser has been run
         return variantEvaluation -> {
             geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
             return variantEvaluation;
