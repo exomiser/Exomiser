@@ -20,10 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import de.charite.compbio.jannovar.pedigree.Disease;
-import de.charite.compbio.jannovar.pedigree.PedPerson;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.Sex;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
@@ -32,10 +28,13 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -103,10 +102,11 @@ public class CompHetAlleleCalculatorTest {
         System.out.println("Built allele " + var97723020);
         gene.addVariant(var97723020);
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "0", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "0", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson);
+        Individual probandIndividual = Individual.newBuilder().id("Cain").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.newBuilder().id("Abel").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.newBuilder().id("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, brotherIndividual);
 
         CompHetAlleleCalculator instance = new CompHetAlleleCalculator(new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults()));
         List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.getPassedVariantEvaluations());
