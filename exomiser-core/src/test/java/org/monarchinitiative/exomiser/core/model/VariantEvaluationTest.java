@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -198,6 +199,15 @@ public class VariantEvaluationTest {
     @Test
     public void canGetGeneId() {
         assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
+    }
+
+    @Test
+    public void testSampleGenotypes() {
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT));
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotypes(), equalTo(sampleGenotypes));
     }
 
     @Test

@@ -67,6 +67,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     //Variant variables, for a richer more VCF-like experience
     private final double phredScore;
+    //TODO for the time being this is ignored
+    @JsonIgnore
+    private Map<String,SampleGenotype> sampleGenotypes;
 
     //VariantAnnotation
     private VariantEffect variantEffect;
@@ -103,6 +106,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
+        sampleGenotypes = builder.sampleGenotypes;
 
         passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
         failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
@@ -234,7 +238,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * @return a String such as chr6:g.29911092G>T
      */
-//    SPDI?
+    // SPDI?
     @JsonIgnore
     public String getHgvsGenome() {
         return chr + ":g." + pos + ref + ">" + alt;
@@ -242,6 +246,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @JsonIgnore
     public String getGenotypeString() {
+        //TODO: build this from the sampleGenotypes
         // collect genotype string list
         List<String> gtStrings = new ArrayList<>();
         for (Genotype gt : variantContext.getGenotypes()) {
@@ -265,6 +270,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             }
         }
         return Joiner.on(":").join(gtStrings);
+    }
+
+    /**
+     * @return A map of sample ids and their corresponding {@link SampleGenotype}
+     * @since 11.0.0
+     */
+    public Map<String, SampleGenotype> getSampleGenotypes() {
+        return sampleGenotypes;
     }
 
     /**
@@ -560,7 +573,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String toString() {
-        //TODO: expose frequency and pathogenicity scores?
+        // expose frequency and pathogenicity scores?
         if(contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
             return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
@@ -595,6 +608,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         private VariantContext variantContext;
         private int altAlleleId;
+        private Map<String,SampleGenotype> sampleGenotypes = Collections.emptyMap();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
         private FrequencyData frequencyData = FrequencyData.empty();
@@ -667,6 +681,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         public Builder quality(double phredScore) {
             this.phredScore = phredScore;
+            return this;
+        }
+
+        public Builder sampleGenotypes(Map<String,SampleGenotype> sampleGenotypes) {
+            this.sampleGenotypes = sampleGenotypes;
             return this;
         }
 
