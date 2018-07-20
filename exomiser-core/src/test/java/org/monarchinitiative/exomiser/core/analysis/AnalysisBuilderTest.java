@@ -410,7 +410,7 @@ public class AnalysisBuilderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddHiPhivePrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults());
 
         analysisBuilder.addHiPhivePrioritiser();
 
@@ -419,7 +419,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyHiPhivePrioritiserNoOptions() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults());
 
         analysisBuilder.hpoIds(hpoIds)
                 .addHiPhivePrioritiser();

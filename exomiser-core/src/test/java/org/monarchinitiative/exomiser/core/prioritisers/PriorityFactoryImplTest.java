@@ -85,7 +85,7 @@ public class PriorityFactoryImplTest {
 
     @Test
     public void testmakePrioritiserForHiPhivePriority() {
-        assertThat(instance.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT), instanceOf(HiPhivePriority.class));
+        assertThat(instance.makeHiPhivePrioritiser(HiPhiveOptions.defaults()), instanceOf(HiPhivePriority.class));
     }
 
     @Test

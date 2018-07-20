@@ -256,7 +256,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addHiPhivePrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         return this;
     }
 

@@ -635,7 +635,7 @@ public class AnalysisParser {
                         .runParams(runParams)
                         .build();
             }
-            return HiPhiveOptions.DEFAULT;
+            return HiPhiveOptions.defaults();
         }
 
         private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List<Integer>> options) {

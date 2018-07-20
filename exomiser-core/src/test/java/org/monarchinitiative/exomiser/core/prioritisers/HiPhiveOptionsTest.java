@@ -60,7 +60,7 @@ public class HiPhiveOptionsTest {
 
     @Test
     public void testDefault() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
         assertDefaultOptions(instance);
     }
 
@@ -312,14 +312,14 @@ public class HiPhiveOptionsTest {
 
     @Test
     public void testHashCode() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
-        HiPhiveOptions other = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
+        HiPhiveOptions other = HiPhiveOptions.defaults();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
     public void testHashCodeNotEquals() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.builder()
                 .candidateGeneSymbol("geneSymbol")
                 .diseaseId("disease")
@@ -329,14 +329,14 @@ public class HiPhiveOptionsTest {
 
     @Test
     public void testEquals() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
-        HiPhiveOptions other = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
+        HiPhiveOptions other = HiPhiveOptions.defaults();
         assertThat(instance.equals(other), is(true));
     }
 
     @Test
     public void testNotEquals() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.builder()
                 .candidateGeneSymbol("geneSymbol")
                 .diseaseId("disease")
@@ -346,7 +346,7 @@ public class HiPhiveOptionsTest {
 
     @Test
      public void testToStringDefaultConstructor() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
         String defaultString  = "HiPhiveOptions{diseaseId='', candidateGeneSymbol='', benchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}";
         assertThat(instance.toString(), equalTo(defaultString));
     }
@@ -364,7 +364,7 @@ public class HiPhiveOptionsTest {
 
     @Test
     public void testGetOrganismsToRunAllOrganisms() {
-        HiPhiveOptions instance = HiPhiveOptions.DEFAULT;
+        HiPhiveOptions instance = HiPhiveOptions.defaults();
         assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE, Organism.FISH)));
     }
 

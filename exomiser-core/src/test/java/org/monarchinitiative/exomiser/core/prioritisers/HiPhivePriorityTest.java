@@ -153,7 +153,7 @@ public class HiPhivePriorityTest {
 
     @Test
     public void testGetPriorityType() {
-        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, testMatrix, priorityService);
+        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), testMatrix, priorityService);
         assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
@@ -302,7 +302,7 @@ public class HiPhivePriorityTest {
 
     @Test
     public void testToString() {
-        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, DataMatrix.empty(), priorityService);
+        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), priorityService);
         System.out.println(instance);
     }
     

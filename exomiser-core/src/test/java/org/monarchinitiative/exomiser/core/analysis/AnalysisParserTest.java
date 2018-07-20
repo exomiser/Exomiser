@@ -506,7 +506,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStepHiPhivePrioritiserWithDefaultOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -560,7 +560,7 @@ public class AnalysisParserTest {
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
         analysisSteps.add(priorityFactory.makeOmimPrioritiser());
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.builder()
                 .diseaseId("OMIM:101600")
                 .candidateGeneSymbol("FGFR2")
