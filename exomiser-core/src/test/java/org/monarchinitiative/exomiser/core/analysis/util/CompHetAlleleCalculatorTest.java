@@ -102,9 +102,9 @@ public class CompHetAlleleCalculatorTest {
         System.out.println("Built allele " + var97723020);
         gene.addVariant(var97723020);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, brotherIndividual);
 

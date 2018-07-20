@@ -88,7 +88,7 @@ public class Pedigree {
     }
 
     public static Pedigree justProband(String id) {
-        Individual individual = Individual.newBuilder().id(id).status(Individual.Status.AFFECTED).build();
+        Individual individual = Individual.builder().id(id).status(Individual.Status.AFFECTED).build();
         return Pedigree.of(individual);
     }
 
@@ -208,7 +208,7 @@ public class Pedigree {
             return status == Status.AFFECTED;
         }
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 

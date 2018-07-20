@@ -37,19 +37,19 @@ import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Stat
  */
 public class PedigreeTest {
 
-    private static final Individual MOTHER = Individual.newBuilder()
+    private static final Individual MOTHER = Individual.builder()
             .id("mother")
             .sex(Sex.FEMALE)
             .status(Status.UNAFFECTED)
             .build();
 
-    private static final Individual FATHER = Individual.newBuilder()
+    private static final Individual FATHER = Individual.builder()
             .id("father")
             .sex(Sex.MALE)
             .status(Status.UNKNOWN)
             .build();
 
-    private static final Individual PROBAND = Individual.newBuilder()
+    private static final Individual PROBAND = Individual.builder()
             .id("proband")
             .fatherId(FATHER.getId())
             .motherId(MOTHER.getId())
@@ -79,41 +79,41 @@ public class PedigreeTest {
     @Test
     public void testJustProband() {
         Pedigree instance = Pedigree.justProband("proband");
-        Individual expectedProband = Individual.newBuilder().id("proband").sex(Sex.UNKNOWN).status(Status.AFFECTED).build();
+        Individual expectedProband = Individual.builder().id("proband").sex(Sex.UNKNOWN).status(Status.AFFECTED).build();
         assertThat(instance.getIndividuals(), equalTo(ImmutableSet.of(expectedProband)));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void individualWithEmptyIdentifier() {
-        Individual.newBuilder().id("").build();
+        Individual.builder().id("").build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void individualWithNullIdentifier() {
-        Individual.newBuilder().id(null).build();
+        Individual.builder().id(null).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void duplicateIndividualId() {
-        Individual duplicatedId = Individual.newBuilder().id(PROBAND.getId()).build();
+        Individual duplicatedId = Individual.builder().id(PROBAND.getId()).build();
         Pedigree.of(PROBAND, duplicatedId);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void illegalFatherId() {
-        Individual noFather = Individual.newBuilder().id("proband").fatherId("father").build();
+        Individual noFather = Individual.builder().id("proband").fatherId("father").build();
         Pedigree.of(noFather);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void incorrectSexFather() {
-        Individual incorrectSexFather = Individual.newBuilder().id("father").sex(Sex.FEMALE).build();
+        Individual incorrectSexFather = Individual.builder().id("father").sex(Sex.FEMALE).build();
         Pedigree.of(PROBAND, incorrectSexFather);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void incorrectSexMother() {
-        Individual incorrectSexMother = Individual.newBuilder().id("mother").sex(Sex.MALE).build();
+        Individual incorrectSexMother = Individual.builder().id("mother").sex(Sex.MALE).build();
         Pedigree.of(PROBAND, incorrectSexMother);
     }
 

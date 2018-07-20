@@ -283,9 +283,9 @@ public class RawScoreGeneScorerTest {
         System.out.println("Built variant context " + variantContext);
         System.out.println("Proband sample 0 has genotype " + variantContext.getGenotype(0).getGenotypeString());
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
 

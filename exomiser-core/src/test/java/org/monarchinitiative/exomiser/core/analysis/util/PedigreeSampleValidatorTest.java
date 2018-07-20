@@ -36,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PedigreeSampleValidatorTest {
 
-    private static final Individual UNNAMED_SAMPLE = Individual.newBuilder()
+    private static final Individual UNNAMED_SAMPLE = Individual.builder()
             .familyId("family")
             .id(SampleIdentifier.defaultSample().getId())
             .status(Individual.Status.AFFECTED)
@@ -47,21 +47,21 @@ public class PedigreeSampleValidatorTest {
     //    1	Adam	0	0	1	1
     //    1	Seth	Adam	Eva	1	2
 
-    private static final Individual ADAM = Individual.newBuilder()
+    private static final Individual ADAM = Individual.builder()
             .familyId("1")
             .id("Adam")
             .sex(Individual.Sex.MALE)
             .status(Individual.Status.UNAFFECTED)
             .build();
 
-    private static final Individual EVA = Individual.newBuilder()
+    private static final Individual EVA = Individual.builder()
             .familyId("1")
             .id("Eva")
             .sex(Individual.Sex.FEMALE)
             .status(Individual.Status.UNAFFECTED)
             .build();
 
-    private static final Individual SETH = Individual.newBuilder()
+    private static final Individual SETH = Individual.builder()
             .familyId("1")
             .id("Seth")
             .sex(Individual.Sex.MALE)
@@ -98,7 +98,7 @@ public class PedigreeSampleValidatorTest {
 
     @Test(expected = RuntimeException.class)
     public void pedigreePresentAndSampleHasNoName() {
-        Individual individual = Individual.newBuilder().id("Nemo").build();
+        Individual individual = Individual.builder().id("Nemo").build();
         Pedigree input = Pedigree.of(individual);
         PedigreeSampleValidator.validate(input, SampleIdentifier.defaultSample(), Collections.emptyList());
     }
@@ -107,7 +107,7 @@ public class PedigreeSampleValidatorTest {
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndEmptyPedigree() {
         Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Adam", 0), ImmutableList
                 .of("Adam"));
-        Individual individual = Individual.newBuilder()
+        Individual individual = Individual.builder()
                 .familyId("family")
                 .id("Adam")
                 .status(Individual.Status.AFFECTED)
@@ -170,7 +170,7 @@ public class PedigreeSampleValidatorTest {
     @Test(expected = RuntimeException.class)
     public void validatePedigreeWithUnaffectedProband() {
         Pedigree pedigree = Pedigree.of(
-                Individual.newBuilder()
+                Individual.builder()
                         .id("Adam")
                         .status(Individual.Status.UNAFFECTED)
                         .build()
@@ -181,13 +181,13 @@ public class PedigreeSampleValidatorTest {
     @Test(expected = RuntimeException.class)
     public void testCreatePedigreeWithMoreThanOneFamilyInFile() {
         Pedigree multiFamilyPed = Pedigree.of(
-                Individual.newBuilder()
+                Individual.builder()
                         .familyId("Adams")
                         .id("Adam")
                         .sex(Individual.Sex.MALE)
                         .status(Individual.Status.UNAFFECTED)
                         .build(),
-                Individual.newBuilder()
+                Individual.builder()
                         .familyId("Simpsons")
                         .id("Homer")
                         .sex(Individual.Sex.MALE)

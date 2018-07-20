@@ -39,7 +39,7 @@ public class PedFilesTest {
     @Test
     public void canParsePedigreeWithSpaces() {
 
-        Pedigree.Individual manuel = Pedigree.Individual.newBuilder()
+        Pedigree.Individual manuel = Pedigree.Individual.builder()
                 .familyId("1")
                 .id("Manuel")
                 .sex(Sex.MALE)
@@ -73,21 +73,21 @@ public class PedFilesTest {
         @Test
     public void parsePedigreeUnknownStatus() {
         Pedigree.Individual zero = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t0"))
-                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.newBuilder().build());
+                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
         assertThat(zero.getStatus(), equalTo(Status.UNKNOWN));
 
         Pedigree.Individual minusNine = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t-9"))
-                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.newBuilder().build());
+                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
         assertThat(minusNine.getStatus(), equalTo(Status.UNKNOWN));
     }
     @Test
     public void parsePedigreeUnknownSex() {
         Pedigree.Individual zero = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t0\t0"))
-                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.newBuilder().build());
+                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
         assertThat(zero.getSex(), equalTo(Sex.UNKNOWN));
 
         Pedigree.Individual minusNine = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t42\t0"))
-                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.newBuilder().build());
+                .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
         assertThat(minusNine.getSex(), equalTo(Sex.UNKNOWN));
     }
 

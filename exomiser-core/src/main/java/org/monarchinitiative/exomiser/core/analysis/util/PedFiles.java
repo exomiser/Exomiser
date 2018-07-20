@@ -86,7 +86,7 @@ public class PedFiles {
             String motherId = parseParentId(tokens[3]);
             Individual.Sex sex = parseSex(tokens[4]);
             Individual.Status status = parseStatus(tokens[5]);
-            return Individual.newBuilder()
+            return Individual.builder()
                     .familyId(familyId)
                     .id(id)
                     .fatherId(fatherId)

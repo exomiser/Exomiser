@@ -74,7 +74,7 @@ public class PedigreeSampleValidator {
 
     private static Pedigree singleSamplePedigree(String sampleName) {
         logger.info("Creating single-sample pedigree for {}", sampleName);
-        Individual proband = Individual.newBuilder()
+        Individual proband = Individual.builder()
                 .familyId("family")
                 .id(sampleName)
                 .status(Status.AFFECTED)

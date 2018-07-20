@@ -32,27 +32,27 @@ import java.nio.file.Paths;
  */
 public class TestPedigrees {
 
-    private static final Pedigree.Individual EVA = Pedigree.Individual.newBuilder()
+    private static final Pedigree.Individual EVA = Pedigree.Individual.builder()
             .familyId("1")
             .id("Eva")
             .sex(Pedigree.Individual.Sex.FEMALE)
             .status(Pedigree.Individual.Status.UNAFFECTED)
             .build();
-    private static final Pedigree.Individual ADAM = Pedigree.Individual.newBuilder()
+    private static final Pedigree.Individual ADAM = Pedigree.Individual.builder()
             .familyId("1")
             .id("Adam")
             .sex(Pedigree.Individual.Sex.MALE)
             .status(Pedigree.Individual.Status.UNAFFECTED)
             .build();
 
-    private static final Pedigree.Individual ADAM_AFFECTED = Pedigree.Individual.newBuilder()
+    private static final Pedigree.Individual ADAM_AFFECTED = Pedigree.Individual.builder()
             .familyId("1")
             .id("Adam")
             .sex(Pedigree.Individual.Sex.MALE)
             .status(Pedigree.Individual.Status.AFFECTED)
             .build();
 
-    private static final Pedigree.Individual SETH = Pedigree.Individual.newBuilder()
+    private static final Pedigree.Individual SETH = Pedigree.Individual.builder()
             .familyId("1")
             .id("Seth")
             .motherId("Eva")

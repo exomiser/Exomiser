@@ -55,7 +55,7 @@ import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Stat
 public class InheritanceModeAnnotatorTest {
 
     private Pedigree singleAffectedSample(String id) {
-        return Pedigree.of(Individual.newBuilder().id(id).status(Status.AFFECTED).build());
+        return Pedigree.of(Individual.builder().id(id).status(Status.AFFECTED).build());
     }
 
     @Test
@@ -143,10 +143,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(23, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation variant = filteredVariant(23, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -173,11 +173,11 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(23, 12345, alleles, proband, brother, sister, mother, father);
         VariantEvaluation variant = filteredVariant(23, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual sisterIndividual = Individual.newBuilder().id("Rachel").fatherId("Adam").motherId("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual sisterIndividual = Individual.builder().id("Rachel").fatherId("Adam").motherId("Eve").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.AFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual, sisterIndividual);
 
@@ -224,10 +224,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(25, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation variant = filteredVariant(25, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.AFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -253,10 +253,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -283,10 +283,10 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -312,10 +312,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -346,10 +346,10 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -457,10 +457,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext2 = buildVariantContext(1, 12355, alleles2, proband2, brother2, mother2, father2);
         VariantEvaluation alleleTwo = filteredVariant(1, 12355, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext2);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -496,10 +496,10 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
@@ -531,10 +531,10 @@ public class InheritanceModeAnnotatorTest {
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext);
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
-        Individual probandIndividual = Individual.newBuilder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
-        Individual brotherIndividual = Individual.newBuilder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
-        Individual motherIndividual = Individual.newBuilder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
-        Individual fatherIndividual = Individual.newBuilder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
 
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 

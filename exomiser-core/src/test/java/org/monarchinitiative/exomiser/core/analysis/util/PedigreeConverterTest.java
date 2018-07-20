@@ -36,7 +36,7 @@ import static org.junit.Assert.assertThat;
 public class PedigreeConverterTest {
 
     private static final org.monarchinitiative.exomiser.core.model.Pedigree.Individual ADAM = org.monarchinitiative.exomiser.core.model.Pedigree.Individual
-            .newBuilder()
+            .builder()
             .familyId("1")
             .id("Adam")
             .sex(org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE)
@@ -44,7 +44,7 @@ public class PedigreeConverterTest {
             .build();
 
     private static final org.monarchinitiative.exomiser.core.model.Pedigree.Individual EVA = org.monarchinitiative.exomiser.core.model.Pedigree.Individual
-            .newBuilder()
+            .builder()
             .familyId("1")
             .id("Eva")
             .sex(org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.FEMALE)
@@ -52,7 +52,7 @@ public class PedigreeConverterTest {
             .build();
 
     private static final org.monarchinitiative.exomiser.core.model.Pedigree.Individual SETH = org.monarchinitiative.exomiser.core.model.Pedigree.Individual
-            .newBuilder()
+            .builder()
             .familyId("1")
             .id("Seth")
             .sex(org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE)
@@ -62,7 +62,7 @@ public class PedigreeConverterTest {
             .build();
 
     private static final org.monarchinitiative.exomiser.core.model.Pedigree.Individual NEMO = org.monarchinitiative.exomiser.core.model.Pedigree.Individual
-            .newBuilder()
+            .builder()
             .familyId("1")
             .id("Nemo")
             .fatherId("Adam")
@@ -96,7 +96,7 @@ public class PedigreeConverterTest {
     @Test(expected = RuntimeException.class)
     public void toJannovarThrowsException() {
 
-        Pedigree.Individual illegal = Pedigree.Individual.newBuilder().id("illegal").fatherId("not_present").build();
+        Pedigree.Individual illegal = Pedigree.Individual.builder().id("illegal").fatherId("not_present").build();
 
         Pedigree original = Pedigree.of(ADAM, EVA, SETH, illegal);
 

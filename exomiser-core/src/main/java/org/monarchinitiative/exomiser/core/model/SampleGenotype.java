@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
@@ -104,6 +105,17 @@ public class SampleGenotype {
 
     public List<AlleleCall> getCalls() {
         return ImmutableList.copyOf(alleleCalls);
+    }
+
+    @JsonIgnore
+    public boolean isHomozygousAlt() {
+        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
+            AlleleCall alleleCall = alleleCalls[i];
+            if (alleleCall == AlleleCall.REF || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
