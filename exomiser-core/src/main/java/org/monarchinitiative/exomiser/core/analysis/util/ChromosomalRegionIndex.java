@@ -67,14 +67,14 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     }
 
     private Map<Integer, IntervalArray<T>> createChromosomeIntervalTreeIndex(Map<Integer, Set<T>> regionIndex) {
-        Map<Integer, IntervalArray<T>> index = new HashMap<>();
+        Map<Integer, IntervalArray<T>> intervalTreeIndex = new HashMap<>();
         for (Map.Entry<Integer, Set<T>> entry : regionIndex.entrySet()) {
             Integer chrId = entry.getKey();
             IntervalArray<T> intervalTree = new IntervalArray<>(entry.getValue(), new ChromosomalRegionEndExtractor());
             logger.debug("Chr: {} - {} regions", chrId, intervalTree.size());
-            index.put(chrId, intervalTree);
+            intervalTreeIndex.put(chrId, intervalTree);
         }
-        return index;
+        return intervalTreeIndex;
     }
 
     public boolean hasRegionContainingVariant(VariantCoordinates variant) {
