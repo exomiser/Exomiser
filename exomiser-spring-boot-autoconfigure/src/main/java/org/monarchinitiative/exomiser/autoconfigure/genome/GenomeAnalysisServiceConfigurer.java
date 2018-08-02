@@ -26,6 +26,8 @@ import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +84,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     }
 
     protected VariantAnnotator buildVariantAnnotator() {
-        return new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData);
+        ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = genomeDataService().getRegulatoryRegionIndex();
+        return new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData, regulatoryRegionIndex);
     }
 
     protected VariantFactory buildVariantFactory() {

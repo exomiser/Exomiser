@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
@@ -145,6 +144,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return analysisResults;
     }
 
+    /**
+     * @return a map of genes indexed by gene symbol.
+     */
+    private Map<String, Gene> makeKnownGenes() {
+        return genomeAnalysisService.getKnownGenes()
+                .parallelStream()
+                .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
+    }
+
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, SampleIdentifier probandSample, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
@@ -166,16 +174,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return filteredVariants;
     }
 
-    private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
-        return variantEvaluation -> {
-            // need a nicer API for this.
-            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotypes().get(probandSample.getId());
-            // a possible NPE here, but this really shouldn't happen, as the samples and pedigree should have been checked previously
-            // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
-            return probandGenotype.getCalls().contains(AlleleCall.ALT);
-        };
-    }
-
     private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
         ChromosomalRegionIndex<TopologicalDomain> tadIndex = genomeAnalysisService.getTopologicallyAssociatedDomainIndex();
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
@@ -191,6 +189,21 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     return (VariantFilter) analysisStep;
                 })
                 .collect(toList());
+    }
+
+    private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
+        //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
+        return genomeAnalysisService.createVariantEvaluations(vcfPath);
+    }
+
+    private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
+        return variantEvaluation -> {
+            // need a nicer API for this.
+            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotypes().get(probandSample.getId());
+            // a possible NPE here, but this really shouldn't happen, as the samples and pedigree should have been checked previously
+            // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
+            return probandGenotype.getCalls().contains(AlleleCall.ALT);
+        };
     }
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
@@ -230,31 +243,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      */
     abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
 
-    private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
-        ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = genomeAnalysisService.getRegulatoryRegionIndex();
-        //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-        return genomeAnalysisService.createVariantEvaluations(vcfPath)
-                .map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
-    }
-
-    //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
-    //This ought to move into the variantFactory/variantDataService
-    private Function<VariantEvaluation, VariantEvaluation> setRegulatoryRegionVariantEffect(ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
-        return variantEvaluation -> {
-            VariantEffect variantEffect = variantEvaluation.getVariantEffect();
-            //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
-            if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionContainingVariant(variantEvaluation)) {
-                //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
-                variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
-            }
-            return variantEvaluation;
-        };
-    }
-
-    private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
-    }
-
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             Gene gene = allGenes.get(variantEvaluation.getGeneSymbol());
@@ -278,15 +266,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
 
-    /**
-     * @return a map of genes indexed by gene symbol.
-     */
-    private Map<String, Gene> makeKnownGenes() {
-        return genomeAnalysisService.getKnownGenes()
-                .parallelStream()
-                .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
-    }
-
     //might this be a nascent class waiting to get out here?
     private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator) {
         boolean inheritanceModesCalculated = false;
@@ -306,7 +285,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
-        if (analysisStep.isVariantFilter()) {
+        if (analysisStep instanceof VariantFilter) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
             for (Gene gene : genes) {
@@ -315,14 +294,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             return;
 
         }
-        if (GeneFilter.class.isInstance(analysisStep)) {
+
+        if (analysisStep instanceof GeneFilter) {
             GeneFilter filter = (GeneFilter) analysisStep;
             logger.info("Running GeneFilter: {}", filter);
             geneFilterRunner.run(filter, genes);
             return;
         }
 
-        if (Prioritiser.class.isInstance(analysisStep)) {
+        if (analysisStep instanceof Prioritiser) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
             logger.info("Running Prioritiser: {}", prioritiser);
             prioritiser.prioritizeGenes(hpoIds, genes);

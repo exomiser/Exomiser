@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 
@@ -49,7 +50,9 @@ public class TestFactory {
     private static final GenomeAssembly DEFAULT_GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA));
+    private static final VariantAnnotator DEFAULT_VARIANT_ANNOTATOR = new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA, ChromosomalRegionIndex
+            .empty());
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryImpl(DEFAULT_VARIANT_ANNOTATOR);
 
     private TestFactory() {
         //this class should be used in a static context.
@@ -67,6 +70,10 @@ public class TestFactory {
         return DEFAULT_JANNOVAR_DATA;
     }
 
+    public static VariantAnnotator buildDefaultVariantAnnotator() {
+        return DEFAULT_VARIANT_ANNOTATOR;
+    }
+
     public static VariantFactory buildDefaultVariantFactory() {
         return DEFAULT_VARIANT_FACTORY;
     }
@@ -76,8 +83,9 @@ public class TestFactory {
     }
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
-        final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData));
+        JannovarData jannovarData = buildJannovarData(transcriptModels);
+        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData, ChromosomalRegionIndex.empty());
+        return new VariantFactoryImpl(variantAnnotator);
     }
 
     public static GeneFactory buildDefaultGeneFactory() {
@@ -109,7 +117,7 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
-        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA)));
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA, ChromosomalRegionIndex.empty())));
     }
 
 }

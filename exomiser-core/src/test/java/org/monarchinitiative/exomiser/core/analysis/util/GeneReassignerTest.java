@@ -33,10 +33,7 @@ import org.monarchinitiative.exomiser.core.genome.GeneTranscriptModelBuilder;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -121,7 +118,7 @@ public class GeneReassignerTest {
 
 
     private GeneReassigner makeInstance(PriorityType hiphivePriority, TopologicalDomain... tads) {
-        ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(Arrays.asList(tads));
+        ChromosomalRegionIndex<TopologicalDomain> tadIndex = ChromosomalRegionIndex.of(Arrays.asList(tads));
         return new GeneReassigner(hiphivePriority, allGenes, tadIndex);
     }
 

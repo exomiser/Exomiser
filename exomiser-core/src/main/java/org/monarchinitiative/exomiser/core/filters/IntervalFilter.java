@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.analysis.util.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -80,7 +80,7 @@ public class IntervalFilter implements VariantFilter {
         //an empty collection will result in nothing ever passing
         assertNotEmpty(chromosomalRegions);
         this.intervals = copySortDeDup(chromosomalRegions);
-        this.intervalIndex = new ChromosomalRegionIndex<>(chromosomalRegions);
+        this.intervalIndex = ChromosomalRegionIndex.of(chromosomalRegions);
     }
 
     private void assertNotEmpty(Collection<ChromosomalRegion> chromosomalRegions) {

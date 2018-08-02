@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,9 +26,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import org.monarchinitiative.exomiser.core.model.AllelePosition;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,10 +45,12 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private final GenomeAssembly genomeAssembly;
     private final JannovarAnnotationService jannovarAnnotationService;
+    private final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex;
 
-    public JannovarVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData) {
+    public JannovarVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData, ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         this.genomeAssembly = genomeAssembly;
         this.jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
+        this.regulatoryRegionIndex = regulatoryRegionIndex;
     }
 
     /**
@@ -103,13 +103,14 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
         String geneId = buildGeneId(highestImpactAnnotation);
 
-        VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
+        VariantEffect higestImpactEffect = variantAnnotations.getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         int pos = allelePosition.getPos();
         String ref = allelePosition.getRef();
         String alt = allelePosition.getAlt();
 
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(higestImpactEffect, chr, pos);
         return VariantAnnotation.builder()
                 .genomeAssembly(genomeAssembly)
                 .chromosome(chr)
@@ -190,6 +191,20 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         } else {
             return annotation.getGeneSymbol();
         }
+    }
+
+    //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
+    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, int chr, int pos) {
+        //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
+        if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionContainingPosition(chr, pos)) {
+            //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
+            return VariantEffect.REGULATORY_REGION_VARIANT;
+        }
+        return variantEffect;
+    }
+
+    private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
+        return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
     }
 
 }

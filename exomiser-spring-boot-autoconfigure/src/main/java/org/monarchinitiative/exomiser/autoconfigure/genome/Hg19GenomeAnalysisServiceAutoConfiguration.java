@@ -56,6 +56,11 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
         return mvStore;
     }
 
+    @Bean("hg19allelePropertiesDao")
+    public AllelePropertiesDao allelePropertiesDao() {
+        return new DefaultAllelePropertiesDao(mvStore);
+    }
+
     @Bean("hg19variantAnnotator")
     @Override
     public VariantAnnotator variantAnnotator() {
@@ -90,13 +95,13 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg19defaultFrequencyDao")
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
+        return new DefaultFrequencyDaoMvStoreProto(allelePropertiesDao());
     }
 
     @Bean("hg19pathogenicityDao")
     @Override
     public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
+        return new DefaultPathogenicityDaoMvStoreProto(allelePropertiesDao());
     }
 
     @Bean("hg19localFrequencyDao")

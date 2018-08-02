@@ -35,10 +35,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
-import org.monarchinitiative.exomiser.core.model.AlleleCall;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,8 +56,7 @@ public class VariantFactoryTest {
     private final VariantFactory instance;
 
     public VariantFactoryTest() {
-        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
-                .buildDefaultJannovarData());
+        VariantAnnotator variantAnnotator = TestFactory.buildDefaultVariantAnnotator();
         instance = new VariantFactoryImpl(variantAnnotator);
     }
 
@@ -339,7 +335,8 @@ public class VariantFactoryTest {
         System.out.println("Read " + numVariants + " variants");
 
 
-        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData());
+        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
+                .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         long numJannovarVariants;

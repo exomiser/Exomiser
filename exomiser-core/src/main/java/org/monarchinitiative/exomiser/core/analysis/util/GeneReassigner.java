@@ -26,10 +26,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
