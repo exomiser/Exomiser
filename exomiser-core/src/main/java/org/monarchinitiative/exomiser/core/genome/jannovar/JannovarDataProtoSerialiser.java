@@ -70,8 +70,8 @@ public class JannovarDataProtoSerialiser {
         Instant start = Instant.now();
         try (InputStream inputStream = Files.newInputStream(jannovarProtoPath)) {
             byte[] bytes = new byte[4];
-            inputStream.read(bytes);
-            if (!Arrays.equals(bytes, MAGIC_BYTES)) {
+            int bytesRead = inputStream.read(bytes);
+            if (!Arrays.equals(bytes, MAGIC_BYTES) || bytesRead != bytes.length) {
                 throw new InvalidFileFormatException(jannovarProtoPath + " not an Exomiser format Jannovar transcript database.");
             }
             try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
