@@ -56,11 +56,6 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
         return mvStore;
     }
 
-    @Bean("hg38allelePropertiesDao")
-    public AllelePropertiesDao allelePropertiesDao() {
-        return new DefaultAllelePropertiesDao(mvStore);
-    }
-
     @Bean("hg38variantAnnotator")
     @Override
     public VariantAnnotator variantAnnotator() {
@@ -95,13 +90,13 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg38defaultFrequencyDao")
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDaoMvStoreProto(allelePropertiesDao());
+        return new DefaultFrequencyDaoMvStoreProto(mvStore);
     }
 
     @Bean("hg38pathogenicityDao")
     @Override
     public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDaoMvStoreProto(allelePropertiesDao());
+        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
     @Bean("hg38localFrequencyDao")
