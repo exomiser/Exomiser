@@ -57,7 +57,7 @@ public class VariantEffectCounter {
             return;
         }
 
-        //TODO could use variant.getSampleGenotypes();
+        //TODO could use variant.getSampleGenotypes()
         VariantContext variantContext = variant.getVariantContext();
         for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             final Genotype gt = variantContext.getGenotype(sampleIdx);
@@ -101,25 +101,6 @@ public class VariantEffectCounter {
         }
 
         return result;
-    }
-
-    /**
-     * @return map with the frequency for all variant effects in the map for
-     * each individual
-     */
-    private List<Map<VariantEffect, Integer>> getFrequencyMap() {
-        ImmutableList.Builder<Map<VariantEffect, Integer>> builder = new ImmutableList.Builder<>();
-
-        int sampleIdx = 0;
-        for (Map<VariantEffect, Integer> map : sampleVariantEffectCounts) {
-            ImmutableMap.Builder<VariantEffect, Integer> builder2 = new ImmutableMap.Builder<>();
-            for (Map.Entry<VariantEffect, Integer> entry : sampleVariantEffectCounts.get(sampleIdx).entrySet()) {
-                builder2.put(entry.getKey(), map.get(entry.getKey()));
-            }
-            builder.add(builder2.build());
-            ++sampleIdx;
-        }
-        return builder.build();
     }
 
     /**
