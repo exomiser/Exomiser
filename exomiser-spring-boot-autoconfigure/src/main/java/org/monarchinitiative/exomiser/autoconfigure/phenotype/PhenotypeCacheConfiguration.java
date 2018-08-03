@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cache.interceptor.CacheResolver;
@@ -38,9 +36,6 @@ import java.util.Collections;
 @EnableCaching
 public class PhenotypeCacheConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(PhenotypeCacheConfiguration.class);
-
-    //TODO: move this bean to the phenotype package? Can we have 2 @EnableCaching @Configurations?
     //http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
     @Bean
     public CacheResolver modelCacheResolver() {
