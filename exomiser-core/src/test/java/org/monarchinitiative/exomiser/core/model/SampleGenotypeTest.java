@@ -90,6 +90,14 @@ public class SampleGenotypeTest {
     }
 
     @Test
+    public void testConvenienceConstructors() {
+        assertThat(SampleGenotype.noCall(), equalTo(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL)));
+        assertThat(SampleGenotype.het(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.homRef(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.REF)));
+        assertThat(SampleGenotype.homAlt(), equalTo(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT)));
+    }
+
+    @Test
     public void testMonoploid() {
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL).toString(), equalTo("."));
 

@@ -56,6 +56,44 @@ public class SampleGenotype {
         return EMPTY;
     }
 
+    /**
+     * Returns an instance representing an unphased diploid no-call genotype e.g. ./.
+     * @return an unphased diploid no-call SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype noCall() {
+        return UNPHASED_DIPLOID_NO_CALL;
+    }
+
+    /**
+     * Returns an instance representing an unphased diploid heterozygous genotype e.g. 0/1
+     * @return an unphased diploid heterozygous SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype het() {
+        return UNPHASED_DIPLOID_HET;
+    }
+
+
+    /**
+     * Returns an instance representing an unphased diploid homozygous reference genotype e.g. 0/0
+     * @return an unphased diploid homozygous reference SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype homRef() {
+        return UNPHASED_DIPLOID_HOM_REF;
+    }
+
+
+    /**
+     * Returns an instance representing an unphased homozygous alternate genotype e.g. 1/1
+     * @return an unphased diploid homozygous alternate SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype homAlt() {
+        return UNPHASED_DIPLOID_HOM_ALT;
+    }
+
     public static SampleGenotype of(AlleleCall... alleleCalls) {
         if (alleleCalls.length == 0) {
             return EMPTY;
