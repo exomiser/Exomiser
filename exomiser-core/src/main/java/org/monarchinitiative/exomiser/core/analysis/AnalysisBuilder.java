@@ -170,8 +170,8 @@ public class AnalysisBuilder {
         if (frequencySources.isEmpty()) {
             throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
         }
-        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
-        return new FrequencyDataProvider(genomeAnalysisService, frequencySources, filter);
+        GenomeAnalysisService analysisService = getGenomeAnalysisService();
+        return new FrequencyDataProvider(analysisService, frequencySources, filter);
     }
 
     private GenomeAnalysisService getGenomeAnalysisService() {
@@ -213,8 +213,8 @@ public class AnalysisBuilder {
         if (pathogenicitySources.isEmpty()) {
             throw new IllegalArgumentException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
         }
-        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
-        return new PathogenicityDataProvider(genomeAnalysisService, pathogenicitySources, pathogenicityFilter);
+        GenomeAnalysisService analysisService = getGenomeAnalysisService();
+        return new PathogenicityDataProvider(analysisService, pathogenicitySources, pathogenicityFilter);
     }
 
     public AnalysisBuilder addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
