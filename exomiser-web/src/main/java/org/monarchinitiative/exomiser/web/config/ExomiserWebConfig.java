@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrixIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,14 +40,11 @@ public class ExomiserWebConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserWebConfig.class);
 
-    @Autowired
-    public Path phenotypeDataDirectory;
-
     /**
      * Override bean to load the DataMatrix fully into memory rather than accessing off disk.
      */
     @Bean
-    public DataMatrix randomWalkMatrix(PhenotypeProperties phenotypeProperties) {
+    public DataMatrix randomWalkMatrix(PhenotypeProperties phenotypeProperties, Path phenotypeDataDirectory) {
         String randomWalkFileNameValue = phenotypeProperties.getRandomWalkFileName();
         Path randomWalkFilePath = phenotypeDataDirectory.resolve(randomWalkFileNameValue);
         logger.info("Loading in-memory random-walk matrix from {}", randomWalkFilePath);
