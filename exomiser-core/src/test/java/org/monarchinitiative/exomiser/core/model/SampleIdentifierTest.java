@@ -42,7 +42,7 @@ public class SampleIdentifierTest {
 
     @Test
     public void defaultInstance() {
-        assertThat(SampleIdentifier.of("Sample", 0), equalTo(SampleIdentifier.defaultSample()));
+        assertThat(SampleIdentifier.of("sample", 0), equalTo(SampleIdentifier.defaultSample()));
     }
 
     @Test

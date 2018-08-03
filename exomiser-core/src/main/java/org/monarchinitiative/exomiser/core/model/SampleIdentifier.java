@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 public class SampleIdentifier {
 
-    private static final SampleIdentifier DEFAULT = SampleIdentifier.of("Sample", 0);
+    private static final SampleIdentifier DEFAULT = SampleIdentifier.of("sample", 0);
 
     private final String id;
     private final int position;
@@ -62,7 +62,7 @@ public class SampleIdentifier {
     /**
      * Default sample identifier for use with unspecified single-sample VCF files.
      *
-     * @return a default sample identifier named 'Sample' with a VCF genotype position of 0
+     * @return a default sample identifier named 'sample' with a VCF genotype position of 0
      * @since 11.0.0
      */
     public static SampleIdentifier defaultSample() {
