@@ -24,7 +24,6 @@ import org.monarchinitiative.exomiser.autoconfigure.UndefinedDataDirectoryExcept
 import org.monarchinitiative.exomiser.cli.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,9 +44,6 @@ import java.nio.file.Path;
 public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
-
-    @Autowired
-    private Environment env;
 
     /**
      * Used to find the Path the Main application is running on in order to
@@ -78,7 +74,7 @@ public class MainConfig {
     }
 
     @Bean
-    public Path exomiserDataDirectory(Path exomiserHome) {
+    public Path exomiserDataDirectory(Path exomiserHome, Environment env) {
         String dataDirValue = env.getProperty("exomiser.data-directory");
         if (dataDirValue == null || dataDirValue.isEmpty()) {
             return findDefaultDataDir(exomiserHome);
