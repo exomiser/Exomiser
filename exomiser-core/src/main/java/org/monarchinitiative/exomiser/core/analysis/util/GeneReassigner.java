@@ -79,22 +79,20 @@ public class GeneReassigner {
         double bestScore = prioritiserScore(currentlyAssignedGene);
         List<Gene> genesInTad = getGenesInTadForVariant(variantEvaluation);
 
-//        Optional<Gene> bestScoringGeneInTad = genesInTad.stream().max(Comparator.comparingDouble(this::prioritiserScore));
-//        logger.info("bestScoringGeneInTad {}", bestScoringGeneInTad);
-
         Gene geneWithHighestPhenotypeScore = null;
         for (Gene gene : genesInTad) {
             double geneScore = prioritiserScore(gene);
-//            logger.info("Gene {} in TAD has score {}", gene.getGeneSymbol(), geneScore);
             if (geneScore > bestScore) {
                 bestScore = geneScore;
                 geneWithHighestPhenotypeScore = gene;
             }
         }
+
         if (prioritiserScore(currentlyAssignedGene) == bestScore) {
             //don't move the assignment if there is nowhere better to go...
             return;
         }
+
         if (geneWithHighestPhenotypeScore != null) {
             //given the physical ranges of topologically associated domains, the annotations are likely to be meaningless once reassigned
             //but try to find any anything matching the new gene symbol.
@@ -173,9 +171,6 @@ public class GeneReassigner {
             }
         }
 
-//        logger.info("variantEffects: {}", variantEffects);
-//        logger.info("newAnnotations: {}", newAnnotations);
-
         Gene currentlyAssignedGene = getCurrentlyAssignedGene(variantEvaluation);
         double bestScore = prioritiserScore(currentlyAssignedGene);
         Gene geneWithHighestPhenotypeScore = null;
@@ -191,7 +186,6 @@ public class GeneReassigner {
                 variantEffectForTopHit = variantEffects.get(i);
                 //bestAnnotation can be null here
                 bestAnnotation = newAnnotations.get(i);
-//                logger.info("Best annotation is {}", bestAnnotation);
             }
         }
         // Keep original annotation if possible - used in RegFilter later on and for display
