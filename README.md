@@ -128,4 +128,8 @@ spring.cache.type=caffeine
 spring.cache.caffeine.spec=maximumSize=300000
 ```
 
-![IRDiRC recognised resource](LOGO_IRDIRCRR_RVB.jpg)
+#### Recognition
+
+The Exomiser is proud to be recognised by the International Rare Diseases Research Consortium ([IRDiRC](http://www.irdirc.org/)) as an [IRDiRC Recognized Resource](http://www.irdirc.org/research/irdirc-recognized-resources/). This is *'a quality indicator, based on a specific set of criteria, that was created to highlight key resources which, if used more broadly, would accelerate the pace of translating discoveries into clinical applications.'* These resources *'must be of fundamental importance to the international rare diseases research and development community'*.
+
+[![IRDiRC recognised resource](LOGO_IRDIRCRR_RVB.jpg)](http://www.irdirc.org/)
