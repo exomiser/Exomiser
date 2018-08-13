@@ -127,3 +127,5 @@ and these lines to the ```application.properties```:
 spring.cache.type=caffeine
 spring.cache.caffeine.spec=maximumSize=300000
 ```
+
+![IRDiRC recognised resource](LOGO_IRDIRCRR_RVB.jpg)
