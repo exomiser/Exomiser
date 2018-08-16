@@ -30,6 +30,7 @@ import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status.AFFECTED;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,7 +40,7 @@ public class PedigreeSampleValidatorTest {
     private static final Individual UNNAMED_SAMPLE = Individual.builder()
             .familyId("family")
             .id(SampleIdentifier.defaultSample().getId())
-            .status(Individual.Status.AFFECTED)
+            .status(AFFECTED)
             .build();
 
     // Contents of src/test/resources/pedValid.ped
@@ -67,7 +68,7 @@ public class PedigreeSampleValidatorTest {
             .sex(Individual.Sex.MALE)
             .fatherId("Adam")
             .motherId("Eva")
-            .status(Individual.Status.AFFECTED)
+            .status(AFFECTED)
             .build();
 
     private static final Pedigree VALID_PEDIGREE = Pedigree
@@ -103,6 +104,13 @@ public class PedigreeSampleValidatorTest {
         PedigreeSampleValidator.validate(input, SampleIdentifier.defaultSample(), Collections.emptyList());
     }
 
+    @Test()
+    public void singleSamplePedigreePresentAndAllIsWell() {
+        Pedigree input = Pedigree.justProband("Adam");
+        Pedigree validated = PedigreeSampleValidator.validate(input, SampleIdentifier.of("Adam", 0), ImmutableList.of("Adam"));
+        assertThat(input, equalTo(validated));
+    }
+
     @Test
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndEmptyPedigree() {
         Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Adam", 0), ImmutableList
@@ -110,7 +118,7 @@ public class PedigreeSampleValidatorTest {
         Individual individual = Individual.builder()
                 .familyId("family")
                 .id("Adam")
-                .status(Individual.Status.AFFECTED)
+                .status(AFFECTED)
                 .build();
         Pedigree expected = Pedigree.of(individual);
         assertThat(result, equalTo(expected));
