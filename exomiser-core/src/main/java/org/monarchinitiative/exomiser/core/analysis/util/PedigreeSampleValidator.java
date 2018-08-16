@@ -61,6 +61,7 @@ public class PedigreeSampleValidator {
      * @param sampleNames the list of sample names contained in the VCF file to be analysed
      * @return a validated {@link Pedigree} object for use in an analysis.
      * @throws PedigreeValidationException for any invalid input.
+     * @throws NullPointerException for any null input value.
      */
     public static Pedigree validate(Pedigree pedigree, SampleIdentifier proband, List<String> sampleNames) {
         Objects.requireNonNull(pedigree);
