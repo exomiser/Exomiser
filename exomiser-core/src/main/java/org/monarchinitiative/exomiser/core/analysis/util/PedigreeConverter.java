@@ -29,9 +29,12 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Function;
 
 /**
+ * Utility class for converting an {@link org.monarchinitiative.exomiser.core.model.Pedigree} object into a
+ * {@link de.charite.compbio.jannovar.pedigree.Pedigree}.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PedigreeConverter {
+class PedigreeConverter {
 
     private static final Logger logger = LoggerFactory.getLogger(PedigreeConverter.class);
 
@@ -39,7 +42,7 @@ public class PedigreeConverter {
         //
     }
 
-    public static de.charite.compbio.jannovar.pedigree.Pedigree convertToJannovarPedigree(Pedigree pedigree) {
+    static de.charite.compbio.jannovar.pedigree.Pedigree convertToJannovarPedigree(Pedigree pedigree) {
         logger.debug("Converting pedigree");
         ImmutableList<PedPerson> people = pedigree.getIndividuals()
                 .stream()
