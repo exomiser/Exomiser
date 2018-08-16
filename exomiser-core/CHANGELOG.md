@@ -1,5 +1,40 @@
 # The Exomiser - Core Library Changelog
 
+## 11.0.0 ????
+API breaking changes:
+- Removed unused ```VariantSerialiser```
+- Moved ```ChromosomalRegionIndex``` from ```analysis.util``` package to ```model```
+- Changed ```HiPhiveOptions.DEFAULT``` to ```HiPhiveOptions.defaults()``` to match style with the rest of the framework
+- Deleted redundant ```MvStoreUtil.generateAlleleKey()``` method in favour of ```AlleleProtoAdaptor.toAlleleKey()```
+- Split ```VariantEffectPathogenicityScore.SPLICING_SCORE``` into ```SPLICE_DONOR_ACCEPTOR_SCORE``` and ```SPLICE_REGION_SCORE```
+- Removed unused ```VariantEvaluation.getNumberOfIndividuals()``` and ```VariantEvaluation.Builder.numIndividuals()```
+- ```InheritanceModeAnnotator``` now requires an Exomiser ```Pedigree``` as input and no longer takes a Jannovar ```de.charite.compbio.jannovar.pedigree.Pedigree``` 
+- Changed ```SampleIdentifier``` default identifier from 'Sample' to 'sample' to fit existing internal implementation details
+- Replaced ```Analysis.AnalysisBuilder.pedPath(pedPath)``` and ```Analysis.getPedPath()``` with ```Analysis.AnalysisBuilder.pedigree(pedigree)``` and ```Analysis.getPedigree()```
+- Replaced ```AnalysisBuilder.pedPath(pedPath)```  with ```AnalysisBuilder.pedigree(pedigree)```
+- Removed obsolete ```PedigreeFactory``` - this functionality has been split amongst the new Pedigree API classes
+
+New APIs:
+- Added new jannovar package and faster data serialisation format handled by the ```JannovarDataProtoSerialiser``` and ```JannovarProtoConverter```.
+- Added new native ```Pedigree``` class for representing pedigrees.
+- Added new ```PedFiles``` class for reading PED files into a ```Pedigree``` object.
+- Added new ```PedigreeSampleValidator``` to check the pedigree, proband and VCF samples are consistent with each other.
+- Added ```SampleIdentifier.defaultSample()``` for use with unspecified single-sample VCF files.
+- Added ```InheritanceModeOptions.getMaxFreq()``` method for retrieving the maximum frequency of all the defined inheritance modes.
+- Added new no-args ```AnalysisBuilder.addFrequencyFilter()``` which uses maximum value from ```InheritanceModeOptions```
+- Added ```Pedigree``` support to ```AnalysisBuilder```
+- Added new ```VariantEvaluation.getSampleGenotypes()``` method to map sample names to genotype for that allele
+
+Other changes:
+- Added support for REMM and CADD in ```AlleleProtoAdaptor```
+- Added check to remove alleles not called as ALT in proband
+- ```SampleGenotypes``` now calculated for all variants in te ```VariantFactory```
+- Added support ```frequencyFilter: {}``` to ```AnalysisParser```
+- Updated HTML output to display current SO terms for variant types/consequence
+- Various code clean-up changes
+- Changed dependency management to use spring-boot-dependencies rather than deprecated Spring Platform
+- Updated Spring Boot to version 2.0.4
+
 ## 10.1.0 2018-05-09
 - Added new simple ```BedFiles``` class for reading in ```ChromosomalRegion``` from an external file. 
 - Added support for filtering multiple intervals in the ```IntervalFilter``` 
