@@ -37,12 +37,6 @@ import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Stat
  */
 public class PedigreeSampleValidatorTest {
 
-    private static final Individual UNNAMED_SAMPLE = Individual.builder()
-            .familyId("family")
-            .id(SampleIdentifier.defaultSample().getId())
-            .status(AFFECTED)
-            .build();
-
     // Contents of src/test/resources/pedValid.ped
     //    1	Eva	0	0	2	1
     //    1	Adam	0	0	1	1
@@ -93,7 +87,7 @@ public class PedigreeSampleValidatorTest {
     public void createsSingleSamplePedigreeWithDefaultNameWhenSampleHasNoNameOrPedFile() {
         Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.defaultSample(), Collections
                 .emptyList());
-        Pedigree expected = Pedigree.of(UNNAMED_SAMPLE);
+        Pedigree expected = Pedigree.justProband(SampleIdentifier.defaultSample().getId());
         assertThat(result, equalTo(expected));
     }
 
@@ -102,6 +96,11 @@ public class PedigreeSampleValidatorTest {
         Individual individual = Individual.builder().id("Nemo").build();
         Pedigree input = Pedigree.of(individual);
         PedigreeSampleValidator.validate(input, SampleIdentifier.defaultSample(), Collections.emptyList());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void noPedigreeSampleIdentifierAndSampleNamesDoNotMatch() {
+        PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Nemo", 0), ImmutableList.of("Adam"));
     }
 
     @Test()
@@ -115,12 +114,7 @@ public class PedigreeSampleValidatorTest {
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndEmptyPedigree() {
         Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Adam", 0), ImmutableList
                 .of("Adam"));
-        Individual individual = Individual.builder()
-                .familyId("family")
-                .id("Adam")
-                .status(AFFECTED)
-                .build();
-        Pedigree expected = Pedigree.of(individual);
+        Pedigree expected = Pedigree.justProband("Adam");
         assertThat(result, equalTo(expected));
     }
 
