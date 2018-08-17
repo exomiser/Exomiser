@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
@@ -40,6 +40,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -48,10 +49,10 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     private static final String DATA_VERSION = "exomiser.phenotype.data-version=1710";
 
-    @Test(expected = NoSuchBeanDefinitionException.class)
+    @Test
     public void doesNotLoadWhenPhenotypeDataVersionIsAbsent() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        context.getBean("phenotypeDataDirectory");
+        assertThrows(NoSuchBeanDefinitionException.class, () -> context.getBean("phenotypeDataDirectory"));
     }
 
     @Test
@@ -60,8 +61,8 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         assertThat(context.getBean("phenotypeDataDirectory"), not(nullValue()));
     }
 
-    @Ignore
 //this works in prod, but fails to autowire the phenotypeDataSource in test, despite being able to load the dataSource.
+    @Disabled
     @Test
     public void canDefinePhenotypeDataDirectory() {
         Path definedDir = TEST_DATA.resolve("user-defined");

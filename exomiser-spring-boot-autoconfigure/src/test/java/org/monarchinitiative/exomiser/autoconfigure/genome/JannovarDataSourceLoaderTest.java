@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 
 import java.nio.file.Path;
@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -49,9 +50,9 @@ public class JannovarDataSourceLoaderTest {
         assertThat(jannovarData, instanceOf(JannovarData.class) );
     }
 
-    @Test(expected = ExomiserAutoConfigurationException.class)
+    @Test
     public void cannotLoadData() {
         Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/wibble.ser");
-        JannovarDataSourceLoader.loadJannovarData(jannovarDataPath);
+        assertThrows(ExomiserAutoConfigurationException.class, () -> JannovarDataSourceLoader.loadJannovarData(jannovarDataPath));
     }
 }
