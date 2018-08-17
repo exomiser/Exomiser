@@ -21,11 +21,8 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import com.google.common.collect.ImmutableMap;
-import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
@@ -110,52 +107,4 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                         .valueOf(0.003f, FrequencySource.ESP_AFRICAN_AMERICAN))));
     }
 
-    @Disabled
-    @Test
-    public void testRealData() throws Exception {
-        MVStore mvStore = new MVStore.Builder()
-                .fileName("C:\\Users\\hhx640\\Documents\\exomiser-build\\data\\allele_importer\\alleles_all\\alleles_exac_esp_proto.mv.db")
-//                .fileName("C:\\Users\\hhx640\\Documents\\exomiser-cli-dev\\data\\1707_hg19\\1707_hg19_variants.mv.db")
-                .open();
-
-        MVMap<AlleleKey, AlleleProperties> map = MvStoreUtil.openAlleleMVMap(mvStore);
-        System.out.println("Map contains " + map.size() + " entries");
-        System.out.println("Map contains " + map.keySet().size() + " keys");
-//processed 12192520 variants total in 341 sec
-//        Set<AlleleKey> extractedKeys = new HashSet<>();
-//        int count = 0;
-//        for (AlleleKey key : map.keySet()) {
-////            while (count < 333_000_000) {
-//                count++;
-////                System.out.println(count  + " " + key);
-//                extractedKeys.add(key);
-////            }
-////            break;
-//        }
-//
-//        System.out.println("Added " + count + " keys. Extracted  " + extractedKeys.size() + " keys");
-//        for (AlleleKey key : extractedKeys) {
-//            System.out.println(key);
-//        }
-
-
-//        AlleleKey key = AlleleKey.newBuilder().setChr(1).setPosition(15447).setRef("A").setAlt("G").build();
-//        AlleleKey key = AlleleKey.newBuilder().setChr(1).setPosition(909321).setRef("G").setAlt("A").build();
-        AlleleKey key = AlleleKey.newBuilder().setChr(23).setPosition(36103454).setRef("A").setAlt("G").build();
-        System.out.println(map.get(key));
-
-//        Variant variant = VariantAnnotation.builder().chromosome(1).position(15447).ref("A").alt("G").build();
-        Variant variant = buildVariant(1, 909321, "G", "A");
-
-        DefaultFrequencyDaoMvStoreProto instance = new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
-        DefaultPathogenicityDaoMvStoreProto pathDao = new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
-
-        System.out.println(instance.getFrequencyData(variant));
-
-        Variant pfeiffer = buildVariant(10, 123256215, "T", "G");
-        System.out.println(instance.getFrequencyData(pfeiffer));
-        System.out.println(pathDao.getPathogenicityData(pfeiffer));
-
-
-    }
 }
