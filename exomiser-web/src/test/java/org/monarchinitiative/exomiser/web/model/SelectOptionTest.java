@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@
  */
 package org.monarchinitiative.exomiser.web.model;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,17 +32,16 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
 /**
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class SelectOptionTest {
-    
+
     private SelectOption instance;
-    
+
     private final String value = "value";
     private final String text = "text";
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         instance = new SelectOption(value, text);
     }
@@ -61,22 +60,22 @@ public class SelectOptionTest {
     public void testNotEqualToNull() {
         assertThat(instance.equals(null), is(false));
     }
-    
+
     @Test
     public void testNotEqualToOtherClass() {
-        String other  = "";
+        String other = "";
         assertThat(instance.equals(other), is(false));
     }
-    
+
     @Test
     public void testNotEqualToOtherOption() {
-        SelectOption other  = new SelectOption("wibble", "sass that hoopy frood");
+        SelectOption other = new SelectOption("wibble", "sass that hoopy frood");
         assertThat(instance.equals(other), is(false));
     }
-    
+
     @Test
     public void testIsEqualToOtherOptionWithSameVariables() {
-        SelectOption other  = new SelectOption(value, text);
+        SelectOption other = new SelectOption(value, text);
         assertThat(instance.equals(other), is(true));
     }
 
@@ -86,9 +85,9 @@ public class SelectOptionTest {
         SelectOption secondOption = new SelectOption("00000", "ZZZZZ");
 
         assertThat(firstOption.compareTo(secondOption), lessThan(0));
-        
+
     }
-    
+
     @Test
     public void selectOptionsAreSortedByTextValueInLists() {
         SelectOption firstOption = new SelectOption("99999", "AAAA");
@@ -99,22 +98,22 @@ public class SelectOptionTest {
         expected.add(firstOption);
         expected.add(secondOption);
         expected.add(lastOption);
-        
-        
+
+
         List<SelectOption> sortedList = new ArrayList<>();
         sortedList.add(lastOption);
         sortedList.add(firstOption);
         sortedList.add(secondOption);
-        
+
         Collections.sort(sortedList);
-        
+
         assertThat(sortedList, equalTo(expected));
-        
+
     }
-    
+
     @Test
     public void testToString() {
         assertThat(instance.toString(), equalTo(String.format("{text=%s, value=%s}", text, value)));
     }
-    
+
 }
