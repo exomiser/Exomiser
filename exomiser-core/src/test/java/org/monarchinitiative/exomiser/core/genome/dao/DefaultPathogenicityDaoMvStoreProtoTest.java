@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
@@ -44,7 +44,8 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
 
     private DefaultPathogenicityDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+//        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
     @Test

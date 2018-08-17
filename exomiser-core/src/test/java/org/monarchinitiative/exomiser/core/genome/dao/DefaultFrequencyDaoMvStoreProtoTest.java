@@ -23,8 +23,8 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import com.google.common.collect.ImmutableMap;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -48,7 +48,8 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
 
     private DefaultFrequencyDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+        return new DefaultFrequencyDaoMvStoreProto(mvStore);
+//        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
     }
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
@@ -109,7 +110,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                         .valueOf(0.003f, FrequencySource.ESP_AFRICAN_AMERICAN))));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testRealData() throws Exception {
         MVStore mvStore = new MVStore.Builder()
