@@ -35,7 +35,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -44,7 +44,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
 
     private DefaultPathogenicityDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
+        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
     }
 
     @Test

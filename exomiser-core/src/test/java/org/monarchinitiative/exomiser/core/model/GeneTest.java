@@ -40,7 +40,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**

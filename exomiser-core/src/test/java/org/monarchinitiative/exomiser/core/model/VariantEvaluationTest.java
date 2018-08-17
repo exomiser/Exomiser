@@ -46,8 +46,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -208,6 +208,17 @@ public class VariantEvaluationTest {
                 .sampleGenotypes(sampleGenotypes)
                 .build();
         assertThat(instance.getSampleGenotypes(), equalTo(sampleGenotypes));
+    }
+
+    @Test
+    public void testGetSampleGenotype() {
+        SampleGenotype sampleGenotype = SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT);
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", sampleGenotype);
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotype("Zaphod"), equalTo(sampleGenotype));
+        assertThat(instance.getSampleGenotype("Nemo"), equalTo(SampleGenotype.empty()));
     }
 
     @Test

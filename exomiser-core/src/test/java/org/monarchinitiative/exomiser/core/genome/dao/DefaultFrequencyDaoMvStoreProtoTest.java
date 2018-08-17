@@ -39,7 +39,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -48,7 +48,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
 
     private DefaultFrequencyDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
+        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
     }
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
@@ -146,8 +146,8 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
 //        Variant variant = VariantAnnotation.builder().chromosome(1).position(15447).ref("A").alt("G").build();
         Variant variant = buildVariant(1, 909321, "G", "A");
 
-        DefaultFrequencyDaoMvStoreProto instance = new DefaultFrequencyDaoMvStoreProto(mvStore);
-        DefaultPathogenicityDaoMvStoreProto pathDao = new DefaultPathogenicityDaoMvStoreProto(mvStore);
+        DefaultFrequencyDaoMvStoreProto instance = new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+        DefaultPathogenicityDaoMvStoreProto pathDao = new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
 
         System.out.println(instance.getFrequencyData(variant));
 
