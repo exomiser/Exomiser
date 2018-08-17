@@ -30,8 +30,8 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -349,7 +349,7 @@ public class InheritanceModeAnalyserTest {
     /**
      * Currently ignored as Jannovar multi-allelic inheritance compatibility is broken for multi-sample VCF.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHomVarAltAllele2shouldBeCompatibleWithAR() {
         Gene gene = newGene();
@@ -393,7 +393,7 @@ public class InheritanceModeAnalyserTest {
     /**
      * Currently ignored as Jannovar multi-allelic inheritance compatibility is broken for multi-sample VCF.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
