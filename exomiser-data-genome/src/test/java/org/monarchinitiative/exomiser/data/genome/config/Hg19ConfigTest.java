@@ -21,8 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.DbNsfpAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.EspAlleleArchive;
@@ -30,9 +29,8 @@ import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.parsers.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -44,8 +42,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {Hg19Config.class})
+@SpringJUnitConfig(classes = {Hg19Config.class})
 @TestPropertySource("/application-test.properties")
 public class Hg19ConfigTest {
 

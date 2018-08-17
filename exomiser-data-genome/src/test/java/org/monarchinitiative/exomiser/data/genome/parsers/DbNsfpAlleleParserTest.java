@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.Collections;

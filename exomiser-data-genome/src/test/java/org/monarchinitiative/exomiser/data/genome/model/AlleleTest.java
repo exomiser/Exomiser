@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
 import java.util.Arrays;
