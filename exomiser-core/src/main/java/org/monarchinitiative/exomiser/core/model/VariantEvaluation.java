@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.*;
@@ -278,6 +279,19 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public Map<String, SampleGenotype> getSampleGenotypes() {
         return sampleGenotypes;
+    }
+
+    /**
+     * Returns the {@link SampleGenotype} for a given sample identifier. If the identifier is not found an empty
+     * {@link SampleGenotype} will be returned.
+     *
+     * @param sampleId sample id of the individual of interest
+     * @return the {@link SampleGenotype} of the individual for this variant, or an empty {@link SampleGenotype} if the
+     * sample is not represented
+     * @since 11.0.0
+     */
+    public SampleGenotype getSampleGenotype(String sampleId) {
+        return sampleGenotypes.getOrDefault(sampleId, SampleGenotype.empty());
     }
 
     /**
@@ -684,8 +698,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
-        public Builder sampleGenotypes(Map<String,SampleGenotype> sampleGenotypes) {
-            this.sampleGenotypes = sampleGenotypes;
+        public Builder sampleGenotypes(Map<String, SampleGenotype> sampleGenotypes) {
+            Objects.requireNonNull(sampleGenotypes);
+            this.sampleGenotypes = ImmutableMap.copyOf(sampleGenotypes);
             return this;
         }
 
