@@ -22,12 +22,10 @@ package org.monarchinitiative.exomiser.test;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import htsjdk.tribble.readers.TabixReader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,8 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ExomiserStubDataConfig.class)
+@SpringJUnitConfig(ExomiserStubDataConfig.class)
 public class ExomiserStubDataConfigTest {
 
     @Autowired
