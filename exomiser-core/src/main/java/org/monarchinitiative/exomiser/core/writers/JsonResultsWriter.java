@@ -82,11 +82,11 @@ public class JsonResultsWriter implements ResultsWriter {
         return "";
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyPassVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
         List<Gene> compatibleGenes = getCompatibleGene(modeOfInheritance, analysisResults.getGenes());
 
-        if (writeOnlyPassVariants) {
-            logger.info("Writing out only PASS variants");
+        if (writeOnlyContributingVariants) {
+            logger.debug("Writing out only CONTRIBUTING variants");
             List<Gene> passedGenes = makePassedGenes(modeOfInheritance, compatibleGenes);
             objectWriter.writeValue(writer, passedGenes);
         } else {

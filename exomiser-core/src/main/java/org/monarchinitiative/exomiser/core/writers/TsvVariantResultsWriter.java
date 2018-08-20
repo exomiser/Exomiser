@@ -96,12 +96,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults,
-                           boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
-        if (writeOnlyPassVariants) {
-            logger.info("Writing out only PASS variants");
+                           boolean writeOnlyContributingVariants, CSVPrinter printer) throws IOException {
+        if (writeOnlyContributingVariants) {
+            logger.debug("Writing out only CONTRIBUTING variants");
             for (Gene gene : analysisResults.getGenes()) {
                 if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                    writeOnlyPassVariantsOfGene(modeOfInheritance, gene, printer);
+                    writeOnlyContributingVariantsOfGene(modeOfInheritance, gene, printer);
                 }
             }
         } else {
@@ -111,7 +111,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-    private void writeOnlyPassVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
+    private void writeOnlyContributingVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
         GeneScore geneScore = gene.getGeneScoreForMode(modeOfInheritance);
         for (VariantEvaluation ve : geneScore.getContributingVariants()) {
             List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);

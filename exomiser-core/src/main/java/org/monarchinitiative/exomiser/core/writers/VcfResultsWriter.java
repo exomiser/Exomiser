@@ -148,11 +148,11 @@ public class VcfResultsWriter implements ResultsWriter {
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyPassVariants, VariantContextWriter writer) {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, VariantContextWriter writer) {
         writeUnannotatedVariants(modeOfInheritance, analysisResults, writer);
         // actually write the data and close writer again
-        if (writeOnlyPassVariants) {
-            logger.info("Writing out only PASS variants");
+        if (writeOnlyContributingVariants) {
+            logger.debug("Writing out only CONTRIBUTING variants");
             writeOnlyContributingData(modeOfInheritance, analysisResults, writer);
         } else {
             writeAllSampleData(modeOfInheritance, analysisResults, writer);
