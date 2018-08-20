@@ -24,7 +24,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import static org.hamcrest.CoreMatchers.is;

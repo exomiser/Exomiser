@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
@@ -53,10 +53,10 @@ public class FilterSettingsImplTest {
     private static final boolean REMOVE_FAILED_VARIANTS_DEFAULT = false;
     private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
     private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
-    private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet();
+    private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet<>();
     private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.ANY;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         builder = FilterSettingsImpl.builder();
     }

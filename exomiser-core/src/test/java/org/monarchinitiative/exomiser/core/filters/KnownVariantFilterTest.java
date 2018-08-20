@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;

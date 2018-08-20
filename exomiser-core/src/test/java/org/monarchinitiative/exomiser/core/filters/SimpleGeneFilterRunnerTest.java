@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -59,7 +59,7 @@ public class SimpleGeneFilterRunnerTest {
     private Gene passGene;
     private Gene failGene;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new SimpleGeneFilterRunner();
         inheritanceFilter = new InheritanceFilter(PASS_MODE);

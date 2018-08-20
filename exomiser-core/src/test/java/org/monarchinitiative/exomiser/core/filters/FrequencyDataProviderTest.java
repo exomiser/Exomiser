@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.VariantDataServiceMock;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -51,7 +51,7 @@ public class FrequencyDataProviderTest {
     private VariantEvaluation variant;
     private final FrequencyData defaultFrequencyData = FrequencyData.empty();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         variantDataService = new VariantDataServiceMock();
         variant = VariantEvaluation.builder(1, 1, "A", "T").frequencyData(defaultFrequencyData).build();

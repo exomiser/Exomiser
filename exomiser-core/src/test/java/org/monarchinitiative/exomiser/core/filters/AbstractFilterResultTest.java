@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,11 +59,11 @@ public class AbstractFilterResultTest {
         assertThat(instance.passed(), is(false));
     }
 
-//    @Test
-//    public void testGetResultStatus() {
-//        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
-//        assertThat(instance.getResultStatus(), equalTo(FilterResultStatus.PASS));
-//    }
+    @Test
+    public void testGetResultStatus() {
+        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
+        assertThat(instance.passed(), equalTo(true));
+    }
 
     @Test
     public void testHashCode() {

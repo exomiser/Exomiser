@@ -26,8 +26,8 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class FilterReportTest {
     private static final int FAILED = 345;
     private static final String MESSAGE = "hello";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);
     }

@@ -27,8 +27,8 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -62,7 +62,7 @@ public class FilterReportFactoryTest {
     private List<VariantEvaluation> variantEvaluations;
     private List<Gene> genes;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new FilterReportFactory();
 

@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.EnumSet;
@@ -48,7 +48,7 @@ public class InheritanceFilterTest {
     private Gene compatibleWithAutosomalDominantAndRecessive;
     private Gene compatibleWithXLinked;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         compatibleWithAutosomalDominant = new Gene("mockGeneId", 12345);

@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.EnumSet;
@@ -49,7 +49,7 @@ public class VariantEffectFilterTest {
     private VariantEvaluation missensePassesFilter;
     private VariantEvaluation synonymousFailsFilter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         offTargetVariantEffects = EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT);
 

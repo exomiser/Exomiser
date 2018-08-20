@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.MutationTasterScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -72,7 +72,7 @@ public class PathogenicityFilterTest {
     private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
     private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);

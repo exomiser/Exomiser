@@ -25,13 +25,14 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -53,7 +54,7 @@ public class QualityFilterTest {
             .quality(UNDER_THRESHOLD)
             .build();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new QualityFilter(MIN_QUAL_THRESHOLD);
     }
@@ -68,9 +69,9 @@ public class QualityFilterTest {
         assertThat(instance.getFilterType(), equalTo(FilterType.QUALITY_FILTER));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void filterThrowIllegalArgumentExceptionWhenInitialisedWithNegativeValue() {
-        instance = new QualityFilter(-1);
+        assertThrows(IllegalArgumentException.class, () -> new QualityFilter(-1));
     }
 
     @Test
