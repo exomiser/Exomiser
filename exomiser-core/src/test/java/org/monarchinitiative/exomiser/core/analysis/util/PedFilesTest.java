@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -50,27 +51,27 @@ public class PedFilesTest {
         assertThat(instance, equalTo(Pedigree.of(manuel)));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void parsePedigreeNotEnoughFields() {
-        PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1"));
+        assertThrows(RuntimeException.class, () -> PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1")));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void parsePedigreeEmptyId() {
-        PedFiles.parsePedigree(Stream.of("1\t\t\t0\t1\t2"));
+        assertThrows(RuntimeException.class, () -> PedFiles.parsePedigree(Stream.of("1\t\t\t0\t1\t2")));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void parsePedigreeEmptyParentId() {
-        PedFiles.parsePedigree(Stream.of("1\tManuel\t\t0\t1\t2"));
+        assertThrows(RuntimeException.class, () -> PedFiles.parsePedigree(Stream.of("1\tManuel\t\t0\t1\t2")));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void parsePedigreeIllegalStatus() {
-        PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t7"));
+        assertThrows(RuntimeException.class, () -> PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t7")));
     }
 
-        @Test
+    @Test
     public void parsePedigreeUnknownStatus() {
         Pedigree.Individual zero = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t0"))
                 .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
@@ -91,9 +92,9 @@ public class PedFilesTest {
         assertThat(minusNine.getSex(), equalTo(Sex.UNKNOWN));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void unknownFile() {
-        PedFiles.readPedigree(Paths.get("wibble.ped"));
+        assertThrows(RuntimeException.class, () -> PedFiles.readPedigree(Paths.get("wibble.ped")));
     }
 
     @Test

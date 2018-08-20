@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.SampleMismatchException;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 
@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -47,24 +48,32 @@ public class SampleIdentifierUtilTest {
         assertThat(sampleId, equalTo(SampleIdentifier.of("David", 0)));
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testGetProbandSampleIdWithProbandNameAndEmptySampleNames() {
-        SampleIdentifierUtil.createProbandIdentifier("David", Collections.emptyList());
+        assertThrows(SampleMismatchException.class, () ->
+                SampleIdentifierUtil.createProbandIdentifier("David", Collections.emptyList())
+        );
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testGetProbandSampleIdWithProbandNameAndSampleNameMisMatch() {
-        SampleIdentifierUtil.createProbandIdentifier("David", Collections.singletonList("Slartibartfast"));
+        assertThrows(SampleMismatchException.class, () ->
+                SampleIdentifierUtil.createProbandIdentifier("David", Collections.singletonList("Slartibartfast"))
+        );
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testGetProbandSampleIdWithProbandNameAndSampleNamesMisMatch() {
-        SampleIdentifierUtil.createProbandIdentifier("David", Arrays.asList("Slartibartfast", "Homer"));
+        assertThrows(SampleMismatchException.class, () ->
+                SampleIdentifierUtil.createProbandIdentifier("David", Arrays.asList("Slartibartfast", "Homer"))
+        );
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testGetProbandSampleIdWithEmptyProbandNameAndSampleNamesMisMatch() {
-        SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "Homer"));
+        assertThrows(SampleMismatchException.class, () ->
+                SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "Homer"))
+        );
     }
 
     @Test
@@ -85,9 +94,11 @@ public class SampleIdentifierUtilTest {
         assertThat(sampleId, equalTo(SampleIdentifier.of("David", 0)));
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testGetProbandSampleNameWithEmptyProbandNameAndMultipleSampleNamesInList() {
-        SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "David"));
+        assertThrows(SampleMismatchException.class, () ->
+                SampleIdentifierUtil.createProbandIdentifier("", Arrays.asList("Slartibartfast", "David"))
+        );
     }
 
 }

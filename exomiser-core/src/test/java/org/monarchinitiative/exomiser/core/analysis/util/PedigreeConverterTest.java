@@ -23,12 +23,13 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import de.charite.compbio.jannovar.pedigree.Disease;
 import de.charite.compbio.jannovar.pedigree.Person;
 import de.charite.compbio.jannovar.pedigree.Sex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -93,21 +94,11 @@ public class PedigreeConverterTest {
         assertContainsPerson(jannovarNemo, converted);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void toJannovarThrowsException() {
 
         Pedigree.Individual illegal = Pedigree.Individual.builder().id("illegal").fatherId("not_present").build();
 
-        Pedigree original = Pedigree.of(ADAM, EVA, SETH, illegal);
-
-        de.charite.compbio.jannovar.pedigree.Pedigree converted = PedigreeConverter.convertToJannovarPedigree(original);
-        Person jannovarAdam = new Person("Adam", null, null, Sex.MALE, Disease.UNAFFECTED);
-        Person jannovarEva = new Person("Eva", null, null, Sex.FEMALE, Disease.UNAFFECTED);
-        Person jannovarSeth = new Person("Seth", jannovarAdam, jannovarEva, Sex.MALE, Disease.AFFECTED);
-
-        assertThat(converted.getNMembers(), equalTo(original.size()));
-        assertContainsPerson(jannovarAdam, converted);
-        assertContainsPerson(jannovarEva, converted);
-        assertContainsPerson(jannovarSeth, converted);
+        assertThrows(IllegalArgumentException.class, () -> Pedigree.of(ADAM, EVA, SETH, illegal));
     }
 }

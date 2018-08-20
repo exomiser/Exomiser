@@ -24,13 +24,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -181,9 +182,9 @@ public class InheritanceModeOptionsTest {
         assertThat(InheritanceModeOptions.defaults().isEmpty(), equalTo(false));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNullInput() {
-        InheritanceModeOptions.of(null);
+        assertThrows(NullPointerException.class, () -> InheritanceModeOptions.of(null));
     }
 
     @Test
@@ -195,15 +196,15 @@ public class InheritanceModeOptionsTest {
         assertThat(instance.getDefinedModes(), equalTo(EnumSet.of(ModeOfInheritance.ANY)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsExceptionWithNonPercentageValue() {
         //check upper bounds
         Map<SubModeOfInheritance, Float> tooHigh = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
-        InheritanceModeOptions.of(tooHigh);
+        assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooHigh));
 
         //check lower bounds
         Map<SubModeOfInheritance, Float> tooLow = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
-        InheritanceModeOptions.of(tooLow);
+        assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooLow));
     }
 
     @Test

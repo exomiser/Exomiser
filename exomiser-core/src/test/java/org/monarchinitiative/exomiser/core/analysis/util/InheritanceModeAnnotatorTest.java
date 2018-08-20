@@ -28,8 +28,8 @@ import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
@@ -84,7 +84,7 @@ public class InheritanceModeAnnotatorTest {
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
                 ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(variant)
-                );
+        );
 
         assertThat(results, equalTo(expected));
     }
@@ -330,9 +330,9 @@ public class InheritanceModeAnnotatorTest {
     }
 
     /**
-     * This is currently @Ignored due to there being a Jannovar issue with heterozygous alt alleles.
+     * This is currently @Disabled due to there being a Jannovar issue with heterozygous alt alleles.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAutosomalDominantFamilyTwoAlts() {
         List<Allele> alleles = buildAlleles("A", "T", "C");
@@ -480,9 +480,9 @@ public class InheritanceModeAnnotatorTest {
     }
 
     /**
-     * This is currently @Ignored due to there being a Jannovar issue with heterozygous alt alleles.
+     * This is currently @Disabled due to there being a Jannovar issue with heterozygous alt alleles.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testCompHetAutosomalRecessiveFamilyTwoAlts() {
         List<Allele> alleles = buildAlleles("A", "T", "C");
@@ -515,9 +515,9 @@ public class InheritanceModeAnnotatorTest {
     }
 
     /**
-     * This is currently @Ignored due to there being a Jannovar issue with heterozygous alt alleles.
+     * This is currently @Disabled due to there being a Jannovar issue with heterozygous alt alleles.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAutosomalDominantHetAltFamily() {
         List<Allele> alleles = buildAlleles("A", "T", "C");

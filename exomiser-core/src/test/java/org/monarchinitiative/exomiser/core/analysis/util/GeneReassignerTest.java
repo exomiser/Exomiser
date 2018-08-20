@@ -27,8 +27,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GeneTranscriptModelBuilder;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
@@ -61,7 +61,7 @@ public class GeneReassignerTest {
     private Gene gene1;
     private Gene gene2;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         gene1 = new Gene("GENE1", 1111);
         gene2 = new Gene("GENE2", 2222);
