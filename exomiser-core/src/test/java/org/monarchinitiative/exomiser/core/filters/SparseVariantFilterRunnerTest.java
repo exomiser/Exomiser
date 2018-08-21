@@ -25,12 +25,13 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SparseVariantFilterRunnerTest {
 
     private SparseVariantFilterRunner instance = new SparseVariantFilterRunner();
@@ -66,7 +67,7 @@ public class SparseVariantFilterRunnerTest {
 
     private List<VariantEvaluation> variantEvaluations;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         passesAllFilters = VariantEvaluation.builder(1, 1, "A", "T").build();
@@ -96,6 +97,8 @@ public class SparseVariantFilterRunnerTest {
         FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
 
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
+        Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
+        Mockito.when(frequencyFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(passesTargetQualityFilter)).thenReturn(failFrequencyResult);
     }
 

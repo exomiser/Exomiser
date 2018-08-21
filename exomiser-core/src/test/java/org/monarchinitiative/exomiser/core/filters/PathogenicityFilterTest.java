@@ -49,10 +49,10 @@ public class PathogenicityFilterTest {
     private static final boolean PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS = false;
     private static final boolean PASS_ALL_VARIANTS = true;
 
-    VariantEvaluation missensePassesFilter;
-    VariantEvaluation downstreamFailsFilter;
-    VariantEvaluation stopGainPassesFilter;
-    VariantEvaluation predictedNonPathogenicMissense;
+    private VariantEvaluation missensePassesFilter;
+    private VariantEvaluation downstreamFailsFilter;
+    private VariantEvaluation stopGainPassesFilter;
+    private VariantEvaluation predictedNonPathogenicMissense;
 
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
