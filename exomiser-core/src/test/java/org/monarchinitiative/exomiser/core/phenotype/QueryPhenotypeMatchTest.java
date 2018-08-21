@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
@@ -58,7 +58,7 @@ public class QueryPhenotypeMatchTest {
 
     private final Set<PhenotypeMatch> bestMatches = Sets.newHashSet(perfectNoseMatch, bestToeMatch);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = new LinkedHashMap<>();
         phenotypeMatches.put(bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch));

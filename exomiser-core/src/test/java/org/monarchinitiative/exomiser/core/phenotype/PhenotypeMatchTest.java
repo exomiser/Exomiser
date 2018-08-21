@@ -28,8 +28,8 @@ package org.monarchinitiative.exomiser.core.phenotype;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -50,7 +50,7 @@ public class PhenotypeMatchTest {
     private double simJ;
     private double score;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         lcs = PhenotypeTerm.of("ID:12345", "nose");
         queryPhenotype = PhenotypeTerm.of("ID:12344", "big nose");

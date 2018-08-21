@@ -25,16 +25,16 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.dao;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -47,7 +47,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestDataSourceConfig.class, HumanPhenotypeOntologyDao.class})
 @Sql(scripts = {"" +
         "file:src/test/resources/sql/create_hpo.sql",
@@ -63,7 +63,7 @@ public class HumanPhenotypeOntologyDaoTest {
     private final PhenotypeTerm multicysticKidneyDysplasia = PhenotypeTerm.of("HP:0000003", "Multicystic kidney dysplasia");
     private Set<PhenotypeMatch> phenotypeMatches;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         allHpoAsStrings = new HashMap<>();
         allHpoAsStrings.put("HP:0000001", "All");

@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +42,7 @@ public class PhenotypeTermTest {
     private String id;
     private String label;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         id = "ID:12344";
         label = "big nose";
