@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,43 +20,34 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class DataDirectoryAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Test
     public void testUndefinedDataPath() {
-        thrown.expect(BeanCreationException.class);
-        thrown.expectMessage("Exomiser data directory not defined. Please provide a valid path.");
-        load(DataDirectoryAutoConfiguration.class);
-        Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
-        assertThat(exomiserDataDirectory, nullValue());
+        Throwable thrown = assertThrows(BeanCreationException.class, () -> load(DataDirectoryAutoConfiguration.class));
+        assertThat(thrown.getMessage(), containsString("Exomiser data directory not defined. Please provide a valid path."));
     }
 
     @Test
     public void testEmptyDataPath() {
-        thrown.expect(BeanCreationException.class);
-//        thrown.expectMessage("Invalid data directory ''");
-        thrown.expectMessage("Exomiser data directory not defined. Please provide a valid path.");
-        load(DataDirectoryAutoConfiguration.class, "exomiser.data-directory=");
-        Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
-        assertThat(exomiserDataDirectory, nullValue());
+        Throwable thrown = assertThrows(BeanCreationException.class, () ->
+                load(DataDirectoryAutoConfiguration.class, "exomiser.data-directory=")
+        );
+        assertThat(thrown.getMessage(), containsString("Exomiser data directory not defined. Please provide a valid path."));
     }
 
     @Test
