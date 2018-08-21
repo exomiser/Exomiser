@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 

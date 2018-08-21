@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,7 +34,7 @@ public class RegulatoryFeatureTest {
 
     private RegulatoryFeature instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         //do we want types or polymorphism? Start with type as this is pretty much just a DTO at the moment?
         int chr = 1;

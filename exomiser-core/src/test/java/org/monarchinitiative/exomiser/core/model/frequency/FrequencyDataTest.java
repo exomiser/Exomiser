@@ -26,7 +26,7 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 
 /**
@@ -65,9 +66,9 @@ public class FrequencyDataTest {
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testThrowsExceptionWithNullRsId() {
-        FrequencyData.of(null, Collections.emptyList());
+        assertThrows(NullPointerException.class, () -> FrequencyData.of(null, Collections.emptyList()));
     }
 
     @Test

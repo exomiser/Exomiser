@@ -20,7 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -36,24 +38,24 @@ public class GeneIdentifierTest {
 
     private static final GeneIdentifier EMPTY_GENE_IDENTIFIER = GeneIdentifier.builder().build();
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksForNullGeneSymbol() {
-        GeneIdentifier.builder().geneSymbol(null).build();
+        assertThrows(NullPointerException.class, () -> GeneIdentifier.builder().geneSymbol(null).build());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksGeneIdIsNotNull() {
-        new Gene(GeneIdentifier.builder().geneId(null).build());
+        assertThrows(NullPointerException.class, () -> new Gene(GeneIdentifier.builder().geneId(null).build()));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksEntrezIdIsNotNull() {
-        new Gene(GeneIdentifier.builder().entrezId(null).build());
+        assertThrows(NullPointerException.class, () -> new Gene(GeneIdentifier.builder().entrezId(null).build()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructorChecksEntrezIdIsValidInteger() {
-        new Gene(GeneIdentifier.builder().entrezId("wibble").build());
+        assertThrows(IllegalArgumentException.class, () -> new Gene(GeneIdentifier.builder().entrezId("wibble").build()));
     }
 
     @Test

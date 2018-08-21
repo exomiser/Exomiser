@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

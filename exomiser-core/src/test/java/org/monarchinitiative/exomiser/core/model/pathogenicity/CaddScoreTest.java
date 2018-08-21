@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +40,7 @@ public class CaddScoreTest {
     private CaddScore instance;
     float score = 1.0f;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = CaddScore.valueOf(score);
     }

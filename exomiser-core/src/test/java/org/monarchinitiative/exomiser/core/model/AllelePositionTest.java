@@ -20,11 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
 
 /**
@@ -32,14 +33,14 @@ import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
  */
 public class AllelePositionTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullRef() {
-        AllelePosition instance = trim(1, null, "A");
+        assertThrows(NullPointerException.class, () -> trim(1, null, "A"));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullAlt() {
-        AllelePosition instance = trim(1, "T", null);
+        assertThrows(NullPointerException.class, () -> trim(1, "T", null));
     }
 
     @Test

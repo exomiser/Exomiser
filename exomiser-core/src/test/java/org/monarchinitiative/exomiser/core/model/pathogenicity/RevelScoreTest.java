@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

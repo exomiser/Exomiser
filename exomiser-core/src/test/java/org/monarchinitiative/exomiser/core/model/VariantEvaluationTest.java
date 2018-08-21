@@ -32,8 +32,8 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -48,6 +48,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -99,7 +100,7 @@ public class VariantEvaluationTest {
     private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
     private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = newInstance();
     }
@@ -137,12 +138,11 @@ public class VariantEvaluationTest {
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
-        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .genomeAssembly("wibble")
-                .build();
-        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        );
     }
 
     @Test

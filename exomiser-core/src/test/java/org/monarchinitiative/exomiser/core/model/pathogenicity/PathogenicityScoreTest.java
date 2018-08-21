@@ -26,7 +26,7 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +34,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -121,12 +122,11 @@ public class PathogenicityScoreTest {
         
     }
     
-    @Test(expected = NullPointerException.class)
+    @Test
     public void comparingPathogenicityScoreToNullThrowsNullPointerException() {
         PolyPhenScore polyPhenScore = PolyPhenScore.valueOf(1);
-        PolyPhenScore nullScore = null;
-        
-        polyPhenScore.compareTo(nullScore);
+
+        assertThrows(NullPointerException.class, () -> polyPhenScore.compareTo(null));
     }
 
 }

@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;

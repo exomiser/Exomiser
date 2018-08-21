@@ -20,24 +20,26 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class SampleIdentifierTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWhenInitialisedWithNull() {
-        SampleIdentifier.of(null, 0);
+        assertThrows(NullPointerException.class, () -> SampleIdentifier.of(null, 0));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsExceptionWhenInitialisedWithEmptyString() {
-        SampleIdentifier.of("", 0);
+        assertThrows(IllegalArgumentException.class, () -> SampleIdentifier.of("", 0));
     }
 
     @Test

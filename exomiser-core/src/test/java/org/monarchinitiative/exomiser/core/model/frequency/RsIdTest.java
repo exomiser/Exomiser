@@ -26,11 +26,12 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -128,9 +129,9 @@ public class RsIdTest {
         assertThat(RsId.valueOf("123456"), equalTo(RsId.valueOf(123456)));
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testValueOfInvalidThrowsException() {
-        RsId.valueOf("wibble");
+        assertThrows(NumberFormatException.class, () -> RsId.valueOf("wibble"));
     }
 
 }
