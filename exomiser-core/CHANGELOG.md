@@ -13,6 +13,9 @@ API breaking changes:
 - Replaced ```Analysis.AnalysisBuilder.pedPath(pedPath)``` and ```Analysis.getPedPath()``` with ```Analysis.AnalysisBuilder.pedigree(pedigree)``` and ```Analysis.getPedigree()```
 - Replaced ```AnalysisBuilder.pedPath(pedPath)```  with ```AnalysisBuilder.pedigree(pedigree)```
 - Removed obsolete ```PedigreeFactory``` - this functionality has been split amongst the new Pedigree API classes
+- Removed ```AnalysisMode.SPARSE``` this was confusing and unused. Unless you need to debug a script, we advise using ```AnalysisMode.PASS_ONLY```
+- Replaced OutputSettings interface with the concrete implementation
+- Removed OutputSettings.outputPassVariantsOnly() with OutputSettings.outputContributingVariantsOnly(). This still has the default value of ```false```
 
 New APIs:
 - Added new jannovar package and faster data serialisation format handled by the ```JannovarDataProtoSerialiser``` and ```JannovarProtoConverter```.
@@ -24,6 +27,7 @@ New APIs:
 - Added new no-args ```AnalysisBuilder.addFrequencyFilter()``` which uses maximum value from ```InheritanceModeOptions```
 - Added ```Pedigree``` support to ```AnalysisBuilder```
 - Added new ```VariantEvaluation.getSampleGenotypes()``` method to map sample names to genotype for that allele
+- Added new utility constructors to ```SampleGenotype``` _e.g._ ```SampleGenotype.het()``` , ```SampleGenotype.homRef()```
 
 Other changes:
 - Added support for REMM and CADD in ```AlleleProtoAdaptor```
