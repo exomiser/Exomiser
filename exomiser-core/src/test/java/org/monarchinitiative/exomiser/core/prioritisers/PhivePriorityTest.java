@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.slf4j.Logger;

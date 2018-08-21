@@ -25,8 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
@@ -39,12 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class NoneTypePrioritiserTest {
 
-    private NoneTypePrioritiser instance;
-
-    @Before
-    public void setUp() {
-        instance = new NoneTypePrioritiser();
-    }
+    private final NoneTypePrioritiser instance = new NoneTypePrioritiser();
 
     @Test
     public void testRunAnalysisHasNoEffectOnGenes() {

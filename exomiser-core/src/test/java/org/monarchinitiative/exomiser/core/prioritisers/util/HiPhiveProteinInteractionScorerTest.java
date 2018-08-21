@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import org.jblas.FloatMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;

@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class GeneOrthologModelTest {
     private final String modelGeneSymbol = "Gene1";
     private final List<String> modelPhenotypeIds = new ArrayList<>(Arrays.asList("HP:0000000", "HP:0000001"));
     
-    @Before
+    @BeforeEach
     public void setUp() {
         //TODO: want it to work more like this I think - although a HUMAN modelOrganism would indicate a GeneDiseaseModel
 //        humanGeneId = new HumanGeneIdentifier(humanGeneId, humanGeneSymbol);

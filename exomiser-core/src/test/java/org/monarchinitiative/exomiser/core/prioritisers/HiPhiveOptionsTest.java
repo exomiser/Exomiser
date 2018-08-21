@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
@@ -37,6 +37,7 @@ import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -84,9 +85,9 @@ public class HiPhiveOptionsTest {
         assertAllRunParamsAreTrue(instance);
     }
 
-    @Test(expected = InvalidRunParameterException.class)
+    @Test
     public void testThrowsInvalidRunParameterExceptionWhenEncountersUnrecognisedRunParameter() {
-        HiPhiveOptions instance = HiPhiveOptions.builder().runParams("floorb").build();
+        assertThrows(InvalidRunParameterException.class, () -> HiPhiveOptions.builder().runParams("floorb").build());
     }
 
     @Test

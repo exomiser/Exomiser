@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
 import static org.hamcrest.CoreMatchers.equalTo;

@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +40,7 @@ public class ExomeWalkerPriorityScoreTest {
     private ExomeWalkerPriorityResult instance;
     private final double score = 1.0;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         instance =  new ExomeWalkerPriorityResult(0, "", score);
     }
