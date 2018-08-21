@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 

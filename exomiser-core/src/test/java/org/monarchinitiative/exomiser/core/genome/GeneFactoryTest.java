@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 

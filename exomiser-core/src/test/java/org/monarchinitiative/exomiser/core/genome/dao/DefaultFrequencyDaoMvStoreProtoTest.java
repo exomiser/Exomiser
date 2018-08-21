@@ -45,8 +45,8 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
 
     private DefaultFrequencyDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
-//        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+//        return new DefaultFrequencyDaoMvStoreProto(mvStore);
+        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
     }
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {

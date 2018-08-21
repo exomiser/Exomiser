@@ -44,8 +44,8 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
 
     private DefaultPathogenicityDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-//        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
+        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
+//        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
     }
 
     @Test

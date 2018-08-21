@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
@@ -39,6 +40,15 @@ import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactor
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VariantContextSampleGenotypeConverterTest {
+
+    @Test
+    void testNoGenotypeReturnsEmptyMap() {
+        List<Allele> alleles = buildAlleles("A", "T");
+        VariantContext variantContext = buildVariantContext(1, 12345, alleles);
+
+        Map<String, SampleGenotype> result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
+        assertThat(result.isEmpty(), is(true));
+    }
 
     @Test
     public void testSingleSampleHetUnPhased() {

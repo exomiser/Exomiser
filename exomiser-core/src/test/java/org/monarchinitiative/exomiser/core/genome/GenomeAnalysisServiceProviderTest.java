@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,12 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -35,24 +36,24 @@ public class GenomeAnalysisServiceProviderTest {
     private static final GenomeAnalysisService HG19_SERVICE = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
     private static final GenomeAnalysisService HG38_SERVICE = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testWontInstantiateWithNullDefaultInput() {
-        new GenomeAnalysisServiceProvider((GenomeAnalysisService) null);
+        assertThrows(NullPointerException.class, () -> new GenomeAnalysisServiceProvider((GenomeAnalysisService) null));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testWontInstantiateWithNullDefaultInputArray() {
-        new GenomeAnalysisServiceProvider((GenomeAnalysisService[]) null);
+        assertThrows(NullPointerException.class, () -> new GenomeAnalysisServiceProvider((GenomeAnalysisService[]) null));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testWontInstantiateWithNullAlternateInput() {
-        new GenomeAnalysisServiceProvider(HG19_SERVICE, null);
+        assertThrows(NullPointerException.class, () -> new GenomeAnalysisServiceProvider(HG19_SERVICE, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testWontInstantiateWithEmptyInput() {
-        new GenomeAnalysisServiceProvider();
+        assertThrows(IllegalArgumentException.class, GenomeAnalysisServiceProvider::new);
     }
 
     @Test

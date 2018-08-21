@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -56,19 +57,19 @@ public class GenomeAssemblyTest {
         assertThat(GenomeAssembly.fromValue("GRCh38"), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
-    public void testEmptyNameThrowsException() throws Exception {
-        GenomeAssembly.fromValue("");
+    @Test
+    public void testEmptyNameThrowsException() {
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.fromValue(""));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testNullNameThrowsException() throws Exception {
-        GenomeAssembly.fromValue(null);
+    @Test
+    public void testNullNameThrowsException() {
+        assertThrows(NullPointerException.class, () -> GenomeAssembly.fromValue(null));
     }
 
-    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
-    public void testUnrecognisedNameThrowsException() throws Exception {
-        GenomeAssembly.fromValue("unrecognised build number");
+    @Test
+    public void testUnrecognisedNameThrowsException() {
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.fromValue("unrecognised build number"));
     }
 
     @Test

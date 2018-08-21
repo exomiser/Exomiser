@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.proto.JannovarProto;
 

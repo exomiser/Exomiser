@@ -32,8 +32,8 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.monarchinitiative.exomiser.core.model.*;
 
@@ -319,7 +319,7 @@ public class VariantFactoryTest {
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testGenome() {
 
