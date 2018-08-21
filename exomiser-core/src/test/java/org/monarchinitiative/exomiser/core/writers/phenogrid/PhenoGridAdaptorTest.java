@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
@@ -84,7 +84,7 @@ public class PhenoGridAdaptorTest {
     private HiPhivePriorityResult onlyDiseaseModelHiPhiveResult;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setUpQueryTerms();
         setUpPhenotypeMatches();

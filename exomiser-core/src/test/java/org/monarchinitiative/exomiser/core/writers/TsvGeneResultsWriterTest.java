@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -78,7 +78,7 @@ public class TsvGeneResultsWriterTest {
     private AnalysisResults analysisResults;
     private Analysis analysis = Analysis.builder().build();
     
-    @Before
+    @BeforeEach
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));

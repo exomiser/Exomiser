@@ -25,8 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,12 +35,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ResultsWriterFactoryTest {
 
-    private ResultsWriterFactory instance;
-
-    @Before
-    public void setUp() {
-        instance = new ResultsWriterFactory();
-    }
+    private final ResultsWriterFactory instance = new ResultsWriterFactory();
 
     @Test
     public void testGetHtmlResultsWriter() {

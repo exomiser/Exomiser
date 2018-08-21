@@ -28,8 +28,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -95,7 +95,7 @@ public class TsvVariantResultsWriterTest {
     private final Analysis analysis = Analysis.builder().build();
     private AnalysisResults analysisResults;
 
-    @Before
+    @BeforeEach
     public void before() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         fgfr2.addVariant(makePassVariant());

@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;

@@ -26,12 +26,12 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -52,7 +52,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ResultsWriterUtilsTest {
 
     private static final String DEFAULT_OUTPUT_DIR = "results";
@@ -65,7 +65,7 @@ public class ResultsWriterUtilsTest {
     @Mock
     Gene failedGene;
     
-    @Before
+    @BeforeEach
     public void before() {
         Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);

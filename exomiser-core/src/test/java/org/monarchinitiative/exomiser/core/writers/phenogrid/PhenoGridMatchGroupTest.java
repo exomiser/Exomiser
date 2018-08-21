@@ -28,8 +28,8 @@ package org.monarchinitiative.exomiser.core.writers.phenogrid;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
@@ -54,7 +54,7 @@ public class PhenoGridMatchGroupTest {
 
     private final TestPhenoGridObjectCache matchCache = TestPhenoGridObjectCache.getInstance();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         matches = matchCache.getPhenoGridMatches();
         queryPhenotypeTermIds = matchCache.getQueryPhenotypeTermIds();

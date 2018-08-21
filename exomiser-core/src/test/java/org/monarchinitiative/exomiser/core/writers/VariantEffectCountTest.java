@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class VariantEffectCountTest {
     private VariantEffect effect;
     private List<Integer> counts;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         effect = VariantEffect.MISSENSE_VARIANT;
