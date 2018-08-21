@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -55,10 +56,9 @@ public class AnalysisFactoryTest {
         assertThat(analysisRunner, instanceOf(PassOnlyAnalysisRunner.class));
     }
 
-    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    @Test
     public void testGetAnalysisRunnerThrowsExceptionWhenUnsupportedGenomeAssemblyIsSpecified() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL);
-        assertThat(analysisRunner, instanceOf(SimpleAnalysisRunner.class));
+        assertThrows(UnsupportedGenomeAssemblyException.class, ()-> instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL));
     }
 
     @Test

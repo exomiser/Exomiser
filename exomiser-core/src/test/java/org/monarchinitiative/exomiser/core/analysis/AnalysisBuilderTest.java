@@ -25,8 +25,8 @@ import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -47,6 +47,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -61,7 +62,7 @@ public class AnalysisBuilderTest {
 
     private List<String> hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
 
-    @Before
+    @BeforeEach
     public void setUp() {
         analysisBuilder = new AnalysisBuilder(priorityFactory, genomeAnalysisServiceProvider);
     }
@@ -106,11 +107,10 @@ public class AnalysisBuilderTest {
         assertThat(analysisBuilder.build().getGenomeAssembly(), equalTo(genomeAssembly));
     }
 
-    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    @Test
     public void testAnalysisBuilderUnsupportedGenomeAssembly() {
         GenomeAssembly genomeAssembly = GenomeAssembly.HG38;
-        analysisBuilder.genomeAssembly(genomeAssembly);
-        assertThat(analysisBuilder.build().getGenomeAssembly(), equalTo(genomeAssembly));
+        assertThrows(UnsupportedGenomeAssemblyException.class, () -> analysisBuilder.genomeAssembly(genomeAssembly));
     }
 
     @Test
@@ -223,9 +223,9 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new QualityFilter(cutoff))));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddKnownVariantFilterThrowsExceptionWhenFrequencySourcesAreNotDefined() {
-        analysisBuilder.addKnownVariantFilter();
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addKnownVariantFilter());
     }
 
     @Test
@@ -236,16 +236,15 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
     }
 
-    @Test(expected = UndefinedGenomeAssemblyException.class)
+    @Test//(expected = UndefinedGenomeAssemblyException.class)
     public void testAddKnownVariantFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
         analysisBuilder.frequencySources(EnumSet.allOf(FrequencySource.class));
-        analysisBuilder.addKnownVariantFilter();
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
+        assertThrows(UndefinedGenomeAssemblyException.class, () -> analysisBuilder.addKnownVariantFilter());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddFrequencyFilterThrowsExceptionWhenFrequencySourcesAreNotDefined() {
-        analysisBuilder.addFrequencyFilter(0.01f);
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addFrequencyFilter(0.01f));
     }
 
     @Test
@@ -279,25 +278,24 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(InheritanceModeOptions.defaults().getMaxFreq()))));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddNoArgsFrequencyWhenInheritanceModeOptionsAreEmpty() {
         analysisBuilder.genomeAssembly(GenomeAssembly.HG19);
         analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
-        analysisBuilder.addFrequencyFilter();
-        buildAndGetSteps();
+        analysisBuilder.inheritanceModes(InheritanceModeOptions.empty());
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addFrequencyFilter());
     }
 
-    @Test(expected = UndefinedGenomeAssemblyException.class)
+    @Test
     public void testAddFrequencyFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
         analysisBuilder.frequencySources(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES));
         float cutOff = 0.01f;
-        analysisBuilder.addFrequencyFilter(cutOff);
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+        assertThrows(UndefinedGenomeAssemblyException.class, () -> analysisBuilder.addFrequencyFilter(cutOff));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddPathogenicityFilterStepThrowsExceptionWhenPathogenicitySourcesAreNotDefined() {
-        analysisBuilder.addPathogenicityFilter(true);
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addPathogenicityFilter(true));
     }
 
     @Test
@@ -309,12 +307,11 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(keepNonPathogenic))));
     }
 
-    @Test(expected = UndefinedGenomeAssemblyException.class)
+    @Test
     public void testAddPathogenicityFilterThrowsExceptionWhenGenomeAssemblyNotPreviouslyDefined() {
         analysisBuilder.pathogenicitySources(EnumSet.allOf(PathogenicitySource.class));
         boolean keepNonPathogenic = true;
-        analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(keepNonPathogenic))));
+        assertThrows(UndefinedGenomeAssemblyException.class, () -> analysisBuilder.addPathogenicityFilter(keepNonPathogenic));
     }
 
     @Test
@@ -392,10 +389,9 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddPhivePrioritiserThrowsExcptionWhenHpoIdsNotDefined() {
-        analysisBuilder.addPhivePrioritiser();
-        assertThat(analysisSteps(), equalTo(singletonList(priorityFactory.makePhivePrioritiser())));
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addPhivePrioritiser());
     }
 
     @Test
@@ -408,13 +404,9 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddHiPhivePrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults());
-
-        analysisBuilder.addHiPhivePrioritiser();
-
-        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addHiPhivePrioritiser());
     }
 
     @Test
@@ -443,13 +435,9 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAddPhenixPrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
-
-        analysisBuilder.addPhenixPrioritiser();
-
-        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addPhenixPrioritiser());
     }
 
     @Test
@@ -462,14 +450,14 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testExomeWalkerPrioritiserThrowsExceptionWithEmptyList() {
-        analysisBuilder.addExomeWalkerPrioritiser(Collections.emptyList());
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addExomeWalkerPrioritiser(Collections.emptyList()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testExomeWalkerPrioritiserThrowsExceptionWithNullList() {
-        analysisBuilder.addExomeWalkerPrioritiser(null);
+        assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addExomeWalkerPrioritiser(null));
     }
 
     @Test

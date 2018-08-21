@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;

@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
@@ -36,6 +36,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -163,13 +164,13 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testRunAnalysisWhenProbandSampleNameIsNotInSingleSampleVcf() {
         Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
                 .probandSampleName("mickyMouse")
                 .build();
-        instance.run(analysis);
+        assertThrows(SampleMismatchException.class , () -> instance.run(analysis));
     }
 
     @Test
@@ -180,13 +181,13 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         instance.run(analysis);
     }
 
-    @Test(expected = SampleMismatchException.class)
+    @Test
     public void testRunAnalysisWhenProbandSampleNameIsNotInMultiSampleVcf() {
         Analysis analysis = Analysis.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .probandSampleName("mickyMouse")
                 .build();
-        instance.run(analysis);
+        assertThrows(SampleMismatchException.class , () -> instance.run(analysis));
     }
 
     @Test

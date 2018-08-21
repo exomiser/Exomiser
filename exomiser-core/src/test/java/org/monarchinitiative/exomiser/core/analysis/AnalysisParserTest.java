@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -56,6 +56,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -72,7 +73,7 @@ public class AnalysisParserTest {
     private Set<FrequencySource> frequencySources;
     private Set<PathogenicitySource> pathogenicitySources;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory.buildDefaultHg19GenomeAnalysisService());
@@ -122,12 +123,13 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps().isEmpty(), is(true));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void throwsExceptionWhenNoVcfIsSet() {
-        instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: \n"
-        );
+        ));
     }
 
     @Test
@@ -200,13 +202,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
     }
 
-    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    @Test
     public void testParseAnalysisThrowsExceptionForUnsupportedGenomeBuild() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(UnsupportedGenomeAssemblyException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    genomeAssembly: hg38\n"
-                        + "    ");
+                        + "    ")
+        );
     }
 
     @Test
@@ -246,13 +250,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
     }
 
-    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
+    @Test
     public void testParseAnalysisUnrecognisedGenomeBuild() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    genomeAssembly: invalid\n"
-                        + "    ");
+                        + "    ")
+        );
     }
 
     @Test
@@ -296,13 +302,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisModeOfInheritanceUserUsesWrongValue() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+            instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    modeOfInheritance: AD\n"
-                        );
+                        )
+        );
     }
 
     /**
@@ -373,9 +381,11 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testThrowsExceptionWithUnexpectedTokenForIntervalFilter() {
-        instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bod: src/test/resources/intervals.bed}"));
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bod: src/test/resources/intervals.bed}"))
+        );
     }
 
     @Test
@@ -399,9 +409,11 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepVariantEffectFilterillegalVariantEffect() {
-        instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [WIBBLE]}"));
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [WIBBLE]}"))
+        );
     }
 
     @Test
@@ -411,7 +423,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepFrequencyFilterNoFrequencySourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -419,8 +431,10 @@ public class AnalysisParserTest {
                 + "    steps: ["
                 + "        frequencyFilter: {maxFrequency: 1.0}\n"
                 + "]";
-                
-        instance.parseAnalysis(script);
+
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(script)
+        );
     }
 
     @Test
@@ -437,7 +451,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepPathogenicityFilterNoPathSourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -445,8 +459,10 @@ public class AnalysisParserTest {
                 + "    steps: ["
                 + "        pathogenicityFilter: {keepNonPathogenic: false}\n"
                 + "]";
-                
-        instance.parseAnalysis(script);
+
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(script)
+        );
     }
 
     @Test
@@ -480,12 +496,14 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepInheritanceFilterUnrecognisedValue() {
-        instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    inheritanceModes: {WIBBLE: 0.0}\n"
+                )
         );
     }
 
@@ -569,21 +587,27 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisFileNotFoundException.class)
+    @Test
     public void testParseAnalysisNonExistentFile() {
-        instance.parseAnalysis(Paths.get("src/test/resources/wibble"));
+        assertThrows(AnalysisFileNotFoundException.class, () ->
+                instance.parseAnalysis(Paths.get("src/test/resources/wibble"))
+        );
     }
 
-    @Test(expected = AnalysisFileNotFoundException.class)
+    @Test
     public void testParseOutputSettingsNonExistentFile() {
-        instance.parseOutputSettings(Paths.get("src/test/resources/wibble"));
+        assertThrows(AnalysisFileNotFoundException.class, () ->
+                instance.parseOutputSettings(Paths.get("src/test/resources/wibble"))
+        );
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseOutputSettingsOutputPassVariantsOnlyThrowsExceptionWithNoValue() {
-        instance.parseOutputSettings(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseOutputSettings(
                 "outputOptions:\n"
-                + "    outputPassVariantsOnly: ");
+                + "    outputPassVariantsOnly: ")
+        );
     }
 
     @Test
