@@ -22,8 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.*;
-import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.exomiser.core.genome.VariantContextSampleGenotypeConverter;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
@@ -174,7 +172,7 @@ public class InheritanceModeAnnotator {
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation
             //then we can mostly discard the VariantContext, apart from writing out again...
-            Map<String, SampleGenotype> sampleGenotypes = getSampleGenotypes(variantEvaluation);
+            Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
             logger.debug("Converting {} {} {}", variantEvaluation.getRef(), variantEvaluation.getAlt(), sampleGenotypes);
             for (Map.Entry<String, SampleGenotype> entry : sampleGenotypes.entrySet()) {
                 String sampleName = entry.getKey();
@@ -205,18 +203,6 @@ public class InheritanceModeAnnotator {
         }
 
         return result;
-    }
-
-    private Map<String, SampleGenotype> getSampleGenotypes(VariantEvaluation variantEvaluation) {
-        Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
-        // guard clause primarily to prevent tests exploding before being updated. Production code should be ok as the
-        // sampleGenotypes are created in the VariantFactory
-        if (sampleGenotypes.isEmpty()) {
-            int altAlleleId = variantEvaluation.getAltAlleleId();
-            VariantContext variantContext = variantEvaluation.getVariantContext();
-            return VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-        }
-        return sampleGenotypes;
     }
 
     private ChromosomeType toChromosomeType(int chromosome) {
