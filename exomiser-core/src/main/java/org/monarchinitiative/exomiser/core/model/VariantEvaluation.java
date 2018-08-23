@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -58,7 +59,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
 
-    //VariantCoordinates variables - these are a minimal requirement for describing a variant
+    // VariantCoordinates variables - these are a minimal requirement for describing a variant
     private final GenomeAssembly genomeAssembly;
     private final int chr;
     private final String chromosomeName;
@@ -66,9 +67,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final String ref;
     private final String alt;
 
-    //Variant variables, for a richer more VCF-like experience
+    // Variant variables, for a richer more VCF-like experience
     private final double phredScore;
-    //TODO for the time being this is ignored
+
     @JsonIgnore
     private Map<String,SampleGenotype> sampleGenotypes;
 
@@ -80,11 +81,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     @JsonIgnore
     private String geneId;
 
-    //results from filters
+    // results from filters
+    // mutable
     private final Set<FilterType> passedFilterTypes;
     private final Set<FilterType> failedFilterTypes;
 
-    //score-related stuff - these are mutable
+    // score-related stuff - these are mutable
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     @JsonProperty("contributingInheritanceModes")
@@ -101,13 +103,13 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         phredScore = builder.phredScore;
         variantEffect = builder.variantEffect;
-        annotations = builder.annotations;
+        annotations = ImmutableList.copyOf(builder.annotations);
         geneSymbol = builder.geneSymbol;
         geneId = builder.geneId;
 
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
-        sampleGenotypes = builder.sampleGenotypes;
+        sampleGenotypes = ImmutableMap.copyOf(builder.sampleGenotypes);
 
         passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
         failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
@@ -622,13 +624,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         private VariantContext variantContext;
         private int altAlleleId;
-        private Map<String,SampleGenotype> sampleGenotypes = Collections.emptyMap();
+        private Map<String,SampleGenotype> sampleGenotypes = ImmutableMap.of();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
         private FrequencyData frequencyData = FrequencyData.empty();
 
         private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
         private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
+
+        private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
+        // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
+        static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(DEFAULT_SAMPLE_NAME, SampleGenotype.het());
 
         /**
          * Creates a minimal variant
@@ -700,21 +706,27 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         public Builder sampleGenotypes(Map<String, SampleGenotype> sampleGenotypes) {
             Objects.requireNonNull(sampleGenotypes);
-            this.sampleGenotypes = ImmutableMap.copyOf(sampleGenotypes);
+            this.sampleGenotypes = sampleGenotypes;
             return this;
         }
 
         public Builder variantEffect(VariantEffect variantEffect) {
+            Objects.requireNonNull(variantEffect);
             this.variantEffect = variantEffect;
             return this;
         }
 
         public Builder annotations(List<TranscriptAnnotation> annotations) {
+            Objects.requireNonNull(annotations);
             this.annotations = annotations;
             return this;
         }
 
         public Builder geneSymbol(String geneSymbol) {
+            Objects.requireNonNull(geneSymbol);
+            if (geneSymbol.isEmpty()) {
+                throw new IllegalArgumentException("Variant gene symbol cannot be empty");
+            }
             this.geneSymbol = inputOrfirstValueInCommaSeparatedString(geneSymbol);
             return this;
         }
@@ -755,14 +767,20 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
 
         public VariantEvaluation build() {
-            if (chromosomeName == null) {
+            if (chromosomeName == null || chromosomeName.isEmpty()) {
                 chromosomeName = buildChromosomeName(chr);
             }
 
             if (variantContext == null) {
                 // We don't check that the variant context agrees with the coordinates here as the variant context could
                 // have been split into different allelic variants so the positions and alleles could differ.
-                variantContext = buildVariantContext(chr, pos, ref, alt, phredScore);
+                variantContext = buildVariantContext(chr, pos, ref, alt, phredScore, DEFAULT_SAMPLE_NAME);
+            }
+            // Should this be here? Would it be safer to validate for null/empty fields here? This is primarily for
+            // ease of testing. The TestAlleleFactory should fill in the missing fields for tests, although this
+            // replicates what buildVariantContext is doing for the SampleGenotypes
+            if (sampleGenotypes.isEmpty()) {
+                sampleGenotypes = SINGLE_SAMPLE_HET_GENOTYPE;
             }
             return new VariantEvaluation(this);
         }
@@ -770,7 +788,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         /**
          * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
          */
-        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
+        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual, String sampleName) {
             Allele refAllele = Allele.create(ref, true);
             Allele altAllele = Allele.create(alt);
             List<Allele> alleles = Arrays.asList(refAllele, altAllele);
@@ -778,7 +796,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             VariantContextBuilder vcBuilder = new VariantContextBuilder();
 
             // build Genotype
-            GenotypeBuilder gtBuilder = new GenotypeBuilder("sample").noAttributes();
+            GenotypeBuilder gtBuilder = new GenotypeBuilder(sampleName).noAttributes();
             //default to HETEROZYGOUS
             gtBuilder.alleles(alleles);
 
