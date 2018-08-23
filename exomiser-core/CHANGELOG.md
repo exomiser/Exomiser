@@ -15,7 +15,7 @@ API breaking changes:
 - Removed obsolete ```PedigreeFactory``` - this functionality has been split amongst the new Pedigree API classes
 - Removed ```AnalysisMode.SPARSE``` this was confusing and unused. Unless you need to debug a script, we advise using ```AnalysisMode.PASS_ONLY```
 - Replaced OutputSettings interface with the concrete implementation
-- Removed OutputSettings.outputPassVariantsOnly() with OutputSettings.outputContributingVariantsOnly(). This still has the default value of ```false```
+- Replaced ```OutputSettings.outputPassVariantsOnly()``` with ```OutputSettings.outputContributingVariantsOnly()```. This still has the default value of ```false```
 
 New APIs:
 - Added new jannovar package and faster data serialisation format handled by the ```JannovarDataProtoSerialiser``` and ```JannovarProtoConverter```.
