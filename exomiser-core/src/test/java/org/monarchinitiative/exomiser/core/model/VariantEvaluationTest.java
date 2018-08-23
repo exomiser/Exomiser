@@ -178,6 +178,26 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    void testGeneSymbolCannotBeNull() {
+        assertThrows(NullPointerException.class, () ->
+                testVariantBuilder()
+                .geneSymbol(null)
+                        .build()
+        );
+
+    }
+
+    @Test
+    void testGeneSymbolCannotBeEmpty() {
+        Throwable throwable = assertThrows(IllegalArgumentException.class, () ->
+                testVariantBuilder()
+                        .geneSymbol("")
+                        .build()
+        );
+        assertThat(throwable.getMessage(), containsString("Variant gene symbol cannot be empty"));
+    }
+
+    @Test
     public void testGetGeneSymbol() {
         assertThat(instance.getGeneSymbol(), equalTo(GENE1_GENE_SYMBOL));
     }
@@ -199,6 +219,23 @@ public class VariantEvaluationTest {
     @Test
     public void canGetGeneId() {
         assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
+    }
+
+    @Test
+    void testSampleGenotypesCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .sampleGenotypes(null)
+                .build()
+        );
+    }
+
+    @Test
+    void testSampleGenotypeEmptyIsReplacedWithDefault() {
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .sampleGenotypes(Collections.emptyMap())
+                .build();
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(VariantEvaluation.Builder.SINGLE_SAMPLE_HET_GENOTYPE));
     }
 
     @Test
@@ -229,6 +266,14 @@ public class VariantEvaluationTest {
 
         variantEvaluation.setVariantEffect(VariantEffect.MISSENSE_VARIANT);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+    }
+
+    @Test
+    void testsTranscriptAnnotationsCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .annotations(null)
+                .build()
+        );
     }
 
     @Test
@@ -781,14 +826,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

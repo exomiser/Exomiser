@@ -43,8 +43,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings.Builder;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -129,17 +129,22 @@ public class TsvVariantResultsWriterTest {
     }
 
     @Test
-    public void testWriteProducesFileWithCorrectName() {
-        OutputSettings settings = settingsBuilder.outputPrefix("testWrite").build();
+    public void testWriteProducesFileWithCorrectName() throws Exception {
+        Path tempFolder = Files.createTempDirectory("exomiser_test");
+        String outPrefix = tempFolder.resolve("testWrite").toString();
+
+        OutputSettings settings = settingsBuilder.outputPrefix(outPrefix).build();
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, settings);
-        Path arOutputPath = Paths.get("testWrite_AR.variants.tsv");
+        Path arOutputPath = tempFolder.resolve("testWrite_AR.variants.tsv");
         assertThat(arOutputPath.toFile().exists(), is(true));
         assertThat(arOutputPath.toFile().delete(), is(true));
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
-        Path adOutputPath = Paths.get("testWrite_AD.variants.tsv");
+        Path adOutputPath = tempFolder.resolve("testWrite_AD.variants.tsv");
         assertThat(adOutputPath.toFile().exists(), is(true));
         assertThat(adOutputPath.toFile().delete(), is(true));
+
+        Files.delete(tempFolder);
     }
 
     @Test

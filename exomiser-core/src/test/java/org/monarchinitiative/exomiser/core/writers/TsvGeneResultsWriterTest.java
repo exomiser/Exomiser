@@ -33,8 +33,8 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.StringJoiner;
@@ -88,17 +88,21 @@ public class TsvGeneResultsWriterTest {
     }
 
     @Test
-    public void testWrite() {
+    public void testWrite() throws Exception {
+        Path tempFolder = Files.createTempDirectory("exomiser_test");
+        String outPrefix = tempFolder.resolve("testWrite").toString();
+
         OutputSettings settings = OutputSettings.builder()
-                .outputPrefix("testWrite")
+                .outputPrefix(outPrefix)
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
 
-        Path outputPath = Paths.get("testWrite_AD.genes.tsv");
+        Path outputPath = tempFolder.resolve("testWrite_AD.genes.tsv");
         assertThat(outputPath.toFile().exists(), is(true));
         assertThat(outputPath.toFile().delete(), is(true));
+        Files.delete(tempFolder);
     }
 
     @Test

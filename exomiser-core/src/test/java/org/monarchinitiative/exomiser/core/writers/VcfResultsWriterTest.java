@@ -25,10 +25,8 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -106,10 +104,7 @@ public class VcfResultsWriterTest {
 
     private static VCFFileReader reader;
 
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
-
-    private Path outPath;
+//    private Path outPath;
     private OutputSettings settings;
 
     private Analysis analysis = Analysis.builder()
@@ -128,12 +123,13 @@ public class VcfResultsWriterTest {
     private Gene fgfr2Gene;
     private Gene shhGene;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
-        outPath = tmpFolder.newFile().toPath();
+//        outPath = Files.createTempFile("exomiser_test", "");
+//        outPath.toFile().deleteOnExit();
         settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outputPrefix(outPath + "testWrite")
+                .outputPrefix("testWrite")
                 .build();
 
         setUpModel();
@@ -306,7 +302,6 @@ public class VcfResultsWriterTest {
         OutputSettings outputContributingVariantsOnly = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputContributingVariantsOnly(true)
-                .outputPrefix(outPath + "testWrite")
                 .build();
         
         String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputContributingVariantsOnly);
@@ -330,7 +325,6 @@ public class VcfResultsWriterTest {
         OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputContributingVariantsOnly(true)
-                .outputPrefix(outPath + "testWrite")
                 .build();
 
         String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputPassVariantsOnlySettings);

@@ -23,10 +23,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -56,9 +54,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class JsonResultsWriterTest {
 
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
-
     private final TestVariantFactory varFactory = new TestVariantFactory();
 
     private final OutputSettings.Builder settingsBuilder = OutputSettings.builder()
@@ -66,7 +61,7 @@ public class JsonResultsWriterTest {
     private final Analysis.Builder analysisBuilder = Analysis.builder();
     private AnalysisResults.Builder analysisResultsBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         VariantEvaluation contributingDominantAndRecessiveVariant = makeContributingDominantAndRecessiveVariant();
@@ -212,7 +207,7 @@ public class JsonResultsWriterTest {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
 
-        Path outPath = tmpFolder.newFile().toPath();
+        Path outPath = Files.createTempFile("exomiser_test", "");
         OutputSettings outputSettings = settingsBuilder.outputPrefix(outPath + "testWrite").build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
@@ -229,5 +224,7 @@ public class JsonResultsWriterTest {
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
         Path adOutputPath = Paths.get(outPath + "testWrite_AD.json");
         assertThat(adOutputPath.toFile().exists(), is(true));
-        assertThat(adOutputPath.toFile().delete(), is(true));    }
+        assertThat(adOutputPath.toFile().delete(), is(true));
+        Files.delete(outPath);
+    }
 }

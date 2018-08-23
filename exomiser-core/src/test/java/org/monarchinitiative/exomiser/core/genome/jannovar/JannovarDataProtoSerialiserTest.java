@@ -21,29 +21,33 @@
 package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class JannovarDataProtoSerialiserTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    private Path getTempFile() throws IOException {
+        Path tempFile = Files.createTempFile("exomiser_test", ".tmp");
+        tempFile.toFile().deleteOnExit();
+        return tempFile;
+    }
 
     @Test
     public void roundTrip() throws Exception {
-        Path protoJannovarPath = tempFolder.newFile().toPath();
         JannovarData testData = TestFactory.buildDefaultJannovarData();
 
+        Path protoJannovarPath = getTempFile();
         JannovarDataProtoSerialiser.save(protoJannovarPath, testData);
         JannovarData jannovarData = JannovarDataProtoSerialiser.load(protoJannovarPath);
 
@@ -55,9 +59,9 @@ public class JannovarDataProtoSerialiserTest {
         assertThat(jannovarData.getTmByGeneSymbol(), equalTo(testData.getTmByGeneSymbol()));
     }
 
-    @Test(expected = InvalidFileFormatException.class)
-    public void incorrectFileFormatThrowsException() throws Exception{
-        Path protoJannovarPath = tempFolder.newFile().toPath();
-        JannovarDataProtoSerialiser.load(protoJannovarPath);
+    @Test
+    public void incorrectFileFormatThrowsException() throws Exception {
+        Path protoJannovarPath = getTempFile();
+        assertThrows(InvalidFileFormatException.class, () -> JannovarDataProtoSerialiser.load(protoJannovarPath));
     }
 }
