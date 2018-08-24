@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -44,7 +43,7 @@ public class AbstractFilterResultTest {
         FilterResult instance = new PassFilterResult(expResult);
 
         FilterType result = instance.getFilterType();
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(expResult));
     }
 
     @Test
@@ -71,7 +70,7 @@ public class AbstractFilterResultTest {
         FilterResult another = new FailFilterResult(FilterType.INTERVAL_FILTER);
         int expResult = another.hashCode();
         int result = instance.hashCode();
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(expResult));
     }
 
     @Test
@@ -100,7 +99,7 @@ public class AbstractFilterResultTest {
         AbstractFilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
         String expResult = "Filter=Interval status=PASS";
         String result = instance.toString();
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(expResult));
     }
 
 }

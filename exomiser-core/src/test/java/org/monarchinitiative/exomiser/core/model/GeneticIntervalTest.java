@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -173,7 +172,7 @@ public class GeneticIntervalTest {
     public void testHashCode() {
         int expResult = new GeneticInterval(CHR, START, END).hashCode();
         int result = instance.hashCode();
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(expResult));
     }
 
     @Test
