@@ -204,6 +204,7 @@ public class Pedigree {
             return status;
         }
 
+        @JsonIgnore
         public boolean isAffected() {
             return status == Status.AFFECTED;
         }
