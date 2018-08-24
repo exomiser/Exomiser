@@ -146,6 +146,15 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
     }
 
     @Test
+    public void randomWalkMatrixLoadInMemory() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.random-walk-preload=true");
+        DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
+        assertThat(dataMatrix, not(nullValue()));
+        assertThat(dataMatrix.numRows(), equalTo(10));
+        assertThat(dataMatrix.numColumns(), equalTo(10));
+    }
+
+    @Test
     public void randomWalkMatrixCanBeOverriden() {
         load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.randomWalkFileName=wibble.gz", "exomiser.randomWalkIndexFileName=wibbleIndex.gz");
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");

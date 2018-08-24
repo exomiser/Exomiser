@@ -168,6 +168,10 @@ public class PrioritiserAutoConfiguration {
             Path randomWalkIndexFilePath = phenotypeDataDirectory().resolve(randomWalkIndexFileNameValue);
             return DataMatrixIO.loadInMemoryDataMatrixFromFile(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
         }
+        if (phenotypeProperties.isRandomWalkPreload()) {
+            logger.info("Pre-loading in-memory random-walk matrix from {}", randomWalkFilePath);
+            return DataMatrixIO.loadInMemoryDataMatrix(randomWalkFilePath);
+        }
         return DataMatrixIO.loadOffHeapDataMatrix(randomWalkFilePath);
     }
 
