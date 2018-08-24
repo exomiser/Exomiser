@@ -41,6 +41,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -182,7 +183,7 @@ public class SubmitJobController {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
-                .pedigree(PedFiles.readPedigree(pedPath))
+                .pedigree((pedPath == null) ? Pedigree.of() : PedFiles.readPedigree(pedPath))
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
                 .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
