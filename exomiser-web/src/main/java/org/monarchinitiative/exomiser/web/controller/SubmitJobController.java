@@ -97,7 +97,6 @@ public class SubmitJobController {
 
     @Autowired
     private Exomiser exomiser;
-
     @Autowired
     private PriorityService priorityService;
 
@@ -183,7 +182,7 @@ public class SubmitJobController {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
-                .pedigree((pedPath == null) ? Pedigree.of() : PedFiles.readPedigree(pedPath))
+                .pedigree((pedPath == null) ? Pedigree.empty() : PedFiles.readPedigree(pedPath))
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
                 .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
