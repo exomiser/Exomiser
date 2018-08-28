@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 
@@ -50,7 +51,10 @@ public class RemmDao {
         this.remmTabixDataSource = remmTabixDataSource;
     }
 
-    @Cacheable(value = "remm", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting REMM data for {}", variant);
         // REMM has not been trained on missense variants so skip these

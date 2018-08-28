@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -45,7 +46,10 @@ public class DefaultPathogenicityDaoMvStoreProto implements PathogenicityDao {
         map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
-    @Cacheable(value = "pathogenicity", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.pathogenicity", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.pathogenicity", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);

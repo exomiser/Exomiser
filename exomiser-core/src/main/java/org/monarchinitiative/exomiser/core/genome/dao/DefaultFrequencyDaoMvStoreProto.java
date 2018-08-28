@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -45,7 +46,10 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
         map = MvStoreUtil.openAlleleMVMap(mvStore);
     }
 
-    @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.frequency", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.frequency", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
