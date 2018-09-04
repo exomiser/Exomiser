@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKey;
@@ -48,7 +48,7 @@ public class VariantKeyGenerator implements KeyGenerator {
         if (params.length == 1) {
             Object param = params[0];
             if (param instanceof Variant) {
-                return MvStoreUtil.generateAlleleKey((Variant) param);
+                return AlleleProtoAdaptor.toAlleleKey((Variant) param);
             }
         }
         return new SimpleKey(params);
