@@ -145,8 +145,58 @@ public class SampleGenotype {
         return ImmutableList.copyOf(alleleCalls);
     }
 
+    /**
+     * Tests whether the current {@link SampleGenotype} is heterozygous.
+     *
+     * @return true if the genotype is heterozygous, otherwise false
+     * @since 11.0.0
+     */
     @JsonIgnore
-    public boolean isHomozygousAlt() {
+    public boolean isHet() {
+        if (alleleCalls.length <= 1) {
+            return false;
+        }
+        AlleleCall first = alleleCalls[0];
+        for (int i = 1; i < alleleCalls.length; i++) {
+            AlleleCall current = alleleCalls[i];
+            if (first != current) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is homozygous for the reference allele.
+     *
+     * @return true if the genotype is homozygous ref, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isHomRef() {
+        if (alleleCalls.length == 0) {
+            return false;
+        }
+        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
+            AlleleCall alleleCall = alleleCalls[i];
+            if (alleleCall == AlleleCall.ALT || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is homozygous for the alternate allele.
+     *
+     * @return true if the genotype is homozygous alt, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isHomAlt() {
+        if (alleleCalls.length == 0) {
+            return false;
+        }
         for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
             AlleleCall alleleCall = alleleCalls[i];
             if (alleleCall == AlleleCall.REF || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
@@ -154,6 +204,17 @@ public class SampleGenotype {
             }
         }
         return true;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is phased.
+     *
+     * @return true if the genotype is phased, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isPhased() {
+        return phased;
     }
 
     @Override

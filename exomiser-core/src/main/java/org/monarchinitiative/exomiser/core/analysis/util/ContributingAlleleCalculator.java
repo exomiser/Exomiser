@@ -135,7 +135,7 @@ class ContributingAlleleCalculator {
     }
 
     private Predicate<VariantEvaluation> variantIsHomozygousAlt(SampleIdentifier probandSampleIdentifier) {
-        return ve -> ve.getSampleGenotype(probandSampleIdentifier.getId()).isHomozygousAlt();
+        return ve -> ve.getSampleGenotype(probandSampleIdentifier.getId()).isHomAlt();
     }
 
     /**
