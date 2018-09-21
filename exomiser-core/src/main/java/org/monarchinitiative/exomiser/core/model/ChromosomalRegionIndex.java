@@ -45,6 +45,19 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     private final Map<Integer, IntervalArray<T>> index;
 
+    private ChromosomalRegionIndex(Map<Integer, IntervalArray<T>> index) {
+        this.index = index;
+    }
+
+    /**
+     * Static constructor for creating a {@link ChromosomalRegionIndex} from a collection of {@link ChromosomalRegion}
+     * objects of a given type.
+     *
+     * @param chromosomalRegions The {@link ChromosomalRegion} objects to add to the index
+     * @param <T> The type of {@link ChromosomalRegion} this index contains
+     * @return a {@link ChromosomalRegionIndex} containing the input {@link ChromosomalRegion} objects
+     * @since 11.0.0
+     */
     public static <T extends ChromosomalRegion> ChromosomalRegionIndex<T> of(Collection<T> chromosomalRegions) {
         Map<Integer, Set<T>> regionIndex = chromosomalRegions.stream().collect(groupingBy(T::getChromosome, toSet()));
 
@@ -55,10 +68,6 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         logger.debug("Created index for {} chromosomes totalling {} regions", intervalTreeIndex.keySet().size(), intervalTreeIndex.values().stream().mapToInt(IntervalArray::size).sum());
 
         return new ChromosomalRegionIndex<>(intervalTreeIndex);
-    }
-
-    private ChromosomalRegionIndex(Map<Integer, IntervalArray<T>> index) {
-        this.index = index;
     }
 
     /**

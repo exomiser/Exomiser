@@ -1,6 +1,6 @@
 # The Exomiser - Core Library Changelog
 
-## 11.0.0 ????
+## 11.0.0 2018-09-21
 API breaking changes:
 - Removed unused ```VariantSerialiser```
 - Moved ```ChromosomalRegionIndex``` from ```analysis.util``` package to ```model```
@@ -33,7 +33,7 @@ Other changes:
 - Added support for REMM and CADD in ```AlleleProtoAdaptor```
 - Added check to remove alleles not called as ALT in proband
 - ```SampleGenotypes``` now calculated for all variants in te ```VariantFactory```
-- Added support ```frequencyFilter: {}``` to ```AnalysisParser```
+- Added support for ```frequencyFilter: {}``` to ```AnalysisParser```
 - Updated HTML output to display current SO terms for variant types/consequence
 - Various code clean-up changes
 - Changed dependency management to use spring-boot-dependencies rather than deprecated Spring Platform

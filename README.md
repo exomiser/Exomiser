@@ -19,21 +19,38 @@ The Exomiser was developed by the Computational Biology and Bioinformatics group
 
 #### Download and Installation
 
-The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser).
+The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser/latest).
 
-It is possible to use the same data sources for each major version, in order to avoid having to download the data files for each software point release. To do this, edit the ```exomiser.data-directory``` field in the ```application.properties``` file to point to the data directory of the other installation.
+It is possible to use the same data sources for multiple versions, in order to avoid having to download the data files for each software point release. We recommend maintaining a dedicated exomiser data directory where you can extract versions of the hg19, hg38 and phenotype data. To do this, edit the ```exomiser.data-directory``` field in the ```application.properties``` file to point to the dedicated data directory. The version for the data releases should also be specified in the ```application.properties``` file:
     
-For example you have an exomiser installation located at ```/opt/exomiser-cli-7.0.0``` which contains the data files in the directory ```/opt/exomiser-cli-7.0.0/data```. You can use the release 7.2.3 (same major version) by unzipping the release to ```/opt/exomiser-cli-7.2.3``` and changing the line in the file ```/opt/exomiser-cli-7.2.3/application.properties``` from
+For example, if you have an exomiser installation located at ```/opt/exomiser-cli-11.0.0``` and you have extracted the data files to the directory ```/opt/exomiser-data```. When there is a new data release, you can change the data versions by specifying the version in the ```/opt/exomiser-cli-11.0.0/application.properties``` from
 ```properties
-#root path where data is to be downloaded and worked on
-#it is assumed that all the files required by exomiser listed in this properties file
-#will be found in the data directory unless specifically overridden here.
+# root path where data is to be downloaded and worked on
+# it is assumed that all the files required by exomiser listed in this properties file
+# will be found in the data directory unless specifically overridden here.
 exomiser.data-directory=data
+
+# old data versions
+exomiser.hg19.data-version=1802
+...
+exomiser.hg38.data-version=1802
+...
+exomiser.phenotype.data-version=1802
 ```
 to
 ```properties
-exomiser.data-directory=/opt/exomiser-cli-7.0.0/data
+# overridden data-directory containing multiple data versions
+exomiser.data-directory=/opt/exomiser-data
+
+# updated data versions
+exomiser.hg19.data-version=1805
+...
+exomiser.hg38.data-version=1805
+...
+exomiser.phenotype.data-version=1807
 ```
+
+We strongly recommend using the latest versions of both the application and the data for optimum results.
 
 For further instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
 
@@ -105,7 +122,7 @@ private final Exomiser exomiser;
  
 #### Memory usage
 
-Analysing whole genomes using the ``AnalysisMode.FULL`` or ``AnalysisMode.SPARSE`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
+Analysing whole genomes using the ``AnalysisMode.FULL`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
 Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java -jar -Xmx...`` incantation. 
 
 #### Caching

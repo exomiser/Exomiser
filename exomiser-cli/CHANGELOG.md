@@ -1,5 +1,14 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 11.0.0 2018-09-21
+- Removed ```analysisMode: SPARSE``` option - this will default to ```PASS_ONLY```
+- Removed ```phenixPrioritiser: {}``` option - we recommend using ```hiPhivePrioritiser: {runParams: 'human'}``` for human-only model comparisons
+- Changed ```outputPassVariantsOnly``` to ```outputContributingVariantsOnly``` in ```outputOptions```. Enabling this will only report the variants marked as ```CONTRIBUTING_VARIANT```, _i.e._ those variants which contribute to the ```EXOMISER_GENE_VARIANT_SCORE``` and ```EXOMISER_GENE_COMBINED_SCORE``` score. This will default to ```false```.   
+    ```yaml
+    outputOptions:
+         outputContributingVariantsOnly: false
+    ```
+
 ## 10.1.0 2018-05-09
 - Added support for filtering multiple intervals in the ```intervalFilter``` 
     ```yaml

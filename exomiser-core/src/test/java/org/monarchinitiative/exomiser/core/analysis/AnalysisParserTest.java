@@ -545,9 +545,14 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStepPhenixPrioritiser() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
-        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+        //Temporarily disabled until we have up-to-date data.
+//        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
+//        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
+//        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"))
+        );
     }
 
     @Test
