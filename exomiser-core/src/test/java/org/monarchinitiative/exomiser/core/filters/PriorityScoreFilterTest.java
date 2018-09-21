@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
@@ -49,7 +49,7 @@ public class PriorityScoreFilterTest {
 
     private Gene gene;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new PriorityScoreFilter(priorityType, minPriorityScore);
         gene = new Gene("GENE1", 12345);

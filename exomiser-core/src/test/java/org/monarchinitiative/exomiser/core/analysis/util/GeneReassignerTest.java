@@ -27,16 +27,13 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GeneTranscriptModelBuilder;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -48,7 +45,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -64,7 +61,7 @@ public class GeneReassignerTest {
     private Gene gene1;
     private Gene gene2;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         gene1 = new Gene("GENE1", 1111);
         gene2 = new Gene("GENE2", 2222);
@@ -121,7 +118,7 @@ public class GeneReassignerTest {
 
 
     private GeneReassigner makeInstance(PriorityType hiphivePriority, TopologicalDomain... tads) {
-        ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(Arrays.asList(tads));
+        ChromosomalRegionIndex<TopologicalDomain> tadIndex = ChromosomalRegionIndex.of(Arrays.asList(tads));
         return new GeneReassigner(hiphivePriority, allGenes, tadIndex);
     }
 

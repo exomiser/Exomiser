@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig;
 
 import java.util.Collections;

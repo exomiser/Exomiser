@@ -38,7 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -89,17 +90,18 @@ public class ResultsWriterUtils {
      * @param variantEvaluations
      * @return
      */
-    public static List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
+    public static List<VariantEffectCount> makeVariantEffectCounters(List<String> sampleNames, List<VariantEvaluation> variantEvaluations) {
 
         // all used Jannovar VariantEffects
-        final Set<VariantEffect> variantEffects = ImmutableSet.of(VariantEffect.FRAMESHIFT_ELONGATION,
+        final Set<VariantEffect> variantEffects = ImmutableSet.of(
+                VariantEffect.FRAMESHIFT_ELONGATION,
                 VariantEffect.FRAMESHIFT_TRUNCATION, VariantEffect.FRAMESHIFT_VARIANT,
                 VariantEffect.INTERNAL_FEATURE_ELONGATION, VariantEffect.FEATURE_TRUNCATION, VariantEffect.MNV,
                 VariantEffect.STOP_GAINED, VariantEffect.STOP_LOST, VariantEffect.START_LOST,
                 VariantEffect.SPLICE_ACCEPTOR_VARIANT, VariantEffect.SPLICE_DONOR_VARIANT,
-                VariantEffect.MISSENSE_VARIANT, VariantEffect.INFRAME_INSERTION,
-                VariantEffect.DISRUPTIVE_INFRAME_INSERTION, VariantEffect.INFRAME_DELETION,
-                VariantEffect.DISRUPTIVE_INFRAME_DELETION,
+                VariantEffect.MISSENSE_VARIANT,
+                VariantEffect.INFRAME_INSERTION, VariantEffect.DISRUPTIVE_INFRAME_INSERTION,
+                VariantEffect.INFRAME_DELETION, VariantEffect.DISRUPTIVE_INFRAME_DELETION,
                 VariantEffect.SPLICE_REGION_VARIANT, VariantEffect.STOP_RETAINED_VARIANT,
                 VariantEffect.INITIATOR_CODON_VARIANT, VariantEffect.SYNONYMOUS_VARIANT,
                 VariantEffect.FIVE_PRIME_UTR_TRUNCATION,
@@ -110,49 +112,11 @@ public class ResultsWriterUtils {
                 VariantEffect.THREE_PRIME_UTR_EXON_VARIANT,
                 VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT,
                 VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
-                VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
+                VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT,
+                VariantEffect.REGULATORY_REGION_VARIANT);
 
-        VariantEffectCounter variantTypeCounter = makeVariantEffectCounter(variantEvaluations);
-        final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
-
-        int numIndividuals = 0;
-        if (!variantEvaluations.isEmpty()) {
-            numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
-        }
-
-        List<VariantEffectCount> result = new ArrayList<>();
-        Set<VariantEffect> effects = EnumSet.noneOf(VariantEffect.class);
-        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
-            effects.addAll(freqMaps.get(sampleIdx).keySet());
-        }
-        if (variantEvaluations.isEmpty()) {
-            effects.addAll(variantEffects);
-        }
-
-        for (VariantEffect effect : effects) {
-            List<Integer> typeSpecificCounts = new ArrayList<>();
-            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
-                typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
-            }
-            result.add(new VariantEffectCount(effect, typeSpecificCounts));
-        }
-
-        return result;
-    }
-
-    private static VariantEffectCounter makeVariantEffectCounter(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.isEmpty()) {
-            return new VariantEffectCounter(0);
-        }
-
-        int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
-        //TODO check replace with variantEvaluations.get(0).getVariantContext().getGenotypes().size()
-        VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            effectCounter.put(variantEvaluation);
-        }
-        return effectCounter;
+        VariantEffectCounter variantEffectCounter = new VariantEffectCounter(sampleNames, variantEvaluations);
+        return variantEffectCounter.getVariantEffectCounts(variantEffects);
     }
 
     public static List<FilterReport> makeFilterReports(Analysis analysis, AnalysisResults analysisResults) {

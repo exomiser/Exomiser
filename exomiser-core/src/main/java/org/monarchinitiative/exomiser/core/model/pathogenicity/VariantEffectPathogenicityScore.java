@@ -58,8 +58,11 @@ public abstract class VariantEffectPathogenicityScore {
     /**
      * Assumed pathogenicity score for a splice site mutation.
      */
-    public static final float SPLICING_SCORE = 1.00f;
+    public static final float SPLICE_DONOR_ACCEPTOR_SCORE = 1.00f;
     /**
+     * Default pathogenicity score for variants in the a splice region, but not a donor or acceptor.
+     */
+    public static final float SPLICE_REGION_SCORE = 0.8f;   /**
      * Assumed pathogenicity score for a synonymous mutation.
      */
     public static final float SYNONYMOUS_SCORE = 0.10f;
@@ -108,8 +111,9 @@ public abstract class VariantEffectPathogenicityScore {
                 return NONFRAMESHIFT_INDEL_SCORE;
             case SPLICE_ACCEPTOR_VARIANT:
             case SPLICE_DONOR_VARIANT:
+                return SPLICE_DONOR_ACCEPTOR_SCORE;
             case SPLICE_REGION_VARIANT:
-                return SPLICING_SCORE;
+                return SPLICE_REGION_SCORE;
             case START_LOST:
                 return STARTLOSS_SCORE;
             case STOP_LOST:

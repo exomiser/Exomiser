@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.genome.VariantDataServiceMock;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -41,7 +41,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.filters.FilterType.*;
 
 /**
@@ -73,8 +73,8 @@ public class SimpleVariantFilterRunnerTest {
     private VariantEvaluation passesTargetQualityFilter;
 
     private List<VariantEvaluation> variantEvaluations;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
 
         passesAllFilters = VariantEvaluation.builder(1, 1, "A", "T")
@@ -151,9 +151,7 @@ public class SimpleVariantFilterRunnerTest {
         filters.add(qualityFilter);
         filters.add(frequencyFilter);
 
-        List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
-
-        assertThat(result, equalTo(variantEvaluations));
+        filters.forEach(filter -> instance.run(filter, variantEvaluations));
 
         printVariantFilterStatus("passesAllFilters", passesAllFilters);
         assertThat(passesAllFilters.passedFilters(), is(true));

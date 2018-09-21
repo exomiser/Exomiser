@@ -27,15 +27,15 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
 import org.jblas.ranges.IntervalRange;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -48,7 +48,7 @@ public class InMemoryDataMatrixTest {
     private FloatMatrix floatMatrix;
     private Map<Integer, Integer> entrezIdToRowIndex;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         float[][] matrix = {
                 {0.0f, 0.1f, 0.2f, 0.3f},

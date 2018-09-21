@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -68,9 +68,7 @@ public class QueryPhenotypeMatch {
      * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score. OR returns a null
      */
     private Function<Set<PhenotypeMatch>, PhenotypeMatch> bestPhenotypeMatch() {
-        return phenotypeMatches -> phenotypeMatches.stream()
-                .sorted(Comparator.comparingDouble(PhenotypeMatch::getScore).reversed())
-                .findFirst()
+        return phenotypeMatches -> phenotypeMatches.stream().max(Comparator.comparingDouble(PhenotypeMatch::getScore))
                 .orElse(null);
     }
 

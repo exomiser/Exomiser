@@ -28,7 +28,9 @@ package org.monarchinitiative.exomiser.core.genome;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -39,11 +41,11 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -93,19 +95,18 @@ public class VariantFactoryImpl implements VariantFactory {
         return allele -> {
             //alternate Alleles are always after the reference allele, which is 0
             int altAlleleId = variantContext.getAlleleIndex(allele) - 1;
-            if (alleleIsObservedInGenotypes(allele, variantContext)) {
+            if (alleleIsObservedInGenotypes(allele, variantContext.getGenotypes())) {
                 return Optional.of(buildVariantEvaluation(variantContext, altAlleleId));
             }
             return Optional.empty();
         };
     }
 
-    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
-        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(allele));
-    }
-
-    private Predicate<Genotype> alleleObservedInGenotype(Allele allele) {
-        return genotype -> genotype.getAlleles().stream().anyMatch(allele::equals);
+    // this is required in case of incorrectly merged multi-sample VCF files to remove alleles not represented in the sample genotypes
+    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, GenotypesContext genotypesContext) {
+        return genotypesContext.stream()
+                .map(Genotype::getAlleles)
+                .anyMatch(genotypeAlleles -> genotypeAlleles.contains(allele));
     }
 
     /**
@@ -132,8 +133,8 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotation variantAnnotation) {
 
-        //Add this in here...? If so see notes in InheritanceModeAnnotator.
-//        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeAdaptor.createAlleleSampleGenotypes(variantContext, altAlleleId);
+        //See also notes in InheritanceModeAnnotator.
+        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();
@@ -157,7 +158,7 @@ public class VariantFactoryImpl implements VariantFactory {
                 //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
-                .numIndividuals(variantContext.getNSamples())
+                .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 //jannovar derived data

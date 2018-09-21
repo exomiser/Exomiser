@@ -27,33 +27,33 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OutputSettingsImplTest {
+public class OutputSettingsTest {
 
     @Test
     public void testThatDefaultOutputPassVariantsOptionIsFalse() {
         OutputSettings instance = OutputSettings.builder().build();
-        assertThat(instance.outputPassVariantsOnly(), equalTo(false));
+        assertThat(instance.outputContributingVariantsOnly(), equalTo(false));
     }
 
     @Test
     public void testThatBuilderProducesOutputPassVariantsOptionWhenSet() {
         OutputSettings instance = OutputSettings.builder()
-                .outputPassVariantsOnly(true)
+                .outputContributingVariantsOnly(true)
                 .build();
-        assertThat(instance.outputPassVariantsOnly(), equalTo(true));
+        assertThat(instance.outputContributingVariantsOnly(), equalTo(true));
     }
 
     /**
@@ -136,13 +136,12 @@ public class OutputSettingsImplTest {
         OutputSettings instance = OutputSettings.builder().build();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
-        OutputSettings createdFromYaml = mapper.readValue("outputPassVariantsOnly: false\n"
-                //TODO:
-//                        + "outputContributingVariantsOnly: true\n"
+        OutputSettings createdFromYaml = mapper.readValue(
+                "outputContributingVariantsOnly: false\n"
                         + "numGenes: 0\n"
                         + "outputPrefix: \"\"\n"
                         + "outputFormats: [HTML]",
-                OutputSettingsImp.class);
+                OutputSettings.class);
 
         assertThat(instance, equalTo(createdFromYaml));
     }

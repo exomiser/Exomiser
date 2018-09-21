@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,9 +26,11 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import org.junitpioneer.jupiter.TempDirectory.TempDir;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 
@@ -40,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -47,27 +50,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class MorbidMapParserTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
     /**
      * Test of parseResource method, of class MorbidMapParser.
      */
     @Test
-    public void testParse() throws Exception {
+    @ExtendWith(TempDirectory.class)
+    public void testParse(@TempDir Path tempDir) {
         System.out.println("parse");
         Path testResourceDir = Paths.get("src/test/resources/data");
-        Path testOutDir = temporaryFolder.newFolder().toPath();
 
         Resource testResource = new Resource("OMIM_morbidmap");
         testResource.setExtractedFileName("morbidmap");
-        testResource.setParsedFileName("testMorbidMap.txt");
+        String parsedFileName = "testMorbidMap.txt";
+        testResource.setParsedFileName(parsedFileName);
 
         Resource diseaseInheritanceResource = new Resource("HPO_phenotype_annotation_test");
         diseaseInheritanceResource.setExtractedFileName("phenotype_annotation_test.tab");
 
         DiseaseInheritanceCache cache = new DiseaseInheritanceCache();
-        cache.parseResource(diseaseInheritanceResource, testResourceDir, testOutDir);
+        cache.parseResource(diseaseInheritanceResource, testResourceDir, tempDir);
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         //todo: add some stub data to stop the test failing...
         Set<Integer> geneIds = new HashSet<>();
@@ -75,8 +76,11 @@ public class MorbidMapParserTest {
         geneIds.add(2260);
         mim2geneMap.put(176943, geneIds);
         MorbidMapParser instance = new MorbidMapParser(cache, mim2geneMap);
-        instance.parseResource(testResource, testResourceDir, testOutDir);
+        instance.parseResource(testResource, testResourceDir, tempDir);
         assertThat(testResource.getParseStatus(), equalTo(ResourceOperationStatus.SUCCESS));
+
+        Path parsedFile = tempDir.resolve(parsedFileName);
+        assertThat(parsedFile.toFile().exists(), is(true));
     }
 
 }

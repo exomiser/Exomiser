@@ -25,8 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
@@ -38,18 +39,19 @@ import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
         PriorityFactoryImpl.class,
         PriorityFactoryTestConfig.class,
@@ -85,7 +87,7 @@ public class PriorityFactoryImplTest {
 
     @Test
     public void testmakePrioritiserForHiPhivePriority() {
-        assertThat(instance.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT), instanceOf(HiPhivePriority.class));
+        assertThat(instance.makeHiPhivePrioritiser(HiPhiveOptions.defaults()), instanceOf(HiPhivePriority.class));
     }
 
     @Test
@@ -101,9 +103,9 @@ public class PriorityFactoryImplTest {
         assertThat(instance.makePhivePrioritiser(), instanceOf(PhivePriority.class));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testmakePrioritiserForPhenixPriorityThrowsRuntimeExceptionDueToMissingPhenixData() {
-        assertThat(instance.makePhenixPrioritiser(), instanceOf(PhenixPriority.class));
+        assertThrows(NullPointerException.class, () -> instance.makePhenixPrioritiser());
     }
 
 }

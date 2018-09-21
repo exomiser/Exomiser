@@ -35,11 +35,13 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -95,7 +97,6 @@ public class SubmitJobController {
 
     @Autowired
     private Exomiser exomiser;
-
     @Autowired
     private PriorityService priorityService;
 
@@ -181,7 +182,7 @@ public class SubmitJobController {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(vcfPath)
-                .pedPath(pedPath)
+                .pedigree((pedPath == null) ? Pedigree.empty() : PedFiles.readPedigree(pedPath))
                 .probandSampleName(proband)
                 .hpoIds(phenotypes)
                 .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
@@ -281,11 +282,6 @@ public class SubmitJobController {
         List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         model.addAttribute("filterReports", filterReports);
 
-        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
-        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
-        model.addAttribute("variantTypeCounters", variantEffectCounters);
-
-        //write out the variant type counters
         List<String> sampleNames = analysisResults.getSampleNames();
         String sampleName = "Anonymous";
         if (!sampleNames.isEmpty()) {
@@ -293,6 +289,11 @@ public class SubmitJobController {
         }
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
+
+        //write out the variant type counters
+        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
+        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, variantEvaluations);
+        model.addAttribute("variantTypeCounters", variantEffectCounters);
 
         List<Gene> sampleGenes = analysisResults.getGenes();
         model.addAttribute("geneResultsTruncated", false);

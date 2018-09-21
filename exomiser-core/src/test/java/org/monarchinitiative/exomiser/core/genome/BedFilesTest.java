@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -49,6 +49,6 @@ public class BedFilesTest {
 
         Stream<ChromosomalRegion> regions = BedFiles.readChromosomalRegions(Paths.get("src/test/resources/intervals.bed"));
 
-        assertThat(regions.collect(toList()), equalTo(expectedIntervals));
+        assertThat(regions.collect(toList()), contains(expectedIntervals.toArray()));
     }
 }

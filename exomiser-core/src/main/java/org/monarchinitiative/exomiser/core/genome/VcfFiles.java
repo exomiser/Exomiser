@@ -52,7 +52,7 @@ public class VcfFiles {
     public static Stream<VariantContext> readVariantContexts(Path vcfPath) {
         Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
         logger.info("Reading variants from VCF file {}", vcfPath);
-        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
+        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath, false)) {
             return vcfReader.iterator().stream();
         }
     }
@@ -66,7 +66,7 @@ public class VcfFiles {
     public static VCFHeader readVcfHeader(Path vcfPath) {
         Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
         logger.info("Reading VCF header from file {}", vcfPath);
-        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
+        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath, false)) {
             return vcfReader.getFileHeader();
         }
     }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({SimpleAnalysisRunnerTest.class, SparseAnalysisRunnerTest.class, PassOnlyAnalysisRunnerTest.class})
-public class AnalysisRunnerSuite {
+public class InvalidFileFormatException extends RuntimeException {
+
+    public InvalidFileFormatException() {
+    }
+
+    public InvalidFileFormatException(String message) {
+        super(message);
+    }
+
+    public InvalidFileFormatException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public InvalidFileFormatException(Throwable cause) {
+        super(cause);
+    }
+
+    public InvalidFileFormatException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,11 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * Enum representing the pathogenicity prediction method/database used to
  * calculate a given score.
  *
+ * CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
+ * or the other predicted path scores, yet apparently are more concordant with ClinVar. However we do not yet recommend
+ * using REVEL either in isolation of with other pathogenicity predictors as the REVEL scores tend to be overwhelmed by
+ * the other scores. USE AT YOUR OWN RISK!!!
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum PathogenicitySource {
@@ -34,6 +39,7 @@ public enum PathogenicitySource {
     MUTATION_TASTER,
     SIFT,
     CADD,
-    REMM
+    REMM,
+    REVEL
 
 }

@@ -28,12 +28,12 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
@@ -45,7 +45,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RemmDaoTest {
     
     private RemmDao instance;
@@ -53,7 +53,7 @@ public class RemmDaoTest {
     @Mock
     private TabixReader remmTabixReader;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TabixDataSource tabixDataSource = new TabixReaderAdaptor(remmTabixReader);
         instance = new RemmDao(tabixDataSource);

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-appender("CONSOLE", ConsoleAppender) {
-  encoder(PatternLayoutEncoder) {
-    pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n"
-  }
+package org.monarchinitiative.exomiser.core.model.pathogenicity;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+public class RevelScoreTest {
+
+    @Test
+    public void testRevel() {
+        RevelScore instance = RevelScore.valueOf(1.0f);
+        System.out.println(instance);
+    }
 }
-
-logger("org.monarchinitiative.exomiser", INFO)
-logger("org.thymeleaf", ERROR)
-
-root(INFO, ["CONSOLE"])

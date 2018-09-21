@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
@@ -35,7 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -53,10 +53,10 @@ public class FilterSettingsImplTest {
     private static final boolean REMOVE_FAILED_VARIANTS_DEFAULT = false;
     private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
     private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
-    private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet();
+    private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet<>();
     private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.ANY;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         builder = FilterSettingsImpl.builder();
     }

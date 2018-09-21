@@ -23,10 +23,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -49,38 +47,53 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class JsonResultsWriterTest {
 
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
-
     private final TestVariantFactory varFactory = new TestVariantFactory();
 
-    private final OutputSettingsImp.OutputSettingsBuilder settingsBuilder = OutputSettings.builder()
+    private final OutputSettings.Builder settingsBuilder = OutputSettings.builder()
             .outputFormats(EnumSet.of(OutputFormat.JSON));
     private final Analysis.Builder analysisBuilder = Analysis.builder();
     private AnalysisResults.Builder analysisResultsBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        VariantEvaluation passVariant = makePassVariant();
-        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2.addVariant(passVariant);
+        VariantEvaluation contributingDominantAndRecessiveVariant = makeContributingDominantAndRecessiveVariant();
+        contributingDominantAndRecessiveVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        contributingDominantAndRecessiveVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        contributingDominantAndRecessiveVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        fgfr2.addVariant(contributingDominantAndRecessiveVariant);
         fgfr2.addGeneScore(GeneScore.builder()
                 .geneIdentifier(fgfr2.getGeneIdentifier())
                 .variantScore(1.0f)
                 .phenotypeScore(1.0f)
                 .combinedScore(1.0f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .contributingVariants(ImmutableList.of(passVariant)).build()
+                .contributingVariants(ImmutableList.of(contributingDominantAndRecessiveVariant)).build()
         );
-        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        VariantEvaluation contributingRecessiveCompHetVariant = makeContributingCompHetRecessiveVariant();
+        contributingRecessiveCompHetVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        contributingRecessiveCompHetVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        fgfr2.addVariant(contributingRecessiveCompHetVariant);
+        fgfr2.addGeneScore(GeneScore.builder()
+                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .variantScore(0.945f)
+                .phenotypeScore(1.0f)
+                .combinedScore(0.945f)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .contributingVariants(ImmutableList.of(contributingDominantAndRecessiveVariant, contributingRecessiveCompHetVariant)).build()
+        );
+        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+
+        VariantEvaluation passVariant = makePassVariant();
+        fgfr2.addVariant(passVariant);
 
         Gene shh = TestFactory.newGeneSHH();
         VariantEvaluation failVariant = makeFailVariant();
@@ -95,10 +108,24 @@ public class JsonResultsWriterTest {
                 .genes(Arrays.asList(fgfr2, shh));
     }
 
-    private VariantEvaluation makePassVariant() {
+    private VariantEvaluation makeContributingCompHetRecessiveVariant() {
+        VariantEvaluation variant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(0.89f)));
+        return variant;
+    }
+
+    private VariantEvaluation makeContributingDominantAndRecessiveVariant() {
         VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
+        return variant;
+    }
+
+    private VariantEvaluation makePassVariant() {
+        VariantEvaluation variant = varFactory.buildVariant(10, 123256204, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(0.6f)));
         return variant;
     }
 
@@ -118,11 +145,11 @@ public class JsonResultsWriterTest {
     public void writeToStringPassOnlyAutosomalDominant() throws Exception {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
-        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+        OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
         String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
-        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        String expected = readFromFile("src/test/resources/writers/contributing_only_autosomal_dominant_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
@@ -130,19 +157,19 @@ public class JsonResultsWriterTest {
     public void writeToStringPassOnlyAnyModeOfInheritance() throws Exception {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
-        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+        OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
         String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
-        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
-    public void writeToStringOutputFullAnyModeOfInheritanceAllVariants() throws Exception {
+    public void writeToStringFullAnalysisAnyModeOfInheritanceAllVariants() throws Exception {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
-        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(false).build();
+        OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(false).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
         String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
@@ -151,27 +178,27 @@ public class JsonResultsWriterTest {
     }
 
     @Test
-    public void writeToStringOutputFullNoModeOfInheritanceMatchAllVariants() throws Exception {
+    public void writeToStringFullAnalysisNoModeOfInheritanceMatchAllVariants() throws Exception {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
-        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(false).build();
+        OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(false).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        //we have no AR matches in the results set
-        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, outputSettings);
+        //we have no MITOCHONDRIAL matches in the results set
+        String result = instance.writeString(ModeOfInheritance.MITOCHONDRIAL, analysis, analysisResults, outputSettings);
         String expected = "[]";
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
-    public void writeToStringOutputFullAnyModeOfInheritancePassOnlyVariants() throws Exception {
+    public void writeToStringFullAnalysisAnyModeOfInheritancePassOnlyVariants() throws Exception {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
-        OutputSettings outputSettings = this.settingsBuilder.outputPassVariantsOnly(true).build();
+        OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
         String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
-        String expected = readFromFile("src/test/resources/writers/pass_only_autosomal_dominant_test.json");
+        String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
@@ -180,7 +207,7 @@ public class JsonResultsWriterTest {
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
         AnalysisResults analysisResults = this.analysisResultsBuilder.build();
 
-        Path outPath = tmpFolder.newFile().toPath();
+        Path outPath = Files.createTempFile("exomiser_test", "");
         OutputSettings outputSettings = settingsBuilder.outputPrefix(outPath + "testWrite").build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
@@ -197,5 +224,7 @@ public class JsonResultsWriterTest {
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
         Path adOutputPath = Paths.get(outPath + "testWrite_AD.json");
         assertThat(adOutputPath.toFile().exists(), is(true));
-        assertThat(adOutputPath.toFile().delete(), is(true));    }
+        assertThat(adOutputPath.toFile().delete(), is(true));
+        Files.delete(outPath);
+    }
 }

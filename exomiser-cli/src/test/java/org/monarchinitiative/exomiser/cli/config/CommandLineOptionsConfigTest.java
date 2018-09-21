@@ -27,22 +27,19 @@
 package org.monarchinitiative.exomiser.cli.config;
 
 import org.apache.commons.cli.Options;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for the command line options.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = CommandLineOptionsConfig.class)
+@SpringJUnitConfig(classes = CommandLineOptionsConfig.class)
 public class CommandLineOptionsConfigTest {
     
     @Autowired

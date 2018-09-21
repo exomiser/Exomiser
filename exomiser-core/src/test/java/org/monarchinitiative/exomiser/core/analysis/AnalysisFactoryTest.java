@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -50,21 +51,14 @@ public class AnalysisFactoryTest {
     }
 
     @Test
-    public void testCanMakeSparseAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG19, AnalysisMode.SPARSE);
-        assertThat(analysisRunner, instanceOf(SparseAnalysisRunner.class));
-    }
-
-    @Test
     public void testCanMakePassOnlyAnalysisRunner() {
         AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG19, AnalysisMode.PASS_ONLY);
         assertThat(analysisRunner, instanceOf(PassOnlyAnalysisRunner.class));
     }
 
-    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    @Test
     public void testGetAnalysisRunnerThrowsExceptionWhenUnsupportedGenomeAssemblyIsSpecified() {
-        AnalysisRunner analysisRunner = instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL);
-        assertThat(analysisRunner, instanceOf(SimpleAnalysisRunner.class));
+        assertThrows(UnsupportedGenomeAssemblyException.class, ()-> instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL));
     }
 
     @Test

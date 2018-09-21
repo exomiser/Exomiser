@@ -26,12 +26,12 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -42,16 +42,17 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ResultsWriterUtilsTest {
 
     private static final String DEFAULT_OUTPUT_DIR = "results";
@@ -64,7 +65,7 @@ public class ResultsWriterUtilsTest {
     @Mock
     Gene failedGene;
     
-    @Before
+    @BeforeEach
     public void before() {
         Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
@@ -150,8 +151,8 @@ public class ResultsWriterUtilsTest {
 
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
+        List<VariantEvaluation> variantEvaluations = Collections.emptyList();
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(Collections.emptyList(), variantEvaluations);
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
         VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);

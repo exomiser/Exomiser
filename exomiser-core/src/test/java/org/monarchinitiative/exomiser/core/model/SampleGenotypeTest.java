@@ -21,11 +21,10 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -87,6 +86,66 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.phased(AlleleCall.OTHER_ALT, AlleleCall.ALT).toString(), equalTo("-|1"));
         assertThat(SampleGenotype.phased(AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT).toString(), equalTo("-|-"));
 
+    }
+
+    @Test
+    public void testConvenienceConstructors() {
+        assertThat(SampleGenotype.noCall(), equalTo(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL)));
+        assertThat(SampleGenotype.het(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.homRef(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.REF)));
+        assertThat(SampleGenotype.homAlt(), equalTo(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT)));
+    }
+
+    @Test
+    void testIsHet() {
+        assertThat(SampleGenotype.het().isHet(), is(true));
+
+        assertThat(SampleGenotype.of(AlleleCall.REF).isHet(), is(false));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.NO_CALL).isHet(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).isHet(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT, AlleleCall.REF).isHet(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.OTHER_ALT).isHet(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT).isHet(), is(true));
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.OTHER_ALT).isHet(), is(true));
+
+        assertThat(SampleGenotype.empty().isHet(), is(false));
+        assertThat(SampleGenotype.homRef().isHet(), is(false));
+        assertThat(SampleGenotype.homAlt().isHet(), is(false));
+    }
+
+    @Test
+    void testIsHomRef() {
+        assertThat(SampleGenotype.homRef().isHomRef(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF).isHomRef(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.REF).isHomRef(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.REF, AlleleCall.REF).isHomRef(), is(true));
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.REF).isHomRef(), is(true));
+
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.NO_CALL).isHomRef(), is(false));
+        assertThat(SampleGenotype.empty().isHomRef(), is(false));
+        assertThat(SampleGenotype.het().isHomRef(), is(false));
+        assertThat(SampleGenotype.homAlt().isHomRef(), is(false));
+    }
+
+    @Test
+    void testIsHomAlt() {
+        assertThat(SampleGenotype.homAlt().isHomAlt(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.ALT).isHomAlt(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT).isHomAlt(), is(true));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT, AlleleCall.ALT).isHomAlt(), is(true));
+        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.ALT).isHomAlt(), is(true));
+
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.NO_CALL).isHomAlt(), is(false));
+        assertThat(SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.NO_CALL).isHomAlt(), is(false));
+        assertThat(SampleGenotype.empty().isHomAlt(), is(false));
+        assertThat(SampleGenotype.het().isHomAlt(), is(false));
+        assertThat(SampleGenotype.homRef().isHomAlt(), is(false));
+    }
+
+    @Test
+    void testIsPhased() {
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).isPhased(), is(false));
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).isPhased(), is(true));
     }
 
     @Test

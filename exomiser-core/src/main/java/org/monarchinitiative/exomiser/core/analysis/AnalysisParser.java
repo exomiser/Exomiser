@@ -25,6 +25,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
@@ -32,6 +33,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
@@ -97,7 +99,7 @@ public class AnalysisParser {
 
     private Map loadMap(String analysisDoc) {
         Yaml yaml = new Yaml();
-        return (Map) yaml.load(analysisDoc);
+        return yaml.load(analysisDoc);
     }
 
     private Map loadMap(Path analysisScript) {
@@ -105,7 +107,7 @@ public class AnalysisParser {
         try (InputStream inputStream = newInputStream(analysisScript)) {
             CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, decoder));
-            return (Map) yaml.load(bufferedReader);
+            return yaml.load(bufferedReader);
         } catch (IOException ex) {
             throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage(), ex);
         }
@@ -129,19 +131,30 @@ public class AnalysisParser {
 
         public OutputSettings construct(Map analysisMap) {
             return OutputSettings.builder()
-                    .outputPassVariantsOnly(parseOutputPassVariantsOnly(analysisMap))
+                    .outputContributingVariantsOnly(parseOutputVariantsOption(analysisMap))
                     .numberOfGenesToShow(parseNumberOfGenesToShow(analysisMap))
                     .outputPrefix(parseOutputPrefix(analysisMap))
                     .outputFormats(parseOutputFormats(analysisMap))
                     .build();
         }
 
-        private Boolean parseOutputPassVariantsOnly(Map<String, Boolean> analysisMap) {
-            Boolean outputPassOnly = analysisMap.get("outputPassVariantsOnly");
-            if (outputPassOnly == null) {
-                throw new AnalysisParserException("outputPassVariantsOnly cannot be null.", analysisMap);
+        private boolean parseOutputVariantsOption(Map<String, Boolean> analysisMap) {
+            String deprecatedOption = "outputPassVariantsOnly";
+            String outputContributingVariantsOnly = "outputContributingVariantsOnly";
+            if (analysisMap.containsKey(deprecatedOption)) {
+                logger.warn("{} option has been deprecated - please replace with '{}'", deprecatedOption, outputContributingVariantsOnly);
+                //despite being deprecated and functionally different, this has the same return value
+                return parseBooleanValue(deprecatedOption, analysisMap);
             }
-            return outputPassOnly;
+            return parseBooleanValue(outputContributingVariantsOnly, analysisMap);
+        }
+
+        private Boolean parseBooleanValue(String key, Map<String, Boolean> analysisMap) {
+            Boolean booleanValue = analysisMap.get(key);
+            if (booleanValue == null) {
+                throw new AnalysisParserException("'" + key + "' value cannot be null.", analysisMap);
+            }
+            return booleanValue;
         }
 
         private int parseNumberOfGenesToShow(Map<String, Integer> analysisMap) {
@@ -211,10 +224,11 @@ public class AnalysisParser {
             GenomeAssembly requestedAssembly = parseGenomeAssembly(analysisMap);
             genomeAnalysisService = genomeAnalysisServiceProvider.get(requestedAssembly);
 
+            //TODO: Why not use the AnalysisBuilder?
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
                     .genomeAssembly(requestedAssembly)
-                    .pedPath(parsePed(analysisMap))
+                    .pedigree(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
                     .inheritanceModeOptions(inheritanceModeOptions(analysisMap))
@@ -224,7 +238,7 @@ public class AnalysisParser {
                     .steps(makeAnalysisSteps(analysisMap))
                     .build();
             //this method is only here to provide a warning to users that their script is out of date.
-            parseScoringMode(analysisMap);
+            warnUserAboutDeprecatedGeneScoreMode(analysisMap);
 
             logger.debug("Made analysis: {}", analysis);
             return analysis;
@@ -267,13 +281,14 @@ public class AnalysisParser {
             return GenomeAssembly.fromValue(genomeAssemblyValue);
         }
 
-        private Path parsePed(Map<String, String> analysisMap) {
+        private Pedigree parsePed(Map<String, String> analysisMap) {
             String pedValue = analysisMap.get("ped");
             //PED file paths are allowed to be null
-            if (pedValue == null) {
-                return null;
+            if (pedValue == null || pedValue.isEmpty()) {
+                return Pedigree.empty();
             }
-            return Paths.get(pedValue);
+            Path pedFile = Paths.get(pedValue);
+            return PedFiles.readPedigree(pedFile);
         }
 
         private String parseProbandSampleName(Map<String, String> analysisMap) {
@@ -315,13 +330,9 @@ public class AnalysisParser {
                 Map<SubModeOfInheritance, Float> inheritanceModes = new EnumMap<>(SubModeOfInheritance.class);
                 for (Entry<String, Double> entry : inheritanceModesInput.entrySet()) {
                     SubModeOfInheritance subMode = parseValueOfSubInheritanceMode(entry.getKey());
-                    if (subMode == SubModeOfInheritance.ANY) {
-                        logger.info("Ignoring inheritance mode {}", subMode);
-                    } else {
-                        Double value = entry.getValue();
-                        logger.debug("Adding inheritance mode {} max MAF {}", subMode, value);
-                        inheritanceModes.put(subMode, value.floatValue());
-                    }
+                    Double value = entry.getValue();
+                    logger.debug("Adding inheritance mode {} max MAF {}", subMode, value);
+                    inheritanceModes.put(subMode, value.floatValue());
                 }
 
                 return InheritanceModeOptions.of(inheritanceModes);
@@ -334,7 +345,6 @@ public class AnalysisParser {
                 return SubModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
                 List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
-                        .filter(mode -> mode != SubModeOfInheritance.ANY)
                         .collect(toList());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
@@ -345,7 +355,6 @@ public class AnalysisParser {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
                 List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
-                        .filter(mode -> mode != ModeOfInheritance.ANY)
                         .collect(toList());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
@@ -356,15 +365,17 @@ public class AnalysisParser {
             if (value == null) {
                 return AnalysisMode.PASS_ONLY;
             }
+            if ("SPARSE".equalsIgnoreCase(value)) {
+                logger.warn("Analysis mode 'SPARSE' is no longer supported - defaulting to {}", AnalysisMode.PASS_ONLY);
+                return AnalysisMode.PASS_ONLY;
+            }
             return AnalysisMode.valueOf(value);
         }
 
-        @Deprecated
-        private void parseScoringMode(Map<String, String> analysisMap) {
-            String value = analysisMap.get("geneScoreMode");
-            if (value != null) {
-                logger.info("geneScoreMode is deprecated and {} will have no effect. " +
-                        "Please consider removing this from your analysis script to prevent this message from showing again.", value);
+        private void warnUserAboutDeprecatedGeneScoreMode(Map analysisMap) {
+            if (analysisMap.containsKey("geneScoreMode")) {
+                logger.warn("geneScoreMode is deprecated and will have no effect. " +
+                        "Please consider removing this from your analysis script to prevent this message from showing again.");
             }
         }
 
@@ -398,7 +409,7 @@ public class AnalysisParser {
                 case "knownVariantFilter":
                     return makeKnownVariantFilter(analysisStepMap, parseFrequencySources(analysisMap));
                 case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap));
+                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap));
                 case "pathogenicityFilter":
                     return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
                 case "inheritanceFilter":
@@ -414,7 +425,8 @@ public class AnalysisParser {
                 case "phivePrioritiser":
                     return prioritiserFactory.makePhivePrioritiser();
                 case "phenixPrioritiser":
-                    return prioritiserFactory.makePhenixPrioritiser();
+                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
+//                    return prioritiserFactory.makePhenixPrioritiser();
                 case "exomeWalkerPrioritiser":
                     return makeWalkerPrioritiser(analysisStepMap);
                 default:
@@ -498,20 +510,28 @@ public class AnalysisParser {
             return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new KnownVariantFilter());
         }
 
-        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources) {
-            Double maxFreq = getMaxFrequency(options);
+        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources, InheritanceModeOptions inheritanceModeOptions) {
+            Double maxFreq = getMaxFreq(options, inheritanceModeOptions);
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
-            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq
-                    .floatValue()));
+            if (maxFreq == null) {
+                //this shouldn't be the case, but to be on the safe side...
+                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
+            }
+            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq.floatValue()));
         }
 
-        private Double getMaxFrequency(Map<String, Object> options) {
+        private Double getMaxFreq(Map<String, Object> options, InheritanceModeOptions inheritanceModeOptions) {
             Double maxFreq = (Double) options.get("maxFrequency");
-            if (maxFreq == null) {
-                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 1.0}", options);
+            if (maxFreq == null && inheritanceModeOptions.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
             }
+            if (maxFreq == null && !inheritanceModeOptions.isEmpty()) {
+                logger.debug("maxFrequency not defined - using inheritanceModeOptions max frequency.");
+                return (double) inheritanceModeOptions.getMaxFreq();
+            }
+            // maxFreq should not be null at this point
             return maxFreq;
         }
 
@@ -610,7 +630,7 @@ public class AnalysisParser {
                         .runParams(runParams)
                         .build();
             }
-            return HiPhiveOptions.DEFAULT;
+            return HiPhiveOptions.defaults();
         }
 
         private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List<Integer>> options) {

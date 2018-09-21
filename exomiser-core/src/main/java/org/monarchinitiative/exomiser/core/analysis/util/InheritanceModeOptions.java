@@ -54,6 +54,7 @@ public class InheritanceModeOptions {
 
     private final Map<SubModeOfInheritance, Float> subMoiMaxFreqs;
     private final Map<ModeOfInheritance, Float> moiMaxFreqs;
+    private final float maxFreq;
 
     public static InheritanceModeOptions defaults() {
         return DEFAULT;
@@ -65,9 +66,6 @@ public class InheritanceModeOptions {
 
     public static InheritanceModeOptions of(Map<SubModeOfInheritance, Float> values) {
         Objects.requireNonNull(values);
-        if (values.keySet().contains(SubModeOfInheritance.ANY)) {
-            throw new IllegalArgumentException("values cannot contain key " + SubModeOfInheritance.ANY);
-        }
         return new InheritanceModeOptions(values);
     }
 
@@ -94,7 +92,8 @@ public class InheritanceModeOptions {
                     translated.put(SubModeOfInheritance.MITOCHONDRIAL, DEFAULT_FREQ.get(SubModeOfInheritance.MITOCHONDRIAL));
                     break;
                 case ANY:
-                    throw new IllegalArgumentException(ModeOfInheritance.ANY + " is not a valid argument");
+                    translated.put(SubModeOfInheritance.ANY, 2.0f);
+                    break;
             }
         }
         return new InheritanceModeOptions(translated);
@@ -104,6 +103,7 @@ public class InheritanceModeOptions {
         this.subMoiMaxFreqs = Maps.immutableEnumMap(values);
         this.subMoiMaxFreqs.forEach(InheritanceModeOptions::checkBounds);
         this.moiMaxFreqs = createInheritanceModeMaxFreqs(subMoiMaxFreqs);
+        this.maxFreq = moiMaxFreqs.values().stream().max(Comparator.naturalOrder()).orElse(Float.MAX_VALUE);
     }
 
     private static void checkBounds(SubModeOfInheritance key, Float value) {
@@ -129,22 +129,25 @@ public class InheritanceModeOptions {
 
         for (Map.Entry<SubModeOfInheritance, Float> entry : subModeMaxFreqs.entrySet()) {
             SubModeOfInheritance subMode = entry.getKey();
-            Float maxFreq = entry.getValue();
+            Float freq = entry.getValue();
             switch (subMode) {
                 case AUTOSOMAL_DOMINANT:
-                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, maxFreq);
+                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, freq);
                     break;
                 case AUTOSOMAL_RECESSIVE_COMP_HET:
-                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, maxFreq);
+                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, freq);
                     break;
                 case X_DOMINANT:
-                    maxFreqs.put(ModeOfInheritance.X_DOMINANT, maxFreq);
+                    maxFreqs.put(ModeOfInheritance.X_DOMINANT, freq);
                     break;
                 case X_RECESSIVE_COMP_HET:
-                    maxFreqs.put(ModeOfInheritance.X_RECESSIVE, maxFreq);
+                    maxFreqs.put(ModeOfInheritance.X_RECESSIVE, freq);
                     break;
                 case MITOCHONDRIAL:
-                    maxFreqs.put(ModeOfInheritance.MITOCHONDRIAL, maxFreq);
+                    maxFreqs.put(ModeOfInheritance.MITOCHONDRIAL, freq);
+                    break;
+                case ANY:
+                    maxFreqs.put(ModeOfInheritance.ANY, freq);
                     break;
                 default:
                     //don't add the value
@@ -172,8 +175,21 @@ public class InheritanceModeOptions {
         return subMoiMaxFreqs.getOrDefault(subModeOfInheritance, Float.MAX_VALUE);
     }
 
+    /**
+     * Returns the maximum minor allele frequency of all the defined modes of inheritance, as a percentage value.
+     *
+     * @return the maximum defined minor allele frequency  value for all modes of inheritance
+     */
+    public float getMaxFreq() {
+        return maxFreq;
+    }
+
     public Set<ModeOfInheritance> getDefinedModes() {
         return Sets.immutableEnumSet(moiMaxFreqs.keySet());
+    }
+
+    public Set<SubModeOfInheritance> getDefinedSubModes() {
+        return Sets.immutableEnumSet(subMoiMaxFreqs.keySet());
     }
 
     public boolean isEmpty() {

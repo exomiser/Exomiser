@@ -28,14 +28,15 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -111,9 +112,9 @@ public class IntervalFilterTest {
         System.out.println(multiIntervalFilter);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void throwsExceptionWithEmptyInputList() {
-        new IntervalFilter(ImmutableList.of());
+        assertThrows(IllegalStateException.class, () -> new IntervalFilter(ImmutableList.of()));
     }
 
     @Test

@@ -30,15 +30,17 @@ import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -51,8 +53,10 @@ import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -69,7 +73,7 @@ public class AnalysisParserTest {
     private Set<FrequencySource> frequencySources;
     private Set<PathogenicitySource> pathogenicitySources;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory.buildDefaultHg19GenomeAnalysisService());
@@ -86,7 +90,6 @@ public class AnalysisParserTest {
                 + "    vcf: test.vcf\n"
                 + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
-//                + "    modeOfInheritance: [AUTOSOMAL_DOMINANT]\n"
                 + "    inheritanceModes: {\n" +
                 "            AUTOSOMAL_DOMINANT: 0.1,\n" +
                 "            AUTOSOMAL_RECESSIVE_HOM_ALT: 1.0,\n" +
@@ -110,7 +113,7 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis(""));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
-        assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
         assertThat(analysis.getProbandSampleName(), equalTo(""));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
@@ -120,12 +123,13 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps().isEmpty(), is(true));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void throwsExceptionWhenNoVcfIsSet() {
-        instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: \n"
-        );
+        ));
     }
 
     @Test
@@ -133,9 +137,19 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    ped: test.ped\n"
+                        + "    ped: " + TestPedigrees.trioWithChildAffectedPedPath() +"\n"
                         + "    ");
-        assertThat(analysis.getPedPath(), equalTo(Paths.get("test.ped")));
+        assertThat(analysis.getPedigree(), equalTo(TestPedigrees.trioChildAffected()));
+    }
+
+    @Test
+    public void testParseAnalysisPedPathEmpty() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ped: ''\n"
+                        + "    ");
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
     }
 
     @Test
@@ -159,6 +173,27 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisPassOnlyAnalysisMode() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    analysisMode: PASS_ONLY \n"
+                        + "    ");
+        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+    }
+
+    @Test
+    public void testParseAnalysisSparseAnalysisModeReturnsPassOnlyDefault() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    analysisMode: SPARSE \n"
+                        + "    ");
+        // AnalysisMode.SPARSE was removed in version 11.0.0
+        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+    }
+
+    @Test
     public void testParseAnalysisNotSettingGenomeBuildReturnsDefault() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
@@ -167,13 +202,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
     }
 
-    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    @Test
     public void testParseAnalysisThrowsExceptionForUnsupportedGenomeBuild() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(UnsupportedGenomeAssemblyException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    genomeAssembly: hg38\n"
-                        + "    ");
+                        + "    ")
+        );
     }
 
     @Test
@@ -213,13 +250,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
     }
 
-    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
+    @Test
     public void testParseAnalysisUnrecognisedGenomeBuild() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    genomeAssembly: invalid\n"
-                        + "    ");
+                        + "    ")
+        );
     }
 
     @Test
@@ -236,7 +275,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseAnalysisModeOfInheritanceRemovesAny() {
+    public void testParseAnalysisModeOfInheritanceMultipleModes() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
@@ -246,7 +285,10 @@ public class AnalysisParserTest {
                         + "}\n"
                         + "    ");
 
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f,
+                SubModeOfInheritance.ANY, 0.1f
+        );
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
@@ -260,13 +302,15 @@ public class AnalysisParserTest {
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisModeOfInheritanceUserUsesWrongValue() {
-        Analysis analysis = instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+            instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    modeOfInheritance: AD\n"
-                        );
+                        )
+        );
     }
 
     /**
@@ -337,9 +381,11 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testThrowsExceptionWithUnexpectedTokenForIntervalFilter() {
-        instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bod: src/test/resources/intervals.bed}"));
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("intervalFilter: {bod: src/test/resources/intervals.bed}"))
+        );
     }
 
     @Test
@@ -363,9 +409,11 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepVariantEffectFilterillegalVariantEffect() {
-        instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [WIBBLE]}"));
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [WIBBLE]}"))
+        );
     }
 
     @Test
@@ -375,7 +423,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepFrequencyFilterNoFrequencySourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -383,8 +431,10 @@ public class AnalysisParserTest {
                 + "    steps: ["
                 + "        frequencyFilter: {maxFrequency: 1.0}\n"
                 + "]";
-                
-        instance.parseAnalysis(script);
+
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(script)
+        );
     }
 
     @Test
@@ -394,7 +444,14 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
+    public void testParseAnalysisStepFrequencyFilterNoMaxFreqDefined() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {}"));
+        analysisSteps.add(new FrequencyFilter(2.0f));
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
     public void testParseAnalysisStepPathogenicityFilterNoPathSourcesDefined() {
         String script = "analysis:\n"
                 + "    vcf: test.vcf\n"
@@ -402,8 +459,10 @@ public class AnalysisParserTest {
                 + "    steps: ["
                 + "        pathogenicityFilter: {keepNonPathogenic: false}\n"
                 + "]";
-                
-        instance.parseAnalysis(script);
+
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(script)
+        );
     }
 
     @Test
@@ -425,7 +484,6 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
-//                + "    modeOfInheritance: UNINITIALIZED\n"
                 + "    inheritanceModes: {}\n"
                 + "    hpoIds: []\n"
                 + "    analysisMode: PASS_ONLY \n"
@@ -438,13 +496,14 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseAnalysisStepInheritanceFilterUnrecognisedValue() {
-        instance.parseAnalysis(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-//                        + "    modeOfInheritance: [WIBBLE!]"
                         + "    inheritanceModes: {WIBBLE: 0.0}\n"
+                )
         );
     }
 
@@ -465,7 +524,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStepHiPhivePrioritiserWithDefaultOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -486,9 +545,14 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStepPhenixPrioritiser() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
-        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+        //Temporarily disabled until we have up-to-date data.
+//        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
+//        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
+//        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"))
+        );
     }
 
     @Test
@@ -505,7 +569,7 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(Paths.get("src/test/resources/analysisExample.yml"));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
-        assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getPedigree(), equalTo(Pedigree.empty()));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaultForModes(modeOfInheritance)));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
@@ -519,7 +583,7 @@ public class AnalysisParserTest {
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
         analysisSteps.add(priorityFactory.makeOmimPrioritiser());
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.builder()
                 .diseaseId("OMIM:101600")
                 .candidateGeneSymbol("FGFR2")
@@ -528,21 +592,27 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
-    @Test(expected = AnalysisFileNotFoundException.class)
+    @Test
     public void testParseAnalysisNonExistentFile() {
-        instance.parseAnalysis(Paths.get("src/test/resources/wibble"));
+        assertThrows(AnalysisFileNotFoundException.class, () ->
+                instance.parseAnalysis(Paths.get("src/test/resources/wibble"))
+        );
     }
 
-    @Test(expected = AnalysisFileNotFoundException.class)
+    @Test
     public void testParseOutputSettingsNonExistentFile() {
-        instance.parseOutputSettings(Paths.get("src/test/resources/wibble"));
+        assertThrows(AnalysisFileNotFoundException.class, () ->
+                instance.parseOutputSettings(Paths.get("src/test/resources/wibble"))
+        );
     }
 
-    @Test(expected = AnalysisParserException.class)
+    @Test
     public void testParseOutputSettingsOutputPassVariantsOnlyThrowsExceptionWithNoValue() {
-        instance.parseOutputSettings(
+        assertThrows(AnalysisParserException.class, () ->
+                instance.parseOutputSettings(
                 "outputOptions:\n"
-                + "    outputPassVariantsOnly: ");
+                + "    outputPassVariantsOnly: ")
+        );
     }
 
     @Test
@@ -553,7 +623,7 @@ public class AnalysisParserTest {
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
                 + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
-        assertThat(outputSettings.outputPassVariantsOnly(), is(true));
+        assertThat(outputSettings.outputContributingVariantsOnly(), is(true));
     }
 
     @Test
@@ -585,8 +655,8 @@ public class AnalysisParserTest {
                 + "    outputPassVariantsOnly: true\n"
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
-                + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
-        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
+                + "    outputFormats: [HTML, JSON, TSV-GENE, TSV-VARIANT, VCF]\n");
+        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
         assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
     }
 
@@ -618,7 +688,7 @@ public class AnalysisParserTest {
     public void testParseOutputSettings() {
         OutputSettings outputSettings = instance.parseOutputSettings(Paths.get("src/test/resources/analysisExample.yml"));
         OutputSettings expected = OutputSettings.builder()
-                .outputPassVariantsOnly(false)
+                .outputContributingVariantsOnly(false)
                 .numberOfGenesToShow(0)
                 .outputPrefix("results/Pfeiffer-hiphive")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.HTML))

@@ -21,12 +21,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,20 +32,12 @@ import java.util.TreeMap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class DataMatrixIOTest {
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @After
-    public void tearDown() {
-        tempFolder.delete();
-    }
 
     private final DataMatrix dataMatrix = loadMatrix();
 
@@ -101,13 +89,13 @@ public class DataMatrixIOTest {
         String indexPath = dataPath + "test_ppi_matrix_id2index.gz";
         String matrixPath = dataPath + "test_ppi_matrix.gz";
 
-        File matrixMapFile = tempFolder.newFile("test_ppi_matrix.mv");
-        DataMatrixIO.convertToMap(matrixPath, indexPath, matrixMapFile.toPath());
+        Path matrixMapFile = Files.createTempFile("test_ppi_matrix", ".mv");
+        DataMatrixIO.convertToMap(matrixPath, indexPath, matrixMapFile);
 
         // load the in memory version first as this copies all the data and closes the map otherwise it will throw an
         // IllegalStateException caused by an OverlappingFileLockException
-        DataMatrix inMemoryMapMatrix = DataMatrixIO.loadInMemoryDataMatrix(matrixMapFile.toPath());
-        DataMatrix offHeapMapMatrix = DataMatrixIO.loadOffHeapDataMatrix(matrixMapFile.toPath());
+        DataMatrix inMemoryMapMatrix = DataMatrixIO.loadInMemoryDataMatrix(matrixMapFile);
+        DataMatrix offHeapMapMatrix = DataMatrixIO.loadOffHeapDataMatrix(matrixMapFile);
 
         DataMatrix fromFile = DataMatrixIO.loadInMemoryDataMatrixFromFile(matrixPath, indexPath, true);
 

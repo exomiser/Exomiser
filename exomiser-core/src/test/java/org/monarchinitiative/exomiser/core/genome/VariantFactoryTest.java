@@ -25,18 +25,17 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
-import de.charite.compbio.jannovar.data.SerializationException;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
+import org.monarchinitiative.exomiser.core.model.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +46,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -57,8 +56,7 @@ public class VariantFactoryTest {
     private final VariantFactory instance;
 
     public VariantFactoryTest() {
-        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
-                .buildDefaultJannovarData());
+        VariantAnnotator variantAnnotator = TestFactory.buildDefaultVariantAnnotator();
         instance = new VariantFactoryImpl(variantAnnotator);
     }
 
@@ -146,6 +144,7 @@ public class VariantFactoryTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         System.out.println(variantEvaluation);
+
         assertThat(variantEvaluation.getChromosome(), equalTo(10));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("10"));
         assertThat(variantEvaluation.getPosition(), equalTo(123256215));
@@ -156,6 +155,7 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getGeneId(), equalTo("2263"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF))));
     }
 
     @Test
@@ -178,6 +178,7 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getGeneId(), equalTo(""));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("."));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT))));
     }
 
     /**
@@ -203,6 +204,7 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getGeneId(), equalTo("9939"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT))));
     }
 
     @Test
@@ -223,6 +225,8 @@ public class VariantFactoryTest {
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variant = variants.get(0);
+        assertThat(variant.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT))));
     }
 
     @Test
@@ -233,6 +237,8 @@ public class VariantFactoryTest {
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(2));
+        assertThat(variants.get(0).getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.ALT))));
+        assertThat(variants.get(1).getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.ALT))));
     }
 
     @Test
@@ -255,7 +261,12 @@ public class VariantFactoryTest {
         assertThat(firstAllele.getGeneId(), equalTo("9939"));
         assertThat(firstAllele.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(firstAllele.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
-
+        assertThat(firstAllele.getSampleGenotypes(), equalTo(
+                ImmutableMap.of(
+                        "Sample1", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT),
+                        "Sample2", SampleGenotype.of(AlleleCall.REF, AlleleCall.OTHER_ALT)
+                ))
+        );
 
         VariantEvaluation secondAllele = variants.get(1);
         System.out.println(secondAllele);
@@ -269,6 +280,12 @@ public class VariantFactoryTest {
         assertThat(secondAllele.getGeneId(), equalTo("9939"));
         assertThat(secondAllele.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(secondAllele.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(secondAllele.getSampleGenotypes(), equalTo(
+                ImmutableMap.of(
+                        "Sample1", SampleGenotype.of(AlleleCall.REF, AlleleCall.OTHER_ALT),
+                        "Sample2", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)
+                ))
+        );
     }
 
     @Test
@@ -291,12 +308,18 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getGeneId(), equalTo("9939"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(
+                ImmutableMap.of(
+                        "Sample1", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT),
+                        "Sample2", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)
+                ))
+        );
     }
 
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testGenome() {
 
@@ -312,7 +335,8 @@ public class VariantFactoryTest {
         System.out.println("Read " + numVariants + " variants");
 
 
-        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData());
+        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
+                .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         long numJannovarVariants;
@@ -353,11 +377,7 @@ public class VariantFactoryTest {
     }
 
     private JannovarData loadJannovarData() {
-        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/data/1707_hg19/1707_hg19_transcripts_ucsc.ser");
-        try {
-            return new JannovarDataSerializer(transcriptFilePath.toString()).load();
-        } catch (SerializationException e) {
-            throw new RuntimeException("Could not load Jannovar data from " + transcriptFilePath, e);
-        }
+        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1806_hg19/1806_hg19_transcripts_ucsc.ser");
+        return JannovarDataProtoSerialiser.load(transcriptFilePath);
     }
 }

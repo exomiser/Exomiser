@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
@@ -53,6 +54,44 @@ public class SampleGenotype {
 
     public static SampleGenotype empty() {
         return EMPTY;
+    }
+
+    /**
+     * Returns an instance representing an unphased diploid no-call genotype e.g. ./.
+     * @return an unphased diploid no-call SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype noCall() {
+        return UNPHASED_DIPLOID_NO_CALL;
+    }
+
+    /**
+     * Returns an instance representing an unphased diploid heterozygous genotype e.g. 0/1
+     * @return an unphased diploid heterozygous SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype het() {
+        return UNPHASED_DIPLOID_HET;
+    }
+
+
+    /**
+     * Returns an instance representing an unphased diploid homozygous reference genotype e.g. 0/0
+     * @return an unphased diploid homozygous reference SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype homRef() {
+        return UNPHASED_DIPLOID_HOM_REF;
+    }
+
+
+    /**
+     * Returns an instance representing an unphased homozygous alternate genotype e.g. 1/1
+     * @return an unphased diploid homozygous alternate SampleGenotype
+     * @since 11.0.0
+     */
+    public static SampleGenotype homAlt() {
+        return UNPHASED_DIPLOID_HOM_ALT;
     }
 
     public static SampleGenotype of(AlleleCall... alleleCalls) {
@@ -104,6 +143,78 @@ public class SampleGenotype {
 
     public List<AlleleCall> getCalls() {
         return ImmutableList.copyOf(alleleCalls);
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is heterozygous.
+     *
+     * @return true if the genotype is heterozygous, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isHet() {
+        if (alleleCalls.length <= 1) {
+            return false;
+        }
+        AlleleCall first = alleleCalls[0];
+        for (int i = 1; i < alleleCalls.length; i++) {
+            AlleleCall current = alleleCalls[i];
+            if (first != current) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is homozygous for the reference allele.
+     *
+     * @return true if the genotype is homozygous ref, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isHomRef() {
+        if (alleleCalls.length == 0) {
+            return false;
+        }
+        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
+            AlleleCall alleleCall = alleleCalls[i];
+            if (alleleCall == AlleleCall.ALT || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is homozygous for the alternate allele.
+     *
+     * @return true if the genotype is homozygous alt, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isHomAlt() {
+        if (alleleCalls.length == 0) {
+            return false;
+        }
+        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
+            AlleleCall alleleCall = alleleCalls[i];
+            if (alleleCall == AlleleCall.REF || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests whether the current {@link SampleGenotype} is phased.
+     *
+     * @return true if the genotype is phased, otherwise false
+     * @since 11.0.0
+     */
+    @JsonIgnore
+    public boolean isPhased() {
+        return phased;
     }
 
     @Override

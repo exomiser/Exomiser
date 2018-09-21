@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -68,13 +68,6 @@ public class ExomiserTest {
     @Test
     public void canRunAnalysisFull() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
-        AnalysisResults analysisResults = instance.run(analysis);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
-    }
-    
-    @Test
-    public void canRunAnalysisSparse() {
-        Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
         AnalysisResults analysisResults = instance.run(analysis);
         assertThat(analysisResults.getGenes().size(), equalTo(2));
     }

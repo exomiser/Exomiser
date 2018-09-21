@@ -24,9 +24,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import org.junitpioneer.jupiter.TempDirectory.TempDir;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -58,9 +60,6 @@ import static org.junit.Assert.assertThat;
 public class MvStoreAlleleIndexerTest {
 
     private static Logger logger = LoggerFactory.getLogger(MvStoreAlleleIndexerTest.class);
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private MVStore newMvStore() {
         // open the store (in-memory if fileName is null)
@@ -162,6 +161,35 @@ public class MvStoreAlleleIndexerTest {
         allele.addValue(AlleleProperty.KG, 0.0023f);
 
         instance.writeAllele(allele);
+
+        assertThat(instance.count(), equalTo(1L));
+
+        MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
+
+        AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
+        AlleleProperties alleleProperties = AlleleConverter.toAlleleProperties(allele);
+
+        assertThat(alleleMap.containsKey(alleleKey), is(true));
+        assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
+    }
+
+    @Test
+    public void writeDuplicateSingleAllele() throws Exception {
+        MVStore mvStore = newMvStore();
+
+        MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
+
+        Allele allele = new Allele(1, 12345, "A", "T");
+        allele.setRsId("rs12345");
+        allele.addValue(AlleleProperty.KG, 0.0023f);
+
+        instance.writeAllele(allele);
+
+        Allele dupAllele = new Allele(1, 12345, "A", "T");
+        dupAllele.setRsId("rs12345");
+        dupAllele.addValue(AlleleProperty.KG, 0.0023f);
+
+        instance.writeAllele(dupAllele);
 
         assertThat(instance.count(), equalTo(1L));
 
@@ -366,11 +394,12 @@ public class MvStoreAlleleIndexerTest {
 
 
     @Test
-    public void processAndWriteToDisk() throws Exception {
+    @ExtendWith(TempDirectory.class)
+    public void processAndWriteToDisk(@TempDir Path tempDir) throws Exception {
         AlleleArchive dbsnpArchive = new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
         AlleleResource dbSnpResource = new AlleleResource("test_first_ten_dbsnp", dbsnpArchive, new DbSnpAlleleParser());
 
-        File mvTestFile = temporaryFolder.newFile("test.mv.db");
+        File mvTestFile = tempDir.resolve("test.mv.db").toFile();
         logger.info("Writing allele data to file {}", mvTestFile);
         MVStore mvStore = new MVStore.Builder()
                 .fileName(mvTestFile.getAbsolutePath())
@@ -409,6 +438,8 @@ public class MvStoreAlleleIndexerTest {
         assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10077, "C", "G").getRsId(), equalTo("rs1022805358"));
         assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10109, "A", "T").getRsId(), equalTo("rs376007522"));
         assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10108, "C", "T").getRsId(), equalTo("rs62651026"));
+
+        reOpened.close();
     }
 
     private AlleleProperties getAlleleProperties(MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap, int chr, int pos, String ref, String alt) {

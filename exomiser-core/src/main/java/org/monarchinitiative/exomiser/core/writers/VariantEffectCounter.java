@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,16 +31,19 @@ import java.util.*;
 
 public class VariantEffectCounter {
 
-    /**
-     * counter for each variant effect
-     */
-    private final List<Map<VariantEffect, Integer>> counters;
+    private final int numSamples;
+    private final List<Map<VariantEffect, Integer>> sampleVariantEffectCounts;
 
-    VariantEffectCounter(int numSamples) {
-        this.counters = new ArrayList<>();
+    public VariantEffectCounter(List<String> sampleNames, List<VariantEvaluation> variantEvaluations) {
+        numSamples = sampleNames.size();
+        sampleVariantEffectCounts = new ArrayList<>();
         for (int i = 0; i < numSamples; ++i) {
-            counters.add(new EnumMap<>(VariantEffect.class));
+            sampleVariantEffectCounts.add(new EnumMap<>(VariantEffect.class));
         }
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            put(variantEvaluation);
+        }
+
     }
 
     /**
@@ -48,13 +51,14 @@ public class VariantEffectCounter {
      *
      * @param variant
      */
-    public void put(VariantEvaluation variant) {
+    private void put(VariantEvaluation variant) {
         VariantEffect effect = variant.getVariantEffect();
         if (effect == null) {
             return;
         }
+
+        //TODO could use variant.getSampleGenotypes()
         VariantContext variantContext = variant.getVariantContext();
-        int numSamples = variant.getNumberOfIndividuals();
         for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             final Genotype gt = variantContext.getGenotype(sampleIdx);
             if (gt.getAlleles().size() != 2) {
@@ -71,41 +75,42 @@ public class VariantEffectCounter {
                 // does not have correct alternative allele
                 continue;
             }
-            if (!counters.get(sampleIdx).containsKey(effect)) {
-                counters.get(sampleIdx).put(effect, 1);
+            if (!sampleVariantEffectCounts.get(sampleIdx).containsKey(effect)) {
+                sampleVariantEffectCounts.get(sampleIdx).put(effect, 1);
             } else {
-                counters.get(sampleIdx).put(effect, counters.get(sampleIdx).get(effect) + 1);
+                sampleVariantEffectCounts.get(sampleIdx).put(effect, sampleVariantEffectCounts.get(sampleIdx).get(effect) + 1);
             }
         }
     }
 
-    /**
-     * @return map with the frequency for all variant effects in the map for
-     * each individual
-     */
-    public List<Map<VariantEffect, Integer>> getFrequencyMap() {
-        ImmutableList.Builder<Map<VariantEffect, Integer>> builder = new ImmutableList.Builder<>();
+    public List<VariantEffectCount> getVariantEffectCounts(Set<VariantEffect> variantEffects) {
+        Set<VariantEffect> effects = EnumSet.copyOf(variantEffects);
 
-        int sampleIdx = 0;
-        for (Map<VariantEffect, Integer> map : counters) {
-            ImmutableMap.Builder<VariantEffect, Integer> builder2 = new ImmutableMap.Builder<>();
-            for (Map.Entry<VariantEffect, Integer> entry : counters.get(sampleIdx).entrySet()) {
-                builder2.put(entry.getKey(), map.get(entry.getKey()));
-            }
-            builder.add(builder2.build());
-            ++sampleIdx;
+        List<Map<VariantEffect, Integer>> freqMaps = getFrequencyMap(variantEffects);
+        for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
+            effects.addAll(freqMaps.get(sampleIdx).keySet());
         }
-        return builder.build();
+
+        List<VariantEffectCount> result = new ArrayList<>();
+        for (VariantEffect effect : effects) {
+            List<Integer> typeSpecificCounts = new ArrayList<>();
+            for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
+                typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
+            }
+            result.add(new VariantEffectCount(effect, typeSpecificCounts));
+        }
+
+        return result;
     }
 
     /**
      * @return map with the frequency for the <code>effects</code> for each
      * individual
      */
-    public List<Map<VariantEffect, Integer>> getFrequencyMap(Collection<VariantEffect> effects) {
-        ImmutableList.Builder<Map<VariantEffect, Integer>> listBuilder = new ImmutableList.Builder<>();
+    private List<Map<VariantEffect, Integer>> getFrequencyMap(Collection<VariantEffect> effects) {
 
-        for (Map<VariantEffect, Integer> map : counters) {
+        ImmutableList.Builder<Map<VariantEffect, Integer>> listBuilder = new ImmutableList.Builder<>();
+        for (Map<VariantEffect, Integer> map : sampleVariantEffectCounts) {
             Map<VariantEffect, Integer> counters2 = new EnumMap<>(VariantEffect.class);
             for (VariantEffect effect : effects) {
                 counters2.put(effect, 0);
@@ -128,5 +133,4 @@ public class VariantEffectCounter {
         }
         return listBuilder.build();
     }
-
 }

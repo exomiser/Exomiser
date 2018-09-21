@@ -48,7 +48,7 @@ public class DefaultFrequencyDaoMvStoreProto implements FrequencyDao {
     @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        AlleleKey key = MvStoreUtil.generateAlleleKey(variant);
+        AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties alleleProperties = map.getOrDefault(key, AlleleProperties.getDefaultInstance());
         logger.debug("{} {}", key, alleleProperties);
         return AlleleProtoAdaptor.toFrequencyData(alleleProperties);

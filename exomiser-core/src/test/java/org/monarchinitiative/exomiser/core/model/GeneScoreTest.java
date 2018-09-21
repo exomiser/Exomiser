@@ -21,8 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -132,7 +131,7 @@ public class GeneScoreTest {
 
         geneScores.sort(GeneScore::compareTo);
 
-        Assert.assertThat(geneScores, equalTo(Arrays.asList(one, two, three, four, five, six)));
+        assertThat(geneScores, equalTo(Arrays.asList(one, two, three, four, five, six)));
     }
 
     @Test

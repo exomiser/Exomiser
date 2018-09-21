@@ -79,6 +79,14 @@ with
 
     exomiser.data-directory=/full/path/to/alternative/data/directory
 
+
+## Running from alternate directory
+
+If you're running the exomiser from a different directory to the one the ```exomiser-cli-${project.version}.jar``` is located you'll need to add the command 
+
+    --spring.config.location=/full/path/to/your/exomiser-cli/directory
+    
+to the end of your command-line arguments. *n.b.* the ```spring.config.location``` command *must be the last argument in the input commands*  
 ## <a name="usage"></a>Usage
 
 The Exomiser can be run via simply via a yaml analysis file. The extended cli capability was removed in version 10.0.0 as this was less capable than the yaml scripts and only supported hg19 exome analysis.

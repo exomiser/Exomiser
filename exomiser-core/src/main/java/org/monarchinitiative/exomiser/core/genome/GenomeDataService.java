@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.analysis.util.ChromosomalRegionIndex;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.model.*;
 
 import java.util.List;
 import java.util.Set;
@@ -41,12 +37,12 @@ public interface GenomeDataService {
     public List<RegulatoryFeature> getRegulatoryFeatures();
 
     public default ChromosomalRegionIndex<RegulatoryFeature> getRegulatoryRegionIndex() {
-        return new ChromosomalRegionIndex<>(getRegulatoryFeatures());
+        return ChromosomalRegionIndex.of(getRegulatoryFeatures());
     }
 
     public List<TopologicalDomain> getTopologicallyAssociatedDomains();
 
     public default ChromosomalRegionIndex<TopologicalDomain> getTopologicallyAssociatedDomainIndex() {
-        return new ChromosomalRegionIndex<>(getTopologicallyAssociatedDomains());
+        return ChromosomalRegionIndex.of(getTopologicallyAssociatedDomains());
     }
 }

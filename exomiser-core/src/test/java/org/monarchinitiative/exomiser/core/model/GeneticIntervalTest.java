@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,13 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -50,7 +50,7 @@ public class GeneticIntervalTest {
 
     ReferenceDictionary refDict;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new GeneticInterval(CHR, START, END);
         refDict = HG19RefDictBuilder.build();
@@ -105,52 +105,52 @@ public class GeneticIntervalTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorOnMissingChromosomePrefix() {
         String interval = "3:123-456";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorOnIncorrectChromosomeNumber() {
         String interval = "chr33:123-456";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorOnAnotherIncorrectChromosomeNumber() {
         String interval = "chr666:123-456";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorOnUndefinedStart() {
         String interval = "chr6:-456";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorOnUndefinedEnd() {
         String interval = "chr6:123-";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorWithIncorrectPositionDelimiter() {
         String interval = "chr6:123:456";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testParseStringThrowsErrorWithSwitchedPositions() {
         String interval = "chr6:456:123";
-        GeneticInterval.parseString(refDict, interval);
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(refDict, interval));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructorThrowsErrorWhenEndDefinedBeforeStart() {
-        GeneticInterval interval = new GeneticInterval(CHR, END, START);
+        assertThrows(IllegalArgumentException.class, () -> new GeneticInterval(CHR, END, START));
     }
 
     @Test
@@ -172,7 +172,7 @@ public class GeneticIntervalTest {
     public void testHashCode() {
         int expResult = new GeneticInterval(CHR, START, END).hashCode();
         int result = instance.hashCode();
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(expResult));
     }
 
     @Test

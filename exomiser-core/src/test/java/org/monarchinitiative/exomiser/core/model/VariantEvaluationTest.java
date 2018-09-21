@@ -25,14 +25,15 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -45,8 +46,9 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -98,7 +100,7 @@ public class VariantEvaluationTest {
     private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
     private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = newInstance();
     }
@@ -136,12 +138,11 @@ public class VariantEvaluationTest {
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
-        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .genomeAssembly("wibble")
-                .build();
-        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        );
     }
 
     @Test
@@ -177,6 +178,26 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    void testGeneSymbolCannotBeNull() {
+        assertThrows(NullPointerException.class, () ->
+                testVariantBuilder()
+                .geneSymbol(null)
+                        .build()
+        );
+
+    }
+
+    @Test
+    void testGeneSymbolCannotBeEmpty() {
+        Throwable throwable = assertThrows(IllegalArgumentException.class, () ->
+                testVariantBuilder()
+                        .geneSymbol("")
+                        .build()
+        );
+        assertThat(throwable.getMessage(), containsString("Variant gene symbol cannot be empty"));
+    }
+
+    @Test
     public void testGetGeneSymbol() {
         assertThat(instance.getGeneSymbol(), equalTo(GENE1_GENE_SYMBOL));
     }
@@ -196,20 +217,45 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetNumIndividualsEqualsOneIfNotSet() {
-        assertThat(instance.getNumberOfIndividuals(), equalTo(1));
-    }
-
-    @Test
-    public void testGetNumIndividualsEqualsBuilderValue() {
-        int builderValue = 2;
-        instance = testVariantBuilder().numIndividuals(builderValue).build();
-        assertThat(instance.getNumberOfIndividuals(), equalTo(builderValue));
-    }
-
-    @Test
     public void canGetGeneId() {
         assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
+    }
+
+    @Test
+    void testSampleGenotypesCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .sampleGenotypes(null)
+                .build()
+        );
+    }
+
+    @Test
+    void testSampleGenotypeEmptyIsReplacedWithDefault() {
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .sampleGenotypes(Collections.emptyMap())
+                .build();
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(VariantEvaluation.Builder.SINGLE_SAMPLE_HET_GENOTYPE));
+    }
+
+    @Test
+    public void testSampleGenotypes() {
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT));
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotypes(), equalTo(sampleGenotypes));
+    }
+
+    @Test
+    public void testGetSampleGenotype() {
+        SampleGenotype sampleGenotype = SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT);
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", sampleGenotype);
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotype("Zaphod"), equalTo(sampleGenotype));
+        assertThat(instance.getSampleGenotype("Nemo"), equalTo(SampleGenotype.empty()));
     }
 
     @Test
@@ -220,6 +266,14 @@ public class VariantEvaluationTest {
 
         variantEvaluation.setVariantEffect(VariantEffect.MISSENSE_VARIANT);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+    }
+
+    @Test
+    void testsTranscriptAnnotationsCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .annotations(null)
+                .build()
+        );
     }
 
     @Test
@@ -601,7 +655,6 @@ public class VariantEvaluationTest {
         assertThat(builtContext.getNAlleles(), equalTo(2));
         assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
         assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
-        assertThat(builtContext.getNSamples(), equalTo(instance.getNumberOfIndividuals()));
     }
 
     @Test
@@ -773,14 +826,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

@@ -25,11 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -41,7 +41,7 @@ public class PolyPhenScoreTest {
     private final float pathogenicScore = 1f;
     private final float nonPathogenicScore = 0f;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = PolyPhenScore.valueOf(pathogenicScore);
     }

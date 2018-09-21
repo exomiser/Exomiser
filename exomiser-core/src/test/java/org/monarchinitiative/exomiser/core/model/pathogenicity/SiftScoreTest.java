@@ -26,11 +26,12 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -109,11 +110,10 @@ public class SiftScoreTest {
         assertThat(sift.compareTo(equalScoreSift), equalTo(EQUALS));
     }
     
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCompareToAfterAgainstNullSiftScoreThrowsNullPointer() {
         SiftScore pathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore nonPathogenic = null;
-        assertThat(pathogenic.compareTo(nonPathogenic), equalTo(MORE_PATHOGENIC));
+        assertThrows(NullPointerException.class, () -> pathogenic.compareTo(null));
     }
     
     @Test

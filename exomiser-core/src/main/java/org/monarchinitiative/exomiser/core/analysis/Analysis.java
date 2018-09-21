@@ -35,6 +35,7 @@ import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
@@ -56,7 +57,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
-@JsonPropertyOrder({"vcf", "genomeAssembly", "ped", "proband", "hpoIds", "inheritanceModes", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
+@JsonPropertyOrder({"vcf", "genomeAssembly", "pedigree", "proband", "hpoIds", "inheritanceModes", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
@@ -64,9 +65,9 @@ public class Analysis {
     //Store the path of the file used to create this data.
     @JsonProperty("vcf")
     private final Path vcfPath;
-    //there is often no pedigree. 
-    @JsonProperty("ped")
-    private final Path pedPath;
+    //there is often no pedigree.
+    private final Pedigree pedigree;
+
     @JsonProperty("proband")
     private final String probandSampleName;
 
@@ -86,7 +87,7 @@ public class Analysis {
     private Analysis(Builder builder) {
         this.vcfPath = builder.vcfPath;
         this.genomeAssembly = builder.genomeAssembly;
-        this.pedPath = builder.pedPath;
+        this.pedigree = builder.pedigree;
         this.probandSampleName = builder.probandSampleName;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
         this.inheritanceModeOptions = builder.inheritanceModeOptions;
@@ -105,8 +106,14 @@ public class Analysis {
         return genomeAssembly;
     }
 
-    public Path getPedPath() {
-        return pedPath;
+    /**
+     * Returns the {@link Pedigree} used in this {@link Analysis}.
+     *
+     * @return a pedigree object used for this analysis
+     * @since 11.0.0
+     */
+    public Pedigree getPedigree() {
+        return pedigree;
     }
 
     public String getProbandSampleName() {
@@ -205,11 +212,11 @@ public class Analysis {
         return builder()
                 .vcfPath(vcfPath)
                 .genomeAssembly(genomeAssembly)
-                .pedPath(pedPath)
+                .pedigree(pedigree)
                 .probandSampleName(probandSampleName)
                 .hpoIds(hpoIds)
-                .inheritanceModeOptions(inheritanceModeOptions)
 
+                .inheritanceModeOptions(inheritanceModeOptions)
                 .analysisMode(analysisMode)
                 .frequencySources(frequencySources)
                 .pathogenicitySources(pathogenicitySources)
@@ -221,13 +228,13 @@ public class Analysis {
         private Path vcfPath = null;
         private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
         //there is often no pedigree.
-        private Path pedPath = null;
+        private Pedigree pedigree = Pedigree.empty();
         private String probandSampleName = "";
         //these are more optional variables
         private List<String> hpoIds = new ArrayList<>();
-        private InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.empty();
 
         private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
+        private InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.empty();
         private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
         private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
         private List<AnalysisStep> analysisSteps = new ArrayList<>();
@@ -251,8 +258,16 @@ public class Analysis {
             return this;
         }
 
-        public Builder pedPath(Path pedPath) {
-            this.pedPath = pedPath;
+        /**
+         * Sets the {@link Pedigree} for use in this analysis. The object supplied cannot be null.
+         * @param pedigree pedigree of the individual(s) listed in the VCF file for this analysis.
+         * @return the current Builder object
+         * @since 11.0.0
+         * @throws NullPointerException when supplied with a null input value
+         */
+        public Builder pedigree(Pedigree pedigree) {
+            Objects.requireNonNull(pedigree, "pedigree cannot be null");
+            this.pedigree = pedigree;
             return this;
         }
 
@@ -312,7 +327,7 @@ public class Analysis {
         Analysis analysis = (Analysis) o;
         return Objects.equals(vcfPath, analysis.vcfPath) &&
                 Objects.equals(genomeAssembly, analysis.genomeAssembly) &&
-                Objects.equals(pedPath, analysis.pedPath) &&
+                Objects.equals(pedigree, analysis.pedigree) &&
                 Objects.equals(probandSampleName, analysis.probandSampleName) &&
                 Objects.equals(hpoIds, analysis.hpoIds) &&
                 inheritanceModeOptions == analysis.inheritanceModeOptions &&
@@ -324,11 +339,11 @@ public class Analysis {
 
     @Override
     public int hashCode() {
-        return Objects.hash(vcfPath, genomeAssembly, pedPath, probandSampleName, hpoIds, inheritanceModeOptions, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
+        return Objects.hash(vcfPath, genomeAssembly, pedigree, probandSampleName, hpoIds, inheritanceModeOptions, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
     }
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", genomeAssembly=" + genomeAssembly + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", inheritanceModeOptions=" + inheritanceModeOptions + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", genomeAssembly=" + genomeAssembly + ", pedigree=" + pedigree + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", inheritanceModeOptions=" + inheritanceModeOptions + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 }

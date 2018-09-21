@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -65,12 +64,9 @@ public class MGIPhenotypeParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
         Map<String, Set<String>> mouse2PhenotypeMap = new HashMap<>();
-        //Map<String, String> mouse2geneMap = new HashMap<>();
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
-                //logger.info("Line is " + line);
                 String[] fields = line.split("\\t");
                 String mpId = fields[4];
                 String modelID = fields[0] + fields[3];
@@ -83,15 +79,10 @@ public class MGIPhenotypeParser implements ResourceParser {
                     mouse2PhenotypeMap.put(modelID, mpIds);
                 }
             }
-            int id = 1;
-            for (String modelId : mouse2PhenotypeMap.keySet()) {
-                Set<String> mpIds = mouse2PhenotypeMap.get(modelId);
+            for (Map.Entry<String, Set<String>> entry : mouse2PhenotypeMap.entrySet()) {
+                String modelId = entry.getKey();
+                Set<String> mpIds = entry.getValue();
                 mouse2PhenotypesMap.put(modelId, Joiner.on(",").join(mpIds));
-                //String[] mgiIds = mouse2geneMap.get(modelId).split(",");
-                //for (String mgiID : mgiIds) {
-                //writer.write(String.format("%s|%s|%s|%s%n", mgiID, "", id, Joiner.on(",").join(mpIds)));
-                //}
-                id++;
             }
             status = ResourceOperationStatus.SUCCESS;
 

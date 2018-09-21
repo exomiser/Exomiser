@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.genome.dao.*;

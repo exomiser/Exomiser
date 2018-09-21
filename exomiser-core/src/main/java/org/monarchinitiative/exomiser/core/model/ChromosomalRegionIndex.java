@@ -18,16 +18,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
 import de.charite.compbio.jannovar.impl.intervals.IntervalEndExtractor;
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
-import org.monarchinitiative.exomiser.core.model.VariantCoordinates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Interval tree-backed index for chromosomal regions. It enables extremely fast in-memory lookups to find the regions
@@ -37,48 +39,61 @@ import java.util.*;
  */
 public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
+    private static final ChromosomalRegionIndex EMPTY = new ChromosomalRegionIndex<>(ImmutableMap.of());
+
     private static final Logger logger = LoggerFactory.getLogger(ChromosomalRegionIndex.class);
 
     private final Map<Integer, IntervalArray<T>> index;
 
-    public ChromosomalRegionIndex(Collection<T> chromosomalRegions) {
-        this.index = populateIndex(chromosomalRegions);
+    private ChromosomalRegionIndex(Map<Integer, IntervalArray<T>> index) {
+        this.index = index;
     }
 
-    private Map<Integer, IntervalArray<T>> populateIndex(Collection<T> chromosomalRegions) {
-        Map<Integer, Set<T>> regionIndex = createRegionIndex(chromosomalRegions);
-        Map<Integer, IntervalArray<T>> intervalTreeIndex = createChromosomeIntervalTreeIndex(regionIndex);
-        logger.debug("Created index for {} chromosomes totalling {} regions", intervalTreeIndex.keySet().size(), chromosomalRegions.size());
-        return intervalTreeIndex;
-    }
+    /**
+     * Static constructor for creating a {@link ChromosomalRegionIndex} from a collection of {@link ChromosomalRegion}
+     * objects of a given type.
+     *
+     * @param chromosomalRegions The {@link ChromosomalRegion} objects to add to the index
+     * @param <T> The type of {@link ChromosomalRegion} this index contains
+     * @return a {@link ChromosomalRegionIndex} containing the input {@link ChromosomalRegion} objects
+     * @since 11.0.0
+     */
+    public static <T extends ChromosomalRegion> ChromosomalRegionIndex<T> of(Collection<T> chromosomalRegions) {
+        Map<Integer, Set<T>> regionIndex = chromosomalRegions.stream().collect(groupingBy(T::getChromosome, toSet()));
 
-    private Map<Integer, Set<T>> createRegionIndex(Collection<T> chromosomalRegions) {
-        Map<Integer, Set<T>> regionIndex = new HashMap<>();
-        for (T region : chromosomalRegions) {
-            if (!regionIndex.containsKey(region.getChromosome())) {
-                Set<T> regionsInChr = new LinkedHashSet<>();
-                regionsInChr.add(region);
-                regionIndex.put(region.getChromosome(), regionsInChr);
-            } else {
-                regionIndex.get(region.getChromosome()).add(region);
-            }
-        }
-        return regionIndex;
-    }
-
-    private Map<Integer, IntervalArray<T>> createChromosomeIntervalTreeIndex(Map<Integer, Set<T>> regionIndex) {
-        Map<Integer, IntervalArray<T>> index = new HashMap<>();
+        Map<Integer, IntervalArray<T>> intervalTreeIndex = new HashMap<>();
         for (Map.Entry<Integer, Set<T>> entry : regionIndex.entrySet()) {
-            Integer chrId = entry.getKey();
-            IntervalArray<T> intervalTree = new IntervalArray<>(entry.getValue(), new ChromosomalRegionEndExtractor());
-            logger.debug("Chr: {} - {} regions", chrId, intervalTree.size());
-            index.put(chrId, intervalTree);
+            intervalTreeIndex.put(entry.getKey(), new IntervalArray<>(entry.getValue(), new ChromosomalRegionEndExtractor<>()));
         }
-        return index;
+        logger.debug("Created index for {} chromosomes totalling {} regions", intervalTreeIndex.keySet().size(), intervalTreeIndex.values().stream().mapToInt(IntervalArray::size).sum());
+
+        return new ChromosomalRegionIndex<>(intervalTreeIndex);
+    }
+
+    /**
+     * Returns an empty index. Useful for testing.
+     * @return An empty index
+     * @since 11.0.0
+     */
+    // Casting to any type is safe because the index will never hold any elements.
+    @SuppressWarnings("unchecked")
+    public static <T extends ChromosomalRegion> ChromosomalRegionIndex<T> empty() {
+        return (ChromosomalRegionIndex<T>) EMPTY;
     }
 
     public boolean hasRegionContainingVariant(VariantCoordinates variant) {
         return !getRegionsContainingVariant(variant).isEmpty();
+    }
+
+    /**
+     *
+     * @param chromosome chromosome of the position of interest
+     * @param position 1-based position to be tested for inclusion within the intervals of the index
+     * @return true if the position is contained within a region in the index, otherwise false
+     * @since 11.0.0
+     */
+    public boolean hasRegionContainingPosition(int chromosome, int position) {
+        return !getRegionsOverlappingPosition(chromosome, position).isEmpty();
     }
 
     public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
@@ -89,6 +104,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     /**
      * Use one-based co-ordinates for this method.
+     *
      * @param chromosome
      * @param position
      * @return
@@ -100,6 +116,15 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         }
         IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
         return queryResult.getEntries();
+    }
+
+    /**
+     * Returns the number of intervals stored in the index.
+     * @return the number of intervals stored in the index.
+     * @since 11.0.0
+     */
+    public int size() {
+        return index.values().stream().mapToInt(IntervalArray::size).sum();
     }
 
     @Override
@@ -115,7 +140,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return Objects.hash(index);
     }
 
-    private class ChromosomalRegionEndExtractor implements IntervalEndExtractor<T> {
+    private static class ChromosomalRegionEndExtractor<T extends ChromosomalRegion> implements IntervalEndExtractor<T> {
 
         @Override
         public int getBegin(T region) {

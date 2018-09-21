@@ -1,0 +1,6 @@
+##fileformat=VCFv4.1
+##description=This file contains a two variants for testing the removal of variants which are hom_ref (0/0) for the proband in multisample files.
+##description=The gene RBM8A contains a 0/0 genotype for the proband (id = Seth) and should not appear in the results
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Seth	Adam	Eva
+1	123256213	.	CA	CC	100.15	PASS	GENE=RBM8A	GT:DP	0/0:33	0/1:33	0/0:33
+10	123239370	.	G	A	260.15	PASS	GENE=FGFR2	GT:DP	1/1:21	0/1:33	0/1:33

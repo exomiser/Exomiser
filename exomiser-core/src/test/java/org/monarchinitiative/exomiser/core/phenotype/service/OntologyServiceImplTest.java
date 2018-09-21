@@ -26,13 +26,13 @@
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
@@ -48,7 +48,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class OntologyServiceImplTest {
 
     @InjectMocks
@@ -70,12 +70,8 @@ public class OntologyServiceImplTest {
     private Set<PhenotypeTerm> mpoTerms = Collections.emptySet();
     private Set<PhenotypeTerm> zpoTerms = Collections.emptySet();
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        setUpDaoMocks();
-    }
-
-    private void setUpDaoMocks() {
         Mockito.when(mockHpoDao.getAllTerms()).thenReturn(hpoTerms);
         Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
 

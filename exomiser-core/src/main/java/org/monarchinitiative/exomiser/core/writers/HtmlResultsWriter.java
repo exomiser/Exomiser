@@ -96,26 +96,26 @@ public class HtmlResultsWriter implements ResultsWriter {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        String jsonSettings = "";
+        StringBuilder jsonSettings = new StringBuilder();
         try {
-            jsonSettings = mapper.writeValueAsString(analysis);
-            jsonSettings += mapper.writeValueAsString(settings);
+            jsonSettings.append(mapper.writeValueAsString(analysis));
+            jsonSettings.append(mapper.writeValueAsString(settings));
         } catch (JsonProcessingException ex) {
             logger.error("Unable to process JSON settings", ex);
         }
-        context.setVariable("settings", jsonSettings);
+        context.setVariable("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the analysis reports section
-        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, analysisResults);
+        List<FilterReport> analysisStepReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
-        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
         List<String> sampleNames = analysisResults.getSampleNames();
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults
+                .getVariantEvaluations());
         String sampleName = "Anonymous";
         if (!analysis.getProbandSampleName().isEmpty()) {
             sampleName = analysis.getProbandSampleName();
@@ -135,14 +135,6 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("transcriptDb", "ENSEMBL");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return context;
-    }
-
-    private List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
-    }
-
-    private List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
-        return ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
     }
 
     //TODO:

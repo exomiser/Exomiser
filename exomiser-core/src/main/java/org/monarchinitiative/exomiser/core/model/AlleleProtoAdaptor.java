@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
@@ -40,6 +41,19 @@ public class AlleleProtoAdaptor {
 
     private AlleleProtoAdaptor() {
         //un-instantiable utility class
+    }
+
+    // This would make sense to have this here rather than having similar functionality in the MvStoreUtil
+    // and the VariantKeyGenerator
+    public static AlleleKey toAlleleKey(Variant variant) {
+        // ARGH! I didn't put the frikking genome assembly in the alleleKey!
+        // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
+        return AlleleKey.newBuilder()
+                .setChr(variant.getChromosome())
+                .setPosition(variant.getPosition())
+                .setRef(variant.getRef())
+                .setAlt(variant.getAlt())
+                .build();
     }
 
     public static FrequencyData toFrequencyData(AlleleProperties alleleProperties) {
@@ -77,6 +91,10 @@ public class AlleleProtoAdaptor {
         List<PathogenicityScore> pathogenicityScores = new ArrayList<>(values.size());
         for (Map.Entry<String, Float> field : values.entrySet()) {
             String key = field.getKey();
+            if (key.startsWith("REVEL")) {
+                float value = field.getValue();
+                pathogenicityScores.add(RevelScore.valueOf(value));
+            }
             if (key.startsWith("SIFT")) {
                 float value = field.getValue();
                 pathogenicityScores.add(SiftScore.valueOf(value));
@@ -88,6 +106,14 @@ public class AlleleProtoAdaptor {
             if (key.startsWith("MUT_TASTER")) {
                 float value = field.getValue();
                 pathogenicityScores.add(MutationTasterScore.valueOf(value));
+            }
+            if (key.startsWith("REMM")) {
+                float value = field.getValue();
+                pathogenicityScores.add(RemmScore.valueOf(value));
+            }
+            if (key.startsWith("CADD")) {
+                float value = field.getValue();
+                pathogenicityScores.add(CaddScore.valueOf(value));
             }
         }
         return pathogenicityScores;

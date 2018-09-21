@@ -31,14 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-public class ControllerConfig extends WebMvcConfigurerAdapter {
+public class ControllerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
 

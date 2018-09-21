@@ -20,15 +20,17 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -42,8 +44,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class AnalysisResultsWriterTest {
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    private Path tempFile;
+
+    @BeforeEach
+    private void getTempFile() throws IOException {
+        tempFile = Files.createTempFile("exomiser_test", "");
+    }
+
+    @AfterEach
+    private void deleteTempFile() throws Exception {
+        Files.delete(tempFile);
+    }
 
     private AnalysisResults newAnalysisResults() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
@@ -53,14 +65,17 @@ public class AnalysisResultsWriterTest {
 
     @Test
     public void testWriteToFileOutputsAllModesOfinheritanceForEachFormat() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.HTML, OutputFormat.VCF))
                 .build();
 
-        Analysis analysis = Analysis.builder().inheritanceModeOptions(InheritanceModeOptions.defaults()).build();
+        Analysis analysis = Analysis.builder()
+                .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
+                .build();
         AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
 
         //HTML writer is a special case where it presents a combined view of the results
@@ -80,14 +95,17 @@ public class AnalysisResultsWriterTest {
 
     @Test
     public void testWriteToFileOutputsAllModesOfinheritanceForEachFormatWhenInheritanceModeIsUndefined() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.HTML, OutputFormat.VCF))
                 .build();
 
-        Analysis analysis = Analysis.builder().inheritanceModeOptions(InheritanceModeOptions.empty()).build();
+        Analysis analysis = Analysis.builder()
+                .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
+                .inheritanceModeOptions(InheritanceModeOptions.empty())
+                .build();
         AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
 
         for (OutputFormat outputFormat : Arrays.asList(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF)) {
@@ -99,7 +117,7 @@ public class AnalysisResultsWriterTest {
 
     @Test
     public void testWriteToFileOutputsSingleHtmlFileIfPresentInSettings() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)
@@ -111,11 +129,12 @@ public class AnalysisResultsWriterTest {
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
+        assertThat(outputPath.toFile().delete(), is(true));
     }
 
     @Test
     public void testWriteToFileOutputsSingleJsonFileIfPresentInSettings() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)
@@ -127,11 +146,12 @@ public class AnalysisResultsWriterTest {
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
+        assertThat(outputPath.toFile().delete(), is(true));
     }
 
     @Test
     public void testWriteToFileOutputsSingleJsonOrHtmlFileIfPresentInSettings() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         Set<OutputFormat> singleFileFormats = EnumSet.of(OutputFormat.JSON, OutputFormat.HTML);
         OutputSettings settings = OutputSettings.builder()
@@ -145,12 +165,13 @@ public class AnalysisResultsWriterTest {
         for (OutputFormat outputFormat : singleFileFormats) {
             Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
             assertThat(outputPath.toFile().exists(), is(true));
+            assertThat(outputPath.toFile().delete(), is(true));
         }
     }
 
     @Test
     public void testWriteToFileDoesNotOutputsSingleHtmlFileIfAbsentFromSettings() throws Exception {
-        String outputPrefix = tmpFolder.newFile("test").toString();
+        String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)

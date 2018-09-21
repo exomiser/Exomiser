@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -38,7 +38,7 @@ public abstract class AbstractAutoConfigurationTest {
 
     protected ConfigurableApplicationContext context;
 
-    @After
+    @AfterEach
     public void closeContext() {
         if (this.context != null) {
             this.context.close();

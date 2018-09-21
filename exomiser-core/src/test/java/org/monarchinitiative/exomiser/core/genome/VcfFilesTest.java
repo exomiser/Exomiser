@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 import htsjdk.tribble.TribbleException;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -41,15 +42,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class VcfFilesTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateVariantContextsNullPath() {
-        VcfFiles.readVariantContexts(null);
+        assertThrows(NullPointerException.class, () -> VcfFiles.readVariantContexts(null));
     }
 
-    @Test(expected = TribbleException.class)
+    @Test
     public void testCreateVariantContextsNonExistentFile() {
         Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
-        VcfFiles.readVariantContexts(vcfPath);
+        assertThrows(TribbleException.class, () -> VcfFiles.readVariantContexts(vcfPath));
     }
 
     @Test

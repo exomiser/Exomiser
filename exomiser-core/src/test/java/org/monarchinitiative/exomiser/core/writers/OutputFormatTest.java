@@ -26,10 +26,10 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for {@link org.monarchinitiative.exomiser.core.writers.OutputFormat}
