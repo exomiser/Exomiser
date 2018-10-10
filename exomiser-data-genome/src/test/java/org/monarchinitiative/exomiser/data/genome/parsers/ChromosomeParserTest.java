@@ -37,15 +37,23 @@ public class ChromosomeParserTest {
     }
 
     @Test
+    public void parseNumericWithChrPrefix() throws Exception {
+        assertThat(ChromosomeParser.parseChr("chr1"), equalTo((byte) 1));
+        assertThat(ChromosomeParser.parseChr("chr22"), equalTo((byte) 22));
+    }
+
+    @Test
     public void parseX() throws Exception {
         assertThat(ChromosomeParser.parseChr("X"), equalTo((byte) 23));
         assertThat(ChromosomeParser.parseChr("x"), equalTo((byte) 23));
+        assertThat(ChromosomeParser.parseChr("chrX"), equalTo((byte) 23));
     }
 
     @Test
     public void parseY() throws Exception {
         assertThat(ChromosomeParser.parseChr("Y"), equalTo((byte) 24));
         assertThat(ChromosomeParser.parseChr("y"), equalTo((byte) 24));
+        assertThat(ChromosomeParser.parseChr("chrY"), equalTo((byte) 24));
     }
 
     @Test
@@ -53,6 +61,12 @@ public class ChromosomeParserTest {
         assertThat(ChromosomeParser.parseChr("M"), equalTo((byte) 25));
         assertThat(ChromosomeParser.parseChr("MT"), equalTo((byte) 25));
         assertThat(ChromosomeParser.parseChr("m"), equalTo((byte) 25));
+        assertThat(ChromosomeParser.parseChr("chrM"), equalTo((byte) 25));
+    }
+
+    @Test
+    public void parseEmpty() throws Exception {
+        assertThat(ChromosomeParser.parseChr(""), equalTo((byte) 0));
     }
 
     @Test
