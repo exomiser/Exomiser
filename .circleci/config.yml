@@ -6,7 +6,7 @@ jobs:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-      - image: circleci/openjdk:11-jdk
+      - image: circleci/openjdk:8-jdk
     steps:
       - checkout
       - run: chmod +x mvnw
