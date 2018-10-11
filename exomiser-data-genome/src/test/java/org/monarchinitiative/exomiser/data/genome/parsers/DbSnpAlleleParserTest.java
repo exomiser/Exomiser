@@ -20,10 +20,12 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,7 +35,12 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbSnpAlleleParserTest {
+public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAlleleParser> {
+
+    @Override
+    public DbSnpAlleleParser newInstance() {
+        return new DbSnpAlleleParser();
+    }
 
     @Test
     public void testSingleAlleleSnpNoCaf() {
@@ -92,6 +99,18 @@ public class DbSnpAlleleParserTest {
     }
 
     @Test
+    public void testSingleAlleleSnpBuild151() {
+        String line = "1\t8036291\trs72854879\tT\tC\t.\t.\tRS=72854879;RSPOS=8036291;dbSNPBuildID=130;SSR=0;SAO=0;VP=0x05010008000515013e000100;GENEINFO=PARK7:11315;WGT=1;VC=SNV;SLO;INT;ASP;VLD;G5;GNO;KGPhase1;KGPhase3;CAF=0.9413,0.05871;COMMON=1;TOPMED=0.914829,0.0851707";
+
+        Allele expected = new Allele(1, 8036291, "T", "C");
+        expected.setRsId("rs72854879");
+        expected.addValue(AlleleProperty.KG, 5.8710003f);
+        expected.addValue(AlleleProperty.TOPMED, 8.51707f);
+
+        assertParseLineEquals(line, Collections.singletonList(expected));
+    }
+
+    @Test
     public void testSingleAlleleDeletion() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "1\t10353088\trs763778935\tTC\tT\t.\t.\tRS=763778935;RSPOS=10353089;dbSNPBuildID=144;SSR=0;SAO=0;VP=0x050000080005000002000200;GENEINFO=KIF1B:23095;WGT=1;VC=DIV;INT;ASP";
@@ -110,7 +129,7 @@ public class DbSnpAlleleParserTest {
     }
 
     @Test
-    public void testMultiAllelealleleNoCaf() {
+    public void testMultiAlleleNoCaf() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "1\t9633387\trs776815368\tG\tGT,GTT\t.\t.\tRS=776815368;RSPOS=9633387;dbSNPBuildID=144;SSR=0;SAO=0;VP=0x050000080005000002000200;GENEINFO=SLC25A33:84275;WGT=1;VC=DIV;INT;ASP";
         List<Allele> alleles = instance.parseLine(line);
@@ -137,7 +156,7 @@ public class DbSnpAlleleParserTest {
     }
 
     @Test
-    public void testMultiAllelealleleWithCaf() {
+    public void testMultiAlleleWithCaf() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "1\t9973965\trs555705142\tA\tAT,ATTT\t.\t.\tRS=555705142;RSPOS=9973965;dbSNPBuildID=142;SSR=0;SAO=0;VP=0x050000000005150026000200;WGT=1;VC=DIV;ASP;VLD;G5;KGPhase3;CAF=0.87,.,0.13;COMMON=1";
         List<Allele> alleles = instance.parseLine(line);
@@ -164,7 +183,7 @@ public class DbSnpAlleleParserTest {
     }
 
     @Test
-    public void testLotsOfMultiAllelealleleWithCaf() {
+    public void testLotsOfMultiAlleleWithCaf() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "3\t134153617\trs56011117\tG\tGT,GTT,GTTGT,GTTGTTTTTTTTTGTTT\t.\t.\tRS=56011117;RSPOS=134153617;dbSNPBuildID=129;SSR=0;SAO=0;VP=0x05000000000504002e000204;WGT=1;VC=DIV;ASP;VLD;KGPhase3;NOV;CAF=0.995,0.004992,.,.,.;COMMON=1";
         List<Allele> alleles = instance.parseLine(line);
@@ -208,6 +227,51 @@ public class DbSnpAlleleParserTest {
         assertThat(allele4.getAlt(), equalTo("GTTGTTTTTTTTTGTTT"));
         assertThat(allele4.getValues().isEmpty(), is(true));
     }
+
+    /**
+     * Build 151 has TOPMED allele frequencies in along with CAF from the Thousand Genomes.
+     */
+    @Test
+    void testSingleAlleleWithTopMedNoCaf() {
+        String line = "3\t134153617\trs796981196\tGGTTT\tG\t.\t.\tRS=796981196;RSPOS=134153618;dbSNPBuildID=146;SSR=0;SAO=0;VP=0x050000000005000002000200;WGT=1;VC=DIV;ASP;TOPMED=0.99335818042813455,0.00664181957186544";
+
+        Allele expected = new Allele(3, 134153617, "GGTTT", "G");
+        expected.setRsId("rs796981196");
+        expected.addValue(AlleleProperty.TOPMED, 0.664181957186544f);
+
+        assertParseLineEquals(line, Collections.singletonList(expected));
+    }
+
+    @Test
+    void testMultiAlleleCafAndTopMed() {
+        String line = "1\t9974103\trs527824753\tA\tC,T\t.\t.\tRS=527824753;RSPOS=9974103;dbSNPBuildID=142;SSR=0;SAO=0;VP=0x050000000005040026000100;WGT=1;VC=SNV;ASP;VLD;KGPhase3;CAF=0.9996,0.0003994,.;COMMON=1;TOPMED=0.999725,0.000274744,.";
+
+        Allele allele1 = new Allele(1, 9974103, "A", "C");
+        allele1.setRsId("rs527824753");
+        allele1.addValue(AlleleProperty.KG, 0.03994f);
+        allele1.addValue(AlleleProperty.TOPMED, 0.0274744f);
+
+        Allele allele2 = new Allele(1, 9974103, "A", "T");
+        allele2.setRsId("rs527824753");
+
+        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+    }
+
+    @Test
+    void testMultiAlleleCafAndTopMedMixedRepresentation() {
+        String line = "1\t9974103\trs527824753\tA\tC,T\t.\t.\tRS=527824753;RSPOS=9974103;dbSNPBuildID=142;SSR=0;SAO=0;VP=0x050000000005040026000100;WGT=1;VC=SNV;ASP;VLD;KGPhase3;CAF=0.9996,.,0.0003994;COMMON=1;TOPMED=0.999725,0.000274744,.";
+
+        Allele allele1 = new Allele(1, 9974103, "A", "C");
+        allele1.setRsId("rs527824753");
+        allele1.addValue(AlleleProperty.TOPMED, 0.0274744f);
+
+        Allele allele2 = new Allele(1, 9974103, "A", "T");
+        allele2.setRsId("rs527824753");
+        allele2.addValue(AlleleProperty.KG, 0.03994f);
+
+        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+    }
+
 
     @Test
     public void testMitochondrialSnp() {
