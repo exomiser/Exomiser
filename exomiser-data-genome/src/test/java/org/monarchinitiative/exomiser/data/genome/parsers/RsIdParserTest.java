@@ -46,6 +46,11 @@ public class RsIdParserTest {
     }
 
     @Test
+    public void parseRsIdWithTildePrefix() {
+        assertThat(RsIdParser.parseRsId("~rs12345"), equalTo("rs12345"));
+    }
+
+    @Test
     public void parseRsIdReallyEmptyRsId() throws Exception {
         assertThat(RsIdParser.parseRsId(""), equalTo(""));
     }
