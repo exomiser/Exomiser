@@ -46,13 +46,7 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
     public void writeAllele(Allele allele) {
         AlleleKey key = AlleleConverter.toAlleleKey(allele);
         AlleleProperties properties = AlleleConverter.toAlleleProperties(allele);
-        AlleleProperties originalProperties = map.get(key);
-        if (originalProperties != null) {
-            AlleleProperties mergedValue = AlleleConverter.mergeProperties(originalProperties, properties);
-            map.put(key, mergedValue);
-        } else {
-            map.put(key, properties);
-        }
+        map.merge(key, properties, AlleleConverter::mergeProperties);
     }
 
     @Override
