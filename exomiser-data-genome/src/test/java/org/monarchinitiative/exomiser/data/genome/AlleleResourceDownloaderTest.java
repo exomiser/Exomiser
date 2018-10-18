@@ -57,7 +57,7 @@ class AlleleResourceDownloaderTest {
         URL url = Paths.get("src/test/resources/no_file_here.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("no_file_here.vcf.gz");
         AlleleResource testResource = new AlleleResource("test", url, new TabixAlleleArchive(alleleGzipFile), line -> null);
-        assertThrows(RuntimeException.class, () ->AlleleResourceDownloader.download(testResource));
+        assertThrows(ResourceDownloadException.class, () -> AlleleResourceDownloader.download(testResource));
     }
 
     @Test

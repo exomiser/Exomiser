@@ -94,7 +94,7 @@ public class AlleleResourceDownloader {
             logger.info("Finished downloading {} to {}", name, destination);
         } catch (IOException ex) {
             logger.error("Unable to download resource {} to {}", resourceUrl, destination, ex);
-            throw new RuntimeException("{}");
+            throw new ResourceDownloadException(ex);
         }
     }
 
