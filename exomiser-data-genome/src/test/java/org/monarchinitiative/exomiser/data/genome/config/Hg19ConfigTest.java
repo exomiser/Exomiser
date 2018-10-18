@@ -57,7 +57,6 @@ public class Hg19ConfigTest {
 
         alleleResources.put("gnomad-genome", instance.gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", instance.gnomadExomeAlleleResource());
-        alleleResources.put("topmed", instance.topmedAlleleResource());
         alleleResources.put("dbsnp", instance.dbSnpAlleleResource());
         alleleResources.put("uk10k", instance.uk10kAlleleResource());
         alleleResources.put("exac", instance.exacAlleleResource());

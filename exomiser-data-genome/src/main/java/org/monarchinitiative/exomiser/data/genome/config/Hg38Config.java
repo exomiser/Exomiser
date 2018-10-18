@@ -56,8 +56,7 @@ public class Hg38Config {
 
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed now part of dbSNP
-        alleleResources.put("topmed", topmedAlleleResource());
+        // TOPMed removed as this is now part of dbSNP
         alleleResources.put("dbsnp", dbSnpAlleleResource());
         alleleResources.put("uk10k", uk10kAlleleResource());
         alleleResources.put("exac", exacAlleleResource());
