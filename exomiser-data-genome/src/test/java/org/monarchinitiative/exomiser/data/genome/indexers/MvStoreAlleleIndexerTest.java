@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -397,7 +398,7 @@ public class MvStoreAlleleIndexerTest {
     @ExtendWith(TempDirectory.class)
     public void processAndWriteToDisk(@TempDir Path tempDir) throws Exception {
         AlleleArchive dbsnpArchive = new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
-        AlleleResource dbSnpResource = new AlleleResource("test_first_ten_dbsnp", dbsnpArchive, new DbSnpAlleleParser());
+        AlleleResource dbSnpResource = new AlleleResource("test_first_ten_dbsnp", new URL("http://"), dbsnpArchive, new DbSnpAlleleParser());
 
         File mvTestFile = tempDir.resolve("test.mv.db").toFile();
         logger.info("Writing allele data to file {}", mvTestFile);
