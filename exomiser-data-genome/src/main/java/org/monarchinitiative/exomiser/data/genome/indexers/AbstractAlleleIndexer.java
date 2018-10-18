@@ -67,7 +67,7 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
             }
         }
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written",
+        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written.",
                 alleleResource.getName(),
                 alleleLogger.count(),
                 seconds,
