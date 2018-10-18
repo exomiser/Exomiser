@@ -40,6 +40,10 @@ public class AlleleResourceDownloader {
 
     private static final Logger logger = LoggerFactory.getLogger(AlleleResourceDownloader.class);
 
+    private AlleleResourceDownloader() {
+        // Static utility class
+    }
+
     public static void download(AlleleResource alleleResource) {
         Path resourceFile = alleleResource.getAlleleArchive().getPath();
 
