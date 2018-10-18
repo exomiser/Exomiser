@@ -53,17 +53,6 @@ class AlleleResourceDownloaderTest {
 
     @Test
     @ExtendWith(TempDirectory.class)
-    void downloadWithMisformedTabixUrlIndex(@TempDir Path tempDir) throws Exception {
-        URL url = Paths.get("src/test/resources^test_empty.vcf.gz").toUri().toURL();
-        Path alleleGzipFile = tempDir.resolve("test_empty.vcf.gz");
-        AlleleResource testResource = new AlleleResource("test", url, new TabixAlleleArchive(alleleGzipFile), line -> null);
-        AlleleResourceDownloader.download(testResource);
-        assertThat(alleleGzipFile.toFile().exists(), is(true));
-        assertThat(tempDir.resolve("test_empty.vcf.gz.tbi").toFile().exists(), is(true));
-    }
-
-    @Test
-    @ExtendWith(TempDirectory.class)
     void downloadNonExistentFileThrowsException(@TempDir Path tempDir) throws Exception {
         URL url = Paths.get("src/test/resources/no_file_here.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("no_file_here.vcf.gz");
