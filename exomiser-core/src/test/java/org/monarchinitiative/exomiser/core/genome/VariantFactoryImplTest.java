@@ -51,11 +51,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantFactoryTest {
+public class VariantFactoryImplTest {
 
     private final VariantFactory instance;
 
-    public VariantFactoryTest() {
+    public VariantFactoryImplTest() {
         VariantAnnotator variantAnnotator = TestFactory.buildDefaultVariantAnnotator();
         instance = new VariantFactoryImpl(variantAnnotator);
     }
