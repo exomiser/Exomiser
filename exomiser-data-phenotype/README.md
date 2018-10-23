@@ -32,8 +32,8 @@ be incorporated into this codebase:
 7. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
+```perl
 system("wget http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/phenotype_annotation.tab");
-```
 open(IN,"phenotype_annotation.tab");
 open(OUT1,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt");
 open(OUT2,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt");
