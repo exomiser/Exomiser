@@ -103,14 +103,15 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
         String geneId = buildGeneId(highestImpactAnnotation);
 
-        VariantEffect higestImpactEffect = variantAnnotations.getHighestImpactEffect();
+        //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
+        VariantEffect highestImpactEffect = allelePosition.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations.getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         int pos = allelePosition.getPos();
         String ref = allelePosition.getRef();
         String alt = allelePosition.getAlt();
 
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(higestImpactEffect, chr, pos);
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, pos);
         return VariantAnnotation.builder()
                 .genomeAssembly(genomeAssembly)
                 .chromosome(chr)
@@ -121,7 +122,8 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .geneId(geneId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)
-                .annotations(annotations).build();
+                .annotations(annotations)
+                .build();
     }
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {

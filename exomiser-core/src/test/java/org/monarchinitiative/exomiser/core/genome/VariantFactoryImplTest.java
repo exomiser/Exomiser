@@ -316,6 +316,18 @@ public class VariantFactoryImplTest {
         );
     }
 
+    @Test
+    public void testStructuralVariant() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256110;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+    }
+
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
      */

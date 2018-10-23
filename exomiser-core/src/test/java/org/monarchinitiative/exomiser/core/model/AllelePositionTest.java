@@ -369,7 +369,7 @@ public class AllelePositionTest {
     }
 
     @Test
-    public void testStructutalVariant() {
+    public void testStructuralVariant() {
         assertThat(trim(4477084, "C", "<DEL:ME:ALU>"), equalTo(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>")));
     }
 
@@ -397,6 +397,16 @@ public class AllelePositionTest {
         assertThat(trim(123457, "A", "]1 : 0]A"), equalTo(AllelePosition.of(123457, "A", "]1 : 0]A")));
     }
 
+    @Test
+    void testIsSymbolic() {
+        assertThat(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(321681, "G", "G]17:198982]").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(0, "N", ".[13 : 123457[").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(0, "C", "C.").isSymbolic(), is(true));
+        // Having a symbolic ref allele isn't mention in the VCF 4.2 spec, but we'll make sure though
+        assertThat(AllelePosition.of(4477084, "<INS>", "A").isSymbolic(), is(true));
+
+    }
 
     /**
      * Nirvana style trimming:
