@@ -18,19 +18,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.autoconfigure.genome;
+package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
-import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
 /**
+ * Utility for loading JannovarData from disk. There are two formats for this - the original which uses standard Java
+ * serialisation and an Exomiser-specific Protobuf version. The Protobuf version loads about twice as fast as the
+ * standard Java serialised version, although is much less compressed.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class JannovarDataSourceLoader {
@@ -53,7 +55,7 @@ public class JannovarDataSourceLoader {
             // if we've got here, try again using the original java serializable-based format (small file-size, but slower load-time)
             return new JannovarDataSerializer(transcriptFilePath.toString()).load();
         } catch (SerializationException e) {
-            throw new ExomiserAutoConfigurationException("Could not load Jannovar data from " + transcriptFilePath, e);
+            throw new JannovarException("Could not load Jannovar data from " + transcriptFilePath, e);
         }
     }
 }

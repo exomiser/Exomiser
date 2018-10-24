@@ -18,11 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.autoconfigure.genome;
+package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,14 +37,14 @@ public class JannovarDataSourceLoaderTest {
 
     @Test
     public void loadsOldFormatData() {
-        Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/1710_hg19_transcripts_ensembl.ser");
+        Path jannovarDataPath = Paths.get("src/test/resources/jannovar/1710_hg19_transcripts_ensembl.ser");
         JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(jannovarDataPath);
         assertThat(jannovarData, instanceOf(JannovarData.class) );
     }
 
     @Test
     public void loadsNewFormatData() {
-        Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/1710_hg19_transcripts_ensembl_new_format.ser");
+        Path jannovarDataPath = Paths.get("src/test/resources/jannovar/1710_hg19_transcripts_ensembl_new_format.ser");
         JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(jannovarDataPath);
         assertThat(jannovarData, instanceOf(JannovarData.class) );
     }
@@ -53,6 +52,6 @@ public class JannovarDataSourceLoaderTest {
     @Test
     public void cannotLoadData() {
         Path jannovarDataPath = Paths.get("src/test/resources/data/1710_hg19/wibble.ser");
-        assertThrows(ExomiserAutoConfigurationException.class, () -> JannovarDataSourceLoader.loadJannovarData(jannovarDataPath));
+        assertThrows(JannovarException.class, () -> JannovarDataSourceLoader.loadJannovarData(jannovarDataPath));
     }
 }

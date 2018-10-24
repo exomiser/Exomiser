@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
