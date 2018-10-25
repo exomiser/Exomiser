@@ -32,7 +32,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class Frequency {
+public class Frequency {
 
     private final FrequencySource source;
     private final float value;

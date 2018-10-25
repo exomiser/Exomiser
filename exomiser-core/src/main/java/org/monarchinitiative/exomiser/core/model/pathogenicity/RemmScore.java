@@ -25,7 +25,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class RemmScore extends BasePathogenicityScore {
+public class RemmScore extends BasePathogenicityScore {
 
     public static RemmScore of(float score) {
         return new RemmScore(score);

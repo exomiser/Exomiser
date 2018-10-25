@@ -40,7 +40,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class SiftScore extends BasePathogenicityScore {
+public class SiftScore extends BasePathogenicityScore {
 
     /**
      * A SIFT score below this threshold is considered to be pathogenic

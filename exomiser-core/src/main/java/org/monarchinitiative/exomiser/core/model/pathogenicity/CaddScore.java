@@ -25,7 +25,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class CaddScore extends BasePathogenicityScore {
+public class CaddScore extends BasePathogenicityScore {
 
     public static CaddScore of(float score) {
         return new CaddScore(score);

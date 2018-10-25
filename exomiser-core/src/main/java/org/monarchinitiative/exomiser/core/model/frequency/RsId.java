@@ -29,7 +29,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public final class RsId {
+public class RsId {
 
     private static final RsId EMPTY = new RsId(0);
     private static final String VCF_EMPTY_VALUE = ".";
