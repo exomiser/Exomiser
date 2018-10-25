@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@ public final class RsId {
      * @param id
      * @return the rsId value represented by the argument provided.
      */
-    public static RsId valueOf(int id) {
+    public static RsId of(int id) {
         if (id <= 0) {
             return EMPTY;
         }
@@ -57,7 +57,7 @@ public final class RsId {
      * @param id a {@code String} containing the {@code int} representation to be parsed
      * @return the rsId value represented by the argument provided.
      */
-    public static RsId valueOf(String id) {
+    public static RsId of(String id) {
         if (id == null || id.isEmpty() || VCF_EMPTY_VALUE.equals(id)) {
             return EMPTY;
         }

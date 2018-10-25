@@ -301,14 +301,14 @@ public class VariantEvaluationTest {
     
     @Test
     public void testThatTheBuilderCanSetAFrequencyDataObject() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.LOCAL, 0.1f));
         instance = testVariantBuilder().frequencyData(frequencyData).build();
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
 
     @Test
     public void testCanSetFrequencyDataAfterConstruction() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.LOCAL, 0.1f));
         instance.setFrequencyData(frequencyData);
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
@@ -767,7 +767,7 @@ public class VariantEvaluationTest {
         zero.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.ESP_ALL, 0.02f)))
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.of(1.0f)))
                 .build();
         one.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);

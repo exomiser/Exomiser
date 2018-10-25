@@ -73,8 +73,8 @@ public class AlleleProtoAdaptorTest {
                 .build();
         assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
                 equalTo(FrequencyData.of(
-                    Frequency.valueOf(0.7f, FrequencySource.THOUSAND_GENOMES),
-                    Frequency.valueOf(0.05f, FrequencySource.TOPMED))
+                    Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.7f),
+                    Frequency.of(FrequencySource.TOPMED, 0.05f))
                 )
         );
     }

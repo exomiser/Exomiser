@@ -47,12 +47,12 @@ public class FrequencyDataTest {
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
 
-    private static final Frequency ESP_ALL_PASS = Frequency.valueOf(PASS_FREQ, ESP_ALL);
-    private static final Frequency ESP_AA_PASS = Frequency.valueOf(PASS_FREQ, ESP_AFRICAN_AMERICAN);
-    private static final Frequency ESP_EA_PASS = Frequency.valueOf(PASS_FREQ, ESP_EUROPEAN_AMERICAN);
-    private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES);
+    private static final Frequency ESP_ALL_PASS = Frequency.of(ESP_ALL, PASS_FREQ);
+    private static final Frequency ESP_AA_PASS = Frequency.of(ESP_AFRICAN_AMERICAN, PASS_FREQ);
+    private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EUROPEAN_AMERICAN, PASS_FREQ);
+    private static final Frequency DBSNP_PASS = Frequency.of(THOUSAND_GENOMES, PASS_FREQ);
 
-    private static final RsId RSID = RsId.valueOf(12335);
+    private static final RsId RSID = RsId.of(12335);
 
     private static final FrequencyData FREQUENCY_DATA = FrequencyData.of(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
     private static final FrequencyData RS_ID_ONLY_DATA = FrequencyData.of(RSID);
@@ -85,13 +85,13 @@ public class FrequencyDataTest {
 
     @Test
     public void testNoRsIdSpecifiedSingleFrequencyValue() {
-        FrequencyData localFrequency = FrequencyData.of(Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        FrequencyData localFrequency = FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 0.001f));
         assertThat(localFrequency.hasKnownFrequency(), is(true));
     }
 
     @Test
     public void testSingleFrequencyValue() {
-        FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, 0.001f));
         assertThat(localFrequency.hasKnownFrequency(), is(true));
     }
 
@@ -164,20 +164,20 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataIsFalseWhenOnlyNonEspFrequenciesArePresent() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, EXAC_FINNISH));
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(EXAC_FINNISH, PASS_FREQ));
         assertThat(instance.hasEspData(), is(false));
     }
 
     @Test
     public void testHasEspDataIsTrueWhenOtherNonEspFrequenciesArePresent() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, Frequency
-                .valueOf(PASS_FREQ, EXAC_FINNISH));
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(THOUSAND_GENOMES, PASS_FREQ), ESP_AA_PASS, Frequency
+                .of(EXAC_FINNISH, PASS_FREQ));
         assertThat(instance.hasEspData(), is(true));
     }
 
     @Test
     public void testHasExacDataTrue() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, PASS_FREQ));
         assertThat(instance.hasExacData(), is(true));
     }
 
@@ -237,7 +237,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetMaxFreqWithData() {
         float maxFreq = 89.5f;
-        Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
+        Frequency maxFrequency = Frequency.of(UNKNOWN, maxFreq);
         FrequencyData instance = FrequencyData.of(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
     }
@@ -245,8 +245,8 @@ public class FrequencyDataTest {
     @Test
     public void testHasFrequencyOverPercentageValue() {
         float maxFreq = 0.05f;
-        Frequency upper = Frequency.valueOf(maxFreq, UNKNOWN);
-        Frequency lower = Frequency.valueOf(0.0001f, UK10K);
+        Frequency upper = Frequency.of(UNKNOWN, maxFreq);
+        Frequency lower = Frequency.of(UK10K, 0.0001f);
         FrequencyData instance = FrequencyData.of(upper, lower);
         assertThat(instance.hasFrequencyOverPercentageValue(maxFreq - 0.01f), is(true));
         assertThat(instance.hasFrequencyOverPercentageValue(maxFreq + 0.01f), is(false));
@@ -260,7 +260,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetScoreCommonVariant() {
         float maxFreq = 100.0f;
-        Frequency maxFrequency = Frequency.valueOf(maxFreq, THOUSAND_GENOMES);
+        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, maxFreq);
         FrequencyData instance = FrequencyData.of(RSID, maxFrequency);
         assertThat(instance.getScore(), equalTo(0f));
     }
@@ -268,7 +268,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetScoreRareVariant() {
         float maxFreq = 0.1f;
-        Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
+        Frequency maxFrequency = Frequency.of(UNKNOWN, maxFreq);
         FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);
         assertThat(instance.getScore(), equalTo(0.9857672f));
     }

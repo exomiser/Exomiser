@@ -78,16 +78,16 @@ public class FrequencyIT {
         while (i < numObjects) {
             i++;
             //we're creating four variants here
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_ALL));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_AFRICAN_AMERICAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_EUROPEAN_AMERICAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.THOUSAND_GENOMES));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_AMERICAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_FINNISH));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_EAST_ASIAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_NON_FINNISH_EUROPEAN));
-            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_OTHER));
+            mafList.add(Frequency.of(FrequencySource.ESP_ALL, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.ESP_EUROPEAN_AMERICAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.THOUSAND_GENOMES, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_AMERICAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_FINNISH, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_EAST_ASIAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_NON_FINNISH_EUROPEAN, getRandomPercentage()));
+            mafList.add(Frequency.of(FrequencySource.EXAC_OTHER, getRandomPercentage()));
         }
         long end = System.currentTimeMillis();
 
@@ -181,7 +181,7 @@ public class FrequencyIT {
         int i = 0;
         while (i < VARIANTS_IN_GENOME * 10) {
             i++;
-            Frequency.valueOf(20f, FrequencySource.UNKNOWN);
+            Frequency.of(FrequencySource.UNKNOWN, 20f);
         }
         System.out.println(i);
     }
@@ -194,7 +194,7 @@ public class FrequencyIT {
         float threshold = 24.56f;
 
         for (int i = 0; i < VARIANTS_IN_GENOME * 10; i++) {
-            Frequency.valueOf(20f, FrequencySource.UNKNOWN);
+            Frequency.of(FrequencySource.UNKNOWN, 20f);
         }
     }
 }

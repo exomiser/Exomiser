@@ -112,7 +112,7 @@ public class AlleleProtoAdaptor {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return FrequencyData.empty();
         }
-        RsId rsId = RsId.valueOf(alleleProperties.getRsId());
+        RsId rsId = RsId.of(alleleProperties.getRsId());
         List<Frequency> frequencies = parseFrequencyData(alleleProperties.getPropertiesMap());
         return FrequencyData.of(rsId, frequencies);
     }
@@ -122,9 +122,9 @@ public class AlleleProtoAdaptor {
         for (Map.Entry<String, Float> field : values.entrySet()) {
             String key = field.getKey();
             if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
-                float value = field.getValue();
                 FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
-                frequencies.add(Frequency.valueOf(value, source));
+                float value = field.getValue();
+                frequencies.add(Frequency.of(source, value));
             }
         }
         return frequencies;

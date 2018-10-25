@@ -47,11 +47,11 @@ public class FrequencyFilterTest {
     }
 
     private Frequency passFrequency(FrequencySource source) {
-        return Frequency.valueOf(FREQ_THRESHOLD - 0.02f, source);
+        return Frequency.of(source, FREQ_THRESHOLD - 0.02f);
     }
 
     private Frequency failFrequency(FrequencySource source) {
-        return Frequency.valueOf(FREQ_THRESHOLD + 1.0f, source);
+        return Frequency.of(source, FREQ_THRESHOLD + 1.0f);
     }
 
     private VariantEvaluation makeVariantEvaluation(Frequency... frequencies) {

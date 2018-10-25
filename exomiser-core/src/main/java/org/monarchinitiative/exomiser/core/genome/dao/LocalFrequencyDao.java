@@ -93,7 +93,7 @@ public class LocalFrequencyDao implements FrequencyDao {
 
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
-        Frequency localFreq = Frequency.valueOf(value, FrequencySource.LOCAL);
+        Frequency localFreq = Frequency.of(FrequencySource.LOCAL, value);
         return FrequencyData.of(RsId.empty(), localFreq);
     }
 }

@@ -107,8 +107,8 @@ public class SimpleVariantFilterRunnerTest {
     }
 
     private Map<Variant, FrequencyData> mockFrequencyData() {
-        FrequencyData passFrequency = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.01f, FrequencySource.UNKNOWN));
-        FrequencyData failFrequency = FrequencyData.of(RsId.valueOf(54321), Frequency.valueOf(100f, FrequencySource.UNKNOWN));
+        FrequencyData passFrequency = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.UNKNOWN, 0.01f));
+        FrequencyData failFrequency = FrequencyData.of(RsId.of(54321), Frequency.of(FrequencySource.UNKNOWN, 100f));
 
         Map<Variant, FrequencyData> frequecyData = new HashMap<>();
         frequecyData.put(passesAllFilters, passFrequency);

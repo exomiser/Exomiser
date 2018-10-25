@@ -90,7 +90,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
         DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
-        assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.valueOf("rs54321"))));
+        assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.of("rs54321"))));
     }
 
     @Test
@@ -103,8 +103,8 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                 .build();
         DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
-                equalTo(FrequencyData.of(RsId.valueOf("rs54321"), Frequency.valueOf(0.04f, FrequencySource.THOUSAND_GENOMES), Frequency
-                        .valueOf(0.003f, FrequencySource.ESP_AFRICAN_AMERICAN))));
+                equalTo(FrequencyData.of(RsId.of("rs54321"), Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.04f), Frequency
+                        .of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.003f))));
     }
 
 }
