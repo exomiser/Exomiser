@@ -322,10 +322,6 @@ public class VariantEvaluationTest {
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
         PathogenicityData pathogenicityData = instance.getPathogenicityData();
         assertThat(pathogenicityData, equalTo(PathogenicityData.empty()));
-        assertThat(pathogenicityData.getMutationTasterScore(), nullValue());
-        assertThat(pathogenicityData.getPolyPhenScore(), nullValue());
-        assertThat(pathogenicityData.getSiftScore(), nullValue());
-        assertThat(pathogenicityData.getCaddScore(), nullValue());
         assertThat(pathogenicityData.hasPredictedScore(), is(false));
     }
     

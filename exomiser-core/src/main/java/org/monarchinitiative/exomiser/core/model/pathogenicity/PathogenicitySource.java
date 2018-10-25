@@ -32,14 +32,21 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum PathogenicitySource {
-    //variant type is from Jannovar
+    // variant type is from Jannovar
     VARIANT_TYPE,
-    //these guys are calculated from other sources
+    // these guys are calculated from other sources
+    // http://genetics.bwh.harvard.edu/pph2/
     POLYPHEN,
+    // http://mutationtaster.org/
     MUTATION_TASTER,
     SIFT,
+    // http://cadd.gs.washington.edu/info
     CADD,
+    // https://charite.github.io/software-remm-score.html
     REMM,
-    REVEL
+    // https://sites.google.com/site/revelgenomics/
+    // “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885
+    // http://dx.doi.org/10.1016/j.ajhg.2016.08.016
+    REVEL;
 
 }

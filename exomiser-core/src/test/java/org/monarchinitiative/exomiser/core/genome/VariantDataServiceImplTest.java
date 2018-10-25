@@ -83,7 +83,7 @@ public class VariantDataServiceImplTest {
             Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN)
     );
 
-    private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.valueOf(1));
+    private static final PathogenicityData CADD_DATA = PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.CADD, 1));
 
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
@@ -142,7 +142,7 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsCaddDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getCaddScore())));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getPredictedScore(PathogenicitySource.CADD))));
     }
 
     @Test

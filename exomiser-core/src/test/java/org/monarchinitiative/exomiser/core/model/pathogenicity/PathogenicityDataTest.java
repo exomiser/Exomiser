@@ -118,43 +118,36 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPolyPhenScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL);
-        PolyPhenScore result = instance.getPolyPhenScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.POLYPHEN);
         assertThat(result, equalTo(POLYPHEN_FAIL));
     }
 
     @Test
     public void testGetMutationTasterScore() {
         PathogenicityData instance = PathogenicityData.of(MTASTER_PASS);
-        MutationTasterScore result = instance.getMutationTasterScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.MUTATION_TASTER);
         assertThat(result, equalTo(MTASTER_PASS));
     }
     
     @Test
     public void testGetSiftScore() {
         PathogenicityData instance = PathogenicityData.of(SIFT_FAIL);
-        SiftScore result = instance.getSiftScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.SIFT);
         assertThat(result, equalTo(SIFT_FAIL));
     }
     
     @Test
     public void testGetRemmScore() {
         PathogenicityData instance = PathogenicityData.of(RemmScore.valueOf(1f));
-        RemmScore result = instance.getRemmScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.REMM);
         assertThat(result, equalTo(RemmScore.valueOf(1f)));
-    }
-    
-    @Test
-    public void testGetSiftScoreReturnsNullWhenNoSiftScorePresent() {
-        PathogenicityData instance = PathogenicityData.of();
-        SiftScore result = instance.getSiftScore();
-        assertThat(result, nullValue());
     }
 
     @Test
     public void testGetCaddScore() {
         CaddScore caddScore = CaddScore.valueOf(POLYPHEN_PASS_SCORE);
         PathogenicityData instance = PathogenicityData.of(caddScore);
-        CaddScore result = instance.getCaddScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.CADD);
         assertThat(result, equalTo(caddScore));
     }
 

@@ -44,10 +44,10 @@ public class PathogenicityScoreTest {
 
     @Test
     public void testComparableOnlySiftScores() {
-        SiftScore mostPathogenic = SiftScore.valueOf(0.001f);
-        SiftScore belowThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD + 0.01f);
-        SiftScore aboveThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD - 0.01f);
-        SiftScore leastPathogenic = SiftScore.valueOf(0.999f);
+        PathogenicityScore mostPathogenic = SiftScore.valueOf(0.001f);
+        PathogenicityScore belowThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD + 0.01f);
+        PathogenicityScore aboveThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD - 0.01f);
+        PathogenicityScore leastPathogenic = SiftScore.valueOf(0.999f);
         
         
         List<PathogenicityScore> scores = new ArrayList<>();
@@ -70,12 +70,12 @@ public class PathogenicityScoreTest {
     
     @Test
     public void testComparableWithSiftScores() {
-        SiftScore mostPathogenic = SiftScore.valueOf(0.001f);
-        SiftScore leastPathogenic = SiftScore.valueOf(0.998f);
-        PolyPhenScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
-        PolyPhenScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
-        MutationTasterScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
-        MutationTasterScore notdamaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD - 0.001f);
+        PathogenicityScore mostPathogenic = SiftScore.valueOf(0.001f);
+        PathogenicityScore leastPathogenic = SiftScore.valueOf(0.998f);
+        PathogenicityScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
+        PathogenicityScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
+        PathogenicityScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
+        PathogenicityScore notdamaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD - 0.001f);
         
         List<PathogenicityScore> scores = new ArrayList<>();
         scores.add(damaging);
@@ -102,9 +102,9 @@ public class PathogenicityScoreTest {
     @Test
     public void testComparableNoSiftScores() {
 
-        PolyPhenScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
-        PolyPhenScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
-        MutationTasterScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
+        PathogenicityScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
+        PathogenicityScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
+        PathogenicityScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
         
         List<PathogenicityScore> scores = new ArrayList<>();
         scores.add(damaging);
@@ -124,9 +124,25 @@ public class PathogenicityScoreTest {
     
     @Test
     public void comparingPathogenicityScoreToNullThrowsNullPointerException() {
-        PolyPhenScore polyPhenScore = PolyPhenScore.valueOf(1);
+        PathogenicityScore polyPhenScore = PolyPhenScore.valueOf(1);
 
         assertThrows(NullPointerException.class, () -> polyPhenScore.compareTo(null));
     }
 
+    @Test
+    void testNullsInStaticConstructorThrowsException() {
+        assertThrows(NullPointerException.class, () -> PathogenicityScore.of(null, 0f));
+    }
+
+    @Test
+    void testStaticConstructor() {
+        PathogenicityScore instance = PathogenicityScore.of(PathogenicitySource.REVEL, 0.95f);
+        assertThat(instance, equalTo(new BasePathogenicityScore(PathogenicitySource.REVEL, 0.95f)));
+    }
+
+    @Test
+    void testRevelConstructor() {
+        PathogenicityScore instance = RevelScore.valueOf(0.95f);
+        assertThat(instance, equalTo(new BasePathogenicityScore(PathogenicitySource.REVEL, 0.95f)));
+    }
 }

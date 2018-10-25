@@ -106,31 +106,6 @@ public class PathogenicityData {
         return !clinVarData.isEmpty();
     }
 
-    @JsonIgnore
-    public PolyPhenScore getPolyPhenScore() {
-        return (PolyPhenScore) getPredictedScore(PathogenicitySource.POLYPHEN);
-    }
-
-    @JsonIgnore
-    public MutationTasterScore getMutationTasterScore() {
-        return (MutationTasterScore) getPredictedScore(PathogenicitySource.MUTATION_TASTER);
-    }
-
-    @JsonIgnore
-    public SiftScore getSiftScore() {
-        return (SiftScore) getPredictedScore(PathogenicitySource.SIFT);
-    }
-
-    @JsonIgnore
-    public CaddScore getCaddScore() {
-        return (CaddScore) getPredictedScore(PathogenicitySource.CADD);
-    }
-
-    @JsonIgnore
-    public RemmScore getRemmScore() {
-        return (RemmScore) getPredictedScore(PathogenicitySource.REMM);
-    }
-
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
         return new ArrayList<>(pathogenicityScores.values());
     }

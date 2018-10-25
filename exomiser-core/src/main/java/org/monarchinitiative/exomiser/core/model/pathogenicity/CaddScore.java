@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,13 +32,7 @@ public final class CaddScore extends BasePathogenicityScore {
     }
         
     private CaddScore(float score) {
-        super(score, PathogenicitySource.CADD);
+        super(PathogenicitySource.CADD, score);
     }
-
-    @Override
-    public String toString() {
-        return "CADD: " + score;
-    }
-    
     
 }

@@ -33,18 +33,14 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * https://sites.google.com/site/revelgenomics/
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class RevelScore extends BasePathogenicityScore {
+class RevelScore extends BasePathogenicityScore {
 
     public static RevelScore valueOf(float score) {
         return new RevelScore(score);
     }
 
     private RevelScore(float score) {
-        super(score, PathogenicitySource.REVEL);
+        super(PathogenicitySource.REVEL, score);
     }
 
-    @Override
-    public String toString() {
-        return String.format("REVEL: %.3f", score);
-    }
 }

@@ -103,21 +103,19 @@ public class RemmDao {
 
     private synchronized PathogenicityData getRemmData(String chromosome, int start, int end) {
         try {
-            float remm = Float.NaN;
+            float score = Float.NaN;
             String line;
-//            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
             TabixReader.Iterator results = remmTabixDataSource.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
-                if (Float.isNaN(remm)) {
-                    remm = Float.parseFloat(elements[2]);
+                if (Float.isNaN(score)) {
+                    score = Float.parseFloat(elements[2]);
                 } else {
-                    remm = Math.max(remm, Float.parseFloat(elements[2]));
+                    score = Math.max(score, Float.parseFloat(elements[2]));
                 }
             }
-            //logger.info("Final score " + remm);
-            if (!Float.isNaN(remm)) {
-                return PathogenicityData.of(RemmScore.valueOf(remm));
+            if (!Float.isNaN(score)) {
+                return PathogenicityData.of(RemmScore.valueOf(score));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixDataSource.getSource(), e);
