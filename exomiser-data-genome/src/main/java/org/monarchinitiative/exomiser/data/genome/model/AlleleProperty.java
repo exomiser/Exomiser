@@ -66,6 +66,8 @@ public enum AlleleProperty {
     SIFT,
     POLYPHEN,
     MUT_TASTER,
+    CADD,
+    REMM,
     REVEL;
 
     public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(KG, GNOMAD_G_OTH));
