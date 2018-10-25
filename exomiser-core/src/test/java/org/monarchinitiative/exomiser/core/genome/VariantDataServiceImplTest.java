@@ -73,9 +73,9 @@ public class VariantDataServiceImplTest {
             .build();
     private static final PathogenicityData PATH_DATA = PathogenicityData.of(
             PATH_CLINVAR_DATA,
-            PolyPhenScore.valueOf(1),
-            MutationTasterScore.valueOf(1),
-            SiftScore.valueOf(0)
+            PolyPhenScore.of(1),
+            MutationTasterScore.of(1),
+            SiftScore.of(0)
     );
 
     private static final FrequencyData FREQ_DATA = FrequencyData.of(
@@ -135,7 +135,7 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.of(1f))));
     }
 
     @Test
@@ -150,13 +150,13 @@ public class VariantDataServiceImplTest {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
 
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.of(1f), CaddScore.of(1f))));
     }
     
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
@@ -173,7 +173,7 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(CaddScore.valueOf(1f), RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(CaddScore.of(1f), RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
@@ -185,7 +185,7 @@ public class VariantDataServiceImplTest {
         // Even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
         // This will cause a UnnecessaryStubbingException to be thrown as the result of this stubbing is ignored, but
         // we're trying to test for exactly that functionality we're running with the MockitoJUnitRunner.Silent.class
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.valueOf(1f)));
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.of(1f)));
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
         assertThat(result, equalTo(PathogenicityData.empty()));
     }

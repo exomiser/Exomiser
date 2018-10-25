@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  */
 public final class CaddScore extends BasePathogenicityScore {
 
-    public static CaddScore valueOf(float score) {
+    public static CaddScore of(float score) {
         return new CaddScore(score);
     }
         

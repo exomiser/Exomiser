@@ -104,7 +104,7 @@ public class CaddDao {
     private CaddScore parseCaddScore(String phredScaledCaddScore) {
         float score = Float.parseFloat(phredScaledCaddScore);
         float cadd = rescaleLogTenBasedScore(score);
-        return CaddScore.valueOf(cadd);
+        return CaddScore.of(cadd);
     }
  
     /**

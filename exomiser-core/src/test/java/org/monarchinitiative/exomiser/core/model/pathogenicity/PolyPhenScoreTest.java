@@ -43,7 +43,7 @@ public class PolyPhenScoreTest {
     
     @BeforeEach
     public void setUp() {
-        instance = PolyPhenScore.valueOf(pathogenicScore);
+        instance = PolyPhenScore.of(pathogenicScore);
     }
 
     @Test
@@ -53,19 +53,19 @@ public class PolyPhenScoreTest {
     
     @Test
     public void testCompareToBefore() {
-        PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.valueOf(nonPathogenicScore);
+        PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.of(nonPathogenicScore);
         assertThat(instance.compareTo(nonPathogenicPolyphen), equalTo(-1));
     }
     
     @Test
     public void testCompareToAfter() {
-        PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.valueOf(nonPathogenicScore);
+        PolyPhenScore nonPathogenicPolyphen = PolyPhenScore.of(nonPathogenicScore);
         assertThat(nonPathogenicPolyphen.compareTo(instance), equalTo(1));
     }
     
     @Test
     public void testCompareToEquals() {
-        PolyPhenScore sameScore = PolyPhenScore.valueOf(pathogenicScore);
+        PolyPhenScore sameScore = PolyPhenScore.of(pathogenicScore);
         assertThat(instance.compareTo(sameScore), equalTo(0));
     }
 }

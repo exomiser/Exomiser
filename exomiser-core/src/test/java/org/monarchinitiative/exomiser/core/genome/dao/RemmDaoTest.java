@@ -92,14 +92,14 @@ public class RemmDaoTest {
     public void testGetPathogenicityDataSingleNucleotideVariation() {
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(MockTabixIterator.of("1\t1\t1.0"));
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.of(RemmScore.of(1f))));
     }
     
     @Test
     public void testGetPathogenicityDataInsertion() {
         Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(MockTabixIterator.of("1\t1\t0.0", "1\t2\t1.0"));
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.of(1f))));
     }
     
     @Test
@@ -107,6 +107,6 @@ public class RemmDaoTest {
         MockTabixIterator mockIterator = MockTabixIterator.of("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0", "1\t4\t0.0");
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of(RemmScore.of(1f))));
     }
 }

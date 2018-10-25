@@ -47,7 +47,7 @@ public final class SiftScore extends BasePathogenicityScore {
      */
     public static final float SIFT_THRESHOLD = 0.06f;
 
-    public static SiftScore valueOf(float score) {
+    public static SiftScore of(float score) {
         return new SiftScore(score);
     }
 

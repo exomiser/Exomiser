@@ -152,9 +152,9 @@ public class VcfResultsWriterTest {
 
     private void setUpFgfr2Gene() {
         fgfr2PassMissenseVariant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(0.89f)));
+        fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         fgfr2ContributingVariant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
+        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
         fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));

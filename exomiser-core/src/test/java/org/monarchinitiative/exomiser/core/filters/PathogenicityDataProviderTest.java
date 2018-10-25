@@ -52,8 +52,8 @@ public class PathogenicityDataProviderTest {
     private VariantDataServiceMock variantDataService;
 
     private VariantEvaluation variant;
-    private static final PathogenicityData EXPECTED_PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1f), SiftScore
-            .valueOf(0f), MutationTasterScore.valueOf(1f));
+    private static final PathogenicityData EXPECTED_PATH_DATA = PathogenicityData.of(PolyPhenScore.of(1f), SiftScore
+            .of(0f), MutationTasterScore.of(1f));
     private static final PathogenicityData EMPTY_PATH_DATA = PathogenicityData.empty();
 
     @BeforeEach

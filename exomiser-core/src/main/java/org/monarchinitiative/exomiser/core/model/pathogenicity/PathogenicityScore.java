@@ -29,11 +29,11 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
     public static PathogenicityScore of(PathogenicitySource source, float score) {
         switch (source) {
             case POLYPHEN:
-                return PolyPhenScore.valueOf(score);
+                return PolyPhenScore.of(score);
             case MUTATION_TASTER:
-                return MutationTasterScore.valueOf(score);
+                return MutationTasterScore.of(score);
             case SIFT:
-                return SiftScore.valueOf(score);
+                return SiftScore.of(score);
             case CADD:
             case REMM:
             case REVEL:

@@ -42,7 +42,7 @@ public final class PolyPhenScore extends BasePathogenicityScore {
      */
     public static final float POLYPHEN_PROB_DAMAGING_THRESHOLD = 0.956f;
 
-    public static PolyPhenScore valueOf(float score) {
+    public static PolyPhenScore of(float score) {
         return new PolyPhenScore(score);
     }
 

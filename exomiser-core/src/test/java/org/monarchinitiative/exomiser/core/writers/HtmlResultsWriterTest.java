@@ -89,8 +89,8 @@ public class HtmlResultsWriterTest {
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of(RsId.valueOf(123456), Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES)));
-        fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f), MutationTasterScore
-                .valueOf(1f), SiftScore.valueOf(0f), CaddScore.valueOf(1f)));
+        fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f), MutationTasterScore
+                .of(1f), SiftScore.of(0f), CaddScore.of(1f)));
         fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
         fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
 

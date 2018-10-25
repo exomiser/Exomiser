@@ -57,20 +57,20 @@ public class PathogenicityFilterTest {
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
 
-    private static final SiftScore SIFT_PASS = SiftScore.valueOf(SIFT_PASS_SCORE);
-    private static final SiftScore SIFT_FAIL = SiftScore.valueOf(SIFT_FAIL_SCORE);
+    private static final SiftScore SIFT_PASS = SiftScore.of(SIFT_PASS_SCORE);
+    private static final SiftScore SIFT_FAIL = SiftScore.of(SIFT_FAIL_SCORE);
 
     private static final float POLYPHEN_PASS_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f;
     private static final float POLYPHEN_FAIL_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD - 0.1f;
 
-    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.valueOf(POLYPHEN_PASS_SCORE);
-    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.valueOf(POLYPHEN_FAIL_SCORE);
+    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.of(POLYPHEN_PASS_SCORE);
+    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.of(POLYPHEN_FAIL_SCORE);
 
     private static final float MTASTER_PASS_SCORE = MutationTasterScore.MTASTER_THRESHOLD + 0.01f;
     private static final float MTASTER_FAIL_SCORE = MutationTasterScore.MTASTER_THRESHOLD - 0.01f;
 
-    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
-    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
+    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.of(MTASTER_PASS_SCORE);
+    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.of(MTASTER_FAIL_SCORE);
 
     @BeforeEach
     public void setUp() {

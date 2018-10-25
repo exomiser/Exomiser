@@ -28,7 +28,7 @@ public final class MutationTasterScore extends BasePathogenicityScore {
     
     public static final float MTASTER_THRESHOLD = 0.94f;
 
-    public static MutationTasterScore valueOf(float score) {
+    public static MutationTasterScore of(float score) {
         return new MutationTasterScore(score);
     }
 

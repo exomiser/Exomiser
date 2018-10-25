@@ -29,7 +29,7 @@ public class RevelScoreTest {
 
     @Test
     public void testRevel() {
-        RevelScore instance = RevelScore.valueOf(1.0f);
+        RevelScore instance = RevelScore.of(1.0f);
         System.out.println(instance);
     }
 }

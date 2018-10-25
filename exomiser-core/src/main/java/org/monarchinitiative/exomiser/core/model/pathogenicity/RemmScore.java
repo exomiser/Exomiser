@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  */
 public final class RemmScore extends BasePathogenicityScore {
 
-    public static RemmScore valueOf(float score) {
+    public static RemmScore of(float score) {
         return new RemmScore(score);
     }
 

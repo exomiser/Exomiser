@@ -70,7 +70,7 @@ public class CaddDaoTest {
     }
 
     private void assertPathDataContainsCaddScore(PathogenicityData result, float score) {
-        CaddScore expected = CaddScore.valueOf(score);
+        CaddScore expected = CaddScore.of(score);
         assertThat(result, equalTo(PathogenicityData.of(expected)));
     }
 

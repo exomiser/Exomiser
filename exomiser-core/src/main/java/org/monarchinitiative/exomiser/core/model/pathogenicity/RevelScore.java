@@ -35,7 +35,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  */
 class RevelScore extends BasePathogenicityScore {
 
-    public static RevelScore valueOf(float score) {
+    public static RevelScore of(float score) {
         return new RevelScore(score);
     }
 

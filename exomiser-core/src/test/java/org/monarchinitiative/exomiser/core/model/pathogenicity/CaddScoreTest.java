@@ -42,7 +42,7 @@ public class CaddScoreTest {
     
     @BeforeEach
     public void setUp() {
-        instance = CaddScore.valueOf(score);
+        instance = CaddScore.of(score);
     }
 
     @Test

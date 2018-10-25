@@ -114,7 +114,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .build();
 
         DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
-        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(SiftScore.valueOf(0f))));
+        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(SiftScore.of(0f))));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .build();
 
         DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
-        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(PolyPhenScore.of(1f))));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .build();
 
         DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
-        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(MutationTasterScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(MutationTasterScore.of(1f))));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .alleleId("54321")
                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
                 .build(),
-                SiftScore.valueOf(0f), PolyPhenScore.valueOf(1f), MutationTasterScore.valueOf(1f));
+                SiftScore.of(0f), PolyPhenScore.of(1f), MutationTasterScore.of(1f));
 
         assertThat(instance.getPathogenicityData(variant), equalTo(expected));
     }
