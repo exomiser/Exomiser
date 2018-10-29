@@ -436,7 +436,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     public float getPathogenicityScore() {
         float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-            if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
             // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
             // best to check for a REVEL prediction and defer wholly to that if present rather than do the following.
