@@ -236,7 +236,6 @@ public class FrequencyData {
      * maximum MAF in any of the databases, and returns a score that depends on
      * the MAF. Note that the frequency is expressed as a percentage.
      */
-    @JsonIgnore
     public float getScore() {
 
         float max = getMaxFreq();
