@@ -80,7 +80,7 @@ public class Frequency {
 
     @Override
     public String toString() {
-        return "Frequency{" + value + " source=" + source + '}';
+        return "Frequency{" + source + "=" + value + '}';
     }
-    
+
 }
