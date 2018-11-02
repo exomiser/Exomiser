@@ -96,6 +96,16 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testInputWithNullValues() {
+        List<Frequency> listWithNull = new ArrayList<>();
+        listWithNull.add(ESP_AA_PASS);
+        listWithNull.add(null);
+        listWithNull.add(ESP_ALL_PASS);
+        listWithNull.add(Frequency.of(FrequencySource.LOCAL, 0.001f));
+        assertThrows(NullPointerException.class, () -> FrequencyData.of(RsId.empty(), listWithNull));
+    }
+
+    @Test
     public void testGetRsId() {
         assertThat(FREQUENCY_DATA.getRsId(), equalTo(RSID));
     }
@@ -271,5 +281,10 @@ public class FrequencyDataTest {
         Frequency maxFrequency = Frequency.of(UNKNOWN, maxFreq);
         FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);
         assertThat(instance.getScore(), equalTo(0.9857672f));
+    }
+
+    @Test
+    void testString() {
+        System.out.println(FREQUENCY_DATA);
     }
 }
