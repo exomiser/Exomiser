@@ -107,6 +107,6 @@ public class FrequencyTest {
     public void testToString() {
         float frequency = 1.0f;
         Frequency instance = Frequency.of(UNKNOWN, frequency);
-        assertThat(instance.toString(), equalTo(String.format(Locale.UK, "Frequency{%s source=UNKNOWN}", frequency)));
+        assertThat(instance.toString(), equalTo(String.format(Locale.UK, "Frequency{UNKNOWN=%s}", frequency)));
     }
 }
