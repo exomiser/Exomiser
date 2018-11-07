@@ -94,7 +94,7 @@
         <htsjdk.version>2.16.1</htsjdk.version>
         <guava.version>22.0</guava.version>
         <protobuf.version>3.5.1</protobuf.version>
-        <spring-boot.version>2.0.4.RELEASE</spring-boot.version>
+        <spring-boot.version>2.1.0.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -191,6 +191,11 @@
 
         <!--Test dependencies-->
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
@@ -211,23 +216,16 @@
             <artifactId>hamcrest-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Required to run Mockito with JUnit Jupiter-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>2.23.0</version>
             <scope>test</scope>
         </dependency>
         <!-- ByteBuddy 1.9.0+ required for compiling on Java 11 -->
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -247,10 +245,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
-                <configuration>
-                    <forkCount>3</forkCount>
-                    <reuseForks>true</reuseForks>
-                </configuration>
+                <!-- Don't enable parallel tests as these will fail in the autoconfigure module due to MVStore
+                only being able to be opened once by any given JVM -->
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
