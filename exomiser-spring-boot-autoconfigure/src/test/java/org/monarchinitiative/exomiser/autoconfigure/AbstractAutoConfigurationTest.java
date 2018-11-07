@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.autoconfigure;
 
 import org.junit.jupiter.api.AfterEach;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -48,7 +48,8 @@ public abstract class AbstractAutoConfigurationTest {
     protected void load(Class<?> config, String... environment) {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
         ctx.register(config);
-        EnvironmentTestUtils.addEnvironment(ctx, environment);
+        TestPropertyValues.of(environment)
+                .applyTo(ctx);
         ctx.refresh();
         this.context = ctx;
     }
