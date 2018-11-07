@@ -115,10 +115,6 @@ public class VariantDataServiceImplTest {
         assertThat(instance, notNullValue());
     }
 
-    /*
-     * Ignore until sort out how VariantDataService should behave for CADD vs
-     * PathogenictyFilter swithc
-     */
     @Test
     public void serviceReturnsPathogenicityDataForVariant() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT));
