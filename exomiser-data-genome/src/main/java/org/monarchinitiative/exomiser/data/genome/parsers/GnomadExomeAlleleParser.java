@@ -18,16 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.phenotype;
+package org.monarchinitiative.exomiser.data.genome.parsers;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.google.common.collect.ImmutableSet;
 
-@SpringBootTest(classes = ExomiserDataPhenotypeApplication.class)
-public class ExomiserDataPhenotypeApplicationTest {
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+public class GnomadExomeAlleleParser extends ExacAlleleParser {
 
-    @Test
-    public void contextLoads() {
+    public GnomadExomeAlleleParser() {
+        super(ExacPopulationKey.GNOMAD_EXOMES, ImmutableSet.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
     }
-
 }

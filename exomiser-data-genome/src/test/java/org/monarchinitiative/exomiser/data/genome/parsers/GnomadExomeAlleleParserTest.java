@@ -30,11 +30,11 @@ import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.GN
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExacAlleleParserGnomadExomeTest extends AbstractAlleleParserTester<ExacAlleleParser> {
+public class GnomadExomeAlleleParserTest extends AbstractAlleleParserTester<GnomadExomeAlleleParser> {
 
     @Override
-    public ExacAlleleParser newInstance() {
-        return new ExacAlleleParser(ExacPopulationKey.GNOMAD_EXOMES);
+    public GnomadExomeAlleleParser newInstance() {
+        return new GnomadExomeAlleleParser();
     }
 
     @Test

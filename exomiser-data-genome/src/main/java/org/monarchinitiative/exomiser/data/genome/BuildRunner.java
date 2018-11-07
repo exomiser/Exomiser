@@ -119,6 +119,17 @@ public class BuildRunner implements ApplicationRunner {
 //        logger.info("Jannovar version: {}", Jannovar.getVersion());
 //        String[] arguments = new String[] {"download",  "-d", "hg19/refseq"};
 //        Jannovar.main(arguments);
+        // Convert to new proto format:
+//        List<String> resourcesNames = ImmutableList.of("ensembl", "refseq", "ucsc");
+//
+//        resourcesNames.parallelStream().forEach(resourceName -> {
+//            System.out.printf("Converting %s_%s%n", assembly, resourceName);
+//            String inputName = String.format("%s_%s.ser", assembly, resourceName);
+//            JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Paths.get(inputName));
+//            String outputName = String.format("%s_transcripts_%s.ser", buildString, resourceName);
+//            JannovarDataProtoSerialiser.save(Paths.get(outputName), jannovarData);
+//        });
+
 
         logger.info("Finished build {}", buildInfo.getBuildString());
     }

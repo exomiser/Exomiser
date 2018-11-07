@@ -110,7 +110,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.EXAC_EXOMES));
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacExomeAlleleParser());
     }
 
     public AlleleResource dbnsfpAlleleResource() {
@@ -142,7 +142,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.GNOMAD_GENOMES));
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new GnomadGenomeAlleleParser());
     }
 
     public AlleleResource gnomadExomeAlleleResource() {
@@ -150,7 +150,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.GNOMAD_EXOMES));
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new GnomadExomeAlleleParser());
     }
 
     private AlleleResourceProperties getAlleleResourceProperties(String namespacePrefix) {

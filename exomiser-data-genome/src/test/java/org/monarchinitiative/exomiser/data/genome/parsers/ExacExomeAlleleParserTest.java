@@ -34,11 +34,11 @@ import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExacAlleleParserExacExomeTest extends AbstractAlleleParserTester<ExacAlleleParser> {
+public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacExomeAlleleParser> {
 
     @Override
-    public ExacAlleleParser newInstance() {
-        return new ExacAlleleParser(ExacPopulationKey.EXAC_EXOMES);
+    public ExacExomeAlleleParser newInstance() {
+        return new ExacExomeAlleleParser();
     }
 
     @Test

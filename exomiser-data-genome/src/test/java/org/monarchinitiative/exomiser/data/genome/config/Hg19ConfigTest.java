@@ -109,7 +109,7 @@ public class Hg19ConfigTest {
 
         AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/ExAC.r0.3.1.sites.vep.vcf.gz"));
         assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        ExacAlleleParser exacAlleleParser = (ExacAlleleParser) alleleResource.getAlleleParser();
+        ExacExomeAlleleParser exacAlleleParser = (ExacExomeAlleleParser) alleleResource.getAlleleParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.EXAC_EXOMES));
         assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
     }
@@ -120,7 +120,7 @@ public class Hg19ConfigTest {
 
         AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/gnomad.genomes.r2.0.1.sites.noVEP.vcf.gz"));
         assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        ExacAlleleParser exacAlleleParser = (ExacAlleleParser) alleleResource.getAlleleParser();
+        GnomadGenomeAlleleParser exacAlleleParser = (GnomadGenomeAlleleParser) alleleResource.getAlleleParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_GENOMES));
         assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
     }
@@ -131,7 +131,7 @@ public class Hg19ConfigTest {
 
         AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/gnomad.exomes.r2.0.1.sites.noVEP.vcf.gz"));
         assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        ExacAlleleParser exacAlleleParser = (ExacAlleleParser) alleleResource.getAlleleParser();
+        GnomadExomeAlleleParser exacAlleleParser = (GnomadExomeAlleleParser) alleleResource.getAlleleParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_EXOMES));
         assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
     }
