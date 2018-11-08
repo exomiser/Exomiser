@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -123,11 +123,12 @@ public class Main implements ApplicationRunner {
 
     private static void migrateH2Database(DataSource h2DataSource, Map<String, String> propertyPlaceHolders) {
         logger.info("Migrating exomiser H2 database...");
-        Flyway h2Flyway = new Flyway();
-        h2Flyway.setDataSource(h2DataSource);
-        h2Flyway.setSchemas("EXOMISER");
-        h2Flyway.setLocations("migration/common", "migration/h2");
-        h2Flyway.setPlaceholders(propertyPlaceHolders);
+        Flyway h2Flyway = Flyway.configure()
+                .dataSource(h2DataSource)
+                .schemas("EXOMISER")
+                .locations("migration/common", "migration/h2")
+                .placeholders(propertyPlaceHolders)
+                .load();
         h2Flyway.clean();
         h2Flyway.migrate();
     }

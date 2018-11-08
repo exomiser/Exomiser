@@ -154,11 +154,12 @@ public class GenomeDatabaseBuildRunner {
         propertyPlaceHolders.put("import.path", genomeDataPath.toString());
 
         logger.info("Migrating {} genome database...", buildInfo.getBuildString());
-        Flyway h2Flyway = new Flyway();
-        h2Flyway.setDataSource(dataSource);
-        h2Flyway.setSchemas("EXOMISER");
-        h2Flyway.setLocations("classpath:db/migration");
-        h2Flyway.setPlaceholders(propertyPlaceHolders);
+        Flyway h2Flyway = Flyway.configure()
+                .dataSource(dataSource)
+                .schemas("EXOMISER")
+                .locations("classpath:db/migration")
+                .placeholders(propertyPlaceHolders)
+                .load();
         h2Flyway.clean();
         h2Flyway.migrate();
     }
