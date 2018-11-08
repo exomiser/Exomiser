@@ -79,6 +79,16 @@ public class PathogenicityDataTest {
         PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), Collections.emptySet());
         assertThat(instance.getClinVarData().isEmpty(), is(true));
         assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
+        assertThat(instance.isEmpty(), is(true));
+        assertThat(instance, equalTo(PathogenicityData.empty()));
+        assertThat(PathogenicityData.of(), equalTo(PathogenicityData.empty()));
+    }
+
+    @Test
+    public void testVarArgsPathScores() {
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        assertThat(instance.hasPredictedScore(), is(true));
+        assertThat(instance.hasClinVarData(), is(false));
     }
 
     @Test

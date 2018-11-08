@@ -38,33 +38,38 @@ public class PathogenicityData {
     private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
     public static PathogenicityData of(PathogenicityScore pathScore) {
-        return new PathogenicityData(ClinVarData.empty(), Collections.singletonList(pathScore));
+        return of(ClinVarData.empty(), Collections.singletonList(pathScore));
     }
 
     public static PathogenicityData of(PathogenicityScore... pathScore) {
-        return new PathogenicityData(ClinVarData.empty(), Arrays.asList(pathScore));
+        return of(ClinVarData.empty(), Arrays.asList(pathScore));
     }
 
     public static PathogenicityData of(Collection<PathogenicityScore> pathScores) {
-        return new PathogenicityData(ClinVarData.empty(), pathScores);
+        return of(ClinVarData.empty(), pathScores);
     }
 
     /**
      * @since 10.1.0
      */
     public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore pathScore) {
-        return new PathogenicityData(clinVarData, Collections.singletonList(pathScore));
+        return of(clinVarData, Collections.singletonList(pathScore));
     }
 
     /**
      * @since 10.1.0
-     */public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore... pathScore) {
-        return new PathogenicityData(clinVarData, Arrays.asList(pathScore));
+     */
+    public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore... pathScore) {
+        return of(clinVarData, Arrays.asList(pathScore));
     }
 
     /**
      * @since 10.1.0
-     */public static PathogenicityData of(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+     */
+    public static PathogenicityData of(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+        if (clinVarData.isEmpty() && pathScores.isEmpty()) {
+            return EMPTY_DATA;
+        }
         return new PathogenicityData(clinVarData, pathScores);
     }
 
