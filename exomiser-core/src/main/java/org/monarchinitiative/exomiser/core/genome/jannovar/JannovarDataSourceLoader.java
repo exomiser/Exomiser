@@ -48,8 +48,8 @@ public class JannovarDataSourceLoader {
         try {
             return JannovarDataProtoSerialiser.load(transcriptFilePath);
         } catch (Exception e) {
-            logger.warn("Unable to load Jannovar data - {}", e.getMessage());
-            logger.warn("Incorrect Jannovar data format? Will try the old version...");
+            logger.debug("Unable to load Jannovar data - {}", e.getMessage());
+            logger.debug("Incorrect Jannovar data format? Will try the old version...");
         }
         try {
             // if we've got here, try again using the original java serializable-based format (small file-size, but slower load-time)
