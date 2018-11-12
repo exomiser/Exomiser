@@ -29,7 +29,8 @@ import java.util.Objects;
  * <p>
  * It will not accept multiple allele VCF strings and it will not split MNV into SNP.
  * <p>
- * Minimisation follows the specification detailed here: http://genome.sph.umich.edu/wiki/Variant_Normalization
+ * Minimisation follows the specification of Tan et al. 2015 https://dx.doi.org/10.1093/bioinformatics/btv112
+ * Further details here: http://genome.sph.umich.edu/wiki/Variant_Normalization
  * and as discussed here: https://macarthurlab.org/2014/04/28/converting-genetic-variants-to-their-minimal-representation
  * <p>
  * A variant is considered minimised if:
