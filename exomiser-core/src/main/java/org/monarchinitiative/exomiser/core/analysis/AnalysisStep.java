@@ -39,12 +39,12 @@ public interface AnalysisStep {
 
     @JsonIgnore
     default boolean isInheritanceModeDependent() {
-        return InheritanceFilter.class.isInstance(this) || OmimPriority.class.isInstance(this);
+        return this instanceof InheritanceFilter || this instanceof OmimPriority;
     }
 
     @JsonIgnore
     default boolean isVariantFilter() {
-        return VariantFilter.class.isInstance(this);
+        return this instanceof VariantFilter;
     }
 
     @JsonIgnore
@@ -54,7 +54,7 @@ public interface AnalysisStep {
             //hence their exclusion here
             return false;
         }
-        return Prioritiser.class.isInstance(this) || PriorityScoreFilter.class.isInstance(this);
+        return this instanceof Prioritiser || this instanceof PriorityScoreFilter;
     }
 
     @JsonIgnore
