@@ -155,6 +155,11 @@ public class PathogenicityData {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }
 
+        // Once upon a time we used score-specific cutoffs. These are present in the score classes:
+        // Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown
+        // Polyphen2 (HVAR): "D" (> 0.956,probably damaging), "P": [0.447-0.955],  possibly damaging, and "B", <0.447, benign.
+        // SIFT: "D"<0.05, damaging and "T">0.05, tolerated
+
         PathogenicityScore mostPathogenicPredictedScore = getMostPathogenicScore();
         //Thanks to SIFT being about tolerance rather than pathogenicity, the score is inverted
         if (mostPathogenicPredictedScore.getClass() == SiftScore.class) {
