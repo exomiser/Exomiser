@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -143,6 +144,11 @@ public class AnalysisBuilder {
 
     public AnalysisBuilder addIntervalFilter(GeneticInterval interval) {
         analysisSteps.add(new IntervalFilter(interval));
+        return this;
+    }
+
+    public AnalysisBuilder addIntervalFilter(Collection<ChromosomalRegion> chromosomalRegions) {
+        analysisSteps.add(new IntervalFilter(chromosomalRegions));
         return this;
     }
 
