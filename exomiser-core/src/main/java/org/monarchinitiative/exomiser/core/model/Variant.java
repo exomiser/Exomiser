@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.List;
@@ -45,10 +46,12 @@ public interface Variant extends VariantCoordinates {
 
     public boolean hasTranscriptAnnotations();
 
+    @JsonIgnore
     public default boolean isNonCodingVariant() {
         return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
     }
 
+    @JsonIgnore
     public default boolean isCodingVariant() {
         return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
     }
