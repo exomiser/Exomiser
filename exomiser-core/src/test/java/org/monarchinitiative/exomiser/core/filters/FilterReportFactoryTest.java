@@ -287,11 +287,10 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeInheritanceFilterReport() {
-        ModeOfInheritance expectedInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Filter filter = new InheritanceFilter(expectedInheritanceMode);
+        Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Genes filtered for compatibility with AUTOSOMAL_DOMINANT inheritance.");
+        ImmutableList<String> messages = ImmutableList.of("Genes filtered for compatibility with AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE inheritance.");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);

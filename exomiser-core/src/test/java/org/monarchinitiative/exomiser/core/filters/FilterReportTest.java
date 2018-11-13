@@ -124,7 +124,7 @@ public class FilterReportTest {
 
     @Test
     public void testEqualsOtherFilterReport() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, Collections.emptyList());
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
         assertThat(instance.equals(other), is(true));
     }
 
@@ -142,7 +142,7 @@ public class FilterReportTest {
 
     @Test
     public void testToString() {
-        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, new ArrayList<String>());
+        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
         assertThat(instance.toString(), equalTo(expResult));
 
     }

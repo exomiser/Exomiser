@@ -194,7 +194,7 @@ public class FilterReportFactory {
         String inheritanceModes = filter.getCompatibleModes()
                 .stream()
                 .map(ModeOfInheritance::toString)
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(", "));
 
         List<String> messages = ImmutableList.of(String.format("Genes filtered for compatibility with %s inheritance.", inheritanceModes));
 
