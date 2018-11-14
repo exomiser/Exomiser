@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -82,8 +82,9 @@ public class RegulatoryFeatureDao {
         return regulatoryFeatures;
     }
 
-    //TODO: Jannovar VariantEffect doesn't capture these well
-    //TODO: should these also be combined with the TADs? CTCF binding sites can act as insulators, enhancers can have long-range effects within a TAD, promoters are shorter range (to my knowledge), open chromatin has what effect on expression?
+    // Should these also be combined with the TADs? CTCF binding sites can act as insulators,
+    // enhancers can have long-range effects within a TAD, promoters are shorter range (to my knowledge),
+    // open chromatin has what effect on expression?
     private RegulatoryFeature.FeatureType convertToFeatureType(String featureType) {
         switch(featureType) {
             case "Enhancer":
