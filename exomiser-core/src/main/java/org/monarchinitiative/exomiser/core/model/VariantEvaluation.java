@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -272,7 +271,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 gtStrings.set(i, "0/1");
             }
         }
-        return Joiner.on(":").join(gtStrings);
+        return String.join(":", gtStrings);
     }
 
     /**
