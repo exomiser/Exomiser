@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -361,25 +361,6 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
             super(message);
         }
     }
-
-//TODO move this to the messages
-//    /**
-//     * @return an ul list with summary of phenomizer prioritization.
-//     */
-//    @Override
-//    public String getHTMLCode() {
-//        String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
-//                this.analysedGenes, this.offTargetGenes);
-//        String t = null;
-//        if (symmetric) {
-//            t = String.format("Symmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-//        } else {
-//            t = String.format("Asymmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-//        }
-//        String u = String.format("Maximum semantic similarity score: %.2f, maximum negative log. of p-value: %.2f", this.maxSemSim, this.maxNegLogP);
-//        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
-//
-//    }
 
     @Override
     public boolean equals(Object o) {
