@@ -57,7 +57,6 @@ public class LocalFrequencyDao implements FrequencyDao {
     }
 
     private FrequencyData processResults(Variant variant) {
-//        logger.info("Fetching data for {}", variant);
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();
