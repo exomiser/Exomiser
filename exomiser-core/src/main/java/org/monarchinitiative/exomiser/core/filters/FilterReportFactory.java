@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -183,10 +184,35 @@ public class FilterReportFactory {
     }
 
     private FilterReport makeIntervalFilterReport(IntervalFilter filter, List<VariantEvaluation> variantEvaluations) {
+        List<ChromosomalRegion> chromosomalRegions = filter.getChromosomalRegions();
 
-        String message = String.format("Restricted variants to interval: %s", filter.getGeneticInterval());
+        List<String> messages = new ArrayList<>();
+        if (chromosomalRegions.size() == 1) {
+            messages.add("Restricted variants to interval:");
+        } else {
+            messages.add("Restricted variants to intervals:");
+        }
 
-        return makeVariantFilterReport(filter, variantEvaluations, message);
+        int regionsToShow = 5;
+        if (chromosomalRegions.size() <= regionsToShow) {
+            for (ChromosomalRegion chromosomalRegion : chromosomalRegions) {
+                messages.add(formatRegion(chromosomalRegion));
+            }
+        } else {
+            for (int i = 0; i < regionsToShow - 2 ; i++) {
+                ChromosomalRegion region = chromosomalRegions.get(i);
+                messages.add(formatRegion(region));
+            }
+            messages.add("...");
+            ChromosomalRegion finalRegion = chromosomalRegions.get(chromosomalRegions.size() - 1);
+            messages.add(formatRegion(finalRegion));
+        }
+
+        return makeVariantFilterReport(filter, variantEvaluations, messages);
+    }
+
+    private String formatRegion(ChromosomalRegion region) {
+        return String.format("%d:%d-%d", region.getChromosome(), region.getStart(), region.getEnd());
     }
 
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {

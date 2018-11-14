@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -277,12 +278,40 @@ public class FilterReportFactoryTest {
         Filter filter = new IntervalFilter(interval);
         FilterType filterType = FilterType.INTERVAL_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of(String.format("Restricted variants to interval: %s", interval));
+        ImmutableList<String> messages = ImmutableList.of("Restricted variants to interval:", "1:2-3");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
 
         assertThat(result, equalTo(report));
+    }
+
+    @Test
+    public void testMakeIntervalFilterReportLotsOfIntervals() {
+        List<ChromosomalRegion> intervals = new ArrayList<>();
+        intervals.add(new GeneticInterval(1, 2, 3));
+        intervals.add(new GeneticInterval(2, 2, 3));
+        intervals.add(new GeneticInterval(3, 2, 3));
+        intervals.add(new GeneticInterval(4, 2, 3));
+        intervals.add(new GeneticInterval(5, 2, 3));
+        intervals.add(new GeneticInterval(6, 2, 3));
+        intervals.add(new GeneticInterval(7, 2, 3));
+
+        Filter filter = new IntervalFilter(intervals);
+
+        ImmutableList<String> messages = ImmutableList.of(
+                "Restricted variants to intervals:",
+                "1:2-3",
+                "2:2-3",
+                "3:2-3",
+                "...",
+                "7:2-3"
+                );
+        FilterReport expected = new FilterReport(filter.getFilterType(), 0, 0, messages);
+
+        FilterReport result = instance.makeFilterReport(filter, analysisResults);
+
+        assertThat(result, equalTo(expected));
     }
 
     @Test
