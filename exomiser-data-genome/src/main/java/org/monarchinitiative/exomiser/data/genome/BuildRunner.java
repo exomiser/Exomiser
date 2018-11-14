@@ -112,24 +112,7 @@ public class BuildRunner implements ApplicationRunner {
         GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
         genomeDatabaseBuildRunner.run();
 
-        //build jannovar - can this be done via an API?
-        //zip build archive
-        // this should work but there are logging conflicts and it simply fails without an error
-//        logger.info("Building Jannovar data... ");
-//        logger.info("Jannovar version: {}", Jannovar.getVersion());
-//        String[] arguments = new String[] {"download",  "-d", "hg19/refseq"};
-//        Jannovar.main(arguments);
-        // Convert to new proto format:
-//        List<String> resourcesNames = ImmutableList.of("ensembl", "refseq", "ucsc");
-//
-//        resourcesNames.parallelStream().forEach(resourceName -> {
-//            System.out.printf("Converting %s_%s%n", assembly, resourceName);
-//            String inputName = String.format("%s_%s.ser", assembly, resourceName);
-//            JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Paths.get(inputName));
-//            String outputName = String.format("%s_transcripts_%s.ser", buildString, resourceName);
-//            JannovarDataProtoSerialiser.save(Paths.get(outputName), jannovarData);
-//        });
-
+        // Add in Jannovar gubbins
 
         logger.info("Finished build {}", buildInfo.getBuildString());
     }
