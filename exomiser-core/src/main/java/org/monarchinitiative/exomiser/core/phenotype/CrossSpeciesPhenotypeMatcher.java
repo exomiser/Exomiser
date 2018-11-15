@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,12 +21,10 @@
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
@@ -39,12 +37,7 @@ import static java.util.stream.Collectors.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
-
-    private static final Logger logger = LoggerFactory.getLogger(CrossSpeciesPhenotypeMatcher.class);
-
-    private final Organism organism;
-    private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
+class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
 
     private final QueryPhenotypeMatch queryPhenotypeMatch;
 
@@ -57,44 +50,33 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
      * @param organism                  - The organism for which these PhenotypeMatches are associated.
      * @param queryTermPhenotypeMatches - Map of query PhenotypeTerms and their corresponding PhenotypeMatches. If there is no match then an empty Set of PhenotypeMatches is expected.
      */
-    //TODO: should the constructor simply take the QueryPhenotypeMatch? This is a bit odd as the queryPhenotypeMatch is required externally to this - could then remove getBestPhenotypeMatches and getQueryPhenotypeMatch from the interface?
-    public CrossSpeciesPhenotypeMatcher(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> queryTermPhenotypeMatches) {
-        this.organism = organism;
-        this.termPhenotypeMatches = ImmutableMap.copyOf(queryTermPhenotypeMatches);
+    static CrossSpeciesPhenotypeMatcher of(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> queryTermPhenotypeMatches) {
+        QueryPhenotypeMatch queryPhenotypeMatch = new QueryPhenotypeMatch(organism, queryTermPhenotypeMatches);
+        return of(queryPhenotypeMatch);
+    }
 
-        this.queryPhenotypeMatch = new QueryPhenotypeMatch(this.organism, this.termPhenotypeMatches);
+    static CrossSpeciesPhenotypeMatcher of(QueryPhenotypeMatch queryPhenotypeMatch) {
+        return new CrossSpeciesPhenotypeMatcher(queryPhenotypeMatch);
+    }
 
-        this.matchedOrganismPhenotypeIds = queryTermPhenotypeMatches
-                .values().stream()
+    private CrossSpeciesPhenotypeMatcher(QueryPhenotypeMatch queryPhenotypeMatch) {
+        this.queryPhenotypeMatch = queryPhenotypeMatch;
+
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches = queryPhenotypeMatch.getQueryTermPhenotypeMatches();
+
+        this.matchedOrganismPhenotypeIds = termPhenotypeMatches.values()
+                .stream()
                 .flatMap(set -> set.stream().map(PhenotypeMatch::getMatchPhenotypeId))
                 .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
 
-        this.matchedQueryPhenotypeIds = queryTermPhenotypeMatches
-                .keySet().stream()
-                .map(PhenotypeTerm::getId)
-                .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
+        this.matchedQueryPhenotypeIds = queryPhenotypeMatch.getBestPhenotypeMatches()
+                .stream()
+                .map(PhenotypeMatch::getQueryPhenotypeId)
+                .collect(Collectors.toCollection(TreeSet::new));
 
-        this.mappedTerms = getCompoundKeyIndexedPhenotypeMatches();
-    }
-
-    @Override
-    public Organism getOrganism() {
-        return organism;
-    }
-
-    @Override
-    public List<PhenotypeTerm> getQueryTerms() {
-        return ImmutableList.copyOf(termPhenotypeMatches.keySet());
-    }
-
-    @Override
-    public Map<PhenotypeTerm, Set<PhenotypeMatch>> getTermPhenotypeMatches() {
-        return termPhenotypeMatches;
-    }
-
-    private Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
         //'hpId + mpId' : phenotypeMatch
-        return termPhenotypeMatches.values().stream()
+        this.mappedTerms = termPhenotypeMatches.values()
+                .stream()
                 .flatMap(Collection::stream)
                 .collect(collectingAndThen(
                         toMap(makeKey(), Function.identity()),
@@ -103,6 +85,31 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
 
     private Function<PhenotypeMatch, String> makeKey() {
         return match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId());
+    }
+
+    @Override
+    public Organism getOrganism() {
+        return queryPhenotypeMatch.getOrganism();
+    }
+
+    @Override
+    public List<PhenotypeTerm> getQueryTerms() {
+        return queryPhenotypeMatch.getQueryTerms();
+    }
+
+    @Override
+    public Map<PhenotypeTerm, Set<PhenotypeMatch>> getTermPhenotypeMatches() {
+        return queryPhenotypeMatch.getQueryTermPhenotypeMatches();
+    }
+
+    @Override
+    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
+        return queryPhenotypeMatch.getBestPhenotypeMatches();
+    }
+
+    @Override
+    public QueryPhenotypeMatch getQueryPhenotypeMatch() {
+        return queryPhenotypeMatch;
     }
 
     /**
@@ -114,19 +121,21 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
      */
     @Override
     public PhenodigmMatchRawScore matchPhenotypeIds(List<String> modelPhenotypes) {
-        List<String> matchedModelPhenotypeIds = getMatchingPhenotypes(modelPhenotypes);
-
-        //hpId
-        Set<String> hpIdsWithPhenotypeMatch = new TreeSet<>();
-        for (PhenotypeMatch match : getBestPhenotypeMatches()) {
-            hpIdsWithPhenotypeMatch.add(match.getQueryPhenotypeId());
+        // Could be HP, MP or ZP id
+        List<String> matchedModelPhenotypeIds = new ArrayList<>();
+        for (String modelPhenotype : modelPhenotypes) {
+            if (matchedOrganismPhenotypeIds.contains(modelPhenotype)) {
+                matchedModelPhenotypeIds.add(modelPhenotype);
+            }
         }
 
+        // return values
         double maxModelMatchScore = 0;
         double sumModelBestMatchScores = 0;
-
         final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms = new LinkedHashMap<>();
-        for (String hpId : hpIdsWithPhenotypeMatch) {
+
+        // calculate forwards hp-mp scores
+        for (String hpId : matchedQueryPhenotypeIds) {
             double bestMatchScore = 0;
             for (String mpId : matchedModelPhenotypeIds) {
                 String matchIds = hpId + mpId;
@@ -145,10 +154,10 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 maxModelMatchScore = Math.max(bestMatchScore, maxModelMatchScore);
             }
         }
-        // Reciprocal hits
+        // calculate reciprocal mp-hp scores
         for (String mpId : matchedModelPhenotypeIds) {
             double bestMatchScore = 0;
-            for (String hpId : hpIdsWithPhenotypeMatch) {
+            for (String hpId : matchedQueryPhenotypeIds) {
                 String matchIds = hpId + mpId;
                 if (mappedTerms.containsKey(matchIds)) {
                     PhenotypeMatch match = mappedTerms.get(matchIds);
@@ -176,16 +185,6 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 .getScore() < match.getScore()) {
             bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
         }
-    }
-
-    private List<String> getMatchingPhenotypes(List<String> phenotypeIds) {
-        ImmutableList.Builder<String> matchedPhenotypes = ImmutableList.builder();
-        for (String phenotypeId : phenotypeIds) {
-            if (matchedOrganismPhenotypeIds.contains(phenotypeId)) {
-                matchedPhenotypes.add(phenotypeId);
-            }
-        }
-        return matchedPhenotypes.build();
     }
 
     /**
@@ -238,42 +237,31 @@ public class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 .stream()
                 .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
 
-        return bestOptionalPhenotypeMatchForTerms.values().stream()
+        return bestOptionalPhenotypeMatchForTerms.values()
+                .stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
     }
 
     @Override
-    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
-        return queryPhenotypeMatch.getBestPhenotypeMatches();
-    }
-
-    @Override
-    public QueryPhenotypeMatch getQueryPhenotypeMatch() {
-        return queryPhenotypeMatch;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CrossSpeciesPhenotypeMatcher)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         CrossSpeciesPhenotypeMatcher that = (CrossSpeciesPhenotypeMatcher) o;
-        return organism == that.organism &&
-                Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches);
+        return Objects.equals(queryPhenotypeMatch, that.queryPhenotypeMatch);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(organism, termPhenotypeMatches);
+        return Objects.hash(queryPhenotypeMatch);
     }
-
 
     @Override
     public String toString() {
         return "CrossSpeciesPhenotypeMatcher{" +
-                "organism=" + organism +
-                ", termPhenotypeMatches=" + termPhenotypeMatches +
+                "organism=" + queryPhenotypeMatch.getOrganism() +
+                ", termPhenotypeMatches=" + queryPhenotypeMatch.getQueryTermPhenotypeMatches() +
                 '}';
     }
 
