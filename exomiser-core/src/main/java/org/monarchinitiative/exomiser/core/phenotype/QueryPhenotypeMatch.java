@@ -28,6 +28,15 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
+ * Immutable class representing the raw phenotype similarity matches between the input query phenotype terms (HPO) and
+ * the best possible matches for the organism in question. In the case of matching human HP-HP terms this will likely be
+ * a set of self matches, assuming the terms are above the IC threshold of 2.5. For other organisms the matches will be
+ * between the HP terms and the relevant organism phenotype ontology e.g. MP or ZP.
+ *
+ * This class pre-calculates some of the constant values for a given input phenotype required for computing the
+ * phenodigm combined score against a {@link Model} using a {@link PhenodigmModelScorer} supplied with the relevant
+ * species-specific {@link PhenotypeMatcher}.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class QueryPhenotypeMatch {
