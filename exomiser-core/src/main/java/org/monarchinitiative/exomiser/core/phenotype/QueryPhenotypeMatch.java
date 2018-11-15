@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.*;
@@ -32,6 +33,7 @@ import java.util.function.Function;
 public class QueryPhenotypeMatch {
 
     private final Organism organism;
+    private final Map<PhenotypeTerm, Set<PhenotypeMatch>> queryTermPhenotypeMatches;
 
     private final List<PhenotypeTerm> queryTerms;
     private final Set<PhenotypeMatch> bestPhenotypeMatches;
@@ -40,11 +42,12 @@ public class QueryPhenotypeMatch {
 
     QueryPhenotypeMatch(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> queryTermPhenotypeMatches) {
         this.organism = organism;
-        this.queryTerms = ImmutableList.copyOf(queryTermPhenotypeMatches.keySet());
-        this.bestPhenotypeMatches = makeBestPhenotypeMatches(queryTermPhenotypeMatches);
+        this.queryTermPhenotypeMatches = ImmutableMap.copyOf(queryTermPhenotypeMatches);
+
+        this.queryTerms = ImmutableList.copyOf(this.queryTermPhenotypeMatches.keySet());
+        this.bestPhenotypeMatches = makeBestPhenotypeMatches(this.queryTermPhenotypeMatches);
         this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
-        this.theoreticalBestAvgScore = calculateBestAverageScore(bestPhenotypeMatches, queryTermPhenotypeMatches.keySet()
-                .size());
+        this.theoreticalBestAvgScore = calculateBestAverageScore(bestPhenotypeMatches, queryTerms.size());
     }
 
     //calculates the average score of the best phenotype matches over all of query phenotypes, not just those with matches.
@@ -76,6 +79,10 @@ public class QueryPhenotypeMatch {
         return organism;
     }
 
+    public Map<PhenotypeTerm, Set<PhenotypeMatch>> getQueryTermPhenotypeMatches() {
+        return queryTermPhenotypeMatches;
+    }
+
     public List<PhenotypeTerm> getQueryTerms() {
         return queryTerms;
     }
@@ -95,17 +102,17 @@ public class QueryPhenotypeMatch {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof QueryPhenotypeMatch)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         QueryPhenotypeMatch that = (QueryPhenotypeMatch) o;
         return Double.compare(that.theoreticalMaxMatchScore, theoreticalMaxMatchScore) == 0 &&
                 Double.compare(that.theoreticalBestAvgScore, theoreticalBestAvgScore) == 0 &&
                 organism == that.organism &&
-                Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
+                Objects.equals(queryTermPhenotypeMatches, that.queryTermPhenotypeMatches);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(organism, bestPhenotypeMatches, theoreticalMaxMatchScore, theoreticalBestAvgScore);
+        return Objects.hash(organism, queryTermPhenotypeMatches, theoreticalMaxMatchScore, theoreticalBestAvgScore);
     }
 
     @Override
