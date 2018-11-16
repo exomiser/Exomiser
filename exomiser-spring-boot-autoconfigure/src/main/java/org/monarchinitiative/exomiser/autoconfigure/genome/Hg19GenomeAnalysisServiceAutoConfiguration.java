@@ -87,16 +87,10 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
         return buildGenomeAnalysisService();
     }
 
-    @Bean("hg19defaultFrequencyDao")
+    @Bean("hg19allelePropertiesDao")
     @Override
-    public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
-    }
-
-    @Bean("hg19pathogenicityDao")
-    @Override
-    public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
+    public AllelePropertiesDao allelePropertiesDao() {
+        return new AllelePropertiesDaoMvStore(mvStore);
     }
 
     @Bean("hg19localFrequencyDao")
@@ -115,5 +109,11 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Override
     public CaddDao caddDao() {
         return new CaddDao(caddIndelTabixDataSource, caddSnvTabixDataSource);
+    }
+
+    @Bean("hg19testPathDao")
+    @Override
+    public PathogenicityDao testPathScoreDao() {
+        return new TestPathogenicityScoreDao(testPathogenicitySource);
     }
 }

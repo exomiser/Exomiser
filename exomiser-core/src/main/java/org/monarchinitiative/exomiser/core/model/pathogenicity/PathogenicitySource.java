@@ -47,6 +47,7 @@ public enum PathogenicitySource {
     // https://sites.google.com/site/revelgenomics/
     // “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885
     // http://dx.doi.org/10.1016/j.ajhg.2016.08.016
-    REVEL;
-
+    REVEL,
+    // An unspecified source for use in testing new pathogenicity scores
+    TEST;
 }

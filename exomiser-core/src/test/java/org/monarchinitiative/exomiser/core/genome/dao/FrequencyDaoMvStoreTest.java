@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import com.google.common.collect.ImmutableMap;
-import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -33,21 +32,13 @@ import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
-import java.util.Map;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DefaultFrequencyDaoMvStoreProtoTest {
-
-    private DefaultFrequencyDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
-        MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
-//        return new DefaultFrequencyDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
-    }
+public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoMvStoreTest {
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
         return VariantAnnotation.builder()
@@ -61,14 +52,14 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
     @Test
     public void wrongMapName() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
+        FrequencyDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void getFrequencyDataNoData() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
+        FrequencyDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
@@ -80,7 +71,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                 .putProperties("KG", 0.04f)
                 .putProperties("ESP_AA", 0.003f)
                 .build();
-        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
@@ -89,7 +80,7 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
         Variant variant = buildVariant(1, 123245, "A", "T");
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
-        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.of("rs54321"))));
     }
 
@@ -101,10 +92,11 @@ public class DefaultFrequencyDaoMvStoreProtoTest {
                 .putProperties("KG", 0.04f)
                 .putProperties("ESP_AA", 0.003f)
                 .build();
-        DefaultFrequencyDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
-                equalTo(FrequencyData.of(RsId.of("rs54321"), Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.04f), Frequency
-                        .of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.003f))));
+                equalTo(FrequencyData.of(RsId.of("rs54321"),
+                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.04f),
+                        Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.003f))));
     }
 
 }

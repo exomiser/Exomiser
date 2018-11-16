@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -32,26 +31,18 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
-import java.util.Map;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DefaultPathogenicityDaoMvStoreProtoTest {
-
-    private DefaultPathogenicityDaoMvStoreProto newInstanceWithData(Map<AlleleKey, AlleleProperties> value) {
-        MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-//        return new DefaultPathogenicityDaoMvStoreProto(new DefaultAllelePropertiesDao(mvStore));
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
-    }
+public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoMvStoreTest {
 
     @Test
     public void wrongMapName() throws Exception {
         Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T").build();
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
     }
 
@@ -60,7 +51,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
         Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
     }
 
@@ -69,7 +60,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
         Variant frameShiftVariant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .build();
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of());
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getPathogenicityData(frameShiftVariant), equalTo(PathogenicityData.empty()));
     }
 
@@ -82,7 +73,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.getDefaultInstance();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
     }
 
@@ -97,7 +88,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .putProperties("KG", 0.04f)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
     }
 
@@ -113,7 +104,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .putProperties("SIFT", 0.0f)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(SiftScore.of(0f))));
     }
 
@@ -128,7 +119,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .putProperties("POLYPHEN", 1.0f)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(PolyPhenScore.of(1f))));
     }
 
@@ -143,7 +134,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .putProperties("MUT_TASTER", 1.0f)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.of(MutationTasterScore.of(1f))));
     }
 
@@ -159,7 +150,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .setClinVar(clinVar)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         PathogenicityData expected = PathogenicityData.of(ClinVarData.builder()
                 .alleleId("54321")
                 .primaryInterpretation(ClinVarData.ClinSig.ASSOCIATION)
@@ -185,7 +176,7 @@ public class DefaultPathogenicityDaoMvStoreProtoTest {
                 .setClinVar(clinVar)
                 .build();
 
-        DefaultPathogenicityDaoMvStoreProto instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        PathogenicityDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
 
         PathogenicityData expected = PathogenicityData.of(ClinVarData.builder()
                 .alleleId("54321")

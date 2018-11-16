@@ -23,10 +23,9 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.*;
-import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
-import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 
 /**
  * Interface to mark classes from the {@link org.monarchinitiative.exomiser.core.genome} package which need to have
@@ -51,13 +50,14 @@ public interface GenomeAnalysisServiceConfiguration {
     //The classes below require Spring to managed the caching
     public GenomeAnalysisService genomeAnalysisService();
 
-    public FrequencyDao defaultFrequencyDao();
+    public AllelePropertiesDao allelePropertiesDao();
 
     public FrequencyDao localFrequencyDao();
 
-    public PathogenicityDao pathogenicityDao();
+    public PathogenicityDao remmDao();
 
-    public RemmDao remmDao();
+    public PathogenicityDao caddDao();
 
-    public CaddDao caddDao();
+    public PathogenicityDao testPathScoreDao();
+
 }

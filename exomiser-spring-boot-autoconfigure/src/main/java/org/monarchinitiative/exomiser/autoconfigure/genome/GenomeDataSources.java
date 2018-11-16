@@ -52,6 +52,7 @@ public class GenomeDataSources {
     private Path caddIndelPath;
     private Path remmPath;
 
+    private Path testPathogenicityScorePath;
     /**
      * Static constructor which will automatically resolve the resources for the supplied {@code GenomeProperties} where
      * the data directory for the data version and genome assembly are to be found on the {@code exomiserDataDirectory}
@@ -76,6 +77,8 @@ public class GenomeDataSources {
         Path caddIndelPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddInDelPath(), genomeDataResolver);
         Path remmPath = resolvePathOrNullIfEmpty(genomeProperties.getRemmPath(), genomeDataResolver);
 
+        Path testPathogenicityPath = resolvePathOrNullIfEmpty(genomeProperties.getTestPathogenicityScorePath(), genomeDataResolver);
+
         return GenomeDataSources.builder()
                 .transcriptFilePath(transcriptFilePath)
                 .mvStorePath(mvStoreFilePath)
@@ -84,6 +87,7 @@ public class GenomeDataSources {
                 .caddSnvPath(caddSnvPath)
                 .caddIndelPath(caddIndelPath)
                 .remmPath(remmPath)
+                .testPathogenicityScorePath(testPathogenicityPath)
                 .build();
     }
 
@@ -135,6 +139,7 @@ public class GenomeDataSources {
         this.caddSnvPath = builder.caddSnvPath;
         this.caddIndelPath = builder.caddIndelPath;
         this.remmPath = builder.remmPath;
+        this.testPathogenicityScorePath = builder.testPathogenicityPath;
     }
 
     public Path getTranscriptFilePath() {
@@ -167,6 +172,10 @@ public class GenomeDataSources {
 
     public Optional<Path> getRemmPath() {
         return Optional.ofNullable(remmPath);
+    }
+
+    public Optional<Path> getTestPathogenicityPath() {
+        return Optional.ofNullable(testPathogenicityScorePath);
     }
 
     @Override
@@ -216,6 +225,7 @@ public class GenomeDataSources {
         private Path caddSnvPath = null;
         private Path caddIndelPath = null;
         private Path remmPath = null;
+        private Path testPathogenicityPath = null;
 
         public Builder transcriptFilePath(Path transcriptFilePath) {
             Objects.requireNonNull(transcriptFilePath);
@@ -268,6 +278,11 @@ public class GenomeDataSources {
          */
         public Builder remmPath(Path remmPath) {
             this.remmPath = remmPath;
+            return this;
+        }
+
+        public Builder testPathogenicityScorePath(Path testPathogenicityPath) {
+            this.testPathogenicityPath = testPathogenicityPath;
             return this;
         }
 

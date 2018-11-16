@@ -87,16 +87,10 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
         return buildGenomeAnalysisService();
     }
 
-    @Bean("hg38defaultFrequencyDao")
+    @Bean("hg38allelePropertiesDao")
     @Override
-    public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDaoMvStoreProto(mvStore);
-    }
-
-    @Bean("hg38pathogenicityDao")
-    @Override
-    public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDaoMvStoreProto(mvStore);
+    public AllelePropertiesDao allelePropertiesDao() {
+        return new AllelePropertiesDaoMvStore(mvStore);
     }
 
     @Bean("hg38localFrequencyDao")
@@ -115,5 +109,11 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Override
     public CaddDao caddDao() {
         return new CaddDao(caddIndelTabixDataSource, caddSnvTabixDataSource);
+    }
+
+    @Bean("hg38testPathDao")
+    @Override
+    public PathogenicityDao testPathScoreDao() {
+        return new TestPathogenicityScoreDao(testPathogenicitySource);
     }
 }

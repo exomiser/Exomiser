@@ -49,6 +49,7 @@ public class GenomeDataSourceLoader {
     private final TabixDataSource caddSnvTabixDataSource;
     private final TabixDataSource caddIndelTabixDataSource;
     private final TabixDataSource remmTabixDataSource;
+    private final TabixDataSource testPathogenicityTabixDataSource;
 
     public static GenomeDataSourceLoader load(GenomeDataSources genomeDataSources) {
         return new GenomeDataSourceLoader(genomeDataSources);
@@ -69,6 +70,7 @@ public class GenomeDataSourceLoader {
         this.caddSnvTabixDataSource = getTabixDataSourceOrDefault("CADD snv", genomeDataSources.getCaddSnvPath());
         this.caddIndelTabixDataSource = getTabixDataSourceOrDefault("CADD InDel", genomeDataSources.getCaddIndelPath());
         this.remmTabixDataSource = getTabixDataSourceOrDefault("REMM", genomeDataSources.getRemmPath());
+        this.testPathogenicityTabixDataSource = getTabixDataSourceOrDefault("TEST", genomeDataSources.getTestPathogenicityPath());
     }
 
     private TabixDataSource getTabixDataSourceOrDefault(String dataSourceName, Optional<Path> tabixPath) {
@@ -111,6 +113,10 @@ public class GenomeDataSourceLoader {
         return remmTabixDataSource;
     }
 
+    public TabixDataSource getTestPathogenicityTabixDataSource() {
+        return testPathogenicityTabixDataSource;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,5 +135,4 @@ public class GenomeDataSourceLoader {
     public int hashCode() {
         return Objects.hash(dataSource, jannovarData, mvStore, localFrequencyTabixDataSource, caddSnvTabixDataSource, caddIndelTabixDataSource, remmTabixDataSource);
     }
-
 }

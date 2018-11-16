@@ -53,12 +53,20 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
         assertThat(context.getBean("hg19variantDataService"), instanceOf(VariantDataService.class));
         assertThat(context.getBean("hg19genomeDataService"), instanceOf(GenomeDataService.class));
 
-        assertThat(context.getBean("hg19defaultFrequencyDao"), instanceOf(DefaultFrequencyDaoMvStoreProto.class));
-        assertThat(context.getBean("hg19pathogenicityDao"), instanceOf(DefaultPathogenicityDaoMvStoreProto.class));
+        assertThat(context.getBean("hg19allelePropertiesDao"), instanceOf(AllelePropertiesDao.class));
 
         assertThat(context.getBean("hg19remmDao"), instanceOf(RemmDao.class));
         assertThat(context.getBean("hg19caddDao"), instanceOf(CaddDao.class));
         assertThat(context.getBean("hg19localFrequencyDao"), instanceOf(LocalFrequencyDao.class));
+    }
+
+    @Test
+    public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
+
+        String testPathogenicitySourcePath = TEST_DATA.resolve("remmData.tsv.gz").toAbsolutePath().toString();
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
+
+        assertThat(context.getBean("hg19testPathDao"), instanceOf(TestPathogenicityScoreDao.class));
     }
 
     @Configuration

@@ -26,14 +26,18 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Mock of VariantDataService to provide canned responses for variants. Enables
@@ -83,13 +87,25 @@ public class VariantDataServiceMock implements VariantDataService {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
-        return VariantDataServiceImpl.frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
+
+        List<Frequency> wanted = allFrequencyData.getKnownFrequencies()
+                .stream()
+                .filter(frequency -> frequencySources.contains(frequency.getSource()))
+                .collect(Collectors.toList());
+
+        return FrequencyData.of(allFrequencyData.getRsId(), wanted);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
-        return VariantDataServiceImpl.pathDataFromSpecifiedDataSources(pathData.getClinVarData(), pathData.getPredictedPathogenicityScores(), pathogenicitySources);
+
+        List<PathogenicityScore> wanted = pathData.getPredictedPathogenicityScores()
+                .stream()
+                .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
+                .collect(Collectors.toList());
+
+        return PathogenicityData.of(pathData.getClinVarData(), wanted);
     }
 
 }

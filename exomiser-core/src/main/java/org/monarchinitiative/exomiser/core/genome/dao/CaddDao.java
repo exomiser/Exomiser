@@ -41,7 +41,7 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class CaddDao {
+public class CaddDao implements PathogenicityDao {
  
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
 
@@ -57,6 +57,7 @@ public class CaddDao {
             @Cacheable(cacheNames = "hg19.cadd", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
             @Cacheable(cacheNames = "hg38.cadd", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
     })
+    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting CADD data for {}", variant);
         return processResults(variant);

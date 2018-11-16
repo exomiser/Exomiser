@@ -41,7 +41,7 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class RemmDao {
+public class RemmDao implements PathogenicityDao {
 
     private final Logger logger = LoggerFactory.getLogger(RemmDao.class);
 
@@ -55,6 +55,7 @@ public class RemmDao {
             @Cacheable(cacheNames = "hg19.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
             @Cacheable(cacheNames = "hg38.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
     })
+    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting REMM data for {}", variant);
         // REMM has not been trained on missense variants so skip these
