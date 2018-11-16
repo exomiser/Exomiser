@@ -20,10 +20,9 @@
 
 package org.monarchinitiative.exomiser.data.phenotype;
 
+import com.google.common.collect.ImmutableMap;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.exomiser.data.phenotype.config.AppConfig;
-import org.monarchinitiative.exomiser.data.phenotype.config.DataSourceConfig;
-import org.monarchinitiative.exomiser.data.phenotype.config.ResourceConfig;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceDownloadHandler;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceExtractionHandler;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,13 +49,13 @@ public class Main implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private final AppConfig appConfig;
-    private final ResourceConfig resourceConfig;
-    private final DataSourceConfig dataSourceConfig;
+    private final Set<Resource> externalResources;
+    private final DataSource h2DataSource;
 
-    public Main(AppConfig appConfig, ResourceConfig resourceConfig, DataSourceConfig dataSourceConfig) {
+    public Main(AppConfig appConfig, Set<Resource> resources, DataSource exomiserH2DataSource) {
         this.appConfig = appConfig;
-        this.resourceConfig = resourceConfig;
-        this.dataSourceConfig = dataSourceConfig;
+        this.externalResources = resources;
+        this.h2DataSource = exomiserH2DataSource;
     }
 
     @Override
@@ -65,8 +63,6 @@ public class Main implements ApplicationRunner {
         //set the Paths
         Path dataPath = appConfig.dataPath();
         Path downloadPath = appConfig.downloadPath();
-
-        Set<Resource> externalResources = resourceConfig.resources();
 
         //Download the Resources
         boolean downloadResources = appConfig.downloadResources();
@@ -106,22 +102,19 @@ public class Main implements ApplicationRunner {
             logger.info(resource.getStatus());
         }
 
-        logger.info("Migrating exomiser databases...");
-        //define where the data import path is otherwise everything will fail
-        Map<String, String> propertyPlaceHolders = new HashMap<>();
-        propertyPlaceHolders.put("import.path", dataPath.toString());
-
-
         boolean migrateH2 = appConfig.migrateH2();
         if (migrateH2) {
-            DataSource h2DataSource = dataSourceConfig.exomiserH2DataSource();
-            migrateH2Database(h2DataSource, propertyPlaceHolders);
+            logger.info("Migrating exomiser databases...");
+            migrateH2Database(dataPath);
         } else {
             logger.info("Skipping migration of H2 database.");
         }
     }
 
-    private static void migrateH2Database(DataSource h2DataSource, Map<String, String> propertyPlaceHolders) {
+    private void migrateH2Database(Path importDataPath) {
+        //define where the data import path is for Flyway to read in the data
+        Map<String, String> propertyPlaceHolders = ImmutableMap.of("import.path", importDataPath.toString());
+
         logger.info("Migrating exomiser H2 database...");
         Flyway h2Flyway = Flyway.configure()
                 .dataSource(h2DataSource)
