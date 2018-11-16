@@ -26,7 +26,6 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKey;
 
 import java.lang.reflect.Method;
-import java.util.StringJoiner;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -52,16 +51,6 @@ public class VariantKeyGenerator implements KeyGenerator {
             }
         }
         return new SimpleKey(params);
-    }
-
-    private static String generateVariantKey(Variant variant) {
-        StringJoiner stringJoiner = new StringJoiner("-");
-        stringJoiner.add(variant.getGenomeAssembly().toString());
-        stringJoiner.add(variant.getChromosomeName());
-        stringJoiner.add(String.valueOf(variant.getPosition()));
-        stringJoiner.add(variant.getRef());
-        stringJoiner.add(variant.getAlt());
-        return stringJoiner.toString();
     }
 
 }
