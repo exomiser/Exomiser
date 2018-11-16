@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
@@ -72,7 +71,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
         this.matchedQueryPhenotypeIds = queryPhenotypeMatch.getBestPhenotypeMatches()
                 .stream()
                 .map(PhenotypeMatch::getQueryPhenotypeId)
-                .collect(Collectors.toCollection(TreeSet::new));
+                .collect(toCollection(TreeSet::new));
 
         //'hpId + mpId' : phenotypeMatch
         this.mappedTerms = termPhenotypeMatches.values()
