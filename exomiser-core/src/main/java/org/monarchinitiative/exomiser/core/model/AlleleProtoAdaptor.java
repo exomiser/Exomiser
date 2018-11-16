@@ -118,7 +118,7 @@ public class AlleleProtoAdaptor {
     }
 
     private static List<Frequency> parseFrequencyData(Map<String, Float> values) {
-        List<Frequency> frequencies = new ArrayList<>();
+        List<Frequency> frequencies = new ArrayList<>(values.size());
         for (Map.Entry<String, Float> field : values.entrySet()) {
             String key = field.getKey();
             if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
