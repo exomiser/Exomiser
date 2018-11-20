@@ -27,6 +27,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScor
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 
@@ -64,6 +66,10 @@ public class TestPathogenicityScoreDao implements PathogenicityDao {
         this.tabixDataSource = tabixDataSource;
     }
 
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.test_path", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.test_path", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting TEST pathogenicity score for {}", variant);

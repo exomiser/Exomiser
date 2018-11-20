@@ -22,7 +22,6 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -42,7 +41,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Default implementation of the VariantDataService. This is a
+ * Default implementation of the VariantDataService.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -50,18 +49,21 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
 
-    private final AllelePropertiesDao allelePropertiesDao;
+    // Default data sources
+    private final FrequencyDao defaultFrequencyDao;
+    private final PathogenicityDao defaultPathogenicityDao;
 
+    // Optional data sources
     private final FrequencyDao localFrequencyDao;
-
     private final PathogenicityDao caddDao;
     private final PathogenicityDao remmDao;
     private final PathogenicityDao testPathScoreDao;
 
     private VariantDataServiceImpl(Builder builder) {
-        this.allelePropertiesDao = builder.allelePropertiesDao;
-        this.localFrequencyDao = builder.localFrequencyDao;
+        this.defaultFrequencyDao = builder.defaultFrequencyDao;
+        this.defaultPathogenicityDao = builder.defaultPathogenicityDao;
 
+        this.localFrequencyDao = builder.localFrequencyDao;
         this.caddDao = builder.caddDao;
         this.remmDao = builder.remmDao;
         this.testPathScoreDao = builder.testPathScoreDao;
@@ -71,7 +73,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         List<Frequency> allFrequencies = new ArrayList<>();
 
-        FrequencyData defaultFrequencyData = allelePropertiesDao.getFrequencyData(variant);
+        FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
         List<Frequency> defaultFrequencies = defaultFrequencyData.getKnownFrequencies();
         for (Frequency frequency : defaultFrequencies) {
             if (frequencySources.contains(frequency.getSource())) {
@@ -102,7 +104,7 @@ public class VariantDataServiceImpl implements VariantDataService {
         // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
         // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
         if (variantEffect != VariantEffect.SYNONYMOUS_VARIANT && variant.isCodingVariant()) {
-            daosToQuery.add(allelePropertiesDao);
+            daosToQuery.add(defaultPathogenicityDao);
         }
         else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
             //REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
@@ -152,7 +154,8 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     public static class Builder {
 
-        private AllelePropertiesDao allelePropertiesDao;
+        private FrequencyDao defaultFrequencyDao;
+        private PathogenicityDao defaultPathogenicityDao;
 
         private FrequencyDao localFrequencyDao;
 
@@ -160,8 +163,13 @@ public class VariantDataServiceImpl implements VariantDataService {
         private PathogenicityDao remmDao;
         private PathogenicityDao testPathScoreDao;
 
-        public Builder allelePropertiesDao(AllelePropertiesDao allelePropertiesDao) {
-            this.allelePropertiesDao = allelePropertiesDao;
+        public Builder defaultFrequencyDao(FrequencyDao defaultFrequencyDao) {
+            this.defaultFrequencyDao = defaultFrequencyDao;
+            return this;
+        }
+
+        public Builder defaultPathogenicityDao(PathogenicityDao defaultPathogenicityDao) {
+            this.defaultPathogenicityDao = defaultPathogenicityDao;
             return this;
         }
 

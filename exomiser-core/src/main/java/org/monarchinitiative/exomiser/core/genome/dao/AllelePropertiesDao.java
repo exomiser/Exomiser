@@ -25,9 +25,10 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 /**
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface AllelePropertiesDao extends FrequencyDao, PathogenicityDao {
+public interface AllelePropertiesDao {
 
     AlleleProto.AlleleProperties getAlleleProperties(AlleleProto.AlleleKey alleleKey, GenomeAssembly genomeAssembly);
 

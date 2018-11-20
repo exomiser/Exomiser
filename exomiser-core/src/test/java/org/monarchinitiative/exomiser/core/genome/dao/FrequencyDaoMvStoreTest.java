@@ -38,7 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoMvStoreTest {
+public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
         return VariantAnnotation.builder()

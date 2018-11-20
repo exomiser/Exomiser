@@ -26,8 +26,6 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +33,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 
 /**
+ * MVStore implementation of the {@link AllelePropertiesDao}
+ *
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 
@@ -69,15 +70,4 @@ public class AllelePropertiesDaoMvStore implements AllelePropertiesDao {
         return getAlleleProperties(alleleKey, variant.getGenomeAssembly());
     }
 
-    @Override
-    public FrequencyData getFrequencyData(Variant variant) {
-        AlleleProto.AlleleProperties alleleProperties = getAlleleProperties(variant);
-        return AlleleProtoAdaptor.toFrequencyData(alleleProperties);
-    }
-
-    @Override
-    public PathogenicityData getPathogenicityData(Variant variant) {
-        AlleleProto.AlleleProperties alleleProperties = getAlleleProperties(variant);
-        return AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-    }
 }

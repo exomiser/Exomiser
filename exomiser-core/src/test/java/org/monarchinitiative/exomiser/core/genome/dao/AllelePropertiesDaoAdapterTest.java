@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.h2.mvstore.MVStore;
-import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.Map;
@@ -29,18 +28,12 @@ import java.util.Map;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class AllelePropertiesDaoMvStoreTest {
+class AllelePropertiesDaoAdapterTest {
 
-    AllelePropertiesDao newInstanceWithData(Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> value) {
+    AllelePropertiesDaoAdapter newInstanceWithData(Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> value) {
         MVStore mvStore = MvAlleleStoreTestUtil.newMvStoreWithData(value);
-        return new AllelePropertiesDaoMvStore(mvStore);
+        AllelePropertiesDaoMvStore allelePropertiesDao = new AllelePropertiesDaoMvStore(mvStore);
+        return new AllelePropertiesDaoAdapter(allelePropertiesDao);
     }
 
-    @Test
-    void getAlleleProperties() {
-    }
-
-    @Test
-    void getAllelePropertiesFromVariant() {
-    }
 }

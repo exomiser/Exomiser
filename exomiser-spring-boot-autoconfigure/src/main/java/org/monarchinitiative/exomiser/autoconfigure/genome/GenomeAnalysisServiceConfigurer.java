@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoAdapter;
 import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
@@ -98,8 +99,10 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     //This method is calling the public interface of the concrete implementation so that the caching works on the DAOs
     protected VariantDataService buildVariantDataService() {
+        AllelePropertiesDaoAdapter allelePropertiesDaoAdapter = new AllelePropertiesDaoAdapter(allelePropertiesDao());
         return VariantDataServiceImpl.builder()
-                .allelePropertiesDao(allelePropertiesDao())
+                .defaultFrequencyDao(allelePropertiesDaoAdapter)
+                .defaultPathogenicityDao(allelePropertiesDaoAdapter)
                 .localFrequencyDao(localFrequencyDao())
                 .remmDao(remmDao())
                 .caddDao(caddDao())

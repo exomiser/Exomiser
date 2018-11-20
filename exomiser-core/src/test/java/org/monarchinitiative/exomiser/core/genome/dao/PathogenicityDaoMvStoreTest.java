@@ -37,7 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoMvStoreTest {
+public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     @Test
     public void wrongMapName() throws Exception {
