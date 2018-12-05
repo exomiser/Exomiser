@@ -68,7 +68,7 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        logger.info("Writing HTML results");
+        logger.debug("Writing HTML results");
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
@@ -77,12 +77,12 @@ public class HtmlResultsWriter implements ResultsWriter {
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
     }
 
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        logger.info("Writing HTML results");
+        logger.debug("Writing HTML results");
         Context context = buildContext(modeOfInheritance, analysis, analysisResults, settings);
         return templateEngine.process("results", context);
     }

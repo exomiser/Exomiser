@@ -123,7 +123,7 @@ public class VcfResultsWriter implements ResultsWriter {
                 false)) {
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
-        logger.info("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     private VCFHeader getVcfHeader(Analysis analysis) {

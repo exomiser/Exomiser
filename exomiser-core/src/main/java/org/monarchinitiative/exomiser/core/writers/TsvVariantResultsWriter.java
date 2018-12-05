@@ -83,7 +83,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     @Override
