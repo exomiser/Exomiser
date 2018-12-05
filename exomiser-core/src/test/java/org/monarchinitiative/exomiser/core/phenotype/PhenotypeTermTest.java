@@ -56,8 +56,9 @@ public class PhenotypeTermTest {
     }
 
     @Test
-    void wontAcceptNullLabel() {
-        assertThrows(NullPointerException.class, () -> PhenotypeTerm.of("id", null));
+    void willAcceptNullLabel() {
+        PhenotypeTerm instance = PhenotypeTerm.of("id", null);
+        assertThat(instance.getLabel(), equalTo(""));
     }
 
     @Test
