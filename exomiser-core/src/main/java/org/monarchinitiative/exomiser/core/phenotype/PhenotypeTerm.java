@@ -48,9 +48,8 @@ public final class PhenotypeTerm implements Comparable<PhenotypeTerm> {
 
     private PhenotypeTerm(String id, String label, Status status) {
         Objects.requireNonNull(id, "Term id cannot be null");
-        Objects.requireNonNull(label, "Term label cannot be null");
         this.id = id;
-        this.label = label;
+        this.label = label == null ?  "" : label;
         this.status = status;
     }
 
