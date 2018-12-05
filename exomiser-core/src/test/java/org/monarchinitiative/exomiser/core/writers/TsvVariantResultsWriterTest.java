@@ -73,9 +73,9 @@ public class TsvVariantResultsWriterTest {
 
     private static final String HEADER = VARIANT_DETAILS_HEADER + PATHOGENICITY_SCORES_HEADER + FREQUENCY_DATA_HEADER + EXOMISER_SCORES_HEADER;
 
-    private static final String FAIL_VARIANT_DETAILS = "chr7\t155604800\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
-    private static final String PASS_VARIANT_DETAILS = "chr10\t123256214\tA\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)\tFGFR2";
-    private static final String CONTRIBUTING_VARIANT_DETAILS = "chr10\t123256215\tT\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)\tFGFR2";
+    private static final String FAIL_VARIANT_DETAILS = "chr7\t155604800\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(R6Kfs*6)\tSHH";
+    private static final String PASS_VARIANT_DETAILS = "chr10\t123256214\tA\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1695G>C:p.(E565D)\tFGFR2";
+    private static final String CONTRIBUTING_VARIANT_DETAILS = "chr10\t123256215\tT\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1694A>C:p.(E565A)\tFGFR2";
 
     private static final String NO_PATH_SCORES = "\t.\t.\t.\t.\t.";
     private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";

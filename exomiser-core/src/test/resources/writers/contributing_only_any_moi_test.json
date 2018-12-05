@@ -96,7 +96,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(Glu565Ala)",
+                "hgvsProtein": "p.(E565A)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -181,7 +181,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(Glu565Ala)",
+                "hgvsProtein": "p.(E565A)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -247,7 +247,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278534T>C",
                 "hgvsCdna": "c.1695G>C",
-                "hgvsProtein": "p.(Glu565Asp)",
+                "hgvsProtein": "p.(E565D)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -319,7 +319,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278533A>C",
             "hgvsCdna": "c.1694A>C",
-            "hgvsProtein": "p.(Glu565Ala)",
+            "hgvsProtein": "p.(E565A)",
             "distanceFromNearestGene": -2147483648
           }
         ],
@@ -385,7 +385,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278534T>C",
             "hgvsCdna": "c.1695G>C",
-            "hgvsProtein": "p.(Glu565Asp)",
+            "hgvsProtein": "p.(E565D)",
             "distanceFromNearestGene": -2147483648
           }
         ],
