@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.hgvs.AminoAcidCode;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.*;
@@ -141,7 +142,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .geneSymbol(buildGeneSymbol(annotation))
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
                 .hgvsCdna(annotation.getCDSNTChangeStr())
-                .hgvsProtein(annotation.getProteinChangeStr())
+                .hgvsProtein(annotation.getProteinChangeStr(AminoAcidCode.THREE_LETTER))
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))
                 .build();
     }

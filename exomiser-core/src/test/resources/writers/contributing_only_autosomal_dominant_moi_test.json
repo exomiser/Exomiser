@@ -96,7 +96,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(E565A)",
+                "hgvsProtein": "p.(Glu565Ala)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -168,7 +168,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278533A>C",
             "hgvsCdna": "c.1694A>C",
-            "hgvsProtein": "p.(E565A)",
+            "hgvsProtein": "p.(Glu565Ala)",
             "distanceFromNearestGene": -2147483648
           }
         ],

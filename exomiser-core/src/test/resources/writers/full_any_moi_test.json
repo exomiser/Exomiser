@@ -96,7 +96,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(E565A)",
+                "hgvsProtein": "p.(Glu565Ala)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -181,7 +181,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(E565A)",
+                "hgvsProtein": "p.(Glu565Ala)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -247,7 +247,7 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278534T>C",
                 "hgvsCdna": "c.1695G>C",
-                "hgvsProtein": "p.(E565D)",
+                "hgvsProtein": "p.(Glu565Asp)",
                 "distanceFromNearestGene": -2147483648
               }
             ],
@@ -319,7 +319,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278533A>C",
             "hgvsCdna": "c.1694A>C",
-            "hgvsProtein": "p.(E565A)",
+            "hgvsProtein": "p.(Glu565Ala)",
             "distanceFromNearestGene": -2147483648
           }
         ],
@@ -385,7 +385,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278534T>C",
             "hgvsCdna": "c.1695G>C",
-            "hgvsProtein": "p.(E565D)",
+            "hgvsProtein": "p.(Glu565Asp)",
             "distanceFromNearestGene": -2147483648
           }
         ],
@@ -447,7 +447,7 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278544T>C",
             "hgvsCdna": "c.1705A>C",
-            "hgvsProtein": "p.(K569Q)",
+            "hgvsProtein": "p.(Lys569Gln)",
             "distanceFromNearestGene": -2147483648
           }
         ],
@@ -538,7 +538,7 @@
             "accession": "uc003wmk.1",
             "hgvsGenomic": "g.3533863_3533864insAA",
             "hgvsCdna": "c.16_17insAA",
-            "hgvsProtein": "p.(R6Kfs*6)",
+            "hgvsProtein": "p.(Arg6Lysfs*6)",
             "distanceFromNearestGene": -2147483648
           }
         ],

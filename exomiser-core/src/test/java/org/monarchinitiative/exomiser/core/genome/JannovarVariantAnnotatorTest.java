@@ -73,7 +73,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(Integer.MIN_VALUE));
         assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.12278533A>C"));
         assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.1694A>C"));
-        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(E565A)"));
+        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Glu565Ala)"));
     }
 
     @Test
