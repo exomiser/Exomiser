@@ -92,7 +92,7 @@ class OboOntology {
         return obsoleteOntologyTerms;
     }
 
-    public Map<String, OboOntologyTerm> getObsoleteIdToCurrentTerms() {
+    public Map<String, OboOntologyTerm> getIdToTerms() {
         return obsoleteIdToCurrentTerms;
     }
 }

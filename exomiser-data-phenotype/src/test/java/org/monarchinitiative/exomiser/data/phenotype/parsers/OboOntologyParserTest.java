@@ -52,8 +52,15 @@ class OboOntologyParserTest {
     }
 
     @Test
+    void lastTerm() {
+        List<OboOntologyTerm> currentOntologyTerms = OBO_ONTOLOGY.getCurrentOntologyTerms();
+        OboOntologyTerm lastTerm = currentOntologyTerms.get(currentOntologyTerms.size() - 1);
+        assertThat(lastTerm, equalTo(OboOntologyTerm.builder().id("HP:0200151").label("Cutaneous mastocytosis").build()));
+    }
+
+    @Test
     void singleAltId() {
-        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getObsoleteIdToCurrentTerms();
+        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getIdToTerms();
         OboOntologyTerm currentTerm = OboOntologyTerm.builder()
                 .id("HP:0000003")
                 .label("Multicystic kidney dysplasia")
@@ -64,7 +71,7 @@ class OboOntologyParserTest {
 
     @Test
     void multipleAltIds() {
-        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getObsoleteIdToCurrentTerms();
+        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getIdToTerms();
         OboOntologyTerm currentTerm = OboOntologyTerm.builder()
                 .id("HP:0000005")
                 .label("Mode of inheritance")
@@ -75,7 +82,7 @@ class OboOntologyParserTest {
 
     @Test
     void obsoleteReplacedBy() {
-        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getObsoleteIdToCurrentTerms();
+        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getIdToTerms();
         OboOntologyTerm obsoleteTerm = OboOntologyTerm.builder()
                 .id("HP:0001113")
                 .label("Early cataracts")
@@ -93,7 +100,7 @@ class OboOntologyParserTest {
 
     @Test
     void obsoleteReplacedByWithAltIds() {
-        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getObsoleteIdToCurrentTerms();
+        Map<String, OboOntologyTerm> termIds = OBO_ONTOLOGY.getIdToTerms();
         OboOntologyTerm obsoleteTerm = OboOntologyTerm.builder()
                 .id("HP:0009449")
                 .label("Hypoplastic/small phalanges of the 3rd finger")
