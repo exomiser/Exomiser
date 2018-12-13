@@ -69,13 +69,22 @@ CREATE TABLE zp (
 DROP TABLE IF EXISTS hpo;
 
 CREATE TABLE hpo (
-  lcname   VARCHAR(256) PRIMARY KEY,
-  id       CHAR(10),
-  prefname VARCHAR(256)
+  id       CHAR(10) PRIMARY KEY,
+  lcname   VARCHAR(256)
 );
 
 CREATE INDEX hpoidx
   ON hpo (id);
+
+-- Obsolete and alternate id mappings
+DROP TABLE IF EXISTS hp_alt_ids;
+
+CREATE TABLE hp_alt_ids (
+  alt_id     char(10) PRIMARY KEY,
+  primary_id char(10)
+);
+
+CREATE INDEX hpaltidx ON hp_alt_ids (alt_id);
 
 --
 -- TOC entry 1850 (class 1259 OID 16468)

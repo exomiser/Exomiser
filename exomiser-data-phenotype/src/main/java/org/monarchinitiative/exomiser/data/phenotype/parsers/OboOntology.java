@@ -69,7 +69,7 @@ class OboOntology {
         for (OboOntologyTerm obsoleteTerm : obsoleteOntologyTerms) {
             String replacedById = obsoleteTerm.getReplacedBy();
             OboOntologyTerm currentTerm = idToTerms.get(replacedById);
-            if (currentTerm  != null) {
+            if (currentTerm != null) {
                 idToTerms.put(obsoleteTerm.getId(), currentTerm);
                 // Handle edge-case case where this happened:
                 // OboOntologyTerm{id='HP:0009449', label='Hypoplastic/small phalanges of the 3rd finger', obsolete=true, altIds=[HP:0004158, HP:0004164, HP:0004165], replacedBy='HP:0009447'}
