@@ -94,6 +94,13 @@ public class TestPathogenicityScoreDao implements PathogenicityDao {
         // note in the usual VCF format these would be on a single line
         // 1 12345   AT   G   0.9  (an AT->G deletion on chr1 at position 12345 with score of 0.9 (likely pathogenic))
         // 1 12345   T   .   0.3  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with score of 0.3 (likely benign))
+        // non-autosomes
+        // X 12345   AT   G   0.2  (an AT->G deletion on chrX at position 12345 with score of 0.2)
+        // Y 12345   AT   G   0.2  (an AT->G deletion on chrY at position 12345 with score of 0.2)
+        // M 12345   AT   G   0.2  (an AT->G deletion on chrM at position 12345 with score of 0.2)
+        // this can be indexed using the bgzip and tabix commands:
+        // bgzip outfile.tsv
+        // tabix -s 1 -b 2 -e 2 -c# outfile.tsv.gz
         try {
             TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + start);
             String line;
