@@ -18,11 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.sample;
+package org.monarchinitiative.exomiser.core.phenotype.service;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 
-import java.nio.file.Paths;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,21 +35,39 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class HpoIdCheckerTest {
 
-    private static final HpoIdChecker instance = HpoIdChecker.parse(Paths.get("src/test/resources/hp.obo"));
+    private static final PhenotypeTerm FOO = PhenotypeTerm.of("HP:0000315", "Abnormality of the orbital region");
+    private static final PhenotypeTerm BAR = PhenotypeTerm.of("HP:0000316", "Hypertelorism");
+    private static final PhenotypeTerm BAZ = PhenotypeTerm.of("HP:3000079", "Abnormality of mandibular symphysis");
 
-//    @Test
-//    void throwsNullPointerFromConstructorWithNullInput() {
-//        assertThrows(NullPointerException.class, () -> HpoIdChecker.of(null));
-//    }
+    private final Map<String, PhenotypeTerm> termIdToTerms = new ImmutableMap.Builder<String, PhenotypeTerm>()
+            .put("HP:0000315", FOO)
+            .put("HP:0000284", FOO)
+
+            .put("HP:0000316", BAR)
+            .put("HP:0000578", BAR)
+            .put("HP:0002001", BAR)
+            .put("HP:0004657", BAR)
+            .put("HP:0007871", BAR)
+
+            .put("HP:3000079", BAZ)
+            .build();
+
+    private final HpoIdChecker instance = HpoIdChecker.of(termIdToTerms);
+
+    @Test
+    void throwsNullPointerFromConstructorWithNullInput() {
+        assertThrows(NullPointerException.class, () -> HpoIdChecker.of(null));
+    }
 
     @Test
     void throwsErrorWhenIdUnrecognised() {
-        assertThrows(Exception.class, () -> instance.getCurrentTermForId("Wibble"));
+        assertThrows(Exception.class, () -> instance.getCurrentTerm("Wibble"));
     }
 
     @Test
     void returnsSameIdWhenCurrent() {
-        assertThat(instance.getCurrentTermForId("HP:0000316"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentTerm("HP:0000316"), equalTo(BAR));
+        assertThat(instance.getCurrentId("HP:0000316"), equalTo("HP:0000316"));
     }
 
     @Test
@@ -70,8 +90,9 @@ class HpoIdCheckerTest {
         // xref: UMLS:C4025863
         // is_a: HP:0000271 ! Abnormality of the face
 
-        assertThat(instance.getCurrentTermForId("HP:0000284"), equalTo("HP:0000315"));
-        assertThat(instance.getCurrentTermForId("HP:0000315"), equalTo("HP:0000315"));
+        assertThat(instance.getCurrentTerm("HP:0000284"), equalTo(FOO));
+        assertThat(instance.getCurrentTerm("HP:0000315"), equalTo(FOO));
+        assertThat(instance.getCurrentId("HP:0000315"), equalTo("HP:0000315"));
     }
 
     @Test
@@ -101,17 +122,21 @@ class HpoIdCheckerTest {
         // xref: SNOMEDCT_US:22006008
         // xref: UMLS:C0020534
         // is_a: HP:0100886 ! Abnormality of globe location
+        assertThat(instance.getCurrentTerm("HP:0000316"), equalTo(BAR));
 
-        assertThat(instance.getCurrentTermForId("HP:0000578"), equalTo("HP:0000316"));
-        assertThat(instance.getCurrentTermForId("HP:0002001"), equalTo("HP:0000316"));
-        assertThat(instance.getCurrentTermForId("HP:0004657"), equalTo("HP:0000316"));
-        assertThat(instance.getCurrentTermForId("HP:0007871"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentId("HP:0000578"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentId("HP:0002001"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentId("HP:0004657"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentId("HP:0007871"), equalTo("HP:0000316"));
 
-        assertThat(instance.getCurrentTermForId("HP:0000316"), equalTo("HP:0000316"));
+        assertThat(instance.getCurrentTerm("HP:0000578"), equalTo(BAR));
+        assertThat(instance.getCurrentTerm("HP:0002001"), equalTo(BAR));
+        assertThat(instance.getCurrentTerm("HP:0004657"), equalTo(BAR));
+        assertThat(instance.getCurrentTerm("HP:0007871"), equalTo(BAR));
     }
 
     @Test
     void checkLastTermIsIncluded() {
-        assertThat(instance.getCurrentTermForId("HP:3000079"), equalTo("HP:3000079"));
+        assertThat(instance.getCurrentTerm("HP:3000079"), equalTo(BAZ));
     }
 }
