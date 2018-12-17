@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class HPOOntologyFileParser implements ResourceParser {
     }
 
     private ResourceOperationStatus writeHpFile(Path outFile, OboOntology oboOntology) {
-        try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.forName("UTF-8"))){
+        try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)){
             for (OboOntologyTerm ontologyTerm : oboOntology.getCurrentOntologyTerms()) {
                 StringJoiner stringJoiner = new StringJoiner("|");
                 stringJoiner.add(ontologyTerm.getId());

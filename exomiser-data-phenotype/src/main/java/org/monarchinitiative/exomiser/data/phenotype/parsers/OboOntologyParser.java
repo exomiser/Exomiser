@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -44,7 +45,7 @@ class OboOntologyParser {
     }
 
     private static String parseDataVersion(Path oboFile) {
-        try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile, Charset.forName("UTF-8"))) {
+        try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile, StandardCharsets.UTF_8)) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.startsWith("data-version:")){

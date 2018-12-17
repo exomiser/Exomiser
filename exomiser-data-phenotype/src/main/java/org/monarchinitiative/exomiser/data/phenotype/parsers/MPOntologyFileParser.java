@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -87,7 +87,7 @@ public class MPOntologyFileParser implements ResourceParser {
     }
 
     private ResourceOperationStatus writeMpFile(Path outFile, List<OboOntologyTerm> ontologyTerms) {
-        try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.forName("UTF-8"))){
+        try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)){
             for (OboOntologyTerm ontologyTerm : ontologyTerms) {
                 StringJoiner stringJoiner = new StringJoiner("|");
                 stringJoiner.add(ontologyTerm.getId());
