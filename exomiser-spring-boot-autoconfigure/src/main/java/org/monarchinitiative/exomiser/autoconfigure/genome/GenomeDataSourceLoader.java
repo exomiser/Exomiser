@@ -25,8 +25,13 @@ import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarProtoConverter;
+import org.monarchinitiative.exomiser.core.proto.JannovarProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
@@ -61,6 +66,8 @@ public class GenomeDataSourceLoader {
         Path transcriptFilePath = genomeDataSources.getTranscriptFilePath();
         logger.debug("Loading transcript data from {}", transcriptFilePath);
         this.jannovarData = JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
+//        JannovarDataServiceClient jannovarDataServiceClient = new JannovarDataServiceClient();
+//        this.jannovarData = jannovarDataServiceClient.getJannovarData();
 
         Path mvStoreAbsolutePath = genomeDataSources.getMvStorePath();
         logger.debug("Opening MVStore from {}", mvStoreAbsolutePath);
@@ -135,4 +142,27 @@ public class GenomeDataSourceLoader {
     public int hashCode() {
         return Objects.hash(dataSource, jannovarData, mvStore, localFrequencyTabixDataSource, caddSnvTabixDataSource, caddIndelTabixDataSource, remmTabixDataSource);
     }
+
+    private class JannovarDataServiceClient {
+
+        public JannovarData getJannovarData() {
+            return JannovarProtoConverter.toJannovarData(getProtoData());
+        }
+
+        public JannovarProto.JannovarData getProtoData() {
+            // This takes ~6 sec to read off disk. Irritatingly it takes about 8-10 sec to read from a
+            // webservice with a cached version of the JannovarProto.JannovarData pre-loaded into memory.
+            // alternatively - load off of a network location... nothing to administer that way and hopefully same speed.
+            RestTemplate restTemplate = new RestTemplateBuilder()
+                    .messageConverters(new ProtobufHttpMessageConverter())
+                    .build();
+            logger.info("Reading jannovar data from http://localhost:8080/data/1811/hg19/ensembl");
+            JannovarProto.JannovarData protoData = restTemplate
+                    .getForObject("http://localhost:8080/data/1811/hg19/ensembl", JannovarProto.JannovarData.class);
+            logger.info("Finished transfer");
+            return protoData;
+        }
+
+    }
+
 }
