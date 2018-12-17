@@ -25,10 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -51,7 +52,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class OntologyServiceImplTest {
 
-    @InjectMocks
     private OntologyServiceImpl instance;
 
     @Mock
@@ -80,6 +80,8 @@ public class OntologyServiceImplTest {
 
         Mockito.when(mockZpoDao.getAllTerms()).thenReturn(zpoTerms);
         Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+
+        instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
     }
 
     @Test
@@ -120,5 +122,36 @@ public class OntologyServiceImplTest {
     @Test
     public void testReturnsNullForGivenHpoIdWhenHpoIdIsUnrecognised() {
         assertThat(instance.getPhenotypeTermForHpoId("invalidId"), equalTo(null));
+    }
+
+    @Test
+    void testReturnsSameHpoIdsWhenGivenObsoleteIdsAndAltHpIdsNotAvailable() {
+
+        Mockito.when(mockHpoDao.getIdToPhenotypeTerms())
+                .thenReturn(ImmutableMap.of());
+
+        instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
+
+        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", "HP:0000000")), equalTo(ImmutableList.of("HP:0009902", "HP:0000000")));
+        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", "HP:0009905", "HP:0000000")), equalTo(ImmutableList.of("HP:0009902", "HP:0009905", "HP:0000000")));
+    }
+
+    @Test
+    void testReturnsCurrentHpoIdsWhenGivenObsoleteIds() {
+
+        String obsoleteThinEarHelixId = "HP:0000000";
+        String currentThinEarHelixId = "HP:0009905";
+        Mockito.when(mockHpoDao.getIdToPhenotypeTerms())
+                .thenReturn(ImmutableMap.of(
+                "HP:0009902", cleftHelix,
+                        currentThinEarHelixId, thinEarHelix,
+                        obsoleteThinEarHelixId, thinEarHelix
+        ));
+        instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
+
+        ImmutableList<String> expected = ImmutableList.of("HP:0009902", currentThinEarHelixId);
+
+        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", obsoleteThinEarHelixId)), equalTo(expected));
+        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", currentThinEarHelixId, obsoleteThinEarHelixId)), equalTo(expected));
     }
 }
