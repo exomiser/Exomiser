@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
 
+import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public class HpoIdChecker {
     }
 
     private HpoIdChecker(Map<String, PhenotypeTerm> termIdToTerms) {
-        this.termIdToTerms = termIdToTerms;
+        this.termIdToTerms = ImmutableMap.copyOf(termIdToTerms);
     }
 
     /**
@@ -87,7 +88,7 @@ public class HpoIdChecker {
         }
         PhenotypeTerm term = termIdToTerms.get(hpoId);
         if (term == null) {
-            logger.warn("Input {} - unable to find current id so returning input {}", hpoId, hpoId);
+            logger.warn("Input {} - unable to find current id. Returning input {}", hpoId, hpoId);
             return null;
         }
         if (hpoId.equals(term.getId())) {
