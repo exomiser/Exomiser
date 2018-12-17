@@ -18,12 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
 import org.junit.jupiter.api.Test;
@@ -31,39 +25,39 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.TempDirectory;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests for the HPO ontology parser
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class HPOOntologyFileParserTest {
+class MPOntologyFileParserTest {
 
-    /**
-     * Test of parseHPO method, of class HPOOntologyFileParser.
-     */
     @Test
     @ExtendWith(TempDirectory.class)
     public void testParseHPO(@TempDirectory.TempDir Path tempDir) throws Exception {
-        Resource testResource = new Resource("HPO");
-        testResource.setExtractedFileName("hp.obo");
-        testResource.setParsedFileName("hpo.pg");
+        Resource testResource = new Resource("MP");
+        testResource.setExtractedFileName("mp.obo");
+        testResource.setParsedFileName("mp.pg");
 
-        Map<String, String> hpId2termMap = new HashMap<>();
-        HPOOntologyFileParser instance = new HPOOntologyFileParser(hpId2termMap);
+        Map<String, String> mpId2termMap = new HashMap<>();
+
+        MPOntologyFileParser instance = new MPOntologyFileParser(mpId2termMap);
         instance.parseResource(testResource, Paths.get("src/test/resources/data"), tempDir);
 
-        assertFalse(hpId2termMap.isEmpty());
+        assertFalse(mpId2termMap.isEmpty());
 
-        assertTrue(tempDir.resolve("hp_alt_ids.pg").toFile().exists());
-        assertTrue(tempDir.resolve("hpo.pg").toFile().exists());
+        Path mpPath = tempDir.resolve("mp.pg");
+        assertTrue(mpPath.toFile().exists());
+        List<String> lines = Files.readAllLines(mpPath);
+        assertFalse(lines.isEmpty());
     }
 
 }
