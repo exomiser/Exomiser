@@ -35,6 +35,7 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -69,13 +70,15 @@ public class AnalysisParser {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
 
-    private final PriorityFactory prioritiserFactory;
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
+    private final PriorityFactory prioritiserFactory;
+    private final OntologyService ontologyService;
 
     @Autowired
-    public AnalysisParser(PriorityFactory prioritiserFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
-        this.prioritiserFactory = prioritiserFactory;
+    public AnalysisParser(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory prioritiserFactory, OntologyService ontologyService) {
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
+        this.prioritiserFactory = prioritiserFactory;
+        this.ontologyService = ontologyService;
     }
 
     public Analysis parseAnalysis(Path analysisScript) {
@@ -224,7 +227,7 @@ public class AnalysisParser {
             //this method is only here to provide a warning to users that their script is out of date.
             warnUserAboutDeprecatedGeneScoreMode(analysisMap);
 
-            AnalysisBuilder analysisBuilder = new AnalysisBuilder(prioritiserFactory, genomeAnalysisServiceProvider)
+            AnalysisBuilder analysisBuilder = new AnalysisBuilder(genomeAnalysisServiceProvider, prioritiserFactory, ontologyService)
                     .vcfPath(parseVcf(analysisMap))
                     .genomeAssembly(parseGenomeAssembly(analysisMap))
                     .pedigree(parsePed(analysisMap))

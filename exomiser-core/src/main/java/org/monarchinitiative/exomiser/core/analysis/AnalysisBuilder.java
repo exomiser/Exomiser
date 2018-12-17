@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -33,6 +32,7 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
@@ -52,6 +52,8 @@ public class AnalysisBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisBuilder.class);
 
+    // Perhaps combine these into an ueber AnalysisService?
+    private final OntologyService ontologyService;
     private final PriorityFactory priorityFactory;
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
@@ -67,7 +69,8 @@ public class AnalysisBuilder {
 
     private List<AnalysisStep> analysisSteps = new ArrayList<>();
 
-    AnalysisBuilder(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
+    AnalysisBuilder(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory, OntologyService ontologyService) {
+        this.ontologyService = ontologyService;
         this.priorityFactory = priorityFactory;
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
         this.builder = Analysis.builder();
@@ -101,7 +104,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder hpoIds(List<String> hpoIds) {
-        this.hpoIds = ImmutableList.copyOf(hpoIds);
+        this.hpoIds = ontologyService.getCurrentHpoIds(hpoIds);
         builder.hpoIds(this.hpoIds);
         return this;
     }

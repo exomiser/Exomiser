@@ -25,6 +25,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.UnsupportedGenomeAssemblyException;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
@@ -41,8 +43,9 @@ public class AnalysisFactoryTest {
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildStubGenomeAnalysisService(GenomeAssembly.HG19));
     private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
+    private final OntologyService ontologyService = TestOntologyService.builder().build();
 
-    private final AnalysisFactory instance = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory);
+    private final AnalysisFactory instance = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
 
     @Test
     public void testCanMakeFullAnalysisRunner() {

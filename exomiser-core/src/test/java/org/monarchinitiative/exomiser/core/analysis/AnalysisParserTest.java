@@ -43,6 +43,8 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
@@ -66,6 +68,7 @@ public class AnalysisParserTest {
 
     private AnalysisParser instance;
     private PriorityFactory priorityFactory;
+    private final OntologyService ontologyService = TestOntologyService.builder().build();
 
     private List<AnalysisStep> analysisSteps;
 
@@ -77,7 +80,8 @@ public class AnalysisParserTest {
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory.buildDefaultHg19GenomeAnalysisService());
-        instance = new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
+
+        instance = new AnalysisParser(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
@@ -237,7 +241,7 @@ public class AnalysisParserTest {
         GenomeAnalysisService hg38AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(hg19AnalysisService, hg38AnalysisService);
-        return new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
+        return new AnalysisParser(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
     }
 
     @Test
