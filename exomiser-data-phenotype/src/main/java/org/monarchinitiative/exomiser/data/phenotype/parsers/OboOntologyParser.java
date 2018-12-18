@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,7 +59,7 @@ class OboOntologyParser {
     private static List<OboOntologyTerm> parseOntologyTerms(Path oboFile) {
         ImmutableList.Builder<OboOntologyTerm> ontologyTerms =  new ImmutableList.Builder<>();
 
-        try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile, Charset.forName("UTF-8"))) {
+        try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile, StandardCharsets.UTF_8)) {
             // [Term]
             // id: HP:0000316
             // name: Hypertelorism

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,7 +115,7 @@ public class HPOOntologyFileParser implements ResourceParser {
     }
 
     private ResourceOperationStatus writeHpAltIdFile(Path hpAltIdFile, OboOntology oboOntology) {
-        try (BufferedWriter writer = Files.newBufferedWriter(hpAltIdFile, Charset.forName("UTF-8"))){
+        try (BufferedWriter writer = Files.newBufferedWriter(hpAltIdFile, StandardCharsets.UTF_8)){
             Map<String, OboOntologyTerm> phenotypeTermMap = oboOntology.getIdToTerms();
             for (Map.Entry<String, OboOntologyTerm> entry : phenotypeTermMap.entrySet()) {
                 String altId = entry.getKey();
