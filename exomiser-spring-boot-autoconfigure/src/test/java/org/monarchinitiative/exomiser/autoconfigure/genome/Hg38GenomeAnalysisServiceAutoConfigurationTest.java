@@ -62,7 +62,7 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
 
     @Test
     public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
-        String testPathogenicitySourcePath = TEST_DATA.resolve("remmData.tsv.gz").toAbsolutePath().toString();
+        String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710", "exomiser.hg38.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
 
         assertThat(context.getBean("hg38testPathDao"), instanceOf(TestPathogenicityScoreDao.class));

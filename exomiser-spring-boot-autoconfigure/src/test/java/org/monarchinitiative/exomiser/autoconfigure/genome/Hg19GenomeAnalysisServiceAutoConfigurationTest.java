@@ -41,7 +41,7 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
     @Test
     public void genomeAnalysisService() throws Exception {
 
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.local-frequency-path=../local_freq.tsv.gz");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.local-frequency-path=../local/local_freq.tsv.gz");
 
         GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) this.context.getBean("hg19genomeAnalysisService");
         assertThat(genomeAnalysisService.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
@@ -63,7 +63,7 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
     @Test
     public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
 
-        String testPathogenicitySourcePath = TEST_DATA.resolve("remmData.tsv.gz").toAbsolutePath().toString();
+        String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
 
         assertThat(context.getBean("hg19testPathDao"), instanceOf(TestPathogenicityScoreDao.class));
