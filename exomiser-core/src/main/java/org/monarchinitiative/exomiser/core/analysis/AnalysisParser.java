@@ -406,8 +406,8 @@ public class AnalysisParser {
                 case "phivePrioritiser":
                     return analysisBuilder.addPhivePrioritiser();
                 case "phenixPrioritiser":
-                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
-//                    return analysisBuilder.addPhenixPrioritiser();
+//                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
+                    return analysisBuilder.addPhenixPrioritiser();
                 case "exomeWalkerPrioritiser":
                     return makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
                 default:
