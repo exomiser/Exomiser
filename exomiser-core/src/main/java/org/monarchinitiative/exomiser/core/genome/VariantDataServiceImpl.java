@@ -28,7 +28,6 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -38,7 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Default implementation of the VariantDataService.
@@ -71,11 +71,12 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        List<Frequency> allFrequencies = new ArrayList<>();
 
+        // This could be run alongside the pathogenicities as they are all stored in the same datastore
         FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
-        List<Frequency> defaultFrequencies = defaultFrequencyData.getKnownFrequencies();
-        for (Frequency frequency : defaultFrequencies) {
+
+        List<Frequency> allFrequencies = new ArrayList<>();
+        for (Frequency frequency : defaultFrequencyData.getKnownFrequencies()) {
             if (frequencySources.contains(frequency.getSource())) {
                 allFrequencies.add(frequency);
             }
@@ -91,29 +92,45 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        //OK, this is a bit stupid, but if no sources are defined we're not going to bother checking for data
+
+        // This could be run alongside the frequencies as they are all stored in the same datastore
+        PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
         if (pathogenicitySources.isEmpty()) {
-            return PathogenicityData.empty();
+            // Fast-path for the unlikely case when no sources are defined - we'll just return the ClinVar data
+            return PathogenicityData.of(defaultPathogenicityData.getClinVarData());
         }
 
-        List<PathogenicityDao> daosToQuery = new ArrayList<>();
-        // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
-        // gain/loss an other possible SNV scores from the bundled pathogenicity databases as well as any ClinVar annotations.
-        // This could be run alongside the frequencies as they are all stored in the same datastore
-        VariantEffect variantEffect = variant.getVariantEffect();
+        List<PathogenicityScore> allPathScores = new ArrayList<>();
         // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
         // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
-        if (variantEffect != VariantEffect.SYNONYMOUS_VARIANT && variant.isCodingVariant()) {
-            daosToQuery.add(defaultPathogenicityDao);
+        if (variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT) {
+            addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
         }
-        else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
-            //REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
-            // We're never going to find any ClinVar data like this, but the data will be available when the frequency
-            // data was retrieved with the AllelePropertiesDao
+
+        List<PathogenicityData> optionalPathData = getOptionaPathogenicityData(variant, pathogenicitySources);
+        for (PathogenicityData pathogenicityData : optionalPathData) {
+            allPathScores.addAll(pathogenicityData.getPredictedPathogenicityScores());
+        }
+
+        return PathogenicityData.of(defaultPathogenicityData.getClinVarData(), allPathScores);
+    }
+
+    private void addAllWantedScores(Set<PathogenicitySource> pathogenicitySources, PathogenicityData defaultPathogenicityData, List<PathogenicityScore> allPathScores) {
+        for (PathogenicityScore score : defaultPathogenicityData.getPredictedPathogenicityScores()) {
+            if (pathogenicitySources.contains(score.getSource())) {
+                allPathScores.add(score);
+            }
+        }
+    }
+
+    private List<PathogenicityData> getOptionaPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+        List<PathogenicityDao> daosToQuery = new ArrayList<>();
+        // REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
+        if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
             daosToQuery.add(remmDao);
         }
-        
-        //CADD does all of it although is not as good as REMM for the non-coding regions.
+
+        // CADD does all of it although is not as good as REMM for the non-coding regions.
         if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
             daosToQuery.add(caddDao);
         }
@@ -122,30 +139,9 @@ public class VariantDataServiceImpl implements VariantDataService {
             daosToQuery.add(testPathScoreDao);
         }
 
-        List<PathogenicityData> pathData = daosToQuery.parallelStream()
+        return daosToQuery.parallelStream()
                 .map(pathDao -> pathDao.getPathogenicityData(variant))
-                .collect(Collectors.toList());
-
-        return collectPathogenicityData(pathogenicitySources, pathData);
-    }
-
-    private PathogenicityData collectPathogenicityData(Set<PathogenicitySource> pathogenicitySources, List<PathogenicityData> pathData) {
-        List<PathogenicityScore> allPathScores = new ArrayList<>();
-        ClinVarData clinVarData = ClinVarData.empty();
-
-        for (PathogenicityData pathogenicityData : pathData) {
-            if (pathogenicityData.hasClinVarData()) {
-                // will only happen with the default
-                clinVarData = pathogenicityData.getClinVarData();
-            }
-            for (PathogenicityScore score : pathogenicityData.getPredictedPathogenicityScores()) {
-                if (pathogenicitySources.contains(score.getSource())) {
-                    allPathScores.add(score);
-                }
-            }
-        }
-
-        return PathogenicityData.of(clinVarData, allPathScores);
+                .collect(toList());
     }
 
     public static Builder builder() {

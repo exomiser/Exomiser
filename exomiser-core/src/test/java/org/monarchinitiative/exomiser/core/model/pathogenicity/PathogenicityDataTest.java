@@ -184,21 +184,32 @@ public class PathogenicityDataTest {
     @Test
     public void testHasPredictedScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        boolean result = instance.hasPredictedScore();
-        assertThat(result, is(true));
+        assertThat(instance.hasPredictedScore(), is(true));
     }
-    
+
+    @Test
+    public void testHasPredictedScoreWhenOnlyClinVarPresent() {
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).build());
+        assertThat(instance.hasPredictedScore(), is(true));
+    }
+
+    @Test
+    void benignClinVarAndNoPredictedScore() {
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).build());
+        assertThat(instance.hasPredictedScore(), is(true));
+        assertThat(instance.getMostPathogenicScore(), nullValue());
+        assertThat(instance.getScore(), equalTo(0f));
+    }
+
     @Test
     public void testHasPredictedScoreForSourceIsTrue() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS);
-        boolean result = instance.hasPredictedScore(PathogenicitySource.POLYPHEN);
-        assertThat(result, is(true));
+        assertThat(instance.hasPredictedScore(PathogenicitySource.POLYPHEN), is(true));
     }
     
     @Test
     public void testHasPredictedScoreForSourceIsFalse() {
-        boolean result = EMPTY_DATA.hasPredictedScore(PathogenicitySource.POLYPHEN);
-        assertThat(result, is(false));
+        assertThat(EMPTY_DATA.hasPredictedScore(PathogenicitySource.POLYPHEN), is(false));
     }
 
     @Test
@@ -241,6 +252,21 @@ public class PathogenicityDataTest {
         PathogenicityData instance = PathogenicityData.of(clinVarData, POLYPHEN_PASS);
         assertThat(instance.hasClinVarData(), is(true));
         assertThat(instance.getClinVarData(), equalTo(clinVarData));
+    }
+
+    @Test
+    public void testPathogenicClinVarDataScoreOverridesOtherScores() {
+        ClinVarData pathogenicClinVar = ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        assertThat(PathogenicityData.of(pathogenicClinVar, POLYPHEN_FAIL).getScore(), equalTo(1f));
+
+        ClinVarData pathOrLikelyPathClinVar = ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC).build();
+        assertThat(PathogenicityData.of(pathOrLikelyPathClinVar, POLYPHEN_FAIL).getScore(), equalTo(1f));
+
+        ClinVarData likelyPathClinVar = ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.LIKELY_PATHOGENIC).build();
+        assertThat(PathogenicityData.of(likelyPathClinVar, POLYPHEN_FAIL).getScore(), equalTo(1f));
+
+        ClinVarData benignClinVar = ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).build();
+        assertThat(PathogenicityData.of(benignClinVar, POLYPHEN_FAIL).getScore(), equalTo(POLYPHEN_FAIL.score));
     }
 
     @Test

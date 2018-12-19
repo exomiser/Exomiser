@@ -122,7 +122,7 @@ public class PathogenicityData {
 
     @JsonIgnore
     public boolean hasPredictedScore() {
-        return !pathogenicityScores.isEmpty();
+        return !pathogenicityScores.isEmpty() || !clinVarData.isEmpty();
     }
 
     public boolean hasPredictedScore(PathogenicitySource pathogenicitySource) {
@@ -143,6 +143,7 @@ public class PathogenicityData {
      * @return The most pathogenic score or null if there are no predicted scores
      */
     public PathogenicityScore getMostPathogenicScore() {
+        // Add filter step using PathogenicityScore::isPredictedPathogenic?
         return pathogenicityScores.values().stream().max(Comparator.reverseOrder()).orElse(null);
     }
 
@@ -151,6 +152,17 @@ public class PathogenicityData {
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
     public float getScore() {
+        switch (clinVarData.getPrimaryInterpretation()) {
+            case PATHOGENIC:
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
+            case LIKELY_PATHOGENIC:
+                return 1f;
+            default:
+                return getPredictedPathScore();
+        }
+    }
+
+    private float getPredictedPathScore() {
         if (pathogenicityScores.isEmpty()) {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }

@@ -118,9 +118,9 @@ public class VariantDataServiceImplTest {
     }
 
     @Test
-    public void serviceReturnsEmptyPathogenicityDataForVariantWhenNoSourcesAreDefined() {
+    public void serviceReturnsClinVarDataEvenWhenNoSourcesAreDefined() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, Collections.emptySet());
-        assertThat(result, equalTo(PathogenicityData.empty()));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA)));
     }
 
     @Test
@@ -148,10 +148,19 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(RemmScore.of(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(PATH_CLINVAR_DATA, RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
+    }
+
+    @Test
+    public void pathogenicityDataForKnownNonCodingVariantShouldContainClinVarData() {
+        variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
+        PathogenicityData expectedPathData = PathogenicityData.of(PATH_CLINVAR_DATA);
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedPathData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
+        assertThat(result, equalTo(expectedPathData));
     }
 
     @Test
@@ -165,7 +174,7 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(CaddScore.of(1f), RemmScore.of(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(PATH_CLINVAR_DATA, CaddScore.of(1f), RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
