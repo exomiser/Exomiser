@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ import htsjdk.tribble.readers.TabixReader;
 import java.io.Closeable;
 
 /**
- * Abstraction for querying Tabix files. The HTSJK TabixReader is not easy to test and provides no interfaceor
+ * Abstraction for querying Tabix files. The HTSJK TabixReader is not easy to test and provides no interface or
  * alternate implementations. This partially mitigates this issue as the Tabix.Iterator does not implement
  * java.util.Iterator.
  *
