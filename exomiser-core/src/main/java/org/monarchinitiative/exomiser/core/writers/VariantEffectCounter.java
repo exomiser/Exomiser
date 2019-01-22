@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.exomiser.core.model.AlleleCall;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.*;
@@ -57,28 +57,18 @@ public class VariantEffectCounter {
             return;
         }
 
-        //TODO could use variant.getSampleGenotypes()
-        VariantContext variantContext = variant.getVariantContext();
-        for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
-            final Genotype gt = variantContext.getGenotype(sampleIdx);
-            if (gt.getAlleles().size() != 2) {
-                // counted as no-call
-                continue;
-            }
-            boolean isAltAllele = false;
-            for (int i = 0; i < 2; ++i) {
-                if (gt.getAllele(i).equals(variantContext.getAlternateAllele(variant.getAltAlleleId()))) {
-                    isAltAllele = true;
+        Map<String, SampleGenotype> sampleGenotypes = variant.getSampleGenotypes();
+        // this is always an ordered map in the order of the sample names declared in the VCF header
+        List<SampleGenotype> genotypes = new ArrayList<>(sampleGenotypes.values());
+        for (int i = 0; i < genotypes.size(); i++) {
+            SampleGenotype sampleGenotype = genotypes.get(i);
+            List<AlleleCall> calls = sampleGenotype.getCalls();
+            if (calls.size() == 2 && calls.contains(AlleleCall.ALT)) {
+                if (!sampleVariantEffectCounts.get(i).containsKey(effect)) {
+                    sampleVariantEffectCounts.get(i).put(effect, 1);
+                } else {
+                    sampleVariantEffectCounts.get(i).put(effect, sampleVariantEffectCounts.get(i).get(effect) + 1);
                 }
-            }
-            if (!isAltAllele) {
-                // does not have correct alternative allele
-                continue;
-            }
-            if (!sampleVariantEffectCounts.get(sampleIdx).containsKey(effect)) {
-                sampleVariantEffectCounts.get(sampleIdx).put(effect, 1);
-            } else {
-                sampleVariantEffectCounts.get(sampleIdx).put(effect, sampleVariantEffectCounts.get(sampleIdx).get(effect) + 1);
             }
         }
     }
