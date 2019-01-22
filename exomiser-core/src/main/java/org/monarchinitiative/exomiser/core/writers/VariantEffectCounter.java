@@ -59,7 +59,7 @@ public class VariantEffectCounter {
 
         Map<String, SampleGenotype> sampleGenotypes = variant.getSampleGenotypes();
         // this is always an ordered map in the order of the sample names declared in the VCF header
-        List<SampleGenotype> genotypes = new ArrayList<>(sampleGenotypes.values());
+        List<SampleGenotype> genotypes = ImmutableList.copyOf(sampleGenotypes.values());
         for (int i = 0; i < genotypes.size(); i++) {
             SampleGenotype sampleGenotype = genotypes.get(i);
             List<AlleleCall> calls = sampleGenotype.getCalls();
