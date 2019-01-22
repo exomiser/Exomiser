@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -217,6 +217,11 @@ public class SampleGenotype {
         return phased;
     }
 
+    @JsonIgnore
+    public boolean isEmpty() {
+        return alleleCalls.length == 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -235,7 +240,7 @@ public class SampleGenotype {
 
     @Override
     public String toString() {
-        if (alleleCalls.length == 0){
+        if (isEmpty()){
             return "NA";
         }
         StringJoiner stringJoiner;
@@ -249,5 +254,4 @@ public class SampleGenotype {
         }
         return stringJoiner.toString();
     }
-
 }

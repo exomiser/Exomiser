@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -256,6 +257,32 @@ public class VariantEvaluationTest {
                 .build();
         assertThat(instance.getSampleGenotype("Zaphod"), equalTo(sampleGenotype));
         assertThat(instance.getSampleGenotype("Nemo"), equalTo(SampleGenotype.empty()));
+    }
+
+    @Test
+    public void testGetSampleGenotypesAreOrdered() {
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of(
+                "Zaphod", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT),
+                "Arthur", SampleGenotype.homRef(),
+                "Trillian", SampleGenotype.homAlt(),
+                "Marvin", SampleGenotype.noCall(),
+                // ALT/OTHER_ALT is a 1/2 genotype
+                "Ford", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT)
+        );
+
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+
+        List<String> sampleNames = ImmutableList.copyOf(instance.getSampleGenotypes().keySet());
+        assertThat(sampleNames, equalTo(ImmutableList.of("Zaphod", "Arthur", "Trillian", "Marvin", "Ford")));
+        assertThat(instance.getGenotypeString(), equalTo("0/1:0/0:1/1:./.:-/1"));
+    }
+
+    @Test
+    public void testGetGenotypeNoSampleIsHet() {
+        instance = VariantEvaluation.builder(25, 1, "A", "T").build();
+        assertThat(instance.getGenotypeString(), equalTo("0/1"));
     }
 
     @Test
@@ -634,12 +661,6 @@ public class VariantEvaluationTest {
     public void testGetChromosomeName25isMT() {
         instance = VariantEvaluation.builder(25, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("MT"));
-    }
-
-    @Test
-    public void testGetGenotypeHet() {
-        instance = VariantEvaluation.builder(25, 1, "A", "T").build();
-        assertThat(instance.getGenotypeString(), equalTo("0/1"));
     }
 
     @Test
