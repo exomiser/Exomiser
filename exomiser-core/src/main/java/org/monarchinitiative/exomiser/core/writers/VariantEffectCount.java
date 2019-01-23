@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -48,6 +49,20 @@ public class VariantEffectCount {
 
     public List<Integer> getSampleVariantTypeCounts() {
         return sampleVariantEffectCounts;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VariantEffectCount that = (VariantEffectCount) o;
+        return variantEffect == that.variantEffect &&
+                Objects.equals(sampleVariantEffectCounts, that.sampleVariantEffectCounts);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variantEffect, sampleVariantEffectCounts);
     }
 
     @Override

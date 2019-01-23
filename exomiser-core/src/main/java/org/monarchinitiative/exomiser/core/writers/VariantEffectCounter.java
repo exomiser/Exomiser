@@ -21,106 +21,77 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 public class VariantEffectCounter {
 
-    private final int numSamples;
-    private final List<Map<VariantEffect, Integer>> sampleVariantEffectCounts;
+    private final List<VariantEffectCount> variantEffectCounts;
 
     public VariantEffectCounter(List<String> sampleNames, List<VariantEvaluation> variantEvaluations) {
-        numSamples = sampleNames.size();
-        sampleVariantEffectCounts = new ArrayList<>();
-        for (int i = 0; i < numSamples; ++i) {
-            sampleVariantEffectCounts.add(new EnumMap<>(VariantEffect.class));
-        }
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            put(variantEvaluation);
-        }
-
+        variantEffectCounts = setup(sampleNames.size(), variantEvaluations);
     }
 
-    /**
-     * Increment the counter for the given variant's effect.
-     *
-     * @param variant
-     */
-    private void put(VariantEvaluation variant) {
-        VariantEffect effect = variant.getVariantEffect();
-        if (effect == null) {
-            return;
+    private List<VariantEffectCount> setup(int numSamples, List<VariantEvaluation> variantEvaluations) {
+        Map<VariantEffect, int[]> tempCounts = countVariantEffects(numSamples, variantEvaluations);
+
+        return tempCounts.entrySet()
+                .stream()
+                .map(entry -> {
+                    VariantEffect variantEffect = entry.getKey();
+                    List<Integer> counts = IntStream.of(entry.getValue())
+                            .boxed()
+                            .collect(toList());
+                    return new VariantEffectCount(variantEffect, counts);
+                })
+                .collect(toList());
+    }
+
+    private Map<VariantEffect, int[]> countVariantEffects(int numSamples, List<VariantEvaluation> variantEvaluations) {
+        Map<VariantEffect, int[]> tempCounts = new EnumMap<>(VariantEffect.class);
+        // ensure all cases are created as the input set may not contain them all
+        for (VariantEffect variantEffect : VariantEffect.values()) {
+            tempCounts.put(variantEffect, zeroes(numSamples));
         }
 
-        Map<String, SampleGenotype> sampleGenotypes = variant.getSampleGenotypes();
-        // this is always an ordered map in the order of the sample names declared in the VCF header
-        List<SampleGenotype> genotypes = ImmutableList.copyOf(sampleGenotypes.values());
-        for (int i = 0; i < genotypes.size(); i++) {
-            SampleGenotype sampleGenotype = genotypes.get(i);
-            List<AlleleCall> calls = sampleGenotype.getCalls();
-            if (calls.size() == 2 && calls.contains(AlleleCall.ALT)) {
-                if (!sampleVariantEffectCounts.get(i).containsKey(effect)) {
-                    sampleVariantEffectCounts.get(i).put(effect, 1);
-                } else {
-                    sampleVariantEffectCounts.get(i).put(effect, sampleVariantEffectCounts.get(i).get(effect) + 1);
+        for (VariantEvaluation variant : variantEvaluations) {
+            Map<String, SampleGenotype> sampleGenotypes = variant.getSampleGenotypes();
+            // this is always an ordered map in the order of the sample names declared in the VCF header
+            List<SampleGenotype> genotypes = ImmutableList.copyOf(sampleGenotypes.values());
+            VariantEffect effect = variant.getVariantEffect();
+            int[] effectCounts = tempCounts.get(effect);
+            for (int i = 0; i < genotypes.size(); i++) {
+                SampleGenotype sampleGenotype = genotypes.get(i);
+                List<AlleleCall> calls = sampleGenotype.getCalls();
+                if (calls.size() == 2 && calls.contains(AlleleCall.ALT)) {
+                    effectCounts[i]++;
                 }
             }
         }
+        return tempCounts;
+    }
+
+    private int[] zeroes(int numSamples) {
+        int[] zeroes = new int[numSamples];
+        for (int i = 0; i < numSamples; i++) {
+            zeroes[i] = 0;
+        }
+        return zeroes;
     }
 
     public List<VariantEffectCount> getVariantEffectCounts(Set<VariantEffect> variantEffects) {
-        Set<VariantEffect> effects = EnumSet.copyOf(variantEffects);
-
-        List<Map<VariantEffect, Integer>> freqMaps = getFrequencyMap(variantEffects);
-        for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
-            effects.addAll(freqMaps.get(sampleIdx).keySet());
-        }
-
-        List<VariantEffectCount> result = new ArrayList<>();
-        for (VariantEffect effect : effects) {
-            List<Integer> typeSpecificCounts = new ArrayList<>();
-            for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
-                typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
-            }
-            result.add(new VariantEffectCount(effect, typeSpecificCounts));
-        }
-
-        return result;
-    }
-
-    /**
-     * @return map with the frequency for the <code>effects</code> for each
-     * individual
-     */
-    private List<Map<VariantEffect, Integer>> getFrequencyMap(Collection<VariantEffect> effects) {
-
-        ImmutableList.Builder<Map<VariantEffect, Integer>> listBuilder = new ImmutableList.Builder<>();
-        for (Map<VariantEffect, Integer> map : sampleVariantEffectCounts) {
-            Map<VariantEffect, Integer> counters2 = new EnumMap<>(VariantEffect.class);
-            for (VariantEffect effect : effects) {
-                counters2.put(effect, 0);
-            }
-            for (Map.Entry<VariantEffect, Integer> entry : counters2.entrySet()) {
-                if (counters2.containsKey(entry.getKey())) {
-                    counters2.put(entry.getKey(), entry.getValue());
-                }
-            }
-
-            ImmutableMap.Builder<VariantEffect, Integer> mapBuilder = new ImmutableMap.Builder<>();
-            for (Map.Entry<VariantEffect, Integer> entry : counters2.entrySet()) {
-                if (map.get(entry.getKey()) == null) {
-                    mapBuilder.put(entry.getKey(), 0);
-                } else {
-                    mapBuilder.put(entry.getKey(), map.get(entry.getKey()));
-                }
-            }
-            listBuilder.add(mapBuilder.build());
-        }
-        return listBuilder.build();
+        return variantEffectCounts.stream()
+                .filter(variantEffectCount -> variantEffects.contains(variantEffectCount.getVariantType()))
+                .collect(toList());
     }
 }
