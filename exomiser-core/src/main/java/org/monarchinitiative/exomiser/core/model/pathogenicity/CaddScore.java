@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,10 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  */
 public class CaddScore extends BasePathogenicityScore {
 
+    // According to https://cadd.gs.washington.edu/info a good cutoff to use is the PHRED scaled scores of
+    // 10-20 which equates to 90-99% most deleterious or 13-20 (95-99%). These are scaled to 0.90 - 0.99. The M-CAP authors
+    // (http://bejerano.stanford.edu/mcap/) suggest this is too permissive, although their recommended thresholds
+    // don't appear to match what was actually suggested.
     public static CaddScore of(float score) {
         return new CaddScore(score);
     }
