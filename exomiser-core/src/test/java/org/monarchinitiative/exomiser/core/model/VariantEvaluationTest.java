@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -666,7 +667,7 @@ public class VariantEvaluationTest {
     @Test
     public void getVariantContext() {
         VariantContext builtContext = instance.getVariantContext();
-        assertThat(builtContext.getContig(), equalTo("chr" + CHROMOSOME_NAME));
+        assertThat(builtContext.getContig(), equalTo(CHROMOSOME_NAME));
         assertThat(builtContext.getStart(), equalTo(POSITION));
         assertThat(builtContext.getEnd(), equalTo(POSITION));
         assertThat(builtContext.getNAlleles(), equalTo(2));
@@ -676,7 +677,11 @@ public class VariantEvaluationTest {
 
     @Test
     public void testBuilderVariantContext() {
-        VariantContext variantContext = new VariantContextBuilder().chr("M").start(1).stop(1).alleles("A", "T").make();
+        VariantContext variantContext = new VariantContextBuilder()
+                .source("Unknown")
+                .chr("M").start(1).stop(1).alleles("A", "T")
+                .genotypes(GenotypesContext.create(1))
+                .make();
         VariantEvaluation variantEvaluation = VariantEvaluation.builder(25, 1, "A", "T")
                 .variantContext(variantContext)
                 .build();
@@ -854,5 +859,56 @@ public class VariantEvaluationTest {
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
+    }
+
+    @Test
+    void variantIsNotWhiteListedByDefault() {
+        assertThat(instance.isWhiteListed(), is(false));
+    }
+
+    @Test
+    void whiteListStatusIsMutable() {
+        VariantEvaluation instance = testVariantBuilder()
+                .whiteListed(false)
+                .build();
+        assertThat(instance.isWhiteListed(), is(false));
+
+        instance.setWhiteListed(true);
+        assertThat(instance.isWhiteListed(), is(true));
+    }
+
+    @Test
+    void whiteListedVariantsAlwaysHaveMaximalVariantScore() {
+        // this is well above the default AD frequency cut-off
+        instance.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_G_SAS, 3f)));
+        instance.setPathogenicityData(PathogenicityData.empty());
+
+        assertThat(instance.getVariantScore(), equalTo(0f));
+
+        instance.setWhiteListed(true);
+
+        assertThat(instance.getVariantScore(), equalTo(1f));
+    }
+
+    @Test
+    void whiteListedVariantsAlwaysHaveMaximalFrequencyScore() {
+        // this is well above the default AD frequency cut-off
+        instance.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_G_SAS, 3f)));
+        assertThat(instance.getFrequencyScore(), equalTo(0f));
+
+        instance.setWhiteListed(true);
+        assertThat(instance.getFrequencyScore(), equalTo(1f));
+    }
+
+    @Test
+    void whiteListedVariantsAlwaysHaveMaximalPathogenicityScore() {
+        instance.setPathogenicityData(PathogenicityData.empty());
+        assertThat(instance.getPathogenicityScore(), equalTo(0f));
+        assertThat(instance.isPredictedPathogenic(), equalTo(false));
+
+        instance.setWhiteListed(true);
+
+        assertThat(instance.getPathogenicityScore(), equalTo(1f));
+        assertThat(instance.isPredictedPathogenic(), equalTo(true));
     }
 }

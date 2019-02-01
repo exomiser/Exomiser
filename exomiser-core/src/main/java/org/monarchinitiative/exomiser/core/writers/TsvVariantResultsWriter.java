@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -133,13 +133,13 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         List<Object> record = new ArrayList<>();
         VariantContext variantContext = ve.getVariantContext();
         // CHROM
-        record.add(variantContext.getContig());
+        record.add(ve.getChromosomeName());
         // POS
-        record.add(variantContext.getStart());
+        record.add(ve.getPosition());
         // REF
-        record.add(variantContext.getReference().getDisplayString());
+        record.add(ve.getRef());
         // ALT
-        record.add(variantContext.getAlternateAllele(ve.getAltAlleleId()).getDisplayString());
+        record.add(ve.getAlt());
         // QUAL
         record.add(formatter.format(ve.getPhredScore()));
         // FILTER

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -171,6 +171,9 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     .filter(isObservedInProband(probandSample))
                     .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(geneReassigner))
                     .map(reassignNonCodingVariantToBestGeneInTad(geneReassigner))
+                    //TODO: is this a good idea here? This could seriously impact performance.
+                    // An alternative would be in a VariantFilterDataProvider
+                    .map(flagWhiteListedVariants())
                     .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters, filterStats))
                     .peek(variantLogger.countPassedVariant())
@@ -225,6 +228,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         // Caution! This won't function correctly if run before a prioritiser has been run
         return variantEvaluation -> {
             geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
+            return variantEvaluation;
+        };
+    }
+
+    private Function<VariantEvaluation, VariantEvaluation> flagWhiteListedVariants() {
+        return variantEvaluation -> {
+            if (genomeAnalysisService.variantIsWhiteListed(variantEvaluation)) {
+                variantEvaluation.setWhiteListed(true);
+            }
             return variantEvaluation;
         };
     }

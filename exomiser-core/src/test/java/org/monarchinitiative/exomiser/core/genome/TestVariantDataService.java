@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -33,33 +35,37 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Mock of VariantDataService to provide canned responses for variants. Enables
  * testing of the service without requiring any database back-end. This is
- * backed by maps mapping the variants to their respective
- * frequency/pathogenicity/whatever data.
+ * backed by maps mapping the variants to their respective frequency/pathogenicity/whatever data.
  *
  * @author Jules Jacobsen<jules.jacobsen@sanger.ac.uk>
  */
-public class VariantDataServiceMock implements VariantDataService {
+public class TestVariantDataService implements VariantDataService {
 
+    private static final VariantDataService STUB_SERVICE = new VariantDataServiceStub();
+
+    private final Set<Variant> expectedWhiteList;
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
 
-    public VariantDataServiceMock() {
-        this.expectedFrequencyData = new HashMap<>();
-        this.expectedPathogenicityData = new HashMap<>();
+    private TestVariantDataService(Builder builder) {
+        this.expectedWhiteList = ImmutableSet.copyOf(builder.expectedWhiteList);
+        this.expectedFrequencyData = ImmutableMap.copyOf(builder.expectedFrequencyData);
+        this.expectedPathogenicityData = ImmutableMap.copyOf(builder.expectedPathogenicityData);
     }
 
-    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData) {
-        this.expectedFrequencyData = expectedFrequencyData;
-        this.expectedPathogenicityData = expectedPathogenicityData;
+    /**
+     * Returns a stub service containing no data.
+     *
+     * @return a stub service instance
+     */
+    public static VariantDataService stub() {
+        return STUB_SERVICE;
     }
 
     /**
@@ -85,6 +91,11 @@ public class VariantDataServiceMock implements VariantDataService {
     }
 
     @Override
+    public boolean variantIsWhiteListed(Variant variant) {
+        return expectedWhiteList.contains(variant);
+    }
+
+    @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
 
@@ -106,6 +117,70 @@ public class VariantDataServiceMock implements VariantDataService {
                 .collect(Collectors.toList());
 
         return PathogenicityData.of(pathData.getClinVarData(), wanted);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Set<Variant> expectedWhiteList = new HashSet<>();
+        private Map<Variant, FrequencyData> expectedFrequencyData = new HashMap<>();
+        private Map<Variant, PathogenicityData> expectedPathogenicityData = new HashMap<>();
+
+        public Builder expectedWhiteList(Set<Variant> expectedWhiteList) {
+            this.expectedWhiteList = expectedWhiteList;
+            return this;
+        }
+
+        public Builder addToWhitelist(Variant... variants) {
+            this.expectedWhiteList.addAll(Arrays.asList(variants));
+            return this;
+        }
+
+        public Builder expectedFrequencyData(Map<Variant, FrequencyData> expectedFrequencyData) {
+            this.expectedFrequencyData = expectedFrequencyData;
+            return this;
+        }
+
+        public Builder put(Variant variant, FrequencyData expectedFrequencyData) {
+            this.expectedFrequencyData.put(variant, expectedFrequencyData);
+            return this;
+        }
+
+        public Builder expectedPathogenicityData(Map<Variant, PathogenicityData> expectedPathogenicityData) {
+            this.expectedPathogenicityData = expectedPathogenicityData;
+            return this;
+        }
+
+        public Builder put(Variant variant, PathogenicityData expectedPathogenicityData) {
+            this.expectedPathogenicityData.put(variant, expectedPathogenicityData);
+            return this;
+        }
+
+        public TestVariantDataService build() {
+            return new TestVariantDataService(this);
+        }
+    }
+
+
+    private static class VariantDataServiceStub implements VariantDataService {
+
+        @Override
+        public boolean variantIsWhiteListed(Variant variant) {
+            return false;
+        }
+
+        @Override
+        public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
+            return FrequencyData.empty();
+        }
+
+        @Override
+        public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+            return PathogenicityData.empty();
+        }
+
     }
 
 }

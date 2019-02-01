@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -122,7 +122,9 @@ public class PathogenicityData {
 
     @JsonIgnore
     public boolean hasPredictedScore() {
-        return !pathogenicityScores.isEmpty() || !clinVarData.isEmpty();
+        // TODO: keep or delete? Depends on VariantWhiteList
+//        return !pathogenicityScores.isEmpty() || !clinVarData.isEmpty();
+        return !pathogenicityScores.isEmpty();
     }
 
     public boolean hasPredictedScore(PathogenicitySource pathogenicitySource) {
@@ -152,14 +154,16 @@ public class PathogenicityData {
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
     public float getScore() {
-        switch (clinVarData.getPrimaryInterpretation()) {
-            case PATHOGENIC:
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-            case LIKELY_PATHOGENIC:
-                return 1f;
-            default:
-                return getPredictedPathScore();
-        }
+        // TODO: keep or delete? Depends on VariantWhiteList
+//        switch (clinVarData.getPrimaryInterpretation()) {
+//            case PATHOGENIC:
+//            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
+//            case LIKELY_PATHOGENIC:
+//                return 1f;
+//            default:
+//                return getPredictedPathScore();
+//        }
+        return getPredictedPathScore();
     }
 
     private float getPredictedPathScore() {

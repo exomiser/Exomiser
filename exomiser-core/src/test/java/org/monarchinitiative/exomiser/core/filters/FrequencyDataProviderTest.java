@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,8 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceMock;
+import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -42,18 +43,17 @@ import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySourc
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FrequencyDataProviderTest {
-    
+
     private static final Set<FrequencySource> EMPTY_SET = Collections.emptySet();
+    private static final VariantDataService STUB_VARIANT_DATA_SERVICE = TestVariantDataService.stub();
 
     private FrequencyDataProvider instance;
-    private VariantDataServiceMock variantDataService;
 
     private VariantEvaluation variant;
     private final FrequencyData defaultFrequencyData = FrequencyData.empty();
 
     @BeforeEach
     public void setUp() {
-        variantDataService = new VariantDataServiceMock();
         variant = VariantEvaluation.builder(1, 1, "A", "T").frequencyData(defaultFrequencyData).build();
     }
         
@@ -61,7 +61,7 @@ public class FrequencyDataProviderTest {
     public void testReturnsFilterTypeOfDecoratedFilterFrequencyFilter() {
         final VariantFilter decoratedFilter = new FrequencyFilter(100f);
 
-        instance = new FrequencyDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
+        instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EMPTY_SET, decoratedFilter);
 
         assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
         assertThat(instance.isVariantFilter(), is(true));
@@ -71,7 +71,7 @@ public class FrequencyDataProviderTest {
     public void testReturnsFilterTypeOfDecoratedFilterKnownVariantFilter() {
         final KnownVariantFilter decoratedFilter = new KnownVariantFilter();
 
-        instance = new FrequencyDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
+        instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EMPTY_SET, decoratedFilter);
 
         assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
         assertThat(instance.isVariantFilter(), is(true));
@@ -80,7 +80,7 @@ public class FrequencyDataProviderTest {
     @Test
     public void testProvidesFrequencyDataForVariantWhenRun() {
         FrequencyData expectedData = FrequencyData.of(RsId.of(123456), Frequency.of(ESP_ALL, 1.0f));
-        variantDataService.put(variant, expectedData);
+        VariantDataService variantDataService = TestVariantDataService.builder().put(variant, expectedData).build();
        
         instance = new FrequencyDataProvider(variantDataService, EnumSet.allOf(FrequencySource.class), new KnownVariantFilter());
         assertThat(variant.getFrequencyData(), equalTo(defaultFrequencyData));
@@ -91,9 +91,9 @@ public class FrequencyDataProviderTest {
 
     @Test
     public void testFilterResultIsThatOfDecoratedFilter() {
-        final KnownVariantFilter decoratedFilter = new KnownVariantFilter();
+        KnownVariantFilter decoratedFilter = new KnownVariantFilter();
 
-        instance = new FrequencyDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
+        instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EMPTY_SET, decoratedFilter);
 
         FilterResult filterResult = instance.runFilter(variant);
         FilterTestHelper.assertPassed(filterResult);
@@ -102,9 +102,9 @@ public class FrequencyDataProviderTest {
 
     @Test
     public void testFrequencyDataOnlyContainsSpecifiedSourcesNoDataInDatabase() {
-        final KnownVariantFilter decoratedFilter = new KnownVariantFilter();
+        KnownVariantFilter decoratedFilter = new KnownVariantFilter();
 
-        instance = new FrequencyDataProvider(variantDataService, EnumSet.of(ESP_ALL), decoratedFilter);
+        instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EnumSet.of(ESP_ALL), decoratedFilter);
         instance.runFilter(variant);
 
         assertThat(variant.getFrequencyData(), equalTo(FrequencyData.empty()));
@@ -116,8 +116,8 @@ public class FrequencyDataProviderTest {
         Frequency espAll = Frequency.of(ESP_ALL, 0.01f);
         FrequencyData variantFrequencyData = FrequencyData.of(RsId.of(123456), espAll, Frequency.of(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, 0.234f), Frequency
                 .of(EXAC_FINNISH, 0.02f));
-        
-        variantDataService.put(variant, variantFrequencyData);
+
+        VariantDataService variantDataService = TestVariantDataService.builder().put(variant, variantFrequencyData).build();
 
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource()), new KnownVariantFilter());
         instance.runFilter(variant);
@@ -132,7 +132,7 @@ public class FrequencyDataProviderTest {
         Frequency exacAfr = Frequency.of(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, 0.234f);
         FrequencyData variantFrequencyData = FrequencyData.of(RsId.of(123456), espAll, exacAfr, Frequency.of(EXAC_FINNISH, 0.02f));
 
-        variantDataService.put(variant, variantFrequencyData);
+        VariantDataService variantDataService = TestVariantDataService.builder().put(variant, variantFrequencyData).build();
 
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource(), exacAfr.getSource()), new KnownVariantFilter());
         instance.runFilter(variant);
@@ -143,7 +143,7 @@ public class FrequencyDataProviderTest {
     @Test
     public void testGetDecoratedFilter() {
         VariantFilter decoratedFilter = new KnownVariantFilter();
-        instance = new FrequencyDataProvider(variantDataService, EnumSet.noneOf(FrequencySource.class), decoratedFilter);
+        instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EnumSet.noneOf(FrequencySource.class), decoratedFilter);
         assertThat(instance.getDecoratedFilter(), equalTo(decoratedFilter));
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -105,6 +105,14 @@ public class FrequencyFilterTest {
     public void testFilterFailsVariantEvaluationWithFrequencyOverThreshold() {
         VariantEvaluation variantEvaluation = makeVariantEvaluation(failFrequency(FrequencySource.ESP_ALL));
         assertThat(instance.runFilter(variantEvaluation), equalTo(FAIL_FREQUENCY_FILTER_RESULT));
+    }
+
+    @Test
+    public void testFilterPassesVariantEvaluationWithFrequencyOverThresholdWhenVariantIsWhiteListed() {
+        VariantEvaluation variantEvaluation = makeVariantEvaluation(failFrequency(FrequencySource.ESP_ALL));
+        // the user has set this variant as whitelisted so it should pass regardless of the filter cutoff
+        variantEvaluation.setWhiteListed(true);
+        assertThat(instance.runFilter(variantEvaluation), equalTo(PASS_FREQUENCY_FILTER_RESULT));
     }
 
     @Test

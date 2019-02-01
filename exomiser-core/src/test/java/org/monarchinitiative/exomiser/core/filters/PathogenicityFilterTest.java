@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PathogenicityFilterTest {
@@ -102,12 +101,12 @@ public class PathogenicityFilterTest {
     private VariantEvaluation.Builder testVariantBuilder() {
         return VariantEvaluation.builder(1, 1, "A", "T");
     }
-    
+
     @Test
     public void test() {
         assertThat(instance.keepNonPathogenic(), equalTo(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS));
     }
-    
+
     @Test
     public void testThatOffTargetNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
@@ -142,6 +141,17 @@ public class PathogenicityFilterTest {
         FilterResult filterResult = instance.runFilter(predictedNonPathogenicMissense);
 
         FilterTestHelper.assertPassed(filterResult);
+    }
+
+    @Test
+    void alwaysPassesWhiteListedVariant() {
+        instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
+        // under normal circumstances, this would fail
+        FilterTestHelper.assertFailed(instance.runFilter(downstreamFailsFilter));
+
+        // however the user has set this variant as whitelisted so it should pass regardless
+        downstreamFailsFilter.setWhiteListed(true);
+        FilterTestHelper.assertPassed(instance.runFilter(downstreamFailsFilter));
     }
 
     @Test
