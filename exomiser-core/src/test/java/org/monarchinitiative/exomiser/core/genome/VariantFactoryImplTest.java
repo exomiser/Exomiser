@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,15 +27,14 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.data.JannovarData;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.AlleleCall;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -326,70 +325,5 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
-    }
-
-    /**
-     * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
-     */
-    @Disabled
-    @Test
-    public void testGenome() {
-
-        VariantAnnotator variantAnnotator = new StubVariantAnnotator();
-        VariantFactory variantFactory = new VariantFactoryImpl(variantAnnotator);
-
-        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
-        long numVariants;
-        try (Stream<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath)) {
-            numVariants = variants
-                    .count();
-        }
-        System.out.println("Read " + numVariants + " variants");
-
-
-        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
-                .empty());
-        VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
-
-        long numJannovarVariants;
-        try (Stream<VariantEvaluation> variants = jannovarVariantFactory.createVariantEvaluations(vcfPath)) {
-            numJannovarVariants = variants
-                    .count();
-        }
-        System.out.println("Read " + numJannovarVariants + " variants");
-
-    }
-
-    private class StubVariantAnnotator implements VariantAnnotator {
-
-        @Override
-        public VariantAnnotation annotate(String chr, int pos, String ref, String alt) {
-            return VariantAnnotation.builder()
-                    .chromosomeName(chr)
-                    .chromosome(toChromosomeNumber(chr))
-                    .position(pos)
-                    .ref(ref)
-                    .alt(alt)
-                    .build();
-        }
-
-        private int toChromosomeNumber(String chr) {
-            switch (chr) {
-                case "X":
-                    return 23;
-                case "Y":
-                    return 24;
-                case "M":
-                case "MT":
-                    return 25;
-                default:
-                    return Integer.parseInt(chr);
-            }
-        }
-    }
-
-    private JannovarData loadJannovarData() {
-        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1806_hg19/1806_hg19_transcripts_ucsc.ser");
-        return JannovarDataProtoSerialiser.load(transcriptFilePath);
     }
 }
