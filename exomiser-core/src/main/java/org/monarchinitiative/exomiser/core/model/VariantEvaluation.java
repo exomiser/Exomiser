@@ -91,7 +91,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Set<FilterType> failedFilterTypes;
 
     // score-related stuff - these are mutable
-    @JsonIgnore // TODO: remove the ignore tag
     private boolean whiteListed;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
