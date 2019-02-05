@@ -122,8 +122,6 @@ public class PathogenicityData {
 
     @JsonIgnore
     public boolean hasPredictedScore() {
-        // TODO: keep or delete? Depends on VariantWhiteList
-//        return !pathogenicityScores.isEmpty() || !clinVarData.isEmpty();
         return !pathogenicityScores.isEmpty();
     }
 
@@ -154,15 +152,6 @@ public class PathogenicityData {
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
     public float getScore() {
-        // TODO: keep or delete? Depends on VariantWhiteList
-//        switch (clinVarData.getPrimaryInterpretation()) {
-//            case PATHOGENIC:
-//            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-//            case LIKELY_PATHOGENIC:
-//                return 1f;
-//            default:
-//                return getPredictedPathScore();
-//        }
         return getPredictedPathScore();
     }
 
