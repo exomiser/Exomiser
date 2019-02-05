@@ -116,10 +116,6 @@ public class VcfResultsWriterTest {
     private VariantEvaluation fgfr2ContributingVariant;
     private VariantEvaluation shhIndelVariant;
 
-    /** VariantEvaluation objects used for testing (unannotated ones). */
-    private VariantEvaluation unAnnotatedVariantEvaluation1;
-    private VariantEvaluation unAnnotatedVariantEvaluation2;
-
     private Gene fgfr2Gene;
     private Gene shhGene;
 
@@ -138,8 +134,6 @@ public class VcfResultsWriterTest {
     private void setUpModel() {
         setUpFgfr2Gene();
         setUpShhGene();
-        unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "AC", "AT").quality(1).build();
-        unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG").quality(1).build();
     }
 
     private void setUpShhGene() {
@@ -177,13 +171,20 @@ public class VcfResultsWriterTest {
     /* test writing out unannotated variants */
     @Test
     public void testWriteUnannotatedVariants() {
+        VariantEvaluation unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "C", "T")
+                .quality(1)
+                .build();
+        VariantEvaluation unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG")
+                .quality(1)
+                .build();
+
         AnalysisResults analysisResults = AnalysisResults.builder()
                 .variantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2))
                 .build();
         
         String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "5\t11\t.\tAC\tAT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
+                + "5\t11\t.\tC\tT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
         assertThat(vcf, equalTo(expected));
     }
