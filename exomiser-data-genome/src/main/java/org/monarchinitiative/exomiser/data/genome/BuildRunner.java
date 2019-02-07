@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,6 +103,11 @@ public class BuildRunner implements ApplicationRunner {
 
         logger.info("Downloading variant resources");
         userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
+
+        logger.info("Creating ClinVar variant whitelist");
+        AlleleResource clinVarResource = alleleResources.get("clinvar");
+        ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
+        clinVarWhiteListBuildRunner.run();
 
         logger.info("Building variant database...");
         VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);

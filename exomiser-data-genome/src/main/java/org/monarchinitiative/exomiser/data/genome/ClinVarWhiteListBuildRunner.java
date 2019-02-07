@@ -52,7 +52,7 @@ public class ClinVarWhiteListBuildRunner {
     private final BuildInfo buildInfo;
     private final AlleleResource clinVarAlleleResource;
 
-    public ClinVarWhiteListBuildRunner(Path outPath, BuildInfo buildInfo, AlleleResource clinVarAlleleResource) {
+    public ClinVarWhiteListBuildRunner(BuildInfo buildInfo, Path outPath, AlleleResource clinVarAlleleResource) {
         this.outPath = outPath.toAbsolutePath();
         this.buildInfo = buildInfo;
         this.clinVarAlleleResource = clinVarAlleleResource;
