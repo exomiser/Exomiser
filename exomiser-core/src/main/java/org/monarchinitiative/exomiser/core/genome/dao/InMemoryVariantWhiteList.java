@@ -20,11 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -52,7 +52,7 @@ public class InMemoryVariantWhiteList implements VariantWhiteList {
     }
 
     private InMemoryVariantWhiteList(Set<AlleleProto.AlleleKey> whiteList) {
-        this.whiteList = ImmutableSet.copyOf(whiteList);
+        this.whiteList = new HashSet<>(whiteList);
     }
 
     @Override
