@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -68,9 +68,14 @@ public enum AlleleProperty {
     MUT_TASTER,
     CADD,
     REMM,
-    REVEL;
+    // Second generation scores
+    REVEL,
+    MCAP,
+    MPC,
+    MVP,
+    PRIMATE_AI;
 
-    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(KG, GNOMAD_G_OTH));
-    public static final Set<AlleleProperty> PATHOGENIC_PROPERTIES = ImmutableSet.copyOf(EnumSet.range(SIFT, REVEL));
+    public static final Set<AlleleProperty> FREQUENCY_PROPERTIES = Sets.immutableEnumSet(EnumSet.range(KG, GNOMAD_G_OTH));
+    public static final Set<AlleleProperty> PATHOGENIC_PROPERTIES = Sets.immutableEnumSet(EnumSet.range(SIFT, PRIMATE_AI));
 
 }

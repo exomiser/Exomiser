@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,12 +33,10 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
-import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.parsers.DbSnpAlleleParser;
+import org.monarchinitiative.exomiser.data.genome.model.resource.DbSnpAlleleResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -397,8 +395,7 @@ public class MvStoreAlleleIndexerTest {
     @Test
     @ExtendWith(TempDirectory.class)
     public void processAndWriteToDisk(@TempDir Path tempDir) throws Exception {
-        AlleleArchive dbsnpArchive = new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
-        AlleleResource dbSnpResource = new AlleleResource("test_first_ten_dbsnp", new URL("http://"), dbsnpArchive, new DbSnpAlleleParser());
+        AlleleResource dbSnpResource = new DbSnpAlleleResource("test_first_ten_dbsnp", new URL("http://"), Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
 
         File mvTestFile = tempDir.resolve("test.mv.db").toFile();
         logger.info("Writing allele data to file {}", mvTestFile);

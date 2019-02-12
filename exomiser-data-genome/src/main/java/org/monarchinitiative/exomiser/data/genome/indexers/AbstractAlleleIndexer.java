@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,19 +20,11 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
-import org.apache.commons.vfs2.FileObject;
-import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.ArchiveFileReader;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.parsers.AlleleParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,24 +40,13 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
     @Override
     public void index(AlleleResource alleleResource) {
         logger.info("Processing '{}' resource", alleleResource.getName());
-        AlleleArchive alleleArchive = alleleResource.getAlleleArchive();
-        AlleleParser alleleParser = alleleResource.getAlleleParser();
-
-        ArchiveFileReader archiveFileReader = new ArchiveFileReader(alleleArchive);
         Instant startTime = Instant.now();
         AlleleLogger alleleLogger = new AlleleLogger(startTime);
-        for (FileObject fileObject : archiveFileReader.getFileObjects()) {
-            try (InputStream archiveFileInputStream = archiveFileReader.readFileObject(fileObject);
-                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(archiveFileInputStream))) {
-                bufferedReader.lines()
-//                        .peek(line -> logger.info("{}", line))
-                        .flatMap(line -> alleleParser.parseLine(line).stream())
-                        .peek(alleleLogger.logCount())
-                        .forEach(this::writeAllele);
-            } catch (IOException e) {
-                logger.error("Error reading archive file {}", fileObject.getName(), e);
-            }
-        }
+
+        alleleResource.alleles()
+                .peek(alleleLogger.logCount())
+                .forEach(this::writeAllele);
+
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
         logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written.",
                 alleleResource.getName(),
@@ -105,7 +86,7 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
                     long totalSeconds = Duration.between(startTime, now).getSeconds();
                     long sinceLastCount = Duration.between(lastInstant, now).getSeconds();
                     long totalVar = counter.get();
-                    logger.info("Processed {} variants total in {} sec - {} vps (last {} took {} sec - {} vps)", totalVar, totalSeconds, totalVar/totalSeconds, logInterval, sinceLastCount, logInterval/sinceLastCount);
+                    logger.info("Processed {} variants total in {} sec - {} vps (last {} took {} sec - {} vps)", totalVar, totalSeconds, totalVar / totalSeconds, logInterval, sinceLastCount, logInterval / sinceLastCount);
                     logger.info("{}", allele);
                     lastInstant = now;
                 }

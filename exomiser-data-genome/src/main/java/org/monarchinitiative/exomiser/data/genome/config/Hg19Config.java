@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,9 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.exomiser.data.genome.archive.DbNsfpAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.EspAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.parsers.*;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
+import org.monarchinitiative.exomiser.data.genome.model.resource.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,7 +84,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new DbSnpAlleleParser());
+        return new DbSnpAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource clinVarAlleleResource() {
@@ -94,7 +92,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ClinVarAlleleParser());
+        return new ClinVarAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource espAlleleResource() {
@@ -102,7 +100,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new EspAlleleArchive(resourcePath), new EspAlleleParser());
+        return new EspHg19AlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource exacAlleleResource() {
@@ -110,7 +108,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacExomeAlleleParser());
+        return new ExacExomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource dbnsfpAlleleResource() {
@@ -118,7 +116,10 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new DbNsfpAlleleArchive(resourcePath), new DbNsfpAlleleParser(DbNsfpColumnIndex.HG19));
+        if (resourcePath.toString().contains("dbNSFP4.")) {
+            return new DbNsfp4AlleleResource(namespacePrefix, resourceUrl, resourcePath, DbNsfpColumnIndex.HG19);
+        }
+        return new DbNsfp3AlleleResource(namespacePrefix, resourceUrl, resourcePath, DbNsfpColumnIndex.HG19);
     }
 
     public AlleleResource topmedAlleleResource() {
@@ -126,7 +127,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new TopMedAlleleParser());
+        return new TopMedAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource uk10kAlleleResource() {
@@ -134,7 +135,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new Uk10kAlleleParser());
+        return new Uk10kAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource gnomadGenomeAlleleResource() {
@@ -142,7 +143,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new GnomadGenomeAlleleParser());
+        return new GnomadGenomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     public AlleleResource gnomadExomeAlleleResource() {
@@ -150,7 +151,7 @@ public class Hg19Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new GnomadExomeAlleleParser());
+        return new GnomadExomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
     }
 
     private AlleleResourceProperties getAlleleResourceProperties(String namespacePrefix) {

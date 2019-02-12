@@ -104,20 +104,26 @@ public class BuildRunner implements ApplicationRunner {
         logger.info("Downloading variant resources");
         userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
 
-        logger.info("Creating ClinVar variant whitelist");
-        AlleleResource clinVarResource = alleleResources.get("clinvar");
-        ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
-        clinVarWhiteListBuildRunner.run();
-
+//        logger.info("Downloading variant resources");
+//        userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
+//
+//        logger.info("Creating ClinVar variant whitelist");
+//        AlleleResource clinVarResource = alleleResources.get("clinvar");
+//        ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
+//        clinVarWhiteListBuildRunner.run();
+//
         logger.info("Building variant database...");
         VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);
         variantDatabaseBuildRunner.run();
+//
+//        logger.info("Building genome database...");
+//        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
+//        genomeDatabaseBuildRunner.run();
 
-        logger.info("Building genome database...");
-        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
-        genomeDatabaseBuildRunner.run();
-
-        // Add in Jannovar gubbins
+//        // Add in Jannovar gubbins - don't uncomment as this is currently broken
+//        logger.info("Building Jannovar transcript data...");
+//        TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, outPath);
+//        transcriptDataBuildRunner.run();
 
         logger.info("Finished build {}", buildInfo.getBuildString());
     }

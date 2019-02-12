@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,12 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.DbNsfpAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.EspAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.parsers.*;
+import org.monarchinitiative.exomiser.data.genome.model.archive.AlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.DbNsfp3AlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.EspAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -98,7 +98,7 @@ public class Hg38ConfigTest {
     public void testDbNsfpAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.dbnsfpAlleleResource();
 
-        AlleleArchive expectedArchive = new DbNsfpAlleleArchive(Paths.get("src/test/resources/hg19/variants/dbNSFPv3.4a.zip"));
+        AlleleArchive expectedArchive = new DbNsfp3AlleleArchive(Paths.get("src/test/resources/hg19/variants/dbNSFPv3.4a.zip"));
         assertThat(alleleResource.getAlleleParser(), instanceOf(DbNsfpAlleleParser.class));
         assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
     }
