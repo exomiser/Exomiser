@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -80,12 +80,6 @@ public class AlleleProtoAdaptorTest {
     }
 
     @Test
-    public void testToPathDataRevel() {
-        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REVEL", 0.2f).build();
-        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REVEL, 0.2f))));
-    }
-
-    @Test
     public void testToPathDataSift() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("SIFT", 0.2f).build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(SIFT, 0.2f))));
@@ -101,6 +95,36 @@ public class AlleleProtoAdaptorTest {
     public void testToPathDataMutationTaster() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MUT_TASTER", 0.7f).build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MUTATION_TASTER, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataRevel() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REVEL", 0.2f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REVEL, 0.2f))));
+    }
+
+    @Test
+    public void testToPathDataMcap() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MCAP", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(M_CAP, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataMpc() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MPC", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MPC, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataMvp() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MVP", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MVP, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataPrimateAi() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("PRIMATE_AI", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(PRIMATE_AI, 0.7f))));
     }
 
     @Test
