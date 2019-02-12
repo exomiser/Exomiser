@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,38 +26,33 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This is an order-dependent filter which will only run a filter if an input variant has passed all previous filters.
+ * The overall outcome (pass/fail) for a variant being run through a set of filters will be the same as for the
+ * {@link SimpleVariantFilterRunner}, only this {@link VariantFilterRunner} implementation will not exhaustively run all
+ * filters.
+ *
+ * For example consider three variants 0, 1 and 2 being run through three filters A, B, and C. The result is the same for
+ * each filtered variant, but unless the full results are required using this implementation could be computationally
+ * much less expensive, if the filters are optimally ordered. Assuming the computational cost of running a filter is
+ * A = 1, B = 2, C = 3 then the cost of running the filters through this filter runner will be:
+ *
+ * FULL(ABC):      SPARSE(ABC):    SPARSE(BAC):    SPARSE(ACB):    SPARSE(BCA):    SPARSE(CBA):    SPARSE(CAB):
+ *   A B C Result    A B C Result    B A C Result    A C B Result    B C A Result    C B A Result    C A B Result
+ * 0 X + X FAIL    0 X     FAIL    0 + X   FAIL    0 X     FAIL    0 + X   FAIL    0 X     FAIL    0 X     FAIL
+ * 1 + + + PASS    1 + + + PASS    1 + + + PASS    1 + + + PASS    1 + + + PASS    1 + + + PASS    1 + + + PASS
+ * 2 + X + FAIL    2 + X   FAIL    2 X     FAIL    2 + + X FAIL    2 X     FAIL    2 + X   FAIL    2 + + X FAIL
+ * Cost: 18        Cost: 10        Cost: 11        Cost: 13        Cost: 13        Cost: 14        Cost: 15
+ *
+ * key: X = failed filter, + = passed filter, blank = filter not run.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
-
-    private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
-
-    /**
-     * @param filters
-     * @param variantEvaluations
-     * @return
-     */
-    @Override
-    public List<VariantEvaluation> run(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using sparse filtering...", variantEvaluations.size());
-
-        if (ifThereAreNoFiltersToRun(filters)) {
-            return variantEvaluations;
-        }
-
-        List<VariantEvaluation> filteredVariantEvaluations = runFilters(filters, variantEvaluations);
-
-        int numRemoved = variantEvaluations.size() - filteredVariantEvaluations.size();
-        logger.info("Filtering for {} removed {} of {} variants - returning {} filtered variants.", getFilterTypes(filters), numRemoved, variantEvaluations.size(), filteredVariantEvaluations.size());
-        return filteredVariantEvaluations;
-    }
+public class SparseVariantFilterRunner implements VariantFilterRunner {
 
     @Override
     public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
@@ -66,38 +61,17 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
                 run(filter, variantEvaluation);
             }
         }
-        return makeListofFilteredVariants(variantEvaluations);
+        return passedFilteredVariants(variantEvaluations);
     }
 
-    private boolean ifThereAreNoFiltersToRun(List<VariantFilter> filters) {
-        if (filters.isEmpty()) {
-            logger.info("Unable to filter variants against empty Filter list - returning all variants");
-            return true;
-        }
-        return false;
-    }
-
-    private List<VariantEvaluation> runFilters(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
-
-        for (Filter filter : filters) {
-            for (VariantEvaluation variantEvaluation : variantEvaluations) {
-                //the only difference between sparse and full filtering is this if clause here...
-                if (variantEvaluation.passedFilters()) {
-                    run(filter, variantEvaluation);
-                }
-            }
-        }
-        return makeListofFilteredVariants(variantEvaluations);
-    }
-
-    private List<VariantEvaluation> makeListofFilteredVariants(List<VariantEvaluation> variantEvaluations) {
-        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
+    private List<VariantEvaluation> passedFilteredVariants(List<VariantEvaluation> variantEvaluations) {
+        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
         for (VariantEvaluation variant : variantEvaluations) {
             if (variant.passedFilters()) {
-                filteredVariantEvaluations.add(variant);
+                passedVariantEvaluations.add(variant);
             }
         }
-        return filteredVariantEvaluations;
+        return passedVariantEvaluations;
     }
 
 }

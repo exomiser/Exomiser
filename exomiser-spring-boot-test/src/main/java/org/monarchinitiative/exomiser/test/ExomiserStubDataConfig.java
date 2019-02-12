@@ -27,6 +27,9 @@ import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import htsjdk.tribble.readers.TabixReader;
 import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 /**
  * Configuration to provide a stub classes for exomiser beans which require on-disk files to operate on.
@@ -50,6 +54,34 @@ public class ExomiserStubDataConfig {
     public GenomeAnalysisService genomeAnalysisService() {
         return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, Mockito.mock(GenomeAnalysisService.class), Mockito.mock(VariantDataService.class), Mockito
                 .mock(VariantFactory.class));
+    }
+
+    @Bean
+    public HumanPhenotypeOntologyDao hpoDao(){
+        HumanPhenotypeOntologyDao hpoDao = Mockito.mock(HumanPhenotypeOntologyDao.class);
+        Mockito.when(hpoDao.getAllTerms()).thenReturn(Collections.emptySet());
+        Mockito.when(hpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        Mockito.when(hpoDao.getIdToPhenotypeTerms()).thenReturn(Collections.emptyMap());
+        logger.info("Mocking hpDao");
+        return hpoDao;
+    }
+
+    @Bean
+    public MousePhenotypeOntologyDao mpoDao(){
+        MousePhenotypeOntologyDao mpoDao = Mockito.mock(MousePhenotypeOntologyDao.class);
+        Mockito.when(mpoDao.getAllTerms()).thenReturn(Collections.emptySet());
+        Mockito.when(mpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        logger.info("Mocking mpDao");
+        return mpoDao;
+    }
+
+    @Bean
+    public ZebraFishPhenotypeOntologyDao zpoDao(){
+        ZebraFishPhenotypeOntologyDao zpoDao = Mockito.mock(ZebraFishPhenotypeOntologyDao.class);
+        Mockito.when(zpoDao.getAllTerms()).thenReturn(Collections.emptySet());
+        Mockito.when(zpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        logger.info("Mocking zpoDao");
+        return zpoDao;
     }
 
     @Bean

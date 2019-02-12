@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
@@ -69,14 +68,5 @@ public class MvStoreUtil {
         return new MVMap.Builder<AlleleKey, AlleleProperties>()
                 .keyType(AlleleKeyDataType.INSTANCE)
                 .valueType(AllelePropertiesDataType.INSTANCE);
-    }
-
-    public static AlleleKey generateAlleleKey(Variant variant) {
-        return AlleleKey.newBuilder()
-                .setChr(variant.getChromosome())
-                .setPosition(variant.getPosition())
-                .setRef(variant.getRef())
-                .setAlt(variant.getAlt())
-                .build();
     }
 }

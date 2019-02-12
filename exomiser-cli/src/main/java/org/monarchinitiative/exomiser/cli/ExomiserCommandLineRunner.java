@@ -58,7 +58,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     private String buildVersion;
 
     @Override
-    public void run(String... strings) {
+    public void run(String... strings) throws Exception {
         if (strings.length == 0) {
             logger.error("Please supply some command line arguments - none found");
             printHelpAndExit();
@@ -68,7 +68,11 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             printHelpAndExit();
         }
         logger.info("Exomiser running...");
-        runAnalyses(commandLine);
+        try {
+            runAnalyses(commandLine);
+        } catch (Exception e) {
+            logger.error("", e);
+        }
     }
 
     private void runAnalyses(CommandLine commandLine) {

@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 

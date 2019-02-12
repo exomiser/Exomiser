@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
 
 /**
@@ -32,14 +33,14 @@ import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
  */
 public class AllelePositionTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullRef() {
-        AllelePosition instance = trim(1, null, "A");
+        assertThrows(NullPointerException.class, () -> trim(1, null, "A"));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullAlt() {
-        AllelePosition instance = trim(1, "T", null);
+        assertThrows(NullPointerException.class, () -> trim(1, "T", null));
     }
 
     @Test
@@ -368,7 +369,7 @@ public class AllelePositionTest {
     }
 
     @Test
-    public void testStructutalVariant() {
+    public void testStructuralVariant() {
         assertThat(trim(4477084, "C", "<DEL:ME:ALU>"), equalTo(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>")));
     }
 
@@ -396,6 +397,16 @@ public class AllelePositionTest {
         assertThat(trim(123457, "A", "]1 : 0]A"), equalTo(AllelePosition.of(123457, "A", "]1 : 0]A")));
     }
 
+    @Test
+    void testIsSymbolic() {
+        assertThat(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(321681, "G", "G]17:198982]").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(0, "N", ".[13 : 123457[").isSymbolic(), is(true));
+        assertThat(AllelePosition.of(0, "C", "C.").isSymbolic(), is(true));
+        // Having a symbolic ref allele isn't mention in the VCF 4.2 spec, but we'll make sure though
+        assertThat(AllelePosition.of(4477084, "<INS>", "A").isSymbolic(), is(true));
+
+    }
 
     /**
      * Nirvana style trimming:

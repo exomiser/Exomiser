@@ -26,28 +26,27 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Disease;
-import de.charite.compbio.jannovar.pedigree.PedPerson;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.Sex;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
@@ -77,7 +76,7 @@ public class InheritanceModeAnalyserTest {
     @Test
     public void testAnalyseInheritanceModesSingleSampleNoVariants() {
         Gene gene = newGene();
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInheritanceModeAnalyser(pedigree);
         instance.analyseInheritanceModes(gene);
@@ -91,7 +90,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 1 , "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER)));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInheritanceModeAnalyser(pedigree);
         instance.analyseInheritanceModes(gene);
@@ -113,7 +112,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -136,7 +135,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -159,7 +158,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
@@ -185,7 +184,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+        Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -217,10 +216,11 @@ public class InheritanceModeAnalyserTest {
 
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -252,10 +252,12 @@ public class InheritanceModeAnalyserTest {
 
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
+
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -287,10 +289,11 @@ public class InheritanceModeAnalyserTest {
 
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -323,10 +326,12 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
+
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -344,7 +349,7 @@ public class InheritanceModeAnalyserTest {
     /**
      * Currently ignored as Jannovar multi-allelic inheritance compatibility is broken for multi-sample VCF.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHomVarAltAllele2shouldBeCompatibleWithAR() {
         Gene gene = newGene();
@@ -366,10 +371,11 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -387,7 +393,7 @@ public class InheritanceModeAnalyserTest {
     /**
      * Currently ignored as Jannovar multi-allelic inheritance compatibility is broken for multi-sample VCF.
      */
-    @Ignore
+    @Disabled
     @Test
     public void testAnalyseInheritanceModesMultiSampleMultiAllelicOnePassedVariantHetShouldBeCompatibleWithAD() {
         Gene gene = newGene();
@@ -412,12 +418,13 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
-        PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
-        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
-//        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual brotherIndividual = Individual.builder().id("Abel").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
+
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -447,7 +454,7 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -476,7 +483,7 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
@@ -505,7 +512,7 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -534,7 +541,7 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
         gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -580,7 +587,7 @@ public class InheritanceModeAnalyserTest {
         gene.addVariant(hetVar1);
         gene.addVariant(hetVar2);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         InheritanceModeAnalyser instance = newInstanceForModes(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
@@ -643,7 +650,7 @@ public class InheritanceModeAnalyserTest {
         Gene geneMitochondrial = newGene();
         geneMitochondrial.addVariant(mitoHetVar);
 
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
+        Pedigree pedigree = Pedigree.justProband("Cain");
 
         EnumSet<ModeOfInheritance> wantedModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT, ModeOfInheritance.MITOCHONDRIAL);
 

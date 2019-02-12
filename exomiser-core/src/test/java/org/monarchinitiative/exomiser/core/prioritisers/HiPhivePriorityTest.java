@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Lists;
 import org.jblas.DoubleMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -41,8 +41,8 @@ import java.util.function.Consumer;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
-import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -153,7 +153,7 @@ public class HiPhivePriorityTest {
 
     @Test
     public void testGetPriorityType() {
-        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, testMatrix, priorityService);
+        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), testMatrix, priorityService);
         assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
@@ -302,7 +302,7 @@ public class HiPhivePriorityTest {
 
     @Test
     public void testToString() {
-        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.DEFAULT, DataMatrix.empty(), priorityService);
+        HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), priorityService);
         System.out.println(instance);
     }
     

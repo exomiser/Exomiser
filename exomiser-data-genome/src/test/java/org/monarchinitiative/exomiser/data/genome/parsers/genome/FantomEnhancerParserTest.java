@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,10 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers.genome;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import org.junitpioneer.jupiter.TempDirectory.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,13 +38,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class FantomEnhancerParserTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
     @Test
-    public void parse() throws Exception {
+    @ExtendWith(TempDirectory.class)
+    public void parse(@TempDir Path tempDir) throws Exception {
         Path inputFile = Paths.get("src/test/resources/genome/fantom_enhancers.bed");
-        Path outputFile = tempFolder.newFile().toPath();
+        Path outputFile = tempDir.resolve("test_fantom_enhancers.pg");
         Path expectedOutputFile = Paths.get("src/test/resources/genome/fantom_enhancers.pg");
 
         FantomEnhancerParser instance = new FantomEnhancerParser(inputFile, outputFile);

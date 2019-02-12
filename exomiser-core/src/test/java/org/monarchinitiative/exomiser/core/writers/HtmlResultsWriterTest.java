@@ -28,11 +28,10 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.*;
@@ -49,30 +48,24 @@ import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HtmlResultsWriterTest {
 
-    private HtmlResultsWriter instance;
+    private final HtmlResultsWriter instance = new HtmlResultsWriter();
 
-    /**
-     * The temporary folder to write files to, automatically removed after tests
-     * finish.
-     */
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
-
-    private String testOutFilePrefix;
+    private static Path testOutDir;
 
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
@@ -80,16 +73,24 @@ public class HtmlResultsWriterTest {
     private Gene fgfr2Gene;
     private Gene shhGene;
 
-    @Before
-    public void setUp() {
-        instance = new HtmlResultsWriter();
+    @BeforeAll
+    public static void makeTempDir() throws IOException {
+        testOutDir = Files.createTempDirectory("exomiser_html_writer_test");
+    }
 
+    @AfterAll
+    public static void tearDown() throws IOException {
+        Files.delete(testOutDir);
+    }
+
+    @BeforeEach
+    public void setUp(){
         TestVariantFactory varFactory = new TestVariantFactory();
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of(RsId.valueOf(123456), Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES)));
-        fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f), MutationTasterScore
-                .valueOf(1f), SiftScore.valueOf(0f), CaddScore.valueOf(1f)));
+        fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of(RsId.of(123456), Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.01f)));
+        fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f), MutationTasterScore
+                .of(1f), SiftScore.of(0f), CaddScore.of(1f)));
         fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
         fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
 
@@ -108,11 +109,6 @@ public class HtmlResultsWriterTest {
         unAnnotatedVariantEvaluation2 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
     }
 
-    @After
-    public void tearDown() {
-        Paths.get(testOutFilePrefix).toFile().delete();
-    }
-
     private AnalysisResults buildAnalysisResults(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         return AnalysisResults.builder()
                 .sampleNames(Lists.newArrayList("Slartibartfast"))
@@ -122,57 +118,64 @@ public class HtmlResultsWriterTest {
     }
 
     @Test
-    public void testWriteTemplateWithEmptyData() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
+    public void testWriteTemplateWithEmptyData() {
 
         Analysis analysis = Analysis.builder().build();
         AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), Collections.emptyList());
 
-        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
+        String outputPrefix = testOutDir.resolve("testWriteTemplateWithEmptyData").toString();
+        OutputSettings settings = OutputSettings.builder()
+                .outputPrefix(outputPrefix)
+                .build();
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
-        Path testOutFile = Paths.get(testOutFilePrefix);
+        Path testOutFile = Paths.get(outputPrefix + "_AD.html");
         assertTrue(testOutFile.toFile().exists());
-
+        assertTrue(testOutFile.toFile().delete());
     }
 
     @Test
-    public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData_AD.html").toString();
+    public void testWriteTemplateWithUnAnnotatedVariantData() {
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), variants);
 
-        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
+        String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantData").toString();
+        OutputSettings settings = OutputSettings.builder()
+                .outputPrefix(testOutFilePrefix)
+                .build();
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
 
-        Path testOutFile = Paths.get(testOutFilePrefix);
+        Path testOutFile = Paths.get(testOutFilePrefix + "_AD.html");
         assertTrue(testOutFile.toFile().exists());
+        assertTrue(testOutFile.toFile().delete());
     }
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes_AD.html").toString();
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
         AnalysisResults analysisResults = buildAnalysisResults(genes, variants);
 
+        String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
-        Path testOutFile = Paths.get(testOutFilePrefix);
-        Files.readAllLines(testOutFile).forEach(System.out::println);
+        instance.writeFile(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+        Path testOutFile = Paths.get(testOutFilePrefix + ".html");
+
+        List<String> lines = Files.readAllLines(testOutFile);
+        assertFalse(lines.isEmpty());
 
         assertTrue(testOutFile.toFile().exists());
+        assertTrue(testOutFile.toFile().delete());
     }
 
     @Test
     public void testWriteTemplateWithEmptyDataAndFullAnalysis() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWrite").toString();
 
         AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), Collections.emptyList());
 
@@ -184,18 +187,14 @@ public class HtmlResultsWriterTest {
                 .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
                 .build();
 
-        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().build();
 
         String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
-
-        Path testOutFile = Paths.get(testOutFilePrefix);
         assertFalse(output.isEmpty());
-        assertTrue(testOutFile.toFile().exists());
     }
 
     @Test
     public void testWriteTemplateWithFullDataAndFullAnalysis() throws Exception {
-        testOutFilePrefix = tmpFolder.newFile("testWrite").toString();
 
         unAnnotatedVariantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
 
@@ -211,13 +210,12 @@ public class HtmlResultsWriterTest {
                 .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
                 .build();
 
-        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().build();
 
         String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
-
-        Path testOutFile = Paths.get(testOutFilePrefix);
-        assertFalse(output.isEmpty());
-        assertTrue(testOutFile.toFile().exists());
+        assertTrue(output.contains("Exomiser Analysis Results for"));
+        assertTrue(output.contains("FGFR2"));
+        assertTrue(output.contains("SHH"));
     }
 
 }

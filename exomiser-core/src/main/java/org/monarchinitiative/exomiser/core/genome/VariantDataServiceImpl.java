@@ -21,17 +21,13 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
-import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantEffectUtility;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -39,12 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toList;
+
 /**
- * Default implementation of the VariantDataService. This is a
+ * Default implementation of the VariantDataService.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -52,97 +49,99 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
 
-    private FrequencyDao defaultFrequencyDao;
-    private FrequencyDao localFrequencyDao;
+    // Default data sources
+    private final FrequencyDao defaultFrequencyDao;
+    private final PathogenicityDao defaultPathogenicityDao;
 
-    private PathogenicityDao pathogenicityDao;
-    private CaddDao caddDao;
-    private RemmDao remmDao;
+    // Optional data sources
+    private final FrequencyDao localFrequencyDao;
+    private final PathogenicityDao caddDao;
+    private final PathogenicityDao remmDao;
+    private final PathogenicityDao testPathScoreDao;
 
     private VariantDataServiceImpl(Builder builder) {
         this.defaultFrequencyDao = builder.defaultFrequencyDao;
-        this.localFrequencyDao = builder.localFrequencyDao;
+        this.defaultPathogenicityDao = builder.defaultPathogenicityDao;
 
-        this.pathogenicityDao = builder.pathogenicityDao;
+        this.localFrequencyDao = builder.localFrequencyDao;
         this.caddDao = builder.caddDao;
         this.remmDao = builder.remmDao;
+        this.testPathScoreDao = builder.testPathScoreDao;
     }
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        FrequencyData allFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
-        // getKnownFrequencies returns a mutable view, so we can use it directly
-        List<Frequency> allFrequencies = allFrequencyData.getKnownFrequencies();
+
+        // This could be run alongside the pathogenicities as they are all stored in the same datastore
+        FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
+
+        List<Frequency> allFrequencies = new ArrayList<>();
+        for (Frequency frequency : defaultFrequencyData.getKnownFrequencies()) {
+            if (frequencySources.contains(frequency.getSource())) {
+                allFrequencies.add(frequency);
+            }
+        }
 
         if (frequencySources.contains(FrequencySource.LOCAL)) {
             FrequencyData localFrequencyData = localFrequencyDao.getFrequencyData(variant);
-            if (localFrequencyData.hasKnownFrequency()) {
-                allFrequencies.add(localFrequencyData.getFrequencyForSource(FrequencySource.LOCAL));
-            }
+            allFrequencies.addAll(localFrequencyData.getKnownFrequencies());
         }
 
-        return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencies, frequencySources);
-    }
-
-    protected static FrequencyData frequencyDataFromSpecifiedSources(RsId rsid, List<Frequency> allFrequencies, Set<FrequencySource> frequencySources) {
-        // Using a loop rather than stream here as the loop is quicker and this is a performance-critical class
-        Set<Frequency> wanted = new HashSet<>();
-        for (Frequency frequency : allFrequencies) {
-            if (frequencySources.contains(frequency.getSource())) {
-                wanted.add(frequency);
-            }
-        }
-        if (rsid.isEmpty() && wanted.isEmpty()) {
-            return FrequencyData.empty();
-        }
-        return FrequencyData.of(rsid, wanted);
+        return FrequencyData.of(defaultFrequencyData.getRsId(), allFrequencies);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        //OK, this is a bit stupid, but if no sources are defined we're not going to bother checking for data
+
+        // This could be run alongside the frequencies as they are all stored in the same datastore
+        PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
         if (pathogenicitySources.isEmpty()) {
-            return PathogenicityData.empty();
+            // Fast-path for the unlikely case when no sources are defined - we'll just return the ClinVar data
+            return PathogenicityData.of(defaultPathogenicityData.getClinVarData());
         }
 
-        ClinVarData clinVarData = ClinVarData.empty();
         List<PathogenicityScore> allPathScores = new ArrayList<>();
-        // Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
-        // Prior to version 10.1.0 this would only look-up MISSENSE variants, but this would miss out scores for stop/start
-        // gain/loss an other possible SNV scores from the bundled pathogenicity databases.
-        // TODO: this should always be run alongside the frequencies as they are all stored in the same datastore
-        if (VariantEffectUtility.affectsCodingRegion(variant.getVariantEffect())) {
-            PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
-            clinVarData = missenseScores.getClinVarData();
-            allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
-        }
-        else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
-            //REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
-            PathogenicityData nonCodingScore = remmDao.getPathogenicityData(variant);
-            allPathScores.addAll(nonCodingScore.getPredictedPathogenicityScores());
-        }
-        
-        //CADD does all of it although is not as good as REMM for the non-coding regions.
-        if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
-            PathogenicityData caddScore = caddDao.getPathogenicityData(variant);
-            allPathScores.addAll(caddScore.getPredictedPathogenicityScores());
+        // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
+        // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
+        if (variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT) {
+            addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
         }
 
-        return pathDataFromSpecifiedDataSources(clinVarData, allPathScores, pathogenicitySources);
+        List<PathogenicityData> optionalPathData = getOptionaPathogenicityData(variant, pathogenicitySources);
+        for (PathogenicityData pathogenicityData : optionalPathData) {
+            allPathScores.addAll(pathogenicityData.getPredictedPathogenicityScores());
+        }
+
+        return PathogenicityData.of(defaultPathogenicityData.getClinVarData(), allPathScores);
     }
 
-    protected static PathogenicityData pathDataFromSpecifiedDataSources(ClinVarData clinVarData, List<PathogenicityScore> allPathScores, Set<PathogenicitySource> pathogenicitySources) {
-        // Using a loop rather than stream here as the loop is quicker and this is a performance-critical class
-        Set<PathogenicityScore> wanted = new HashSet<>();
-        for (PathogenicityScore pathogenicity : allPathScores) {
-            if (pathogenicitySources.contains(pathogenicity.getSource())) {
-                wanted.add(pathogenicity);
+    private void addAllWantedScores(Set<PathogenicitySource> pathogenicitySources, PathogenicityData defaultPathogenicityData, List<PathogenicityScore> allPathScores) {
+        for (PathogenicityScore score : defaultPathogenicityData.getPredictedPathogenicityScores()) {
+            if (pathogenicitySources.contains(score.getSource())) {
+                allPathScores.add(score);
             }
         }
-        if (wanted.isEmpty() && clinVarData.isEmpty()) {
-            return PathogenicityData.empty();
+    }
+
+    private List<PathogenicityData> getOptionaPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+        List<PathogenicityDao> daosToQuery = new ArrayList<>();
+        // REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
+        if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
+            daosToQuery.add(remmDao);
         }
-        return PathogenicityData.of(clinVarData, wanted);
+
+        // CADD does all of it although is not as good as REMM for the non-coding regions.
+        if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
+            daosToQuery.add(caddDao);
+        }
+
+        if (pathogenicitySources.contains(PathogenicitySource.TEST)) {
+            daosToQuery.add(testPathScoreDao);
+        }
+
+        return daosToQuery.parallelStream()
+                .map(pathDao -> pathDao.getPathogenicityData(variant))
+                .collect(toList());
     }
 
     public static Builder builder() {
@@ -150,16 +149,23 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     public static class Builder {
-        //TODO check for null values or provide NoOp implementations?
+
         private FrequencyDao defaultFrequencyDao;
+        private PathogenicityDao defaultPathogenicityDao;
+
         private FrequencyDao localFrequencyDao;
 
-        private PathogenicityDao pathogenicityDao;
-        private CaddDao caddDao;
-        private RemmDao remmDao;
+        private PathogenicityDao caddDao;
+        private PathogenicityDao remmDao;
+        private PathogenicityDao testPathScoreDao;
 
         public Builder defaultFrequencyDao(FrequencyDao defaultFrequencyDao) {
             this.defaultFrequencyDao = defaultFrequencyDao;
+            return this;
+        }
+
+        public Builder defaultPathogenicityDao(PathogenicityDao defaultPathogenicityDao) {
+            this.defaultPathogenicityDao = defaultPathogenicityDao;
             return this;
         }
 
@@ -168,18 +174,18 @@ public class VariantDataServiceImpl implements VariantDataService {
             return this;
         }
 
-        public Builder pathogenicityDao(PathogenicityDao pathogenicityDao) {
-            this.pathogenicityDao = pathogenicityDao;
-            return this;
-        }
-
-        public Builder caddDao(CaddDao caddDao) {
+        public Builder caddDao(PathogenicityDao caddDao) {
             this.caddDao = caddDao;
             return this;
         }
 
-        public Builder remmDao(RemmDao remmDao) {
+        public Builder remmDao(PathogenicityDao remmDao) {
             this.remmDao = remmDao;
+            return this;
+        }
+
+        public Builder testPathScoreDao(PathogenicityDao testPathScoreDao) {
+            this.testPathScoreDao = testPathScoreDao;
             return this;
         }
 

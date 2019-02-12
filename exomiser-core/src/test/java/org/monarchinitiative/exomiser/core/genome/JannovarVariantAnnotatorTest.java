@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.AllelePosition;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.model.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -35,7 +34,7 @@ import static org.junit.Assert.assertThat;
 public class JannovarVariantAnnotatorTest {
 
     private JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
-            .buildDefaultJannovarData());
+            .buildDefaultJannovarData(), ChromosomalRegionIndex.empty());
 
 
     @Test
@@ -165,6 +164,33 @@ public class JannovarVariantAnnotatorTest {
     }
 
     @Test
+    public void testUpstreamGeneIntergenicVariantsInRegulatoryRegion() {
+        //Without the regulatory regions in the annotator
+        VariantAnnotation upstreamVariant = instance.annotate("10", 123357973, "T", "G");
+        assertThat(upstreamVariant.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+
+        VariantAnnotation intergenicVariant = instance.annotate("10", 150000000, "T", "G");
+        assertThat(intergenicVariant.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+
+        //Regulatory regions containing the variants
+        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.getPosition(), upstreamVariant.getPosition(), RegulatoryFeature.FeatureType.ENHANCER);
+        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.getPosition(), intergenicVariant.getPosition(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
+
+        //Create new annotator with the regulatory regions
+        VariantAnnotator annotatorWithRegulatoryRegions = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(),
+                TestFactory.buildDefaultJannovarData(),
+                ChromosomalRegionIndex.of(ImmutableList.of(enhancer, tfBindingSite))
+        );
+
+        //Annotate the original positions using the new annotator...
+        VariantAnnotation wasUpstream = annotatorWithRegulatoryRegions.annotate(upstreamVariant.getChromosomeName(), upstreamVariant.getPosition(), upstreamVariant.getRef(), upstreamVariant.getAlt());
+        assertThat(wasUpstream.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        //... and lo! They are designated as regulatory region variants!
+        VariantAnnotation wasIntergenic = annotatorWithRegulatoryRegions.annotate(intergenicVariant.getChromosomeName(), intergenicVariant.getPosition(), intergenicVariant.getRef(), intergenicVariant.getAlt());
+        assertThat(wasIntergenic.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+    }
+
+    @Test
     public void testGetAnnotationsForUnTrimmedDeletionReturnsValueOfAllelePositionTrim() {
 
         //Given a single allele from a multi-positional site, they might not be fully trimmed. In cases where there is repetition, depending on the program used, the final
@@ -236,4 +262,21 @@ public class JannovarVariantAnnotatorTest {
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
+    @Test
+    void testStructuralVariant() {
+        int pos = 118608470;
+        String ref = "A";
+        String alt = "<INS>";
+
+        AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
+
+        VariantAnnotation variantAnnotation = instance.annotate("X", pos, ref, alt);
+
+        assertThat(variantAnnotation.getChromosome(), equalTo(23));
+        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
+        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
+        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+    }
 }

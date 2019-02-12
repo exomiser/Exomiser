@@ -43,8 +43,9 @@ public class PhenotypeProperties {
     //Random walk matrix for hiPhive and exomeWalker
     // pre 10.0.0. the randomWalkFileName ended with a .gz extension
     // this was changed to use an MVStore with a .mv extension in version 10.0.0
-    private String randomWalkFileName = "rw_string_9_05.mv";
+    private String randomWalkFileName = "rw_string_10.mv";
     private String randomWalkIndexFileName = "rw_string_9_05_id2index.gz";
+    private boolean randomWalkPreload = false;
 
     //Phenix data
     private String phenixDataDir = "phenix";
@@ -89,6 +90,14 @@ public class PhenotypeProperties {
 
     public void setRandomWalkIndexFileName(String randomWalkIndexFileName) {
         this.randomWalkIndexFileName = randomWalkIndexFileName;
+    }
+
+    public boolean isRandomWalkPreload() {
+        return randomWalkPreload;
+    }
+
+    public void setRandomWalkPreload(boolean randomWalkPreload) {
+        this.randomWalkPreload = randomWalkPreload;
     }
 
     public String getPhenixDataDir() {

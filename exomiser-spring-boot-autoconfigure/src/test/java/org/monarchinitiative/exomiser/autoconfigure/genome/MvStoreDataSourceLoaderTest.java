@@ -21,13 +21,14 @@
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.h2.mvstore.MVStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -41,9 +42,9 @@ public class MvStoreDataSourceLoaderTest {
         assertThat(mvStore, instanceOf(MVStore.class));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void cannotLoadData() {
         Path mvStorePath = Paths.get("wibble");
-        MvStoreDataSourceLoader.openMvStore(mvStorePath);
+        assertThrows(IllegalStateException.class, () -> MvStoreDataSourceLoader.openMvStore(mvStorePath));
     }
 }

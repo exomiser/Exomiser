@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,11 +26,12 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -39,7 +40,7 @@ import static org.junit.Assert.assertThat;
 public class RsIdTest {
 
     private static final int ID = 234567364;
-    private static final RsId instance = RsId.valueOf(ID);
+    private static final RsId instance = RsId.of(ID);
 
     @Test
     public void testGetId() {
@@ -48,7 +49,7 @@ public class RsIdTest {
 
     @Test
     public void testHashCode() {
-        RsId other = RsId.valueOf(ID);
+        RsId other = RsId.of(ID);
         int expected = other.hashCode();
         assertThat(instance.hashCode(), equalTo(expected));
     }
@@ -65,12 +66,12 @@ public class RsIdTest {
 
     @Test
     public void testNotEqualsDifferentId() {
-        assertThat(instance.equals(RsId.valueOf(ID + 1)), is(false));
+        assertThat(instance.equals(RsId.of(ID + 1)), is(false));
     }
 
     @Test
     public void testEquals() {
-        assertThat(instance.equals(RsId.valueOf(ID)), is(true));
+        assertThat(instance.equals(RsId.of(ID)), is(true));
     }
 
     @Test
@@ -80,27 +81,27 @@ public class RsIdTest {
 
     @Test
     public void testValueOfNullReturnsEmpty() {
-        assertThat(RsId.valueOf(null), equalTo(RsId.empty()));
+        assertThat(RsId.of(null), equalTo(RsId.empty()));
     }
 
     @Test
     public void testValueOfLessThanZeroReturnsEmpty() {
-        assertThat(RsId.valueOf(Integer.MIN_VALUE), equalTo(RsId.empty()));
+        assertThat(RsId.of(Integer.MIN_VALUE), equalTo(RsId.empty()));
     }
 
     @Test
     public void testValueOfZeroReturnsEmpty() {
-        assertThat(RsId.valueOf(0), equalTo(RsId.empty()));
+        assertThat(RsId.of(0), equalTo(RsId.empty()));
     }
 
     @Test
     public void testValueOfEmpty() {
-        assertThat(RsId.valueOf("."), equalTo(RsId.empty()));
+        assertThat(RsId.of("."), equalTo(RsId.empty()));
     }
 
     @Test
     public void testEmptyInputReturnsEmpty() {
-        assertThat(RsId.valueOf(""), equalTo(RsId.empty()));
+        assertThat(RsId.of(""), equalTo(RsId.empty()));
     }
 
     @Test
@@ -110,7 +111,7 @@ public class RsIdTest {
 
     @Test
     public void testNotEmpty() {
-        assertThat(RsId.valueOf(123456).isEmpty(), is(false));
+        assertThat(RsId.of(123456).isEmpty(), is(false));
     }
 
     @Test
@@ -120,17 +121,17 @@ public class RsIdTest {
 
     @Test
     public void testParseValidRsId() {
-        assertThat(RsId.valueOf("rs123456"), equalTo(RsId.valueOf(123456)));
+        assertThat(RsId.of("rs123456"), equalTo(RsId.of(123456)));
     }
 
     @Test
     public void testParseRsIdFromStringInt() {
-        assertThat(RsId.valueOf("123456"), equalTo(RsId.valueOf(123456)));
+        assertThat(RsId.of("123456"), equalTo(RsId.of(123456)));
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testValueOfInvalidThrowsException() {
-        RsId.valueOf("wibble");
+        assertThrows(NumberFormatException.class, () -> RsId.of("wibble"));
     }
 
 }

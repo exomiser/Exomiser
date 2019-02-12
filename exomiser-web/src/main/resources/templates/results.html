@@ -62,13 +62,12 @@
                 <th:block th:text="${sampleName}"> Slartibartfast</th:block>
             </h2>
             <ul class="nav nav-pills" id="tabs">
-                <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"/> Analysis Settings</b></a></li>
-                <li><a href="#filtering" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-filter"/>
+                <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"></span> Analysis Settings</b></a></li>
+                <li><a href="#filtering" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-filter"></span>
                     Filtering Summary</b></a></li>
-                <li><a href="#distribution" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</b></a></li>
-                <li class="active"><a href="#prioritisation" role="tab" data-toggle="tab"><b><span
-                        class="glyphicon glyphicon-sort"/> Prioritised Genes</b></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</b></a></li>
+                <li><a href="#distribution" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-align-left"></span> Variant Type Distribution</b></a></li>
+                <li class="active"><a href="#prioritisation" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-sort"></span> Prioritised Genes</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"></span> Unanalysed Variants</b></a></li>
                 <!--<li><a href="#about" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-question-sign"/> About</b></a></li>-->
             </ul>
             <div class="tab-content">
@@ -230,7 +229,7 @@
                                  th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}">
                                 <div class="col-sm-12">
                                     <span class="label label-danger"
-                                          th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+                                          th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                                     <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
                                         chr10:g.123256215T>G [0/1]</b>
                                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
@@ -333,8 +332,8 @@
 
         <footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
 
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"></script>
 
         <script type ="text/javascript">
             $(document).ready(function () {

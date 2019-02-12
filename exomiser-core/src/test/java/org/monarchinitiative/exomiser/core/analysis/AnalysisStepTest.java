@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.KnownVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;

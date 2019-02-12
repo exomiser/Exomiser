@@ -24,12 +24,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -137,9 +139,10 @@ public class InheritanceModeOptionsTest {
         assertThat(instance.getMaxFreqForMode(ModeOfInheritance.ANY), equalTo(Float.MAX_VALUE));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void defaultModeOfInheritanceThrowsExceptionWithAny() {
-        InheritanceModeOptions.defaultForModes(ModeOfInheritance.ANY);
+        InheritanceModeOptions anyDefault = InheritanceModeOptions.defaultForModes(ModeOfInheritance.ANY);
+        assertThat(anyDefault.getMaxFreqForMode(ModeOfInheritance.ANY), equalTo(2.0f));
     }
 
     @Test
@@ -161,33 +164,47 @@ public class InheritanceModeOptionsTest {
     }
 
     @Test
+    public void canGetDefinedSubModes() {
+        InheritanceModeOptions instance = InheritanceModeOptions.defaultForModes(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT,
+                ModeOfInheritance.X_RECESSIVE
+        );
+
+        InheritanceModeOptions empty = InheritanceModeOptions.empty();
+
+        assertThat(instance.getDefinedSubModes(), equalTo(ImmutableSet.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, SubModeOfInheritance.X_RECESSIVE_COMP_HET, SubModeOfInheritance.X_RECESSIVE_HOM_ALT)));
+        assertThat(empty.getDefinedSubModes(), equalTo(ImmutableSet.of()));
+    }
+
+    @Test
     public void isEmpty() {
         assertThat(InheritanceModeOptions.empty().isEmpty(), equalTo(true));
         assertThat(InheritanceModeOptions.defaults().isEmpty(), equalTo(false));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNullInput() {
-        InheritanceModeOptions.of(null);
+        assertThrows(NullPointerException.class, () -> InheritanceModeOptions.of(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWithAnyValue() {
+    @Test
+    public void acceptsAnyValue() {
         Map<SubModeOfInheritance, Float> withAny = ImmutableMap.of(
                 SubModeOfInheritance.ANY, 100f
         );
-        InheritanceModeOptions.of(withAny);
+        InheritanceModeOptions instance = InheritanceModeOptions.of(withAny);
+        assertThat(instance.getDefinedModes(), equalTo(EnumSet.of(ModeOfInheritance.ANY)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsExceptionWithNonPercentageValue() {
         //check upper bounds
         Map<SubModeOfInheritance, Float> tooHigh = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
-        InheritanceModeOptions.of(tooHigh);
+        assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooHigh));
 
         //check lower bounds
         Map<SubModeOfInheritance, Float> tooLow = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
-        InheritanceModeOptions.of(tooLow);
+        assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooLow));
     }
 
     @Test
@@ -211,6 +228,16 @@ public class InheritanceModeOptionsTest {
         assertThat(instance.getMaxFreqForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(1f));
         //non-user-defined
         assertThat(instance.getMaxFreqForSubMode(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT), equalTo(Float.MAX_VALUE));
+    }
+
+    @Test
+    public void getMaxFreq() {
+        assertThat(InheritanceModeOptions.empty().getMaxFreq(), equalTo(Float.MAX_VALUE));
+        assertThat(InheritanceModeOptions.defaults().getMaxFreq(), equalTo(2.0f));
+
+        Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
+        InheritanceModeOptions userDefined = InheritanceModeOptions.of(userDefinedThresholds);
+        assertThat(userDefined.getMaxFreq(), equalTo(1f));
     }
 
     @Test

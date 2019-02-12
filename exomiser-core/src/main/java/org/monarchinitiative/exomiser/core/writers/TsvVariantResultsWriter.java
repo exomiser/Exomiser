@@ -28,12 +28,15 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,18 +79,18 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}", output, ex);
         }
@@ -95,12 +98,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults,
-                           boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
-        if (writeOnlyPassVariants) {
-            logger.info("Writing out only PASS variants");
+                           boolean writeOnlyContributingVariants, CSVPrinter printer) throws IOException {
+        if (writeOnlyContributingVariants) {
+            logger.debug("Writing out only CONTRIBUTING variants");
             for (Gene gene : analysisResults.getGenes()) {
                 if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                    writeOnlyPassVariantsOfGene(modeOfInheritance, gene, printer);
+                    writeOnlyContributingVariantsOfGene(modeOfInheritance, gene, printer);
                 }
             }
         } else {
@@ -110,12 +113,11 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-    private void writeOnlyPassVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
-        for (VariantEvaluation ve : gene.getPassedVariantEvaluations()) {
-            if (ve.isCompatibleWith(modeOfInheritance)) {
-                List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
-                printer.printRecord(record);
-            }
+    private void writeOnlyContributingVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
+        GeneScore geneScore = gene.getGeneScoreForMode(modeOfInheritance);
+        for (VariantEvaluation ve : geneScore.getContributingVariants()) {
+            List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
+            printer.printRecord(record);
         }
     }
 
@@ -152,16 +154,17 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         record.add(getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
         // EXOMISER_GENE
         record.add(ve.getGeneSymbol());
+        PathogenicityData pathogenicityData = ve.getPathogenicityData();
         // CADD
-        record.add(getPathScore(ve.getPathogenicityData().getCaddScore()));
+        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.CADD)));
         // POLYPHEN
-        record.add(getPathScore(ve.getPathogenicityData().getPolyPhenScore()));
+        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.POLYPHEN)));
         // MUTATIONTASTER
-        record.add(getPathScore(ve.getPathogenicityData().getMutationTasterScore()));
+        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.MUTATION_TASTER)));
         // SIFT
-        record.add(getPathScore(ve.getPathogenicityData().getSiftScore()));
-        //MNCDS
-        record.add(getPathScore(ve.getPathogenicityData().getRemmScore()));
+        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.SIFT)));
+        // REMM
+        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.REMM)));
         // "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
         // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
         addFrequencyData(ve.getFrequencyData(), record);

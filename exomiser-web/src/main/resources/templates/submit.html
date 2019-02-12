@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2018 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
         <link href="https://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.min.css" th:href="@{/webjars/chosen/1.3.0/chosen.min.css}" rel="stylesheet" media="screen"/>
-        <link href="css/bootstrap-chosen/bootstrap-chosen.css" th:href="@{/css/bootstrap-chosen/bootstrap-chosen.css}" rel="stylesheet" media="screen"/>
+        <link href="../static/css/bootstrap-chosen/bootstrap-chosen.css" th:href="@{/css/bootstrap-chosen/bootstrap-chosen.css}" rel="stylesheet" media="screen"/>
         <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
     </head>
 
@@ -67,7 +67,7 @@
             <form role="form" id="configure-analysis" action="submit" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
                 <div class="panel panel-default" id="input-data">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-cloud-upload"/> Upload Sample Files</h3>
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-cloud-upload"></span> Upload Sample Files</h3>
                     </div>
                     <div class="panel-body">
                         <div class="col-sm-4">
@@ -100,7 +100,7 @@
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-tasks"/> Enter Sample Phenotypes</h3>
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-tasks"></span> Enter Sample Phenotypes</h3>
                     </div>
                     <div class="panel-body">
 
@@ -128,7 +128,7 @@
                 </div>
                 <div class="panel panel-default" id="filters">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-filter"/> Set Filtering Parameters</h3>
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-filter"></span> Set Filtering Parameters</h3>
                     </div>
                     <div class="panel-body">
                         <div class="col-sm-4">
@@ -176,10 +176,11 @@
                             <label for="inheritance">Inheritance model: </label>
                             <div class="form-group">
                                 <select name="inheritance" id="inheritance" data-toggle="dropdown" class="chosen-select">
-                                    <option selected="true" value="ANY">None</option>
-                                    <option value="AUTOSOMAL_DOMINANT">Autosomal dominant</option>
+                                    <option selected="true" value="AUTOSOMAL_DOMINANT">Autosomal dominant</option>
                                     <option value="AUTOSOMAL_RECESSIVE">Autosomal recessive</option>
-                                    <option value="X_RECESSIVE">X-linked</option>
+                                    <option value="X_DOMINANT">X-Dominant</option>
+                                    <option value="X_RECESSIVE">X-Recessive</option>
+                                    <option value="MITOCHONDRIAL">Mitochondrial</option>
                                 </select>
                             </div>
                         </div>
@@ -203,7 +204,7 @@
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-sort"/> Choose Prioritiser</h3>
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-sort"></span> Choose Prioritiser</h3>
                     </div>
                     <div class="panel-body">
                         <div class="col-sm-4">
@@ -242,10 +243,10 @@
         <!--disabled the footer here as it blocks the submit button in narrow viewports.-->
         <footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.jquery.min.js" th:href="@{/webjars/chosen/1.3.0/chosen.jquery.min.js}"/>
-        <script type="text/javascript" src="js/ajax-chosen/ajax-chosen.min.js" th:href="@{/js/ajax-chosen/ajax-chosen.min.js}"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.jquery.min.js" th:href="@{/webjars/chosen/1.3.0/chosen.jquery.min.js}"></script>
+    <script type="text/javascript" src="js/ajax-chosen/ajax-chosen.min.js" th:href="@{/js/ajax-chosen/ajax-chosen.min.js}"></script>
 
         <script type="text/javascript" >
             $(document).ready(function () {

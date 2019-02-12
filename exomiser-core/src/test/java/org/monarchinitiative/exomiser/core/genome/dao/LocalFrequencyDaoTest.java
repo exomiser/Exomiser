@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,12 +21,12 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LocalFrequencyDaoTest {
 
     private LocalFrequencyDao instance;
@@ -47,7 +47,7 @@ public class LocalFrequencyDaoTest {
     @Mock
     private TabixReader tabixReader;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TabixDataSource tabixDataSource = new TabixReaderAdaptor(tabixReader);
         instance = new LocalFrequencyDao(tabixDataSource);
@@ -58,7 +58,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private FrequencyData localFrequencyData(float freq) {
-        return FrequencyData.of(RsId.empty(), Frequency.valueOf(freq, FrequencySource.LOCAL));
+        return FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, freq));
     }
 
     //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:

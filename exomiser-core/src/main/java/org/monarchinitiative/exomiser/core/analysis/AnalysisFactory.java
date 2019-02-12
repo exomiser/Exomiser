@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +47,14 @@ public class AnalysisFactory {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisFactory.class);
 
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
-
     private final PriorityFactory priorityFactory;
+    private final OntologyService ontologyService;
 
     @Autowired
-    public AnalysisFactory(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory) {
+    public AnalysisFactory(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory, OntologyService ontologyService) {
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
         this.priorityFactory = priorityFactory;
+        this.ontologyService = ontologyService;
     }
 
     public AnalysisRunner getAnalysisRunner(GenomeAssembly genomeAssembly, AnalysisMode analysisMode) {
@@ -64,8 +66,6 @@ public class AnalysisFactory {
         switch (analysisMode) {
             case FULL:
                 return new SimpleAnalysisRunner(genomeAnalysisService);
-            case SPARSE:
-                return new SparseAnalysisRunner(genomeAnalysisService);
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
@@ -74,7 +74,7 @@ public class AnalysisFactory {
     }
 
     public AnalysisBuilder getAnalysisBuilder() {
-        return new AnalysisBuilder(priorityFactory, genomeAnalysisServiceProvider);
+        return new AnalysisBuilder(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
     }
 
 }

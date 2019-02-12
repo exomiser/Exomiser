@@ -20,14 +20,12 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers.genome;
 
-import org.apache.commons.io.FileUtils;
 import org.monarchinitiative.exomiser.data.genome.parsers.ChromosomeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,31 +57,10 @@ public class EnsemblEnhancerParser {
         this.outputPath = outputPath;
     }
 
-    //TODO: fix the Assembly
-    public void download() {
-//        String urlString = "http://grch37.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%221%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_regulatory_feature%22%20interface%20=%20%22default%22%20%3E%3CFilter%20name%20=%20%22regulatory_feature_type_name%22%20value%20=%20%22Enhancer%22/%3E%3CAttribute%20name%20=%20%22chromosome_name%22%20/%3E%3CAttribute%20name%20=%20%22chromosome_start%22%20/%3E%3CAttribute%20name%20=%20%22chromosome_end%22%20/%3E%3CAttribute%20name%20=%20%22feature_type_name%22%20/%3E%3C/Dataset%3E%3C/Query%3E";
-        String urlString = "http://ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%221%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_regulatory_feature%22%20interface%20=%20%22default%22%20%3E%3CFilter%20name%20=%20%22regulatory_feature_type_name%22%20value%20=%20%22Enhancer%22/%3E%3CAttribute%20name%20=%20%22chromosome_name%22%20/%3E%3CAttribute%20name%20=%20%22chromosome_start%22%20/%3E%3CAttribute%20name%20=%20%22chromosome_end%22%20/%3E%3CAttribute%20name%20=%20%22feature_type_name%22%20/%3E%3C/Dataset%3E%3C/Query%3E";
-        Path destination = outputPath.resolve("ensembl_enhancers.tsv");
-        downloadResource(urlString, destination);
-    }
-
-    private void downloadResource(String urlString, Path destination) {
-        try {
-            URL source = new URL(urlString);
-            logger.info("Downloading resource from: {}", source);
-
-            FileUtils.copyURLToFile(source, destination.toFile(), 2500, 15000);
-
-        } catch (IOException ex) {
-            logger.error("Unable to download resource {} to {}", urlString, destination, ex);
-        }
-    }
-
     public void parse() {
 
-        Path inFile = dataPath; //.resolve("ensembl_enhancers.tsv");
-        Path outFile = outputPath; //.resolve("ensembl_enhancers.pg");
-
+        Path inFile = dataPath;
+        Path outFile = outputPath;
 
         logger.info("Parsing Ensembl enhancers file: {} Writing out to: {}", inFile, outFile);
 

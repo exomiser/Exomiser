@@ -44,6 +44,10 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     private String remmPath = "";
     private String localFrequencyPath = "";
 
+    // 'special' tabix datasource for quickly testing new pathogenicity data sources before plumbing them into the main
+    // datastore
+    private String testPathogenicityScorePath = "";
+
     @Override
     public Path getDataDirectory() {
         return dataDirectory;
@@ -125,4 +129,11 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
         this.localFrequencyPath = localFrequencyPath;
     }
 
+    public String getTestPathogenicityScorePath() {
+        return testPathogenicityScorePath;
+    }
+
+    public void setTestPathogenicityScorePath(String testPathogenicityScorePath) {
+        this.testPathogenicityScorePath = testPathogenicityScorePath;
+    }
 }

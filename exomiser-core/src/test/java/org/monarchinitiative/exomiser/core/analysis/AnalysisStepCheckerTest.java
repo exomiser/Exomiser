@@ -22,8 +22,8 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.KnownVariantFilter;
@@ -62,7 +62,7 @@ public class AnalysisStepCheckerTest {
     private static final MockPrioritiser PHIVE_PRIORITISER = new MockPrioritiser(PriorityType.PHIVE_PRIORITY, new HashMap<>());
     private static final PriorityScoreFilter PHIVE_PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0f);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new AnalysisStepChecker();
 

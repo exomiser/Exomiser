@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -29,7 +29,8 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FrequencyFilterTest {
 
@@ -40,17 +41,17 @@ public class FrequencyFilterTest {
 
     private static final float FREQ_THRESHOLD = 0.1f;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         instance = new FrequencyFilter(FREQ_THRESHOLD);
     }
 
     private Frequency passFrequency(FrequencySource source) {
-        return Frequency.valueOf(FREQ_THRESHOLD - 0.02f, source);
+        return Frequency.of(source, FREQ_THRESHOLD - 0.02f);
     }
 
     private Frequency failFrequency(FrequencySource source) {
-        return Frequency.valueOf(FREQ_THRESHOLD + 1.0f, source);
+        return Frequency.of(source, FREQ_THRESHOLD + 1.0f);
     }
 
     private VariantEvaluation makeVariantEvaluation(Frequency... frequencies) {
@@ -69,14 +70,14 @@ public class FrequencyFilterTest {
         assertThat(instance.getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsIllegalArgumentExceptionWhenInstanciatedWithNegativeFrequency() {
-        instance = new FrequencyFilter(-1f);
+        assertThrows(IllegalArgumentException.class, () -> new FrequencyFilter(-1f));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsIllegalArgumentExceptionWhenInstanciatedWithFrequencyGreaterThanOneHundredPercent() {
-        instance = new FrequencyFilter(101f);
+        assertThrows(IllegalArgumentException.class, () -> new FrequencyFilter(101f));
     }
 
     @Test

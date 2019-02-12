@@ -22,10 +22,8 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.*;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.exomiser.core.genome.VariantContextSampleGenotypeConverter;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -51,10 +49,13 @@ public class InheritanceModeAnnotator {
 
     public InheritanceModeAnnotator(Pedigree pedigree, InheritanceModeOptions inheritanceModeOptions) {
         Objects.requireNonNull(pedigree);
+        if (pedigree.isEmpty()){
+            throw new IllegalArgumentException("pedigree cannot be empty - at least one named, affected individual must be present");
+        }
         this.pedigree = pedigree;
         Objects.requireNonNull(inheritanceModeOptions);
         this.inheritanceModeOptions = inheritanceModeOptions;
-        this.mendelChecker = new MendelianInheritanceChecker(pedigree);
+        this.mendelChecker = new MendelianInheritanceChecker(PedigreeConverter.convertToJannovarPedigree(pedigree));
     }
 
     public Pedigree getPedigree() {
@@ -116,7 +117,8 @@ public class InheritanceModeAnnotator {
         Map<ModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(ModeOfInheritance.class);
         for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
             ModeOfInheritance compatibleMode = entry.getKey();
-            if (compatibleMode != ModeOfInheritance.ANY) {
+            //do we really need this check?
+            if (compatibleMode != ModeOfInheritance.ANY || inheritanceModeOptions.getDefinedModes().contains(compatibleMode)) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
                 float maxFreqForMode = inheritanceModeOptions.getMaxFreqForMode(compatibleMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
@@ -132,7 +134,8 @@ public class InheritanceModeAnnotator {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(SubModeOfInheritance.class);
         for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
             SubModeOfInheritance compatibleSubMode = entry.getKey();
-            if (compatibleSubMode != SubModeOfInheritance.ANY) {
+            //do we really need this check?
+            if (compatibleSubMode != SubModeOfInheritance.ANY || inheritanceModeOptions.getDefinedSubModes().contains(compatibleSubMode)) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
                 float maxFreqForMode = inheritanceModeOptions.getMaxFreqForSubMode(compatibleSubMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
@@ -161,6 +164,7 @@ public class InheritanceModeAnnotator {
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             GenotypeCallsBuilder builder = new GenotypeCallsBuilder();
+
             builder.setPayload(variantEvaluation);
 
             ChromosomeType chromosomeType = toChromosomeType(variantEvaluation.getChromosome());
@@ -168,11 +172,8 @@ public class InheritanceModeAnnotator {
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation
             //then we can mostly discard the VariantContext, apart from writing out again...
-            int altAlleleId = variantEvaluation.getAltAlleleId();
-            VariantContext variantContext = variantEvaluation.getVariantContext();
-            Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-            logger.debug("Converting {} {} {}", variantContext.getReference(), variantContext.getAlternateAllele(altAlleleId), variantContext
-                    .getGenotypes());
+            Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
+            logger.debug("Converting {} {} {}", variantEvaluation.getRef(), variantEvaluation.getAlt(), sampleGenotypes);
             for (Map.Entry<String, SampleGenotype> entry : sampleGenotypes.entrySet()) {
                 String sampleName = entry.getKey();
                 SampleGenotype sampleGenotype = entry.getValue();

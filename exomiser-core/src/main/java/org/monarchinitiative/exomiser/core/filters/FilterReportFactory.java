@@ -25,18 +25,21 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
+import com.google.common.collect.ImmutableList;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.model.Filterable;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -100,12 +103,12 @@ public class FilterReportFactory {
             case PRIORITY_SCORE_FILTER:
                 return makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, analysisResults.getGenes());
             default:
-                return makeDefaultVariantFilterReport(filterType, analysisResults.getVariantEvaluations());
+                return makeVariantFilterReport(filter, analysisResults.getVariantEvaluations());
         }
     }
     
     private Filter unWrapVariantFilterDataProvider(Filter filter) {
-        if (VariantFilterDataProvider.class.isInstance(filter) ) {
+        if (filter instanceof VariantFilterDataProvider) {
             VariantFilterDataProvider decorator = (VariantFilterDataProvider) filter;
             return decorator.getDecoratedFilter();
         }
@@ -113,14 +116,11 @@ public class FilterReportFactory {
     } 
 
     private FilterReport makeTargetFilterReport(VariantEffectFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.VARIANT_EFFECT_FILTER, variantEvaluations);
-        report.addMessage(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
-        return report;
+        String message = String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes());
+        return makeVariantFilterReport(filter, variantEvaluations, message);
     }
 
     private FilterReport makeKnownVariantFilterReport(KnownVariantFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.KNOWN_VARIANT_FILTER, variantEvaluations);
-
         int numNotInDatabase = 0;
         int numDbSnpFreqData = 0;
         int numDbSnpRsId = 0;
@@ -147,14 +147,16 @@ public class FilterReportFactory {
             }
         }
 
-        int total = report.getPassed() + report.getFailed();
+        int total = variantEvaluations.size();
 
-        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, asPercent(numNotInDatabase, total)));
-        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, asPercent(numDbSnpRsId, total)));
-        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, asPercent(numDbSnpFreqData, total)));
-        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, asPercent(numEspFreqData, total)));
-        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, asPercent(numExaCFreqData, total)));
-        return report;
+        List<String> messages = new ArrayList<>();
+        messages.add(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, asPercent(numNotInDatabase, total)));
+        messages.add(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, asPercent(numDbSnpRsId, total)));
+        messages.add(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, asPercent(numDbSnpFreqData, total)));
+        messages.add(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, asPercent(numEspFreqData, total)));
+        messages.add(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, asPercent(numExaCFreqData, total)));
+
+        return makeVariantFilterReport(filter, variantEvaluations, messages);
     }
 
     private double asPercent(double number, int total) {
@@ -162,101 +164,99 @@ public class FilterReportFactory {
     }
 
     private FilterReport makeFrequencyFilterReport(FrequencyFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
-
-        report.addMessage(String.format("Variants filtered for maximum allele frequency of %.2f%%", filter.getMaxFreq()));
-        return report;
+        String message = String.format("Variants filtered for maximum allele frequency of %.2f%%", filter.getMaxFreq());
+        return makeVariantFilterReport(filter, variantEvaluations, message);
     }
 
     private FilterReport makeQualityFilterReport(QualityFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.QUALITY_FILTER, variantEvaluations);
-
-        report.addMessage(String.format("Variants filtered for mimimum PHRED quality of %.1f", filter.getMimimumQualityThreshold()));
-        return report;
+        String message = String.format("Variants filtered for mimimum PHRED quality of %.1f", filter.getMimimumQualityThreshold());
+        return makeVariantFilterReport(filter, variantEvaluations, message);
     }
 
     private FilterReport makePathogenicityFilterReport(PathogenicityFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
-
+        String message;
         if (filter.keepNonPathogenic()) {
-            report.addMessage("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
+            message = "Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.";
         } else {
-            report.addMessage("Retained all non-pathogenic missense variants");
-            //this is redundant as the defaut now is to keep all these anyway, but maybe somone will be interested in the cutoffs used for the categories?
-            // Set up the message - these scores ought to belong to the score itself thather than being hard-coded here...
-//            report.addMessage("Pathogenicity predictions are based on the dbNSFP-normalized values");
-//            report.addMessage("Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown");
-//            report.addMessage("Polyphen2 (HVAR): \"D\" (> 0.956,probably damaging), \"P\": [0.447-0.955], "
-//                    + "possibly damaging, and \"B\", <0.447, benign.");
-//            report.addMessage("SIFT: \"D\"<0.05, damaging and \"T\"&ge;0.05, tolerated");
+            message = "Retained all non-pathogenic missense variants";
         }
-        return report;
+        return makeVariantFilterReport(filter, variantEvaluations, message);
     }
 
     private FilterReport makeIntervalFilterReport(IntervalFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.INTERVAL_FILTER, variantEvaluations);
+        List<ChromosomalRegion> chromosomalRegions = filter.getChromosomalRegions();
 
-        report.addMessage(String.format("Restricted variants to interval: %s", filter.getGeneticInterval()));
+        List<String> messages = new ArrayList<>();
+        if (chromosomalRegions.size() == 1) {
+            messages.add("Restricted variants to interval:");
+        } else {
+            messages.add("Restricted variants to intervals:");
+        }
 
-        return report;
+        int regionsToShow = 5;
+        if (chromosomalRegions.size() <= regionsToShow) {
+            for (ChromosomalRegion chromosomalRegion : chromosomalRegions) {
+                messages.add(formatRegion(chromosomalRegion));
+            }
+        } else {
+            for (int i = 0; i < regionsToShow - 2 ; i++) {
+                ChromosomalRegion region = chromosomalRegions.get(i);
+                messages.add(formatRegion(region));
+            }
+            messages.add("...");
+            ChromosomalRegion finalRegion = chromosomalRegions.get(chromosomalRegions.size() - 1);
+            messages.add(formatRegion(finalRegion));
+        }
+
+        return makeVariantFilterReport(filter, variantEvaluations, messages);
+    }
+
+    private String formatRegion(ChromosomalRegion region) {
+        return String.format("%d:%d-%d", region.getChromosome(), region.getStart(), region.getEnd());
     }
 
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {
-        FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
 
-        StringJoiner stringJoiner = new StringJoiner(",");
-        filter.getCompatibleModes().forEach(modeOfInheritance -> stringJoiner.add(modeOfInheritance.toString()));
+        String inheritanceModes = filter.getCompatibleModes()
+                .stream()
+                .map(ModeOfInheritance::toString)
+                .collect(Collectors.joining(", "));
 
-        report.addMessage(String.format("Genes filtered for compatibility with %s inheritance.", stringJoiner.toString()));
+        List<String> messages = ImmutableList.of(String.format("Genes filtered for compatibility with %s inheritance.", inheritanceModes));
 
-        return report;
+        return makeGeneFilterReport(filter, genes, messages);
     }
 
     private FilterReport makePriorityScoreFilterReport(PriorityScoreFilter filter, List<Gene> genes) {
-        FilterReport report = makeDefaultGeneFilterReport(FilterType.PRIORITY_SCORE_FILTER, genes);
 
-        report.addMessage(String.format("Genes filtered for minimum %s score of %s",
+        List<String> messages = ImmutableList.of(String.format("Genes filtered for minimum %s score of %s",
                 filter.getPriorityType(), filter.getMinPriorityScore()));
 
-        return report;
+        return makeGeneFilterReport(filter, genes, messages);
     }
 
-    /**
-     *
-     * @param filterType
-     * @param variantEvaluations
-     * @return
-     */
-    private FilterReport makeDefaultVariantFilterReport(FilterType filterType, List<VariantEvaluation> variantEvaluations) {
-        int passed = countVariantsPassingFilter(variantEvaluations, filterType);
+    private FilterReport makeVariantFilterReport(Filter filter, List<VariantEvaluation> variantEvaluations, String... message) {
+        List<String> messages = Arrays.asList(message);
+        return makeVariantFilterReport(filter, variantEvaluations, messages);
+    }
+
+    private FilterReport makeVariantFilterReport(Filter filter, List<VariantEvaluation> variantEvaluations, List<String> messages) {
+        FilterType filterType = filter.getFilterType();
+        int passed = (int) variantEvaluations.stream()
+                .filter(ve -> ve.passedFilter(filterType))
+                .count();
         int failed = variantEvaluations.size() - passed;
-        return new FilterReport(filterType, passed, failed);
+
+        return new FilterReport(filterType, passed, failed, messages);
     }
 
-    private int countVariantsPassingFilter(List<VariantEvaluation> variantEvaluations, FilterType filterType) {
-        int passed = 0;
-        for (VariantEvaluation ve : variantEvaluations) {
-            if (ve.passedFilter(filterType)) {
-                passed++;
-            }
-        }
-        return passed;
-    }
-
-    private FilterReport makeDefaultGeneFilterReport(FilterType filterType, List<Gene> genes) {
-        int passed = countGenesPassingFilter(genes, filterType);
+    private FilterReport makeGeneFilterReport(Filter filter, List<Gene> genes, List<String> messages) {
+        FilterType filterType = filter.getFilterType();
+        int passed = (int) genes.stream()
+                .filter(gene -> gene.passedFilter(filterType))
+                .count();
         int failed = genes.size() - passed;
-        return new FilterReport(filterType, passed, failed);
-    }
 
-    private int countGenesPassingFilter(List<Gene> genes, FilterType filterType) {
-        int passed = 0;
-        for (Filterable filterable : genes) {
-            if (filterable.passedFilter(filterType)) {
-                passed++;
-            }
-        }
-        return passed;
+        return new FilterReport(filterType, passed, failed, messages);
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,25 +31,13 @@ import java.util.List;
 
 /**
  * Generic interface for classes which handle running
- * {@code org.monarchinitiative.exomiser.core.model.Filter} over
- * {@code org.monarchinitiative.exomiser.core.model.Filterable} objects.
+ * {@link Filter} over {@link Filterable} objects.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @param <T>
  * @param <U>
  */
 public interface FilterRunner<T extends Filter, U extends Filterable> {
-
-    /**
-     * Runs the {@code org.monarchinitiative.exomiser.core.model.Filterable}
-     * objects through the specified List of
-     * {@code org.monarchinitiative.exomiser.core.model.Filter}
-     *
-     * @param filters
-     * @param filterables
-     * @return
-     */
-    List<U> run(List<T> filters, List<U> filterables);
 
     List<U> run(T filter, List<U> filterables);
 

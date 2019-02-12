@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,28 +25,17 @@ import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperation
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Parse the good old human-phenotype-ontology.obo file (or alternatively the
- * hp.obo file from our Hudson server). We want to create a table in the
- * database with lcname - HP:id - preferred name, where lcname is the lower-case
- * name or synonym, ID is the HPO id, and preferred name is the HPO Term name.
- * We lower-case the name ans synonyms to be able to search only over lower
- * cased names for the autosuggestion. However, we want to display the preferred
- * name in the end.
+ * Parse the MP ontology obo file.
  *
- * @author Peter Robinson
- * @version 0.04 (27 November, 2013)
  */
 public class MPOntologyFileParser implements ResourceParser {
 
@@ -73,76 +62,46 @@ public class MPOntologyFileParser implements ResourceParser {
         Path outFile = outDir.resolve(resource.getParsedFileName());
 
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
-        ResourceOperationStatus status;
 
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"));
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+        OboOntology oboOntology = OboOntologyParser.parseOboFile(inFile);
+        resource.setVersion(oboOntology.getDataVersion());
+        logger.info("MP version: {}", oboOntology.getDataVersion());
 
-            int termCount = 0; /* count of terms */
+        int currPlusObs = oboOntology.getCurrentOntologyTerms().size() + oboOntology.getObsoleteOntologyTerms().size();
+        List<OboOntologyTerm> allTerms = new ArrayList<>(currPlusObs);
+        allTerms.addAll(oboOntology.getCurrentOntologyTerms());
+        allTerms.addAll(oboOntology.getObsoleteOntologyTerms());
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("[Term]")) {
-                    break; // comment.
-                }
-            }
-            String id = null;
-            String name = null;
-            List<String> synonymLst = new ArrayList<>();
-            while ((line = reader.readLine()) != null) {
-//                logger.info(line);
-                if (line.startsWith("id:")) {
-                    id = line.substring(3).trim(); /* Gets rid of "id:" and any whitespace in e.g., HP:0000003 */
-
-                } else if (line.startsWith("name:")) {
-                    name = line.substring(5).trim();
-                    termCount++;
-                    synonymLst.add(name);
-                } else if (line.startsWith("synonym:")) {
-                    int i, j;
-                    i = line.indexOf("\"", 8);
-                    if (i > 0) {
-                        j = line.indexOf("\"", i + 1);
-                        if (j > 0) {
-                            String syno = line.substring(i + 1, j);
-//			    synonymLst.add(syno);
-                        }
-                    }
-                    termCount++;
-                } else if (line.startsWith("is_obsolete")) {
-                    //id = null;
-                    //name = null;
-                    synonymLst.clear();
-                } else if (line.startsWith("[Term]") && name != null && id != null) {
-                    mpId2termMap.put(id, name);
-                    writer.write(String.format("%s|%s", id, name));
-                    writer.newLine();
-//		    logger.info("{} {} {}", name,id,synonymLst);
-                    name = null;
-                    id = null;
-                    synonymLst.clear();
-                }
-            }
-            if (name != null && id != null) {
-                writer.write(String.format("%s|%s", id, name));
-                mpId2termMap.put(id, name);
-                writer.newLine();
-//                logger.info("{} {} {}", name,id,synonymLst);
-
-            }
-            writer.close();
-            reader.close();
-            logger.info("Parsed {} term names/synonyms.", termCount);
-            status = ResourceOperationStatus.SUCCESS;
-        } catch (FileNotFoundException ex) {
-            logger.error(null, ex);
-            status = ResourceOperationStatus.FILE_NOT_FOUND;
-        } catch (IOException ex) {
-            logger.error(null, ex);
-            status = ResourceOperationStatus.FAILURE;
+        allTerms.sort(Comparator.comparing(OboOntologyTerm::getId));
+        // CAUTION! In the HPO parser only the current terms are added to the map and written out - in the case of the MP
+        // both obsolete and current terms were included. It's not clear why this is the case, but this behaviour has been
+        // retained following refactoring this class. If this functionality is undesired the allTerms should be replaced
+        // with oboOntology.getCurrentOntologyTerms()
+        for (OboOntologyTerm ontologyTerm : allTerms) {
+            mpId2termMap.put(ontologyTerm.getId(), ontologyTerm.getLabel());
         }
+        ResourceOperationStatus status = writeMpFile(outDir.resolve("mp.pg"), allTerms);
+
         resource.setParseStatus(status);
         logger.info("{}", status);
     }
+
+    private ResourceOperationStatus writeMpFile(Path outFile, List<OboOntologyTerm> ontologyTerms) {
+        try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)){
+            for (OboOntologyTerm ontologyTerm : ontologyTerms) {
+                StringJoiner stringJoiner = new StringJoiner("|");
+                stringJoiner.add(ontologyTerm.getId());
+                stringJoiner.add(ontologyTerm.getLabel());
+                writer.write(stringJoiner.toString());
+                writer.newLine();
+            }
+            return ResourceOperationStatus.SUCCESS;
+        } catch (FileNotFoundException ex) {
+            logger.error("", ex);
+            return ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            return ResourceOperationStatus.FAILURE;
+        }
+    }
 }
-/* eof */

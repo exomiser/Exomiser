@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,35 +40,54 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        List<String> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
-        for (int i = 0; i < alleles.size(); i++) {
-            Allele allele = alleles.get(i);
-            if (!minorAlleleFrequencies.isEmpty()) {
-                String maf = minorAlleleFrequencies.get(i);
+        Map<AlleleProperty, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
+
+        for (Map.Entry<AlleleProperty, List<String>> entry : minorAlleleFrequencies.entrySet()) {
+            AlleleProperty alleleProperty = entry.getKey();
+            List<String> alleleMafs = entry.getValue();
+            for (int i = 0; i < alleleMafs.size(); i++) {
+                String maf = alleleMafs.get(i);
                 if (!maf.equals(".")) {
                     float freq = 100f * Float.parseFloat(maf);
-                    allele.addValue(AlleleProperty.KG, freq);
+                    Allele allele = alleles.get(i);
+                    allele.addValue(alleleProperty, freq);
                 }
             }
         }
         return alleles;
     }
 
-    private List<String> parseMinorAlleleFrequencies(String info) {
-//##INFO=<ID=CAF,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on 1000Genomes, starting with the reference allele followed by alternate alleles as ordered in the ALT column. Where a 1000Genomes alternate allele is not in the dbSNPs alternate allele set, the allele is added to the ALT column.  The minor allele is the second largest value in the list, and was previuosly reported in VCF as the GMAF.  This is the GMAF reported on the RefSNP and EntrezSNP pages and VariationReporter">
+    // ##INFO=<ID=CAF,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on 1000Genomes, starting with the reference allele followed by alternate alleles as ordered in the ALT column. Where a 1000Genomes alternate allele is not in the dbSNPs alternate allele set, the allele is added to the ALT column.  The minor allele is the second largest value in the list, and was previuosly reported in VCF as the GMAF.  This is the GMAF reported on the RefSNP and EntrezSNP pages and VariationReporter">
+    // also in b151
+    // ##INFO=<ID=TOPMED,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on TOPMed, starting with the reference allele followed by alternate alleles as ordered in the ALT column. The TOPMed minor allele is the second largest value in the list.">
+    private Map<AlleleProperty, List<String>> parseMinorAlleleFrequencies(String info) {
+        EnumMap<AlleleProperty, List<String>> mafMap = new EnumMap<>(AlleleProperty.class);
         String[] infoFields = info.split(";");
         for (String infoField : infoFields) {
             if (infoField.startsWith("CAF=")) {
-                return parseCafField(infoField);
+                String frequencyValues = getFrequencyValues(infoField);
+                mafMap.put(AlleleProperty.KG, parseFreqField(frequencyValues));
+            }
+            if (infoField.startsWith("TOPMED=")) {
+                String frequencyValues = getFrequencyValues(infoField);
+                mafMap.put(AlleleProperty.TOPMED, parseFreqField(frequencyValues));
             }
         }
-        return Collections.emptyList();
+        return mafMap;
     }
 
-    private List<String> parseCafField(String infoField) {
-        //allele freq data format is ;CAF=0.9812,.,0.01882; where major allele is 1st followed by minor alleles in order of alt line
+    private String getFrequencyValues(String infoField) {
+        return infoField.substring(infoField.indexOf('='));
+    }
+
+    private List<String> parseFreqField(String infoField) {
+        //allele freq data format is:
+        // CAF=0.9812,.,0.01882
+        // and / or
+        // TOPMED=0.999725,0.000274744,.
+        // where major allele is 1st followed by minor alleles in order of alt line
         List<String> minorFreqs = new ArrayList<>();
-        String[] freqs = infoField.substring(4).split(",");
+        String[] freqs = infoField.split(",");
         //note we're taking the minor freqs, so the loop starts at int i = 1
         for (int i = 1; i < freqs.length; i++) {
             minorFreqs.add(freqs[i]);

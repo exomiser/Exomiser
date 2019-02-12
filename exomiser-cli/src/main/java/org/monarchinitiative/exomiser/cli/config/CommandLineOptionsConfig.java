@@ -27,8 +27,6 @@ package org.monarchinitiative.exomiser.cli.config;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,8 +38,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class CommandLineOptionsConfig {
-
-    private static final Logger logger = LoggerFactory.getLogger(CommandLineOptionsConfig.class);
 
     @Bean
     public Options options() {

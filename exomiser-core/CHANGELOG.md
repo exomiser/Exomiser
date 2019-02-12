@@ -1,5 +1,55 @@
 # The Exomiser - Core Library Changelog
 
+## 11.0.0 2018-09-21
+API breaking changes:
+- Removed unused ```VariantSerialiser```
+- Moved ```ChromosomalRegionIndex``` from ```analysis.util``` package to ```model```
+- Changed ```HiPhiveOptions.DEFAULT``` to ```HiPhiveOptions.defaults()``` to match style with the rest of the framework
+- Deleted redundant ```MvStoreUtil.generateAlleleKey()``` method in favour of ```AlleleProtoAdaptor.toAlleleKey()```
+- Split ```VariantEffectPathogenicityScore.SPLICING_SCORE``` into ```SPLICE_DONOR_ACCEPTOR_SCORE``` and ```SPLICE_REGION_SCORE```
+- Removed unused ```VariantEvaluation.getNumberOfIndividuals()``` and ```VariantEvaluation.Builder.numIndividuals()```
+- ```InheritanceModeAnnotator``` now requires an Exomiser ```Pedigree``` as input and no longer takes a Jannovar ```de.charite.compbio.jannovar.pedigree.Pedigree``` 
+- Changed ```SampleIdentifier``` default identifier from 'Sample' to 'sample' to fit existing internal implementation details
+- Replaced ```Analysis.AnalysisBuilder.pedPath(pedPath)``` and ```Analysis.getPedPath()``` with ```Analysis.AnalysisBuilder.pedigree(pedigree)``` and ```Analysis.getPedigree()```
+- Replaced ```AnalysisBuilder.pedPath(pedPath)```  with ```AnalysisBuilder.pedigree(pedigree)```
+- Removed obsolete ```PedigreeFactory``` - this functionality has been split amongst the new Pedigree API classes
+- Removed ```AnalysisMode.SPARSE``` this was confusing and unused. Unless you need to debug a script, we advise using ```AnalysisMode.PASS_ONLY```
+- Replaced OutputSettings interface with the concrete implementation
+- Replaced ```OutputSettings.outputPassVariantsOnly()``` with ```OutputSettings.outputContributingVariantsOnly()```. This still has the default value of ```false```
+
+New APIs:
+- Added new jannovar package and faster data serialisation format handled by the ```JannovarDataProtoSerialiser``` and ```JannovarProtoConverter```.
+- Added new native ```Pedigree``` class for representing pedigrees.
+- Added new ```PedFiles``` class for reading PED files into a ```Pedigree``` object.
+- Added new ```PedigreeSampleValidator``` to check the pedigree, proband and VCF samples are consistent with each other.
+- Added ```SampleIdentifier.defaultSample()``` for use with unspecified single-sample VCF files.
+- Added ```InheritanceModeOptions.getMaxFreq()``` method for retrieving the maximum frequency of all the defined inheritance modes.
+- Added new no-args ```AnalysisBuilder.addFrequencyFilter()``` which uses maximum value from ```InheritanceModeOptions```
+- Added ```Pedigree``` support to ```AnalysisBuilder```
+- Added new ```VariantEvaluation.getSampleGenotypes()``` method to map sample names to genotype for that allele
+- Added new utility constructors to ```SampleGenotype``` _e.g._ ```SampleGenotype.het()``` , ```SampleGenotype.homRef()```
+
+Other changes:
+- Added support for REMM and CADD in ```AlleleProtoAdaptor```
+- Added check to remove alleles not called as ALT in proband
+- ```SampleGenotypes``` now calculated for all variants in te ```VariantFactory```
+- Added support for ```frequencyFilter: {}``` to ```AnalysisParser```
+- Updated HTML output to display current SO terms for variant types/consequence
+- Various code clean-up changes
+- Changed dependency management to use spring-boot-dependencies rather than deprecated Spring Platform
+- Updated Spring Boot to version 2.0.4
+
+## 10.1.0 2018-05-09
+- Added new simple ```BedFiles``` class for reading in ```ChromosomalRegion``` from an external file. 
+- Added support for filtering multiple intervals in the ```IntervalFilter``` 
+- Added support for parsing multiple intervals in the ```AnalysisParser```
+- Added new ```OutputOption.JSON```
+- Added new JsonResultsWriter - JSON results format should be considered as being in a 'beta' state and may or may not change slightly in the future.
+- Added support for ClinVar annotations 
+- Added ClinVar annotations to ```HTML``` and ```JSON``` output options
+- ```TSV_GENE``` and ```TSV_VARIANT``` output formats have been frozen as adding the new datasources will break the format. Use the JSON output for machines or HTML for humans. 
+- Updated Spring platform to Brussels-SR9. This will be the final Exomiser release on the Brussels release train.
+
 ## 10.0.1 2018-03-20
 - Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
 

@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
@@ -39,7 +39,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -57,7 +57,7 @@ public class HiPhivePriorityResultTest {
     private final double ppiScore = 0.6d;
     private final boolean matchesCandidateGene = true;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         queryPhenotypeTerms = new ArrayList<>();
         phenotypeEvidence = new ArrayList<>();
@@ -162,6 +162,11 @@ public class HiPhivePriorityResultTest {
     @Test
     public void testIsCandidateGeneMatchMatchesConstructorArg() {
         assertThat(instance.isCandidateGeneMatch(), is(matchesCandidateGene));
+    }
+
+    @Test
+    void testGetPhenotypeEvidenceText() {
+        System.out.println(instance.getPhenotypeEvidenceText());
     }
 
     @Test

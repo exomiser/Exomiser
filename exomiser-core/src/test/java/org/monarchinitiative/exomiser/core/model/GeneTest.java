@@ -27,8 +27,8 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -40,8 +40,9 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -69,7 +70,7 @@ public class GeneTest {
     private static final FilterResult PASS_GENE_FILTER_RESULT = FilterResult.pass(FilterType.INHERITANCE_FILTER);
     private static final FilterResult FAIL_GENE_FILTER_RESULT = FilterResult.fail(FilterType.INHERITANCE_FILTER);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // variant1 is the first one in in FGFR2 gene
         variantEvaluation1 = VariantEvaluation.builder(10, 123353320, "C", "G").build();
@@ -108,29 +109,37 @@ public class GeneTest {
         assertThat(gene.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksForNull() {
-        new Gene(null);
+        assertThrows(NullPointerException.class, () -> new Gene(null));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksForNullGeneIdentifierGeneSymbol() {
-        new Gene(GeneIdentifier.builder().geneSymbol(null).entrezId(GENE1_GENE_ID).geneId(GENE1_GENE_ID).build());
+        assertThrows(NullPointerException.class, () ->
+                new Gene(GeneIdentifier.builder().geneSymbol(null).entrezId(GENE1_GENE_ID).geneId(GENE1_GENE_ID).build())
+        );
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksForNullGeneIdentifierGeneId() {
-        new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(null).entrezId(GENE1_GENE_ID).build());
+        assertThrows(NullPointerException.class, () ->
+                new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(null).entrezId(GENE1_GENE_ID).build())
+        );
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorChecksForNullGeneIdentifierEntrezId() {
-        new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(GENE1_GENE_ID).entrezId(null).build());
+        assertThrows(NullPointerException.class, () ->
+                new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(GENE1_GENE_ID).entrezId(null).build())
+        );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructorChecksForEmptyGeneIdentifierGeneSymbol() {
-        new Gene(GeneIdentifier.builder().geneSymbol("").geneId(GENE1_GENE_ID).entrezId(GENE1_GENE_ID).build());
+        assertThrows(IllegalArgumentException.class, () ->
+                new Gene(GeneIdentifier.builder().geneSymbol("").geneId(GENE1_GENE_ID).entrezId(GENE1_GENE_ID).build())
+        );
     }
 
     @Test

@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>10.1.0-SNAPSHOT</version>
+    <version>12.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -84,16 +84,17 @@
     </modules>
 
     <properties>
+        <java.version>1.8</java.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.24</jannovar.version>
-        <htsjdk.version>2.14.3</htsjdk.version>
+        <jannovar.version>0.27</jannovar.version>
+        <htsjdk.version>2.16.1</htsjdk.version>
         <guava.version>22.0</guava.version>
         <protobuf.version>3.5.1</protobuf.version>
-        <spring-boot.version>1.5.12.RELEASE</spring-boot.version>
+        <spring-boot.version>2.1.0.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -110,9 +111,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.spring.platform</groupId>
-                <artifactId>platform-bom</artifactId>
-                <version>Brussels-SR9</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -121,6 +122,10 @@
 
     <dependencies>
         <!--DI framework -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -138,37 +143,6 @@
             <artifactId>spring-jdbc</artifactId>
             <type>jar</type>
         </dependency>
-        <!--Testing framework-->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!--Logging framework -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- Logging dependencies -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <!-- Groovy is required for logback.groovy processing. Plus, it's cool.-->
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-        </dependency>
         <!--H2 is a very versatile and highly compatible pure java DB-->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -180,6 +154,13 @@
             <artifactId>pgjdbc-ng</artifactId>
             <version>0.4</version>
         </dependency>
+        <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
+        https://github.com/brettwooldridge/HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
         <!-- Need to override guava to version 21.0 which  contains the Java 8 Collectors support on immutable Collections
         used by exomiser-core-->
         <dependency>
@@ -207,26 +188,45 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-protobuf</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.fasterxml.jackson.module</groupId>-->
-            <!--<artifactId>jackson-module-jsonSchema</artifactId>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; hibernate validator is the javax.validation-validation-api reference implementation required for-->
-             <!--jackson-module-jsonSchema &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-validator</artifactId>-->
-            <!--<version>6.0.9.Final</version>-->
-        <!--</dependency>-->
-        <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
-        https://github.com/brettwooldridge/HikariCP -->
+
+        <!--Test dependencies-->
         <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <version>0.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Required to run Mockito with JUnit Jupiter-->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- ByteBuddy 1.9.0+ required for compiling on Java 11 -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     
@@ -235,25 +235,23 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.21.0</version>
-                <configuration>
-                    <forkCount>3</forkCount>
-                    <reuseForks>true</reuseForks>
-                </configuration>
+                <version>2.22.0</version>
+                <!-- Don't enable parallel tests as these will fail in the autoconfigure module due to MVStore
+                only being able to be opened once by any given JVM -->
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
+                <version>0.8.2</version>
                 <configuration>
                     <excludes>
                         <exclude>**/resources/**</exclude>

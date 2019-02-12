@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.model;
 import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.parsers.AlleleParser;
 
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -33,17 +34,23 @@ import java.util.Objects;
 public class AlleleResource {
 
     private final String name;
+    private final URL resourceUrl;
     private final AlleleArchive alleleArchive;
     private final AlleleParser alleleParser;
 
-    public AlleleResource(String name, AlleleArchive alleleArchive, AlleleParser alleleParser) {
+    public AlleleResource(String name, URL resourceUrl, AlleleArchive alleleArchive, AlleleParser alleleParser) {
         this.name = name;
+        this.resourceUrl = resourceUrl;
         this.alleleArchive = alleleArchive;
         this.alleleParser = alleleParser;
     }
 
     public String getName() {
         return name;
+    }
+
+    public URL getResourceUrl() {
+        return resourceUrl;
     }
 
     public AlleleArchive getAlleleArchive() {
@@ -60,19 +67,21 @@ public class AlleleResource {
         if (o == null || getClass() != o.getClass()) return false;
         AlleleResource that = (AlleleResource) o;
         return Objects.equals(name, that.name) &&
+                Objects.equals(resourceUrl, that.resourceUrl) &&
                 Objects.equals(alleleArchive, that.alleleArchive) &&
                 Objects.equals(alleleParser, that.alleleParser);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, alleleArchive, alleleParser);
+        return Objects.hash(name, resourceUrl, alleleArchive, alleleParser);
     }
 
     @Override
     public String toString() {
         return "AlleleResource{" +
                 "name='" + name + '\'' +
+                ", resourceUrl=" + resourceUrl +
                 ", alleleArchive=" + alleleArchive +
                 ", alleleParser=" + alleleParser +
                 '}';

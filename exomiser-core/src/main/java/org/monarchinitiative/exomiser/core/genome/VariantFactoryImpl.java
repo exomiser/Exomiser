@@ -28,22 +28,23 @@ package org.monarchinitiative.exomiser.core.genome;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -59,11 +60,6 @@ public class VariantFactoryImpl implements VariantFactory {
 
     public VariantFactoryImpl(VariantAnnotator variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
-    }
-
-    @Override
-    public Stream<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        return createVariantEvaluations(VcfFiles.readVariantContexts(vcfPath));
     }
 
     @Override
@@ -90,22 +86,21 @@ public class VariantFactoryImpl implements VariantFactory {
     }
 
     private Function<Allele, Optional<VariantEvaluation>> buildAlleleVariantEvaluation(VariantContext variantContext) {
-        return allele -> {
+        return altAllele -> {
             //alternate Alleles are always after the reference allele, which is 0
-            int altAlleleId = variantContext.getAlleleIndex(allele) - 1;
-            if (alleleIsObservedInGenotypes(allele, variantContext)) {
-                return Optional.of(buildVariantEvaluation(variantContext, altAlleleId));
+            int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
+            if (alleleIsObservedInGenotypes(altAllele, variantContext.getGenotypes())) {
+                return Optional.of(buildVariantEvaluation(variantContext, altAlleleId, altAllele));
             }
             return Optional.empty();
         };
     }
 
-    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
-        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(allele));
-    }
-
-    private Predicate<Genotype> alleleObservedInGenotype(Allele allele) {
-        return genotype -> genotype.getAlleles().stream().anyMatch(allele::equals);
+    // this is required in case of incorrectly merged multi-sample VCF files to remove alleles not represented in the sample genotypes
+    private synchronized boolean alleleIsObservedInGenotypes(Allele allele, GenotypesContext genotypesContext) {
+        return genotypesContext.stream()
+                .map(Genotype::getAlleles)
+                .anyMatch(genotypeAlleles -> genotypeAlleles.contains(allele));
     }
 
     /**
@@ -117,23 +112,34 @@ public class VariantFactoryImpl implements VariantFactory {
      * @return
      */
     //This is package-private as it is used by the TestVariantFactory
-    VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId) {
-        VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAlleleId);
+    VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele) {
+        VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAllele);
+        // symbolic alleles are reported as VariantEffect.STRUCTURAL_VARIANT
+        // but have a default pathogenicity score of zero
+        // will need to have an end and/or length (sigInt) and SVTYPE (DEL, INS, DUP, INV, CNV, BND)
+        // lookup in Jannovar to find effected genes?
+
+        // find length and type
+        // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
+        // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
+        // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
+        // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
         return buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
     }
 
-    private VariantAnnotation annotateVariantAllele(VariantContext variantContext, int altAlleleId) {
+    private VariantAnnotation annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
         int pos = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
-        String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
+        // Structural variants are 'symbolic' in that they have no actual reported bases
+        String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
         return variantAnnotator.annotate(contig, pos, ref, alt);
     }
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotation variantAnnotation) {
 
-        //Add this in here...? If so see notes in InheritanceModeAnnotator.
-//        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeAdaptor.createAlleleSampleGenotypes(variantContext, altAlleleId);
+        //See also notes in InheritanceModeAnnotator.
+        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();
@@ -157,7 +163,7 @@ public class VariantFactoryImpl implements VariantFactory {
                 //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
-                .numIndividuals(variantContext.getNSamples())
+                .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 //jannovar derived data

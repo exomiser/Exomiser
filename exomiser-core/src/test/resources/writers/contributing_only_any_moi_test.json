@@ -1,0 +1,396 @@
+[
+  {
+    "geneSymbol": "FGFR2",
+    "geneIdentifier": {
+      "geneId": "2263",
+      "geneSymbol": "FGFR2",
+      "hgncId": "HGNC:3689",
+      "hgncSymbol": "FGFR2",
+      "entrezId": "2263",
+      "ensemblId": "ENSG00000066468",
+      "ucscId": "uc057wle.1"
+    },
+    "combinedScore": 1.0,
+    "priorityScore": 1.0,
+    "variantScore": 1.0,
+    "priorityResults": {},
+    "compatibleInheritanceModes": [
+      "AUTOSOMAL_DOMINANT",
+      "AUTOSOMAL_RECESSIVE"
+    ],
+    "geneScores": [
+      {
+        "geneIdentifier": {
+          "geneId": "2263",
+          "geneSymbol": "FGFR2",
+          "hgncId": "HGNC:3689",
+          "hgncSymbol": "FGFR2",
+          "entrezId": "2263",
+          "ensemblId": "ENSG00000066468",
+          "ucscId": "uc057wle.1"
+        },
+        "modeOfInheritance": "AUTOSOMAL_DOMINANT",
+        "combinedScore": 1.0,
+        "phenotypeScore": 1.0,
+        "variantScore": 1.0,
+        "contributingVariants": [
+          {
+            "genomeAssembly": "HG19",
+            "chromosomeName": "10",
+            "chromosome": 10,
+            "position": 123256215,
+            "ref": "T",
+            "alt": "G",
+            "phredScore": 2.2,
+            "variantEffect": "MISSENSE_VARIANT",
+            "filterStatus": "PASSED",
+            "variantScore": 1.0,
+            "frequencyScore": 1.0,
+            "pathogenicityScore": 1.0,
+            "predictedPathogenic": true,
+            "passedFilterTypes": [
+              "VARIANT_EFFECT_FILTER"
+            ],
+            "failedFilterTypes": [],
+            "frequencyData": {
+              "rsId": {
+                "id": 0,
+                "empty": true
+              },
+              "knownFrequencies": [],
+              "score": 1.0
+            },
+            "pathogenicityData": {
+              "clinVarData": {
+                "alleleId": "",
+                "primaryInterpretation": "NOT_PROVIDED",
+                "secondaryInterpretations": [],
+                "reviewStatus": "",
+                "includedAlleles": {},
+                "empty": true
+              },
+              "score": 1.0,
+              "predictedPathogenicityScores": [
+                {
+                  "score": 1.0,
+                  "source": "POLYPHEN"
+                }
+              ],
+              "mostPathogenicScore": {
+                "score": 1.0,
+                "source": "POLYPHEN"
+              }
+            },
+            "compatibleInheritanceModes": [
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "contributingInheritanceModes": [
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "transcriptAnnotations": [
+              {
+                "variantEffect": "MISSENSE_VARIANT",
+                "geneSymbol": "FGFR2",
+                "accession": "uc021pzz.1",
+                "hgvsGenomic": "g.12278533A>C",
+                "hgvsCdna": "c.1694A>C",
+                "hgvsProtein": "p.(Glu565Ala)",
+                "distanceFromNearestGene": -2147483648
+              }
+            ],
+            "altAlleleId": 0
+          }
+        ]
+      },
+      {
+        "geneIdentifier": {
+          "geneId": "2263",
+          "geneSymbol": "FGFR2",
+          "hgncId": "HGNC:3689",
+          "hgncSymbol": "FGFR2",
+          "entrezId": "2263",
+          "ensemblId": "ENSG00000066468",
+          "ucscId": "uc057wle.1"
+        },
+        "modeOfInheritance": "AUTOSOMAL_RECESSIVE",
+        "combinedScore": 0.945,
+        "phenotypeScore": 1.0,
+        "variantScore": 0.945,
+        "contributingVariants": [
+          {
+            "genomeAssembly": "HG19",
+            "chromosomeName": "10",
+            "chromosome": 10,
+            "position": 123256215,
+            "ref": "T",
+            "alt": "G",
+            "phredScore": 2.2,
+            "variantEffect": "MISSENSE_VARIANT",
+            "filterStatus": "PASSED",
+            "variantScore": 1.0,
+            "frequencyScore": 1.0,
+            "pathogenicityScore": 1.0,
+            "predictedPathogenic": true,
+            "passedFilterTypes": [
+              "VARIANT_EFFECT_FILTER"
+            ],
+            "failedFilterTypes": [],
+            "frequencyData": {
+              "rsId": {
+                "id": 0,
+                "empty": true
+              },
+              "knownFrequencies": [],
+              "score": 1.0
+            },
+            "pathogenicityData": {
+              "clinVarData": {
+                "alleleId": "",
+                "primaryInterpretation": "NOT_PROVIDED",
+                "secondaryInterpretations": [],
+                "reviewStatus": "",
+                "includedAlleles": {},
+                "empty": true
+              },
+              "score": 1.0,
+              "predictedPathogenicityScores": [
+                {
+                  "score": 1.0,
+                  "source": "POLYPHEN"
+                }
+              ],
+              "mostPathogenicScore": {
+                "score": 1.0,
+                "source": "POLYPHEN"
+              }
+            },
+            "compatibleInheritanceModes": [
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "contributingInheritanceModes": [
+              "AUTOSOMAL_DOMINANT",
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "transcriptAnnotations": [
+              {
+                "variantEffect": "MISSENSE_VARIANT",
+                "geneSymbol": "FGFR2",
+                "accession": "uc021pzz.1",
+                "hgvsGenomic": "g.12278533A>C",
+                "hgvsCdna": "c.1694A>C",
+                "hgvsProtein": "p.(Glu565Ala)",
+                "distanceFromNearestGene": -2147483648
+              }
+            ],
+            "altAlleleId": 0
+          },
+          {
+            "genomeAssembly": "HG19",
+            "chromosomeName": "10",
+            "chromosome": 10,
+            "position": 123256214,
+            "ref": "A",
+            "alt": "G",
+            "phredScore": 2.2,
+            "variantEffect": "MISSENSE_VARIANT",
+            "filterStatus": "PASSED",
+            "variantScore": 0.89,
+            "frequencyScore": 1.0,
+            "pathogenicityScore": 0.89,
+            "predictedPathogenic": true,
+            "passedFilterTypes": [
+              "VARIANT_EFFECT_FILTER"
+            ],
+            "failedFilterTypes": [],
+            "frequencyData": {
+              "rsId": {
+                "id": 0,
+                "empty": true
+              },
+              "knownFrequencies": [],
+              "score": 1.0
+            },
+            "pathogenicityData": {
+              "clinVarData": {
+                "alleleId": "",
+                "primaryInterpretation": "NOT_PROVIDED",
+                "secondaryInterpretations": [],
+                "reviewStatus": "",
+                "includedAlleles": {},
+                "empty": true
+              },
+              "score": 0.89,
+              "predictedPathogenicityScores": [
+                {
+                  "score": 0.89,
+                  "source": "POLYPHEN"
+                }
+              ],
+              "mostPathogenicScore": {
+                "score": 0.89,
+                "source": "POLYPHEN"
+              }
+            },
+            "compatibleInheritanceModes": [
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "contributingInheritanceModes": [
+              "AUTOSOMAL_RECESSIVE"
+            ],
+            "transcriptAnnotations": [
+              {
+                "variantEffect": "MISSENSE_VARIANT",
+                "geneSymbol": "FGFR2",
+                "accession": "uc021pzz.1",
+                "hgvsGenomic": "g.12278534T>C",
+                "hgvsCdna": "c.1695G>C",
+                "hgvsProtein": "p.(Glu565Asp)",
+                "distanceFromNearestGene": -2147483648
+              }
+            ],
+            "altAlleleId": 0
+          }
+        ]
+      }
+    ],
+    "variantEvaluations": [
+      {
+        "genomeAssembly": "HG19",
+        "chromosomeName": "10",
+        "chromosome": 10,
+        "position": 123256215,
+        "ref": "T",
+        "alt": "G",
+        "phredScore": 2.2,
+        "variantEffect": "MISSENSE_VARIANT",
+        "filterStatus": "PASSED",
+        "variantScore": 1.0,
+        "frequencyScore": 1.0,
+        "pathogenicityScore": 1.0,
+        "predictedPathogenic": true,
+        "passedFilterTypes": [
+          "VARIANT_EFFECT_FILTER"
+        ],
+        "failedFilterTypes": [],
+        "frequencyData": {
+          "rsId": {
+            "id": 0,
+            "empty": true
+          },
+          "knownFrequencies": [],
+          "score": 1.0
+        },
+        "pathogenicityData": {
+          "clinVarData": {
+            "alleleId": "",
+            "primaryInterpretation": "NOT_PROVIDED",
+            "secondaryInterpretations": [],
+            "reviewStatus": "",
+            "includedAlleles": {},
+            "empty": true
+          },
+          "score": 1.0,
+          "predictedPathogenicityScores": [
+            {
+              "score": 1.0,
+              "source": "POLYPHEN"
+            }
+          ],
+          "mostPathogenicScore": {
+            "score": 1.0,
+            "source": "POLYPHEN"
+          }
+        },
+        "compatibleInheritanceModes": [
+          "AUTOSOMAL_DOMINANT",
+          "AUTOSOMAL_RECESSIVE"
+        ],
+        "contributingInheritanceModes": [
+          "AUTOSOMAL_DOMINANT",
+          "AUTOSOMAL_RECESSIVE"
+        ],
+        "transcriptAnnotations": [
+          {
+            "variantEffect": "MISSENSE_VARIANT",
+            "geneSymbol": "FGFR2",
+            "accession": "uc021pzz.1",
+            "hgvsGenomic": "g.12278533A>C",
+            "hgvsCdna": "c.1694A>C",
+            "hgvsProtein": "p.(Glu565Ala)",
+            "distanceFromNearestGene": -2147483648
+          }
+        ],
+        "altAlleleId": 0
+      },
+      {
+        "genomeAssembly": "HG19",
+        "chromosomeName": "10",
+        "chromosome": 10,
+        "position": 123256214,
+        "ref": "A",
+        "alt": "G",
+        "phredScore": 2.2,
+        "variantEffect": "MISSENSE_VARIANT",
+        "filterStatus": "PASSED",
+        "variantScore": 0.89,
+        "frequencyScore": 1.0,
+        "pathogenicityScore": 0.89,
+        "predictedPathogenic": true,
+        "passedFilterTypes": [
+          "VARIANT_EFFECT_FILTER"
+        ],
+        "failedFilterTypes": [],
+        "frequencyData": {
+          "rsId": {
+            "id": 0,
+            "empty": true
+          },
+          "knownFrequencies": [],
+          "score": 1.0
+        },
+        "pathogenicityData": {
+          "clinVarData": {
+            "alleleId": "",
+            "primaryInterpretation": "NOT_PROVIDED",
+            "secondaryInterpretations": [],
+            "reviewStatus": "",
+            "includedAlleles": {},
+            "empty": true
+          },
+          "score": 0.89,
+          "predictedPathogenicityScores": [
+            {
+              "score": 0.89,
+              "source": "POLYPHEN"
+            }
+          ],
+          "mostPathogenicScore": {
+            "score": 0.89,
+            "source": "POLYPHEN"
+          }
+        },
+        "compatibleInheritanceModes": [
+          "AUTOSOMAL_RECESSIVE"
+        ],
+        "contributingInheritanceModes": [
+          "AUTOSOMAL_RECESSIVE"
+        ],
+        "transcriptAnnotations": [
+          {
+            "variantEffect": "MISSENSE_VARIANT",
+            "geneSymbol": "FGFR2",
+            "accession": "uc021pzz.1",
+            "hgvsGenomic": "g.12278534T>C",
+            "hgvsCdna": "c.1695G>C",
+            "hgvsProtein": "p.(Glu565Asp)",
+            "distanceFromNearestGene": -2147483648
+          }
+        ],
+        "altAlleleId": 0
+      }
+    ]
+  }
+]

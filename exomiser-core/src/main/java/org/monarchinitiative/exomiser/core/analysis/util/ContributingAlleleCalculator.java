@@ -135,9 +135,7 @@ class ContributingAlleleCalculator {
     }
 
     private Predicate<VariantEvaluation> variantIsHomozygousAlt(SampleIdentifier probandSampleIdentifier) {
-        // can be replaced by native exomiser API using the VariantContextSampleGenotypeConverter, but will require the
-        // sample name instead of the id
-        return ve -> ve.getVariantContext().getGenotype(probandSampleIdentifier.getGenotypePosition()).isHomVar();
+        return ve -> ve.getSampleGenotype(probandSampleIdentifier.getId()).isHomAlt();
     }
 
     /**

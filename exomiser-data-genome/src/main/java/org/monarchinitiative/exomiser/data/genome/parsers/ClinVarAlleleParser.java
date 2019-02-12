@@ -104,7 +104,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
     private Set<ClinSig> parseSecondaryClinSig(String[] clinsigs) {
         if (clinsigs.length > 1) {
-            Set<ClinSig> secondaryClinSigs = new HashSet<>();
+            Set<ClinSig> secondaryClinSigs = EnumSet.noneOf(ClinSig.class);
             for (int i = 1; i < clinsigs.length; i++) {
                 secondaryClinSigs.add(parseClinSig(clinsigs[i]));
             }

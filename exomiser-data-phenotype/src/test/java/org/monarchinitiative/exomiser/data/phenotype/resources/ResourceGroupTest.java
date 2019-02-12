@@ -26,7 +26,7 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.resources;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.phenotype.parsers.ResourceGroupParser;
 import org.monarchinitiative.exomiser.data.phenotype.parsers.ResourceParser;
 

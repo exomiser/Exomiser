@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
@@ -39,7 +39,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -84,7 +84,7 @@ public class PhenoGridAdaptorTest {
     private HiPhivePriorityResult onlyDiseaseModelHiPhiveResult;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setUpQueryTerms();
         setUpPhenotypeMatches();

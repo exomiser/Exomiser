@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,10 +25,7 @@ import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Parser for the ExAC/GnomAD data sets. The data we want from these are almost identical, with variation only in the
@@ -37,14 +34,15 @@ import java.util.Map;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExacAlleleParser extends VcfAlleleParser {
+public abstract class ExacAlleleParser extends VcfAlleleParser {
 
     private static final Logger logger = LoggerFactory.getLogger(ExacAlleleParser.class);
 
     private final List<ExacPopulationKey> populationKeys;
 
-    public ExacAlleleParser(List<ExacPopulationKey> populationKeys) {
+    public ExacAlleleParser(List<ExacPopulationKey> populationKeys, Set<String> allowedFilterValues) {
         this.populationKeys = populationKeys;
+        this.allowedFilterValues = allowedFilterValues;
     }
 
     public List<ExacPopulationKey> getPopulationKeys() {

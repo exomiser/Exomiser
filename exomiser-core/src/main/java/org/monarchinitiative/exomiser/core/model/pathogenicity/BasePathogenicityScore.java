@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-abstract class BasePathogenicityScore implements PathogenicityScore {
+class BasePathogenicityScore implements PathogenicityScore {
 
     //Higher scores are more likely pathogenic so this is the reverse of what's normal (we're using a probablility of pathogenicity)
     //comparable requires a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
@@ -42,7 +42,7 @@ abstract class BasePathogenicityScore implements PathogenicityScore {
     protected final float score;
     protected final PathogenicitySource source;
 
-    BasePathogenicityScore(float score, PathogenicitySource source) {
+    BasePathogenicityScore(PathogenicitySource source, float score) {
         this.score = score;
         this.source = source;
     }
@@ -111,5 +111,10 @@ abstract class BasePathogenicityScore implements PathogenicityScore {
             return MORE_PATHOGENIC;
         }
         return LESS_PATHOGENIC;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f", source, score);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 
@@ -45,7 +46,10 @@ public class LocalFrequencyDao implements FrequencyDao {
         this.tabixDataSource = localFrequencyTabixDataSource;
     }
 
-    @Cacheable(value = "local", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.local", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.local", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
         logger.debug("Getting LOCAL_FREQ data for {}", variant);
@@ -53,7 +57,6 @@ public class LocalFrequencyDao implements FrequencyDao {
     }
 
     private FrequencyData processResults(Variant variant) {
-//        logger.info("Fetching data for {}", variant);
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();
@@ -89,7 +92,7 @@ public class LocalFrequencyDao implements FrequencyDao {
 
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
-        Frequency localFreq = Frequency.valueOf(value, FrequencySource.LOCAL);
+        Frequency localFreq = Frequency.of(FrequencySource.LOCAL, value);
         return FrequencyData.of(RsId.empty(), localFreq);
     }
 }

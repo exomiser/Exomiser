@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,12 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -42,11 +43,22 @@ public class PhenotypeTermTest {
     private String id;
     private String label;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         id = "ID:12344";
         label = "big nose";
         instance = PhenotypeTerm.of(id, label);
+    }
+
+    @Test
+    void wontAcceptNullId() {
+        assertThrows(NullPointerException.class, () -> PhenotypeTerm.of(null, "label"));
+    }
+
+    @Test
+    void willAcceptNullLabel() {
+        PhenotypeTerm instance = PhenotypeTerm.of("id", null);
+        assertThat(instance.getLabel(), equalTo(""));
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,31 +25,32 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.dao;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
 import java.util.Map.Entry;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestDataSourceConfig.class, HumanPhenotypeOntologyDao.class})
-@Sql(scripts = {"" +
+@Sql(scripts = {
         "file:src/test/resources/sql/create_hpo.sql",
         "file:src/test/resources/sql/humanPhenotypeOntologyDaoTestData.sql"})
 public class HumanPhenotypeOntologyDaoTest {
@@ -58,14 +59,13 @@ public class HumanPhenotypeOntologyDaoTest {
     private HumanPhenotypeOntologyDao instance;
 
     private Set<PhenotypeTerm> allHpoTerms;
-    private Map<String, String> allHpoAsStrings;
-    
+
     private final PhenotypeTerm multicysticKidneyDysplasia = PhenotypeTerm.of("HP:0000003", "Multicystic kidney dysplasia");
     private Set<PhenotypeMatch> phenotypeMatches;
     
-    @Before
+    @BeforeEach
     public void setUp() {
-        allHpoAsStrings = new HashMap<>();
+        Map<String, String> allHpoAsStrings = new HashMap<>();
         allHpoAsStrings.put("HP:0000001", "All");
         allHpoAsStrings.put("HP:0000002", "Abnormality of body height");
         allHpoAsStrings.put("HP:0000003", "Multicystic kidney dysplasia");
@@ -164,5 +164,29 @@ public class HumanPhenotypeOntologyDaoTest {
         Set<PhenotypeMatch> matches = instance.getPhenotypeMatchesForHpoTerm(multicysticKidneyDysplasia);
         assertThat(matches.isEmpty(), is(false));
         assertThat(matches, equalTo(phenotypeMatches));
+    }
+
+    @Test
+    void testGetIdToPhenotypeTerms() {
+        PhenotypeTerm modeOfInheritance = PhenotypeTerm.of("HP:0000005", "Mode of inheritance");
+        PhenotypeTerm adInheritance = PhenotypeTerm.of("HP:0000006", "Autosomal dominant inheritance");
+
+        ImmutableMap.Builder<String, PhenotypeTerm> expected = ImmutableMap.builder();
+        expected.put("HP:0000003", multicysticKidneyDysplasia);
+        expected.put("HP:0004715", multicysticKidneyDysplasia);
+        expected.put("HP:0000005", modeOfInheritance);
+        expected.put("HP:0001453", modeOfInheritance);
+        expected.put("HP:0001461", modeOfInheritance);
+        expected.put("HP:0000006", adInheritance);
+        expected.put("HP:0001415", adInheritance);
+        expected.put("HP:0001447", adInheritance);
+        expected.put("HP:0001448", adInheritance);
+        expected.put("HP:0001451", adInheritance);
+        expected.put("HP:0001455", adInheritance);
+        expected.put("HP:0001456", adInheritance);
+        expected.put("HP:0001463", adInheritance);
+
+        assertThat(instance.getIdToPhenotypeTerms(), equalTo(expected.build()));
+
     }
 }

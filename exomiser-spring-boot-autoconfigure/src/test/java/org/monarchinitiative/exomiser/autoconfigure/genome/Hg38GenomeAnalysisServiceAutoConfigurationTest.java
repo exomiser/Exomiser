@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
@@ -53,12 +53,19 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
         assertThat(context.getBean("hg38variantDataService"), instanceOf(VariantDataService.class));
         assertThat(context.getBean("hg38genomeDataService"), instanceOf(GenomeDataService.class));
 
-        assertThat(context.getBean("hg38defaultFrequencyDao"), instanceOf(DefaultFrequencyDaoMvStoreProto.class));
-        assertThat(context.getBean("hg38pathogenicityDao"), instanceOf(DefaultPathogenicityDaoMvStoreProto.class));
+        assertThat(context.getBean("hg38allelePropertiesDao"), instanceOf(AllelePropertiesDao.class));
 
         assertThat(context.getBean("hg38remmDao"), instanceOf(RemmDao.class));
         assertThat(context.getBean("hg38caddDao"), instanceOf(CaddDao.class));
         assertThat(context.getBean("hg38localFrequencyDao"), instanceOf(LocalFrequencyDao.class));
+    }
+
+    @Test
+    public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
+        String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710", "exomiser.hg38.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
+
+        assertThat(context.getBean("hg38testPathDao"), instanceOf(TestPathogenicityScoreDao.class));
     }
 
     @Configuration

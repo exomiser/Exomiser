@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 
@@ -40,7 +41,7 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class RemmDao {
+public class RemmDao implements PathogenicityDao {
 
     private final Logger logger = LoggerFactory.getLogger(RemmDao.class);
 
@@ -50,7 +51,11 @@ public class RemmDao {
         this.remmTabixDataSource = remmTabixDataSource;
     }
 
-    @Cacheable(value = "remm", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
+    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting REMM data for {}", variant);
         // REMM has not been trained on missense variants so skip these
@@ -99,21 +104,19 @@ public class RemmDao {
 
     private synchronized PathogenicityData getRemmData(String chromosome, int start, int end) {
         try {
-            float remm = Float.NaN;
+            float score = Float.NaN;
             String line;
-//            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
             TabixReader.Iterator results = remmTabixDataSource.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
-                if (Float.isNaN(remm)) {
-                    remm = Float.parseFloat(elements[2]);
+                if (Float.isNaN(score)) {
+                    score = Float.parseFloat(elements[2]);
                 } else {
-                    remm = Math.max(remm, Float.parseFloat(elements[2]));
+                    score = Math.max(score, Float.parseFloat(elements[2]));
                 }
             }
-            //logger.info("Final score " + remm);
-            if (!Float.isNaN(remm)) {
-                return PathogenicityData.of(RemmScore.valueOf(remm));
+            if (!Float.isNaN(score)) {
+                return PathogenicityData.of(RemmScore.of(score));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixDataSource.getSource(), e);

@@ -67,7 +67,7 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
             }
         }
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written",
+        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written.",
                 alleleResource.getName(),
                 alleleLogger.count(),
                 seconds,
@@ -84,10 +84,12 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
 
         private final AtomicLong counter;
         private final Instant startTime;
+        private Instant lastInstant;
 
         public AlleleLogger(Instant startTime) {
             this.counter = new AtomicLong();
             this.startTime = startTime;
+            this.lastInstant = startTime;
         }
 
         public long count() {
@@ -97,10 +99,15 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
         public Consumer<Allele> logCount() {
             return allele -> {
                 counter.incrementAndGet();
-                if (counter.get() % 1000000 == 0) {
-                    long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-                    logger.info("Processed {} variants total in {} sec", counter.get(), seconds);
+                int logInterval = 1000000;
+                if (counter.get() % logInterval == 0) {
+                    Instant now = Instant.now();
+                    long totalSeconds = Duration.between(startTime, now).getSeconds();
+                    long sinceLastCount = Duration.between(lastInstant, now).getSeconds();
+                    long totalVar = counter.get();
+                    logger.info("Processed {} variants total in {} sec - {} vps (last {} took {} sec - {} vps)", totalVar, totalSeconds, totalVar/totalSeconds, logInterval, sinceLastCount, logInterval/sinceLastCount);
                     logger.info("{}", allele);
+                    lastInstant = now;
                 }
             };
         }

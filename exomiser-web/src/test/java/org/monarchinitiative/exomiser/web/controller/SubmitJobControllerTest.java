@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,15 +19,15 @@
  */
 package org.monarchinitiative.exomiser.web.controller;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import config.TestConfig;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
 import org.monarchinitiative.exomiser.web.ExomiserWebApp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -37,15 +37,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
-@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class})
+@SpringBootTest(classes = {ExomiserWebApp.class, ExomiserStubDataConfig.class, TestConfig.class})
 public class SubmitJobControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Ignore
     @Test
     public void submitJobControllerGetReturnsOkStatusAndSubmitPage() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/submit"))

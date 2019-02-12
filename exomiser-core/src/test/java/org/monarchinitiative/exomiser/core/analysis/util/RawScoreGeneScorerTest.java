@@ -29,30 +29,29 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Disease;
-import de.charite.compbio.jannovar.pedigree.PedPerson;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.Sex;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneScore;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
@@ -101,7 +100,7 @@ public class RawScoreGeneScorerTest {
     }
 
     private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId) {
-        return scoreGene(gene, modeOfInheritance, SampleIdentifier.of("sample", sampleId), Pedigree.constructSingleSamplePedigree("sample"));
+        return scoreGene(gene, modeOfInheritance, SampleIdentifier.of("sample", sampleId), Pedigree.justProband("sample"));
     }
 
     private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, SampleIdentifier probandSample, Pedigree pedigree) {
@@ -111,11 +110,11 @@ public class RawScoreGeneScorerTest {
     }
 
     private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, int sampleId) {
-        return scoreGene(gene, inheritanceModeOptions, SampleIdentifier.of("sample", sampleId), Pedigree.constructSingleSamplePedigree("sample"));
+        return scoreGene(gene, inheritanceModeOptions, SampleIdentifier.of("sample", sampleId), Pedigree.justProband("sample"));
     }
 
     private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample) {
-        return scoreGene(gene, inheritanceModeOptions, probandSample, Pedigree.constructSingleSamplePedigree("sample"));
+        return scoreGene(gene, inheritanceModeOptions, probandSample, Pedigree.justProband("sample"));
     }
 
     private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample, Pedigree pedigree) {
@@ -284,17 +283,18 @@ public class RawScoreGeneScorerTest {
         System.out.println("Built variant context " + variantContext);
         System.out.println("Proband sample 0 has genotype " + variantContext.getGenotype(0).getGenotypeString());
 
-        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<>());
-        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<>());
-        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<>());
-        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+        Individual probandIndividual = Individual.builder().id("Cain").fatherId("Adam").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();
+        Individual motherIndividual = Individual.builder().id("Eve").fatherId("").motherId("").sex(Sex.FEMALE).status(Status.UNAFFECTED).build();
+        Individual fatherIndividual = Individual.builder().id("Adam").fatherId("").motherId("").sex(Sex.MALE).status(Status.UNAFFECTED).build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
 
         VariantEvaluation probandHomAlt = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext, VariantEffect.MISSENSE_VARIANT);
         probandHomAlt.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
         Gene gene = newGene(probandHomAlt);
 
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, SampleIdentifier.of(probandPerson.getName(), 0), pedigree);
+        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, SampleIdentifier.of(probandIndividual.getId(), 0), pedigree);
 
         float variantScore = probandHomAlt.getVariantScore();
 
@@ -515,7 +515,7 @@ public class RawScoreGeneScorerTest {
         List<Gene> genes = Lists.newArrayList(last, first, middle);
         Collections.shuffle(genes);
 
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(SampleIdentifier.of("sample", 0), new InheritanceModeAnnotator(Pedigree.constructSingleSamplePedigree("Nemo"), InheritanceModeOptions.empty()));
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(SampleIdentifier.of("sample", 0), new InheritanceModeAnnotator(Pedigree.justProband("Nemo"), InheritanceModeOptions.empty()));
         instance.scoreGenes(genes);
 
         genes.forEach(System.out::println);

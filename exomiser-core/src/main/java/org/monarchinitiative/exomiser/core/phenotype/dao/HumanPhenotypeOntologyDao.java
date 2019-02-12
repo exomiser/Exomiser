@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.dao;
 
+import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,6 +88,36 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
             logger.error("Unable to execute query '{}' for HP-HP match terms", mappingQuery, e);
         }
         return Collections.emptySet();
+    }
+
+    public Map<String, PhenotypeTerm> getIdToPhenotypeTerms() {
+        String query =
+                "SELECT alt.alt_id, alt.primary_id, hp.lcname AS term " +
+                "FROM hp_alt_ids alt, hpo hp " +
+                "WHERE hp.id = alt.primary_id";
+
+        Map<String, PhenotypeTerm> primaryIdToPhenotypeTerms = new HashMap<>();
+        ImmutableMap.Builder<String, PhenotypeTerm> alternateIdToPhenotypeTerms = ImmutableMap.builder();
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement ontologyTermsStatement = connection.prepareStatement(query);
+                ResultSet rs = ontologyTermsStatement.executeQuery()) {
+
+            while(rs.next()) {
+                String altId = rs.getString("alt_id");
+                String primaryId = rs.getString("primary_id");
+                String term = rs.getString("term");
+                // avoid creating lots of duplicate objects - these will hang about for ages
+                PhenotypeTerm phenotypeTerm = primaryIdToPhenotypeTerms.computeIfAbsent(primaryId, key -> PhenotypeTerm.of(primaryId, term));
+                alternateIdToPhenotypeTerms.put(altId, phenotypeTerm);
+            }
+
+        } catch (SQLException e) {
+            // this will always be thrown with data versions 1811 and below as the table doesn't exist in those releases
+            logger.error("Unable to execute query '{}' for HPO terms", query, e);
+        }
+        // No need to add the existing primary ids as these are already there
+        return alternateIdToPhenotypeTerms.build();
     }
 
 }

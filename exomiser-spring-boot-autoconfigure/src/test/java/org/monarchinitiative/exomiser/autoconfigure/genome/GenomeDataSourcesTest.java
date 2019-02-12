@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,6 +30,7 @@ import java.util.Optional;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -57,33 +58,33 @@ public class GenomeDataSourcesTest {
         assertThat(instance.getLocalFrequencyPath(), equalTo(Optional.of(expectedParent.resolve("local_freq.tsv.gz"))));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNoArgs() {
-        GenomeDataSources.builder().build();
-        GenomeDataSources.builder().mvStorePath(Paths.get("mvStore.mv")).build();
-        GenomeDataSources.builder().transcriptFilePath(Paths.get("transcripts.ser")).build();
-        GenomeDataSources.builder().genomeDataSource(new HikariDataSource()).build();
+        assertThrows(NullPointerException.class, () -> GenomeDataSources.builder().build());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNullMvStorePath() {
-        GenomeDataSources.builder()
+        assertThrows(NullPointerException.class, () -> GenomeDataSources.builder()
                 .mvStorePath(null)
-                .build();
+                .build()
+        );
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNullTranscriptFilePath() {
-        GenomeDataSources.builder()
+        assertThrows(NullPointerException.class, () -> GenomeDataSources.builder()
                 .transcriptFilePath(null)
-                .build();
+                .build()
+        );
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void throwsExceptionWithNullGenomeDataSourcePath() {
-        GenomeDataSources.builder()
+        assertThrows(NullPointerException.class, () -> GenomeDataSources.builder()
                 .genomeDataSource(null)
-                .build();
+                .build()
+        );
     }
 
     @Test

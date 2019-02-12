@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,15 +20,14 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.sql.DataSource;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -39,21 +38,19 @@ import static org.junit.Assert.assertThat;
 public class PhenotypeMatchServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
-    public void testAutoConfiguresPhenotypeMatchService() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+    public void testAutoConfiguresPhenotypeMatchService() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.phenotype.data-version=1710");
         PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");
         assertThat(phenotypeMatchService, instanceOf(PhenotypeMatchService.class));
     }
 
     @Configuration
-    @ImportAutoConfiguration(PhenotypeMatchServiceAutoConfiguration.class)
+    @ImportAutoConfiguration(classes = {PrioritiserAutoConfiguration.class} )
     protected static class EmptyConfiguration {
-        /*
-         * Mock this otherwise we'll try connecting to a non-existent database.
-         */
+
         @Bean
-        public DataSource dataSource() {
-            return Mockito.mock(DataSource.class);
+        public CacheManager cacheManager() {
+            return new NoOpCacheManager();
         }
 
     }

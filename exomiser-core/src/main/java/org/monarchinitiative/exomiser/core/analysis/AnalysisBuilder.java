@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -28,9 +27,12 @@ import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
@@ -50,6 +52,8 @@ public class AnalysisBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisBuilder.class);
 
+    // Perhaps combine these into an ueber AnalysisService?
+    private final OntologyService ontologyService;
     private final PriorityFactory priorityFactory;
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
@@ -65,7 +69,8 @@ public class AnalysisBuilder {
 
     private List<AnalysisStep> analysisSteps = new ArrayList<>();
 
-    AnalysisBuilder(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
+    AnalysisBuilder(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory, OntologyService ontologyService) {
+        this.ontologyService = ontologyService;
         this.priorityFactory = priorityFactory;
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
         this.builder = Analysis.builder();
@@ -88,8 +93,8 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder pedPath(Path pedPath) {
-        builder.pedPath(pedPath);
+    public AnalysisBuilder pedigree(Pedigree pedigree) {
+        builder.pedigree(pedigree);
         return this;
     }
 
@@ -99,7 +104,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder hpoIds(List<String> hpoIds) {
-        this.hpoIds = ImmutableList.copyOf(hpoIds);
+        this.hpoIds = ontologyService.getCurrentHpoIds(hpoIds);
         builder.hpoIds(this.hpoIds);
         return this;
     }
@@ -145,6 +150,11 @@ public class AnalysisBuilder {
         return this;
     }
 
+    public AnalysisBuilder addIntervalFilter(Collection<ChromosomalRegion> chromosomalRegions) {
+        analysisSteps.add(new IntervalFilter(chromosomalRegions));
+        return this;
+    }
+
     public AnalysisBuilder addGeneIdFilter(Set<String> entrezIds) {
         analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(entrezIds)));
         return this;
@@ -169,8 +179,8 @@ public class AnalysisBuilder {
         if (frequencySources.isEmpty()) {
             throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
         }
-        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
-        return new FrequencyDataProvider(genomeAnalysisService, frequencySources, filter);
+        GenomeAnalysisService analysisService = getGenomeAnalysisService();
+        return new FrequencyDataProvider(analysisService, frequencySources, filter);
     }
 
     private GenomeAnalysisService getGenomeAnalysisService() {
@@ -185,6 +195,24 @@ public class AnalysisBuilder {
         return this;
     }
 
+    /**
+     * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this
+     * method requires that the {@code inheritanceModes} method has already been called and supplied with a non-empty
+     * {@link InheritanceModeOptions} instance.
+     *
+     * @return an {@link AnalysisBuilder} with an added {@link FrequencyFilter} instantiated with the maximum
+     * frequency taken from the {@link InheritanceModeOptions}.
+     * @since 11.0.0
+     */
+    public AnalysisBuilder addFrequencyFilter() {
+        if (inheritanceModeOptions.isEmpty()) {
+            throw new IllegalArgumentException("Unable to add frequency filter with undefined max frequency without inheritanceModeOptions being set.");
+        }
+        float cutOff = inheritanceModeOptions.getMaxFreq();
+        analysisSteps.add(makeFrequencyDependentStep(new FrequencyFilter(cutOff)));
+        return this;
+    }
+
     public AnalysisBuilder addPathogenicityFilter(boolean keepNonPathogenic) {
         analysisSteps.add(makePathogenicityDependentStep(new PathogenicityFilter(keepNonPathogenic)));
         return this;
@@ -194,8 +222,8 @@ public class AnalysisBuilder {
         if (pathogenicitySources.isEmpty()) {
             throw new IllegalArgumentException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
         }
-        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
-        return new PathogenicityDataProvider(genomeAnalysisService, pathogenicitySources, pathogenicityFilter);
+        GenomeAnalysisService analysisService = getGenomeAnalysisService();
+        return new PathogenicityDataProvider(analysisService, pathogenicitySources, pathogenicityFilter);
     }
 
     public AnalysisBuilder addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
@@ -237,7 +265,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addHiPhivePrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults()));
         return this;
     }
 

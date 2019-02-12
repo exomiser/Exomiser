@@ -68,7 +68,7 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        logger.info("Writing HTML results");
+        logger.debug("Writing HTML results");
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
@@ -77,12 +77,12 @@ public class HtmlResultsWriter implements ResultsWriter {
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
     }
 
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        logger.info("Writing HTML results");
+        logger.debug("Writing HTML results");
         Context context = buildContext(modeOfInheritance, analysis, analysisResults, settings);
         return templateEngine.process("results", context);
     }
@@ -96,26 +96,26 @@ public class HtmlResultsWriter implements ResultsWriter {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        String jsonSettings = "";
+        StringBuilder jsonSettings = new StringBuilder();
         try {
-            jsonSettings = mapper.writeValueAsString(analysis);
-            jsonSettings += mapper.writeValueAsString(settings);
+            jsonSettings.append(mapper.writeValueAsString(analysis));
+            jsonSettings.append(mapper.writeValueAsString(settings));
         } catch (JsonProcessingException ex) {
             logger.error("Unable to process JSON settings", ex);
         }
-        context.setVariable("settings", jsonSettings);
+        context.setVariable("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the analysis reports section
-        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, analysisResults);
+        List<FilterReport> analysisStepReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
-        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
         List<String> sampleNames = analysisResults.getSampleNames();
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults
+                .getVariantEvaluations());
         String sampleName = "Anonymous";
         if (!analysis.getProbandSampleName().isEmpty()) {
             sampleName = analysis.getProbandSampleName();
@@ -136,68 +136,5 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return context;
     }
-
-    private List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
-    }
-
-    private List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
-        return ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
-    }
-
-    //TODO:
-//    /**
-//     * This function writes out a table representing the PED file of the family
-//     * being analysed (if a multisample VCF file is being analysed) or the name
-//     * of the sample (for a single-sample VCF file).
-//     * <P>
-//     * For multisample VCF files, a color code is used to mark the following
-//     * kinds of samples (individuals):
-//     * <ul>
-//     * <li>Unaffected parent: white</li>
-//     * <li>Affected (whether parent or not): dark grey</li>
-//     * <li>Unaffected sibling: light blue</li>
-//     * </ul>
-//     * The same color code will be used for showing the genotypes of the
-//     * individual variants, which hopefully will help in their interpretation.
-//     *
-//     * @param out An open file handle (can come from the command line or server
-//     * versions of Exomiser).
-//     */
-//    public void writePedigreeTable(Writer out) throws IOException {
-//        int n = this.pedigree.getNumberOfIndividualsInPedigree();
-//        if (n == 1) {
-//            String sampleName = this.pedigree.getSingleSampleName();
-//            out.write("<table class=\"pedigree\">\n");
-//            out.write(String.format("<tr><td>Sample name: %s</td></tr>\n", sampleName));
-//            out.write("</table>\n");
-//        } else { /* multiple samples */
-//
-//            out.write("<h2>Analyzed samples</h2>\n");
-//            out.write("<p>affected: red, parent of affected: light blue, unaffected: white</p>\n");
-//            out.write("<table class=\"pedigree\">\n");
-//            for (int i = 0; i < n; ++i) {
-//                List<String> lst = this.pedigree.getPEDFileDatForNthPerson(i);
-//                String fam = lst.get(0);
-//                String id = lst.get(1);
-//                String fathID = lst.get(2);
-//                String mothID = lst.get(3);
-//                String sex = lst.get(4);
-//                String disease = lst.get(5);
-//                out.write("<tr><td>" + fam + "</td>");
-//                if (this.pedigree.isNthPersonAffected(i)) {
-//                    out.write("<td id=\"g\">" + id + "</td>");
-//                } else if (this.pedigree.isNthPersonParentOfAffected(i)) {
-//                    out.write("<td id=\"b\">" + id + "</td>");
-//                } else {
-//                    out.write("<td id=\"w\">" + id + "</td>");
-//                }
-//                out.write("<td>" + fathID + "</td><td>" + mothID + "</td><td>"
-//                        + sex + "</td><td>" + disease + "</td></tr>\n");
-//            }
-//            out.write("</table>\n");
-//            out.write("<br/>\n");
-//        }
-//    }
 
 }

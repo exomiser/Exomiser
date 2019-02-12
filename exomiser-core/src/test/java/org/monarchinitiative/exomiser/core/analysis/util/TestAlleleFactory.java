@@ -26,11 +26,14 @@ import de.charite.compbio.jannovar.pedigree.*;
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
+import org.monarchinitiative.exomiser.core.genome.VariantContextSampleGenotypeConverter;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -42,7 +45,7 @@ import static java.util.stream.Collectors.toList;
 public final class TestAlleleFactory {
 
     private TestAlleleFactory() {
-
+        // static utility class
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
@@ -62,9 +65,12 @@ public final class TestAlleleFactory {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
         int altAlleleId = findAltAlleleId(alt, altAlleles);
 
+        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
+
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
+                .sampleGenotypes(sampleGenotypes)
                 .filterResults(filterResult)
                 .build();
     }
@@ -73,10 +79,13 @@ public final class TestAlleleFactory {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
         int altAlleleId = findAltAlleleId(alt, altAlleles);
 
+        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
+
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
                 .variantEffect(variantEffect)
+                .sampleGenotypes(sampleGenotypes)
                 .filterResults(filterResult)
                 .build();
     }

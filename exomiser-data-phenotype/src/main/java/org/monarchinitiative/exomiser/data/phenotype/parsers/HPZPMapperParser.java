@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -68,27 +68,20 @@ public class HPZPMapperParser implements ResourceParser {
             while ((line = reader.readLine()) != null) {
                 id++;
                 String[] fields = line.split("\\t");
-                String queryId = fields[0];
-                queryId = queryId.replace("_", ":");
-                String queryTerm = "";
-                if (null != hpId2termMap.get(queryId))
-                    queryTerm = hpId2termMap.get(queryId);
-                String hitId = fields[1];
-                hitId = hitId.replace("_", ":");
-                String hitTerm = "";
-                if (null != zpId2termMap.get(hitId))
-                    hitTerm = zpId2termMap.get(hitId);
+
+                String queryId = reformatCurie(fields[0]);
+                String queryTerm = hpId2termMap.getOrDefault(queryId, "");
+
+                String hitId = reformatCurie(fields[1]);
+                String hitTerm = zpId2termMap.getOrDefault(hitId, "");
+
                 String simJ = fields[2];
                 String ic = fields[3];
                 double score = Math.sqrt(Double.parseDouble(simJ) * Double.parseDouble(ic));
-                String lcs = fields[4].split(";")[0];
-                lcs = lcs.replace("_", ":");
-                String lcsTerm = "";
-                if (null != hpId2termMap.get(lcs)) {
-                    lcsTerm = hpId2termMap.get(lcs);
-                } else if (null != zpId2termMap.get(lcs)) {
-                    lcsTerm = zpId2termMap.get(lcs);
-                }
+
+                String lcs = reformatCurie(fields[4].split(";")[0]);
+                String lcsTerm = hpId2termMap.containsKey(lcs) ? hpId2termMap.get(lcs) : zpId2termMap.getOrDefault(lcs, "");
+
                 writer.write(String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s%n", id, queryId, queryTerm, hitId, hitTerm, simJ, ic, score, lcs, lcsTerm));
             }
             status = ResourceOperationStatus.SUCCESS;
@@ -102,5 +95,9 @@ public class HPZPMapperParser implements ResourceParser {
         }
         logger.info("{}", status);
         resource.setParseStatus(status);
+    }
+
+    private String reformatCurie(String field) {
+        return field.replace("_", ":");
     }
 }

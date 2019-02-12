@@ -25,14 +25,15 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -45,7 +46,9 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -82,22 +85,22 @@ public class VariantEvaluationTest {
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
 
-    private static final SiftScore SIFT_PASS = SiftScore.valueOf(SIFT_PASS_SCORE);
-    private static final SiftScore SIFT_FAIL = SiftScore.valueOf(SIFT_FAIL_SCORE);
+    private static final SiftScore SIFT_PASS = SiftScore.of(SIFT_PASS_SCORE);
+    private static final SiftScore SIFT_FAIL = SiftScore.of(SIFT_FAIL_SCORE);
 
     private static final float POLYPHEN_PASS_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f;
     private static final float POLYPHEN_FAIL_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD - 0.1f;
 
-    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.valueOf(POLYPHEN_PASS_SCORE);
-    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.valueOf(POLYPHEN_FAIL_SCORE);
+    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.of(POLYPHEN_PASS_SCORE);
+    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.of(POLYPHEN_FAIL_SCORE);
 
     private static final float MTASTER_PASS_SCORE = MutationTasterScore.MTASTER_THRESHOLD + 0.01f;
     private static final float MTASTER_FAIL_SCORE = MutationTasterScore.MTASTER_THRESHOLD - 0.01f;
 
-    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
-    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
+    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.of(MTASTER_PASS_SCORE);
+    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.of(MTASTER_FAIL_SCORE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = newInstance();
     }
@@ -135,12 +138,11 @@ public class VariantEvaluationTest {
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
-        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .genomeAssembly("wibble")
-                .build();
-        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        );
     }
 
     @Test
@@ -176,6 +178,26 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    void testGeneSymbolCannotBeNull() {
+        assertThrows(NullPointerException.class, () ->
+                testVariantBuilder()
+                .geneSymbol(null)
+                        .build()
+        );
+
+    }
+
+    @Test
+    void testGeneSymbolCannotBeEmpty() {
+        Throwable throwable = assertThrows(IllegalArgumentException.class, () ->
+                testVariantBuilder()
+                        .geneSymbol("")
+                        .build()
+        );
+        assertThat(throwable.getMessage(), containsString("Variant gene symbol cannot be empty"));
+    }
+
+    @Test
     public void testGetGeneSymbol() {
         assertThat(instance.getGeneSymbol(), equalTo(GENE1_GENE_SYMBOL));
     }
@@ -195,20 +217,45 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetNumIndividualsEqualsOneIfNotSet() {
-        assertThat(instance.getNumberOfIndividuals(), equalTo(1));
-    }
-
-    @Test
-    public void testGetNumIndividualsEqualsBuilderValue() {
-        int builderValue = 2;
-        instance = testVariantBuilder().numIndividuals(builderValue).build();
-        assertThat(instance.getNumberOfIndividuals(), equalTo(builderValue));
-    }
-
-    @Test
     public void canGetGeneId() {
         assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
+    }
+
+    @Test
+    void testSampleGenotypesCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .sampleGenotypes(null)
+                .build()
+        );
+    }
+
+    @Test
+    void testSampleGenotypeEmptyIsReplacedWithDefault() {
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .sampleGenotypes(Collections.emptyMap())
+                .build();
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(VariantEvaluation.Builder.SINGLE_SAMPLE_HET_GENOTYPE));
+    }
+
+    @Test
+    public void testSampleGenotypes() {
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT));
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotypes(), equalTo(sampleGenotypes));
+    }
+
+    @Test
+    public void testGetSampleGenotype() {
+        SampleGenotype sampleGenotype = SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT);
+        Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of("Zaphod", sampleGenotype);
+        instance = testVariantBuilder()
+                .sampleGenotypes(sampleGenotypes)
+                .build();
+        assertThat(instance.getSampleGenotype("Zaphod"), equalTo(sampleGenotype));
+        assertThat(instance.getSampleGenotype("Nemo"), equalTo(SampleGenotype.empty()));
     }
 
     @Test
@@ -219,6 +266,14 @@ public class VariantEvaluationTest {
 
         variantEvaluation.setVariantEffect(VariantEffect.MISSENSE_VARIANT);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+    }
+
+    @Test
+    void testsTranscriptAnnotationsCannotBeNull() {
+        assertThrows(NullPointerException.class, () -> testVariantBuilder()
+                .annotations(null)
+                .build()
+        );
     }
 
     @Test
@@ -246,14 +301,14 @@ public class VariantEvaluationTest {
     
     @Test
     public void testThatTheBuilderCanSetAFrequencyDataObject() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.LOCAL, 0.1f));
         instance = testVariantBuilder().frequencyData(frequencyData).build();
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
 
     @Test
     public void testCanSetFrequencyDataAfterConstruction() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.LOCAL, 0.1f));
         instance.setFrequencyData(frequencyData);
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
@@ -267,23 +322,19 @@ public class VariantEvaluationTest {
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
         PathogenicityData pathogenicityData = instance.getPathogenicityData();
         assertThat(pathogenicityData, equalTo(PathogenicityData.empty()));
-        assertThat(pathogenicityData.getMutationTasterScore(), nullValue());
-        assertThat(pathogenicityData.getPolyPhenScore(), nullValue());
-        assertThat(pathogenicityData.getSiftScore(), nullValue());
-        assertThat(pathogenicityData.getCaddScore(), nullValue());
         assertThat(pathogenicityData.hasPredictedScore(), is(false));
     }
     
     @Test
     public void testThatTheBuilderCanSetAPathogenicityDataObject() {
-        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.valueOf(1.0f));
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.of(1.0f));
         instance = testVariantBuilder().pathogenicityData(pathData).build();
         assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
 
     @Test
     public void testCanSetPathogenicityDataAfterConstruction() {
-        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.valueOf(1.0f));
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.of(1.0f));
         instance.setPathogenicityData(pathData);
         assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
@@ -306,7 +357,7 @@ public class VariantEvaluationTest {
     @Test
     public void testGetPathogenicityScoreNonMissenseVariantWithPredictions() {
         VariantEffect type = VariantEffect.REGULATORY_REGION_VARIANT;
-        PathogenicityData pathData = PathogenicityData.of(CaddScore.valueOf(1f));
+        PathogenicityData pathData = PathogenicityData.of(CaddScore.of(1f));
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
         assertThat(instance.getPathogenicityScore(), equalTo(pathData.getScore()));
@@ -348,6 +399,20 @@ public class VariantEvaluationTest {
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
         float expected = MTASTER_PASS.getScore();
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
+
+    @Test
+    public void testGetPathogenicityScoreMissensePredictedScoreLessThanDefault() {
+        float expected = 0.1f;
+        assertThat(expected, lessThan(VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE));
+
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.of(expected));
+        VariantEvaluation instance = testVariantBuilder()
+                .pathogenicityData(pathData)
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 
@@ -417,7 +482,7 @@ public class VariantEvaluationTest {
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .frequencyData(FrequencyData.empty())
                 //PolyPhen of 1 is predicted as highly pathogenic
-                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)))
                 .build();
         assertThat(instance.getVariantScore(), equalTo(1f));
         assertThat(instance.passedFilters(), is(true));
@@ -586,7 +651,6 @@ public class VariantEvaluationTest {
         assertThat(builtContext.getNAlleles(), equalTo(2));
         assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
         assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
-        assertThat(builtContext.getNSamples(), equalTo(instance.getNumberOfIndividuals()));
     }
 
     @Test
@@ -698,13 +762,13 @@ public class VariantEvaluationTest {
     private List<VariantEvaluation> scoredVariantsInDescendingRankOrder() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TT")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
-                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.of(1.0f)))
                 .build();
         zero.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
-                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
+                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.ESP_ALL, 0.02f)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.of(1.0f)))
                 .build();
         one.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         VariantEvaluation two = VariantEvaluation.builder(1, 2, "A", "G")
@@ -758,14 +822,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

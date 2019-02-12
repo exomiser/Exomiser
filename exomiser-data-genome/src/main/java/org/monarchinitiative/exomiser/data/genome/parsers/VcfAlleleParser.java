@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.parsers;
 
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -35,6 +37,8 @@ import java.util.List;
 public abstract class VcfAlleleParser implements AlleleParser {
 
     private static final Logger logger = LoggerFactory.getLogger(VcfAlleleParser.class);
+
+    protected Set<String> allowedFilterValues = ImmutableSet.of(".", "PASS");
 
     public List<Allele> parseLine(String line) {
         if (line.startsWith("#")) {
@@ -97,7 +101,18 @@ public abstract class VcfAlleleParser implements AlleleParser {
     }
 
     private boolean unfilteredOrPassed(String passField) {
-        return ".".equals(passField) || "PASS".equals(passField);
+        if (allowedFilterValues.isEmpty()) {
+            // if we're ignoring the filters carry on
+            return true;
+        }
+
+        String[] filters = passField.split(";");
+        for (String filter : filters) {
+            if (!allowedFilterValues.contains(filter)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Allele makeAllele(byte chr, int pos, String ref, String alt) {

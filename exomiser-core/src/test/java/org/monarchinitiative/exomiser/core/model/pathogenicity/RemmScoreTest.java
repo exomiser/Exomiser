@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,10 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
  */
 public class RemmScoreTest {
     
-    RemmScore instance = RemmScore.valueOf(1f);
+    RemmScore instance = RemmScore.of(1f);
     
     @Test
     public void testGetSource() {

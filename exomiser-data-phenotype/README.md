@@ -6,21 +6,21 @@ This maven project is used to build the Exomiser phenotype database used by the 
 Currently the build relies on a preliminary OWLSim2 file build which in future versions will
 be incorporated into this codebase:
 
-1. ```git clone https://github.com/owlcollab/owltools.git```, install following the instructions in the README and make sure owltools and owltools-runner are added to path
-    ```
-    cd owltools/OWLTools-Parent
+1. OWLTools:
+    ```git clone https://github.com/owlcollab/owltools.git``` or ```git pull```
+    ```cd owltools/OWLTools-Parent
     mvn clean install
     cd ../../
     chmod +x owltools/OWLTools-Runner/bin/owltools
     ```
     Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
 2. Clone Monarch OwlSim:
-```git clone https://github.com/monarch-initiative/monarch-owlsim-data```
+```git clone https://github.com/monarch-initiative/monarch-owlsim-data or git pull``` 
 3. Clone the HPO:
-```git clone https://github.com/obophenotype/human-phenotype-ontology/```
+```git clone https://github.com/obophenotype/human-phenotype-ontology/ or git pull```
 4. Clone the MPO: 
 ```
-    git clone https://github.com/obophenotype/mammalian-phenotype-ontology/
+    git clone https://github.com/obophenotype/mammalian-phenotype-ontology/ or git pull
     cd mammalian-phenotype-ontology/src/ontology
     make mp.owl
     cd ../../../
@@ -32,8 +32,8 @@ be incorporated into this codebase:
 7. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
+```perl
 system("wget http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/phenotype_annotation.tab");
-```
 open(IN,"phenotype_annotation.tab");
 open(OUT1,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt");
 open(OUT2,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt");

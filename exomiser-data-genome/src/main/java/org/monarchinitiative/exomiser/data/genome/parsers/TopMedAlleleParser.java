@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,8 +55,12 @@ public class TopMedAlleleParser extends VcfAlleleParser {
             if (i <= alleleFrequencyValues.size() - 1) {
                 String freqValue = alleleFrequencyValues.get(i);
                 if (!freqValue.isEmpty() && !".".equals(freqValue)) {
-                    Float freq = 100f * Float.valueOf(freqValue);
-                    allele.addValue(TOPMED, freq);
+                    try {
+                        Float freq = 100f * Float.valueOf(freqValue);
+                        allele.addValue(TOPMED, freq);
+                    } catch (NumberFormatException ex) {
+                        // swallow these
+                    }
                 }
             }
         }

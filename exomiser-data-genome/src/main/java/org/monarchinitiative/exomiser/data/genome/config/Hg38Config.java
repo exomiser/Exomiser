@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.config;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.data.genome.archive.DbNsfpAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.EspAlleleArchive;
 import org.monarchinitiative.exomiser.data.genome.archive.TabixAlleleArchive;
@@ -31,9 +31,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -45,85 +46,103 @@ public class Hg38Config {
     public Environment environment;
 
     @Bean
-    public List<AlleleResource> hg38AlleleResources() {
-        return ImmutableList.of(
-                gnomadGenomeAlleleResource(),
-                gnomadExomeAlleleResource(),
-                topmedAlleleResource(),
-                dbSnpAlleleResource(),
-                clinVarAlleleResource(),
-                uk10kAlleleResource(),
-                exacAlleleResource(),
-                espAlleleResource(),
-                dbnsfpAlleleResource()
-        );
+    public Path hg38GenomePath() {
+        return Paths.get(environment.getProperty("hg38.genome-dir"));
+    }
+
+    @Bean
+    public Map<String, AlleleResource> hg38AlleleResources() {
+        ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
+
+        alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
+        alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
+        // TOPMed removed as this is now part of dbSNP
+        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("uk10k", uk10kAlleleResource());
+        alleleResources.put("exac", exacAlleleResource());
+        alleleResources.put("esp", espAlleleResource());
+        alleleResources.put("dbnsfp", dbnsfpAlleleResource());
+        alleleResources.put("clinvar", clinVarAlleleResource());
+
+        return alleleResources.build();
     }
 
     public AlleleResource dbSnpAlleleResource() {
         String namespacePrefix = "hg38.dbsnp";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new DbSnpAlleleParser());
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new DbSnpAlleleParser());
     }
 
     public AlleleResource clinVarAlleleResource() {
         String namespacePrefix = "hg38.clinvar";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new ClinVarAlleleParser());
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ClinVarAlleleParser());
     }
 
     public AlleleResource espAlleleResource() {
         String namespacePrefix = "hg38.esp";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new EspAlleleArchive(resourcePath), new EspHg38AlleleParser());
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new EspAlleleArchive(resourcePath), new EspHg38AlleleParser());
     }
 
     public AlleleResource exacAlleleResource() {
         String namespacePrefix = "hg38.exac";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.EXAC_EXOMES));
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new ExacExomeAlleleParser());
     }
 
     public AlleleResource dbnsfpAlleleResource() {
         String namespacePrefix = "hg38.dbnsfp";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new DbNsfpAlleleArchive(resourcePath), new DbNsfpAlleleParser(DbNsfpColumnIndex.HG38));
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new DbNsfpAlleleArchive(resourcePath), new DbNsfpAlleleParser(DbNsfpColumnIndex.HG38));
     }
 
     public AlleleResource topmedAlleleResource() {
         String namespacePrefix = "hg38.topmed";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new TopMedAlleleParser());
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new TopMedAlleleParser());
     }
 
     public AlleleResource uk10kAlleleResource() {
         String namespacePrefix = "hg38.uk10k";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new Uk10kAlleleParser());
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new Uk10kAlleleParser());
     }
 
     public AlleleResource gnomadGenomeAlleleResource() {
         String namespacePrefix = "hg38.gnomad-genome";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.GNOMAD_GENOMES));
+        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl, new TabixAlleleArchive(resourcePath), new GnomadGenomeAlleleParser());
     }
 
     public AlleleResource gnomadExomeAlleleResource() {
         String namespacePrefix = "hg38.gnomad-exome";
-        Path resourcePath = getAlleleResourcePath(namespacePrefix);
-        return new AlleleResource(namespacePrefix, new TabixAlleleArchive(resourcePath), new ExacAlleleParser(ExacPopulationKey.GNOMAD_EXOMES));
-    }
-
-    private Path getAlleleResourcePath(String namespacePrefix) {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path fileDirectory = resourceProperties.getFileDirectory();
-        return fileDirectory.resolve(resourceProperties.getFileName());
+        Path resourcePath = resourceProperties.getAlleleResourcePath();
+        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        return new AlleleResource(namespacePrefix, resourceUrl,  new TabixAlleleArchive(resourcePath), new GnomadExomeAlleleParser());
     }
 
     private AlleleResourceProperties getAlleleResourceProperties(String namespacePrefix) {
-        AlleleResourceProperties properties = new AlleleResourceProperties();
-        properties.setFileName(environment.getProperty(namespacePrefix + ".file-name"));
-        properties.setFileDirectory(Paths.get(environment.getProperty(namespacePrefix + ".file-dir")));
-        properties.setFileUrl(environment.getProperty(namespacePrefix + ".file-url"));
-        return properties;
+        String fileName = environment.getProperty(namespacePrefix + ".file-name");
+        Path fileDir = Paths.get(environment.getProperty(namespacePrefix + ".file-dir"));
+        String fileUrl = environment.getProperty(namespacePrefix + ".file-url");
+        return new AlleleResourceProperties(fileName, fileDir, fileUrl);
     }
 }

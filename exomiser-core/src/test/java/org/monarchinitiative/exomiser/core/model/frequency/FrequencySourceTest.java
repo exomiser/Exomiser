@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,12 +25,10 @@
  */
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.junit.Test;
-
-import java.util.EnumSet;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -95,12 +93,6 @@ public class FrequencySourceTest {
     @Test
     public void testGetAllExternalFrequencySources(){
         assertThat(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.size(), equalTo(29));
-    }
-
-    @Test
-    public void frequencySourceMap() {
-        EnumSet<FrequencySource> actual = EnumSet.copyOf(FrequencySource.FREQUENCY_SOURCE_MAP.values());
-        assertThat(actual, equalTo(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES));
     }
 
     @Test

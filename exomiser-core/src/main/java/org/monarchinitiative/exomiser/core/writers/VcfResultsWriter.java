@@ -121,9 +121,9 @@ public class VcfResultsWriter implements ResultsWriter {
                 outFile.toString(),
                 getAdditionalHeaderLines(),
                 false)) {
-            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), writer);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
-        logger.info("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     private VCFHeader getVcfHeader(Analysis analysis) {
@@ -142,18 +142,18 @@ public class VcfResultsWriter implements ResultsWriter {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos, getAdditionalHeaderLines())) {
-            writeData(modeOfInheritance, analysisResults, settings.outputPassVariantsOnly(), writer);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyPassVariants, VariantContextWriter writer) {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, VariantContextWriter writer) {
         writeUnannotatedVariants(modeOfInheritance, analysisResults, writer);
         // actually write the data and close writer again
-        if (writeOnlyPassVariants) {
-            logger.info("Writing out only PASS variants");
-            writeOnlyPassSampleData(modeOfInheritance, analysisResults, writer);
+        if (writeOnlyContributingVariants) {
+            logger.debug("Writing out only CONTRIBUTING variants");
+            writeOnlyContributingData(modeOfInheritance, analysisResults, writer);
         } else {
             writeAllSampleData(modeOfInheritance, analysisResults, writer);
         }
@@ -164,12 +164,10 @@ public class VcfResultsWriter implements ResultsWriter {
         updatedRecords.forEach(writer::add);
     }
 
-    private void writeOnlyPassSampleData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
+    private void writeOnlyContributingData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
         for (Gene gene : analysisResults.getGenes()) {
             if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                List<VariantEvaluation> compatibleVariants = gene.getPassedVariantEvaluations().stream()
-                        .filter(ve -> ve.isCompatibleWith(modeOfInheritance))
-                        .collect(toList());
+                List<VariantEvaluation> compatibleVariants = gene.getGeneScoreForMode(modeOfInheritance).getContributingVariants();
                 List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, compatibleVariants);
                 updatedRecords.forEach(writer::add);
             }

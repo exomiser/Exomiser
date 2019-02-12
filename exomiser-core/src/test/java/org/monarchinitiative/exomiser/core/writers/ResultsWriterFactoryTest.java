@@ -25,23 +25,17 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ResultsWriterFactoryTest {
 
-    private ResultsWriterFactory instance;
-
-    @Before
-    public void setUp() {
-        instance = new ResultsWriterFactory();
-    }
+    private final ResultsWriterFactory instance = new ResultsWriterFactory();
 
     @Test
     public void testGetHtmlResultsWriter() {

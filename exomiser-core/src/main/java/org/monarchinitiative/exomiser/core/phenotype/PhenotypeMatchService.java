@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ public class PhenotypeMatchService {
             Set<PhenotypeMatch> termMatches = getSpeciesMatchesForHpoTerm(hpoTerm, organism);
             speciesPhenotypeMatches.put(hpoTerm, termMatches);
         }
-        return new CrossSpeciesPhenotypeMatcher(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
+        return CrossSpeciesPhenotypeMatcher.of(organism, speciesPhenotypeMatches);
     }
 
     public List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {

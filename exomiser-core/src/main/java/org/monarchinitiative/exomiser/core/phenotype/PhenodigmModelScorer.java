@@ -47,35 +47,6 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
     private final int numQueryPhenotypes;
 
     /**
-     * Use this constructor when running a single (HP-HP) or single cross-species (e.g. HP-MP) comparisons.
-     * For multi cross-species comparisons use the constructor which requires the {@link QueryPhenotypeMatch} against which
-     * all models are compared.
-     *
-     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
-     * @param numQueryPhenotypes
-     */
-    private PhenodigmModelScorer(PhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
-        this(organismPhenotypeMatcher.getQueryPhenotypeMatch(), organismPhenotypeMatcher, numQueryPhenotypes);
-    }
-
-    /**
-     * Use this constructor when running multi cross-species comparisons. For single or single cross-species comparisons,
-     * use the alternate constructor.
-     *
-     * @param queryPhenotypeMatch against which all models are compared.
-     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
-     * @param numQueryPhenotypes
-     */
-    private PhenodigmModelScorer(QueryPhenotypeMatch queryPhenotypeMatch, PhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
-        this.theoreticalMaxMatchScore = queryPhenotypeMatch.getMaxMatchScore();
-        this.theoreticalBestAvgScore = queryPhenotypeMatch.getBestAvgScore();
-
-        this.organismPhenotypeMatcher = organismPhenotypeMatcher;
-        this.numQueryPhenotypes = numQueryPhenotypes;
-        logOrganismPhenotypeMatches();
-    }
-
-    /**
      * Produces a {@link ModelScorer} which will score human models only, e.g. disease models or individuals where
      * their phenotypes are encoded using HPO terms.
      *
@@ -107,6 +78,35 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
     public static <T extends Model> PhenodigmModelScorer<T> forMultiCrossSpecies(QueryPhenotypeMatch referenceOrganismQueryPhenotypeMatch, PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = referenceOrganismQueryPhenotypeMatch.getQueryTerms().size();
         return new PhenodigmModelScorer<>(referenceOrganismQueryPhenotypeMatch, phenotypeMatcher, numQueryPhenotypes);
+    }
+
+    /**
+     * Use this constructor when running a single (HP-HP) or single cross-species (e.g. HP-MP) comparisons.
+     * For multi cross-species comparisons use the constructor which requires the {@link QueryPhenotypeMatch} against which
+     * all models are compared.
+     *
+     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
+     * @param numQueryPhenotypes
+     */
+    private PhenodigmModelScorer(PhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
+        this(organismPhenotypeMatcher.getQueryPhenotypeMatch(), organismPhenotypeMatcher, numQueryPhenotypes);
+    }
+
+    /**
+     * Use this constructor when running multi cross-species comparisons. For single or single cross-species comparisons,
+     * use the alternate constructor.
+     *
+     * @param queryPhenotypeMatch against which all models are compared.
+     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
+     * @param numQueryPhenotypes
+     */
+    private PhenodigmModelScorer(QueryPhenotypeMatch queryPhenotypeMatch, PhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
+        this.theoreticalMaxMatchScore = queryPhenotypeMatch.getMaxMatchScore();
+        this.theoreticalBestAvgScore = queryPhenotypeMatch.getBestAvgScore();
+
+        this.organismPhenotypeMatcher = organismPhenotypeMatcher;
+        this.numQueryPhenotypes = numQueryPhenotypes;
+        logOrganismPhenotypeMatches();
     }
 
     private void logOrganismPhenotypeMatches() {

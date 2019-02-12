@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,10 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.junit.Test;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.springframework.cache.interceptor.SimpleKey;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -44,14 +44,21 @@ public class VariantKeyGeneratorTest {
     @Test
     public void returnsKeyForVariant() throws Exception {
         Variant variant = VariantAnnotation.builder()
-                .genomeAssembly(GenomeAssembly.HG19)
-                .chromosomeName("1")
+                .chromosome(1)
                 .position(2345)
                 .ref("A")
                 .alt("T")
                 .build();
+        // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches
+        // created in version 10.1.1 its OK to use the AlleleKey as the cache key
+        AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
+                .setChr(1)
+                .setPosition(2345)
+                .setRef("A")
+                .setAlt("T")
+                .build();
 
-        assertThat(instance.generate(new Object(), Object.class.getMethod("toString"), variant), equalTo("hg19-1-2345-A-T"));
+        assertThat(instance.generate(new Object(), Object.class.getMethod("toString"), variant), equalTo(expected));
     }
 
     @Test

@@ -21,9 +21,15 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
@@ -31,12 +37,83 @@ import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class AlleleProtoAdaptorTest {
+
+    @Test
+    public void generateAlleleKey() {
+        Variant variant = VariantAnnotation.builder()
+                .genomeAssembly(GenomeAssembly.HG19)
+                .chromosome(1)
+                .position(12345)
+                .ref("A")
+                .alt("T")
+                .build();
+
+        AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
+                .setChr(1)
+                .setPosition(12345)
+                .setRef("A")
+                .setAlt("T")
+                .build();
+
+        assertThat(AlleleProtoAdaptor.toAlleleKey(variant), equalTo(expected));
+    }
+
+    @Test
+    public void testToFreqData() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .putProperties("KG", 0.7f)
+                .putProperties("TOPMED", 0.05f)
+                .build();
+        assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
+                equalTo(FrequencyData.of(
+                    Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.7f),
+                    Frequency.of(FrequencySource.TOPMED, 0.05f))
+                )
+        );
+    }
+
+    @Test
+    public void testToPathDataRevel() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REVEL", 0.2f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REVEL, 0.2f))));
+    }
+
+    @Test
+    public void testToPathDataSift() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("SIFT", 0.2f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(SIFT, 0.2f))));
+    }
+
+    @Test
+    public void testToPathDataPolyphen() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("POLYPHEN", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(POLYPHEN, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataMutationTaster() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("MUT_TASTER", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MUTATION_TASTER, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataRemm() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("REMM", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REMM, 0.7f))));
+    }
+
+    @Test
+    public void testToPathDataCadd() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().putProperties("CADD", 0.7f).build();
+        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(CADD, 0.7f))));
+    }
 
     @Test
     public void parseClinVarDataDefaultInstanceReturnsEmpty() {

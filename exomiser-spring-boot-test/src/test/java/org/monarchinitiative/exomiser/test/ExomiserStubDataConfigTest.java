@@ -22,15 +22,18 @@ package org.monarchinitiative.exomiser.test;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import htsjdk.tribble.readers.TabixReader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -40,9 +43,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ExomiserStubDataConfig.class)
+@SpringJUnitConfig(ExomiserStubDataConfig.class)
 public class ExomiserStubDataConfigTest {
+
+    @Autowired
+    private HumanPhenotypeOntologyDao hpoDao;
+
+    @Autowired
+    private MousePhenotypeOntologyDao mpoDao;
+
+    @Autowired
+    private ZebraFishPhenotypeOntologyDao zpoDao;
 
     @Autowired
     private JannovarData jannovarData;
@@ -64,6 +75,30 @@ public class ExomiserStubDataConfigTest {
 
     @Autowired
     private Path phenixDataDirectory;
+
+    @Test
+    void testHpoDao() {
+        assertThat(hpoDao, instanceOf(HumanPhenotypeOntologyDao.class));
+        assertThat(hpoDao.getAllTerms(), equalTo(Collections.emptySet()));
+        assertThat(hpoDao.getPhenotypeMatchesForHpoTerm(PhenotypeTerm.of("HP:0000000", "Wibble")), equalTo(Collections.emptySet()));
+        assertThat(hpoDao.getIdToPhenotypeTerms(), equalTo(Collections.emptyMap()));
+    }
+
+    @Test
+    void testMpoDao() {
+        assertThat(mpoDao, instanceOf(MousePhenotypeOntologyDao.class));
+        assertThat(mpoDao.getAllTerms(), equalTo(Collections.emptySet()));
+        assertThat(mpoDao.getPhenotypeMatchesForHpoTerm(PhenotypeTerm.of("MP:0000000", "Wibble")), equalTo(Collections.emptySet()));
+
+    }
+
+    @Test
+    void testzpoDao() {
+        assertThat(zpoDao, instanceOf(ZebraFishPhenotypeOntologyDao.class));
+        assertThat(zpoDao.getAllTerms(), equalTo(Collections.emptySet()));
+        assertThat(zpoDao.getPhenotypeMatchesForHpoTerm(PhenotypeTerm.of("ZP:0000000", "Wibble")), equalTo(Collections.emptySet()));
+
+    }
 
     @Test
     public void testJannovarData() {
