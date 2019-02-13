@@ -84,7 +84,7 @@ public class ClinVarWhiteListBuildRunner {
         }
     }
 
-    private class ExomiserTabixCodec extends AsciiFeatureCodec<ExomiserTabixFeature> {
+    private static class ExomiserTabixCodec extends AsciiFeatureCodec<ExomiserTabixFeature> {
 
         public ExomiserTabixCodec() {
             super(ExomiserTabixFeature.class);
@@ -121,7 +121,7 @@ public class ClinVarWhiteListBuildRunner {
         }
     }
 
-    private class ExomiserTabixFeature implements Feature {
+    private static class ExomiserTabixFeature implements Feature {
         private final String contig;
         private final int pos;
 
