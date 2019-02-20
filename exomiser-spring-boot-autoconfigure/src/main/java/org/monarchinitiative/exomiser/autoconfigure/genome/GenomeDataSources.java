@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,8 @@ public class GenomeDataSources {
     private Path transcriptFilePath;
     private Path mvStorePath;
     private DataSource genomeDataSource;
+
+    private Path variantWhiteListPath;
 
     // Tabix files
     private Path localFrequencyPath;
@@ -72,6 +75,8 @@ public class GenomeDataSources {
         Path mvStoreFilePath = buildMvStorePath(genomeDataResolver);
         DataSource genomeDataSource = buildGenomeDataSource(genomeProperties, genomeDataResolver);
 
+        Path variantWhiteListPath = resolvePathOrNullIfEmpty(genomeProperties.getVariantWhiteListPath(), genomeDataResolver);
+
         Path localFreqPath = resolvePathOrNullIfEmpty(genomeProperties.getLocalFrequencyPath(), genomeDataResolver);
         Path caddSnvPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddSnvPath(), genomeDataResolver);
         Path caddIndelPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddInDelPath(), genomeDataResolver);
@@ -83,6 +88,7 @@ public class GenomeDataSources {
                 .transcriptFilePath(transcriptFilePath)
                 .mvStorePath(mvStoreFilePath)
                 .genomeDataSource(genomeDataSource)
+                .variantWhiteListPath(variantWhiteListPath)
                 .localFrequencyPath(localFreqPath)
                 .caddSnvPath(caddSnvPath)
                 .caddIndelPath(caddIndelPath)
@@ -135,6 +141,8 @@ public class GenomeDataSources {
         this.genomeDataSource = builder.genomeDataSource;
         this.mvStorePath = builder.mvStorePath;
 
+        this.variantWhiteListPath = builder.variantWhiteListPath;
+
         this.localFrequencyPath = builder.localFrequencyPath;
         this.caddSnvPath = builder.caddSnvPath;
         this.caddIndelPath = builder.caddIndelPath;
@@ -152,6 +160,10 @@ public class GenomeDataSources {
 
     public DataSource getGenomeDataSource() {
         return genomeDataSource;
+    }
+
+    public Optional<Path> getVariantWhiteListPath() {
+        return Optional.ofNullable(variantWhiteListPath);
     }
 
     public Optional<Path> getLocalFrequencyPath() {
@@ -221,6 +233,7 @@ public class GenomeDataSources {
         private DataSource genomeDataSource;
 
         //These are all expected to be null as they are optional data sources
+        private Path variantWhiteListPath;
         private Path localFrequencyPath = null;
         private Path caddSnvPath = null;
         private Path caddIndelPath = null;
@@ -242,6 +255,11 @@ public class GenomeDataSources {
         public Builder genomeDataSource(DataSource genomeDataSource) {
             Objects.requireNonNull(genomeDataSource);
             this.genomeDataSource = genomeDataSource;
+            return this;
+        }
+
+        public Builder variantWhiteListPath(Path variantWhiteListPath) {
+            this.variantWhiteListPath = variantWhiteListPath;
             return this;
         }
 

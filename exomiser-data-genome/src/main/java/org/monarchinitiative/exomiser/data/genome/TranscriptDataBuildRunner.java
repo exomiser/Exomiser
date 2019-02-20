@@ -20,20 +20,14 @@
 
 package org.monarchinitiative.exomiser.data.genome;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataFactory;
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
-//import de.charite.compbio.jannovar.Jannovar;
+import java.util.Arrays;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -43,35 +37,20 @@ public class TranscriptDataBuildRunner {
     private static final Logger logger = LoggerFactory.getLogger(TranscriptDataBuildRunner.class);
 
     private final BuildInfo buildInfo;
+    private final JannovarDataFactory jannovarDataFactory;
     private final Path outPath;
 
-    public TranscriptDataBuildRunner(BuildInfo buildInfo, Path outPath) {
+    public TranscriptDataBuildRunner(BuildInfo buildInfo, JannovarDataFactory jannovarDataFactory, Path outPath) {
         this.buildInfo = buildInfo;
+        this.jannovarDataFactory = jannovarDataFactory;
         this.outPath = outPath;
     }
 
     public void run() {
-        // build jannovar - can this be done via an API?
-        // zip build archive
-        // this should work but there are logging conflicts and it simply fails without an error
-        logger.info("Building Jannovar data... ");
-        String[] arguments = new String[] {"download",  "-d", "hg19/refseq"};
-        // or $ java -jar jannovar-cli-0.26.jar download -d hg19/refseq -d hg19/ucsc
-//        Jannovar.main(arguments);
-        // need to download then hack the hg19 data to update the Ensembl ids
-        // see https://github.com/exomiser/Exomiser/issues/253
-        // Finally, convert to new proto format:
-        List<String> resourcesNames = ImmutableList.of("ensembl", "refseq", "ucsc");
-
-        GenomeAssembly assembly = buildInfo.getAssembly();
-        String buildString = buildInfo.getBuildString();
-
-        resourcesNames.parallelStream().forEach(resourceName -> {
-            logger.info("Converting {}_{}", assembly, resourceName);
-            String inputName = String.format("%s_%s.ser", assembly, resourceName);
-            JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Paths.get(inputName));
-            String outputName = String.format("%s_transcripts_%s.ser", buildString, resourceName);
-            JannovarDataProtoSerialiser.save(Paths.get(outputName), jannovarData);
+        Arrays.stream(TranscriptSource.values()).forEach(transcriptSource -> {
+            String outputName = String.format("%s_transcripts_%s.ser", buildInfo.getBuildString(), transcriptSource);
+            logger.info("Building {}", outputName);
+            jannovarDataFactory.buildAndWrite(buildInfo.getAssembly(), transcriptSource, outPath.resolve(outputName));
         });
     }
 }

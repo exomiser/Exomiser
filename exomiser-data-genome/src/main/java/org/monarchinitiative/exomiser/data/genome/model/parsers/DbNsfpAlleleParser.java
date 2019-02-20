@@ -61,9 +61,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
             scoreParsers = makeScoreParsers(index);
             return Collections.emptyList();
         }
-        String[] fields = line.split("\t");
-
-        return parseAllele(fields);
+        return parseAlleles(line);
     }
 
     private Map<String, Integer> makeHeaderIndex(String header) {
@@ -132,7 +130,9 @@ public class DbNsfpAlleleParser implements AlleleParser {
         return parsers;
     }
 
-    private List<Allele> parseAllele(String[] fields) {
+    private List<Allele> parseAlleles(String line) {
+        String[] fields = line.split("\t");
+
         byte chr = ChromosomeParser.parseChr(fields[chrIndex]);
         if (chr == 0) {
             return Collections.emptyList();
@@ -157,10 +157,10 @@ public class DbNsfpAlleleParser implements AlleleParser {
     private Map<AlleleProperty, Float> parsePathScores(String[] fields) {
         Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
 
-        scoreParsers.forEach(scoreparser -> {
-            Float score = scoreparser.parse(fields);
+        scoreParsers.forEach(scoreParser -> {
+            Float score = scoreParser.parse(fields);
             if (score != null) {
-                values.put(scoreparser.getAlleleProperty(), score);
+                values.put(scoreParser.getAlleleProperty(), score);
             }
         });
 
@@ -453,21 +453,9 @@ public class DbNsfpAlleleParser implements AlleleParser {
         }
     }
 
-    private static abstract class AbstractDbNsfpScoreParser implements DbNsfpScoreParser {
+    private abstract static class AbstractDbNsfpScoreParser implements DbNsfpScoreParser {
 
         protected static final String EMPTY_VALUE = ".";
-
-        private float getMaxValue(String[] transcriptPredictions) {
-            float maxValue = 0;
-            for (String score : transcriptPredictions) {
-                if (!EMPTY_VALUE.equals(score)) {
-                    float value = Float.parseFloat(score);
-                    //The larger the score the more likely the SNP has damaging effect.
-                    maxValue = Float.max(maxValue, value);
-                }
-            }
-            return maxValue;
-        }
 
         @Nullable
         protected Float parseTranscriptValues(String field) {
@@ -480,6 +468,18 @@ public class DbNsfpAlleleParser implements AlleleParser {
                 return maxValue;
             }
             return null;
+        }
+
+        private float getMaxValue(String[] transcriptPredictions) {
+            float maxValue = 0;
+            for (String score : transcriptPredictions) {
+                if (!EMPTY_VALUE.equals(score)) {
+                    float value = Float.parseFloat(score);
+                    //The larger the score the more likely the SNP has damaging effect.
+                    maxValue = Float.max(maxValue, value);
+                }
+            }
+            return maxValue;
         }
 
         @Nullable
