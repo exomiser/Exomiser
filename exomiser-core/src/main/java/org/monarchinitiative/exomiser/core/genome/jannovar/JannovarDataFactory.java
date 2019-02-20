@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -86,7 +85,9 @@ public class JannovarDataFactory {
         try{
             logger.info("Downloading/parsing for data source {}", name);
             DataSource dataSource = dataSourceFactory.getDataSource(name);
-            return dataSource.getDataFactory().build(downloadDir.toString(), printProgressBars, Collections.emptyList());
+            // v0.28
+//            return dataSource.getDataFactory().build(downloadDir.toString(), printProgressBars, Collections.emptyList());
+            return dataSource.getDataFactory().build(downloadDir.toString(), printProgressBars);
         } catch (Exception e) {
             throw new JannovarException(e);
         }
