@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -75,28 +76,9 @@ public class Orphanet2GeneParser implements ResourceParser {
                     continue;
                 String entrezGeneId = fields[1];
                 String geneSymbol = fields[2];
-                String key = diseaseId+geneSymbol;
-                String type = "?";
-                //logger.info("Trying to find type for " + key);
-                if (null != diseaseGeneTypeMap.get(key)){
-                    // note Orphanet defines candidate genes as those that are routinely tested for in clinical labs
-                    // but not fully proven - a review suggested these are worth knowing about still
-                    if (diseaseGeneTypeMap.get(key).startsWith("Disease-causing germline mutation")
-                            || diseaseGeneTypeMap.get(key).startsWith("Candidate gene tested in")){
-                        type = "D";
-                    }
-                    else if (diseaseGeneTypeMap.get(key).startsWith("Major susceptibility factor")){
-                        type = "S";
-                    }
-                    else if (diseaseGeneTypeMap.get(key).startsWith("Role in the phenotype")){
-                        type = "C";
-                    }
-                    /* other types in Orphanet that we are just leaving as ? for now
-                    Disease-causing somatic mutation
-                    Biomarker tested in
-                    Modifying germline mutation in
-                    Part of a fusion gene in*/
-                }
+                String key = diseaseId + geneSymbol;
+                String diseaseTypeValue = diseaseGeneTypeMap.getOrDefault(key, "");
+                String type = mapToDiseaseType(diseaseTypeValue);
                 // ? if MOI in this file or easy to add
                 String diseaseName = disease2TermMap.get(diseaseId);
                 writer.write(String.format("%s|%s|%s|%s|%s|%s%n", diseaseId, "", diseaseName, entrezGeneId, type, ""));
@@ -112,5 +94,30 @@ public class Orphanet2GeneParser implements ResourceParser {
         }
         logger.info("{}", status);
         resource.setParseStatus(status);
+    }
+
+    private String mapToDiseaseType(String description) {
+        // n.b we're using the Disease.DiseaseType here as these are what the data is transformed into and the
+        // DiseaseType.code() is used to parse the values from the database.
+        if (!description.isEmpty()){
+            // note Orphanet defines candidate genes as those that are routinely tested for in clinical labs
+            // but not fully proven - a review suggested these are worth knowing about still
+            if (description.startsWith("Disease-causing germline mutation")
+                    || description.startsWith("Candidate gene tested in")){
+                return Disease.DiseaseType.DISEASE.getCode();
+            }
+            else if (description.startsWith("Major susceptibility factor")){
+                return Disease.DiseaseType.SUSCEPTIBILITY.getCode();
+            }
+            else if (description.startsWith("Role in the phenotype")){
+                return Disease.DiseaseType.CNV.getCode();
+            }
+            /* other types in Orphanet that we are just leaving as ? for now
+            Disease-causing somatic mutation
+            Biomarker tested in
+            Modifying germline mutation in
+            Part of a fusion gene in*/
+        }
+        return Disease.DiseaseType.UNCONFIRMED.getCode();
     }
 }
