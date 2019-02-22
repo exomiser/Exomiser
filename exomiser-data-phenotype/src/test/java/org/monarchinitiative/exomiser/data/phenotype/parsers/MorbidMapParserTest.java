@@ -86,7 +86,7 @@ public class MorbidMapParserTest {
      * Test of parseResource method, of class MorbidMapParser.
      */
     @Test
-    public void testParse() {
+    void testParse() {
         System.out.println("parse");
 
         instance.parseResource(morbidMapResource, testResourceDir, tempDir);

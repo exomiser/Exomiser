@@ -67,7 +67,7 @@ public class MimToGeneParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(MimToGeneParser.class);
 
-    Map<Integer, Integer> mim2geneMap;
+    private final Map<Integer, Integer> mim2geneMap;
 
     /**
      * Key: A MIM id for a Gene; Value: the corresponding entrez Gene id. This
