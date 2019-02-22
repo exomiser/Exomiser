@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public final class Disease {
 
     private final List<String> phenotypeIds;
 
-    private Disease(DiseaseDataBuilder builder) {
+    private Disease(Builder builder) {
         this.diseaseId = builder.diseaseId;
         this.diseaseName = builder.diseaseName;
         this.associatedGeneId = builder.entrezGeneId;
@@ -145,11 +145,11 @@ public final class Disease {
                 '}';
     }
 
-    public static DiseaseDataBuilder builder() {
-        return new DiseaseDataBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static final class DiseaseDataBuilder {
+    public static final class Builder {
 
         private String diseaseId = "";
         private String diseaseName = "";
@@ -162,50 +162,50 @@ public final class Disease {
 
         private List<String> phenotypeIds = new ArrayList<>();
 
-        private DiseaseDataBuilder() {
+        private Builder() {
         }
 
-        public DiseaseDataBuilder diseaseId(String diseaseId) {
+        public Builder diseaseId(String diseaseId) {
             this.diseaseId = diseaseId;
             return this;
         }
 
-        public DiseaseDataBuilder diseaseName(String diseaseName) {
+        public Builder diseaseName(String diseaseName) {
             this.diseaseName = diseaseName;
             return this;
         }
 
-        public DiseaseDataBuilder associatedGeneId(int entrezGeneId) {
+        public Builder associatedGeneId(int entrezGeneId) {
             this.entrezGeneId = entrezGeneId;
             return this;
         }
 
-        public DiseaseDataBuilder associatedGeneSymbol(String humanGeneSymbol) {
+        public Builder associatedGeneSymbol(String humanGeneSymbol) {
             this.humanGeneSymbol = humanGeneSymbol;
             return this;
         }
 
-        public DiseaseDataBuilder diseaseType(DiseaseType diseaseType) {
+        public Builder diseaseType(DiseaseType diseaseType) {
             this.diseaseType = diseaseType;
             return this;
         }
 
-        public DiseaseDataBuilder diseaseTypeCode(String diseaseCode) {
+        public Builder diseaseTypeCode(String diseaseCode) {
             this.diseaseType = DiseaseType.code(diseaseCode);
             return this;
         }
 
-        public DiseaseDataBuilder inheritanceMode(InheritanceMode inheritanceMode) {
+        public Builder inheritanceMode(InheritanceMode inheritanceMode) {
             this.inheritanceMode = inheritanceMode;
             return this;
         }
 
-        public DiseaseDataBuilder inheritanceModeCode(String inheritanceCode) {
+        public Builder inheritanceModeCode(String inheritanceCode) {
             this.inheritanceMode = InheritanceMode.valueOfInheritanceCode(inheritanceCode);
             return this;
         }
 
-        public DiseaseDataBuilder phenotypeIds(List<String> phenotypeIds) {
+        public Builder phenotypeIds(List<String> phenotypeIds) {
             this.phenotypeIds = phenotypeIds;
             return this;
         }

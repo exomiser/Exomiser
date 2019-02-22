@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -90,7 +90,19 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Cacheable(value = "diseases")
     @Override
     public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
-        String query = "SELECT gene_id AS entrez_id, symbol AS human_gene_symbol, d.disease_id AS disease_id, d.diseasename AS disease_name, d.TYPE AS disease_type, d.INHERITANCE AS inheritance_code, hp_id AS pheno_ids FROM entrez2sym e, disease_hp dhp, disease d  WHERE dhp.disease_id = d.DISEASE_ID AND e.entrezid = d.GENE_ID AND d.GENE_ID = ?";
+        String query = "SELECT" +
+                " gene_id AS entrez_id" +
+                ", symbol AS human_gene_symbol" +
+                ", d.disease_id AS disease_id" +
+                ", d.diseasename AS disease_name" +
+                ", d.TYPE AS disease_type" +
+                ", d.INHERITANCE AS inheritance_code" +
+                ", hp_id AS pheno_ids " +
+                "FROM entrez2sym e, disease_hp dhp, disease d " +
+                "WHERE dhp.disease_id = d.DISEASE_ID " +
+                "AND e.entrezid = d.GENE_ID " +
+                "AND d.TYPE in ('D', 'C')" +
+                "AND d.GENE_ID = ?";
 
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
