@@ -51,10 +51,23 @@ class AlleleResourceTest {
     }
 
     @Test
-    void dbNsfp4ResourceTest() {
+    void dbNsfp4Hg19ResourceTest() {
         Path alleleArchivePath = Paths.get("src/test/resources/dbNSFP4.0_test.zip");
 
         AlleleResource instance = new DbNsfp4AlleleResource("dbNSFP4test", null, alleleArchivePath, DbNsfpColumnIndex.HG19);
+
+        long alleles = instance.alleles()
+                .peek(System.out::println)
+                .count();
+        //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
+        assertThat(alleles, equalTo(6L));
+    }
+
+    @Test
+    void dbNsfp4Hg38ResourceTest() {
+        Path alleleArchivePath = Paths.get("src/test/resources/dbNSFP4.0_test.zip");
+
+        AlleleResource instance = new DbNsfp4AlleleResource("dbNSFP4test", null, alleleArchivePath, DbNsfpColumnIndex.HG38);
 
         long alleles = instance.alleles()
                 .peek(System.out::println)

@@ -102,11 +102,6 @@ public class Hg38Config {
         AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
         Path resourcePath = resourceProperties.getAlleleResourcePath();
         URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        if (resourcePath.toString().contains("dbNSFP4.")) {
-            // temporary hack - this ought to be fixed come the final release
-            DbNsfpColumnIndex v4Hg38Index = DbNsfpColumnIndex.builder().chrHeader("chr").posHeader("pos(1-coor)").build();
-            return new DbNsfp4AlleleResource(namespacePrefix, resourceUrl, resourcePath, v4Hg38Index);
-        }
         return new DbNsfp3AlleleResource(namespacePrefix, resourceUrl, resourcePath, DbNsfpColumnIndex.HG38);
     }
 

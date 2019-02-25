@@ -33,7 +33,6 @@ public class DbNsfpColumnIndex {
 
     public static final DbNsfpColumnIndex HG19 = builder().chrHeader("hg19_chr").posHeader("hg19_pos(1-based)").build();
     public static final DbNsfpColumnIndex HG38 = builder().chrHeader("chr").posHeader("pos(1-based)").build();
-//    public static final DbNsfpColumnIndex HG38 = builder().chrHeader("chr").posHeader("pos(1-coor)").build();
 
     private final String chrHeader;
     private final String posHeader;
