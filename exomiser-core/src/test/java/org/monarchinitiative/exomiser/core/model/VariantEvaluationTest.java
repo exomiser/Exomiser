@@ -406,8 +406,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+        assertThat(instance.getPathogenicityScore(), equalTo(SIFT_PASS.getScore()));
     }
 
     @Test
@@ -416,8 +415,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+        assertThat(instance.getPathogenicityScore(), equalTo(SIFT_PASS.getScore()));
     }
 
     @Test
