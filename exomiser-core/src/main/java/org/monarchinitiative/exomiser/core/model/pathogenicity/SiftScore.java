@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SiftScore extends BasePathogenicityScore {
+public class SiftScore extends ScaledPathogenicityScore {
 
     /**
      * A SIFT score below this threshold is considered to be pathogenic
@@ -52,15 +52,15 @@ public class SiftScore extends BasePathogenicityScore {
     }
 
     private SiftScore(float score) {
-        super(PathogenicitySource.SIFT, score);
+        super(PathogenicitySource.SIFT, score, 1 - score);
     }
 
     @Override
     public String toString() {
-        if (score < SiftScore.SIFT_THRESHOLD) {
-            return String.format("SIFT: %.3f (D)", score);
+        if (rawScore < SiftScore.SIFT_THRESHOLD) {
+            return String.format("SIFT: %.3f (D)", rawScore);
         } else {
-            return String.format("SIFT: %.3f (T)", score);
+            return String.format("SIFT: %.3f (T)", rawScore);
         }
     }
 

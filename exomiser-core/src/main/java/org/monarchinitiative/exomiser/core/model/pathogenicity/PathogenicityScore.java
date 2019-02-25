@@ -26,6 +26,12 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  */
 public interface PathogenicityScore extends Comparable<PathogenicityScore> {
 
+    //Higher scores are more likely pathogenic so this is the reverse of what's normal (we're using a probablility of pathogenicity)
+    //comparable requires a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
+    static final int MORE_PATHOGENIC = -1;
+    static final int EQUAL = 0;
+    static final int LESS_PATHOGENIC = 1;
+
     public static PathogenicityScore of(PathogenicitySource source, float score) {
         switch (source) {
             case POLYPHEN:
@@ -35,15 +41,41 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
             case SIFT:
                 return SiftScore.of(score);
             case CADD:
+                return CaddScore.of(score);
             case REMM:
+                return RemmScore.of(score);
             case REVEL:
+                return RevelScore.of(score);
+            case MPC:
+                return MpcScore.of(score);
                 // TODO: Add MVP, ClinPred, PrimateAi, M-CAP,
             default:
                 return new BasePathogenicityScore(source, score);
         }
     }
 
+    public PathogenicitySource getSource();
+
     public float getScore();
 
-    public PathogenicitySource getSource();
+    public float getRawScore();
+
+    @Override
+    default int compareTo(PathogenicityScore o) {
+        return compare(this, o);
+    }
+
+    /**
+     * For the purposes of this comparator scores are ranked on a scale of 0 to
+     * 1 where 0 is considered probably non-pathogenic and 1 probably
+     * pathogenic. This comparator will rank the more pathogenic
+     * PathogenicityScore higher than a less pathogenic score such that in a
+     * sorted list the most pathogenic score will come first.
+     *
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     */
+    public static int compare(PathogenicityScore o1, PathogenicityScore o2) {
+        // Higher scores are considered more pathogenic, so use the reverse of the standard Float.compare
+        return - Float.compare(o1.getScore(), o2.getScore());
+    }
 }

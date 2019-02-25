@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,7 +103,7 @@ public class CaddDaoTest {
         Mockito.when(indelTabixReader.query("1:2-2")).thenReturn(MockTabixIterator.of("1\t2\tA\tAA\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "AA"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class CaddDaoTest {
                 "\t\tA\tAT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "AT"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class CaddDaoTest {
         Mockito.when(indelTabixReader.query("1:2-2")).thenReturn(MockTabixIterator.of("1\t2\tGT\tG\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "GT", "G"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -147,8 +147,8 @@ public class CaddDaoTest {
                 "\t\tAC\tA\t-0.234\t4.45",
                 "\t\tAT\tA\t-0.234\t3.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "AT", "A"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "AC", "A"));
+        assertPathDataContainsCaddScore(result, 4.45f);
     }
 
     @Test
@@ -166,7 +166,7 @@ public class CaddDaoTest {
         Mockito.when(snvTabixReader.query("1:2-2")).thenReturn(MockTabixIterator.of("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class CaddDaoTest {
         Mockito.when(snvTabixReader.query("X:1-1")).thenReturn(MockTabixIterator.of("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(23, 1, "A", "T"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class CaddDaoTest {
         Mockito.when(snvTabixReader.query("Y:1-1")).thenReturn(MockTabixIterator.of("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(24, 1, "A", "T"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
     @Test
@@ -192,7 +192,7 @@ public class CaddDaoTest {
                 "\t\tA\tC\t-0.234\t4.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
-        assertPathDataContainsCaddScore(result, 0.54814404f);
+        assertPathDataContainsCaddScore(result, 3.45f);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -98,20 +98,8 @@ public class CaddDao implements PathogenicityDao {
     }
  
     private PathogenicityData makeCaddPathData(String phredScaledCaddScore) {
-        CaddScore caddScore = parseCaddScore(phredScaledCaddScore);
-        return PathogenicityData.of(caddScore);
-    }
-
-    private CaddScore parseCaddScore(String phredScaledCaddScore) {
         float score = Float.parseFloat(phredScaledCaddScore);
-        float cadd = rescaleLogTenBasedScore(score);
-        return CaddScore.of(cadd);
-    }
- 
-    /**
-     * rescales a log10-Phred based score to a value between 0 and 1
-     */
-    private float rescaleLogTenBasedScore(float caddRaw) {
-        return 1 - (float) Math.pow(10, -(caddRaw / 10));
+        CaddScore caddScore = CaddScore.of(score);
+        return PathogenicityData.of(caddScore);
     }
 }

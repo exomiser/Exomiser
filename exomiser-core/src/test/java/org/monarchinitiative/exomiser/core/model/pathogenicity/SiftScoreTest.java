@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
- * @author Jules Jacobsen <jues.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SiftScoreTest {
     
@@ -43,9 +43,9 @@ public class SiftScoreTest {
     
     //Higher scores are more pathogenic so this is the reverse of what's normal
     //a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-    private static final int MORE_PATHOGENIC = BasePathogenicityScore.MORE_PATHOGENIC;
-    private static final int EQUALS = BasePathogenicityScore.EQUALS;
-    private static final int LESS_PATHOGENIC = BasePathogenicityScore.LESS_PATHOGENIC;
+    private static final int MORE_PATHOGENIC = PathogenicityScore.MORE_PATHOGENIC;
+    private static final int EQUALS = PathogenicityScore.EQUAL;
+    private static final int LESS_PATHOGENIC = PathogenicityScore.LESS_PATHOGENIC;
     
     private static final float SIFT_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_NON_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;

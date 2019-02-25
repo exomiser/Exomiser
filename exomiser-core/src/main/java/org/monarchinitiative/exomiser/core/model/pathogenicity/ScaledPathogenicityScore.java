@@ -18,36 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Objects;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * Class for use with {@link PathogenicityScore} cases which do not fit the standard 0-1 scale where 0 is considered not
+ * pathogenic and 1 to be highly pathogenic. Examples of this are CADD, SIFT and MPC.
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class BasePathogenicityScore implements PathogenicityScore {
+class ScaledPathogenicityScore extends BasePathogenicityScore {
 
-    protected final PathogenicitySource source;
-    protected final float score;
+    protected final float rawScore;
 
-    BasePathogenicityScore(PathogenicitySource source, float score) {
-        checkBounds(source, score);
-        this.source = source;
-        this.score = score;
-    }
-
-    private static void checkBounds(PathogenicitySource source, float score) {
-        if (score < 0f || score > 1f) {
-            String message = String.format("%s score of %.3f is out of range. Must be in the range of 0.0 - 1.0", source, score);
-            throw new IllegalArgumentException(message);
-        }
+    /**
+     *
+     * @param source    source of the data
+     * @param rawScore  the raw or unscaled score, as reported b the source
+     * @param scaledScore   the raw score, scaled to fit the 0 - 1 scaling
+     */
+    ScaledPathogenicityScore(PathogenicitySource source, float rawScore, float scaledScore) {
+        super(source, scaledScore);
+        this.rawScore = rawScore;
     }
 
     @Override
@@ -56,33 +49,27 @@ class BasePathogenicityScore implements PathogenicityScore {
     }
 
     @Override
-    public float getScore() {
-        return score;
-    }
-
-
-    @JsonIgnore
-    @Override
     public float getRawScore() {
-        return score;
+        return rawScore;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BasePathogenicityScore)) return false;
-        BasePathogenicityScore that = (BasePathogenicityScore) o;
-        return Float.compare(that.score, score) == 0 &&
+        if (!(o instanceof ScaledPathogenicityScore)) return false;
+        ScaledPathogenicityScore that = (ScaledPathogenicityScore) o;
+        return Float.compare(that.rawScore, rawScore) == 0 &&
+                Float.compare(that.score, score) == 0 &&
                 source == that.source;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(source, score);
+        return Objects.hash(source, rawScore, score);
     }
 
     @Override
     public String toString() {
-        return String.format("%s: %.3f", source, score);
+        return String.format("%s: %.3f (%.3f)", source, score, rawScore);
     }
 }

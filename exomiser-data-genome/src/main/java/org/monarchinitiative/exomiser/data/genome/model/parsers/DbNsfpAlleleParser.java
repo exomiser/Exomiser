@@ -344,9 +344,6 @@ public class DbNsfpAlleleParser implements AlleleParser {
     private static class MpcParser extends TranscriptValueParser {
 
         public MpcParser(int fieldPosition) {
-            // rescale to 0-1 score
-            // TODO: do re-scaling in the application, not in the storage
-            // values.computeIfPresent(AlleleProperty.MPC, (key, unscaled) -> unscaled * 0.2f);
             super(AlleleProperty.MPC, fieldPosition);
         }
     }
