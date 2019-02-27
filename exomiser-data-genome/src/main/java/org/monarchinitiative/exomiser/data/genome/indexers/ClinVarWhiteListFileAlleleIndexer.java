@@ -49,7 +49,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
     @Override
     public void writeAllele(Allele allele) {
         ClinVarData clinVarData = allele.getClinVarData();
-        if (isPathOrLikelyPath(clinVarData)) {
+        if (isPathOrLikelyPath(clinVarData) && hasAssertionCriteria(clinVarData)) {
             StringJoiner stringJoiner = new StringJoiner("\t");
             stringJoiner.add(Integer.toString(allele.getChr()));
             stringJoiner.add(Integer.toString(allele.getPos()));
@@ -68,6 +68,12 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
             }
             count.incrementAndGet();
         }
+    }
+
+    private boolean hasAssertionCriteria(ClinVarData clinVarData) {
+        // maps to the CLNREVSTAT subfield in the VCF INFO. Many alleles with 'no_assertion_criteria_provided'
+        // or 'no_assertion_provided' have incredibly high MAF, some even as high as 98% in some populations.
+        return !clinVarData.getReviewStatus().startsWith("no_assertion");
     }
 
     private boolean isPathOrLikelyPath(ClinVarData clinVarData) {
