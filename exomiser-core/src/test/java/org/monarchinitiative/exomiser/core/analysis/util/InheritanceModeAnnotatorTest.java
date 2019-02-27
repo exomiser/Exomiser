@@ -595,8 +595,7 @@ public class InheritanceModeAnnotatorTest {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
