@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
@@ -39,21 +40,21 @@ import static org.junit.Assert.assertThat;
  */
 public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
+    // n.b there are issues with the @PreDestroy shutdown hooks for classes in the GenomeAnalysisServiceConfigurer using the MVStore
+    // so all the relevant beans are being tested in one go
     @Test
-    public void testExomiserIsAutoConfigured() {
+    public void testAutoConfiguration() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
         Exomiser exomiser = (Exomiser) context.getBean("exomiser");
         assertThat(exomiser, instanceOf(Exomiser.class));
-    }
-    // n.b there are issues with the @PreDestroy shutdown hooks for classes in the GenomeAnalysisServiceConfigurer using the MVStore
 
-    @Test
-    public void testGenomeAnalysisServiceProviderIsAutoConfigured() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
         assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
         assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG19), is(true));
         assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG38), is(true));
+
+        PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");
+        assertThat(phenotypeMatchService, instanceOf(PhenotypeMatchService.class));
     }
 
     @Configuration
