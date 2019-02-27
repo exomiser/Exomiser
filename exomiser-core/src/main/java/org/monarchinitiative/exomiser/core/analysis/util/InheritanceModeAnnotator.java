@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -117,8 +117,7 @@ public class InheritanceModeAnnotator {
         Map<ModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(ModeOfInheritance.class);
         for (Map.Entry<ModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
             ModeOfInheritance compatibleMode = entry.getKey();
-            //do we really need this check?
-            if (compatibleMode != ModeOfInheritance.ANY || inheritanceModeOptions.getDefinedModes().contains(compatibleMode)) {
+            if (inheritanceModeOptions.getDefinedModes().contains(compatibleMode)) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
                 float maxFreqForMode = inheritanceModeOptions.getMaxFreqForMode(compatibleMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
@@ -134,8 +133,7 @@ public class InheritanceModeAnnotator {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = new EnumMap<>(SubModeOfInheritance.class);
         for (Map.Entry<SubModeOfInheritance, ImmutableList<GenotypeCalls>> entry : compatibilityCalls.entrySet()) {
             SubModeOfInheritance compatibleSubMode = entry.getKey();
-            //do we really need this check?
-            if (compatibleSubMode != SubModeOfInheritance.ANY || inheritanceModeOptions.getDefinedSubModes().contains(compatibleSubMode)) {
+            if (inheritanceModeOptions.getDefinedSubModes().contains(compatibleSubMode)) {
                 List<GenotypeCalls> genotypeCalls = entry.getValue();
                 float maxFreqForMode = inheritanceModeOptions.getMaxFreqForSubMode(compatibleSubMode);
                 List<VariantEvaluation> compatibleVariants = getCompatibleVariantsUnderFrequencyThreshold(genotypeCalls, maxFreqForMode);
@@ -152,7 +150,7 @@ public class InheritanceModeAnnotator {
         for (GenotypeCalls callResults : genotypeCalls) {
             VariantEvaluation variantEvaluation = (VariantEvaluation) callResults.getPayload();
             FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-            if (frequencyData.getMaxFreq() <= maxFreqForMode) {
+            if (frequencyData.getMaxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
                 compatibleVariants.add(variantEvaluation);
             }
         }
