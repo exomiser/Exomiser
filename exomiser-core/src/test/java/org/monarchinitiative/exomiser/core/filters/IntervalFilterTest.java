@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
@@ -131,8 +130,7 @@ public class IntervalFilterTest {
 
     @Test
     public void testNotEqualsIntervalDifferent() {
-        IntervalFilter otherFilter = new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(),
-                "chr3:12334-67850"));
+        IntervalFilter otherFilter = new IntervalFilter(GeneticInterval.parseString("chr3:12334-67850"));
         assertThat(instance.equals(otherFilter), is(false));
     }
 

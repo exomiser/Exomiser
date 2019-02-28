@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
@@ -425,12 +424,12 @@ public class AnalysisParser {
         private List<ChromosomalRegion> parseIntervalFilterOptions(Map<String, Object> options){
             if (options.containsKey("interval")) {
                 String interval = (String) options.get("interval");
-                return ImmutableList.of(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
+                return ImmutableList.of(GeneticInterval.parseString(interval));
             }
             if (options.containsKey("intervals")) {
                 List<String> intervalStrings = (List<String>) options.get("intervals");
                 List<ChromosomalRegion> intervals = new ArrayList<>();
-                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(HG19RefDictBuilder.build(), string)));
+                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(string)));
                 return intervals;
             }
             if (options.containsKey("bed")) {

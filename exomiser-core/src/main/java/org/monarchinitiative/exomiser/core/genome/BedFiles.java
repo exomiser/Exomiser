@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.slf4j.Logger;
@@ -46,8 +44,6 @@ import java.util.stream.Stream;
 public class BedFiles {
 
     private static final Logger logger = LoggerFactory.getLogger(BedFiles.class);
-
-    private static final ReferenceDictionary referenceDictionary = HG19RefDictBuilder.build();
 
     private BedFiles() {
     }
@@ -83,7 +79,7 @@ public class BedFiles {
                 if (tokens.length > 3) {
                     logger.warn("Line contains more than 3 columns - ignoring optional columns 4+. Therefore STRAND will all be +");
                 }
-                int chr = referenceDictionary.getContigNameToID().get(tokens[0]);
+                int chr = Contig.parseId(tokens[0]);
                 //BED format is 0-based - we use 1-based in the exomiser.
                 int start = Integer.parseInt(tokens[1]) + 1;
                 int end = Integer.parseInt(tokens[2]);

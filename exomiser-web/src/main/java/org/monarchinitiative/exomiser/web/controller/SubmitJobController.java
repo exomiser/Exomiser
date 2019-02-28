@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
@@ -207,7 +206,7 @@ public class SubmitJobController {
         }
         //Genetic interval:
         if (!geneticInterval.isEmpty()) {
-            analysisBuilder.addIntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
+            analysisBuilder.addIntervalFilter(GeneticInterval.parseString(geneticInterval));
         }
         //Keep off-target variants:
         if (!keepOffTarget) {
