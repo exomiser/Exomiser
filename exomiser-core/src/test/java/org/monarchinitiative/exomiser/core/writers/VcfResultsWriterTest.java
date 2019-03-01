@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -64,6 +65,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
+@Disabled("Temporarily")
 public class VcfResultsWriterTest {
 
     private final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"

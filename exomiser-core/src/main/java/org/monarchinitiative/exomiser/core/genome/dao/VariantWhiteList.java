@@ -23,7 +23,9 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import org.monarchinitiative.exomiser.core.model.Variant;
 
 /**
+ * Interface for checking whether or not a {@link Variant} is to be considered 'whitelisted'.
  *
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public interface VariantWhiteList {

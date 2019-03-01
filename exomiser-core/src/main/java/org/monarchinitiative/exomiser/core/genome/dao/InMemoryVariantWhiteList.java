@@ -29,6 +29,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * An in-memory implementation of the {@link VariantWhiteList}
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class InMemoryVariantWhiteList implements VariantWhiteList {

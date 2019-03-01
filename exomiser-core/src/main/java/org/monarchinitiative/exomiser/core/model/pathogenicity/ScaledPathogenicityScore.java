@@ -26,6 +26,7 @@ import java.util.Objects;
  * Class for use with {@link PathogenicityScore} cases which do not fit the standard 0-1 scale where 0 is considered not
  * pathogenic and 1 to be highly pathogenic. Examples of this are CADD, SIFT and MPC.
  *
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class ScaledPathogenicityScore extends BasePathogenicityScore {

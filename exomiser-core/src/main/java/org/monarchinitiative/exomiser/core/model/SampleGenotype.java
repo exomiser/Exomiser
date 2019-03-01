@@ -217,6 +217,12 @@ public class SampleGenotype {
         return phased;
     }
 
+    /**
+     * Tests whether the current {@link SampleGenotype} is empty.
+     *
+     * @return true if the genotype is empty, otherwise false
+     * @since 12.0.0
+     */
     @JsonIgnore
     public boolean isEmpty() {
         return alleleCalls.length == 0;

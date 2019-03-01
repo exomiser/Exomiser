@@ -30,6 +30,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  *
  * See: http://dx.doi.org/10.1101/148353
  *
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class MpcScore extends ScaledPathogenicityScore {

@@ -75,7 +75,10 @@ class JannovarDataFactoryTest {
         JannovarDataProtoSerialiser.save(jannovarOutputDir.resolve("1902_transcripts_ensembl.ser"), jannovarData);
 
         JannovarData roundTripped = JannovarDataSourceLoader.loadJannovarData(jannovarOutputDir.resolve("1902_transcripts_ensembl.ser"));
-        roundTripped.getChromosomes().values().forEach(chromosome -> System.out.printf("Chrom: %d %s num genes: %d%n", chromosome.getChrID(), chromosome.getChromosomeName(), chromosome.getNumberOfGenes()));
+        roundTripped.getChromosomes()
+                .values()
+                .forEach(chromosome -> System.out.printf("Chrom: %d %s num genes: %d%n", chromosome.getChrID(), chromosome
+                        .getChromosomeName(), chromosome.getNumberOfGenes()));
 
         VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, roundTripped, ChromosomalRegionIndex
                 .empty());

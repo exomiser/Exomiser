@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -117,6 +117,13 @@ public class AllelePosition {
         return ref.length() < alt.length();
     }
 
+    /**
+     *
+     * @since 12.0.0
+     * @param ref the reference allele
+     * @param alt the alternate allele
+     * @return true if the ref or alt allele is considered symbolic
+     */
     public static boolean isSymbolic(String ref, String alt) {
         // The VCF spec only mentions alt alleles as having symbolic characters, so check these first then check the ref
         // just in case.

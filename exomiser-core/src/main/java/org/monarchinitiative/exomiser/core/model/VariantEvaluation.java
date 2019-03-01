@@ -485,10 +485,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.pathogenicityData = pathogenicityData;
     }
 
+    /**
+     * @since 12.0.0
+     * @return true if the VariantEvaluation has been marked as whitelisted
+     */
     public boolean isWhiteListed() {
         return whiteListed;
     }
 
+    /**
+     * @since 12.0.0
+     */
     public void setWhiteListed(boolean whiteListed) {
         this.whiteListed = whiteListed;
     }
