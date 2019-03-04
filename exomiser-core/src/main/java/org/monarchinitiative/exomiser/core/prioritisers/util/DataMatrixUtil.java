@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -32,6 +34,8 @@ import java.util.Objects;
  * @since 10.0.0
  */
 class DataMatrixUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataMatrixUtil.class);
 
     private DataMatrixUtil() {
     }
@@ -50,6 +54,7 @@ class DataMatrixUtil {
     }
 
     private static FloatMatrix createFloatMatrix(Map<Integer, float[]> columns, Map<Integer, Integer> rowIndex) {
+        logger.debug("Creating {} * {} FloatMatrix", rowIndex.size(), columns.size());
         FloatMatrix floatMatrix = new FloatMatrix(rowIndex.size(), columns.size());
         for (Map.Entry<Integer, Integer> entry : rowIndex.entrySet()) {
             Integer entrezGeneId = entry.getKey();
@@ -58,6 +63,7 @@ class DataMatrixUtil {
             FloatMatrix column = new FloatMatrix(columnValues);
             floatMatrix.putColumn(row, column);
         }
+        logger.debug("Finished building matrix");
         return floatMatrix;
     }
 
