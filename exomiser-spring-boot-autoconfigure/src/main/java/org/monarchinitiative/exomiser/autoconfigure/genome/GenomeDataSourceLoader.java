@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
@@ -107,7 +108,7 @@ public class GenomeDataSourceLoader {
                     }
                     // Exomiser - simple VCF format
                     AlleleProto.AlleleKey alleleKey = AlleleProto.AlleleKey.newBuilder()
-                            .setChr(toChr(tokens[0]))
+                            .setChr(Contig.parseId(tokens[0]))
                             .setPosition(Integer.parseInt(tokens[1]))
                             .setRef(tokens[2])
                             .setAlt(tokens[3])
@@ -124,30 +125,6 @@ public class GenomeDataSourceLoader {
             return InMemoryVariantWhiteList.of(whiteList);
         }
         return InMemoryVariantWhiteList.empty();
-    }
-
-    private int toChr(String field) {
-        switch (field) {
-            case "X":
-            case "x":
-                return 23;
-            case "Y":
-            case "y":
-                return 24;
-            case "M":
-            case "MT":
-            case "m":
-                return 25;
-            case ".":
-                return 0;
-            default:
-                try {
-                    return Integer.parseInt(field);
-                } catch (NumberFormatException e) {
-                    //hg38 alternate scaffolds will throw these all the time, so its on debug
-                }
-                return 0;
-        }
     }
 
     private TabixDataSource getTabixDataSourceOrDefault(String dataSourceName, Optional<Path> tabixPath) {
