@@ -47,8 +47,13 @@ public class Contig {
         String[] nonAutosomalChromosomes = {"X", "Y", "M"};
         for (int i = 0; i < nonAutosomalChromosomes.length; i++) {
             String chrom = nonAutosomalChromosomes[i];
-            mapBuilder.put(chrom, i + 23);
-            mapBuilder.put("chr" + chrom, i + 23);
+            int id = 23 + i;
+            // non-standard numerical-based identifier
+            mapBuilder.put(String.valueOf(id), id);
+            mapBuilder.put("chr" + id, id);
+            // standard letter-based identifier
+            mapBuilder.put(chrom, id);
+            mapBuilder.put("chr" + chrom, id);
         }
         mapBuilder.put("MT", 25);
 

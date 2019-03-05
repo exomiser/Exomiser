@@ -32,6 +32,7 @@ class ContigTest {
 
     @Test
     void unknownOrAlternateScaffold() {
+        assertThat(Contig.parseId("."), equalTo(0));
         assertThat(Contig.parseId("wibble"), equalTo(0));
     }
 
@@ -50,18 +51,24 @@ class ContigTest {
 
     @Test
     void testX() {
+        assertThat(Contig.parseId("23"), equalTo(23));
+        assertThat(Contig.parseId("chr23"), equalTo(23));
         assertThat(Contig.parseId("X"), equalTo(23));
         assertThat(Contig.parseId("chrX"), equalTo(23));
     }
 
     @Test
     void testY() {
+        assertThat(Contig.parseId("24"), equalTo(24));
+        assertThat(Contig.parseId("chr24"), equalTo(24));
         assertThat(Contig.parseId("Y"), equalTo(24));
         assertThat(Contig.parseId("chrY"), equalTo(24));
     }
 
     @Test
     void testM() {
+        assertThat(Contig.parseId("25"), equalTo(25));
+        assertThat(Contig.parseId("chr25"), equalTo(25));
         assertThat(Contig.parseId("M"), equalTo(25));
         assertThat(Contig.parseId("MT"), equalTo(25));
         assertThat(Contig.parseId("chrM"), equalTo(25));
