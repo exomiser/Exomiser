@@ -1,5 +1,69 @@
 # The Exomiser - Core Library Changelog
 
+## 12.0.0 2019-02-28
+Its Rare-Disease Day 2019! Although we're not officially releasing this on Feb 28, we're code-complete and undergoing final performance and quality tests, so it's as good as released. This was unplanned, and therefore proves that the universe can have a sense of humour/appropriateness.
+
+API breaking changes:
+- Removed FREQUENCY_SOURCE_MAP from FrequencySource
+- Changed ```Frequency```, ```RsId``` and ```PathogenicityScore``` static ```valueOf()``` constructor to ```of()```
+- Removed deprecated ```IntervalFilter.getGeneticInterval()```
+- Changed visibility of ```PhenodigmMatchRawScore``` from public to package private and made immutable
+- Changed visibility of ```CrossSpeciesPhenotypeMatcher``` from public to package private and added static ```of()``` constructor
+- Replaced redundant ```Default*DaoMvStoreProto``` classes with new ```AllelePropertiesDaoMvStore```
+- Added ```OntologyService``` as constructor argument to ```AnalysisFactory```, ```AnalysisParser``` and ```AnalysisBuilder```
+- Replaced ```BasePathogenicityScore.compareTo()``` method with default ```PathogenicityScore.compareTo()```
+- ```GeneticInterval``` no longer accepts ```ReferenceDictionary``` as a constructor argument
+
+New APIs:
+- Added CADD and REMM to data-genome ```AlleleProperty```
+- Moved ```JannovarDataSourceLoader``` from autoconfigure to core module
+- Added ```AllelePosition.isSymbolic()``` method
+- Added ```Variant.isCodingVariant()``` method
+- Added ```AnalysisBuilder.addIntervalFilter(Collection<ChromosomalRegion> chromosomalRegions)``` method
+- Added new non-public ```FilterStats``` class for more accurate filtering statistics 
+- Added new ```AllelePropertiesDao``` interface
+- Added new ```AllelePropertiesDaoMvStore``` implementation
+- Added new ```AllelePropertiesDaoAdapter``` to fix issue of Spring cache proxy not being able to intercept internal calls
+- Added new ```HpoIdChecker``` class to return current HPO id/terms for an input id/term
+- Added new ```HumanPhenotypeOntologyDao.getIdToPhenotypeTerms()``` method
+- Added new ```OntologyService.getCurrentHpoIds()``` method
+- Added new ```SampleGenotype.isEmpty()``` method
+- Added new experimental ```VcfCodecs``` class for de/serialising VCF lines
+- Added new ```JannovarDataProtoSerialiser.loadProto()``` method for loading intermediate ```JannovarProto.JannovarData``` 
+- Added new ```VariantWhiteList``` and ```InMemoryVariantWhiteList``` implementation
+- Added new ```VariantEvaluation.isWhiteListed()``` method and relevant builder methods
+- Added new ```JannovarDataFactory``` for a simple programmatic API to build ```JannovarData``` objects
+- Added new ```TranscriptSource``` enum 
+- Added new ```PathogenicityScore.of()``` static factory constructor
+- Added new ```PathogenicityScore.getRawScore()``` method
+- Added default ```PathogenicityScore.compareTo()``` method
+- Added new static ```PathogenicityScore.compare()``` method
+- Added new ```ScaledPathogenicityScore``` class
+- Added new ```MpcScore``` class
+- Add new ```Contig``` class for converting contig names to integer-based id 
+  
+Other changes:
+- Updated Spring Boot to version 2.1.3
+- Updated Jannovar to version 0.28
+- Updated HTSJDK to version 2.18.2
+- Refactored ```FrequencyData``` to use array-based backing for 5-10% memory usage improvement and lower GC especially when nearing max memory
+- Refactored ```AnalysisParser``` to utilise ```AnalysisBuilder``` directly reducing code duplication
+- Refactored ```AnalysisRunner``` classes to to utilise new ```FilterStats``` class
+- Refactored ```QueryPhenotypeMatch``` to store and return input queryPhenotypeMatches argument
+- Refactored ```VariantDataServiceImpl``` to use new AllelePropertiesDao
+- Refactored ```VariantDataServiceImpl``` for better readability and performance
+- Added check for obsolete HPO id input in ```AnalysisBuilder.hpoIds()```
+- Re-enabled ```PhenixPrioritiser``` in ```AnalysisParser```
+- Refactored ```VariantEvaluation.getSampleGenotypeString()``` implementation to use ```SampleGenotype``` instead of ```VariantContext```
+- Refactored ```VariantEffectCounter``` internals with ```VariantEvaluation``` calls in place of ```VariantContext```
+- Enabled flagging of variants on a whitelist and bypassing of ```FrequencyFilter``` and ```VariantEffectFilter```
+- Changed ```DefaultDiseaseDao``` to only return diseases marked as having known disease-gene association or copy-number/structural causes
+- Added range check to ```BasePathogenicityScore``` constructor
+- Updated ```CaddScore``` and ```SiftScore``` to extend ```ScaledPathogenicityScore```
+- Updated ```CaddDao``` to use CADD phred scaled score directly
+- Replaced production use of ```ReferenceDictionary``` from ```HG19RefDictBuilder``` with ```Contig```
+- Added new ```PathogenicitySource``` sources - ```M_CAP, MPC, MVP, PRIMATE_AI```. Be aware that these may not be free for commercial use.
+
 ## 11.0.0 2018-09-21
 API breaking changes:
 - Removed unused ```VariantSerialiser```
