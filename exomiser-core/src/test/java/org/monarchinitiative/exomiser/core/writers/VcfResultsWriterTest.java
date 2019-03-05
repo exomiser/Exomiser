@@ -26,7 +26,6 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -65,7 +64,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-@Disabled("Temporarily")
 public class VcfResultsWriterTest {
 
     private final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"
@@ -92,6 +90,7 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=ExVarHgvs,Number=A,Type=String,Description=\"Exomiser variant hgvs\">\n"
             + "##INFO=<ID=ExVarScore,Number=A,Type=Float,Description=\"Exomiser variant score\">\n"
             + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
+            + "##INFO=<ID=SVANN,Number=1,Type=String,Description=\"Functional SV Annotation:'Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|ERRORS / WARNINGS / INFO'\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
     private static final String CHR10_FGFR2_CONTRIBUTING_VARIANT = "chr10\t123256215\t.\tT\tG\t2.20\tPASS\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
     private static final String CHR10_FGFR2_PASS_VARIANT = "chr10\t123256214\t.\tA\tG\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256214A>G;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
