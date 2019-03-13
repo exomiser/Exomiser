@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
- * @author Jules Jacobsen <jues.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SiftScoreTest {
     
@@ -43,104 +43,104 @@ public class SiftScoreTest {
     
     //Higher scores are more pathogenic so this is the reverse of what's normal
     //a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-    private static final int MORE_PATHOGENIC = BasePathogenicityScore.MORE_PATHOGENIC;
-    private static final int EQUALS = BasePathogenicityScore.EQUALS;
-    private static final int LESS_PATHOGENIC = BasePathogenicityScore.LESS_PATHOGENIC;
+    private static final int MORE_PATHOGENIC = PathogenicityScore.MORE_PATHOGENIC;
+    private static final int EQUALS = PathogenicityScore.EQUAL;
+    private static final int LESS_PATHOGENIC = PathogenicityScore.LESS_PATHOGENIC;
     
     private static final float SIFT_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_NON_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
        
     @Test
     public void testGetSource() {
-        instance = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        instance = SiftScore.of(SIFT_PATHOGENIC_SCORE);
         assertThat(instance.getSource(), equalTo(PathogenicitySource.SIFT));
     }
     
     @Test
     public void testToStringTolerated() {
-        instance = SiftScore.valueOf(0.1f);
+        instance = SiftScore.of(0.1f);
         assertThat(instance.toString(), equalTo("SIFT: 0.100 (T)"));
     }
     
     @Test
     public void testToStringDamaging() {
-        instance = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        instance = SiftScore.of(SIFT_PATHOGENIC_SCORE);
         assertThat(instance.toString(), equalTo(String.format("SIFT: %.3f (D)", SIFT_PATHOGENIC_SCORE)));
     }
     
     @Test
     public void testNotEqualToAnotherSiftScore() {
-        SiftScore pathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore nonPathogenic = SiftScore.valueOf(SIFT_NON_PATHOGENIC_SCORE);
+        SiftScore pathogenic = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        SiftScore nonPathogenic = SiftScore.of(SIFT_NON_PATHOGENIC_SCORE);
         assertThat(nonPathogenic.equals(pathogenic), is(false));
     }
     
     @Test
     public void testEqualToAnotherSiftScore() {
-        SiftScore sift = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore anotherPathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        SiftScore sift = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        SiftScore anotherPathogenic = SiftScore.of(SIFT_PATHOGENIC_SCORE);
         assertThat(anotherPathogenic.equals(sift), is(true));
     }
     
     @Test
     public void testNotEqualToAnotherPathogenicityScoreWithSameScore() {
-        SiftScore sift = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        PathogenicityScore poly = PolyPhenScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        SiftScore sift = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        PathogenicityScore poly = PolyPhenScore.of(SIFT_PATHOGENIC_SCORE);
         assertThat(sift.equals(poly), is(false));
     }
     
     @Test
     public void testCompareToAfterAgainstAnotherSiftScore() {
-        SiftScore pathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore nonPathogenic = SiftScore.valueOf(SIFT_NON_PATHOGENIC_SCORE);
+        SiftScore pathogenic = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        SiftScore nonPathogenic = SiftScore.of(SIFT_NON_PATHOGENIC_SCORE);
         assertThat(pathogenic.compareTo(nonPathogenic), equalTo(MORE_PATHOGENIC));
     }
     
     @Test
     public void testCompareToBeforeAgainstAnotherSiftScore() {
-        SiftScore pathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore nonPathogenic = SiftScore.valueOf(SIFT_NON_PATHOGENIC_SCORE);
+        SiftScore pathogenic = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        SiftScore nonPathogenic = SiftScore.of(SIFT_NON_PATHOGENIC_SCORE);
         assertThat(nonPathogenic.compareTo(pathogenic), equalTo(LESS_PATHOGENIC));
     }
     
     @Test
     public void testCompareToEqualsAgainstAnotherSiftScore() {
-        SiftScore sift = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
-        SiftScore equalScoreSift = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        SiftScore sift = SiftScore.of(SIFT_PATHOGENIC_SCORE);
+        SiftScore equalScoreSift = SiftScore.of(SIFT_PATHOGENIC_SCORE);
         assertThat(sift.compareTo(equalScoreSift), equalTo(EQUALS));
     }
     
     @Test
     public void testCompareToAfterAgainstNullSiftScoreThrowsNullPointer() {
-        SiftScore pathogenic = SiftScore.valueOf(SIFT_PATHOGENIC_SCORE);
+        SiftScore pathogenic = SiftScore.of(SIFT_PATHOGENIC_SCORE);
         assertThrows(NullPointerException.class, () -> pathogenic.compareTo(null));
     }
     
     @Test
     public void testCompareToAfterAnotherPathogenicityScore() {
-        PathogenicityScore sift = SiftScore.valueOf(0.999f);
-        PathogenicityScore poly = PolyPhenScore.valueOf(0.999f);
+        PathogenicityScore sift = SiftScore.of(0.999f);
+        PathogenicityScore poly = PolyPhenScore.of(0.999f);
         assertThat(sift.compareTo(poly), equalTo(LESS_PATHOGENIC));
     }
     
     @Test
     public void testCompareToBeforeAnotherPathogenicityScore() {
-        PathogenicityScore sift = SiftScore.valueOf(0.01f);
-        PathogenicityScore poly = MutationTasterScore.valueOf(0.01f);
+        PathogenicityScore sift = SiftScore.of(0.01f);
+        PathogenicityScore poly = MutationTasterScore.of(0.01f);
         assertThat(sift.compareTo(poly), equalTo(MORE_PATHOGENIC));
     }
     
     @Test
     public void testCompareToEqualsAnotherPathogenicityScore() {
-        PathogenicityScore sift = SiftScore.valueOf(0.4f);
-        PathogenicityScore poly = PolyPhenScore.valueOf(0.6f);
+        PathogenicityScore sift = SiftScore.of(0.4f);
+        PathogenicityScore poly = PolyPhenScore.of(0.6f);
         assertThat(sift.compareTo(poly), equalTo(EQUALS));
     }
     
     @Test
     public void testAnotherPathogenicityScoreCompareToEquals() {
-        PathogenicityScore sift = SiftScore.valueOf(0.4f);
-        PathogenicityScore poly = PolyPhenScore.valueOf(0.6f);
+        PathogenicityScore sift = SiftScore.of(0.4f);
+        PathogenicityScore poly = PolyPhenScore.of(0.6f);
         assertThat(poly.compareTo(sift), equalTo(EQUALS));
     }
 }

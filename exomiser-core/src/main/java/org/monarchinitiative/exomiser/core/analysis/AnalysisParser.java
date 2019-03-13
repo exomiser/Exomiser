@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,15 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
-import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
@@ -36,7 +34,10 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.slf4j.Logger;
@@ -68,13 +69,15 @@ public class AnalysisParser {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
 
-    private final PriorityFactory prioritiserFactory;
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
+    private final PriorityFactory prioritiserFactory;
+    private final OntologyService ontologyService;
 
     @Autowired
-    public AnalysisParser(PriorityFactory prioritiserFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
-        this.prioritiserFactory = prioritiserFactory;
+    public AnalysisParser(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory prioritiserFactory, OntologyService ontologyService) {
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
+        this.prioritiserFactory = prioritiserFactory;
+        this.ontologyService = ontologyService;
     }
 
     public Analysis parseAnalysis(Path analysisScript) {
@@ -216,50 +219,30 @@ public class AnalysisParser {
 
     private class AnalysisConstructor {
 
-        private GenomeAssembly defaultAssembly = GenomeAssembly.HG19;
-        private GenomeAnalysisService genomeAnalysisService;
+        private final GenomeAssembly defaultAssembly = GenomeAssembly.HG19;
 
         public Analysis construct(Map analysisMap) {
 
-            GenomeAssembly requestedAssembly = parseGenomeAssembly(analysisMap);
-            genomeAnalysisService = genomeAnalysisServiceProvider.get(requestedAssembly);
-
-            //TODO: Why not use the AnalysisBuilder?
-            Analysis analysis = Analysis.builder()
-                    .vcfPath(parseVcf(analysisMap))
-                    .genomeAssembly(requestedAssembly)
-                    .pedigree(parsePed(analysisMap))
-                    .probandSampleName(parseProbandSampleName(analysisMap))
-                    .hpoIds(parseHpoIds(analysisMap))
-                    .inheritanceModeOptions(inheritanceModeOptions(analysisMap))
-                    .analysisMode(parseAnalysisMode(analysisMap))
-                    .frequencySources(parseFrequencySources(analysisMap))
-                    .pathogenicitySources(parsePathogenicitySources(analysisMap))
-                    .steps(makeAnalysisSteps(analysisMap))
-                    .build();
             //this method is only here to provide a warning to users that their script is out of date.
             warnUserAboutDeprecatedGeneScoreMode(analysisMap);
 
+            AnalysisBuilder analysisBuilder = new AnalysisBuilder(genomeAnalysisServiceProvider, prioritiserFactory, ontologyService)
+                    .vcfPath(parseVcf(analysisMap))
+                    .genomeAssembly(parseGenomeAssembly(analysisMap))
+                    .pedigree(parsePed(analysisMap))
+                    .probandSampleName(parseProbandSampleName(analysisMap))
+                    .hpoIds(parseHpoIds(analysisMap))
+                    .inheritanceModes(inheritanceModeOptions(analysisMap))
+                    .analysisMode(parseAnalysisMode(analysisMap))
+                    .frequencySources(parseFrequencySources(analysisMap))
+                    .pathogenicitySources(parsePathogenicitySources(analysisMap));
+
+            addAnalysisSteps(analysisMap, analysisBuilder);
+
+            Analysis analysis = analysisBuilder.build();
+
             logger.debug("Made analysis: {}", analysis);
             return analysis;
-        }
-
-        private List<AnalysisStep> makeAnalysisSteps(Map analysisMap) {
-            List<AnalysisStep> analysisSteps = new ArrayList<>();
-            for (Map<String, Map> analysisStepMap : parseAnalysisSteps(analysisMap)) {
-                logger.debug("Analysis step: {}", analysisStepMap);
-                for (Entry<String, Map> entry : analysisStepMap.entrySet()) {
-                    AnalysisStep analysisStep = makeAnalysisStep(entry, analysisMap);
-                    if (analysisStep != null) {
-                        analysisSteps.add(analysisStep);
-                        logger.debug("Added {}", entry.getKey());
-                    }
-                }
-            }
-            //should this be optional for people really wanting to screw about with the steps at the risk of catastrophic failure?
-            //it's really an optimiser step of a compiler.
-            new AnalysisStepChecker().check(analysisSteps);
-            return analysisSteps;
         }
 
         private Path parseVcf(Map<String, String> analysisMap) {
@@ -379,81 +362,79 @@ public class AnalysisParser {
             }
         }
 
-        private List<Map<String, Map>> parseAnalysisSteps(Map analysisMap) {
-            List steps = (List) analysisMap.get("steps");
-            if (steps == null) {
-                steps = new ArrayList();
+        private void addAnalysisSteps(Map analysisMap, AnalysisBuilder analysisBuilder) {
+            List<Map<String, Map>> steps = (List<Map<String, Map>>) analysisMap.getOrDefault("steps", Collections.emptyList());
+            for (Map<String, Map> analysisStepMap : steps) {
+                logger.debug("Analysis step: {}", analysisStepMap);
+                for (Entry<String, Map> entry : analysisStepMap.entrySet()) {
+                    addAnalysisStep(entry, analysisMap, analysisBuilder);
+                }
             }
-            return steps;
         }
 
-        /**
-         * Returns an AnalysisStep or null if the step is unrecognised.
-         *
-         * @return
-         */
-        private AnalysisStep makeAnalysisStep(Entry<String, Map> entry, Map analysisMap) {
+        private AnalysisBuilder addAnalysisStep(Entry<String, Map> entry, Map analysisMap, AnalysisBuilder analysisBuilder) {
             String key = entry.getKey();
-            Map analysisStepMap = entry.getValue();
+            Map analysisStepOptions = entry.getValue();
             switch (key) {
                 case "failedVariantFilter":
-                    return makeFailedVariantFilter();
+                    return analysisBuilder.addFailedVariantFilter();
                 case "intervalFilter":
-                    return makeIntervalFilter(analysisStepMap);
+                    return makeIntervalFilter(analysisStepOptions, analysisBuilder);
                 case "genePanelFilter":
-                    return makeGeneSymbolFilter(analysisStepMap);
+                    return makeGeneSymbolFilter(analysisStepOptions, analysisBuilder);
                 case "variantEffectFilter":
-                    return makeVariantEffectFilter(analysisStepMap);
+                    return makeVariantEffectFilter(analysisStepOptions, analysisBuilder);
                 case "qualityFilter":
-                    return makeQualityFilter(analysisStepMap);
+                    return makeQualityFilter(analysisStepOptions, analysisBuilder);
                 case "knownVariantFilter":
-                    return makeKnownVariantFilter(analysisStepMap, parseFrequencySources(analysisMap));
+                    return makeKnownVariantFilter(analysisStepOptions, parseFrequencySources(analysisMap), analysisBuilder);
                 case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap));
+                    return makeFrequencyFilter(analysisStepOptions, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap), analysisBuilder);
                 case "pathogenicityFilter":
-                    return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
+                    return makePathogenicityFilter(analysisStepOptions, parsePathogenicitySources(analysisMap), analysisBuilder);
                 case "inheritanceFilter":
-                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap));
+                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap), analysisBuilder);
                 case "priorityScoreFilter":
-                    return makePriorityScoreFilter(analysisStepMap);
+                    return makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
                 case "regulatoryFeatureFilter":
-                    return makeRegulatoryFeatureFilter();
+                    return analysisBuilder.addRegulatoryFeatureFilter();
                 case "omimPrioritiser":
-                    return prioritiserFactory.makeOmimPrioritiser();
+                    return analysisBuilder.addOmimPrioritiser();
                 case "hiPhivePrioritiser":
-                    return makeHiPhivePrioritiser(analysisStepMap);
+                    return makeHiPhivePrioritiser(analysisStepOptions, analysisBuilder);
                 case "phivePrioritiser":
-                    return prioritiserFactory.makePhivePrioritiser();
+                    return analysisBuilder.addPhivePrioritiser();
                 case "phenixPrioritiser":
-                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
-//                    return prioritiserFactory.makePhenixPrioritiser();
+//                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
+                    return analysisBuilder.addPhenixPrioritiser();
                 case "exomeWalkerPrioritiser":
-                    return makeWalkerPrioritiser(analysisStepMap);
+                    return makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
                 default:
                     //throw exception here?
                     logger.error("Unsupported exomiser step: {}", key);
-                    return null;
+                    return analysisBuilder;
             }
         }
 
-        private FailedVariantFilter makeFailedVariantFilter() {
-            return new FailedVariantFilter();
+        private AnalysisBuilder makeIntervalFilter(Map<String, Object> options, AnalysisBuilder analysisBuilder) {
+            List<ChromosomalRegion> chromosomalRegions = parseIntervalFilterOptions(options);
+            return analysisBuilder.addIntervalFilter(chromosomalRegions);
         }
 
-        private IntervalFilter makeIntervalFilter(Map<String, Object> options) {
+        private List<ChromosomalRegion> parseIntervalFilterOptions(Map<String, Object> options){
             if (options.containsKey("interval")) {
                 String interval = (String) options.get("interval");
-                return new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
+                return ImmutableList.of(GeneticInterval.parseString(interval));
             }
             if (options.containsKey("intervals")) {
                 List<String> intervalStrings = (List<String>) options.get("intervals");
                 List<ChromosomalRegion> intervals = new ArrayList<>();
-                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(HG19RefDictBuilder.build(), string)));
-                return new IntervalFilter(intervals);
+                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(string)));
+                return intervals;
             }
             if (options.containsKey("bed")) {
                 String bedPath = (String) options.get("bed");
-                return getBedFileIntervalFilter(bedPath);
+                return BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
             }
             throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}", options);
         }
@@ -461,23 +442,25 @@ public class AnalysisParser {
         /**
          * @since 10.1.0
          */
-        private IntervalFilter getBedFileIntervalFilter(String bedPath) {
-            List<ChromosomalRegion> intervals = BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
-            return new IntervalFilter(intervals);
+        private AnalysisBuilder makeGeneSymbolFilter(Map<String, List<String>> options, AnalysisBuilder analysisBuilder) {
+            Set<String> genesToKeep = parseGeneSymbolFilterOptions(options);
+            return analysisBuilder.addGeneIdFilter(genesToKeep);
         }
 
-        /**
-         * @since 10.1.0
-         */
-        private GeneSymbolFilter makeGeneSymbolFilter(Map<String, List<String>> options) {
+        private Set<String> parseGeneSymbolFilterOptions(Map<String, List<String>> options) {
             List<String> geneSymbols = options.get("geneSymbols");
             if (geneSymbols == null || geneSymbols.isEmpty()) {
                 throw new AnalysisParserException("Gene panel filter requires a list of HGNC gene symbols e.g. {geneSymbols: [FGFR1, FGFR2]}", options);
             }
-            return new GeneSymbolFilter(new LinkedHashSet<>(geneSymbols));
+            return new LinkedHashSet<>(geneSymbols);
         }
 
-        private VariantEffectFilter makeVariantEffectFilter(Map<String, List<String>> options) {
+        private AnalysisBuilder makeVariantEffectFilter(Map<String, List<String>> options, AnalysisBuilder analysisBuilder) {
+            Set<VariantEffect> variantEffects = parseVariantEffectFilterOptions(options);
+            return analysisBuilder.addVariantEffectFilter(variantEffects);
+        }
+
+        private Set<VariantEffect> parseVariantEffectFilterOptions(Map<String, List<String>> options) {
             List<String> effectsToRemove = options.get("remove");
             if (effectsToRemove == null) {
                 throw new AnalysisParserException("VariantEffect filter requires a list of VariantEffects to be removed e.g. {remove: [UPSTREAM_GENE_VARIANT, INTERGENIC_VARIANT, SYNONYMOUS_VARIANT]}", options);
@@ -491,35 +474,41 @@ public class AnalysisParser {
                     throw new AnalysisParserException(String.format("Illegal VariantEffect: '%s'.%nPermitted effects are any of: %s.", effect, EnumSet.allOf(VariantEffect.class)), options, ex);
                 }
             }
-            return new VariantEffectFilter(EnumSet.copyOf(variantEffects));
+            return EnumSet.copyOf(variantEffects);
         }
 
-        private QualityFilter makeQualityFilter(Map<String, Double> options) {
+
+        private AnalysisBuilder makeQualityFilter(Map<String, Double> options, AnalysisBuilder analysisBuilder) {
+            double quality = parseQualityFilterOptions(options);
+            return analysisBuilder.addQualityFilter(quality);
+        }
+
+        private double parseQualityFilterOptions(Map<String, Double> options) {
             Double quality = options.get("minQuality");
             if (quality == null) {
                 throw new AnalysisParserException("Quality filter requires a floating point value for the minimum PHRED score e.g. {minQuality: 50.0}", options);
             }
-            return new QualityFilter(quality);
+            return quality;
         }
 
-        private VariantFilter makeKnownVariantFilter(Map<String, Object> options, Set<FrequencySource> sources) {
+        private AnalysisBuilder makeKnownVariantFilter(Map<String, Object> options, Set<FrequencySource> sources, AnalysisBuilder analysisBuilder) {
             //nothing special to do here, apart from wrap the filter with a DataProvider, this is a boolean filter.
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
-            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new KnownVariantFilter());
+            return analysisBuilder.addKnownVariantFilter();
         }
 
-        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources, InheritanceModeOptions inheritanceModeOptions) {
+        private AnalysisBuilder makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources, InheritanceModeOptions inheritanceModeOptions, AnalysisBuilder analysisBuilder) {
             Double maxFreq = getMaxFreq(options, inheritanceModeOptions);
-            if (sources.isEmpty()) {
-                throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
-            }
             if (maxFreq == null) {
                 //this shouldn't be the case, but to be on the safe side...
                 throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
             }
-            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq.floatValue()));
+            if (sources.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
+            }
+            return analysisBuilder.addFrequencyFilter(maxFreq.floatValue());
         }
 
         private Double getMaxFreq(Map<String, Object> options, InheritanceModeOptions inheritanceModeOptions) {
@@ -555,7 +544,7 @@ public class AnalysisParser {
             return EnumSet.copyOf(sources);
         }
 
-        private VariantFilter makePathogenicityFilter(Map<String, Object> options, Set<PathogenicitySource> sources) {
+        private AnalysisBuilder makePathogenicityFilter(Map<String, Object> options, Set<PathogenicitySource> sources, AnalysisBuilder analysisBuilder) {
             Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
             if (keepNonPathogenic == null) {
                 throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
@@ -563,7 +552,7 @@ public class AnalysisParser {
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Pathogenicity filter requires a list of pathogenicity sources for the analysis e.g. {pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]}", options);
             }
-            return new PathogenicityDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new PathogenicityFilter(keepNonPathogenic));
+            return analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
         }
 
         private Set<PathogenicitySource> parsePathogenicitySources(Map<String, List<String>> options) {
@@ -586,7 +575,7 @@ public class AnalysisParser {
             return EnumSet.copyOf(sources);
         }
 
-        private PriorityScoreFilter makePriorityScoreFilter(Map<String, Object> options) {
+        private AnalysisBuilder makePriorityScoreFilter(Map<String, Object> options, AnalysisBuilder analysisBuilder) {
             String priorityTypeString = (String) options.get("priorityType");
             if (priorityTypeString == null) {
                 throw new AnalysisParserException("Priority score filter requires a string value for the prioritiser type e.g. {priorityType: HIPHIVE_PRIORITY}", options);
@@ -597,25 +586,21 @@ public class AnalysisParser {
             if (minPriorityScore == null) {
                 throw new AnalysisParserException("Priority score filter requires a floating point value for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
             }
-            return new PriorityScoreFilter(priorityType, minPriorityScore.floatValue());
+            return analysisBuilder.addPriorityScoreFilter(priorityType, minPriorityScore.floatValue());
         }
 
-        private VariantFilter makeRegulatoryFeatureFilter() {
-            return new RegulatoryFeatureFilter();
-        }
-
-        private InheritanceFilter makeInheritanceFilter(InheritanceModeOptions inheritanceModeOptions) {
+        private AnalysisBuilder makeInheritanceFilter(InheritanceModeOptions inheritanceModeOptions, AnalysisBuilder analysisBuilder) {
             if (inheritanceModeOptions.isEmpty()) {
                 logger.info("Not making an inheritance filter for undefined mode of inheritance");
-                return null;
+                return analysisBuilder;
             }
-            return new InheritanceFilter(inheritanceModeOptions.getDefinedModes());
+            return analysisBuilder.addInheritanceFilter();
         }
 
-        private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options) {
+        private AnalysisBuilder makeHiPhivePrioritiser(Map<String, String> options, AnalysisBuilder analysisBuilder) {
             HiPhiveOptions hiPhiveOptions = makeHiPhiveOptions(options);
-            logger.info("Made {}", hiPhiveOptions);
-            return prioritiserFactory.makeHiPhivePrioritiser(hiPhiveOptions);
+            logger.debug("Made {}", hiPhiveOptions);
+            return analysisBuilder.addHiPhivePrioritiser(hiPhiveOptions);
         }
 
         private HiPhiveOptions makeHiPhiveOptions(Map<String, String> options) {
@@ -633,12 +618,12 @@ public class AnalysisParser {
             return HiPhiveOptions.defaults();
         }
 
-        private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List<Integer>> options) {
+        private AnalysisBuilder makeWalkerPrioritiser(Map<String, List<Integer>> options, AnalysisBuilder analysisBuilder) {
             List<Integer> geneIds = options.get("seedGeneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("ExomeWalker prioritiser requires a list of ENTREZ geneIds e.g. {seedGeneIds: [11111, 22222, 33333]}", options);
             }
-            return prioritiserFactory.makeExomeWalkerPrioritiser(geneIds);
+            return analysisBuilder.addExomeWalkerPrioritiser(geneIds);
         }
 
     }

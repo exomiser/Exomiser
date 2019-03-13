@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
@@ -80,5 +81,20 @@ public class DefaultDiseaseDaoTest {
     public void testGetDiseaseDataAssociatedWithGeneId() {
         List<Disease> expected = Lists.newArrayList(disease) ;
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(2263), equalTo(expected));
+    }
+
+    @Test
+    public void testGetCnvDiseaseDataAssociatedWithGeneId() {
+        Disease cnv = Disease.builder()
+                .diseaseId("ORPHA:11111")
+                .diseaseName("Test CNV disease")
+                .diseaseType(Disease.DiseaseType.CNV)
+                .inheritanceMode(InheritanceMode.UNKNOWN)
+                .associatedGeneId(2222)
+                .associatedGeneSymbol("GENE2")
+                .phenotypeIds(ImmutableList.of("HP:0000001"))
+                .build();
+        List<Disease> expected = Lists.newArrayList(cnv) ;
+        assertThat(instance.getDiseaseDataAssociatedWithGeneId(2222), equalTo(expected));
     }
 }

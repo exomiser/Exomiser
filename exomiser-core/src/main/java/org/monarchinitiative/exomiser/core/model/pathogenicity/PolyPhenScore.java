@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class PolyPhenScore extends BasePathogenicityScore {
+public class PolyPhenScore extends BasePathogenicityScore {
     
     /**
      * Possibly damaging is > 0.446 with Polyphen2 (this is an intermediate
@@ -42,12 +42,12 @@ public final class PolyPhenScore extends BasePathogenicityScore {
      */
     public static final float POLYPHEN_PROB_DAMAGING_THRESHOLD = 0.956f;
 
-    public static PolyPhenScore valueOf(float score) {
+    public static PolyPhenScore of(float score) {
         return new PolyPhenScore(score);
     }
 
     private PolyPhenScore(float score) {
-        super(score, PathogenicitySource.POLYPHEN);
+        super(PathogenicitySource.POLYPHEN, score);
     }
 
     @Override

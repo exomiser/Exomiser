@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,20 +42,20 @@ public class PathogenicityDataTest {
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
 
-    private static final SiftScore SIFT_PASS = SiftScore.valueOf(SIFT_PASS_SCORE);
-    private static final SiftScore SIFT_FAIL = SiftScore.valueOf(SIFT_FAIL_SCORE);
+    private static final SiftScore SIFT_PASS = SiftScore.of(SIFT_PASS_SCORE);
+    private static final SiftScore SIFT_FAIL = SiftScore.of(SIFT_FAIL_SCORE);
 
     private static final float POLYPHEN_PASS_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f;
     private static final float POLYPHEN_FAIL_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD - 0.1f;
 
-    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.valueOf(POLYPHEN_PASS_SCORE);
-    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.valueOf(POLYPHEN_FAIL_SCORE);
+    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.of(POLYPHEN_PASS_SCORE);
+    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.of(POLYPHEN_FAIL_SCORE);
 
     private static final float MTASTER_PASS_SCORE = MutationTasterScore.MTASTER_THRESHOLD + 0.01f;
     private static final float MTASTER_FAIL_SCORE = MutationTasterScore.MTASTER_THRESHOLD - 0.01f;
 
-    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
-    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
+    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.of(MTASTER_PASS_SCORE);
+    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.of(MTASTER_FAIL_SCORE);
 
     @Test
     public void testEmptyData() {
@@ -79,6 +79,16 @@ public class PathogenicityDataTest {
         PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), Collections.emptySet());
         assertThat(instance.getClinVarData().isEmpty(), is(true));
         assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
+        assertThat(instance.isEmpty(), is(true));
+        assertThat(instance, equalTo(PathogenicityData.empty()));
+        assertThat(PathogenicityData.of(), equalTo(PathogenicityData.empty()));
+    }
+
+    @Test
+    public void testVarArgsPathScores() {
+        PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        assertThat(instance.hasPredictedScore(), is(true));
+        assertThat(instance.hasClinVarData(), is(false));
     }
 
     @Test
@@ -118,43 +128,36 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPolyPhenScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL);
-        PolyPhenScore result = instance.getPolyPhenScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.POLYPHEN);
         assertThat(result, equalTo(POLYPHEN_FAIL));
     }
 
     @Test
     public void testGetMutationTasterScore() {
         PathogenicityData instance = PathogenicityData.of(MTASTER_PASS);
-        MutationTasterScore result = instance.getMutationTasterScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.MUTATION_TASTER);
         assertThat(result, equalTo(MTASTER_PASS));
     }
     
     @Test
     public void testGetSiftScore() {
         PathogenicityData instance = PathogenicityData.of(SIFT_FAIL);
-        SiftScore result = instance.getSiftScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.SIFT);
         assertThat(result, equalTo(SIFT_FAIL));
     }
     
     @Test
     public void testGetRemmScore() {
-        PathogenicityData instance = PathogenicityData.of(RemmScore.valueOf(1f));
-        RemmScore result = instance.getRemmScore();
-        assertThat(result, equalTo(RemmScore.valueOf(1f)));
-    }
-    
-    @Test
-    public void testGetSiftScoreReturnsNullWhenNoSiftScorePresent() {
-        PathogenicityData instance = PathogenicityData.of();
-        SiftScore result = instance.getSiftScore();
-        assertThat(result, nullValue());
+        PathogenicityData instance = PathogenicityData.of(RemmScore.of(1f));
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.REMM);
+        assertThat(result, equalTo(RemmScore.of(1f)));
     }
 
     @Test
     public void testGetCaddScore() {
-        CaddScore caddScore = CaddScore.valueOf(POLYPHEN_PASS_SCORE);
+        CaddScore caddScore = CaddScore.of(POLYPHEN_PASS_SCORE);
         PathogenicityData instance = PathogenicityData.of(caddScore);
-        CaddScore result = instance.getCaddScore();
+        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.CADD);
         assertThat(result, equalTo(caddScore));
     }
 
@@ -181,21 +184,18 @@ public class PathogenicityDataTest {
     @Test
     public void testHasPredictedScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        boolean result = instance.hasPredictedScore();
-        assertThat(result, is(true));
+        assertThat(instance.hasPredictedScore(), is(true));
     }
-    
+
     @Test
     public void testHasPredictedScoreForSourceIsTrue() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS);
-        boolean result = instance.hasPredictedScore(PathogenicitySource.POLYPHEN);
-        assertThat(result, is(true));
+        assertThat(instance.hasPredictedScore(PathogenicitySource.POLYPHEN), is(true));
     }
     
     @Test
     public void testHasPredictedScoreForSourceIsFalse() {
-        boolean result = EMPTY_DATA.hasPredictedScore(PathogenicitySource.POLYPHEN);
-        assertThat(result, is(false));
+        assertThat(EMPTY_DATA.hasPredictedScore(PathogenicitySource.POLYPHEN), is(false));
     }
 
     @Test

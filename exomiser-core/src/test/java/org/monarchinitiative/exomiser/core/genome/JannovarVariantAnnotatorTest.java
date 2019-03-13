@@ -262,4 +262,21 @@ public class JannovarVariantAnnotatorTest {
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
+    @Test
+    void testStructuralVariant() {
+        int pos = 118608470;
+        String ref = "A";
+        String alt = "<INS>";
+
+        AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
+
+        VariantAnnotation variantAnnotation = instance.annotate("X", pos, ref, alt);
+
+        assertThat(variantAnnotation.getChromosome(), equalTo(23));
+        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
+        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
+        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+    }
 }

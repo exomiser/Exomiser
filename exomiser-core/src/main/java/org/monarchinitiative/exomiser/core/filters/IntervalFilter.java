@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.filters;
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
-import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,15 +100,6 @@ public class IntervalFilter implements VariantFilter {
      */
     public List<ChromosomalRegion> getChromosomalRegions() {
         return intervals;
-    }
-
-    /**
-     * @deprecated
-     * @return
-     */
-    public GeneticInterval getGeneticInterval() {
-        ChromosomalRegion chromosomalRegion = intervals.get(0);
-        return new GeneticInterval(chromosomalRegion.getChromosome(), chromosomalRegion.getStart(), chromosomalRegion.getEnd());
     }
 
     /**

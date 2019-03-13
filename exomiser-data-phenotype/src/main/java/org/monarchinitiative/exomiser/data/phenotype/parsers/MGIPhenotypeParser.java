@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -82,7 +81,7 @@ public class MGIPhenotypeParser implements ResourceParser {
             for (Map.Entry<String, Set<String>> entry : mouse2PhenotypeMap.entrySet()) {
                 String modelId = entry.getKey();
                 Set<String> mpIds = entry.getValue();
-                mouse2PhenotypesMap.put(modelId, Joiner.on(",").join(mpIds));
+                mouse2PhenotypesMap.put(modelId, String.join(",", mpIds));
             }
             status = ResourceOperationStatus.SUCCESS;
 

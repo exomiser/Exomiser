@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,38 +18,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Objects;
 
 /**
- *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-abstract class BasePathogenicityScore implements PathogenicityScore {
+class BasePathogenicityScore implements PathogenicityScore {
 
-    //Higher scores are more likely pathogenic so this is the reverse of what's normal (we're using a probablility of pathogenicity)
-    //comparable requires a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-    static final int MORE_PATHOGENIC = -1;
-    static final int EQUALS = 0;
-    static final int LESS_PATHOGENIC = 1;
-
-    protected final float score;
     protected final PathogenicitySource source;
+    protected final float score;
 
-    BasePathogenicityScore(float score, PathogenicitySource source) {
-        this.score = score;
+    BasePathogenicityScore(PathogenicitySource source, float score) {
+        checkBounds(source, score);
         this.source = source;
+        this.score = score;
     }
 
-    @Override
-    public float getScore() {
-        return score;
+    private static void checkBounds(PathogenicitySource source, float score) {
+        if (score < 0f || score > 1f) {
+            String message = String.format("%s score of %.3f is out of range. Must be in the range of 0.0 - 1.0", source, score);
+            throw new IllegalArgumentException(message);
+        }
     }
 
     @Override
@@ -58,58 +52,33 @@ abstract class BasePathogenicityScore implements PathogenicityScore {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(score, source);
+    public float getScore() {
+        return score;
+    }
+
+
+    @JsonIgnore
+    @Override
+    public float getRawScore() {
+        return score;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof PathogenicityScore)) {
-            return false;
-        }
-        final BasePathogenicityScore other = (BasePathogenicityScore) o;
-
-        if (source != other.source) {
-            return false;
-        }
-
-        return Float.compare(other.score, score) == 0;
+        if (this == o) return true;
+        if (!(o instanceof BasePathogenicityScore)) return false;
+        BasePathogenicityScore that = (BasePathogenicityScore) o;
+        return Float.compare(that.score, score) == 0 &&
+                source == that.source;
     }
 
-    /**
-     * For the purposes of this comparator scores are ranked on a scale of 0 to
-     * 1 where 0 is considered probably non-pathogenic and 1 probably
-     * pathogenic. The comparator will rank the more pathogenic
-     * PathogenicityScore higher than a less pathogenic score such that in a
-     * sorted list the most pathogenic score will come first.
-     *
-     * Note: this class has a natural ordering that is inconsistent with equals.
-     *
-     * @param other
-     * @return
-     */
     @Override
-    public int compareTo(PathogenicityScore other) {
-        float otherScore = other.getScore();
-        float thisScore = score;
-        //remember if we're comparing this against a SIFT score we need to invert the
-        //SIFT score otherwise the comparison will be inverted
-        if (other.getClass() == SiftScore.class) {
-            otherScore = 1f - other.getScore();
-        }
-        if (this.getClass() == SiftScore.class) {
-            thisScore = 1f - score;
-        }
+    public int hashCode() {
+        return Objects.hash(source, score);
+    }
 
-        if (thisScore == otherScore) {
-            return EQUALS;
-        }
-        if (thisScore > otherScore) {
-            return MORE_PATHOGENIC;
-        }
-        return LESS_PATHOGENIC;
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f", source, score);
     }
 }

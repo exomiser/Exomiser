@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,16 +25,15 @@ import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperation
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+
+import static org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus.FAILURE;
+import static org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus.SUCCESS;
 
 /**
  * Parse the good old human-phenotype-ontology.obo file (or alternatively the
@@ -77,115 +76,60 @@ public class HPOOntologyFileParser implements ResourceParser {
         Path inFile = inDir.resolve(resource.getExtractedFileName());
         Path outFile = outDir.resolve(resource.getParsedFileName());
 
-        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
-        ResourceOperationStatus status;
+        logger.info("Parsing {} file: {}.", resource.getName(), inFile);
+        OboOntology oboOntology = OboOntologyParser.parseOboFile(inFile);
+        resource.setVersion(oboOntology.getDataVersion());
+        logger.info("HPO version: {}", oboOntology.getDataVersion());
 
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"));
-             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-
-            int termCount = 0; /* count of terms */
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("[Term]")) {
-                    break; // comment.
-                }
-            }
-            String id = null;
-            String name = null;
-            List<String> synonymLst = new ArrayList<>();
-            while ((line = reader.readLine()) != null) {
-//                logger.info(line);
-                if (line.startsWith("id:")) {
-                    id = line.substring(3).trim(); /* Gets rid of "id:" and any whitespace in e.g., HP:0000003 */
-
-                } else if (line.startsWith("name:")) {
-                    name = line.substring(5).trim();
-                    termCount++;
-                    synonymLst.add(name);
-                } else if (line.startsWith("synonym:")) {
-                    int i, j;
-                    i = line.indexOf("\"", 8);
-                    if (i > 0) {
-                        j = line.indexOf("\"", i + 1);
-                        if (j > 0) {
-                            String syno = line.substring(i + 1, j);
-//			    synonymLst.add(syno);
-                        }
-                    }
-                    termCount++;
-                } else if (line.startsWith("is_obsolete")) {
-                    id = null;
-                    name = null;
-                    synonymLst.clear();
-                } else if (line.startsWith("[Term]") && name != null && id != null) {
-                    hpId2termMap.put(id, name);
-                    writer.write(String.format("%s|%s|%s", name, id, synonymLst));
-                    writer.newLine();
-//		    logger.info("{} {} {}", name,id,synonymLst);
-                    name = null;
-                    id = null;
-                    synonymLst.clear();
-                }
-            }
-            if (name != null && id != null) {
-                writer.write(String.format("%s|%s|%s", name, id, synonymLst));
-                hpId2termMap.put(id, name);
-                writer.newLine();
-//                logger.info("{} {} {}", name,id,synonymLst);
-
-            }
-            writer.close();
-            reader.close();
-            logger.info("Parsed {} term names/synonyms.", termCount);
-            status = ResourceOperationStatus.SUCCESS;
-        } catch (FileNotFoundException ex) {
-            logger.error(null, ex);
-            status = ResourceOperationStatus.FILE_NOT_FOUND;
-        } catch (IOException ex) {
-            logger.error(null, ex);
-            status = ResourceOperationStatus.FAILURE;
+        for (OboOntologyTerm ontologyTerm : oboOntology.getCurrentOntologyTerms()) {
+            hpId2termMap.put(ontologyTerm.getId(), ontologyTerm.getLabel());
         }
+
+        ResourceOperationStatus hpStatus = writeHpFile(outFile, oboOntology);
+        logger.info("{} Writing hp to: {}", hpStatus, outFile);
+
+        // hack in a new file not defined in the usual resources place
+        Path hpAltIdFile = outDir.resolve("hp_alt_ids.pg");
+        ResourceOperationStatus hpAltIdStatus = writeHpAltIdFile(hpAltIdFile, oboOntology);
+        logger.info("{} Writing hp_alt_ids to: {}", hpAltIdStatus, hpAltIdFile);
+
+        ResourceOperationStatus status = hpStatus == FAILURE ? FAILURE : hpAltIdStatus;
         resource.setParseStatus(status);
         logger.info("{}", status);
     }
 
-//    /**
-//     * This function directly enters name/id pairs into the Exomiser database
-//     * @param preferred The actual term name of an HPO term
-//     * @param id The corresponding HPO term id
-//     * @param synLst A list of synonyms for this term (including the preferred name itself).
-//     */
-//    private void populateHPOTable(String preferred,String id, List<String>synLst) {
-//	String insert = "INSERT INTO hpo (lcname,id,prefname) VALUES(?,?,?);";
-//	try {
-//	    PreparedStatement instPS = connection.prepareStatement(insert);
-//	    for (String name:synLst) {
-//		String lcname = name.toLowerCase();
-//		instPS.setString(1,lcname);
-//		instPS.setString(2,id);
-//		instPS.setString(3,preferred);
-//		System.out.println(n_row + ": " + instPS);
-//		instPS.executeUpdate();
-//		n_row++;
-//	
-//	    }
-//	    
-//	} catch (SQLException e) {
-//	    e.printStackTrace();
-//	    System.err.println("[ERROR] SQLException");
-//	    System.out.println("Unable to insert into table, preferredname=\""+preferred +
-//			       "\", id=\""+id+"\"");
-//	    System.exit(1);
-//	} catch (Exception e) {
-//	    System.out.println("Unable to insert into table, preferredname=\""+preferred +
-//			       "\", id=\""+id+"\"");
-//	    e.printStackTrace();
-//	    System.exit(1);
-//
-//	}
-//
-//
-//    }
+    private ResourceOperationStatus writeHpFile(Path outFile, OboOntology oboOntology) {
+        try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)){
+            for (OboOntologyTerm ontologyTerm : oboOntology.getCurrentOntologyTerms()) {
+                StringJoiner stringJoiner = new StringJoiner("|");
+                stringJoiner.add(ontologyTerm.getId());
+                stringJoiner.add(ontologyTerm.getLabel());
+                writer.write(stringJoiner.toString());
+                writer.newLine();
+            }
+            return SUCCESS;
+        } catch (Exception ex) {
+            logger.error("Error writing to file {}", outFile, ex);
+            return ResourceOperationStatus.FAILURE;
+        }
+    }
+
+    private ResourceOperationStatus writeHpAltIdFile(Path hpAltIdFile, OboOntology oboOntology) {
+        try (BufferedWriter writer = Files.newBufferedWriter(hpAltIdFile, StandardCharsets.UTF_8)){
+            Map<String, OboOntologyTerm> phenotypeTermMap = oboOntology.getIdToTerms();
+            for (Map.Entry<String, OboOntologyTerm> entry : phenotypeTermMap.entrySet()) {
+                String altId = entry.getKey();
+                OboOntologyTerm ontologyTerm = entry.getValue();
+                StringJoiner stringJoiner = new StringJoiner("|");
+                stringJoiner.add(altId);
+                stringJoiner.add(ontologyTerm.getId());
+                writer.write(stringJoiner.toString());
+                writer.newLine();
+            }
+            return SUCCESS;
+        } catch (Exception ex) {
+            logger.error("Error writing to file {}", hpAltIdFile, ex);
+            return ResourceOperationStatus.FAILURE;
+        }
+    }
 }
-/* eof */

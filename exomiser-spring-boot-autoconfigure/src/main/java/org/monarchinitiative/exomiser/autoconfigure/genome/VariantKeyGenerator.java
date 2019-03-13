@@ -20,12 +20,12 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKey;
 
 import java.lang.reflect.Method;
-import java.util.StringJoiner;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -46,21 +46,11 @@ public class VariantKeyGenerator implements KeyGenerator {
         }
         if (params.length == 1) {
             Object param = params[0];
-            if (Variant.class.isInstance(param)) {
-                return generateVariantKey((Variant) param);
+            if (param instanceof Variant) {
+                return AlleleProtoAdaptor.toAlleleKey((Variant) param);
             }
         }
         return new SimpleKey(params);
-    }
-
-    private static String generateVariantKey(Variant variant) {
-        StringJoiner stringJoiner = new StringJoiner("-");
-        stringJoiner.add(variant.getGenomeAssembly().toString());
-        stringJoiner.add(variant.getChromosomeName());
-        stringJoiner.add(String.valueOf(variant.getPosition()));
-        stringJoiner.add(variant.getRef());
-        stringJoiner.add(variant.getAlt());
-        return stringJoiner.toString();
     }
 
 }

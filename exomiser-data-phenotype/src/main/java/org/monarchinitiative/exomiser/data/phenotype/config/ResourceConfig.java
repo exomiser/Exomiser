@@ -69,6 +69,7 @@ public class ResourceConfig {
         resources.add(orphanetResource());
         resources.add(diseaseTermsResource());
         resources.add(diseasePhenotypeResource());
+        resources.add(orphanetDiseaseGeneTypeResource());
 
         //ontologies
         resources.add(hpoResource());
@@ -231,6 +232,20 @@ public class ResourceConfig {
         populateResourceFromProperty("diseaseterms", resource);
         //parsing
         resource.setParserClass(Disease2TermParser.class);
+        //resource groups
+        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+
+        return resource;
+    }
+
+    @Bean
+    public Resource orphanetDiseaseGeneTypeResource() {
+        logger.info("Making orphanet disease-gene type resource");
+        Resource resource = new Resource("Orphanet_type");
+        populateResourceFromProperty("orphanettype", resource);
+        //parsing
+        resource.setParserClass(OrphanetDiseaseGeneTypeParser.class);
         //resource groups
         resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);

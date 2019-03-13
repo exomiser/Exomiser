@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -394,10 +394,10 @@ public class InheritanceModeAnnotatorTest {
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
+        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
@@ -578,10 +578,10 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         float alleleOneMaxFreq = 1.0f;
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, alleleOneMaxFreq)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq / 2f, FrequencySource.LOCAL)));
+        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, alleleOneMaxFreq / 2f)));
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
@@ -595,8 +595,7 @@ public class InheritanceModeAnnotatorTest {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -610,7 +609,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         float alleleOneMaxFreq = 1.0f;
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, alleleOneMaxFreq)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
@@ -626,8 +625,7 @@ public class InheritanceModeAnnotatorTest {
         Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -641,7 +639,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         //Set the frequency data to be over that of the default frequency value
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
@@ -651,11 +649,7 @@ public class InheritanceModeAnnotatorTest {
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
-        );
-        assertThat(results, equalTo(expected));
+        assertThat(results.isEmpty(), equalTo(true));
     }
 
     @Test
@@ -667,7 +661,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         //Set the frequency data to be over that of the default frequency value
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(1f, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
@@ -679,9 +673,7 @@ public class InheritanceModeAnnotatorTest {
         Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+                SubModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -695,7 +687,7 @@ public class InheritanceModeAnnotatorTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
         float alleleOneMaxFreq = 1.0f;
-        alleleOne.setFrequencyData(FrequencyData.of(Frequency.valueOf(alleleOneMaxFreq, FrequencySource.LOCAL)));
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, alleleOneMaxFreq)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
@@ -713,8 +705,43 @@ public class InheritanceModeAnnotatorTest {
 
         Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
                 ModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+                );
+        assertThat(results, equalTo(expected));
+    }
+
+    @Test
+    public void testAutosomalDominantHetAltIndividualWithModeOfInheritanceAnyFrequenciesWhitelistedVariantOverFrequencyCutoff() {
+        List<Allele> alleles = buildAlleles("A", "T", "C");
+
+        Genotype proband = buildPhasedSampleGenotype("Cain", alleles.get(1), alleles.get(2));
+
+        VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
+        VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        float alleleOneMaxFreq = 1.0f;
+        alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, alleleOneMaxFreq)));
+
+        VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        // MAF of 5% is too high for the inheritance mode filters
+        alleleTwo.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AMR, 5f)));
+        // However, whitelisting it will allow it through
+        alleleTwo.setWhiteListed(true);
+
+        Pedigree pedigree = singleAffectedSample("Cain");
+
+        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+                SubModeOfInheritance.ANY, 2.0f,
+                //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
+        );
+        InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
+
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
+                ModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }

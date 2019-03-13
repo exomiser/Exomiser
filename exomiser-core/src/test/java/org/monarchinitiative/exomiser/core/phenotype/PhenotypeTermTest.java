@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -47,6 +48,17 @@ public class PhenotypeTermTest {
         id = "ID:12344";
         label = "big nose";
         instance = PhenotypeTerm.of(id, label);
+    }
+
+    @Test
+    void wontAcceptNullId() {
+        assertThrows(NullPointerException.class, () -> PhenotypeTerm.of(null, "label"));
+    }
+
+    @Test
+    void willAcceptNullLabel() {
+        PhenotypeTerm instance = PhenotypeTerm.of("id", null);
+        assertThat(instance.getLabel(), equalTo(""));
     }
 
     @Test

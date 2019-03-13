@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -61,8 +61,11 @@ public class VariantEffectFilter implements VariantFilter {
     }
 
     @Override
-    public FilterResult runFilter(VariantEvaluation filterable) {
-        VariantEffect effect = filterable.getVariantEffect();
+    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
+        if (variantEvaluation.isWhiteListed()) {
+            return PASS;
+        }
+        VariantEffect effect = variantEvaluation.getVariantEffect();
         if (offTargetVariantTypes.contains(effect)) {
             return FAIL;
         }

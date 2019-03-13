@@ -62,7 +62,7 @@ public class JsonResultsWriter implements ResultsWriter {
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
-        logger.info("{} {} results written to file {}", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
+        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
                 .getAbbreviation(), outFileName);
     }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,12 +23,14 @@ package org.monarchinitiative.exomiser.core.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import htsjdk.variant.variantcontext.*;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.GenotypeBuilder;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -46,7 +48,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
 
     //threshold over which a variant effect score is considered pathogenic
@@ -55,6 +57,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     // HTSJDK {@link VariantContext} instance of this allele
     @JsonIgnore
     private final VariantContext variantContext;
+//    private final String vcfString;
 
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
@@ -71,7 +74,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final double phredScore;
 
     @JsonIgnore
-    private Map<String,SampleGenotype> sampleGenotypes;
+    // IMPORTANT! This map *MUST* be an ordered map
+    private Map<String, SampleGenotype> sampleGenotypes;
 
     //VariantAnnotation
     private VariantEffect variantEffect;
@@ -87,6 +91,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Set<FilterType> failedFilterTypes;
 
     // score-related stuff - these are mutable
+    private boolean whiteListed;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     @JsonProperty("contributingInheritanceModes")
@@ -107,13 +112,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         geneSymbol = builder.geneSymbol;
         geneId = builder.geneId;
 
+//        vcfString = builder.vcfString;
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
+        // IMPORTANT! This map *MUST* be an ordered map
         sampleGenotypes = ImmutableMap.copyOf(builder.sampleGenotypes);
 
         passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
         failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
 
+        whiteListed = builder.whiteListed;
         frequencyData = builder.frequencyData;
         pathogenicityData = builder.pathogenicityData;
     }
@@ -166,6 +174,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public VariantContext getVariantContext() {
+//        VCFCodec vcfCodec = VcfCodecs.decoder(sampleGenotypes.keySet());
+//        return vcfCodec.decode(vcfString);
         return variantContext;
     }
 
@@ -249,30 +259,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @JsonIgnore
     public String getGenotypeString() {
-        //TODO: build this from the sampleGenotypes
-        // collect genotype string list
-        List<String> gtStrings = new ArrayList<>();
-        for (Genotype gt : variantContext.getGenotypes()) {
-            StringJoiner genotypeStringJoiner = new StringJoiner("/");
-            for (Allele allele : gt.getAlleles()) {
-                if (allele.isNoCall()) {
-                    genotypeStringJoiner.add(".");
-                } else if (allele.equals(variantContext.getAlternateAllele(altAlleleId))) {
-                    genotypeStringJoiner.add("1");
-                } else {
-                    genotypeStringJoiner.add("0");
-                }
-            }
-            gtStrings.add(genotypeStringJoiner.toString());
-        }
+        List<String> genotypeStrings = new ArrayList<>(sampleGenotypes.size());
 
-        // normalize 1/0 to 0/1 and join genotype strings with colon
-        for (int i = 0; i < gtStrings.size(); ++i) {
-            if (gtStrings.get(i).equals("1/0")) {
-                gtStrings.set(i, "0/1");
+        for (SampleGenotype sampleGenotype : sampleGenotypes.values()) {
+            if (sampleGenotype.isEmpty()) {
+                genotypeStrings.add(SampleGenotype.noCall().toString());
+            } else {
+                genotypeStrings.add(sampleGenotype.toString());
             }
         }
-        return Joiner.on(":").join(gtStrings);
+        return String.join(":", genotypeStrings);
     }
 
     /**
@@ -407,14 +403,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a score between 0 and 1
      */
     public float getVariantScore() {
-        return getFrequencyScore() * getPathogenicityScore();
+        return whiteListed ? 1f : getFrequencyScore() * getPathogenicityScore();
     }
 
     /**
      * @return a score between 0 and 1
      */
     public float getFrequencyScore() {
-        return frequencyData.getScore();
+        return whiteListed ? 1f : frequencyData.getScore();
     }
 
     /**
@@ -434,9 +430,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a score between 0 and 1
      */
     public float getPathogenicityScore() {
+        if (whiteListed) {
+            return 1f;
+        }
         float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-            if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
             // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
             // best to check for a REVEL prediction and defer wholly to that if present rather than do the following.
@@ -447,6 +446,26 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
         } else {
             return Math.max(predictedScore, variantEffectScore);
+        }
+    }
+
+    /**
+     * @return true or false depending on whether the variant effect is considered pathogenic. Pathogenoic variants are
+     * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
+     */
+    public boolean isPredictedPathogenic() {
+        if (whiteListed) {
+            return true;
+        }
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            // We're making the assumption that a missense variant is always potentially pathogenic.
+            // Given the prediction scores are predictions, they could fall below the default threshold so
+            // we'll leave it up to the user to decide.
+            // TODO: This might actually be too permissive. Might be best to return pathogenicityData.isPredictedPathogenic()
+            //  which will utilise thresholds for the included scores.
+            return true;
+        } else {
+            return getPathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
 
@@ -466,6 +485,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.pathogenicityData = pathogenicityData;
     }
 
+    /**
+     * @since 12.0.0
+     * @return true if the VariantEvaluation has been marked as whitelisted
+     */
+    public boolean isWhiteListed() {
+        return whiteListed;
+    }
+
+    /**
+     * @since 12.0.0
+     */
+    public void setWhiteListed(boolean whiteListed) {
+        this.whiteListed = whiteListed;
+    }
+
     public void setContributesToGeneScoreUnderMode(ModeOfInheritance modeOfInheritance) {
         contributingModes.add(modeOfInheritance);
     }
@@ -476,21 +510,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public boolean contributesToGeneScoreUnderMode(ModeOfInheritance modeOfInheritance) {
         return modeOfInheritance == ModeOfInheritance.ANY && !contributingModes.isEmpty() || contributingModes.contains(modeOfInheritance);
-    }
-
-    /**
-     * @return true or false depending on whether the variant effect is considered pathogenic. Pathogenoic variants are
-     * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
-     */
-    public boolean isPredictedPathogenic() {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            //we're making the assumption that a missense variant is always potentially pathogenic.
-            //Given the prediction scores are predictions, they could fall below the default threshold so
-            //we'll leave it up to the user to decide
-            return true;
-        } else {
-            return getPathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
-        }
     }
 
     @Override
@@ -622,6 +641,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private String geneSymbol = ".";
         private String geneId = GeneIdentifier.EMPTY_FIELD;
 
+        private String vcfString;
         private VariantContext variantContext;
         private int altAlleleId;
         private Map<String,SampleGenotype> sampleGenotypes = ImmutableMap.of();
@@ -629,6 +649,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
         private FrequencyData frequencyData = FrequencyData.empty();
 
+        private boolean whiteListed = false;
         private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
         private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
 
@@ -704,6 +725,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
+        //TODO - this is error-prone as it is possible to supply a HashMap which would screw-up the fact that we're
+        // relying on the inherently ORDERED ImmutableMap implementation
         public Builder sampleGenotypes(Map<String, SampleGenotype> sampleGenotypes) {
             Objects.requireNonNull(sampleGenotypes);
             this.sampleGenotypes = sampleGenotypes;
@@ -741,6 +764,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
+        public Builder whiteListed(boolean whiteListed) {
+            this.whiteListed = whiteListed;
+            return this;
+        }
+
         public Builder pathogenicityData(PathogenicityData pathogenicityData) {
             this.pathogenicityData = pathogenicityData;
             return this;
@@ -774,7 +802,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             if (variantContext == null) {
                 // We don't check that the variant context agrees with the coordinates here as the variant context could
                 // have been split into different allelic variants so the positions and alleles could differ.
-                variantContext = buildVariantContext(chr, pos, ref, alt, phredScore, DEFAULT_SAMPLE_NAME);
+                variantContext = buildVariantContext(chr, pos, ref, alt, phredScore);
             }
             // Should this be here? Would it be safer to validate for null/empty fields here? This is primarily for
             // ease of testing. The TestAlleleFactory should fill in the missing fields for tests, although this
@@ -782,13 +810,45 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             if (sampleGenotypes.isEmpty()) {
                 sampleGenotypes = SINGLE_SAMPLE_HET_GENOTYPE;
             }
+
+            // n.b Storing the VariantContext in its raw string state as found in the file
+            // can save a significant amount of RAM, at the expense of having to decode and encode the variant context
+            // object twice.
+            //
+            // Standard POMP sample (4.3 million variants, single sample) Oracle JDK 11 (G1CG), Windows 10 release 1803
+            // -Xmx4G, preload random walk, caching maximumSize=6000000
+            // Heap used = max heap used after final GC event during variant filtering. RW matrix etc uses 2G.
+            // running on PASS_ONLY and discarding failed variants
+            //                | Heap Used |  TIME
+            // VariantContext | 3.1G   |  3m50s
+            // String         | 2.9G   |  4m45s
+            //
+            // running on PASS_ONLY but *RETAINING* all variants
+            //                | Heap Used |  TIME
+            // VariantContext | 4G+   |  didn't complete - constant GC churn after 2.3 mill variants
+            // String         | 3.4G  |  5m30s (constant spiky 30-60% CPU three full (90% CPU) GC events towards end)
+            //
+            // -Xmx8G, preload random walk, caching maximumSize=6000000
+            // running on PASS_ONLY and discarding failed variants
+            //                | Heap Used |  TIME
+            // VariantContext | 3.1G   |  3m55s (2 partial GC (60% CPU), avg 30-40% CPU)
+            // String         | 2.9G   |  4m25s (several partial GC (60% CPU), avg 30-40% CPU)
+            //
+            // running on PASS_ONLY but *RETAINING* all variants
+            //                | Heap Used |  TIME
+            // VariantContext | 5.9G  |  4m10s (7 partial GC (60% CPU), avg 50-60% CPU)
+            // String         | 4.3G  |  4m30s (3 partial GC (60% CPU), avg 30-40% CPU)
+
+//            VCFEncoder vcfEncoder = VcfCodecs.encoder(sampleGenotypes.keySet());
+//            vcfString = vcfEncoder.encode(variantContext);
+
             return new VariantEvaluation(this);
         }
 
         /**
          * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
          */
-        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual, String sampleName) {
+        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
             Allele refAllele = Allele.create(ref, true);
             Allele altAllele = Allele.create(alt);
             List<Allele> alleles = Arrays.asList(refAllele, altAllele);
@@ -796,12 +856,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             VariantContextBuilder vcBuilder = new VariantContextBuilder();
 
             // build Genotype
-            GenotypeBuilder gtBuilder = new GenotypeBuilder(sampleName).noAttributes();
+            GenotypeBuilder gtBuilder = new GenotypeBuilder(DEFAULT_SAMPLE_NAME).noAttributes();
             //default to HETEROZYGOUS
             gtBuilder.alleles(alleles);
 
             // build VariantContext
-            vcBuilder.loc("chr" + chr, pos, pos - 1L + ref.length());
+            vcBuilder.loc(String.valueOf(chr), pos, pos - 1L + ref.length());
             vcBuilder.alleles(alleles);
             vcBuilder.genotypes(gtBuilder.make());
             vcBuilder.log10PError(-0.1 * qual);

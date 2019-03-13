@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,22 +32,22 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class Frequency {
+public class Frequency {
 
-    private final float frequency;
     private final FrequencySource source;
+    private final float value;
 
-    public static Frequency valueOf(float frequency, FrequencySource source) {
-        return new Frequency(frequency, source);
+    public static Frequency of(FrequencySource source, float value) {
+        return new Frequency(source, value);
     }
 
-    private Frequency(float frequency, FrequencySource source) {
-        this.frequency = frequency;
+    private Frequency(FrequencySource source, float value) {
         this.source = source;
+        this.value = value;
     }
 
     public float getFrequency() {
-        return frequency;
+        return value;
     }
 
     public FrequencySource getSource() {
@@ -55,12 +55,12 @@ public final class Frequency {
     }
     
     public boolean isOverThreshold(float threshold) {
-        return frequency > threshold;
+        return value > threshold;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequency, source);
+        return Objects.hash(value, source);
     }
 
     @Override
@@ -75,12 +75,12 @@ public final class Frequency {
         if (source != frequency1.source) {
             return false;
         }
-        return Float.compare(frequency1.frequency, frequency) == 0;
+        return Float.compare(frequency1.value, value) == 0;
     }
 
     @Override
     public String toString() {
-        return "Frequency{" + frequency + " source=" + source + '}';
+        return "Frequency{" + source + "=" + value + '}';
     }
-    
+
 }

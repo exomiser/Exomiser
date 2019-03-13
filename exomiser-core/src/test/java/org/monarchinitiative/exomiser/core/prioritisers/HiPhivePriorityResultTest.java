@@ -165,6 +165,11 @@ public class HiPhivePriorityResultTest {
     }
 
     @Test
+    void testGetPhenotypeEvidenceText() {
+        System.out.println(instance.getPhenotypeEvidenceText());
+    }
+
+    @Test
     public void testToString() {
         System.out.println(instance.toString());
     }

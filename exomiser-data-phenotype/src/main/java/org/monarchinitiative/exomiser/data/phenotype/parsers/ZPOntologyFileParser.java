@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,16 +35,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * Parse the good old human-phenotype-ontology.obo file (or alternatively the
- * hp.obo file from our Hudson server). We want to create a table in the
- * database with lcname - HP:id - preferred name, where lcname is the lower-case
- * name or synonym, ID is the HPO id, and preferred name is the HPO Term name.
- * We lower-case the name ans synonyms to be able to search only over lower
- * cased names for the autosuggestion. However, we want to display the preferred
- * name in the end.
- *
- * @author Peter Robinson
- * @version 0.04 (27 November, 2013)
+ * ZPO parser
  */
 public class ZPOntologyFileParser implements ResourceParser {
 
@@ -60,7 +51,7 @@ public class ZPOntologyFileParser implements ResourceParser {
      * This function does the actual work of parsing the HPO file.
      *
      * @param resource
-     * @param inDir    Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param inDir    Complete path to directory containing the zp.obo file.
      * @param outDir   Directory where output file is to be written
      * @return
      */
@@ -84,8 +75,6 @@ public class ZPOntologyFileParser implements ResourceParser {
                     writer.newLine();
                 }
             }
-            writer.close();
-            reader.close();
             status = ResourceOperationStatus.SUCCESS;
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);

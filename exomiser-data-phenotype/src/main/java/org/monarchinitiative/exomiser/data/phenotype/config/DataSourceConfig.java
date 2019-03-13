@@ -28,7 +28,6 @@ package org.monarchinitiative.exomiser.data.phenotype.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -50,12 +49,9 @@ public class DataSourceConfig {
 
     private final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    @Autowired
-    Environment env;
-
     @Primary
     @Bean
-    public DataSource exomiserH2DataSource() {
+    public DataSource exomiserH2DataSource(Environment env) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getProperty("exomiser.h2.driverClassName"));
         dataSource.setUrl(env.getProperty("exomiser.h2.url"));

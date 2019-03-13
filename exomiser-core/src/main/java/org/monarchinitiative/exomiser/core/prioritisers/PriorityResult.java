@@ -51,7 +51,6 @@ public interface PriorityResult extends Comparable<PriorityResult> {
      */
     double getScore();
     
-    //TODO: is a PriorityType strictly necessary? Investigate...
     PriorityType getPriorityType();
 
     /**

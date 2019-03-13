@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,11 +61,10 @@ public class GeneticInterval implements ChromosomalRegion {
      * Returns a new GeneticInterval from the parsed string. Strings are to be
      * of the format: <li>chr1:123-456 chrY:1234-1220 chr19:345-567</li>
      *
-     * @param refDict
      * @param interval
      * @return
      */
-    public static GeneticInterval parseString(ReferenceDictionary refDict, String interval) {
+    public static GeneticInterval parseString(String interval) {
 
         String intervalPattern = "chr(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|X|Y|M):[0-9]+-[0-9]+";
         if (!Pattern.matches(intervalPattern, interval)) {
@@ -73,7 +72,7 @@ public class GeneticInterval implements ChromosomalRegion {
         }
 
         String[] intervalSections = interval.split(":");
-        int localChr = refDict.getContigNameToID().get(intervalSections[0]);
+        int localChr = Contig.parseId(intervalSections[0]);
 
         String positions = intervalSections[1];
         String[] startEnd = positions.split("-");

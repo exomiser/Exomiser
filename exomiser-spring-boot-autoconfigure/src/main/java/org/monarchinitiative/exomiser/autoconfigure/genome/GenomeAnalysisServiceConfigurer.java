@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.*;
-import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
-import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.slf4j.Logger;
@@ -53,11 +51,16 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     protected final JannovarData jannovarData;
     protected final MVStore mvStore;
 
+    protected final VariantWhiteList variantWhiteList;
+
     //Optional user-provided TabixDataSources
     protected final TabixDataSource localFrequencyTabixDataSource;
     protected final TabixDataSource caddSnvTabixDataSource;
     protected final TabixDataSource caddIndelTabixDataSource;
     protected final TabixDataSource remmTabixDataSource;
+
+    //Super-optional TabixDataSource for testing new PathogenicityScores
+    protected final TabixDataSource testPathogenicitySource;
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
@@ -68,10 +71,13 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         this.jannovarData = genomeDataSourceLoader.getJannovarData();
         this.mvStore = genomeDataSourceLoader.getMvStore();
 
+        this.variantWhiteList = genomeDataSourceLoader.getVariantWhiteList();
+
         this.localFrequencyTabixDataSource = genomeDataSourceLoader.getLocalFrequencyTabixDataSource();
         this.caddSnvTabixDataSource = genomeDataSourceLoader.getCaddSnvTabixDataSource();
         this.caddIndelTabixDataSource = genomeDataSourceLoader.getCaddIndelTabixDataSource();
         this.remmTabixDataSource = genomeDataSourceLoader.getRemmTabixDataSource();
+        this.testPathogenicitySource = genomeDataSourceLoader.getTestPathogenicityTabixDataSource();
     }
 
     /**
@@ -94,12 +100,15 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     //This method is calling the public interface of the concrete implementation so that the caching works on the DAOs
     protected VariantDataService buildVariantDataService() {
+        AllelePropertiesDaoAdapter allelePropertiesDaoAdapter = new AllelePropertiesDaoAdapter(allelePropertiesDao());
         return VariantDataServiceImpl.builder()
-                .defaultFrequencyDao(defaultFrequencyDao())
+                .defaultFrequencyDao(allelePropertiesDaoAdapter)
+                .defaultPathogenicityDao(allelePropertiesDaoAdapter)
                 .localFrequencyDao(localFrequencyDao())
-                .pathogenicityDao(pathogenicityDao())
                 .remmDao(remmDao())
                 .caddDao(caddDao())
+                .testPathScoreDao(testPathScoreDao())
+                .variantWhiteList(variantWhiteList)
                 .build();
     }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
  
@@ -40,7 +41,7 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class CaddDao {
+public class CaddDao implements PathogenicityDao {
  
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
 
@@ -52,7 +53,11 @@ public class CaddDao {
         this.caddSnvTabixDataSource = caddSnvTabixDataSource;
     }
 
-    @Cacheable(value = "cadd", keyGenerator = "variantKeyGenerator")
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.cadd", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.cadd", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
+    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting CADD data for {}", variant);
         return processResults(variant);
@@ -93,20 +98,8 @@ public class CaddDao {
     }
  
     private PathogenicityData makeCaddPathData(String phredScaledCaddScore) {
-        CaddScore caddScore = parseCaddScore(phredScaledCaddScore);
-        return PathogenicityData.of(caddScore);
-    }
-
-    private CaddScore parseCaddScore(String phredScaledCaddScore) {
         float score = Float.parseFloat(phredScaledCaddScore);
-        float cadd = rescaleLogTenBasedScore(score);
-        return CaddScore.valueOf(cadd);
-    }
- 
-    /**
-     * rescales a log10-Phred based score to a value between 0 and 1
-     */
-    private float rescaleLogTenBasedScore(float caddRaw) {
-        return 1 - (float) Math.pow(10, -(caddRaw / 10));
+        CaddScore caddScore = CaddScore.of(score);
+        return PathogenicityData.of(caddScore);
     }
 }

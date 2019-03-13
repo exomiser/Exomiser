@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.indexers.AlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.MvStoreAlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Main class for handling parsing of the {@link AlleleResource} and reading these into the variants.mv.db database.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VariantDatabaseBuildRunner {
@@ -43,45 +46,48 @@ public class VariantDatabaseBuildRunner {
     private static final Logger logger = LoggerFactory.getLogger(VariantDatabaseBuildRunner.class);
 
     private final Path buildPath;
-    private final String buildString;
+    private final BuildInfo buildInfo;
     private final List<AlleleResource> alleleResources;
 
-    public VariantDatabaseBuildRunner(Path buildPath, String buildString, List<AlleleResource> alleleResources) {
+    public VariantDatabaseBuildRunner(BuildInfo buildInfo, Path buildPath, List<AlleleResource> alleleResources) {
         this.buildPath = buildPath;
-        this.buildString = buildString;
+        this.buildInfo = buildInfo;
         this.alleleResources = alleleResources;
     }
 
     public void run() {
-        MVStore mvStore = new MVStore.Builder()
-                .fileName(buildPath.resolve(buildString + "_variants_temp.mv.db").toString())
+        MVStore mergeStore = new MVStore.Builder()
+                .fileName(buildPath.resolve(buildInfo.getBuildString() + "_variants_temp.mv.db").toString())
                 .compress()
                 .open();
 
-        AlleleIndexer alleleIndexer = new MvStoreAlleleIndexer(mvStore);
+        // This is threadsafe and can be run in parallel. However, the throughput is significantly slower,
+        // to the extent that the overall time is the same, at least on my machine (4 cores) it is.
+        // This holds true both using parallelStream and a fixed thread pool executor with only 2 threads.
+        AlleleIndexer alleleIndexer = new MvStoreAlleleIndexer(mergeStore);
         alleleResources.forEach(alleleIndexer::index);
 
         MVStore finalStore = new MVStore.Builder()
-                .fileName(buildPath.resolve(buildString + "_variants.mv.db").toString())
+                .fileName(buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString())
                 .compress()
                 .open();
 
-        // MVStore stands for Multi-VersionStore. Alleles appearing in multiple datasets will have a new version stored
+        // MVStore stands for Multi-Version Store. Alleles appearing in multiple datasets will have a new version stored
         // for each new dataset added.
         // These multiple versions can make the initial store much larger than we need as we only want the final version
         // of the allele. So as a workaround we're copying the entries from the original store to a new store which
         // will only contain one version of each allele. This leads to significant space savings on disk - e.g. 25 GB original
         // is only 12 GB when the final version is copied over. This operation takes about 40 min for 0.5 billion alleles.
-        copyToNewInstance(mvStore, finalStore);
+        copyToNewInstance(mergeStore, finalStore);
 
-        mvStore.close();
+        mergeStore.close();
         finalStore.close();
     }
 
     private void copyToNewInstance(MVStore mvStore, MVStore newStore) {
-        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        MVMap<AlleleKey, AlleleProperties> map = MvStoreUtil.openAlleleMVMap(mvStore);
 
-        MVMap<AlleleKey, AlleleProperties> newMap = newStore.openMap("alleles", MvStoreUtil.alleleMapBuilder());
+        MVMap<AlleleKey, AlleleProperties> newMap = MvStoreUtil.openAlleleMVMap(newStore);
 
         logger.info("Copying {} entries from temp store {} to final store {}", map.size(), mvStore.getFileStore().getFileName(), newStore.getFileStore().getFileName());
         int count = 0;

@@ -58,7 +58,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private FrequencyData localFrequencyData(float freq) {
-        return FrequencyData.of(RsId.empty(), Frequency.valueOf(freq, FrequencySource.LOCAL));
+        return FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, freq));
     }
 
     //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,61 +20,24 @@
 
 package org.monarchinitiative.exomiser.data.genome.model;
 
-import org.monarchinitiative.exomiser.data.genome.archive.AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.parsers.AlleleParser;
+import org.monarchinitiative.exomiser.data.genome.model.archive.AlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.AlleleParser;
 
-import java.util.Objects;
+import java.net.URL;
+import java.util.stream.Stream;
 
 /**
- * Data class for defining the resources required for processing an allele data set in the application.
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AlleleResource {
+public interface AlleleResource {
 
-    private final String name;
-    private final AlleleArchive alleleArchive;
-    private final AlleleParser alleleParser;
+    String getName();
 
-    public AlleleResource(String name, AlleleArchive alleleArchive, AlleleParser alleleParser) {
-        this.name = name;
-        this.alleleArchive = alleleArchive;
-        this.alleleParser = alleleParser;
-    }
+    URL getResourceUrl();
 
-    public String getName() {
-        return name;
-    }
+    AlleleArchive getAlleleArchive();
 
-    public AlleleArchive getAlleleArchive() {
-        return alleleArchive;
-    }
+    AlleleParser getAlleleParser();
 
-    public AlleleParser getAlleleParser() {
-        return alleleParser;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AlleleResource that = (AlleleResource) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(alleleArchive, that.alleleArchive) &&
-                Objects.equals(alleleParser, that.alleleParser);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, alleleArchive, alleleParser);
-    }
-
-    @Override
-    public String toString() {
-        return "AlleleResource{" +
-                "name='" + name + '\'' +
-                ", alleleArchive=" + alleleArchive +
-                ", alleleParser=" + alleleParser +
-                '}';
-    }
+    Stream<Allele> alleles();
 }

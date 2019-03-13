@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -75,7 +74,7 @@ public class DiseasePhenotypeParser implements ResourceParser {
             for (Map.Entry<String, Set<String>> entry : disease2PhenotypeMap.entrySet()) {
                 String diseaseId = entry.getKey();
                 Set<String> hpIds = entry.getValue();
-                writer.write(String.format("%s|%s%n", diseaseId, Joiner.on(",").join(hpIds)));
+                writer.write(String.format("%s|%s%n", diseaseId, String.join(",", hpIds)));
             }
             status = ResourceOperationStatus.SUCCESS;
 

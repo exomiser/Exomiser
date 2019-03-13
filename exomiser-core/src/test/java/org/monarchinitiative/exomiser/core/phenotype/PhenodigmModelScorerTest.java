@@ -68,7 +68,7 @@ public class PhenodigmModelScorerTest {
 
     @Test
     public void testScoreModelNoPhenotypesNoMatches() {
-        PhenotypeMatcher emptyMatches = new CrossSpeciesPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
+        PhenotypeMatcher emptyMatches = CrossSpeciesPhenotypeMatcher.of(Organism.HUMAN, Collections.emptyMap());
 
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(emptyMatches);
 

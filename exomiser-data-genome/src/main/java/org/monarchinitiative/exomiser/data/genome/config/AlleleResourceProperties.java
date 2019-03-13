@@ -20,38 +20,59 @@
 
 package org.monarchinitiative.exomiser.data.genome.config;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AlleleResourceProperties {
+class AlleleResourceProperties {
 
-    private String fileName;
-    private Path fileDirectory;
-    private String fileUrl;
+    private final String fileName;
+    private final Path fileDirectory;
+    private final String fileUrl;
+
+    public AlleleResourceProperties(String fileName, Path fileDirectory, String fileUrl) {
+        this.fileName = fileName;
+        this.fileDirectory = fileDirectory;
+        if (!fileUrl.endsWith("/")) {
+            this.fileUrl = fileUrl + "/";
+        } else {
+            this.fileUrl = fileUrl;
+        }
+    }
 
     public String getFileName() {
         return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public Path getFileDirectory() {
         return fileDirectory;
     }
 
-    public void setFileDirectory(Path fileDirectory) {
-        this.fileDirectory = fileDirectory.toAbsolutePath();
-    }
-
     public String getFileUrl() {
         return fileUrl;
     }
 
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
+    public Path getAlleleResourcePath() {
+        return fileDirectory.resolve(fileName);
+    }
+
+    public URL getAlleleResourceUrl() {
+        try {
+            return new URL(fileUrl + fileName);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Incorrectly formatted allele resource URL", e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "AlleleResourceProperties{" +
+                "fileName='" + fileName + '\'' +
+                ", fileDirectory=" + fileDirectory +
+                ", fileUrl='" + fileUrl + '\'' +
+                '}';
     }
 }

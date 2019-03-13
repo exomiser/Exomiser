@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -34,8 +34,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class QueryPhenotypeMatchTest {
 
-    private QueryPhenotypeMatch instance;
-
     //No phenotype match
     private final PhenotypeTerm noMatchTerm = PhenotypeTerm.of("HP:0000000", "No match phenotype");
 
@@ -44,8 +42,11 @@ public class QueryPhenotypeMatchTest {
     private final PhenotypeTerm nose = PhenotypeTerm.of("HP:0000002", "Nose");
     private final PhenotypeTerm littleNose = PhenotypeTerm.of("HP:0000003", "Little nose");
 
-    private final PhenotypeMatch perfectNoseMatch = PhenotypeMatch.builder().query(bigNose).match(bigNose).lcs(bigNose).ic(2.0).simj(1.0).score(4.0).build();
-    private final PhenotypeMatch noseMatch = PhenotypeMatch.builder().query(bigNose).match(littleNose).lcs(nose).ic(1.0).simj(0.5).score(1.0).build();
+    private final PhenotypeMatch perfectNoseMatch = PhenotypeMatch.builder()
+            .query(bigNose).match(bigNose).lcs(bigNose).ic(2.0).simj(1.0).score(4.0).build();
+
+    private final PhenotypeMatch noseMatch = PhenotypeMatch.builder()
+            .query(bigNose).match(littleNose).lcs(nose).ic(1.0).simj(0.5).score(1.0).build();
 
     //Toe phenotypes
     private final PhenotypeTerm toe = PhenotypeTerm.of("HP:0000004", "Toe");
@@ -53,19 +54,20 @@ public class QueryPhenotypeMatchTest {
     private final PhenotypeTerm crookedToe = PhenotypeTerm.of("HP:0000006", "Crooked toe");
     private final PhenotypeTerm longToe = PhenotypeTerm.of("HP:0000007", "Long toe");
 
-    private final PhenotypeMatch bestToeMatch = PhenotypeMatch.builder().query(bigToe).match(longToe).lcs(toe).ic(1.0).simj(1.0).score(2.0).build();
-    private final PhenotypeMatch bigToeCrookedToeMatch = PhenotypeMatch.builder().query(bigToe).match(crookedToe).lcs(toe).ic(1.0).simj(1.0).score(1.5).build();
+    private final PhenotypeMatch bestToeMatch = PhenotypeMatch.builder()
+            .query(bigToe).match(longToe).lcs(toe).ic(1.0).simj(1.0).score(2.0).build();
+
+    private final PhenotypeMatch bigToeCrookedToeMatch = PhenotypeMatch.builder()
+            .query(bigToe).match(crookedToe).lcs(toe).ic(1.0).simj(1.0).score(1.5).build();
 
     private final Set<PhenotypeMatch> bestMatches = Sets.newHashSet(perfectNoseMatch, bestToeMatch);
 
-    @BeforeEach
-    public void setUp() {
-        Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = new LinkedHashMap<>();
-        phenotypeMatches.put(bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch));
-        phenotypeMatches.put(bigToe, Sets.newHashSet(bestToeMatch, bigToeCrookedToeMatch));
+    private final Map<PhenotypeTerm, Set<PhenotypeMatch>> queryPhenotypeMatches = ImmutableMap.of(
+            bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch),
+            bigToe, Sets.newHashSet(bestToeMatch, bigToeCrookedToeMatch)
+    );
 
-        instance = new QueryPhenotypeMatch(Organism.HUMAN, phenotypeMatches);
-    }
+    private final QueryPhenotypeMatch instance = new QueryPhenotypeMatch(Organism.HUMAN, queryPhenotypeMatches);
 
     @Test
     public void testWithNoPhenotypeMatch() {
@@ -93,8 +95,13 @@ public class QueryPhenotypeMatchTest {
     }
 
     @Test
-    public void testGetOrganism() throws Exception {
+    public void testGetOrganism() {
         assertThat(instance.getOrganism(), equalTo(Organism.HUMAN));
+    }
+
+    @Test
+    void testGetQueryPhenotypeMatches() {
+        assertThat(instance.getQueryTermPhenotypeMatches(), equalTo(queryPhenotypeMatches));
     }
 
     @Test
@@ -103,7 +110,7 @@ public class QueryPhenotypeMatchTest {
     }
 
     @Test
-    public void testGetBestPhenotypeMatches() throws Exception {
+    public void testGetBestPhenotypeMatches() {
         assertThat(instance.getBestPhenotypeMatches(), equalTo(bestMatches));
     }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * This class is designed to parseResource two files from OMIM in order to
@@ -69,7 +67,7 @@ public class MimToGeneParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(MimToGeneParser.class);
 
-    Map<Integer, Set<Integer>> mim2geneMap;
+    private final Map<Integer, Integer> mim2geneMap;
 
     /**
      * Key: A MIM id for a Gene; Value: the corresponding entrez Gene id. This
@@ -77,7 +75,7 @@ public class MimToGeneParser implements ResourceParser {
      *
      * @param mim2geneMap
      */
-    public MimToGeneParser(Map<Integer, Set<Integer>> mim2geneMap) {
+    public MimToGeneParser(Map<Integer, Integer> mim2geneMap) {
         this.mim2geneMap = mim2geneMap;
     }
 
@@ -136,11 +134,12 @@ public class MimToGeneParser implements ResourceParser {
                 Integer mim = Integer.parseInt(fields[0]);
                 Integer entrezGeneId = Integer.parseInt(fields[2]); // Entrez Gene ID */
                 if (mim2geneMap.containsKey(mim)) {
-                    mim2geneMap.get(mim).add(entrezGeneId);
+                    logger.warn("{} already mapped to EntrezId {}", mim, mim2geneMap.get(mim));
+//                    mim2geneMap.get(mim).add(entrezGeneId);
                 } else {
-                    Set<Integer> geneSet = new TreeSet<>();
-                    geneSet.add(entrezGeneId);
-                    mim2geneMap.put(mim, geneSet);
+//                    Set<Integer> geneSet = new TreeSet<>();
+//                    geneSet.add(entrezGeneId);
+                    mim2geneMap.put(mim, entrezGeneId);
                 }
             }
         } catch (NumberFormatException e) {

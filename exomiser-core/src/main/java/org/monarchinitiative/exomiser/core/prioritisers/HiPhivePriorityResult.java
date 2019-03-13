@@ -136,16 +136,14 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         StringBuilder humanBuilder = new StringBuilder();
         StringBuilder mouseBuilder = new StringBuilder();
         StringBuilder fishBuilder = new StringBuilder();
-        StringBuilder humanPPIBuilder = new StringBuilder();
-        StringBuilder mousePPIBuilder = new StringBuilder();
-        StringBuilder fishPPIBuilder = new StringBuilder();
 
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence) {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
             switch (geneModelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
                     GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
-                    humanBuilder.append(geneDiseaseModel.getDiseaseTerm() + " (" + geneDiseaseModel.getDiseaseId() + "): ");
+                    humanBuilder.append(geneDiseaseModel.getDiseaseTerm())
+                            .append(" (").append(geneDiseaseModel.getDiseaseId()).append("): ");
                     makeBestPhenotypeMatchText(humanBuilder, bestMatchesForModel);
                     break;
                 case MOUSE:
@@ -155,27 +153,36 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                     makeBestPhenotypeMatchText(fishBuilder, bestMatchesForModel);
             }
         }
+
+        StringBuilder humanPPIBuilder = new StringBuilder();
+        StringBuilder mousePPIBuilder = new StringBuilder();
+        StringBuilder fishPPIBuilder = new StringBuilder();
+
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : ppiEvidence) {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
+            String proximityToGeneSymbol = "Proximity to " + geneModelPhenotypeMatch.getHumanGeneSymbol() + " ";
             switch (geneModelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
                     GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
-                    humanPPIBuilder.append("Proximity to " + geneModelPhenotypeMatch.getHumanGeneSymbol() + " associated with " + geneDiseaseModel
-                            .getDiseaseTerm() + " (" + geneDiseaseModel.getDiseaseId() + "): ");
+                    humanPPIBuilder.append(proximityToGeneSymbol)
+                            .append("associated with ")
+                            .append(geneDiseaseModel.getDiseaseTerm())
+                            .append(" (").append(geneDiseaseModel.getDiseaseId()).append("): ");
                     makeBestPhenotypeMatchText(humanPPIBuilder, bestMatchesForModel);
                     break;
                 case MOUSE:
-                    mousePPIBuilder.append("Proximity to " + geneModelPhenotypeMatch.getHumanGeneSymbol() + " ");
+                    mousePPIBuilder.append(proximityToGeneSymbol);
                     makeBestPhenotypeMatchText(mousePPIBuilder, bestMatchesForModel);
                     break;
                 case FISH:
-                    fishPPIBuilder.append("Proximity to " + geneModelPhenotypeMatch.getHumanGeneSymbol() + " ");
+                    fishPPIBuilder.append(proximityToGeneSymbol);
                     makeBestPhenotypeMatchText(fishPPIBuilder, bestMatchesForModel);
             }
         }
         String human = humanBuilder.toString();
         String mouse = mouseBuilder.toString();
         String fish = fishBuilder.toString();
+
         String humanPPI = humanPPIBuilder.toString();
         String mousePPI = mousePPIBuilder.toString();
         String fishPPI = fishPPIBuilder.toString();

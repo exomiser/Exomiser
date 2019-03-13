@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceMock;
+import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
@@ -49,18 +49,19 @@ public class PathogenicityDataProviderTest {
     private static final Set<PathogenicitySource> EMPTY_SET = Collections.emptySet();
 
     private PathogenicityDataProvider instance;
-    private VariantDataServiceMock variantDataService;
+    private TestVariantDataService variantDataService;
 
     private VariantEvaluation variant;
-    private static final PathogenicityData EXPECTED_PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1f), SiftScore
-            .valueOf(0f), MutationTasterScore.valueOf(1f));
+    private static final PathogenicityData EXPECTED_PATH_DATA = PathogenicityData.of(PolyPhenScore.of(1f), SiftScore
+            .of(0f), MutationTasterScore.of(1f));
     private static final PathogenicityData EMPTY_PATH_DATA = PathogenicityData.empty();
 
     @BeforeEach
     public void setUp() {
-        variantDataService = new VariantDataServiceMock();
         variant = VariantEvaluation.builder(1, 1, "A", "T").pathogenicityData(EMPTY_PATH_DATA).build();
-        variantDataService.put(variant, EXPECTED_PATH_DATA);
+        variantDataService = TestVariantDataService.builder()
+                .put(variant, EXPECTED_PATH_DATA)
+                .build();
     }
 
     @Test

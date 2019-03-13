@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,11 +30,17 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for retrieving phenotype data from the database for use by the
@@ -45,15 +51,38 @@ import java.util.Set;
 @Service
 public class OntologyServiceImpl implements OntologyService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OntologyServiceImpl.class);
+
     private final HumanPhenotypeOntologyDao hpoDao;
     private final MousePhenotypeOntologyDao mpoDao;
     private final ZebraFishPhenotypeOntologyDao zpoDao;
+
+    private final HpoIdChecker hpoIdChecker;
 
     @Autowired
     public OntologyServiceImpl(HumanPhenotypeOntologyDao hpoDao, MousePhenotypeOntologyDao mpoDao, ZebraFishPhenotypeOntologyDao zpoDao) {
         this.hpoDao = hpoDao;
         this.mpoDao = mpoDao;
         this.zpoDao = zpoDao;
+
+        Map<String, PhenotypeTerm> hpAltIds = setUpHpoAltIds();
+        this.hpoIdChecker = HpoIdChecker.of(hpAltIds);
+    }
+
+    private Map<String, PhenotypeTerm> setUpHpoAltIds() {
+        Map<String, PhenotypeTerm> hpAltIds = hpoDao.getIdToPhenotypeTerms();
+        // in cases where there old phenotype database schema is being used the above will log an exception
+        // and return an empty list. In that case instead of refusing to start, revert back to the old behaviour of not
+        // checking the input too closely.
+        if (hpAltIds.isEmpty()) {
+            Map<String, PhenotypeTerm> alternateIdToPhenotypeTerms = new LinkedHashMap<>();
+            Set<PhenotypeTerm> allTerms = hpoDao.getAllTerms();
+            for (PhenotypeTerm term : allTerms) {
+                alternateIdToPhenotypeTerms.put(term.getId(), term);
+            }
+            return alternateIdToPhenotypeTerms;
+        }
+        return hpAltIds;
     }
 
     @Cacheable(value = "hpo")
@@ -98,12 +127,20 @@ public class OntologyServiceImpl implements OntologyService {
      */
     @Override
     public PhenotypeTerm getPhenotypeTermForHpoId(String hpoId) {
-        for (PhenotypeTerm hpoTerm : getHpoTerms()) {
-            if (hpoTerm.getId().equals(hpoId)) {
-                return hpoTerm;
-            }
+        try {
+            return hpoIdChecker.getCurrentTerm(hpoId);
+        } catch (IllegalArgumentException ex) {
+            // swallow exception thrown for unrecognised HPO ids
+            logger.warn("{}", ex.getMessage());
         }
         return null;
     }
 
+    @Override
+    public List<String> getCurrentHpoIds(List<String> hpoIds) {
+       return hpoIds.stream()
+                .map(hpoIdChecker::getCurrentId)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }

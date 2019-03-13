@@ -43,7 +43,7 @@ public class TabixDataSourceLoaderTest {
 
     @Test
     public void testLoadResource() throws Exception {
-        Path remmTabixFilePath = Paths.get("src/test/resources/data/remmData.tsv.gz");
+        Path remmTabixFilePath = Paths.get("src/test/resources/data/remm/remmData.tsv.gz");
         TabixDataSource tabixDataSource = TabixDataSourceLoader.load(remmTabixFilePath);
         assertThat(tabixDataSource.getSource(), equalTo(remmTabixFilePath.toAbsolutePath().toString()));
     }

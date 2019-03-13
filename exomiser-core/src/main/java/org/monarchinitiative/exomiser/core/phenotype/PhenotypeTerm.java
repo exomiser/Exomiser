@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,8 +47,9 @@ public final class PhenotypeTerm implements Comparable<PhenotypeTerm> {
     private final Status status;
 
     private PhenotypeTerm(String id, String label, Status status) {
+        Objects.requireNonNull(id, "Term id cannot be null");
         this.id = id;
-        this.label = label;
+        this.label = label == null ?  "" : label;
         this.status = status;
     }
 

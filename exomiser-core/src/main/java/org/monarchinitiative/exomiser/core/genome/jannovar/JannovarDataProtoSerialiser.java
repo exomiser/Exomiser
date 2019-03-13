@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,6 +66,20 @@ public class JannovarDataProtoSerialiser {
     }
 
     public static JannovarData load(Path jannovarProtoPath) {
+        JannovarProto.JannovarData protoJannovarData = loadProto(jannovarProtoPath);
+        return JannovarProtoConverter.toJannovarData(protoJannovarData);
+    }
+
+    /**
+     * Returns the native Protobuf stored in the Jannovar transcripts data file. This is not suitable for direct use in
+     * Exomiser. Most users will require the load() method.
+      *
+     * @param jannovarProtoPath
+     * @return Deserialised Protobuf-encoded JannovarData object.
+     * @throws JannovarDataSerializerException on error
+     * @since 12.0.0
+     */
+    public static JannovarProto.JannovarData loadProto(Path jannovarProtoPath) {
         logger.info("Deserialising Jannovar data from {}", jannovarProtoPath);
         Instant start = Instant.now();
         try (InputStream inputStream = Files.newInputStream(jannovarProtoPath)) {
@@ -77,7 +91,7 @@ public class JannovarDataProtoSerialiser {
             try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
                 JannovarProto.JannovarData protoJannovarData = JannovarProto.JannovarData.parseFrom(gzipInputStream);
                 logger.info("Deserialisation took {} sec.", Duration.between(start, Instant.now()).toMillis() / 1000f);
-                return JannovarProtoConverter.toJannovarData(protoJannovarData);
+                return protoJannovarData;
             }
         } catch (IOException e) {
             logger.error("Unable to deserialise data", e);

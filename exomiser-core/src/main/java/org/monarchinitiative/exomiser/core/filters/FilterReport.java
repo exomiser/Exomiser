@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -39,26 +40,19 @@ import java.util.Objects;
 public class FilterReport {
 
     private final FilterType filterType;
-
     private final List<String> messages;
-
     private final int passed;
-
     private final int failed;
 
-    public FilterReport(FilterType filterType, int pass, int fail) {
+    public FilterReport(FilterType filterType, int pass, int fail, List<String> messages) {
         this.filterType = filterType;
-        passed = pass;
-        failed = fail;
-        messages = new ArrayList<>();
+        this.passed = pass;
+        this.failed = fail;
+        this.messages = ImmutableList.copyOf(messages);
     }
 
     public FilterType getFilterType() {
         return filterType;
-    }
-
-    public boolean addMessage(String message) {
-        return messages.add(message);
     }
 
     public List<String> getMessages() {

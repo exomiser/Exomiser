@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.hgvs.AminoAcidCode;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.*;
@@ -103,14 +104,15 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
         String geneId = buildGeneId(highestImpactAnnotation);
 
-        VariantEffect higestImpactEffect = variantAnnotations.getHighestImpactEffect();
+        //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
+        VariantEffect highestImpactEffect = allelePosition.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations.getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         int pos = allelePosition.getPos();
         String ref = allelePosition.getRef();
         String alt = allelePosition.getAlt();
 
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(higestImpactEffect, chr, pos);
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, pos);
         return VariantAnnotation.builder()
                 .genomeAssembly(genomeAssembly)
                 .chromosome(chr)
@@ -121,7 +123,8 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .geneId(geneId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)
-                .annotations(annotations).build();
+                .annotations(annotations)
+                .build();
     }
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
@@ -139,7 +142,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .geneSymbol(buildGeneSymbol(annotation))
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
                 .hgvsCdna(annotation.getCDSNTChangeStr())
-                .hgvsProtein(annotation.getProteinChangeStr())
+                .hgvsProtein(annotation.getProteinChangeStr(AminoAcidCode.THREE_LETTER))
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))
                 .build();
     }

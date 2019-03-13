@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,8 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -83,12 +85,16 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
+            Instant timeStart = Instant.now();
             //this *could* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //HOWEVER there may be threading issues so this needs investigation.
             analysisScripts.forEach(analysis ->{
                 logger.info("Running analysis: {}", analysis);
                 runAnalysisFromScript(analysis);
             });
+            Duration duration = Duration.between(timeStart, Instant.now());
+            long ms = duration.toMillis();
+            logger.info("Finished batch of {} samples in {}m {}s ({} ms)", analysisScripts.size(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
         }
     }
 

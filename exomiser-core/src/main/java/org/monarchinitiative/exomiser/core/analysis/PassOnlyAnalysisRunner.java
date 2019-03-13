@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SparseVariantFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
@@ -59,12 +60,13 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters, FilterStats filterStats) {
         return variantEvaluation -> {
             //loop through the filters and only run if the variantEvaluation has passed all prior filters
             for (VariantFilter filter : variantFilters) {
                 if (variantEvaluation.passedFilters()) {
-                    variantFilterRunner.run(filter, variantEvaluation);
+                    FilterResult result = variantFilterRunner.run(filter, variantEvaluation);
+                    filterStats.addResult(result);
                 }
             }
             return variantEvaluation.passedFilters();

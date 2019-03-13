@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +47,15 @@ public class GenomeDataSources {
     private Path mvStorePath;
     private DataSource genomeDataSource;
 
+    private Path variantWhiteListPath;
+
     // Tabix files
     private Path localFrequencyPath;
     private Path caddSnvPath;
     private Path caddIndelPath;
     private Path remmPath;
 
+    private Path testPathogenicityScorePath;
     /**
      * Static constructor which will automatically resolve the resources for the supplied {@code GenomeProperties} where
      * the data directory for the data version and genome assembly are to be found on the {@code exomiserDataDirectory}
@@ -71,19 +75,25 @@ public class GenomeDataSources {
         Path mvStoreFilePath = buildMvStorePath(genomeDataResolver);
         DataSource genomeDataSource = buildGenomeDataSource(genomeProperties, genomeDataResolver);
 
+        Path variantWhiteListPath = resolvePathOrNullIfEmpty(genomeProperties.getVariantWhiteListPath(), genomeDataResolver);
+
         Path localFreqPath = resolvePathOrNullIfEmpty(genomeProperties.getLocalFrequencyPath(), genomeDataResolver);
         Path caddSnvPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddSnvPath(), genomeDataResolver);
         Path caddIndelPath = resolvePathOrNullIfEmpty(genomeProperties.getCaddInDelPath(), genomeDataResolver);
         Path remmPath = resolvePathOrNullIfEmpty(genomeProperties.getRemmPath(), genomeDataResolver);
 
+        Path testPathogenicityPath = resolvePathOrNullIfEmpty(genomeProperties.getTestPathogenicityScorePath(), genomeDataResolver);
+
         return GenomeDataSources.builder()
                 .transcriptFilePath(transcriptFilePath)
                 .mvStorePath(mvStoreFilePath)
                 .genomeDataSource(genomeDataSource)
+                .variantWhiteListPath(variantWhiteListPath)
                 .localFrequencyPath(localFreqPath)
                 .caddSnvPath(caddSnvPath)
                 .caddIndelPath(caddIndelPath)
                 .remmPath(remmPath)
+                .testPathogenicityScorePath(testPathogenicityPath)
                 .build();
     }
 
@@ -131,10 +141,13 @@ public class GenomeDataSources {
         this.genomeDataSource = builder.genomeDataSource;
         this.mvStorePath = builder.mvStorePath;
 
+        this.variantWhiteListPath = builder.variantWhiteListPath;
+
         this.localFrequencyPath = builder.localFrequencyPath;
         this.caddSnvPath = builder.caddSnvPath;
         this.caddIndelPath = builder.caddIndelPath;
         this.remmPath = builder.remmPath;
+        this.testPathogenicityScorePath = builder.testPathogenicityPath;
     }
 
     public Path getTranscriptFilePath() {
@@ -147,6 +160,10 @@ public class GenomeDataSources {
 
     public DataSource getGenomeDataSource() {
         return genomeDataSource;
+    }
+
+    public Optional<Path> getVariantWhiteListPath() {
+        return Optional.ofNullable(variantWhiteListPath);
     }
 
     public Optional<Path> getLocalFrequencyPath() {
@@ -167,6 +184,10 @@ public class GenomeDataSources {
 
     public Optional<Path> getRemmPath() {
         return Optional.ofNullable(remmPath);
+    }
+
+    public Optional<Path> getTestPathogenicityPath() {
+        return Optional.ofNullable(testPathogenicityScorePath);
     }
 
     @Override
@@ -212,10 +233,12 @@ public class GenomeDataSources {
         private DataSource genomeDataSource;
 
         //These are all expected to be null as they are optional data sources
+        private Path variantWhiteListPath;
         private Path localFrequencyPath = null;
         private Path caddSnvPath = null;
         private Path caddIndelPath = null;
         private Path remmPath = null;
+        private Path testPathogenicityPath = null;
 
         public Builder transcriptFilePath(Path transcriptFilePath) {
             Objects.requireNonNull(transcriptFilePath);
@@ -232,6 +255,11 @@ public class GenomeDataSources {
         public Builder genomeDataSource(DataSource genomeDataSource) {
             Objects.requireNonNull(genomeDataSource);
             this.genomeDataSource = genomeDataSource;
+            return this;
+        }
+
+        public Builder variantWhiteListPath(Path variantWhiteListPath) {
+            this.variantWhiteListPath = variantWhiteListPath;
             return this;
         }
 
@@ -268,6 +296,11 @@ public class GenomeDataSources {
          */
         public Builder remmPath(Path remmPath) {
             this.remmPath = remmPath;
+            return this;
+        }
+
+        public Builder testPathogenicityScorePath(Path testPathogenicityPath) {
+            this.testPathogenicityPath = testPathogenicityPath;
             return this;
         }
 

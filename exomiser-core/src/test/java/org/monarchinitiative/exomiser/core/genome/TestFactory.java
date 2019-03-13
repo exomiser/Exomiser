@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -113,11 +113,11 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
-        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), new VariantDataServiceStub(), DEFAULT_VARIANT_FACTORY);
+        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), TestVariantDataService.stub(), DEFAULT_VARIANT_FACTORY);
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
-        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA, ChromosomalRegionIndex.empty())));
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), TestVariantDataService.stub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA, ChromosomalRegionIndex.empty())));
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.nio.file.Path;
@@ -33,16 +34,24 @@ import java.nio.file.Paths;
 public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     private GenomeAssembly assembly;
-    private TranscriptSource transcriptSource = TranscriptSource.ensembl;
+    private TranscriptSource transcriptSource = TranscriptSource.ENSEMBL;
     private String dataVersion = "";
 
     private Path dataDirectory;
 
-    //Optional tabix variant data
+    // Optional tabix data file containing whitelisted variants
+    // This overrides the variant effect, frequency and pathogenicity filters
+    private String variantWhiteListPath = "";
+
+    // Optional tabix variant data
     private String caddSnvPath = "";
     private String caddInDelPath = "";
     private String remmPath = "";
     private String localFrequencyPath = "";
+
+    // 'special' tabix datasource for quickly testing new pathogenicity data sources before plumbing them into the main
+    // datastore
+    private String testPathogenicityScorePath = "";
 
     @Override
     public Path getDataDirectory() {
@@ -82,7 +91,7 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     }
 
     public void setTranscriptSource(String name) {
-        this.transcriptSource = TranscriptSource.valueOf(name);
+        this.transcriptSource = TranscriptSource.parseValue(name);
     }
 
     public DataSourceProperties getDatasource() {
@@ -91,6 +100,14 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     public void setDatasource(DataSourceProperties dataSourceProperties) {
         this.datasource = dataSourceProperties;
+    }
+
+    public String getVariantWhiteListPath() {
+        return variantWhiteListPath;
+    }
+
+    public void setVariantWhiteListPath(String variantWhiteListPath) {
+        this.variantWhiteListPath = variantWhiteListPath;
     }
 
     public String getCaddSnvPath() {
@@ -125,4 +142,11 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
         this.localFrequencyPath = localFrequencyPath;
     }
 
+    public String getTestPathogenicityScorePath() {
+        return testPathogenicityScorePath;
+    }
+
+    public void setTestPathogenicityScorePath(String testPathogenicityScorePath) {
+        this.testPathogenicityScorePath = testPathogenicityScorePath;
+    }
 }

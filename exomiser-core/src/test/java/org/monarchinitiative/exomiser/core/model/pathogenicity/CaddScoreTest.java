@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,33 +25,33 @@
  */
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class CaddScoreTest {
-    
-    private CaddScore instance;
-    float score = 1.0f;
-    
-    @BeforeEach
-    public void setUp() {
-        instance = CaddScore.valueOf(score);
-    }
 
     @Test
     public void testGetSource() {
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.CADD));
+        assertThat(CaddScore.of(1.0f).getSource(), equalTo(PathogenicitySource.CADD));
     }
-    
+
+    @Test
+    void testScaling() {
+        assertThat(CaddScore.of(10f).getScore(), equalTo(0.90f));
+        assertThat((double) CaddScore.of(13f).getScore(), closeTo(0.95f, 0.1f));
+        assertThat(CaddScore.of(20f).getScore(), equalTo(0.99f));
+    }
+
     @Test
     public void testToString() {
+        System.out.println(CaddScore.of(10f));
     }
     
 }

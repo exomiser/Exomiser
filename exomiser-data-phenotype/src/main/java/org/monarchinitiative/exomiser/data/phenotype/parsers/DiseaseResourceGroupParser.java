@@ -48,6 +48,7 @@ public class DiseaseResourceGroupParser extends AbstractResourceGroupParser impl
 
     private Resource orphanet2GeneResource;
     private Resource disease2TermResource;
+    private Resource orphanetDiseaseGeneTypeResource;
 
     @Override
     public void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir) {
@@ -66,7 +67,11 @@ public class DiseaseResourceGroupParser extends AbstractResourceGroupParser impl
         Disease2TermParser disease2TermParser = new Disease2TermParser(disease2termMap);
         disease2TermParser.parseResource(disease2TermResource, inDir, outDir);
 
-        Orphanet2GeneParser orphanet2GeneParser = new Orphanet2GeneParser(disease2termMap);
+        Map<String, String> diseaseGeneTypeMap = new HashMap<>();
+        OrphanetDiseaseGeneTypeParser orphanetDiseaseGeneTypeParser = new OrphanetDiseaseGeneTypeParser(diseaseGeneTypeMap);
+        orphanetDiseaseGeneTypeParser.parseResource(orphanetDiseaseGeneTypeResource, inDir, outDir);
+
+        Orphanet2GeneParser orphanet2GeneParser = new Orphanet2GeneParser(disease2termMap, diseaseGeneTypeMap);
         orphanet2GeneParser.parseResource(orphanet2GeneResource, inDir, outDir);
     }
 
@@ -84,6 +89,11 @@ public class DiseaseResourceGroupParser extends AbstractResourceGroupParser impl
             return false;
         }
 
+        orphanetDiseaseGeneTypeResource = resourceGroup.getResource(OrphanetDiseaseGeneTypeParser.class);
+        if (orphanetDiseaseGeneTypeResource == null) {
+            logResourceMissing(resourceGroup.getName(), OrphanetDiseaseGeneTypeParser.class);
+            return false;
+        }
 
         return true;
     }

@@ -32,6 +32,7 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.service.HpoIdChecker;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyServiceImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
@@ -62,7 +63,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         DefaultDiseaseDao.class,
         HumanPhenotypeOntologyDao.class,
         MousePhenotypeOntologyDao.class,
-        ZebraFishPhenotypeOntologyDao.class
+        ZebraFishPhenotypeOntologyDao.class,
+        HpoIdChecker.class
 })
 @Sql(scripts = {
         "file:src/test/resources/sql/create_disease.sql",

@@ -31,6 +31,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -53,8 +55,9 @@ public class ExomiserTest {
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
     private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
+    private final OntologyService ontologyService = TestOntologyService.builder().build();
 
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
     //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module
     private Exomiser instance = new Exomiser(analysisFactory);
 
@@ -85,7 +88,7 @@ public class ExomiserTest {
         GenomeAnalysisService grch38Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
         GenomeAnalysisServiceProvider twoAssemblyProvider = new GenomeAnalysisServiceProvider(grch37Service, grch38Service);
-        AnalysisFactory analysisFactory = new AnalysisFactory(twoAssemblyProvider, priorityFactory);
+        AnalysisFactory analysisFactory = new AnalysisFactory(twoAssemblyProvider, priorityFactory, ontologyService);
 
         Exomiser twoAssembliesSupportedExomiser = new Exomiser(analysisFactory);
 

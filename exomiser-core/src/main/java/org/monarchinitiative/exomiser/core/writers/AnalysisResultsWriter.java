@@ -61,7 +61,7 @@ public class AnalysisResultsWriter {
             writeForInheritanceMode(ModeOfInheritance.ANY, outputFormatsForAnyMoi, analysis, analysisResults, outputSettings, resultsWriterFactory);
         } else {
             for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
-                logger.info("Writing {} results:", modeOfInheritance);
+                logger.debug("Writing {} results:", modeOfInheritance);
                 // Can't do this in parallel because theses are mutated each time for a different mode here.
                 // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
                 // without interfering with other writes for different modes. Check RAM requirements.

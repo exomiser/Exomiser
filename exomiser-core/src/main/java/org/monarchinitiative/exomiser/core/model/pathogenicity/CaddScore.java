@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,20 +25,25 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class CaddScore extends BasePathogenicityScore {
+public class CaddScore extends ScaledPathogenicityScore {
 
-    public static CaddScore valueOf(float score) {
-        return new CaddScore(score);
+    /**
+     * Creates a {@link CaddScore} from the input PHRED scaled score. *IMPORTANT* this method will rescale the input
+     * PHRED score to a score in the 0-1 range, therefore ensure the correct CADD score is used here.
+     *
+     * According to https://cadd.gs.washington.edu/info a good cutoff to use is the PHRED scaled scores of
+     * 10-20 which equates to 90-99% most deleterious or 13-20 (95-99%). For reference, these are scaled to 0.90 - 0.99.
+     *
+     * The M-CAP authors (http://bejerano.stanford.edu/mcap/) suggest these cutoffs are too permissive, although their
+     * recommended thresholds don't appear to match what was actually suggested by the CADD authors.
+     */
+    public static CaddScore of(float phredScaledScore) {
+        float score = 1 - (float) Math.pow(10, -(phredScaledScore / 10));
+        return new CaddScore(phredScaledScore, score);
     }
         
-    private CaddScore(float score) {
-        super(score, PathogenicitySource.CADD);
+    private CaddScore(float rawScore, float scaledScore) {
+        super(PathogenicitySource.CADD, rawScore, scaledScore);
     }
 
-    @Override
-    public String toString() {
-        return "CADD: " + score;
-    }
-    
-    
 }

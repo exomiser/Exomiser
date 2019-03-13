@@ -27,8 +27,6 @@ package org.monarchinitiative.exomiser.core.model.frequency;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.EnumSet;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -95,12 +93,6 @@ public class FrequencySourceTest {
     @Test
     public void testGetAllExternalFrequencySources(){
         assertThat(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.size(), equalTo(29));
-    }
-
-    @Test
-    public void frequencySourceMap() {
-        EnumSet<FrequencySource> actual = EnumSet.copyOf(FrequencySource.FREQUENCY_SOURCE_MAP.values());
-        assertThat(actual, equalTo(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES));
     }
 
     @Test

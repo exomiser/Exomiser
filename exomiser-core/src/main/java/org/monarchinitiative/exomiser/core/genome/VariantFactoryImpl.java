@@ -37,7 +37,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -64,11 +63,6 @@ public class VariantFactoryImpl implements VariantFactory {
     }
 
     @Override
-    public Stream<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        return createVariantEvaluations(VcfFiles.readVariantContexts(vcfPath));
-    }
-
-    @Override
     public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream) {
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         VariantCounter counter = new VariantCounter();
@@ -92,11 +86,11 @@ public class VariantFactoryImpl implements VariantFactory {
     }
 
     private Function<Allele, Optional<VariantEvaluation>> buildAlleleVariantEvaluation(VariantContext variantContext) {
-        return allele -> {
+        return altAllele -> {
             //alternate Alleles are always after the reference allele, which is 0
-            int altAlleleId = variantContext.getAlleleIndex(allele) - 1;
-            if (alleleIsObservedInGenotypes(allele, variantContext.getGenotypes())) {
-                return Optional.of(buildVariantEvaluation(variantContext, altAlleleId));
+            int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
+            if (alleleIsObservedInGenotypes(altAllele, variantContext.getGenotypes())) {
+                return Optional.of(buildVariantEvaluation(variantContext, altAlleleId, altAllele));
             }
             return Optional.empty();
         };
@@ -118,16 +112,27 @@ public class VariantFactoryImpl implements VariantFactory {
      * @return
      */
     //This is package-private as it is used by the TestVariantFactory
-    VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId) {
-        VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAlleleId);
+    VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele) {
+        VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAllele);
+        // symbolic alleles are reported as VariantEffect.STRUCTURAL_VARIANT
+        // but have a default pathogenicity score of zero
+        // will need to have an end and/or length (sigInt) and SVTYPE (DEL, INS, DUP, INV, CNV, BND)
+        // lookup in Jannovar to find effected genes?
+
+        // find length and type
+        // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
+        // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
+        // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
+        // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
         return buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
     }
 
-    private VariantAnnotation annotateVariantAllele(VariantContext variantContext, int altAlleleId) {
+    private VariantAnnotation annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
         int pos = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
-        String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
+        // Structural variants are 'symbolic' in that they have no actual reported bases
+        String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
         return variantAnnotator.annotate(contig, pos, ref, alt);
     }
 

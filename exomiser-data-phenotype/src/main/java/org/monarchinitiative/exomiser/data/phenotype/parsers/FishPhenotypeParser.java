@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
-import com.google.common.base.Joiner;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -85,7 +84,7 @@ public class FishPhenotypeParser implements ResourceParser {
                 String fishId = entry.getKey();
                 Set<String> zpIds = entry.getValue();
                 String fishSymbol = fishId2Symbol.get(fishId);
-                writer.write(String.format("%s|%s|%s|%s%n", fishId, fishSymbol, id, Joiner.on(",").join(zpIds)));
+                writer.write(String.format("%s|%s|%s|%s%n", fishId, fishSymbol, id, String.join(",", zpIds)));
                 id++;
             }
             status = ResourceOperationStatus.SUCCESS;

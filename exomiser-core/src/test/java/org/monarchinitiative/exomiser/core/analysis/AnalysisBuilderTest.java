@@ -37,6 +37,8 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 
 import java.nio.file.Path;
@@ -57,6 +59,7 @@ public class AnalysisBuilderTest {
     private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
+    private final OntologyService ontologyService = TestOntologyService.builder().build();
 
     private AnalysisBuilder analysisBuilder;
 
@@ -64,7 +67,7 @@ public class AnalysisBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        analysisBuilder = new AnalysisBuilder(priorityFactory, genomeAnalysisServiceProvider);
+        analysisBuilder = new AnalysisBuilder(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
     }
 
     private List<AnalysisStep> analysisSteps() {

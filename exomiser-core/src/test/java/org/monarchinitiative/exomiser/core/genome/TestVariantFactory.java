@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,8 +60,8 @@ public class TestVariantFactory {
      */
     public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
         VariantContext variantContext = buildVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-
-        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID);
+        Allele altAllele = variantContext.getAlternateAllele(altAlleleID);
+        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID, altAllele);
     }
 
     private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, Genotype genotype, int readDepth, double qual) {
@@ -74,6 +74,7 @@ public class TestVariantFactory {
         // build VariantContext
         VariantContextBuilder vcBuilder = new VariantContextBuilder();
         vcBuilder.loc("chr" + chrom, pos, pos - 1L + ref.length());
+//        vcBuilder.loc(Integer.toString(chrom), pos, pos - 1L + ref.length());
         vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
         vcBuilder.genotypes(genotypeBuilder.make());
         vcBuilder.attribute("RD", readDepth);

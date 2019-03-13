@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,24 +28,20 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
-import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
-import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
-import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
+import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.EnumSet;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -60,30 +57,28 @@ public class VariantDataServiceImplTest {
     @Mock
     private FrequencyDao localFrequencyDao;
     @Mock
-    private PathogenicityDao mockPathogenicityDao;
+    private PathogenicityDao defaultPathogenicityDao;
     @Mock
     private RemmDao mockRemmDao;
     @Mock
     private CaddDao mockCaddDao;
-
-    private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
     private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().alleleId("12345")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .build();
     private static final PathogenicityData PATH_DATA = PathogenicityData.of(
             PATH_CLINVAR_DATA,
-            PolyPhenScore.valueOf(1),
-            MutationTasterScore.valueOf(1),
-            SiftScore.valueOf(0)
+            PolyPhenScore.of(1),
+            MutationTasterScore.of(1),
+            SiftScore.of(0)
     );
 
     private static final FrequencyData FREQ_DATA = FrequencyData.of(
-            RsId.valueOf(1234567),
-            Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN)
+            RsId.of(1234567),
+            Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 100.0f)
     );
 
-    private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.valueOf(1));
+    private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.of(15f));
 
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
@@ -92,7 +87,7 @@ public class VariantDataServiceImplTest {
     @BeforeEach
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
+        Mockito.when(defaultPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
@@ -100,7 +95,7 @@ public class VariantDataServiceImplTest {
         instance = VariantDataServiceImpl.builder()
                 .defaultFrequencyDao(defaultFrequencyDao)
                 .localFrequencyDao(localFrequencyDao)
-                .pathogenicityDao(mockPathogenicityDao)
+                .defaultPathogenicityDao(defaultPathogenicityDao)
                 .caddDao(mockCaddDao)
                 .remmDao(mockRemmDao)
                 .build();
@@ -115,34 +110,30 @@ public class VariantDataServiceImplTest {
         assertThat(instance, notNullValue());
     }
 
-    /*
-     * Ignore until sort out how VariantDataService should behave for CADD vs
-     * PathogenictyFilter swithc
-     */
     @Test
     public void serviceReturnsPathogenicityDataForVariant() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT));
         assertThat(result, equalTo(PATH_DATA));
     }
-    
+
     @Test
-    public void serviceReturnsEmptyPathogenicityDataForVariantWhenNoSourcesAreDefined() {
+    public void serviceReturnsClinVarDataEvenWhenNoSourcesAreDefined() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, Collections.emptySet());
-        assertThat(result, equalTo(PathogenicityData.empty()));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA)));
     }
 
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.of(1f))));
     }
 
     @Test
     public void serviceReturnsCaddDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getCaddScore())));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getPredictedScore(PathogenicitySource.CADD))));
     }
 
     @Test
@@ -150,18 +141,27 @@ public class VariantDataServiceImplTest {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
 
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, PolyPhenScore.of(1f), CaddScore.of(15f))));
     }
-    
+
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(PATH_CLINVAR_DATA, RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
     }
-    
+
+    @Test
+    public void pathogenicityDataForKnownNonCodingVariantShouldContainClinVarData() {
+        variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
+        PathogenicityData expectedPathData = PathogenicityData.of(PATH_CLINVAR_DATA);
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedPathData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
+        assertThat(result, equalTo(expectedPathData));
+    }
+
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
         variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
@@ -169,11 +169,11 @@ public class VariantDataServiceImplTest {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA)));
     }
-    
+
     @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = PathogenicityData.of(CaddScore.valueOf(1f), RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(PATH_CLINVAR_DATA, CaddScore.of(15f), RemmScore.of(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
@@ -185,7 +185,7 @@ public class VariantDataServiceImplTest {
         // Even if there is pathogenicity data it's likely wrong for a synonymous variant, so check we ignore it
         // This will cause a UnnecessaryStubbingException to be thrown as the result of this stubbing is ignored, but
         // we're trying to test for exactly that functionality we're running with the MockitoJUnitRunner.Silent.class
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.valueOf(1f)));
+        Mockito.when(defaultPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.of(1f)));
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
         assertThat(result, equalTo(PathogenicityData.empty()));
     }
@@ -193,7 +193,7 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsEmptyFrequencyDataWithRsIdForVariantWhenNoSourcesAreDefined() {
         FrequencyData result = instance.getVariantFrequencyData(variant, Collections.emptySet());
-        assertThat(result, equalTo(FrequencyData.of(RsId.valueOf(1234567))));
+        assertThat(result, equalTo(FrequencyData.of(RsId.of(1234567))));
     }
 
     @Test
@@ -204,17 +204,17 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsSpecifiedFrequencyDataForVariant() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN), Frequency
-                .valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(234567), Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 1f), Frequency
+                .of(FrequencySource.ESP_EUROPEAN_AMERICAN, 1f));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN));
-        assertThat(result, equalTo(FrequencyData.of(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN))));
+        assertThat(result, equalTo(FrequencyData.of(RsId.of(234567), Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 1f))));
     }
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariant() {
-        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, 2f));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
@@ -224,33 +224,49 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariantWithRsIdIfKnown() {
-        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, 2f));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
-        assertThat(result, equalTo(FrequencyData.of(RsId.valueOf(1234567), Frequency.valueOf(2f, FrequencySource.LOCAL))));
+        assertThat(result, equalTo(FrequencyData.of(RsId.of(1234567), Frequency.of(FrequencySource.LOCAL, 2f))));
     }
 
     @Test
     public void serviceReturnsSpecifiedFrequencyDataForVariantIncludingLocalData() {
-        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN), Frequency
-                .valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
+        FrequencyData frequencyData = FrequencyData.of(RsId.of(234567), Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 1f), Frequency
+                .of(FrequencySource.ESP_EUROPEAN_AMERICAN, 1f));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
-        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, 2f));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.LOCAL));
-        assertThat(result, equalTo(FrequencyData.of(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN), Frequency
-                .valueOf(2f, FrequencySource.LOCAL))));
+        assertThat(result, equalTo(FrequencyData.of(RsId.of(234567), Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 1f), Frequency
+                .of(FrequencySource.LOCAL, 2f))));
     }
 
     @Test
     public void serviceReturnsEmptyFrequencyDataWhenSpecifiedFrequencyDataIsUnavailable() {
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
-                
+
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
         assertThat(result, equalTo(FrequencyData.empty()));
     }
 
+    @Test
+    void serviceReturnsDataAboutWhiteList() {
+        assertThat(instance.variantIsWhiteListed(variant), is(false));
+    }
+
+    @Test
+    void whiteListedVariant() {
+        Variant whiteListVariant = VariantEvaluation.builder(3, 12345, "A", "C").build();
+        Variant nonWhiteListVariant = VariantEvaluation.builder(3, 12345, "G", "T").build();
+
+        VariantWhiteList whiteList = InMemoryVariantWhiteList.of(ImmutableSet.of(AlleleProtoAdaptor.toAlleleKey(whiteListVariant)));
+        VariantDataServiceImpl instance = VariantDataServiceImpl.builder().variantWhiteList(whiteList).build();
+
+        assertThat(instance.variantIsWhiteListed(whiteListVariant), is(true));
+        assertThat(instance.variantIsWhiteListed(nonWhiteListVariant), is(false));
+    }
 }

@@ -26,10 +26,12 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -50,7 +52,7 @@ public class FilterReportTest {
 
     @BeforeEach
     public void setUp() {
-        instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);
+        instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
     }
 
     @Test
@@ -61,30 +63,20 @@ public class FilterReportTest {
     }
 
     @Test
-    public void testAddMessage() {
-        assertThat(instance.addMessage(MESSAGE), is(true));
-    }
-
-    @Test
     public void testGetMessages() {
         List<String> expectedMessages = new ArrayList<>();
         expectedMessages.add(MESSAGE);
-
-        instance.addMessage(MESSAGE);
-
         assertThat(instance.getMessages(), equalTo(expectedMessages));
     }
 
     @Test
     public void testHasMessagesIsFalseWhenNoMessagesAdded() {
+        FilterReport instance = new FilterReport(FilterType.FREQUENCY_FILTER, 0, 0, Collections.emptyList());
         assertThat(instance.hasMessages(), is(false));
     }
 
     @Test
     public void testHasMessagesIsTrueWhenMessagesAdded() {
-
-        instance.addMessage(MESSAGE);
-
         assertThat(instance.hasMessages(), is(true));
     }
 
@@ -100,9 +92,7 @@ public class FilterReportTest {
 
     @Test
     public void testHashCode() {
-        instance.addMessage(MESSAGE);
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);
-        other.addMessage(MESSAGE);
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
         int expResult = other.hashCode();
         assertThat(instance.hashCode(), equalTo(expResult));
 
@@ -122,38 +112,37 @@ public class FilterReportTest {
 
     @Test
     public void testEqualsOtherFilterReportWithDifferentMessageIsFalse() {
-        instance.addMessage(MESSAGE);
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, Collections.emptyList());
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
     public void testEqualsOtherFilterReportWithOtherPassFailIsFalse() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, FAILED, PASSED);
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, FAILED, PASSED, Collections.emptyList());
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
     public void testEqualsOtherFilterReport() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED);
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
         assertThat(instance.equals(other), is(true));
     }
 
     @Test
     public void testNotEqualsOtherFilterReportWithDifferentFailedNumber() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, PASSED);
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, PASSED, Collections.emptyList());
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
     public void testNotEqualsOtherFilterReportOfDifferentFilterType() {
-        FilterReport other = new FilterReport(FilterType.INHERITANCE_FILTER, PASSED, FAILED);
+        FilterReport other = new FilterReport(FilterType.INHERITANCE_FILTER, PASSED, FAILED, Collections.emptyList());
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
     public void testToString() {
-        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, new ArrayList<String>());
+        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
         assertThat(instance.toString(), equalTo(expResult));
 
     }

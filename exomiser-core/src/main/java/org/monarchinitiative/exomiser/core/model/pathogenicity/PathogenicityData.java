@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -38,33 +39,38 @@ public class PathogenicityData {
     private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
     public static PathogenicityData of(PathogenicityScore pathScore) {
-        return new PathogenicityData(ClinVarData.empty(), Collections.singletonList(pathScore));
+        return of(ClinVarData.empty(), Collections.singletonList(pathScore));
     }
 
     public static PathogenicityData of(PathogenicityScore... pathScore) {
-        return new PathogenicityData(ClinVarData.empty(), Arrays.asList(pathScore));
+        return of(ClinVarData.empty(), Arrays.asList(pathScore));
     }
 
     public static PathogenicityData of(Collection<PathogenicityScore> pathScores) {
-        return new PathogenicityData(ClinVarData.empty(), pathScores);
+        return of(ClinVarData.empty(), pathScores);
     }
 
     /**
      * @since 10.1.0
      */
     public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore pathScore) {
-        return new PathogenicityData(clinVarData, Collections.singletonList(pathScore));
+        return of(clinVarData, Collections.singletonList(pathScore));
     }
 
     /**
      * @since 10.1.0
-     */public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore... pathScore) {
-        return new PathogenicityData(clinVarData, Arrays.asList(pathScore));
+     */
+    public static PathogenicityData of(ClinVarData clinVarData, PathogenicityScore... pathScore) {
+        return of(clinVarData, Arrays.asList(pathScore));
     }
 
     /**
      * @since 10.1.0
-     */public static PathogenicityData of(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+     */
+    public static PathogenicityData of(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
+        if (clinVarData.isEmpty() && pathScores.isEmpty()) {
+            return EMPTY_DATA;
+        }
         return new PathogenicityData(clinVarData, pathScores);
     }
 
@@ -106,31 +112,6 @@ public class PathogenicityData {
         return !clinVarData.isEmpty();
     }
 
-    @JsonIgnore
-    public PolyPhenScore getPolyPhenScore() {
-        return (PolyPhenScore) getPredictedScore(PathogenicitySource.POLYPHEN);
-    }
-
-    @JsonIgnore
-    public MutationTasterScore getMutationTasterScore() {
-        return (MutationTasterScore) getPredictedScore(PathogenicitySource.MUTATION_TASTER);
-    }
-
-    @JsonIgnore
-    public SiftScore getSiftScore() {
-        return (SiftScore) getPredictedScore(PathogenicitySource.SIFT);
-    }
-
-    @JsonIgnore
-    public CaddScore getCaddScore() {
-        return (CaddScore) getPredictedScore(PathogenicitySource.CADD);
-    }
-
-    @JsonIgnore
-    public RemmScore getRemmScore() {
-        return (RemmScore) getPredictedScore(PathogenicitySource.REMM);
-    }
-
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
         return new ArrayList<>(pathogenicityScores.values());
     }
@@ -160,27 +141,39 @@ public class PathogenicityData {
     }
 
     /**
-     * @return The most pathogenic score or null if there are no predicted scores
-     */
-    public PathogenicityScore getMostPathogenicScore() {
-        return pathogenicityScores.values().stream().max(Comparator.reverseOrder()).orElse(null);
-    }
-
-
-    /**
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
     public float getScore() {
         if (pathogenicityScores.isEmpty()) {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }
+        return getPredictedPathScore();
+    }
 
+    private float getPredictedPathScore() {
+        // Once upon a time we used score-specific cutoffs. These are present in the score classes:
+        // Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown
+        // Polyphen2 (HVAR): "D" (> 0.956,probably damaging), "P": [0.447-0.955],  possibly damaging, and "B", <0.447, benign.
+        // SIFT: "D"<0.05, damaging and "T">0.05, tolerated
+        // TODO: re-implement this and add isPredictedPathogenic() to the PathogenicityScore
         PathogenicityScore mostPathogenicPredictedScore = getMostPathogenicScore();
-        //Thanks to SIFT being about tolerance rather than pathogenicity, the score is inverted
-        if (mostPathogenicPredictedScore.getClass() == SiftScore.class) {
-            return 1 - mostPathogenicPredictedScore.getScore();
+        if (mostPathogenicPredictedScore != null) {
+            // As of v12.0.0 scores are normalised internally so SIFT scores no longer need to be inverted here.
+            return mostPathogenicPredictedScore.getScore();
         }
-        return mostPathogenicPredictedScore.getScore();
+        return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
+    }
+
+    /**
+     * @return The most pathogenic score or null if there are no predicted scores
+     */
+    @Nullable
+    public PathogenicityScore getMostPathogenicScore() {
+        // Add filter step using PathogenicityScore::isPredictedPathogenic?
+        // n.b. here min() is referring to the *first* element in a sorted list, rather than the minimum numeric value
+        // PathogenicityScore compareTo returns the most pathogenic first e.g. 1.0, 0.9, 0.8 ... which is the reverse of
+        // natural numeric ordering.
+        return pathogenicityScores.values().stream().min(PathogenicityScore::compareTo).orElse(null);
     }
 
     @Override

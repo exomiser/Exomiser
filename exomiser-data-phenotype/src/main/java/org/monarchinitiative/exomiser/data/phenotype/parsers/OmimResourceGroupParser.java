@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,6 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -64,7 +63,7 @@ public class OmimResourceGroupParser extends AbstractResourceGroupParser {
             return;
         }
 
-        Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
+        Map<Integer, Integer> mim2geneMap = new HashMap<>();
         //first parseResource the mim2gene file
         MimToGeneParser mimParser = new MimToGeneParser(mim2geneMap);
         mimParser.parseResource(mim2geneResource, inDir, outDir);

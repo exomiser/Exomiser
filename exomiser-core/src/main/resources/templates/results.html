@@ -1,8 +1,7 @@
-<!DOCTYPE html>
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2018 Queen Mary University of London.
+  ~ Copyright (c) 2016-2019 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -18,6 +17,8 @@
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
+
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
@@ -285,6 +286,9 @@
                                 <span class="label label-info"
                                       th:if="${variantEvaluation.contributesToGeneScore()}"
                                       th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
+                                <span class="label label-danger"
+                                      th:if="${variantEvaluation.isWhiteListed()}"
+                                      th:text="'WHITELIST VARIANT'">WHITELIST VARIANT</span>
                                 <dl class="list-unstyled">
                                     <dt>Transcripts:</dt>
                                     <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
@@ -381,6 +385,9 @@
                 <div class="col-sm-6">
                     <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
                         score: 0.600</b>
+                    <span class="label label-danger"
+                          th:if="${variantEvaluation.isWhiteListed()}"
+                          th:text="'WHITELIST VARIANT'">WHITELIST VARIANT</span>
                     <dl class="list-unstyled">
                         <dt>Transcripts:</dt>
                         <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
@@ -468,8 +475,9 @@
         <p>
             Developed by the Computational Biology and Bioinformatics group at the
             <a href="http://genetik.charite.de/">Institute for Medical Genetics and Human Genetics</a> of the
-            <a href="http://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a> and the Mouse
-            Informatics Group at the <a href="http://www.sanger.ac.uk/">Sanger Institute</a>.
+            <a href="http://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a>, the Mouse
+            Informatics Group at the <a href="http://www.sanger.ac.uk/">Sanger Institute</a> and the Smedley group at
+            <a href="https://qmul.ac.uk/whri">Queen Mary University of London</a>.
         </p>
 
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.model.frequency;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Maps;
 
 import java.util.*;
 
@@ -35,13 +34,18 @@ import java.util.*;
  */
 public class FrequencyData {
 
-    private static final FrequencyData EMPTY_DATA = new FrequencyData(RsId.empty(), Collections.emptyMap());
+    private static final FrequencyData EMPTY_DATA = new FrequencyData(RsId.empty(), Collections.emptyList());
+
+    private static final int NUM_FREQ_SOURCES = FrequencySource.values().length;
 
     private static final float VERY_RARE_SCORE = 1f;
     private static final float NOT_RARE_SCORE = 0f;
 
-    private final RsId rsId;
-    private final Map<FrequencySource, Frequency> knownFrequencies;
+    private final int rsId;
+
+    private int size;
+    private final FrequencySource[] sources;
+    private final float[] values;
 
     public static FrequencyData of(RsId rsId, Collection<Frequency> frequencies) {
         return validate(rsId, frequencies);
@@ -69,30 +73,72 @@ public class FrequencyData {
 
     private static FrequencyData validate(RsId rsId, Collection<Frequency> frequencies) {
         Objects.requireNonNull(rsId, "RsId cannot be null");
-        Objects.requireNonNull(frequencies, "frequencies cannot be null");
+        Objects.requireNonNull(frequencies, "frequency data cannot be null");
 
         if (rsId.isEmpty() && frequencies.isEmpty()) {
             return FrequencyData.empty();
         }
-        Map<FrequencySource, Frequency> frequencySourceMap = new EnumMap<>(FrequencySource.class);
+
         for (Frequency frequency : frequencies) {
-            frequencySourceMap.put(frequency.getSource(), frequency);
+            Objects.requireNonNull(frequency, "frequency data cannot contain null element");
         }
-        return new FrequencyData(rsId, frequencySourceMap);
+        return new FrequencyData(rsId, frequencies);
     }
 
-    private FrequencyData(RsId rsId, Map<FrequencySource, Frequency> knownFrequencies) {
-        this.rsId = rsId;
-        this.knownFrequencies = Maps.immutableEnumMap(knownFrequencies);
+    private FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
+        this.rsId = rsId.getId();
+
+        // use natural ordering by FrequencySource - this class is a kind of EnumMap, but we're using primitives to store
+        // the values. This means that duplicated FrequencySource will be overwritten. In practice this shouldn't happen
+        // as they are extracted from a map instance.
+        Frequency[] sorted = orderByFrequencySource(frequencies);
+
+        this.size = countNotNullFrequencies(sorted);
+        this.sources = new FrequencySource[size];
+        this.values = new float[size];
+
+        int pos = 0;
+        for (Frequency entry : sorted) {
+            if (entry != null) {
+                sources[pos] = entry.getSource();
+                values[pos] = entry.getFrequency();
+                pos++;
+            }
+        }
+    }
+
+    private Frequency[] orderByFrequencySource(Collection<Frequency> frequencies) {
+        Frequency[] sorted = new Frequency[NUM_FREQ_SOURCES];
+        for (Frequency frequency : frequencies) {
+            FrequencySource frequencySource = frequency.getSource();
+            sorted[frequencySource.ordinal()] = frequency;
+        }
+        return sorted;
+    }
+
+    private int countNotNullFrequencies(Frequency[] sorted) {
+        int notNull = 0;
+        for (Frequency frequency : sorted) {
+            if (frequency != null) {
+                notNull++;
+            }
+        }
+        return notNull;
     }
 
     //RSID ought to belong to the Variant, not the frequencyData, but its here for convenience
     public RsId getRsId() {
-        return rsId;
+        return RsId.of(rsId);
     }
 
     public Frequency getFrequencyForSource(FrequencySource source) {
-        return knownFrequencies.get(source);
+        for (int i = 0; i < size; i++) {
+            if (sources[i] == source) {
+                float value = values[i];
+                return Frequency.of(source, value);
+            }
+        }
+        return null;
     }
 
     /**
@@ -105,16 +151,24 @@ public class FrequencyData {
         return hasDbSnpRsID() || hasKnownFrequency();
     }
 
+    @JsonIgnore
     public boolean hasDbSnpData() {
-        return knownFrequencies.containsKey(FrequencySource.THOUSAND_GENOMES);
+        for (FrequencySource dataSource : sources) {
+            if (dataSource == FrequencySource.THOUSAND_GENOMES) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    @JsonIgnore
     public boolean hasDbSnpRsID() {
-        return !rsId.isEmpty();
+        return RsId.empty().getId() != rsId;
     }
 
+    @JsonIgnore
     public boolean hasEspData() {
-        for (FrequencySource dataSource : knownFrequencies.keySet()) {
+        for (FrequencySource dataSource : sources) {
             switch (dataSource) {
                 case ESP_AFRICAN_AMERICAN:
                 case ESP_EUROPEAN_AMERICAN:
@@ -125,9 +179,10 @@ public class FrequencyData {
         }
         return false;
     }
-    
+
+    @JsonIgnore
     public boolean hasExacData() {
-        for (FrequencySource dataSource : knownFrequencies.keySet()) {
+        for (FrequencySource dataSource : sources) {
             switch (dataSource) {
                 case EXAC_AFRICAN_INC_AFRICAN_AMERICAN:
                 case EXAC_AMERICAN:
@@ -143,8 +198,9 @@ public class FrequencyData {
         return false;
     }
 
+    @JsonIgnore
     public boolean hasKnownFrequency() {
-        return !knownFrequencies.isEmpty();
+        return size != 0;
     }
 
     /**
@@ -158,8 +214,8 @@ public class FrequencyData {
      * @since 10.1.0
      */
     public boolean hasFrequencyOverPercentageValue(float maxFreq) {
-        for (Frequency frequency : knownFrequencies.values()) {
-            if (frequency.isOverThreshold(maxFreq)) {
+        for (int i = 0; i < size; i++) {
+            if (values[i] > maxFreq) {
                 return true;
             }
         }
@@ -173,7 +229,11 @@ public class FrequencyData {
      * @return a mutable copy of the {@code Frequency} data
      */
     public List<Frequency> getKnownFrequencies() {
-        return new ArrayList<>(knownFrequencies.values());
+        List<Frequency> freqs = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            freqs.add(Frequency.of(sources[i], values[i]));
+        }
+        return freqs;
     }
 
     /**
@@ -184,35 +244,11 @@ public class FrequencyData {
      */
     @JsonIgnore
     public float getMaxFreq() {
-        return (float) knownFrequencies.values().stream().mapToDouble(Frequency::getFrequency).max().orElse(0);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + Objects.hashCode(this.rsId);
-        hash = 29 * hash + Objects.hashCode(this.knownFrequencies);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        float max = 0f;
+        for (int i = 0; i < size; i++) {
+            max = Math.max(max, values[i]);
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final FrequencyData other = (FrequencyData) obj;
-        if (!Objects.equals(this.rsId, other.rsId)) {
-            return false;
-        }
-        return Objects.equals(this.knownFrequencies, other.knownFrequencies);
-    }
-
-    @Override
-    public String toString() {
-        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies.values() + '}';
+        return max;
     }
 
     /**
@@ -233,6 +269,41 @@ public class FrequencyData {
         } else {
             return 1.13533f - (0.13533f * (float) Math.exp(max));
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FrequencyData that = (FrequencyData) o;
+        return rsId == that.rsId &&
+                size == that.size &&
+                Arrays.equals(sources, that.sources) &&
+                Arrays.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(rsId, size);
+        result = 31 * result + Arrays.hashCode(sources);
+        result = 31 * result + Arrays.hashCode(values);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder().append('{');
+        boolean first = true;
+
+        for (int i = 0; i < size; i++) {
+            if (!first) {
+                sb.append(", ");
+            }
+            first = false;
+            sb.append(sources[i]).append('=').append(values[i]);
+        }
+        sb.append('}');
+        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + sb.toString() + '}';
     }
 
 }

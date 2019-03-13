@@ -31,7 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class RemmScoreTest {
     
-    RemmScore instance = RemmScore.valueOf(1f);
+    RemmScore instance = RemmScore.of(1f);
     
     @Test
     public void testGetSource() {

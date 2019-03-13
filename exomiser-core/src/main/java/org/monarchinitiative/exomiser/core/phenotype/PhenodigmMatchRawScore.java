@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2018 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -29,18 +31,18 @@ import java.util.Objects;
  * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PhenodigmMatchRawScore {
+class PhenodigmMatchRawScore {
 
-    private double maxModelMatchScore;
-    private double sumModelBestMatchScores;
-    private List<String> matchingPhenotypes;
-    private List<PhenotypeMatch> bestPhenotypeMatches;
+    private final double maxModelMatchScore;
+    private final double sumModelBestMatchScores;
+    private final List<String> matchingPhenotypes;
+    private final List<PhenotypeMatch> bestPhenotypeMatches;
 
     PhenodigmMatchRawScore(double maxModelMatchScore, double sumModelBestMatchScores, List<String> matchingPhenotypes, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.maxModelMatchScore = maxModelMatchScore;
         this.sumModelBestMatchScores = sumModelBestMatchScores;
-        this.matchingPhenotypes = matchingPhenotypes;
-        this.bestPhenotypeMatches = bestPhenotypeMatches;
+        this.matchingPhenotypes = ImmutableList.copyOf(matchingPhenotypes);
+        this.bestPhenotypeMatches = ImmutableList.copyOf(bestPhenotypeMatches);
     }
 
     double getMaxModelMatchScore() {

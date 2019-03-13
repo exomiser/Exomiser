@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -123,7 +123,7 @@ public class VcfResultsWriter implements ResultsWriter {
                 false)) {
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
-        logger.info("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
     private VCFHeader getVcfHeader(Analysis analysis) {
@@ -225,10 +225,12 @@ public class VcfResultsWriter implements ResultsWriter {
         //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF
         // chr10-123256215-T*-[G, A]
         // chr5-11-AC*-[AT]
-        return variantContext.getContig() + '-' +
-                variantContext.getStart() + '-' +
-                variantContext.getReference() + '-' +
-                variantContext.getAlternateAlleles();
+        StringJoiner stringJoiner = new StringJoiner("-");
+        stringJoiner.add(variantContext.getContig());
+        stringJoiner.add(String.valueOf(variantContext.getStart()));
+        stringJoiner.add(variantContext.getReference().toString());
+        stringJoiner.add(variantContext.getAlternateAlleles().toString());
+        return stringJoiner.toString();
     }
 
     private VariantContext updateRecord(List<VariantEvaluation> variantEvaluations, Gene gene, ModeOfInheritance modeOfInheritance) {

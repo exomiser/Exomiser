@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -90,6 +90,7 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=ExVarHgvs,Number=A,Type=String,Description=\"Exomiser variant hgvs\">\n"
             + "##INFO=<ID=ExVarScore,Number=A,Type=Float,Description=\"Exomiser variant score\">\n"
             + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
+            + "##INFO=<ID=SVANN,Number=1,Type=String,Description=\"Functional SV Annotation:'Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|ERRORS / WARNINGS / INFO'\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
     private static final String CHR10_FGFR2_CONTRIBUTING_VARIANT = "chr10\t123256215\t.\tT\tG\t2.20\tPASS\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
     private static final String CHR10_FGFR2_PASS_VARIANT = "chr10\t123256214\t.\tA\tG\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256214A>G;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
@@ -116,10 +117,6 @@ public class VcfResultsWriterTest {
     private VariantEvaluation fgfr2ContributingVariant;
     private VariantEvaluation shhIndelVariant;
 
-    /** VariantEvaluation objects used for testing (unannotated ones). */
-    private VariantEvaluation unAnnotatedVariantEvaluation1;
-    private VariantEvaluation unAnnotatedVariantEvaluation2;
-
     private Gene fgfr2Gene;
     private Gene shhGene;
 
@@ -138,8 +135,6 @@ public class VcfResultsWriterTest {
     private void setUpModel() {
         setUpFgfr2Gene();
         setUpShhGene();
-        unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "AC", "AT").quality(1).build();
-        unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG").quality(1).build();
     }
 
     private void setUpShhGene() {
@@ -152,9 +147,9 @@ public class VcfResultsWriterTest {
 
     private void setUpFgfr2Gene() {
         fgfr2PassMissenseVariant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(0.89f)));
+        fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         fgfr2ContributingVariant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
+        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
         fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
@@ -177,14 +172,21 @@ public class VcfResultsWriterTest {
     /* test writing out unannotated variants */
     @Test
     public void testWriteUnannotatedVariants() {
+        VariantEvaluation unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "C", "T")
+                .quality(1)
+                .build();
+        VariantEvaluation unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG")
+                .quality(1)
+                .build();
+
         AnalysisResults analysisResults = AnalysisResults.builder()
                 .variantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2))
                 .build();
         
         String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr5\t11\t.\tAC\tAT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
-                + "chr5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
+                + "5\t11\t.\tC\tT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
+                + "5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
         assertThat(vcf, equalTo(expected));
     }
 

@@ -27,11 +27,17 @@
 package org.monarchinitiative.exomiser.data.phenotype.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
 import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the HPO ontology parser
@@ -44,14 +50,20 @@ public class HPOOntologyFileParserTest {
      * Test of parseHPO method, of class HPOOntologyFileParser.
      */
     @Test
-    public void testParseHPO() {
-        System.out.println("parseHPO");
+    @ExtendWith(TempDirectory.class)
+    public void testParseHPO(@TempDirectory.TempDir Path tempDir) throws Exception {
         Resource testResource = new Resource("HPO");
         testResource.setExtractedFileName("hp.obo");
-        testResource.setParsedFileName("hpoTestOut.pg");
+        testResource.setParsedFileName("hpo.pg");
+
         Map<String, String> hpId2termMap = new HashMap<>();
         HPOOntologyFileParser instance = new HPOOntologyFileParser(hpId2termMap);
-        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
+        instance.parseResource(testResource, Paths.get("src/test/resources/data"), tempDir);
+
+        assertFalse(hpId2termMap.isEmpty());
+
+        assertTrue(tempDir.resolve("hp_alt_ids.pg").toFile().exists());
+        assertTrue(tempDir.resolve("hpo.pg").toFile().exists());
     }
 
 }
