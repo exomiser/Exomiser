@@ -171,8 +171,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     .filter(isObservedInProband(probandSample))
                     .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(geneReassigner))
                     .map(reassignNonCodingVariantToBestGeneInTad(geneReassigner))
-                    //TODO: is this a good idea here? This could seriously impact performance.
-                    // An alternative would be in a VariantFilterDataProvider
                     .map(flagWhiteListedVariants())
                     .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters, filterStats))
