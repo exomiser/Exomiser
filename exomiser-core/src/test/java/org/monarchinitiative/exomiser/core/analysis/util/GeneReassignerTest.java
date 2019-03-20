@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -56,7 +56,7 @@ public class GeneReassignerTest {
 
     private GeneReassigner instance;
 
-    private Map<String, Gene> allGenes = new HashMap<>();
+    private Map<String, Gene> allGenes;
 
     private Gene gene1;
     private Gene gene2;
@@ -66,6 +66,7 @@ public class GeneReassignerTest {
         gene1 = new Gene("GENE1", 1111);
         gene2 = new Gene("GENE2", 2222);
 
+        allGenes = new HashMap<>();
         allGenes.put(gene1.getGeneSymbol(), gene1);
         allGenes.put(gene2.getGeneSymbol(), gene2);
     }
@@ -83,7 +84,7 @@ public class GeneReassignerTest {
                 mismatchDescription.appendText("was variant with geneSymbol=").appendValue(variantEvaluation.getGeneSymbol());
                 mismatchDescription.appendText(" geneId=").appendValue(variantEvaluation.getGeneId());
 
-                return gene.getGeneId() == variantEvaluation.getGeneId() && gene.getGeneSymbol()
+                return gene.getGeneId().equals(variantEvaluation.getGeneId()) && gene.getGeneSymbol()
                         .equals(variantEvaluation.getGeneSymbol());
             }
         };
@@ -402,8 +403,12 @@ public class GeneReassignerTest {
         List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContext).collect(toList());
 
         Gene GNRHR2 = TestFactory.newGeneGNRHR2();
-
+        GNRHR2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, GNRHR2.getEntrezGeneID(), GNRHR2.getGeneSymbol(), 1.0));
         allGenes.put(GNRHR2.getGeneSymbol(), GNRHR2);
+
+        Gene RBM8A = TestFactory.newGeneRBM8A();
+        RBM8A.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, RBM8A.getEntrezGeneID(), RBM8A.getGeneSymbol(), 0.5));
+        allGenes.put(RBM8A.getGeneSymbol(), RBM8A);
 
         TopologicalDomain unimportantForThisTestTad = makeTad(1, 1, 20000, gene1, gene2);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, unimportantForThisTestTad);
