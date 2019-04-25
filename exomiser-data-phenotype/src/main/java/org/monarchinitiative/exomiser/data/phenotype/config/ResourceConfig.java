@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -219,8 +219,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(Orphanet2GeneParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
@@ -233,8 +233,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(Disease2TermParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
@@ -247,8 +247,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(OrphanetDiseaseGeneTypeParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
