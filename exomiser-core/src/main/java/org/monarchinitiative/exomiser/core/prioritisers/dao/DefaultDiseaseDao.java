@@ -101,7 +101,7 @@ public class DefaultDiseaseDao implements DiseaseDao {
                 "FROM entrez2sym e, disease_hp dhp, disease d " +
                 "WHERE dhp.disease_id = d.DISEASE_ID " +
                 "AND e.entrezid = d.GENE_ID " +
-                "AND d.TYPE in ('D', 'C')" +
+                "AND d.TYPE in ('D', 'C', '?')" +
                 "AND d.GENE_ID = ?";
 
         try (Connection connection = dataSource.getConnection()) {
