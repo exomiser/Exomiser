@@ -97,4 +97,34 @@ public class DefaultDiseaseDaoTest {
         List<Disease> expected = Lists.newArrayList(cnv) ;
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(2222), equalTo(expected));
     }
+
+    @Test
+    public void testGetUnconfirmedDiseaseDataAssociatedWithGeneId() {
+        Disease disease = Disease.builder()
+                .diseaseId("OMIM:123456")
+                .diseaseName("Test unconfirmed disease association")
+                .diseaseType(Disease.DiseaseType.UNCONFIRMED)
+                .inheritanceMode(InheritanceMode.UNKNOWN)
+                .associatedGeneId(3333)
+                .associatedGeneSymbol("GENE3")
+                .phenotypeIds(ImmutableList.of("HP:0000002"))
+                .build();
+        List<Disease> expected = Lists.newArrayList(disease) ;
+        assertThat(instance.getDiseaseDataAssociatedWithGeneId(3333), equalTo(expected));
+    }
+
+    @Test
+    public void testGetSusceptibilityDiseaseDataAssociatedWithGeneId() {
+        Disease disease = Disease.builder()
+                .diseaseId("OMIM:234567")
+                .diseaseName("Test susceptibility disease association")
+                .diseaseType(Disease.DiseaseType.SUSCEPTIBILITY)
+                .inheritanceMode(InheritanceMode.UNKNOWN)
+                .associatedGeneId(4444)
+                .associatedGeneSymbol("GENE4")
+                .phenotypeIds(ImmutableList.of("HP:0000002"))
+                .build();
+        List<Disease> expected = Lists.newArrayList(disease) ;
+        assertThat(instance.getDiseaseDataAssociatedWithGeneId(4444), equalTo(expected));
+    }
 }
