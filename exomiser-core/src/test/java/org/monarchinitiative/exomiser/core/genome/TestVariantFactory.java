@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
@@ -54,14 +55,15 @@ public class TestVariantFactory {
      * @param alt alt string
      * @param gt the Genotype to use
      * @param readDepth depth the read depth to use
-     * @param altAlleleID alternative allele ID
      * @param qual phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
+    public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
+        if (alt.contains(",")) {
+            throw new IllegalArgumentException("Only single ALT alleles supported.");
+        }
         VariantContext variantContext = buildVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-        Allele altAllele = variantContext.getAlternateAllele(altAlleleID);
-        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID, altAllele);
+        return variantFactory.createVariantEvaluations(Stream.of(variantContext)).findFirst().get();
     }
 
     private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, Genotype genotype, int readDepth, double qual) {
