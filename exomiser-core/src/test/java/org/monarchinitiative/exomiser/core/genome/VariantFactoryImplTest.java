@@ -39,9 +39,11 @@ import org.monarchinitiative.exomiser.core.model.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -343,10 +345,41 @@ public class VariantFactoryImplTest {
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(2));
-        variants.forEach(variantEvaluation -> {
-            System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
-            variantEvaluation.getTranscriptAnnotations().forEach(System.out::println);
-        });
+
+        Map<String, List<VariantEvaluation>> variantsByGeneSymbol = variants.stream()
+                .collect(groupingBy(VariantEvaluation::getGeneSymbol));
+
+        variantsByGeneSymbol.get("TUBB3")
+                .forEach(variantEvaluation -> {
+                    System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
+                    assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getPosition(), equalTo(89935214));
+                    assertThat(variantEvaluation.getRef(), equalTo("G"));
+                    assertThat(variantEvaluation.getAlt(), equalTo("A"));
+                    assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+                    variantEvaluation.getTranscriptAnnotations().forEach(
+                            transcriptAnnotation -> {
+                                assertThat(transcriptAnnotation.getAccession(), equalTo(ENST00000315491.getAccession()));
+                                assertThat(transcriptAnnotation.getGeneSymbol(), equalTo(ENST00000315491.getGeneSymbol()));
+                            }
+                    );});
+        variantsByGeneSymbol.get("AC092143.1")
+                .forEach(variantEvaluation -> {
+                    System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
+                    assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getPosition(), equalTo(89935214));
+                    assertThat(variantEvaluation.getRef(), equalTo("G"));
+                    assertThat(variantEvaluation.getAlt(), equalTo("A"));
+                    assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+                    variantEvaluation.getTranscriptAnnotations().forEach(
+                            transcriptAnnotation -> {
+                                assertThat(transcriptAnnotation.getAccession(), equalTo(ENST00000556922.getAccession()));
+                                assertThat(transcriptAnnotation.getGeneSymbol(), equalTo(ENST00000556922.getGeneSymbol()));
+                            }
+                    );
+                });
     }
 
     @Test
