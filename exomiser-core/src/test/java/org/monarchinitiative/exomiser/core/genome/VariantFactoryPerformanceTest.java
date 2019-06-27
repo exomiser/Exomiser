@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
@@ -34,14 +35,45 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VariantFactoryPerformanceTest {
+
+
+    @Test
+    void completableFutureSuppliers() throws Exception {
+        ExecutorService executor = Executors.newCachedThreadPool();
+
+        String joined = Stream.of("Hail", "smiling", "morn,", "smiling", "morn", "in", "who's", "great", "presence", "darkness", "flies", "away")
+                .parallel()
+                .map(val ->
+                        CompletableFuture.supplyAsync(() -> {
+                                    try {
+                                        Thread.sleep(1000);
+                                        System.out.println("Sleeping " + val);
+                                    } catch (InterruptedException ex) {
+
+                                    }
+                                    return val;
+                                }, executor)
+                )
+                .map(CompletableFuture::join)
+                .collect(Collectors.joining(" "));
+
+        System.out.println(joined);
+    }
+
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
      */
@@ -54,48 +86,39 @@ public class VariantFactoryPerformanceTest {
 
         //warm-up
         for (int i = 0; i < 1000; i++) {
-            countVariants(stubAnnotationVariantFactory, Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"), new StubAllelePropertiesDao());
+            countVariants(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"), stubAnnotationVariantFactory, new StubAllelePropertiesDao());
         }
 
         Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
         System.out.println("Read variants with stub annotations, stub data - baseline file reading and VariantEvaluation creation");
-        for (int i = 0; i < 4; i++) {
-            Instant start = Instant.now();
-
-            long numVariants = countVariants(stubAnnotationVariantFactory, vcfPath, new StubAllelePropertiesDao());
-
-            Duration duration = Duration.between(start, Instant.now());
-            long ms = duration.toMillis();
-            System.out.printf("Read %d in in %dm %ds %dms (%d ms)%n", numVariants, (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
-        }
+        runPerfTest(4, vcfPath, stubAnnotationVariantFactory, new StubAllelePropertiesDao());
 
         VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
                 .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         System.out.println("Read variants with real annotations, stub data");
-        for (int i = 0; i < 4; i++) {
-            Instant start = Instant.now();
+        runPerfTest(4, vcfPath, jannovarVariantFactory, new StubAllelePropertiesDao());
 
-            long numVariants = countVariants(jannovarVariantFactory, vcfPath, new StubAllelePropertiesDao());
-
-            Duration duration = Duration.between(start, Instant.now());
-            long ms = duration.toMillis();
-            System.out.printf("Read %d in in %dm %ds %dms (%d ms)%n", numVariants, (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
-        }
-
-//        System.out.println("Read variants with real annotations, stub data");
-//        countVariants(jannovarVariantFactory, vcfPath, new StubAllelePropertiesDao());
-
-//        System.out.println("Read variants with stub annotations, real data");
-//        countVariants(stubAnnotationVariantFactory, vcfPath, allelePropertiesDao());
-//
-//        System.out.println("Read variants with real annotations, real data");
-//        countVariants(jannovarVariantFactory, vcfPath, allelePropertiesDao());
+        // This should take about 10-15 mins as it annotates every variant in the file from the database
+        System.out.println("Read variants with real annotations, real data");
+        runPerfTest(1, vcfPath, jannovarVariantFactory, allelePropertiesDao());
 
     }
 
-    private long countVariants(VariantFactory variantFactory, Path vcfPath, AllelePropertiesDao allelePropertiesDao) {
+    private void runPerfTest(int numIterations, Path vcfPath, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
+        for (int i = 0; i < numIterations; i++) {
+            Instant start = Instant.now();
+
+            long numVariants = countVariants(vcfPath, variantFactory, allelePropertiesDao);
+
+            Duration duration = Duration.between(start, Instant.now());
+            long ms = duration.toMillis();
+            System.out.printf("Read %d alleles in %dm %ds %dms (%d ms)%n", numVariants, (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
+        }
+    }
+
+    private long countVariants(Path vcfPath, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
         return variantFactory.createVariantEvaluations(vcfPath)
                 .map(annotateVariant(allelePropertiesDao))
                 .count();
@@ -123,8 +146,8 @@ public class VariantFactoryPerformanceTest {
     private class StubVariantAnnotator implements VariantAnnotator {
 
         @Override
-        public VariantAnnotation annotate(String chr, int pos, String ref, String alt) {
-            return VariantAnnotation.builder()
+        public List<VariantAnnotation> annotate(String chr, int pos, String ref, String alt) {
+            VariantAnnotation variantAnnotation = VariantAnnotation.builder()
                     .chromosomeName(chr)
                     .chromosome(toChromosomeNumber(chr))
                     .position(pos)
@@ -132,6 +155,7 @@ public class VariantFactoryPerformanceTest {
                     .alt(alt)
                     .geneSymbol("GENE")
                     .build();
+            return ImmutableList.of(variantAnnotation);
         }
 
         private int toChromosomeNumber(String chr) {

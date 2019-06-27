@@ -36,6 +36,7 @@ import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -83,8 +84,10 @@ class JannovarDataFactoryTest {
         VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, roundTripped, ChromosomalRegionIndex
                 .empty());
 
-        VariantAnnotation variantAnnotation = variantAnnotator.annotate("19", 36227863, "C", "T");
-        System.out.println(variantAnnotation);
+        List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate("19", 36227863, "C", "T");
+        System.out.println(variantAnnotations);
+        assertThat(variantAnnotations.size(), equalTo(1));
+        VariantAnnotation variantAnnotation = variantAnnotations.get(0);
 
         GeneFactory geneFactory = new GeneFactory(roundTripped);
         for (Gene gene : geneFactory.createKnownGenes()) {
