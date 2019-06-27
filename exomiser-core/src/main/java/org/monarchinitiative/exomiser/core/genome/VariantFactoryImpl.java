@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
@@ -39,9 +40,9 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -80,19 +81,19 @@ public class VariantFactoryImpl implements VariantFactory {
      */
     private Function<VariantContext, Stream<VariantEvaluation>> toVariantEvaluations() {
         return variantContext -> variantContext.getAlternateAlleles().stream()
-                .map(buildAlleleVariantEvaluation(variantContext))
-                .filter(Optional::isPresent)
-                .map(Optional::get);
+                .map(buildAlleleVariantEvaluations(variantContext))
+                .flatMap(Collection::stream);
+        // TODO: is this easier to use if we have streams all the way down rather than dealing with lists?
     }
 
-    private Function<Allele, Optional<VariantEvaluation>> buildAlleleVariantEvaluation(VariantContext variantContext) {
+    private Function<Allele, List<VariantEvaluation>> buildAlleleVariantEvaluations(VariantContext variantContext) {
         return altAllele -> {
             //alternate Alleles are always after the reference allele, which is 0
             int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
             if (alleleIsObservedInGenotypes(altAllele, variantContext.getGenotypes())) {
-                return Optional.of(buildVariantEvaluation(variantContext, altAlleleId, altAllele));
+                return buildVariantEvaluations(variantContext, altAlleleId, altAllele);
             }
-            return Optional.empty();
+            return ImmutableList.of();
         };
     }
 
@@ -111,9 +112,9 @@ public class VariantFactoryImpl implements VariantFactory {
      * @param altAlleleId
      * @return
      */
-    //This is package-private as it is used by the TestVariantFactory
-    VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele) {
-        VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAllele);
+    private List<VariantEvaluation> buildVariantEvaluations(VariantContext variantContext, int altAlleleId, Allele altAllele) {
+        List<VariantAnnotation> variantAnnotations = annotateVariantAllele(variantContext, altAllele);
+
         // symbolic alleles are reported as VariantEffect.STRUCTURAL_VARIANT
         // but have a default pathogenicity score of zero
         // will need to have an end and/or length (sigInt) and SVTYPE (DEL, INS, DUP, INV, CNV, BND)
@@ -124,10 +125,18 @@ public class VariantFactoryImpl implements VariantFactory {
         // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
         // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
         // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
-        return buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
+        ImmutableList.Builder<VariantEvaluation> variantEvaluations = new ImmutableList.Builder<>();
+        for (VariantAnnotation variantAnnotation : variantAnnotations) {
+            VariantEvaluation variantEvaluation = buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
+            variantEvaluations.add(variantEvaluation);
+        }
+        return variantEvaluations.build();
     }
 
-    private VariantAnnotation annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
+    // It is possible for a variant to overlap two or more genes (see issue https://github.com/exomiser/Exomiser/issues/294)
+    // so we're expecting a single gene per variant annotation which might have different variant consequences and different
+    // phenotypes for each gene
+    private List<VariantAnnotation> annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
         int pos = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();

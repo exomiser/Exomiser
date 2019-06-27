@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
@@ -33,7 +35,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Handles creation of {@link VariantAnnotation} using Jannovar.
@@ -81,18 +88,73 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      * Jannovar:
      * https://github.com/charite/jannovar/blob/master/jannovar-core/src/main/java/de/charite/compbio/jannovar/reference/VariantDataCorrector.java
      *
-     * @param contig
-     * @param pos
-     * @param ref
-     * @param alt
+     * @param chr chromosome identifier
+     * @param pos 1-based start position of the first base of the ref string
+     * @param ref reference base(s)
+     * @param alt alternate bases
      * @return {@link VariantAnnotation} objects trimmed according to {@link AllelePosition#trim(int, String, String)} and annotated using Jannovar.
+     * @since 13.0.0
      */
-    public VariantAnnotation annotate(String contig, int pos, String ref, String alt) {
+    @Override
+    public List<VariantAnnotation> annotate(String chr, int pos, String ref, String alt) {
         //so given the above, trim the allele first, then annotate it otherwise untrimmed alleles from multi-allelic sites will give different results
         AllelePosition trimmedAllele = AllelePosition.trim(pos, ref, alt);
-        VariantAnnotations variantAnnotations = jannovarAnnotationService.annotateVariant(contig, trimmedAllele.getPos(), trimmedAllele
-                .getRef(), trimmedAllele.getAlt());
-        return buildVariantAlleleAnnotation(genomeAssembly, contig, trimmedAllele, variantAnnotations);
+        VariantAnnotations variantAnnotations = jannovarAnnotationService
+                .annotateVariant(chr, trimmedAllele.getPos(), trimmedAllele.getRef(), trimmedAllele.getAlt());
+
+        // Group annotations by geneSymbol then create new Jannovar.VariantAnnotations from these then return List<VariantAnnotation>
+        // see issue https://github.com/exomiser/Exomiser/issues/294. However it creates approximately 2x as many variants
+        // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the amount of new
+        // VariantAnnotations returned by only splitting those with a MODERATE or greater putative impact.
+        if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
+            return splitAnnotationsByGene(variantAnnotations)
+                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, chr, trimmedAllele, variantGeneAnnotations))
+                    .collect(toList());
+        }
+        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, chr, trimmedAllele, variantAnnotations));
+    }
+
+    private boolean effectsMoreThanOneGeneWithMinimumImpact(VariantAnnotations variantAnnotations, PutativeImpact minimumImpact) {
+        ImmutableList<Annotation> annotations = variantAnnotations.getAnnotations();
+        // increasing cost of computation with each stage of the evaluation - don't change order.
+        return annotations.size() > 1 &&
+                variantEffectImpactIsAtLeast(variantAnnotations.getHighestImpactEffect(), minimumImpact) &&
+                annotationsContainMoreThanOneGene(annotations) &&
+                annotationsEffectMoreThanOneGeneWithMinimumImpact(annotations, minimumImpact);
+    }
+
+    private boolean variantEffectImpactIsAtLeast(VariantEffect variantEffect, PutativeImpact minimumImpact) {
+        // HIGH and MODERATE are ordinal 0, 1 which we want to look at if there are any
+        return variantEffect.getImpact().ordinal() <= minimumImpact.ordinal();
+    }
+
+    private boolean annotationsContainMoreThanOneGene(ImmutableList<Annotation> annotations) {
+        return annotations.stream().map(Annotation::getGeneSymbol).distinct().count() > 1L;
+    }
+
+    private boolean annotationsEffectMoreThanOneGeneWithMinimumImpact(ImmutableList<Annotation> annotations, PutativeImpact minimumImpact) {
+        Map<String, List<Annotation>> annotationsByGene = annotations.stream()
+                .filter(annotation -> annotation.getMostPathogenicVarType() != null)
+                .filter(annotation -> variantEffectImpactIsAtLeast(annotation.getMostPathogenicVarType(), minimumImpact))
+                .collect(groupingBy(Annotation::getGeneSymbol));
+        return annotationsByGene.size() > 1;
+    }
+
+    private Stream<VariantAnnotations> splitAnnotationsByGene(VariantAnnotations variantAnnotations) {
+        ImmutableList<Annotation> annotations = variantAnnotations.getAnnotations();
+        GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
+        logger.debug("Multiple annotations for {} {} {} {}", genomeVariant.getChrName(), genomeVariant.getPos(), genomeVariant.getRef(), genomeVariant.getAlt());
+
+        return annotations.stream()
+                .collect(groupingBy(Annotation::getGeneSymbol))
+                .values().stream()
+                //.peek(annotationList -> annotationList.forEach(annotation -> logger.info("{}", toAnnotationString(annotation))))
+                .map(annos -> new VariantAnnotations(genomeVariant, annos));
+    }
+
+    private String toAnnotationString(Annotation annotation) {
+        return annotation.getGeneSymbol() + ", " + annotation.getMostPathogenicVarType() + ", " + annotation.getMostPathogenicVarType()
+                .getImpact() + ", " + annotation.getTranscript();
     }
 
     private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, String contig, AllelePosition allelePosition, VariantAnnotations variantAnnotations) {
