@@ -50,7 +50,7 @@ public class AlleleProtoAdaptorTest {
         Variant variant = VariantAnnotation.builder()
                 .genomeAssembly(GenomeAssembly.HG19)
                 .chromosome(1)
-                .position(12345)
+                .start(12345)
                 .ref("A")
                 .alt("T")
                 .build();

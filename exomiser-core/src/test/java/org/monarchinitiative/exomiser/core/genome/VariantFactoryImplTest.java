@@ -65,7 +65,7 @@ public class VariantFactoryImplTest {
         return variant -> {
             GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
             List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
-            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getChromosome(), variant.getPosition(), variant
+            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getChromosome(), variant.getStart(), variant
                             .getRef(), variant.getAlt(), variant.getGenotypeString(), genotypes, genotypeTypes,
                     variant.getGeneSymbol(), variant.getGeneId(), variant.getVariantContext());
         };
@@ -148,7 +148,7 @@ public class VariantFactoryImplTest {
 
         assertThat(variantEvaluation.getChromosome(), equalTo(10));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("10"));
-        assertThat(variantEvaluation.getPosition(), equalTo(123256215));
+        assertThat(variantEvaluation.getStart(), equalTo(123256215));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -171,7 +171,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(0));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("UNKNOWN"));
-        assertThat(variantEvaluation.getPosition(), equalTo(12345));
+        assertThat(variantEvaluation.getStart(), equalTo(12345));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(false));
@@ -197,7 +197,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(1));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
-        assertThat(variantEvaluation.getPosition(), equalTo(123256213));
+        assertThat(variantEvaluation.getStart(), equalTo(123256213));
         assertThat(variantEvaluation.getRef(), equalTo("CA"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -254,7 +254,8 @@ public class VariantFactoryImplTest {
         System.out.println(firstAllele);
         assertThat(firstAllele.getChromosome(), equalTo(1));
         assertThat(firstAllele.getChromosomeName(), equalTo("1"));
-        assertThat(firstAllele.getPosition(), equalTo(120612040));
+        assertThat(firstAllele.getStart(), equalTo(120612040));
+        assertThat(firstAllele.getEnd(), equalTo(120612046));
         assertThat(firstAllele.getRef(), equalTo("T"));
         assertThat(firstAllele.getAlt(), equalTo("TCCGCCG"));
         assertThat(firstAllele.hasTranscriptAnnotations(), is(true));
@@ -273,7 +274,8 @@ public class VariantFactoryImplTest {
         System.out.println(secondAllele);
         assertThat(secondAllele.getChromosome(), equalTo(1));
         assertThat(secondAllele.getChromosomeName(), equalTo("1"));
-        assertThat(secondAllele.getPosition(), equalTo(120612040));
+        assertThat(secondAllele.getStart(), equalTo(120612040));
+        assertThat(secondAllele.getEnd(), equalTo(120612049));
         assertThat(secondAllele.getRef(), equalTo("T"));
         assertThat(secondAllele.getAlt(), equalTo("TCCTCCGCCG"));
         assertThat(secondAllele.hasTranscriptAnnotations(), is(true));
@@ -301,7 +303,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(1));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
-        assertThat(variantEvaluation.getPosition(), equalTo(120612040));
+        assertThat(variantEvaluation.getStart(), equalTo(120612040));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("TCCGCCG"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -354,7 +356,7 @@ public class VariantFactoryImplTest {
                     System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
                     assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
                     assertThat(variantEvaluation.getChromosome(), equalTo(16));
-                    assertThat(variantEvaluation.getPosition(), equalTo(89935214));
+                    assertThat(variantEvaluation.getStart(), equalTo(89935214));
                     assertThat(variantEvaluation.getRef(), equalTo("G"));
                     assertThat(variantEvaluation.getAlt(), equalTo("A"));
                     assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
@@ -369,7 +371,7 @@ public class VariantFactoryImplTest {
                     System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
                     assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
                     assertThat(variantEvaluation.getChromosome(), equalTo(16));
-                    assertThat(variantEvaluation.getPosition(), equalTo(89935214));
+                    assertThat(variantEvaluation.getStart(), equalTo(89935214));
                     assertThat(variantEvaluation.getRef(), equalTo("G"));
                     assertThat(variantEvaluation.getAlt(), equalTo("A"));
                     assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
@@ -385,12 +387,29 @@ public class VariantFactoryImplTest {
     @Test
     public void testStructuralVariant() {
         Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
-                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256110;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
+                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256215;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
-        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FEATURE_TRUNCATION));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+
+        assertThat(variantEvaluation.getStart(), equalTo(123256215));
+//        assertThat(variantEvaluation.getStartMin(), equalTo(123256159));
+//        assertThat(variantEvaluation.getStartMax(), equalTo(123256235));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(123256215));
+//        assertThat(variantEvaluation.getEndMin(), equalTo(123256100));
+//        assertThat(variantEvaluation.getEndMax(), equalTo(123256172));
+
+//        assertThat(variantEvaluation.getLength(), equalTo(-205));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<DEL>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.het())));
+
     }
 }

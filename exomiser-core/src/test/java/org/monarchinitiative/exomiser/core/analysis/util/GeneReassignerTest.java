@@ -383,7 +383,7 @@ public class GeneReassignerTest {
         variant.setAnnotations(annotations);
         instance.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variant);
 
-        logger.info("{} {}:{} {} {} {} {}", variant.getGeneSymbol(), variant.getChromosome(), variant.getPosition(),
+        logger.info("{} {}:{} {} {} {} {}", variant.getGeneSymbol(), variant.getChromosome(), variant.getStart(),
                 variant.getRef(), variant.getAlt(), variant.getVariantEffect(), variant.getTranscriptAnnotations()
                         .size());
         variant.getTranscriptAnnotations().forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
@@ -415,7 +415,7 @@ public class GeneReassignerTest {
 
         variants.forEach(variantEvaluation -> {
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
-                    .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
+                    .getStart(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
                     .getTranscriptAnnotations()
                     .size());
             VariantEffect originalVariantEffect = VariantEffect.MISSENSE_VARIANT;
@@ -457,7 +457,7 @@ public class GeneReassignerTest {
         variants.forEach(variantEvaluation -> {
             logger.info("Before re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
-                    .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
+                    .getStart(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
                     .getTranscriptAnnotations()
                     .size());
             assertThat(variantEvaluation, isAssignedTo(GNRHR2));
@@ -474,7 +474,7 @@ public class GeneReassignerTest {
 
             logger.info("After re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
-                    .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
+                    .getStart(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
                     .getTranscriptAnnotations()
                     .size());
             assertThat(variantEvaluation, isAssignedTo(topPhenotypeMatchGene));

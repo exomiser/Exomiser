@@ -132,20 +132,20 @@ public class VariantEvaluationTest {
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test
-    public void testSpecifiedGenomeAssemblyFromValue() {
-        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
-                .genomeAssembly("GRCh38")
-                .build();
-        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-    }
-
-    @Test
-    public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
-        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
-                .genomeAssembly("wibble")
-        );
-    }
+//    @Test
+//    public void testSpecifiedGenomeAssemblyFromValue() {
+//        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+//                .genomeAssembly("GRCh38")
+//                .build();
+//        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+//    }
+//
+//    @Test
+//    public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
+//        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+//                .genomeAssembly("wibble")
+//        );
+//    }
 
     @Test
     public void testGetChromosome() {
@@ -165,7 +165,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetChromosomePosition() {
-        assertThat(instance.getPosition(), equalTo(POSITION));
+        assertThat(instance.getStart(), equalTo(POSITION));
     }
 
     @Test
@@ -772,14 +772,14 @@ public class VariantEvaluationTest {
         Collections.shuffle(variants);
 
         System.out.println("Shuffled:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
 
         Collections.sort(variants);
 
         List<VariantEvaluation> expected = Arrays.asList(zero, one, two, three, four);
 
         System.out.println("Sorted:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(expected));
     }
 
@@ -816,13 +816,13 @@ public class VariantEvaluationTest {
 
         System.out.println("Shuffled:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
 
         variants.sort(new VariantEvaluation.RankBasedComparator());
 
         System.out.println("Sorted:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 
@@ -834,13 +834,13 @@ public class VariantEvaluationTest {
 
         System.out.println("Shuffled:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
 
         variants.sort(VariantEvaluation::compareByRank);
 
         System.out.println("Sorted:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 

@@ -26,13 +26,13 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -80,16 +80,18 @@ public class VariantFactoryImpl implements VariantFactory {
      * alternate allele.
      */
     private Function<VariantContext, Stream<VariantEvaluation>> toVariantEvaluations() {
-        return variantContext -> variantContext.getAlternateAlleles().stream()
-                .map(buildAlleleVariantEvaluations(variantContext))
-                .flatMap(Collection::stream);
-        // TODO: is this easier to use if we have streams all the way down rather than dealing with lists?
+        return variantContext ->  variantContext.getAlternateAlleles().stream()
+                    .map(buildAlleleVariantEvaluations(variantContext))
+                    .flatMap(Collection::stream);
+            // TODO: is this easier to use if we have streams all the way down rather than dealing with lists?
     }
 
     private Function<Allele, List<VariantEvaluation>> buildAlleleVariantEvaluations(VariantContext variantContext) {
         return altAllele -> {
-            //alternate Alleles are always after the reference allele, which is 0
+            // Itererating by alleleId here this is less clean, but faster
+            // alternate Alleles are always after the reference allele, which is 0
             int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
+            // n.b. samples with no genotypes (e.g. ./.) will return no variants
             if (alleleIsObservedInGenotypes(altAllele, variantContext.getGenotypes())) {
                 return buildVariantEvaluations(variantContext, altAlleleId, altAllele);
             }
@@ -107,27 +109,19 @@ public class VariantFactoryImpl implements VariantFactory {
     /**
      * Creates a VariantEvaluation made from all the relevant bits of the
      * VariantContext and VariantAnnotations for a given alternative allele.
-     *
-     * @param variantContext
-     * @param altAlleleId
-     * @return
      */
     private List<VariantEvaluation> buildVariantEvaluations(VariantContext variantContext, int altAlleleId, Allele altAllele) {
         List<VariantAnnotation> variantAnnotations = annotateVariantAllele(variantContext, altAllele);
 
         // symbolic alleles are reported as VariantEffect.STRUCTURAL_VARIANT
-        // but have a default pathogenicity score of zero
-        // will need to have an end and/or length (sigInt) and SVTYPE (DEL, INS, DUP, INV, CNV, BND)
-        // lookup in Jannovar to find effected genes?
 
-        // find length and type
         // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
         // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
         // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
         // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
         ImmutableList.Builder<VariantEvaluation> variantEvaluations = new ImmutableList.Builder<>();
         for (VariantAnnotation variantAnnotation : variantAnnotations) {
-            VariantEvaluation variantEvaluation = buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
+            VariantEvaluation variantEvaluation = buildVariantEvaluation(variantContext, altAlleleId, altAllele, variantAnnotation);
             variantEvaluations.add(variantEvaluation);
         }
         return variantEvaluations.build();
@@ -138,32 +132,53 @@ public class VariantFactoryImpl implements VariantFactory {
     // phenotypes for each gene
     private List<VariantAnnotation> annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
-        int pos = variantContext.getStart();
+        int start = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
         // Structural variants are 'symbolic' in that they have no actual reported bases
         String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
-        return variantAnnotator.annotate(contig, pos, ref, alt);
+
+        StructuralType structuralType = detectAlleleVariantType(variantContext, altAllele);
+        if (structuralType.isStructural()) {
+            String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
+            int end = variantContext.getEnd();
+            List<Integer> startCi = getCiListOrDefault(variantContext, "CIPOS", ImmutableList.of(0, 0));
+            List<Integer> endCi = getCiListOrDefault(variantContext, "CIEND", ImmutableList.of(0, 0));
+
+            // TODO: add line validation for various SV types to ensure they are correctly formatted?
+//            logger.info("Annotating {}: {} {} {} {} {} {} {} {}", structuralType, ref, alt, contig, start, startCi, endContig, end, endCi);
+            JannovarVariantAnnotator jannovarVariantAnnotator = (JannovarVariantAnnotator) variantAnnotator;
+            return jannovarVariantAnnotator.annotateStructuralVariant(structuralType, ref, alt, contig, start, startCi, endContig, end, endCi);
+        }
+
+        return variantAnnotator.annotate(contig, start, ref, alt);
     }
 
-    private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotation variantAnnotation) {
+    private StructuralType detectAlleleVariantType(VariantContext variantContext, Allele altAllele) {
+        // WARNING! variantContext.getStructuralVariantType() IS NOT SAFE! It throws the following exception:
+        //  java.lang.IllegalArgumentException: No enum constant htsjdk.variant.variantcontext.StructuralVariantType.SVA
+        //  for the line
+        //  22   16918023    esv3647185  C   <INS:ME:SVA>    100 PASS    SVLEN=1312;SVTYPE=SVA;TSD=AAAAATACAAAAATTTGC;VT=SV   GT  0|1
+        if (altAllele.isSymbolic()){
+            String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, null);
+            // SV types should not be SMALL so try parsing the alt allele if the SVTYPE field isn't recognised (as in the case of ALU, LINE, SVA from 1000 genomes)
+            StructuralType parseValue = StructuralType.parseValue(altAllele.getDisplayString());
+            return parseValue == StructuralType.UNKNOWN ? StructuralType.parseValue(svTypeString) : parseValue;
+        }
+        return StructuralType.NON_STRUCTURAL;
+    }
 
-        //See also notes in InheritanceModeAnnotator.
+    private List<Integer> getCiListOrDefault(VariantContext variantContext, String cipos, List<Integer> defaultValue) {
+        List<Integer> ciList = variantContext.getCommonInfo().getAttributeAsIntList(cipos, -1);
+        return ciList.isEmpty() ? defaultValue : ciList;
+    }
+
+    private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele, VariantAnnotation variantAnnotation) {
+
+        // See also notes in InheritanceModeAnnotator.
         Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
-        GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
-        int chr = variantAnnotation.getChromosome();
-        String chromosomeName = variantAnnotation.getChromosomeName();
-        int pos = variantAnnotation.getPosition();
-        String ref = variantAnnotation.getRef();
-        String alt = variantAnnotation.getAlt();
-
-        String geneSymbol = variantAnnotation.getGeneSymbol();
-        String geneId = variantAnnotation.getGeneId();
-        VariantEffect variantEffect = variantAnnotation.getVariantEffect();
-        List<TranscriptAnnotation> annotations = variantAnnotation.getTranscriptAnnotations();
-
-        return VariantEvaluation.builder(chr, pos, ref, alt)
-                .genomeAssembly(genomeAssembly)
+        // all the variantAnnotation methods are present on the Variant interface so this should be a VariantEvaluation.copy(Variant)
+        return VariantEvaluation.copy(variantAnnotation)
                 //HTSJDK derived data are used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
                 //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
@@ -175,13 +190,6 @@ public class VariantFactoryImpl implements VariantFactory {
                 .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
-                //jannovar derived data
-                .chromosomeName(chromosomeName)
-                .geneSymbol(geneSymbol)
-                //This used to be an ENTREZ gene identifier, but could now be anything.
-                .geneId(geneId)
-                .variantEffect(variantEffect)
-                .annotations(annotations)
                 .build();
     }
 
@@ -190,6 +198,7 @@ public class VariantFactoryImpl implements VariantFactory {
      */
     private class VariantCounter {
         final AtomicInteger variantRecords = new AtomicInteger(0);
+        final AtomicInteger structuralVariants = new AtomicInteger(0);
         final AtomicInteger unannotatedVariants = new AtomicInteger(0);
         final AtomicInteger annotatedVariants = new AtomicInteger(0);
         final Instant start = Instant.now();
@@ -200,6 +209,10 @@ public class VariantFactoryImpl implements VariantFactory {
 
         Consumer<VariantEvaluation> countAnnotatedVariant() {
             return variantEvaluation -> {
+                // This does add a few seconds overhead over 4 mill variants
+                if (variantEvaluation.isStructuralVariant()) {
+                    structuralVariants.incrementAndGet();
+                }
                 if (variantEvaluation.hasTranscriptAnnotations()) {
                     annotatedVariants.incrementAndGet();
                 } else {
@@ -210,11 +223,11 @@ public class VariantFactoryImpl implements VariantFactory {
 
         void logCount() {
             if (unannotatedVariants.get() > 0) {
-                logger.info("Processed {} variant records into {} single allele variants, {} are missing annotations, most likely due to non-numeric chromosome designations", variantRecords
-                        .get(), annotatedVariants.get(), unannotatedVariants.get());
+                logger.info("Processed {} variant records into {} single allele variants (including {} structural variants), {} are missing annotations, most likely due to non-numeric chromosome designations",
+                        variantRecords.get(), annotatedVariants.get(), structuralVariants.get(), unannotatedVariants.get());
             } else {
-                logger.info("Processed {} variant records into {} single allele variants", variantRecords.get(), annotatedVariants
-                        .get());
+                logger.info("Processed {} variant records into {} single allele variants (including {} structural variants)",
+                        variantRecords.get(), annotatedVariants.get(), structuralVariants.get());
             }
             Duration duration = Duration.between(start, Instant.now());
             long ms = duration.toMillis();

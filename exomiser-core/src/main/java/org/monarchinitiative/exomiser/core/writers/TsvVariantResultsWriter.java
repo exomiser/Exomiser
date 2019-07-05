@@ -135,7 +135,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // CHROM
         record.add(ve.getChromosomeName());
         // POS
-        record.add(ve.getPosition());
+        record.add(ve.getStart());
         // REF
         record.add(ve.getRef());
         // ALT

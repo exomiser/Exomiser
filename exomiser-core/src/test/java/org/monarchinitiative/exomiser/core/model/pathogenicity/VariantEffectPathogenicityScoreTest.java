@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore.*;
 
 /**
  *
@@ -41,22 +42,24 @@ public class VariantEffectPathogenicityScoreTest {
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {
         VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
-        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantEffectPathogenicityScore.DEFAULT_MISSENSE_SCORE));
+        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForStartLoss() {
         VariantEffect variantEffect = VariantEffect.START_LOST;
-        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantEffectPathogenicityScore.STARTLOSS_SCORE));
+        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(VariantEffectPathogenicityScore.STARTLOSS_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForNonPathogenicVariantType() {
         VariantEffect variantEffect = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        float result = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-        assertThat(result, equalTo(VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE));
+        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(NON_PATHOGENIC_SCORE));
     }
 
+
+    @Test
+    public void testGetPathogenicityScoreForUnListedVariantEffect() {
+        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(VariantEffect.COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
+    }
 }

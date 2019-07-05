@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -68,7 +68,7 @@ public class GeneReassigner {
     public void reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
             logger.debug("Checking gene assignment for {} chr={} pos={}", variantEvaluation.getVariantEffect(), variantEvaluation
-                    .getChromosome(), variantEvaluation.getPosition());
+                    .getChromosome(), variantEvaluation.getStart());
             assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation);
         }
     }
@@ -135,7 +135,7 @@ public class GeneReassigner {
 
     private void assignVariantToGene(VariantEvaluation variant, Gene gene, List<TranscriptAnnotation> matchingGeneAnnotations) {
         logger.debug("Reassigning {} {}:{} {}->{} from {} to {}", variant.getVariantEffect(), variant.getChromosome(), variant
-                .getPosition(), variant.getRef(), variant.getAlt(), variant
+                .getStart(), variant.getRef(), variant.getAlt(), variant
                 .getGeneSymbol(), gene.getGeneSymbol());
 
         variant.setGeneSymbol(gene.getGeneSymbol());

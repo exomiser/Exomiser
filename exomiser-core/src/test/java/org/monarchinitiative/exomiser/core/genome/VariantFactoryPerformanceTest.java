@@ -90,8 +90,11 @@ public class VariantFactoryPerformanceTest {
         }
 
         Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
+//        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19240.sniffles.PB.vcf");
+//        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/example_sv.vcf");
+
         System.out.println("Read variants with stub annotations, stub data - baseline file reading and VariantEvaluation creation");
-        runPerfTest(4, vcfPath, stubAnnotationVariantFactory, new StubAllelePropertiesDao());
+//        runPerfTest(4, vcfPath, stubAnnotationVariantFactory, new StubAllelePropertiesDao());
 
         VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
                 .empty());
@@ -101,8 +104,8 @@ public class VariantFactoryPerformanceTest {
         runPerfTest(4, vcfPath, jannovarVariantFactory, new StubAllelePropertiesDao());
 
         // This should take about 10-15 mins as it annotates every variant in the file from the database
-        System.out.println("Read variants with real annotations, real data");
-        runPerfTest(1, vcfPath, jannovarVariantFactory, allelePropertiesDao());
+//        System.out.println("Read variants with real annotations, real data");
+//        runPerfTest(1, vcfPath, jannovarVariantFactory, allelePropertiesDao());
 
     }
 
@@ -149,27 +152,13 @@ public class VariantFactoryPerformanceTest {
         public List<VariantAnnotation> annotate(String chr, int pos, String ref, String alt) {
             VariantAnnotation variantAnnotation = VariantAnnotation.builder()
                     .chromosomeName(chr)
-                    .chromosome(toChromosomeNumber(chr))
-                    .position(pos)
+                    .chromosome(Contig.parseId(chr))
+                    .start(pos)
                     .ref(ref)
                     .alt(alt)
                     .geneSymbol("GENE")
                     .build();
             return ImmutableList.of(variantAnnotation);
-        }
-
-        private int toChromosomeNumber(String chr) {
-            switch (chr) {
-                case "X":
-                    return 23;
-                case "Y":
-                    return 24;
-                case "M":
-                case "MT":
-                    return 25;
-                default:
-                    return Integer.parseInt(chr);
-            }
         }
     }
 

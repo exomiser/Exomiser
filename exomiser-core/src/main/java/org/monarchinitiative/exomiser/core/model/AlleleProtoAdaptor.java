@@ -106,7 +106,7 @@ public class AlleleProtoAdaptor {
         // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
         return AlleleKey.newBuilder()
                 .setChr(variant.getChromosome())
-                .setPosition(variant.getPosition())
+                .setPosition(variant.getStart())
                 .setRef(variant.getRef())
                 .setAlt(variant.getAlt())
                 .build();

@@ -117,7 +117,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
     private Allele makeAllele(byte chr, int pos, String ref, String alt) {
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
-        return new Allele(chr, allelePosition.getPos(), allelePosition.getRef(), allelePosition.getAlt());
+        return new Allele(chr, allelePosition.getStart(), allelePosition.getRef(), allelePosition.getAlt());
     }
 
 }

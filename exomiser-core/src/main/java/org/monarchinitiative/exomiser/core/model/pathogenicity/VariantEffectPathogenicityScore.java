@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,8 @@ public abstract class VariantEffectPathogenicityScore {
      * or SIFT.
      */
     public static final float DEFAULT_MISSENSE_SCORE = 0.6f;
+
+    public static final float DEFAULT_HIGH_SCORE = 1.0f;
     /**
      * Pathogenicity score for a mutation class such as INTERGENIC where we are
      * entirely sure it is nonpathogenic (for the purposes of this software).
@@ -120,12 +122,21 @@ public abstract class VariantEffectPathogenicityScore {
                 return STOPLOSS_SCORE;
             case STOP_GAINED:
                 return NONSENSE_SCORE;
-            // NO REGULATORY_REGION, FIVE_PRIME_UTR_EXON_VARIANT, FIVE_PRIME_UTR_TRUNCATION
-            // FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT.... ?
-            // There, are many other missing cases which really need default scores!
             default:
-                return NON_PATHOGENIC_SCORE;
+                return defaultImpactScore(variantEffect.getImpact());
         }
+    }
+
+    private static float defaultImpactScore(PutativeImpact putativeImpact) {
+        // guard against overlooking MODERATE and HIGH impact effects
+        int effectOrdinal = putativeImpact.ordinal();
+        if (effectOrdinal == PutativeImpact.MODERATE.ordinal()) {
+            return DEFAULT_MISSENSE_SCORE;
+        }
+        if (effectOrdinal == PutativeImpact.HIGH.ordinal()) {
+            return DEFAULT_HIGH_SCORE;
+        }
+        return NON_PATHOGENIC_SCORE;
     }
 
 }

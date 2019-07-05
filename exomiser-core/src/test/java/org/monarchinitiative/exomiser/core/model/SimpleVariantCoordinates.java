@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 /**
@@ -29,14 +30,14 @@ public class SimpleVariantCoordinates implements VariantCoordinates {
 
     private final GenomeAssembly genomeAssembly;
     private final int chr;
-    private final int pos;
+    private final int start;
     private final String ref;
     private final String alt;
 
-    public SimpleVariantCoordinates(GenomeAssembly genomeAssembly, int chr, int pos, String ref, String alt) {
+    public SimpleVariantCoordinates(GenomeAssembly genomeAssembly, int chr, int start, String ref, String alt) {
         this.genomeAssembly = genomeAssembly;
         this.chr = chr;
-        this.pos = pos;
+        this.start = start;
         this.ref = ref;
         this.alt = alt;
     }
@@ -53,21 +54,17 @@ public class SimpleVariantCoordinates implements VariantCoordinates {
 
     @Override
     public String getChromosomeName() {
-        switch (chr) {
-            case 23:
-                return "X";
-            case 24:
-                return "Y";
-            case 25:
-                return "M";
-            default:
-                return String.valueOf(chr);
-        }
+        return Contig.toString(chr);
     }
 
     @Override
-    public int getPosition() {
-        return pos;
+    public int getStart() {
+        return start;
+    }
+
+    @Override
+    public int getEnd() {
+        return start;
     }
 
     @Override
@@ -88,7 +85,7 @@ public class SimpleVariantCoordinates implements VariantCoordinates {
         SimpleVariantCoordinates that = (SimpleVariantCoordinates) o;
 
         if (chr != that.chr) return false;
-        if (pos != that.pos) return false;
+        if (start != that.start) return false;
         if (ref != null ? !ref.equals(that.ref) : that.ref != null) return false;
         return !(alt != null ? !alt.equals(that.alt) : that.alt != null);
 
@@ -97,7 +94,7 @@ public class SimpleVariantCoordinates implements VariantCoordinates {
     @Override
     public int hashCode() {
         int result = chr;
-        result = 31 * result + pos;
+        result = 31 * result + start;
         result = 31 * result + (ref != null ? ref.hashCode() : 0);
         result = 31 * result + (alt != null ? alt.hashCode() : 0);
         return result;
@@ -107,7 +104,7 @@ public class SimpleVariantCoordinates implements VariantCoordinates {
     public String toString() {
         return "SimpleVariantCoordinates{" +
                 "chr=" + chr +
-                ", pos=" + pos +
+                ", start=" + start +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 '}';
