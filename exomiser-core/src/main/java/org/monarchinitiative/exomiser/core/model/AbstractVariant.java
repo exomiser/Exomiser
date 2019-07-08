@@ -90,22 +90,22 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
         private List<TranscriptAnnotation> annotations = ImmutableList.of();
 
         public T geneSymbol(String geneSymbol) {
-            this.geneSymbol = geneSymbol;
+            this.geneSymbol = Objects.requireNonNull(geneSymbol);
             return self();
         }
 
         public T geneId(String geneId) {
-            this.geneId = geneId;
+            this.geneId = Objects.requireNonNull(geneId);
             return self();
         }
 
         public T variantEffect(VariantEffect variantEffect) {
-            this.variantEffect = variantEffect;
+            this.variantEffect = Objects.requireNonNull(variantEffect);
             return self();
         }
 
         public T annotations(List<TranscriptAnnotation> annotations) {
-            this.annotations = annotations;
+            this.annotations = Objects.requireNonNull(annotations);
             return self();
         }
 
