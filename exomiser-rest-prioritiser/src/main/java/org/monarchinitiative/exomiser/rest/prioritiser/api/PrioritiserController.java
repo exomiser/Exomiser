@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,10 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -76,8 +73,8 @@ public class PrioritiserController {
     }
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") List<String> phenotypes,
-                                           @RequestParam(value = "genes", required = false, defaultValue = "") List<Integer> genesIds,
+    public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") Set<String> phenotypes,
+                                           @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
                                            @RequestParam(value = "prioritiser") String prioritiserName,
                                            @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
                                            @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
@@ -120,7 +117,7 @@ public class PrioritiserController {
         }
     }
 
-    private List<Gene> makeGenesFromIdentifiers(List<Integer> genesIds) {
+    private List<Gene> makeGenesFromIdentifiers(Collection<Integer> genesIds) {
         if (genesIds.isEmpty()) {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
