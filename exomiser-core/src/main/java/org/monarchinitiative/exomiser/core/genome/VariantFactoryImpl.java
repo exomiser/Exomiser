@@ -140,14 +140,12 @@ public class VariantFactoryImpl implements VariantFactory {
         StructuralType structuralType = detectAlleleVariantType(variantContext, altAllele);
         if (structuralType.isStructural()) {
             String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
-            int end = variantContext.getEnd();
+            int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             List<Integer> startCi = getCiListOrDefault(variantContext, "CIPOS", ImmutableList.of(0, 0));
             List<Integer> endCi = getCiListOrDefault(variantContext, "CIEND", ImmutableList.of(0, 0));
-
-            // TODO: add line validation for various SV types to ensure they are correctly formatted?
-//            logger.info("Annotating {}: {} {} {} {} {} {} {} {}", structuralType, ref, alt, contig, start, startCi, endContig, end, endCi);
-            JannovarVariantAnnotator jannovarVariantAnnotator = (JannovarVariantAnnotator) variantAnnotator;
-            return jannovarVariantAnnotator.annotateStructuralVariant(structuralType, ref, alt, contig, start, startCi, endContig, end, endCi);
+            int length = variantContext.getAttributeAsInt("SVLEN", 0);
+//            logger.info("Annotating {}: {} {} {} {} {} {} {} {} {}", structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
+            return variantAnnotator.annotateStructuralVariant(structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
         }
 
         return variantAnnotator.annotate(contig, start, ref, alt);
@@ -173,10 +171,8 @@ public class VariantFactoryImpl implements VariantFactory {
     }
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele, VariantAnnotation variantAnnotation) {
-
         // See also notes in InheritanceModeAnnotator.
         Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-
         // all the variantAnnotation methods are present on the Variant interface so this should be a VariantEvaluation.copy(Variant)
         return VariantEvaluation.copy(variantAnnotation)
                 //HTSJDK derived data are used for writing out the

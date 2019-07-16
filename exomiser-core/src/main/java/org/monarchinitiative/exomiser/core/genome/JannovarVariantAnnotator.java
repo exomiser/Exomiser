@@ -112,7 +112,9 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, chr, trimmedAllele, variantAnnotations));
     }
 
-    public List<VariantAnnotation> annotateStructuralVariant(StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd) {
+    @Override
+    public List<VariantAnnotation> annotateStructuralVariant(StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd, int length) {
+//        logger.info("Annotating {} {} {} {} {} {} {} {} {}", structuralType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
         SVAnnotations svAnnotations = jannovarAnnotationService
                 .annotateStructuralVariant(structuralType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd);
 
@@ -124,7 +126,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
         return annotationsByGeneSymbol.values()
                 .stream()
-                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, structuralType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd))
+                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, structuralType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length))
                 .collect(toList());
     }
 
@@ -168,7 +170,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private String toAnnotationString(StructuralType structuralType, SVAnnotation annotation) {
         return structuralType + ", " +
-//                annotation.getVariant()  + ", " +
+                annotation.getVariant()  + ", " +
                 annotation.getTranscript().getGeneSymbol() + ", " +
                 annotation.getTranscript().getGeneID() + ", " +
                 annotation.getMostPathogenicVariantEffect() + ", " +
@@ -177,7 +179,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
     }
 
 
-    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd) {
+    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd, int length) {
         svAnnotations.sort(SVAnnotation::compareTo);
         SVAnnotation highestImpactAnnotation = svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
@@ -190,7 +192,6 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         int endChr = genomeVariant.getChr2();
         // The genomeVariant.getStart() seems to be 0-based despite being constructed using 1-based coordinates
         //  so ensure we use the original startPos from the VCF to avoid confusion.
-
         //TODO: enable this to do regulatory gubbins with SVs
         VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, startPos);
 
@@ -203,12 +204,14 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .chromosome(chr)
                 .chromosomeName(getChromosomeNameOrDefault(genomeVariant.getChrName(), startContig))
                 .start(startPos)
-                .startMin(genomeVariant.getPosCILowerBound())
-                .startMax(genomeVariant.getPosCIUpperBound())
+                .startMin(startPos + genomeVariant.getPosCILowerBound())
+                .startMax(startPos + genomeVariant.getPosCIUpperBound())
                 .endChromosome(endChr)
+                .endContig(endContig)
                 .end(endPos)
-                .endMin(genomeVariant.getPos2CILowerBound())
-                .endMax(genomeVariant.getPos2CIUpperBound())
+                .endMin(endPos + genomeVariant.getPos2CILowerBound())
+                .endMax(endPos + genomeVariant.getPos2CIUpperBound())
+                .length(length)
                 .structuralType(structuralType)
                 .ref(ref)
                 .alt(alt)
@@ -239,7 +242,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         int start = allelePosition.getStart();
         String ref = allelePosition.getRef();
         String alt = allelePosition.getAlt();
-        int end = calculateEnd(start, ref, alt);
+        int end = start + Math.max(ref.length() - 1, 0);
 
         VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, start);
         return VariantAnnotation.builder()
@@ -267,7 +270,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
         return TranscriptAnnotation.builder()
-                .variantEffect(annotation.getMostPathogenicVarType())
+                .variantEffect(getVariantEffectOrDefault(annotation.getMostPathogenicVarType(), VariantEffect.SEQUENCE_VARIANT))
                 .accession(getTranscriptAccession(annotation.getTranscript()))
                 .geneSymbol(buildGeneSymbol(annotation))
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
@@ -275,6 +278,10 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
                 .hgvsProtein(annotation.getProteinChangeStr(AminoAcidCode.THREE_LETTER))
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))
                 .build();
+    }
+
+    private VariantEffect getVariantEffectOrDefault(VariantEffect annotatedEffect, VariantEffect defaultEffect) {
+        return annotatedEffect == null ? defaultEffect : annotatedEffect;
     }
 
     private List<TranscriptAnnotation> buildSvTranscriptAnnotations(List<SVAnnotation> svAnnotations) {
@@ -287,23 +294,10 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private TranscriptAnnotation toTranscriptAnnotation(SVAnnotation svAnnotation) {
         return TranscriptAnnotation.builder()
-                .variantEffect(svAnnotation.getMostPathogenicVariantEffect())
+                .variantEffect(getVariantEffectOrDefault(svAnnotation.getMostPathogenicVariantEffect(), VariantEffect.STRUCTURAL_VARIANT))
                 .accession(getTranscriptAccession(svAnnotation.getTranscript()))
                 .geneSymbol(buildGeneSymbol(svAnnotation))
                 .build();
-    }
-
-    // Might be good to pull these out into a separate class for easier testing?
-    // How does this fit with the requirements for structural variant annotation?
-    private int calculateEnd(int start, String refAllele, String altAllele) {
-        // variantContext.getEnd() - HTSJDK defines this as either the start + SVLEN or start + Math.max(ref.length() - 1, 0)
-        // it seems odd to refer to either the ref or the structural alt when it seems more natural to be referring
-        // to the length of the ALT allele, given this is the interesting bit.
-        int altAlleleLength = altAllele.length();
-        int refAlleleLength = refAllele.length();
-        // TODO: DEL end = (start - refAlleleLength) + altAlleleLength   (SVLEN=- )
-        //       INS end = start
-        return altAlleleLength > refAlleleLength ? (start - refAlleleLength) + altAlleleLength : (start - refAlleleLength) - altAlleleLength;
     }
 
     private String getTranscriptAccession(TranscriptModel transcriptModel) {

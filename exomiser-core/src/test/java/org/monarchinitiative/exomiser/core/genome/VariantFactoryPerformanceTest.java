@@ -160,6 +160,26 @@ public class VariantFactoryPerformanceTest {
                     .build();
             return ImmutableList.of(variantAnnotation);
         }
+
+        @Override
+        public List<VariantAnnotation> annotateStructuralVariant(StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd, int length) {
+            VariantAnnotation variantAnnotation = VariantAnnotation.builder()
+                    .chromosomeName(startContig)
+                    .chromosome(Contig.parseId(startContig))
+                    .start(startPos)
+                    .startMin(startPos + ciStart.get(0))
+                    .startMax(startPos + ciStart.get(1))
+                    .ref(ref)
+                    .alt(alt)
+                    .endContig(endContig)
+                    .endChromosome(Contig.parseId(endContig))
+                    .end(endPos)
+                    .endMin(endPos + ciEnd.get(0))
+                    .endMax(endPos + ciEnd.get(0))
+                    .geneSymbol("GENE")
+                    .build();
+            return ImmutableList.of(variantAnnotation);
+        }
     }
 
     private JannovarData loadJannovarData() {

@@ -290,30 +290,53 @@ public class JannovarVariantAnnotatorTest {
         System.out.println("Trimmed: " + trimmed);
 
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getStart(), equalTo(trimmed.getStart()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(118608471));
+        assertThat(variantAnnotation.getEnd(), equalTo(118608472));
+        assertThat(variantAnnotation.getLength(), equalTo(-1));
+        assertThat(variantAnnotation.getRef(), equalTo("GT"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
     @Test
-    void testStructuralVariant() {
+    void testAnnotateStructuralVariantAsSnv() {
         int pos = 118608470;
         String ref = "A";
         String alt = "<INS>";
-
-        AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
 
         List<VariantAnnotation> annotations = instance.annotate("X", pos, ref, alt);
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getStart(), equalTo(trimmed.getStart()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(pos));
+        assertThat(variantAnnotation.getEnd(), equalTo(pos));
+        assertThat(variantAnnotation.getLength(), equalTo(0));
+        assertThat(variantAnnotation.getRef(), equalTo(ref));
+        assertThat(variantAnnotation.getAlt(), equalTo(alt));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+    }
+
+    @Test
+    void testAnnotateStructuralVariant() {
+        // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
+        // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
+        List<VariantAnnotation> annotations = instance.annotateStructuralVariant(StructuralType.DEL, "T", "<DEL>", "10", 123237843, ImmutableList.of(0, 0), "10", 123357972, ImmutableList.of(0, 0), 120129);
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(123237843));
+        assertThat(variantAnnotation.getEnd(), equalTo(123357972));
+        assertThat(variantAnnotation.getLength(), equalTo(120129));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("<DEL>"));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
     }
 
     @Test

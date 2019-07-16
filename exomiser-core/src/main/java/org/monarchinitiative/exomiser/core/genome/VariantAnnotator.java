@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 
 import java.util.List;
@@ -30,5 +31,7 @@ import java.util.List;
 public interface VariantAnnotator {
 
     public List<VariantAnnotation> annotate(String chr, int pos, String ref, String alt);
+
+    public List<VariantAnnotation> annotateStructuralVariant(StructuralType structuralType, String ref, String alt, String startContig, int startPos, List<Integer> ciStart, String endContig, int endPos, List<Integer> ciEnd, int length);
 
 }

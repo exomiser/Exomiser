@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
@@ -172,11 +173,12 @@ public class VcfResultsWriterTest {
     /* test writing out unannotated variants */
     @Test
     public void testWriteUnannotatedVariants() {
+        TestVcfParser testVcfParser = TestVcfParser.forSamples("Sample");
         VariantEvaluation unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "C", "T")
-                .quality(1)
+                .variantContext(testVcfParser.toVariantContext("5 11 . C T 1 PASS . GT 0/1"))
                 .build();
         VariantEvaluation unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG")
-                .quality(1)
+                .variantContext(testVcfParser.toVariantContext("5 14 . T TG 1 PASS . GT 0/1"))
                 .build();
 
         AnalysisResults analysisResults = AnalysisResults.builder()
@@ -360,11 +362,12 @@ public class VcfResultsWriterTest {
         List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(System.out::println);
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
-        VariantEvaluation altAlleleOne = variants.get(3);
-        //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
-        //variant score is 0.95 - contributes to score
-        altAlleleOne.setVariantEffect(VariantEffect.FRAMESHIFT_VARIANT);
-        altAlleleOne.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        VariantEvaluation altAlleleOne = variants.get(3).toBuilder()
+            //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
+            //variant score is 0.95 - contributes to score
+            .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
+            .contributingModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+            .build();
 
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);

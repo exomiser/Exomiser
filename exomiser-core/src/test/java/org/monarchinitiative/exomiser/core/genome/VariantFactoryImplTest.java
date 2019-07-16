@@ -149,6 +149,8 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getChromosome(), equalTo(10));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("10"));
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
+        assertThat(variantEvaluation.getEnd(), equalTo(123256215));
+        assertThat(variantEvaluation.getLength(), equalTo(0));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -255,7 +257,8 @@ public class VariantFactoryImplTest {
         assertThat(firstAllele.getChromosome(), equalTo(1));
         assertThat(firstAllele.getChromosomeName(), equalTo("1"));
         assertThat(firstAllele.getStart(), equalTo(120612040));
-        assertThat(firstAllele.getEnd(), equalTo(120612046));
+        assertThat(firstAllele.getEnd(), equalTo(120612040));
+        assertThat(firstAllele.getLength(), equalTo(6));
         assertThat(firstAllele.getRef(), equalTo("T"));
         assertThat(firstAllele.getAlt(), equalTo("TCCGCCG"));
         assertThat(firstAllele.hasTranscriptAnnotations(), is(true));
@@ -275,7 +278,8 @@ public class VariantFactoryImplTest {
         assertThat(secondAllele.getChromosome(), equalTo(1));
         assertThat(secondAllele.getChromosomeName(), equalTo("1"));
         assertThat(secondAllele.getStart(), equalTo(120612040));
-        assertThat(secondAllele.getEnd(), equalTo(120612049));
+        assertThat(secondAllele.getEnd(), equalTo(120612040));
+        assertThat(secondAllele.getLength(), equalTo(9));
         assertThat(secondAllele.getRef(), equalTo("T"));
         assertThat(secondAllele.getAlt(), equalTo("TCCTCCGCCG"));
         assertThat(secondAllele.hasTranscriptAnnotations(), is(true));
@@ -397,14 +401,14 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
 
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
-//        assertThat(variantEvaluation.getStartMin(), equalTo(123256159));
-//        assertThat(variantEvaluation.getStartMax(), equalTo(123256235));
+        assertThat(variantEvaluation.getStartMin(), equalTo(123256159));
+        assertThat(variantEvaluation.getStartMax(), equalTo(123256235));
 
         assertThat(variantEvaluation.getEnd(), equalTo(123256215));
-//        assertThat(variantEvaluation.getEndMin(), equalTo(123256100));
-//        assertThat(variantEvaluation.getEndMax(), equalTo(123256172));
+        assertThat(variantEvaluation.getEndMin(), equalTo(123256205));
+        assertThat(variantEvaluation.getEndMax(), equalTo(123256277));
 
-//        assertThat(variantEvaluation.getLength(), equalTo(-205));
+        assertThat(variantEvaluation.getLength(), equalTo(-205));
 
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("<DEL>"));
