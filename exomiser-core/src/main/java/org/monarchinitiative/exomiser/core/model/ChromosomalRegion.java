@@ -59,6 +59,10 @@ public interface ChromosomalRegion {
         return getEnd();
     }
 
+    default int getLength() {
+        return (getEnd() - getStart()) + 1;
+    }
+
     public static int compare(ChromosomalRegion c1, ChromosomalRegion c2){
         //TODO: implement compare with new fields
         // Check out Guava ComparisonChain
