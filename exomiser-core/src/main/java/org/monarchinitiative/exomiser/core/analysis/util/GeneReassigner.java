@@ -25,18 +25,17 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import javax.annotation.Nullable;
+import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Reassigns regulatory non-coding variants to the gene with the best phenotype score in a topological domain
@@ -45,6 +44,7 @@ import static java.util.stream.Collectors.toList;
  *
  * @author Damian Smedley <damian.smedley@sanger.ac.uk>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @since 7.0.0
  */
 public class GeneReassigner {
 
@@ -65,50 +65,176 @@ public class GeneReassigner {
         logger.debug("Made new GeneReassigner for {}", priorityType);
     }
 
-    public void reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
+    /**
+     *
+     * @param variantEvaluation
+     * @return
+     * @since 13.0.0
+     */
+    public VariantEvaluation reassignRegulatoryAndNonCodingVariantAnnotations(VariantEvaluation variantEvaluation) {
+        // Caution! This won't function correctly if run before a prioritiser has been run
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
-            logger.debug("Checking gene assignment for {} chr={} pos={}", variantEvaluation.getVariantEffect(), variantEvaluation
-                    .getChromosome(), variantEvaluation.getStart());
-            assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation);
+            return assignVariantToGeneWithHighestPhenotypeScoreInTad(variantEvaluation);
         }
+        if (variantEvaluation.isStructuralVariant() || variantEvaluation.isCodingVariant() || isInUnknownGene(variantEvaluation)) {
+            // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
+            // we don't want to move structural or coding variants.
+            return variantEvaluation;
+        }
+        return reassignNonCodingVariantToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
     }
 
-    private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation) {
-        Gene currentlyAssignedGene = getCurrentlyAssignedGene(variantEvaluation);
-        //assign this to the variant's current gene as we don't necessarily want ALL the regulatory region variants to clump into one gene.
-        double bestScore = prioritiserScore(currentlyAssignedGene);
-        List<Gene> genesInTad = getGenesInTadForVariant(variantEvaluation);
+    private VariantEvaluation reassignNonCodingVariantToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation) {
 
-        Gene geneWithHighestPhenotypeScore = null;
-        for (Gene gene : genesInTad) {
-            double geneScore = prioritiserScore(gene);
-            if (geneScore > bestScore) {
-                bestScore = geneScore;
-                geneWithHighestPhenotypeScore = gene;
-            }
+        // Prior to v13.0.0 genes containing a hyphen were split, however these are often:
+        // IG V genes e.g. IGLV6-57, IGLVV-58, IGLVIV-59,
+        // Pseudogenes e.g. LL22NC03-30E12.13, LL22NC03-88E1.17
+        // others might be read-through proteins e.g. PRR5-ARHGAP8
+        // so we'll leave them as is.
+
+        // Given we're looking at non-coding variants which make up ~95% of a WGS sample we want to avoid new object
+        // allocation where possible.
+        List<TranscriptAnnotation> transcriptAnnotations = variantEvaluation.getTranscriptAnnotations();
+        if (transcriptAnnotations.size() <= 1) {
+            return variantEvaluation;
         }
 
-        if (prioritiserScore(currentlyAssignedGene) == bestScore) {
+        // This is the most common case in WGS samples where there are hundreds of thousands of these.
+        // having this here is marginally faster than the other path.
+        if (transcriptAnnotations.size() == 2) {
+            // For UPSTREAM_GENE_VARIANT, DOWNSTREAM_GENE_VARIANT and INTERGENIC_VARIANT variants there are 2 transcripts
+            // annotated - one up and one downstream.
+            // in these cases pick the most phenotypically relevant (phenotype score > 0) and return that transcript only
+            return variantEvaluationWithHighestNonZeroPhenotypeScore(variantEvaluation, transcriptAnnotations.get(0), transcriptAnnotations.get(1));
+        }
+
+        // check there are transcripts for more than 1 gene which passes geneFilters
+        // and has a prioritiser score greater than zero
+        List<Gene> uniqueGenes = findUniqueScoringGenes(transcriptAnnotations);
+        if (uniqueGenes.isEmpty()) {
+            return variantEvaluation;
+        }
+        uniqueGenes.sort(Comparator.comparingDouble(this::prioritiserScore).reversed());
+
+        Gene geneWithHighestPhenotypeScoreOverZero = uniqueGenes.get(0);
+        List<TranscriptAnnotation> transcriptsWithHighestPhenotypeScoreOverZero = getTranscriptAnnotationsForGene(geneWithHighestPhenotypeScoreOverZero, transcriptAnnotations);
+        if (transcriptsWithHighestPhenotypeScoreOverZero.isEmpty()) {
+            return variantEvaluation;
+        }
+        VariantEffect topVariantEffect = transcriptsWithHighestPhenotypeScoreOverZero.get(0).getVariantEffect();
+        return buildVariantEvaluationAssignedToGene(variantEvaluation, geneWithHighestPhenotypeScoreOverZero, topVariantEffect, transcriptsWithHighestPhenotypeScoreOverZero);
+    }
+
+    private boolean isInUnknownGene(VariantEvaluation variantEvaluation) {
+        return !allGenes.containsKey(variantEvaluation.getGeneSymbol());
+    }
+
+    private VariantEvaluation variantEvaluationWithHighestNonZeroPhenotypeScore(VariantEvaluation variantEvaluation, TranscriptAnnotation transcriptAnnotationOne, TranscriptAnnotation transcriptAnnotationTwo) {
+        if (transcriptAnnotationOne.getGeneSymbol().equals(transcriptAnnotationTwo.getGeneSymbol())) {
+            // Nothing to change
+            return variantEvaluation;
+        }
+
+        Gene geneOne = allGenes.get(transcriptAnnotationOne.getGeneSymbol());
+        Gene geneTwo = allGenes.get(transcriptAnnotationTwo.getGeneSymbol());
+
+        if (isNotNullPassesFiltersAndHasNonZeroScore(geneOne) && prioritiserScore(geneOne) > prioritiserScore(geneTwo)){
+            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneOne, transcriptAnnotationOne.getVariantEffect(), ImmutableList.of(transcriptAnnotationOne));
+        } else if (isNotNullPassesFiltersAndHasNonZeroScore(geneTwo)) {
+            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneTwo, transcriptAnnotationTwo.getVariantEffect(), ImmutableList.of(transcriptAnnotationTwo));
+        }
+        // do nothing - there will be two transcripts associated still, but there is no phenotypic evidence for the genes
+        // associated with either transcript
+        return variantEvaluation;
+    }
+
+    private List<Gene> findUniqueScoringGenes(List<TranscriptAnnotation> transcriptAnnotations) {
+        List<Gene> uniqueGenes = new ArrayList<>(transcriptAnnotations.size());
+        Set<String> uniqueValues = new HashSet<>(transcriptAnnotations.size());
+        for (int i = 0; i < transcriptAnnotations.size(); i++) {
+            TranscriptAnnotation transcriptAnnotation = transcriptAnnotations.get(i);
+            String geneSymbol = transcriptAnnotation.getGeneSymbol();
+            if (uniqueValues.add(geneSymbol)) {
+                Gene gene = allGenes.get(geneSymbol);
+                if (isNotNullPassesFiltersAndHasNonZeroScore(gene)) {
+                    uniqueGenes.add(gene);
+                }
+            }
+        }
+        return uniqueGenes;
+    }
+
+    private VariantEvaluation assignVariantToGeneWithHighestPhenotypeScoreInTad(VariantEvaluation variantEvaluation) {
+        Gene currentlyAssignedGene = getCurrentlyAssignedGene(variantEvaluation);
+        Set<Gene> genesInTad = getGenesInTadForVariant(variantEvaluation);
+
+        Gene geneWithHighestPhenotypeScore = highestPhenotypeScoringGeneInTad(currentlyAssignedGene, genesInTad);
+        //assign this to the variant's current gene as we don't necessarily want ALL the regulatory region variants to clump into one gene.
+        double currentScore = prioritiserScore(currentlyAssignedGene);
+        double bestScore = prioritiserScore(geneWithHighestPhenotypeScore);
+        if (currentScore >= bestScore) {
             //don't move the assignment if there is nowhere better to go...
-            return;
+            return variantEvaluation;
         }
 
         if (geneWithHighestPhenotypeScore != null) {
             //given the physical ranges of topologically associated domains, the annotations are likely to be meaningless once reassigned
             //but try to find any anything matching the new gene symbol.
-            String geneSymbol = geneWithHighestPhenotypeScore.getGeneSymbol();
-            List<TranscriptAnnotation> matchingGeneAnnotations = getTranscriptAnnotationsMatchingGene(variantEvaluation.getTranscriptAnnotations(), geneSymbol);
-            assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore, matchingGeneAnnotations);
+            List<TranscriptAnnotation> matchingGeneAnnotations = getTranscriptAnnotationsForGene(geneWithHighestPhenotypeScore, variantEvaluation.getTranscriptAnnotations());
+            // n.b it is quite likely that there will be no matching gene annotations as the variant is likely to have been
+            // re-assigned to a gene far from its original genomic position.
+            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneWithHighestPhenotypeScore, VariantEffect.REGULATORY_REGION_VARIANT, matchingGeneAnnotations);
         }
+        return variantEvaluation;
     }
 
-    private List<Gene> getGenesInTadForVariant(VariantEvaluation variantEvaluation) {
+    @Nullable
+    private Gene getCurrentlyAssignedGene(VariantEvaluation variantEvaluation) {
+        return allGenes.get(variantEvaluation.getGeneSymbol());
+    }
+
+    private Set<Gene> getGenesInTadForVariant(VariantEvaluation variantEvaluation) {
         return tadIndex.getRegionsContainingVariant(variantEvaluation).stream()
                 .map(TopologicalDomain::getGenes)
                 .flatMap(geneMap -> geneMap.keySet().stream())
                 .map(allGenes::get)
                 .filter(Objects::nonNull)
-                .collect(toList());
+                .collect(toSet());
+    }
+
+    /*
+     * CAUTION! This can return NULL in cases where the input gene is null.
+     */
+    @Nullable
+    private Gene highestPhenotypeScoringGeneInTad(Gene assigned, Set<Gene> genesInTad) {
+        Gene topScoringGene = genesInTad.stream().max(Comparator.comparingDouble(this::prioritiserScore)).orElse(assigned);
+        return prioritiserScore(topScoringGene) > prioritiserScore(assigned) ? topScoringGene : assigned;
+    }
+
+    private List<TranscriptAnnotation> getTranscriptAnnotationsForGene(Gene gene, List<TranscriptAnnotation> transcriptAnnotations) {
+        ImmutableList.Builder<TranscriptAnnotation> topTranscriptsBuilder = new ImmutableList.Builder<>();
+        for (int i = 0; i < transcriptAnnotations.size(); i++) {
+            TranscriptAnnotation transcriptAnnotation = transcriptAnnotations.get(i);
+            if (transcriptAnnotation.getVariantEffect() != null && transcriptAnnotation.getGeneSymbol().equals(gene.getGeneSymbol())) {
+                topTranscriptsBuilder.add(transcriptAnnotation);
+            }
+        }
+        return topTranscriptsBuilder.build();
+    }
+
+    private VariantEvaluation buildVariantEvaluationAssignedToGene(VariantEvaluation variantEvaluation, Gene gene, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
+        return variantEvaluation.toBuilder()
+                .geneSymbol(gene.getGeneSymbol())
+                .geneId(gene.getGeneId())
+                .annotations(transcriptAnnotations)
+                // Only reassign variant effect if it has not already been flagged by RegFeatureDao as a regulatory region variant.
+                // Otherwise TAD reassignment and subsequent reg feature filter fail to work as expected
+                .variantEffect(variantEvaluation.getVariantEffect() != VariantEffect.REGULATORY_REGION_VARIANT ? variantEffect : variantEvaluation.getVariantEffect())
+                .build();
+    }
+
+    private boolean isNotNullPassesFiltersAndHasNonZeroScore(Gene gene) {
+        return gene != null && prioritiserScore(gene) > 0 && gene.passedFilters();
     }
 
     private double prioritiserScore(Gene gene) {
@@ -122,110 +248,4 @@ public class GeneReassigner {
     private boolean prioritiserHasNotRun(Gene gene) {
         return !gene.getPriorityResults().containsKey(priorityType);
     }
-
-    private List<TranscriptAnnotation> getTranscriptAnnotationsMatchingGene(List<TranscriptAnnotation> annotations, String geneSymbol) {
-        List<TranscriptAnnotation> matchingGeneAnnotations = new ArrayList<>();
-        for (TranscriptAnnotation annotation : annotations) {
-            if (annotation.getGeneSymbol().equals(geneSymbol)) {
-                matchingGeneAnnotations.add(annotation);
-            }
-        }
-        return matchingGeneAnnotations;
-    }
-
-    private void assignVariantToGene(VariantEvaluation variant, Gene gene, List<TranscriptAnnotation> matchingGeneAnnotations) {
-        logger.debug("Reassigning {} {}:{} {}->{} from {} to {}", variant.getVariantEffect(), variant.getChromosome(), variant
-                .getStart(), variant.getRef(), variant.getAlt(), variant
-                .getGeneSymbol(), gene.getGeneSymbol());
-
-        variant.setGeneSymbol(gene.getGeneSymbol());
-        variant.setGeneId(gene.getGeneId());
-        variant.setAnnotations(matchingGeneAnnotations);
-    }
-
-    public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation) {
-
-        if (isInUnknownGene(variantEvaluation)) {
-            // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
-            return;
-        }
-
-        List<String> geneSymbols = new ArrayList<>();
-        List<VariantEffect> variantEffects = new ArrayList<>();
-        List<TranscriptAnnotation> newAnnotations = new ArrayList<>();
-        for (TranscriptAnnotation annotation : variantEvaluation.getTranscriptAnnotations()) {
-            String geneSymbol = annotation.getGeneSymbol();
-            geneSymbols.add(geneSymbol);
-            variantEffects.add(annotation.getVariantEffect());
-            newAnnotations.add(annotation);
-            // hack to deal with fusion protein Jannovar nonsense -
-            // ? should the separate genes not be part of the annotation anyway - don't seem to be, should maybe not do this split
-            if (isValidFusionProtein(geneSymbol)) {
-                String[] separateGeneSymbols = geneSymbol.split("-");
-                for (String separateGeneSymbol : separateGeneSymbols) {
-                    geneSymbols.add(separateGeneSymbol);
-                    // for - split entries we do not know effect
-                    variantEffects.add(VariantEffect.CUSTOM);
-                    newAnnotations.add(null);
-                }
-            }
-        }
-
-        Gene currentlyAssignedGene = getCurrentlyAssignedGene(variantEvaluation);
-        double bestScore = prioritiserScore(currentlyAssignedGene);
-        Gene geneWithHighestPhenotypeScore = null;
-        VariantEffect variantEffectForTopHit = null;
-        TranscriptAnnotation bestAnnotation = null;
-
-        for (int i = 0; i < geneSymbols.size(); i++) {
-            Gene gene = allGenes.get(geneSymbols.get(i));
-            double geneScore = prioritiserScore(gene);
-            if (geneScore > bestScore) {
-                bestScore = geneScore;
-                geneWithHighestPhenotypeScore = gene;
-                variantEffectForTopHit = variantEffects.get(i);
-                //bestAnnotation can be null here
-                bestAnnotation = newAnnotations.get(i);
-            }
-        }
-        // Keep original annotation if possible - used in RegFilter later on and for display
-        List<TranscriptAnnotation> finalAnnotations = new ArrayList<>();
-        if (bestAnnotation != null) {
-            finalAnnotations.add(bestAnnotation);
-        }
-
-        if (prioritiserScore(currentlyAssignedGene) == bestScore) {
-            //don't move the assignment if there is nowhere better to go...
-            return;
-        }
-        if (geneWithHighestPhenotypeScore == null) {
-            return;
-        }
-
-        if (variantEffectForTopHit == null) {
-            // had one variant where this happened in Genomiser runs and breaks a lot of downstream code
-            return;
-        }
-        /* Only reassign variant effect if it has not already been flagged by RegFeatureDao as a regulatory region variant.
-        Otherwise TAD reassignment and subsequent reg feature filter fail to work as expected
-        */
-        if (variantEvaluation.getVariantEffect() != VariantEffect.REGULATORY_REGION_VARIANT) {
-            variantEvaluation.setVariantEffect(variantEffectForTopHit);
-        }
-        assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore, finalAnnotations);
-    }
-
-    private Gene getCurrentlyAssignedGene(VariantEvaluation variantEvaluation) {
-        return allGenes.get(variantEvaluation.getGeneSymbol());
-    }
-
-    private boolean isInUnknownGene(VariantEvaluation variantEvaluation) {
-        return !allGenes.containsKey(variantEvaluation.getGeneSymbol());
-    }
-
-    // avoid RP11-489C13.1 type annotations
-    private boolean isValidFusionProtein(String geneSymbol) {
-        return geneSymbol.contains("-") && !geneSymbol.contains(".");
-    }
-
 }
