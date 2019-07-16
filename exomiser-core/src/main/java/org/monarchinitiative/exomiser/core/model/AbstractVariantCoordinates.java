@@ -34,9 +34,10 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     final String chromosomeName;
     final int chromosome;
-    final int startPos;
+    final int start;
     final String ref;
     final String alt;
+    final int length;
 
     // additional fields for describing structural variants. These need overriding in
     // the case of SNVs to default values based on chromosomeName, startChr, startPos, ref and alt
@@ -45,7 +46,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     final String endContig;
     final int endChromosome;
-    final int endPos;
+    final int end;
 
     final int endMin;
     final int endMax;
@@ -56,9 +57,10 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         this.genomeAssembly = builder.genomeAssembly;
         this.chromosomeName = builder.chromosomeName;
         this.chromosome = builder.startChr;
-        this.startPos = builder.startPos;
+        this.start = builder.start;
         this.ref = builder.ref;
         this.alt = builder.alt;
+        this.length = calculateLength(builder.length, ref, alt);
 
         // additional fields for structural variants
         this.startMin = builder.startMin;
@@ -66,11 +68,18 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
         this.endContig = builder.endContig.isEmpty() ? builder.chromosomeName : builder.endContig;
         this.endChromosome = builder.endChromosome == 0 ? builder.startChr : builder.endChromosome;
-        this.endPos = builder.endPos == 0 ? builder.startPos : builder.endPos;
+        this.end = builder.end == 0 ? builder.start : builder.end;
         this.endMin = builder.endMin;
         this.endMax = builder.endMax;
 
         this.structuralType = builder.structuralType;
+    }
+
+    private int calculateLength(int length, String ref, String alt) {
+        if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
+            return (alt.length() - ref.length());
+        }
+        return length;
     }
 
     @Override
@@ -94,6 +103,11 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
     @Override
+    public int getLength() {
+        return length;
+    }
+
+    @Override
     public StructuralType getStructuralType() {
         return structuralType;
     }
@@ -105,7 +119,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     @Override
     public int getStart() {
-        return startPos;
+        return start;
     }
 
     @Override
@@ -128,7 +142,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     @Override
     public int getEnd() {
-        return endPos;
+        return end;
     }
 
     @Override
@@ -147,11 +161,11 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         if (!(o instanceof AbstractVariantCoordinates)) return false;
         AbstractVariantCoordinates that = (AbstractVariantCoordinates) o;
         return chromosome == that.chromosome &&
-                startPos == that.startPos &&
+                start == that.start &&
                 startMin == that.startMin &&
                 startMax == that.startMax &&
                 endChromosome == that.endChromosome &&
-                endPos == that.endPos &&
+                end == that.end &&
                 endMin == that.endMin &&
                 endMax == that.endMax &&
                 genomeAssembly == that.genomeAssembly &&
@@ -164,7 +178,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, chromosomeName, chromosome, startPos, ref, alt, startMin, startMax, endContig, endChromosome, endPos, endMin, endMax, structuralType);
+        return Objects.hash(genomeAssembly, chromosomeName, chromosome, start, ref, alt, startMin, startMax, endContig, endChromosome, end, endMin, endMax, length, structuralType);
     }
 
     @Override
@@ -173,16 +187,17 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
                 "genomeAssembly=" + genomeAssembly +
                 ", chromosomeName='" + chromosomeName + '\'' +
                 ", chromosome=" + chromosome +
-                ", startPos=" + startPos +
+                ", startPos=" + start +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", startMin=" + startMin +
                 ", startMax=" + startMax +
                 ", endContig='" + endContig + '\'' +
                 ", endChromosome=" + endChromosome +
-                ", endPos=" + endPos +
+                ", endPos=" + end +
                 ", endMin=" + endMin +
                 ", endMax=" + endMax +
+                ", length=" + length +
                 ", structuralType=" + structuralType +
                 '}';
     }
@@ -194,17 +209,18 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         private String ref = "";
         private String alt = "";
 
+        private int length = 0;
         private StructuralType structuralType = StructuralType.NON_STRUCTURAL;
 
         private String chromosomeName = "";
         private int startChr;
-        private int startPos;
+        private int start;
         private int startMin;
         private int startMax;
 
         private String endContig = "";
         private int endChromosome;
-        private int endPos;
+        private int end;
         private int endMin;
         private int endMax;
 
@@ -225,7 +241,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         }
 
         public T start(int start) {
-            this.startPos = start;
+            this.start = start;
             return self();
         }
 
@@ -239,6 +255,11 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
+        public T length(int length) {
+            this.length = length;
+            return self();
+        }
+
         public T structuralType(StructuralType structuralType) {
             this.structuralType = Objects.requireNonNull(structuralType);
             return self();
@@ -248,6 +269,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             this.startMin = startMin;
             return self();
         }
+
         public T startMax(int startMax) {
             this.startMax = startMax;
             return self();
@@ -263,8 +285,8 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        public T end(int endPos) {
-            this.endPos = endPos;
+        public T end(int end) {
+            this.end = end;
             return self();
         }
 

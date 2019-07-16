@@ -77,11 +77,20 @@ public class VariantAnnotationTest {
     }
 
     @Test
-    public void position() {
+    public void start() {
         VariantAnnotation instance = VariantAnnotation.builder()
                 .start(123456)
                 .build();
         assertThat(instance.getStart(), equalTo(123456));
+    }
+
+    @Test
+    public void end() {
+        VariantAnnotation instance = VariantAnnotation.builder()
+                .start(123456)
+                .build();
+        assertThat(instance.getStart(), equalTo(123456));
+        assertThat(instance.getEnd(), equalTo(123456));
     }
 
     @Test
@@ -98,6 +107,43 @@ public class VariantAnnotationTest {
                 .alt("T")
                 .build();
         assertThat(instance.getAlt(), equalTo("T"));
+    }
+
+    @Test
+    public void length() {
+        VariantAnnotation instance = VariantAnnotation.builder()
+                .length(2)
+                .build();
+        assertThat(instance.getLength(), equalTo(2));
+    }
+
+    @Test
+    public void lengthSetFromAlleleLength() {
+        VariantAnnotation snp = VariantAnnotation.builder()
+                .ref("A")
+                .alt("G")
+                .build();
+        assertThat(snp.getLength(), equalTo(0));
+
+
+        VariantAnnotation insertion = VariantAnnotation.builder()
+                .ref("AT")
+                .alt("GTT")
+                .build();
+        assertThat(insertion.getLength(), equalTo(1));
+
+        VariantAnnotation deletion = VariantAnnotation.builder()
+                .ref("ACT")
+                .alt("G")
+                .build();
+        assertThat(deletion.getLength(), equalTo(-2));
+
+
+        VariantAnnotation mnv = VariantAnnotation.builder()
+                .ref("ATC")
+                .alt("GTT")
+                .build();
+        assertThat(mnv.getLength(), equalTo(0));
     }
 
     @Test

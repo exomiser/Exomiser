@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -34,7 +33,6 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.Contig;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
@@ -55,46 +53,29 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     //threshold over which a variant effect score is considered pathogenic
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
 
+    private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
+    // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
+    static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(
+            DEFAULT_SAMPLE_NAME, SampleGenotype.het()
+    );
+
     // HTSJDK {@link VariantContext} instance of this allele
-    @JsonIgnore
     private final VariantContext variantContext;
 
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
 
     // VariantCoordinates variables - these are a minimal requirement for describing a variant
-    private final GenomeAssembly genomeAssembly;
-    private final int chromosome;
     private final String chromosomeName;
-
-    private final int start;
-    private final int startMin;
-    private final int startMax;
-
-    private final int endChromosome;
-    private final int end;
-    private final int endMin;
-    private final int endMax;
-
-    private final StructuralType structuralType;
-
-    private final String ref;
-    private final String alt;
 
     // Variant variables, for a richer more VCF-like experience
     private final double phredScore;
 
-    @JsonIgnore
     // IMPORTANT! This map *MUST* be an ordered map
     private Map<String, SampleGenotype> sampleGenotypes;
 
     //VariantAnnotation
-    private VariantEffect variantEffect;
-    private List<TranscriptAnnotation> annotations;
-    @JsonIgnore
     private String geneSymbol;
-    @JsonIgnore
-    private String geneId;
 
     // results from filters
     // mutable
@@ -106,60 +87,38 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     @JsonProperty("contributingInheritanceModes")
-    private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
-    private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+    private Set<ModeOfInheritance> contributingModes;
+    private Set<ModeOfInheritance> compatibleInheritanceModes;
 
     private VariantEvaluation(Builder builder) {
         super(builder);
-        this.genomeAssembly = builder.genomeAssembly;
-        this.chromosome = builder.chromosome;
-        this.chromosomeName = builder.chromosomeName;
 
-        this.start = builder.start;
-        this.startMin = builder.startMin;
-        this.startMax = builder.startMax;
+        this.chromosomeName = ((super.chromosomeName == null) || super.chromosomeName.isEmpty())
+                ? Contig.toString(super.chromosome) : super.chromosomeName;
 
-        this.endChromosome = builder.endChromosome;
-        this.end = builder.end;
-        this.endMin = builder.endMin;
-        this.endMax = builder.endMax;
-
-        this.structuralType = builder.structuralType;
-
-        this.ref = builder.ref;
-        this.alt = builder.alt;
-
-        this.variantEffect = builder.variantEffect;
-        this.annotations = ImmutableList.copyOf(builder.annotations);
-        this.geneSymbol = builder.geneSymbol;
-        this.geneId = builder.geneId;
+        this.geneSymbol = inputOrFirstValueInCommaSeparatedString((super.geneSymbol.isEmpty()) ? "." : super.geneSymbol);
 
         this.variantContext = builder.variantContext;
         this.altAlleleId = builder.altAlleleId;
         this.phredScore = builder.phredScore;
         // IMPORTANT! This map *MUST* be an ordered map
-        this.sampleGenotypes = ImmutableMap.copyOf(builder.sampleGenotypes);
+        this.sampleGenotypes = builder.sampleGenotypes.isEmpty() ? SINGLE_SAMPLE_HET_GENOTYPE
+                : ImmutableMap.copyOf(builder.sampleGenotypes);
 
         this.passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
         this.failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
+
+        this.compatibleInheritanceModes = EnumSet.copyOf(builder.compatibleInheritanceModes);
+        this.contributingModes = EnumSet.copyOf(builder.contributingModes);
 
         this.whiteListed = builder.whiteListed;
         this.frequencyData = builder.frequencyData;
         this.pathogenicityData = builder.pathogenicityData;
     }
 
-    @Override
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    /**
-     * @return an integer representing the chromosome. 1-22 are obvious,
-     * chrX=23, ChrY=24, ChrM=25.
-     */
-    @Override
-    public int getChromosome() {
-        return chromosome;
+    private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
+        int commaIndex = geneSymbol.indexOf(',');
+        return (commaIndex > -1) ? geneSymbol.substring(0, commaIndex) : geneSymbol;
     }
 
     /**
@@ -170,66 +129,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return chromosomeName;
     }
 
-    /**
-     * @return Return the 1-based start position of the variant on its
-     * chromosome.
-     */
-    @Override
-    public int getStart() {
-        return start;
-    }
-
-    @Override
-    public int getStartMin() {
-        return startMin;
-    }
-
-    @Override
-    public int getStartMax() {
-        return startMax;
-    }
-
-    @Override
-    public int getEndChromosome() {
-        return endChromosome;
-    }
-
-    @Override
-    public int getEnd() {
-        return end;
-    }
-
-    @Override
-    public int getEndMin() {
-        return endMin;
-    }
-
-    @Override
-    public int getEndMax() {
-        return endMax;
-    }
-
-    @Override
-    public StructuralType getStructuralType() {
-        return structuralType;
-    }
-
-    /**
-     * @return reference allele, or "-" in case of insertions.
-     */
-    @Override
-    public String getRef() {
-        return ref;
-    }
-
-    /**
-     * @return alternative allele, or "-" in case of deletions.
-     */
-    @Override
-    public String getAlt() {
-        return alt;
-    }
-
+    @JsonIgnore
     public VariantContext getVariantContext() {
         return variantContext;
     }
@@ -243,70 +143,23 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     /**
-     * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
-     * {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
-     * if there is no annotated effect.
-     */
-    @Override
-    public VariantEffect getVariantEffect() {
-        return variantEffect;
-    }
-
-    public void setVariantEffect(VariantEffect ve) {
-        variantEffect = ve;
-    }
-
-    /**
      * @return the gene symbol associated with the variant.
      */
+    @JsonIgnore
     @Override
     public String getGeneSymbol() {
         return geneSymbol;
     }
 
-    public void setGeneSymbol(String symbol) {
-        geneSymbol = symbol;
-    }
-
+    @JsonIgnore
     @Override
     public String getGeneId() {
         return geneId;
     }
 
-    public void setGeneId(String geneId) {
-        this.geneId = geneId;
-    }
-
-    /**
-     * This function returns a list of all of the
-     * {@link de.charite.compbio.jannovar.annotation.Annotation Annotation} objects that have been
-     * associated with the current variant. This function can be called if
-     * client code wants to display one line for each affected transcript, e.g.,
-     * <ul>
-     * <li>LTF(uc003cpr.3:exon5:c.30_31insAAG:p.R10delinsRR)
-     * <li>LTF(uc003cpq.3:exon2:c.69_70insAAG:p.R23delinsRR)
-     * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
-     * </ul>
-     * <p>
-     */
-    @Override
-    public List<TranscriptAnnotation> getTranscriptAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(List<TranscriptAnnotation> annotations) {
-        this.annotations = annotations;
-    }
-
-    @Override
-    public boolean hasTranscriptAnnotations() {
-        return !annotations.isEmpty();
-    }
-
     /**
      * @return a String such as chr6:g.29911092G>T
      */
-    // SPDI?
     @JsonIgnore
     public String getHgvsGenome() {
         return chromosome + ":g." + start + ref + ">" + alt;
@@ -330,6 +183,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return A map of sample ids and their corresponding {@link SampleGenotype}
      * @since 11.0.0
      */
+    @JsonIgnore
     public Map<String, SampleGenotype> getSampleGenotypes() {
         return sampleGenotypes;
     }
@@ -674,13 +528,56 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     /**
-     * Copies all varient fields into a new VariantEvaluation.Builder
+     *
+     * @return
+     * @since 13.0.0
+     */
+    public VariantEvaluation.Builder toBuilder() {
+        return new Builder()
+                //ChromosomalRegion fields
+                .genomeAssembly(this.genomeAssembly)
+                .chromosomeName(this.chromosomeName)
+                .chromosome(this.chromosome)
+                .start(this.start)
+                .startMin(this.end)
+                .startMax(this.startMax)
+                .endChromosome(this.endChromosome)
+                .end(this.end)
+                .endMin(this.endMin)
+                .endMax(this.endMax)
+                .length(this.length)
+                // Variant fields
+                .structuralType(this.structuralType)
+                .ref(this.ref)
+                .alt(this.alt)
+                .geneSymbol(this.geneSymbol)
+                .geneId(this.geneId)
+                .variantEffect(this.variantEffect)
+                .annotations(this.annotations)
+                // VariantContext-derived fields
+                .variantContext(this.variantContext)
+                .altAlleleId(this.altAlleleId)
+                .sampleGenotypes(this.sampleGenotypes)
+                .quality(this.phredScore)
+                // Additional annotations
+                .whiteListed(this.whiteListed)
+                .frequencyData(this.frequencyData)
+                .pathogenicityData(this.pathogenicityData)
+                .failedFilters(this.failedFilterTypes)
+                .passedFilters(this.passedFilterTypes)
+                .compatibleInheritanceModes(this.compatibleInheritanceModes)
+                .contributingModes(this.contributingModes);
+    }
+
+    /**
+     * Copies all variant fields into a new VariantEvaluation.Builder
      *
      * @param variant
      * @return a Builder instance pre-populated with fields copied from the input Variant
      * @since 13.0.0
      */
-    public static Builder copy(Variant variant) {
+    //TODO: should this not be a Builder.copy(Variant)?
+    public static VariantEvaluation.Builder copy(Variant variant) {
         return new Builder()
                 .genomeAssembly(variant.getGenomeAssembly())
                 .chromosomeName(variant.getChromosomeName())
@@ -692,6 +589,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 .end(variant.getEnd())
                 .endMin(variant.getEndMin())
                 .endMax(variant.getEndMax())
+                .length(variant.getLength())
                 .structuralType(variant.getStructuralType())
                 .ref(variant.getRef())
                 .alt(variant.getAlt())
@@ -701,10 +599,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 .annotations(variant.getTranscriptAnnotations());
     }
 
-    public static Builder builder(int chr, int pos, String ref, String alt) {
+    public static VariantEvaluation.Builder builder(int chr, int start, String ref, String alt) {
         return new Builder()
                 .chromosome(chr)
-                .start(pos)
+                .start(start)
                 .ref(ref)
                 .alt(alt);
     }
@@ -713,29 +611,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * Builder class for producing a valid VariantEvaluation.
      */
     public static class Builder extends AbstractVariant.Builder<Builder> {
-
-        private GenomeAssembly genomeAssembly = GenomeAssembly.HG19;
-        private int chromosome;
-        private String chromosomeName;
-        private int start = 0;
-        private int startMin = 0;
-        private int startMax = 0;
-
-        private int endChromosome = 0;
-        private int end = 0;
-        private int endMin = 0;
-        private int endMax = 0;
-
-        private String ref;
-        private String alt;
-
-        private StructuralType structuralType = StructuralType.NON_STRUCTURAL;
-
-
-        private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
-        private List<TranscriptAnnotation> annotations = Collections.emptyList();
-        private String geneSymbol = ".";
-        private String geneId = GeneIdentifier.EMPTY_FIELD;
 
         private double phredScore = 0;
         private VariantContext variantContext;
@@ -746,97 +621,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         private FrequencyData frequencyData = FrequencyData.empty();
 
         private boolean whiteListed = false;
-        private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
-        private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
-
-        private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
-        // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
-        static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(
-                DEFAULT_SAMPLE_NAME, SampleGenotype.het()
-        );
-
-        @Override
-        public Builder chromosome(int chromosome) {
-            this.chromosome = chromosome;
-            return this;
-        }
-
-        @Override
-        public Builder start(int start) {
-            this.start = start;
-            return this;
-        }
-
-        @Override
-        public Builder startMin(int startMin) {
-            this.startMin = startMin;
-            return this;
-        }
-
-        @Override
-        public Builder startMax(int startMax) {
-            this.startMax = startMax;
-            return this;
-        }
-
-        @Override
-        public Builder endChromosome(int endChromosome) {
-            this.endChromosome = endChromosome;
-            return this;
-        }
-
-        @Override
-        public Builder end(int end) {
-            this.end = end;
-            return this;
-        }
-
-        @Override
-        public Builder endMin(int endMin) {
-            this.endMin = endMin;
-            return this;
-        }
-
-        @Override
-        public Builder endMax(int endMax) {
-            this.endMax = endMax;
-            return this;
-        }
-
-        @Override
-        public Builder structuralType(StructuralType structuralType) {
-            this.structuralType = structuralType;
-            return this;
-        }
-
-        @Override
-        public Builder ref(String ref) {
-            this.ref = Objects.requireNonNull(ref);
-            return this;
-        }
-
-        @Override
-        public Builder alt(String alt) {
-            this.alt = Objects.requireNonNull(alt);
-            return this;
-        }
-
-        @Override
-        public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
-            this.genomeAssembly = genomeAssembly;
-            return this;
-        }
-
-        public Builder genomeAssembly(String genomeAssembly) {
-            this.genomeAssembly = GenomeAssembly.fromValue(genomeAssembly);
-            return this;
-        }
-
-        @Override
-        public Builder chromosomeName(String chromosomeName) {
-            this.chromosomeName = chromosomeName;
-            return this;
-        }
+        private Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
+        private Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
+        private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
         public Builder variantContext(VariantContext variantContext) {
             this.variantContext = Objects.requireNonNull(variantContext);
@@ -860,51 +648,18 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return this;
         }
 
-        @Override
-        public Builder variantEffect(VariantEffect variantEffect) {
-            this.variantEffect = Objects.requireNonNull(variantEffect);
-            return this;
-        }
-
-        @Override
-        public Builder annotations(List<TranscriptAnnotation> annotations) {
-            this.annotations = Objects.requireNonNull(annotations);
-            return this;
-        }
-
-        @Override
-        public Builder geneSymbol(String geneSymbol) {
-            Objects.requireNonNull(geneSymbol);
-            if (geneSymbol.isEmpty()) {
-                throw new IllegalArgumentException("Variant gene symbol cannot be empty");
-            }
-            this.geneSymbol = inputOrFirstValueInCommaSeparatedString(geneSymbol);
-            return this;
-        }
-
-        private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
-            int commaIndex = geneSymbol.indexOf(',');
-            return (commaIndex > -1) ? geneSymbol.substring(0, commaIndex) : geneSymbol;
-        }
-
-        @Override
-        public Builder geneId(String geneId) {
-            this.geneId = Objects.requireNonNull(geneId);
-            return this;
-        }
-
         public Builder whiteListed(boolean whiteListed) {
             this.whiteListed = whiteListed;
             return this;
         }
 
         public Builder pathogenicityData(PathogenicityData pathogenicityData) {
-            this.pathogenicityData = pathogenicityData;
+            this.pathogenicityData = Objects.requireNonNull(pathogenicityData);
             return this;
         }
 
         public Builder frequencyData(FrequencyData frequencyData) {
-            this.frequencyData = frequencyData;
+            this.frequencyData = Objects.requireNonNull(frequencyData);
             return this;
         }
 
@@ -912,7 +667,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return filterResults(Arrays.asList(filterResults));
         }
 
-        public Builder filterResults(Collection<FilterResult> filterResults) {
+        Builder filterResults(Collection<FilterResult> filterResults) {
             for (FilterResult filterResult : filterResults) {
                 if (filterResult.passed()) {
                     this.passedFilterTypes.add(filterResult.getFilterType());
@@ -923,23 +678,33 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return this;
         }
 
+        Builder failedFilters(Set<FilterType> failedFilterTypes) {
+            this.failedFilterTypes = Objects.requireNonNull(failedFilterTypes);
+            return this;
+        }
+
+        Builder passedFilters(Set<FilterType> passedFilterTypes) {
+            this.passedFilterTypes = Objects.requireNonNull(passedFilterTypes);
+            return this;
+        }
+
+        Builder compatibleInheritanceModes(Set<ModeOfInheritance> compatibleInheritanceModes) {
+            this.compatibleInheritanceModes = Objects.requireNonNull(compatibleInheritanceModes);
+            return this;
+        }
+
+        public Builder contributingModes(Set<ModeOfInheritance> contributingModes) {
+            this.contributingModes = Objects.requireNonNull(contributingModes);
+            return this;
+        }
+
         public VariantEvaluation build() {
-            // TODO: if this happened in the constructor there would be no need to have these fields exposed in the
-            //  builder - arguably these should be checked for before-hand.
-            if (chromosomeName == null || chromosomeName.isEmpty()) {
-                chromosomeName = Contig.toString(chromosome);
-            }
 
             if (variantContext == null) {
                 // We don't check that the variant context agrees with the coordinates here as the variant context could
                 // have been split into different allelic variants so the positions and alleles could differ.
-                variantContext = buildVariantContext(chromosome, start, ref, alt, phredScore);
-            }
-            // Should this be here? Would it be safer to validate for null/empty fields here? This is primarily for
-            // ease of testing. The TestAlleleFactory should fill in the missing fields for tests, although this
-            // replicates what buildVariantContext is doing for the SampleGenotypes
-            if (sampleGenotypes.isEmpty()) {
-                sampleGenotypes = SINGLE_SAMPLE_HET_GENOTYPE;
+// TODO: awaiting further production checks before removing this.
+//                variantContext = buildVariantContext(chromosome, start, ref, alt, phredScore);
             }
 
             return new VariantEvaluation(this);

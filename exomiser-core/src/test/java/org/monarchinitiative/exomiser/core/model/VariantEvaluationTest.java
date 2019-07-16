@@ -47,7 +47,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -190,13 +191,11 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    void testGeneSymbolCannotBeEmpty() {
-        Throwable throwable = assertThrows(IllegalArgumentException.class, () ->
-                testVariantBuilder()
-                        .geneSymbol("")
-                        .build()
-        );
-        assertThat(throwable.getMessage(), containsString("Variant gene symbol cannot be empty"));
+    void testGeneSymbolReplacedByDotIfEmpty() {
+        instance = testVariantBuilder()
+                .geneSymbol("")
+                .build();
+        assertThat(instance.getGeneSymbol(), equalTo("."));
     }
 
     @Test
@@ -210,12 +209,6 @@ public class VariantEvaluationTest {
                 .geneSymbol(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL)
                 .build();
         assertThat(instance.getGeneSymbol(), equalTo(GENE2_GENE_SYMBOL));
-    }
-
-    @Test
-    public void testGetGeneSymbolReturnsADotIfGeneSymbolNotDefined() {
-        instance = testVariantBuilder().build();
-        assertThat(instance.getGeneSymbol(), equalTo("."));
     }
 
     @Test
@@ -237,7 +230,7 @@ public class VariantEvaluationTest {
                 .sampleGenotypes(Collections.emptyMap())
                 .build();
 
-        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(VariantEvaluation.Builder.SINGLE_SAMPLE_HET_GENOTYPE));
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(VariantEvaluation.SINGLE_SAMPLE_HET_GENOTYPE));
     }
 
     @Test
@@ -284,16 +277,6 @@ public class VariantEvaluationTest {
     public void testGetGenotypeNoSampleIsHet() {
         instance = VariantEvaluation.builder(25, 1, "A", "T").build();
         assertThat(instance.getGenotypeString(), equalTo("0/1"));
-    }
-
-    @Test
-    public void testCanSetVariantEffectAfterConstruction() {
-        VariantEvaluation variantEvaluation = testVariantBuilder().variantEffect(VariantEffect.FEATURE_TRUNCATION)
-                .build();
-        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FEATURE_TRUNCATION));
-
-        variantEvaluation.setVariantEffect(VariantEffect.MISSENSE_VARIANT);
-        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
     }
 
     @Test
@@ -662,16 +645,16 @@ public class VariantEvaluationTest {
         assertThat(instance.getChromosomeName(), equalTo("MT"));
     }
 
-    @Test
-    public void getVariantContext() {
-        VariantContext builtContext = instance.getVariantContext();
-        assertThat(builtContext.getContig(), equalTo(CHROMOSOME_NAME));
-        assertThat(builtContext.getStart(), equalTo(POSITION));
-        assertThat(builtContext.getEnd(), equalTo(POSITION));
-        assertThat(builtContext.getNAlleles(), equalTo(2));
-        assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
-        assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
-    }
+//    @Test
+//    public void getVariantContext() {
+//        VariantContext builtContext = instance.getVariantContext();
+//        assertThat(builtContext.getContig(), equalTo(CHROMOSOME_NAME));
+//        assertThat(builtContext.getStart(), equalTo(POSITION));
+//        assertThat(builtContext.getEnd(), equalTo(POSITION));
+//        assertThat(builtContext.getNAlleles(), equalTo(2));
+//        assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
+//        assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
+//    }
 
     @Test
     public void testBuilderVariantContext() {
@@ -908,5 +891,40 @@ public class VariantEvaluationTest {
 
         assertThat(instance.getPathogenicityScore(), equalTo(1f));
         assertThat(instance.isPredictedPathogenic(), equalTo(true));
+    }
+
+    @Test
+    void testLengthUsesAllelesIfNotSet() {
+        VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TTT")
+                .build();
+        assertThat(zero.getLength(), equalTo(2));
+    }
+
+    @Test
+    void testEndUsesAllelesIfNotSet() {
+        VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TTT")
+                .build();
+        assertThat(zero.getEnd(), equalTo(1));
+
+        VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
+                .build();
+        assertThat(one.getEnd(), equalTo(1));
+    }
+
+    @Test
+    void testLengthOfStructuralVariantIsZeroIfNotSet() {
+        VariantEvaluation sv = VariantEvaluation.builder(2, 1, "C", "<INS>")
+                .build();
+        assertThat(sv.getEnd(), equalTo(1));
+        assertThat(sv.getLength(), equalTo(0));
+    }
+
+    @Test
+    void testLengthOfStructuralVariantCanBeSet() {
+        VariantEvaluation sv = VariantEvaluation.builder(2, 1, "C", "<INS>")
+                .length(12345)
+                .build();
+        assertThat(sv.getEnd(), equalTo(1));
+        assertThat(sv.getLength(), equalTo(12345));
     }
 }
