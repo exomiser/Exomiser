@@ -109,7 +109,7 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
             return self();
         }
 
-        abstract Variant build();
+        protected abstract Variant build();
 
     }
 }

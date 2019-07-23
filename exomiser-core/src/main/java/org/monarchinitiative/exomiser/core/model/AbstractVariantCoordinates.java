@@ -53,7 +53,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     final StructuralType structuralType;
 
-    AbstractVariantCoordinates(Builder<?> builder) {
+    protected AbstractVariantCoordinates(Builder<?> builder) {
         this.genomeAssembly = builder.genomeAssembly;
         this.chromosomeName = builder.chromosomeName;
         this.chromosome = builder.startChr;
@@ -300,7 +300,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        abstract VariantCoordinates build();
+        protected abstract VariantCoordinates build();
 
         protected abstract T self();
     }
