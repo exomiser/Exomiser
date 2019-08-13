@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ class GenePriorityScoreCalculator {
         double phenotypePrioritiserScore = gene.getPriorityResults().values().stream()
                 .filter(isNonOmimPriorityResult())
                 //In the original implementation this used to average the scores of all the priority results
-                //but here we're going to just take the first - there should only be one at ths stage
+                //but here we're going to just take the first - there should only be one at this stage
                 .findFirst()
                 .orElseGet(ZeroScorePrioritserResult::new)
                 .getScore();
@@ -68,15 +68,15 @@ class GenePriorityScoreCalculator {
 
     private Map<ModeOfInheritance, Double> getOmimPriorityResultScoresOrEmpty(Gene gene) {
         PriorityResult omimPrioritiserResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        if (omimPrioritiserResult == null || !OmimPriorityResult.class.isInstance(omimPrioritiserResult)) {
-            return Collections.emptyMap();
+        if (omimPrioritiserResult instanceof OmimPriorityResult) {
+            OmimPriorityResult omimPriorityResult = (OmimPriorityResult) omimPrioritiserResult;
+            return omimPriorityResult.getScoresByMode();
         }
-        OmimPriorityResult omimPriorityResult = (OmimPriorityResult) omimPrioritiserResult;
-        return omimPriorityResult.getScoresByMode();
+        return Collections.emptyMap();
     }
 
     private Predicate<PriorityResult> isNonOmimPriorityResult() {
-        return priorityResult -> !OmimPriorityResult.class.isInstance(priorityResult);
+        return priorityResult -> !(priorityResult instanceof OmimPriorityResult);
     }
 
     /**
