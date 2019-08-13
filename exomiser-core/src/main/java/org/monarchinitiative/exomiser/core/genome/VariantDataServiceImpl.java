@@ -83,6 +83,9 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
 
+        if (variant.isStructuralVariant()) {
+            return FrequencyData.empty();
+        }
         // This could be run alongside the pathogenicities as they are all stored in the same datastore
         FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
 
@@ -103,6 +106,10 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+
+        if (variant.isStructuralVariant()) {
+            return PathogenicityData.empty();
+        }
 
         // This could be run alongside the frequencies as they are all stored in the same datastore
         PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
