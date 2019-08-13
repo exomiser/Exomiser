@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -107,6 +109,34 @@ public class VariantFactoryPerformanceTest {
 //        System.out.println("Read variants with real annotations, real data");
 //        runPerfTest(1, vcfPath, jannovarVariantFactory, allelePropertiesDao());
 
+    }
+
+    @Disabled
+    @Test
+    void testVariant() {
+        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
+                .empty());
+        VariantFactory variantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
+
+        Stream<VariantContext> variantContextStream = TestVcfParser.forSamples("Sample")
+                .parseVariantContext(
+                        "3       38626082        esv3595913      G       <INS:ME:LINE1>  100     PASS    CS=L1_umary;DP=18522;MEINFO=LINE1,3,6014,+;NS=2504;SVLEN=6011;SVTYPE=LINE1;TSD=AAAACAGAATGAGTAAATAATG;VT=SV        GT     1|0",
+                        "3       37241307        gnomAD_v2_INS_3_22085   N       <INS>   275     PASS    END=112856057;SVTYPE=INS;CHR2=3;SVLEN=51;ALGORITHMS=delly,manta;EVIDENCE=SR;PROTEIN_CODING__NEAREST_TSS=LRRFIP2;PROTEIN_CODING__INTERGENIC;AN=20154;AC=59;AF=0.002927    GT  1/0",
+                        "3       38626065        gnomAD_v2_INS_3_22148   N       <INS>   729     PASS    END=38626082;SVTYPE=INS;CHR2=3;SVLEN=6018;ALGORITHMS=melt;EVIDENCE=SR;PESR_GT_OVERDISPERSION;PROTEIN_CODING__INTRONIC=SCN5A;AN=21476;AC=6561;AF=0.305504   GT    0/1",
+                        "22      19906885        esv3647281      C       <INS:ME:ALU>    100     PASS    CS=ALU_umary;DP=22624;MEINFO=AluUndef,4,259,+;NS=2504;SVLEN=255;SVTYPE=ALU;TSD=null;VT=SV GT      1|0",
+                        "22      19907202        gnomAD_v2_INS_22_120078 N       <INS>   330     PASS    END=19907252;SVTYPE=INS;CHR2=22;SVLEN=51;ALGORITHMS=manta;EVIDENCE=SR;PROTEIN_CODING__INTRONIC=TXNRD2;AN=17078;AC=1633;AF=0.09562  GT  0/1");
+
+        variantFactory.createVariantEvaluations(variantContextStream).forEach(printVariant());
+    }
+
+    private Consumer<VariantEvaluation> printVariant() {
+        return variantEvaluation -> {
+            System.out.printf("%d:%d-%d length:%d %s %s score:%f %s dist=%d%n",
+                    variantEvaluation.getChromosome(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
+                    variantEvaluation.getLength(), variantEvaluation.getStructuralType(), variantEvaluation.getVariantEffect(),
+                    variantEvaluation.getVariantScore(), variantEvaluation.getGeneSymbol(),
+                    variantEvaluation.getTranscriptAnnotations().get(0).getDistanceFromNearestGene());
+        };
     }
 
     private void runPerfTest(int numIterations, Path vcfPath, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
