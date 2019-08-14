@@ -90,7 +90,7 @@ public class InheritanceModeAnnotatorTest {
     }
 
     @Test
-    public void testAutosomalRecessiveIndividual() {
+    public void testAutosomalRecessiveHomAltIndividual() {
         List<Allele> alleles = buildAlleles("A", "T");
 
         Genotype genotype = buildUnPhasedSampleGenotype("Adam", alleles.get(1), alleles.get(1));
@@ -371,7 +371,7 @@ public class InheritanceModeAnnotatorTest {
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+        VariantEvaluation alleleTwo = filteredVariant(1, 23456, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
