@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
@@ -39,6 +40,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * This class contains the logic for producing and providing canned data for running phive, hiPhive and Omim prioritisers.
+ * It contains the models, phenotype profiles and phenotype matches for matching the Pfeiffer syndrome and
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class TestPriorityServiceFactory {
@@ -48,23 +51,66 @@ public class TestPriorityServiceFactory {
     static {
         logger.info("Creating test ontology and priority services - this is static test data");
     }
-    public static final OntologyService TEST_ONTOLOGY_SERVICE = setUpOntologyService();
 
-    public static final PriorityService TEST_SERVICE = setUpPriorityService();
-    public static final PriorityService STUB_SERVICE = setUpStubPriorityService();
+    private static final OntologyService TEST_ONTOLOGY_SERVICE = setUpOntologyService();
 
+    private static final PriorityService TEST_SERVICE = setUpPriorityService();
+    private static final PriorityService STUB_SERVICE = setUpStubPriorityService();
 
-    private static PriorityService setUpStubPriorityService() {
-        ModelService stubModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+    private static final List<PhenotypeTerm> PFEIFFER_PHENOTYPES = ImmutableList.of(
+            PhenotypeTerm.of("HP:0010055", "Broad hallux"),
+            PhenotypeTerm.of("HP:0001363", "Craniosynostosis"),
+            PhenotypeTerm.of("HP:0001156", "Brachydactyly syndrome"),
+            PhenotypeTerm.of("HP:0011304", "Broad thumb")
+    );
 
-        OntologyService stubOntologyService = TestOntologyService.builder()
-                .setHpIdPhenotypeTerms(Collections.emptyMap())
-                .setHumanHumanMappings(Collections.emptyMap())
-                .setHumanMouseMappings(Collections.emptyMap())
-                .setHumanFishMappings(Collections.emptyMap())
-                .build();
+    private static final List<PhenotypeTerm> TARS_PHENOTYPES = ImmutableList.of(
+            PhenotypeTerm.of("HP:0007370", "Aplasia/Hypoplasia of the corpus callosum"),
+            PhenotypeTerm.of("HP:0001873", "Thrombocytopenia"),
+            PhenotypeTerm.of("HP:0004977", "Bilateral radial aplasia"),
+            PhenotypeTerm.of("HP:0007413", "Nevus flammeus of the forehead")
+    );
 
-        return new PriorityService(stubModelService, new PhenotypeMatchService(stubOntologyService), null);
+    /**
+     * Contains matches for phenotypes:
+     * HP:0001156 - Brachydactyly syndrome
+     * HP:0001363 - Craniosynostosis
+     * HP:0011304 - Broad thumb
+     * HP:0010055 - Broad hallux
+     * Used to match model:
+     * Craniofacial-skeletal-dermatologic dysplasia (OMIM:101600)
+     * Caused by abormalities in gene:
+     * FGFR2 (Entrez:2263)
+     */
+    public static List<PhenotypeTerm> pfeifferSyndromePhenotypes() {
+        return PFEIFFER_PHENOTYPES;
+    }
+
+    /**
+     * Contains phenotypes:
+     * HP:0007370 - Aplasia/Hypoplasia of the corpus callosum
+     * HP:0001873 - Thrombocytopenia
+     * HP:0004977 - Bilateral radial aplasia
+     * HP:0007413 - Nevus flammeus of the forehead
+     * Used to match model:
+     * Thrombocytopenia-absent radius syndrome (OMIM:274000)
+     * Caused by abormalities in gene:
+     * RBM8A (Entrez:9939)
+     */
+    public static List<PhenotypeTerm> thrombocytopeniaAbsentRadiusSyndromePhenotypes() {
+        return TARS_PHENOTYPES;
+    }
+
+    public static OntologyService testOntologyService() {
+        return TEST_ONTOLOGY_SERVICE;
+    }
+
+    public static PriorityService testPriorityService() {
+        return TEST_SERVICE;
+    }
+
+    public static PriorityService stubPriorityService() {
+        return STUB_SERVICE;
     }
 
     private static OntologyService setUpOntologyService() {
@@ -95,6 +141,10 @@ public class TestPriorityServiceFactory {
                 .build();
     }
 
+    private static Map<PhenotypeTerm, List<PhenotypeMatch>> createPhenotypeMap(List<PhenotypeMatch> crossOntologyMappings) {
+        return crossOntologyMappings.parallelStream().collect(Collectors.groupingBy(PhenotypeMatch::getQueryPhenotype));
+    }
+
     private static PriorityService setUpPriorityService() {
         logger.info("To the following models:");
         ModelService testModelService = setUpModelService();
@@ -115,10 +165,6 @@ public class TestPriorityServiceFactory {
         return new PriorityService(testModelService, new PhenotypeMatchService(TestPriorityServiceFactory.TEST_ONTOLOGY_SERVICE), testDiseaseDao);
     }
 
-    private static Map<PhenotypeTerm, List<PhenotypeMatch>> createPhenotypeMap(List<PhenotypeMatch> crossOntologyMappings) {
-        return crossOntologyMappings.parallelStream().collect(Collectors.groupingBy(PhenotypeMatch::getQueryPhenotype));
-    }
-
     private static ModelService setUpModelService() {
         List<GeneModel> diseaseModels = TestPrioritiserDataFileReader.readDiseaseModelData("src/test/resources/prioritisers/disease-models");
         logger.info("    Disease Models: " + diseaseModels.size());
@@ -130,5 +176,19 @@ public class TestPriorityServiceFactory {
         logger.info("    Fish Models: {}", fishModels.size());
 
         return new TestModelService(diseaseModels, mouseModels, fishModels);
+    }
+
+    private static PriorityService setUpStubPriorityService() {
+        ModelService stubModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections
+                .emptyList());
+
+        OntologyService stubOntologyService = TestOntologyService.builder()
+                .setHpIdPhenotypeTerms(Collections.emptyMap())
+                .setHumanHumanMappings(Collections.emptyMap())
+                .setHumanMouseMappings(Collections.emptyMap())
+                .setHumanFishMappings(Collections.emptyMap())
+                .build();
+
+        return new PriorityService(stubModelService, new PhenotypeMatchService(stubOntologyService), null);
     }
 }

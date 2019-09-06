@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,16 +38,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PhenotypeMatchServiceTest {
 
-    private OntologyService ontologyService = TestPriorityServiceFactory.TEST_ONTOLOGY_SERVICE;
-
-    private List<String> getAllHpoIds() {
-        return ontologyService.getHpoTerms().stream().map(PhenotypeTerm::getId).collect(toList());
-    }
+    private OntologyService ontologyService = TestPriorityServiceFactory.testOntologyService();
 
     @Test
     public void testIntegrationWithModelScorer() {
         PhenotypeMatchService instance = new PhenotypeMatchService(ontologyService);
-        List<String> hpoIds = getAllHpoIds();
+        List<String> hpoIds = TestPriorityServiceFactory.pfeifferSyndromePhenotypes()
+                .stream()
+                .map(PhenotypeTerm::getId)
+                .collect(toList());
 
         List<PhenotypeTerm> queryTerms = instance.makePhenotypeTermsFromHpoIds(hpoIds);
         PhenotypeMatcher hpHpQueryMatcher = instance.getHumanPhenotypeMatcherForTerms(queryTerms);
@@ -75,7 +74,7 @@ public class PhenotypeMatchServiceTest {
     /**
      * Simple class to enable testing the ModelScorer.
      */
-    private class TestModel implements Model {
+    private static class TestModel implements Model {
 
         private final String id;
         private final List<String> phenotypes;
@@ -88,6 +87,11 @@ public class PhenotypeMatchServiceTest {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String getLabel() {
+            return "";
         }
 
         @Override

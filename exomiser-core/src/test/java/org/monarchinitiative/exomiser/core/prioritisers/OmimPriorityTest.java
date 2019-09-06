@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class OmimPriorityTest {
 
-    private final PriorityService priorityService = TestPriorityServiceFactory.TEST_SERVICE;
+    private final PriorityService priorityService = TestPriorityServiceFactory.testPriorityService();
 
     private final OmimPriority instance = new OmimPriority(priorityService);
 

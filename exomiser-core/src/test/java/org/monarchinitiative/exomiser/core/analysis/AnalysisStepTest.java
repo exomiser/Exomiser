@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,10 +40,10 @@ import static org.hamcrest.core.Is.is;
  */
 public class AnalysisStepTest {
 
-    private static final AnalysisStep PHIVE_PRIORITY = new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
+    private static final AnalysisStep PHIVE_PRIORITY = new PhivePriority(TestPriorityServiceFactory.stubPriorityService());
     private static final AnalysisStep PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.6f);
     private static final AnalysisStep KNOWN_VARIANT_FILTER = new KnownVariantFilter();
-    private static final AnalysisStep OMIM_PRIORITY = new OmimPriority(TestPriorityServiceFactory.STUB_SERVICE);
+    private static final AnalysisStep OMIM_PRIORITY = new OmimPriority(TestPriorityServiceFactory.stubPriorityService());
     private static final AnalysisStep INHERITANCE_FILTER = new InheritanceFilter(EnumSet.of(ModeOfInheritance.ANY));
     
     @Test

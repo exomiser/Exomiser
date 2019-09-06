@@ -184,7 +184,7 @@ public class HtmlResultsWriterTest {
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
+                .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
 
         OutputSettings settings = OutputSettings.builder().build();
@@ -207,7 +207,7 @@ public class HtmlResultsWriterTest {
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
+                .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
 
         OutputSettings settings = OutputSettings.builder().build();

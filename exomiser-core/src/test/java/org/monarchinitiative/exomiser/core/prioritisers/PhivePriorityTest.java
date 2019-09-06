@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,8 +24,6 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +39,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PhivePriorityTest {
 
-    private Logger logger = LoggerFactory.getLogger(PhivePriorityTest.class);
-
     //TODO: add these to the TestService as GeneIdentifiers
     private List<Gene> getGenes() {
         return Lists.newArrayList(
@@ -55,11 +51,9 @@ public class PhivePriorityTest {
 
     private void checkScores(Map<String, Double> actualScores, Map<String, Double> expectedScores) {
         assertThat(actualScores.size(), equalTo(expectedScores.size()));
-        expectedScores.entrySet().forEach(entry -> {
-            String expectedGeneSymbol = entry.getKey();
-            Double expectedScore = entry.getValue();
-            assertThat(expectedGeneSymbol + " score not as expected", actualScores.get(expectedGeneSymbol), equalTo(expectedScore));
-        });
+        expectedScores.forEach(
+                (expectedGeneSymbol, expectedScore) ->
+                        assertThat(expectedGeneSymbol + " score not as expected", actualScores.get(expectedGeneSymbol), equalTo(expectedScore)));
     }
 
     private Map<String, Double> expectedMouseScores() {
@@ -73,7 +67,7 @@ public class PhivePriorityTest {
 
     @Test
     public void testGetPriorityType() {
-        PhivePriority instance = new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
+        PhivePriority instance = new PhivePriority(TestPriorityServiceFactory.stubPriorityService());
         assertThat(instance.getPriorityType(), equalTo(PriorityType.PHIVE_PRIORITY));
     }
 
@@ -82,7 +76,7 @@ public class PhivePriorityTest {
         List<Gene> genes = getGenes();
 
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
-        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
         phivePriority.prioritizeGenes(hpoIds, genes);
 
         List<PhivePriorityResult> results = genes.stream()
@@ -103,7 +97,7 @@ public class PhivePriorityTest {
         List<Gene> genes = getGenes();
 
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
-        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
 
         List<PhivePriorityResult> results = phivePriority.prioritise(hpoIds, genes)
                 .sorted()
@@ -118,8 +112,8 @@ public class PhivePriorityTest {
 
     @Test
     public void testHashCode() {
-        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
-        PhivePriority other = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
+        PhivePriority other = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
         System.out.println(phivePriority.hashCode());
         System.out.println(other.hashCode());
         assertThat(phivePriority, equalTo(other));
