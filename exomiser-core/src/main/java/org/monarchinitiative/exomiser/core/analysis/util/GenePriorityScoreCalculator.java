@@ -67,10 +67,9 @@ class GenePriorityScoreCalculator {
     }
 
     private Map<ModeOfInheritance, Double> getOmimPriorityResultScoresOrEmpty(Gene gene) {
-        PriorityResult omimPrioritiserResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        if (omimPrioritiserResult instanceof OmimPriorityResult) {
-            OmimPriorityResult omimPriorityResult = (OmimPriorityResult) omimPrioritiserResult;
-            return omimPriorityResult.getScoresByMode();
+        OmimPriorityResult omimPrioritiserResult = gene.getPriorityResult(OmimPriorityResult.class);
+        if (omimPrioritiserResult != null) {
+            return omimPrioritiserResult.getScoresByMode();
         }
         return Collections.emptyMap();
     }
