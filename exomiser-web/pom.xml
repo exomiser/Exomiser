@@ -31,11 +31,10 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>12.0.1</version>
+        <version>13.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
         <data.dir>${project.build.testOutputDirectory}/data</data.dir>
         <h2.dir>${data.dir}</h2.dir>

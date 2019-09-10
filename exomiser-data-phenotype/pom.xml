@@ -31,13 +31,10 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>12.0.1</version>
+        <version>13.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
         <exomiser.release.version>1710</exomiser.release.version>
     </properties>
 
@@ -87,7 +84,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
-
             </plugin>
         </plugins>
     </build>
