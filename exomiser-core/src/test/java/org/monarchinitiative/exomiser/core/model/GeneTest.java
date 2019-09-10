@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,10 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
 
 import java.util.*;
 
@@ -402,6 +399,16 @@ public class GeneTest {
         instance.addPriorityResult(omimPriorityResult);
         instance.addPriorityResult(new ExomeWalkerPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 0.0d));
         assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
+    }
+
+    @Test
+    public void testCanAddAndRetrievePriorityScoreByPriorityClass() {
+        MockPriorityResult mockPriorityResult = new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, instance.getEntrezGeneID(), instance
+                .getGeneSymbol(), 1d);
+        instance.addPriorityResult(mockPriorityResult);
+
+        assertThat(instance.getPriorityResult(MockPriorityResult.class), equalTo(mockPriorityResult));
+        assertThat(instance.getPriorityResult(HiPhivePriorityResult.class), equalTo(null));
     }
 
     @Test

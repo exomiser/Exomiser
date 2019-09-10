@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public OmimPriority makeOmimPrioritiser() {
-        return new OmimPriority(TestPriorityServiceFactory.STUB_SERVICE);
+        return new OmimPriority(TestPriorityServiceFactory.stubPriorityService());
     }
 
     @Override
@@ -48,7 +48,7 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public PhivePriority makePhivePrioritiser() {
-        return new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
+        return new PhivePriority(TestPriorityServiceFactory.stubPriorityService());
     }
 
     @Override
@@ -58,6 +58,6 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), TestPriorityServiceFactory.STUB_SERVICE);
+        return new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService());
     }
 }

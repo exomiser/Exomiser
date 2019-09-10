@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PhenodigmModelScorerTest {
 
-    private OntologyService ontologyService = TestPriorityServiceFactory.TEST_ONTOLOGY_SERVICE;
+    private OntologyService ontologyService = TestPriorityServiceFactory.testOntologyService();
     private PhenotypeMatchService priorityService = new PhenotypeMatchService(ontologyService);
 
     private GeneDiseaseModel makeBestHumanModel(PhenotypeMatcher referenceOrganismPhenotypeMatcher) {
@@ -82,7 +82,7 @@ public class PhenodigmModelScorerTest {
 
     @Test
     public void testScoreModelNoMatch() {
-        List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
@@ -100,7 +100,7 @@ public class PhenodigmModelScorerTest {
 
     @Test
     public void testScoreModelPerfectMatch() {
-        List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
@@ -115,12 +115,12 @@ public class PhenodigmModelScorerTest {
     @Test
     public void testScoreModelPartialMatch() {
 
-        List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
-        List<String> twoExactPhenotypeMatches = queryTerms.stream().limit(2).map(PhenotypeTerm::getId).collect(toList());
+        List<String> twoExactPhenotypeMatches = ImmutableList.of("HP:0001156", "HP:0001363");
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
         ModelPhenotypeMatch result = instance.scoreModel(model);
@@ -131,7 +131,7 @@ public class PhenodigmModelScorerTest {
 
     @Test
     public void testScoreModelPerfectMatchModelAndUnmatchedQueryPhenotype() {
-        List<PhenotypeTerm> queryTerms = new ArrayList<>(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = new ArrayList<>(TestPriorityServiceFactory.pfeifferSyndromePhenotypes());
         queryTerms.add(PhenotypeTerm.of("HP:000000", "No match"));
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
 
@@ -147,7 +147,7 @@ public class PhenodigmModelScorerTest {
     @Test
     public void testScoreSingleCrossSpecies() {
 
-        List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
         PhenotypeMatcher mouseOrganismPhenotypeMatcher = priorityService.getMousePhenotypeMatcherForTerms(queryTerms);
 
         ModelScorer<Model> mousePhiveModelScorer = PhenodigmModelScorer.forSingleCrossSpecies(mouseOrganismPhenotypeMatcher);
@@ -162,7 +162,7 @@ public class PhenodigmModelScorerTest {
     @Test
     public void testScoreMultiCrossSpecies() {
 
-        List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(ontologyService.getHpoTerms());
+        List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
         queryTerms.forEach(System.out::println);
 
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -311,8 +312,28 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @param type {@code PriorityType} representing the priority type
      * @return The result applied by that {@code Priority}.
      */
+    @Nullable
     public PriorityResult getPriorityResult(PriorityType type) {
         return priorityResultsMap.get(type);
+    }
+
+    /**
+     * Type-safe version of getPriorityResult which will return a fully-typed instance of a PriorityResult or null if
+     * not present.
+     *
+     * @param clazz The class of the PriorityResult to search for.
+     * @param <T>   They type of PriorityResult class.
+     * @return a fully-typed instance of a PriorityResult or null if not present.
+     * @since 13.0.0
+     */
+    @Nullable
+    public <T extends PriorityResult> T getPriorityResult(Class<T> clazz) {
+        for (PriorityResult priorityResult : priorityResultsMap.values()) {
+            if (clazz.isInstance(priorityResult)) {
+                return (T) priorityResult;
+            }
+        }
+        return null;
     }
 
     /**
