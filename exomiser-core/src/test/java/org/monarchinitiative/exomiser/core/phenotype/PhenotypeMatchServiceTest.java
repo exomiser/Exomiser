@@ -90,11 +90,6 @@ public class PhenotypeMatchServiceTest {
         }
 
         @Override
-        public String getLabel() {
-            return "";
-        }
-
-        @Override
         public List<String> getPhenotypeIds() {
             return phenotypes;
         }
