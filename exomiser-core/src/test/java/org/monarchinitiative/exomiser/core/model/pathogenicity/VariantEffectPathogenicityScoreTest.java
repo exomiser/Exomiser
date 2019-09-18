@@ -42,24 +42,29 @@ public class VariantEffectPathogenicityScoreTest {
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {
         VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
-        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(DEFAULT_MISSENSE_SCORE));
+        assertThat(getPathogenicityScoreOf(variantEffect), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForStartLoss() {
         VariantEffect variantEffect = VariantEffect.START_LOST;
-        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(VariantEffectPathogenicityScore.STARTLOSS_SCORE));
+        assertThat(getPathogenicityScoreOf(variantEffect), equalTo(STARTLOSS_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForNonPathogenicVariantType() {
         VariantEffect variantEffect = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect), equalTo(NON_PATHOGENIC_SCORE));
+        assertThat(getPathogenicityScoreOf(variantEffect), equalTo(NON_PATHOGENIC_SCORE));
     }
 
 
     @Test
     public void testGetPathogenicityScoreForUnListedVariantEffect() {
-        assertThat(VariantEffectPathogenicityScore.getPathogenicityScoreOf(VariantEffect.COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
+        assertThat(getPathogenicityScoreOf(VariantEffect.COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
+    }
+
+    @Test
+    public void testGetPathogenicityScoreForInversion() {
+        assertThat(getPathogenicityScoreOf(VariantEffect.INVERSION), equalTo(INVERSION_SCORE));
     }
 }
