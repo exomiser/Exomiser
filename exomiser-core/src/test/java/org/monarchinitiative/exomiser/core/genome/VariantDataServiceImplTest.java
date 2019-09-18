@@ -63,6 +63,11 @@ public class VariantDataServiceImplTest {
     @Mock
     private CaddDao mockCaddDao;
 
+    @Mock
+    private FrequencyDao svFrequencyDao;
+    @Mock
+    private PathogenicityDao svPathogenicityDao;
+
     private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().alleleId("12345")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .build();
@@ -92,12 +97,17 @@ public class VariantDataServiceImplTest {
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
 
+        Mockito.when(svFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
+        Mockito.when(svPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.empty());
+
         instance = VariantDataServiceImpl.builder()
                 .defaultFrequencyDao(defaultFrequencyDao)
                 .localFrequencyDao(localFrequencyDao)
                 .defaultPathogenicityDao(defaultPathogenicityDao)
                 .caddDao(mockCaddDao)
                 .remmDao(mockRemmDao)
+                .svFrequencyDao(svFrequencyDao)
+                .svPathogenicityDao(svPathogenicityDao)
                 .build();
     }
 

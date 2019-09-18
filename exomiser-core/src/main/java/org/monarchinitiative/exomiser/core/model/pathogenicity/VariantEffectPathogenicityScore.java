@@ -78,6 +78,8 @@ public abstract class VariantEffectPathogenicityScore {
      */
     public static final float STARTLOSS_SCORE = 1.00f;
 
+    public static final float INVERSION_SCORE = 0.6f;
+
     private VariantEffectPathogenicityScore() {
         //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
     }
@@ -122,6 +124,10 @@ public abstract class VariantEffectPathogenicityScore {
                 return STOPLOSS_SCORE;
             case STOP_GAINED:
                 return NONSENSE_SCORE;
+            case INVERSION:
+                // down-ranking this from HIGH to MODERATE as we're not certain of the impact unless it affects the
+                // transcript e.g. transcript ablation if the inversion happens in the middle of a gene.
+                return INVERSION_SCORE;
             default:
                 return defaultImpactScore(variantEffect.getImpact());
         }
