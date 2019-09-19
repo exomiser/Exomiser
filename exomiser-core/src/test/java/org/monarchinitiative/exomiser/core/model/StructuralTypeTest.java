@@ -54,10 +54,25 @@ class StructuralTypeTest {
     }
 
     @Test
-    void testGetBaseMethodFromSubType() {
+    void testGetBaseTypeFromSubType() {
         assertThat(StructuralType.DEL_ME_ALU.getBaseType(), equalTo(StructuralType.DEL));
         assertThat(StructuralType.INS_ME.getBaseType(), equalTo(StructuralType.INS));
         assertThat(StructuralType.BND.getBaseType(), equalTo(StructuralType.BND));
+    }
+
+    @Test
+    void testGetSubType() {
+        assertThat(StructuralType.DEL.getSubType(), equalTo(StructuralType.DEL));
+        assertThat(StructuralType.DEL_ME.getSubType(), equalTo(StructuralType.DEL_ME));
+        assertThat(StructuralType.DEL_ME_ALU.getSubType(), equalTo(StructuralType.DEL_ME));
+        assertThat(StructuralType.INS_ME.getSubType(), equalTo(StructuralType.INS_ME));
+        assertThat(StructuralType.INS_ME_HERV.getSubType(), equalTo(StructuralType.INS_ME));
+        assertThat(StructuralType.BND.getSubType(), equalTo(StructuralType.BND));
+    }
+
+    @Test
+    void testNonCanonicalDelMobileElementSubType() {
+        assertThat(StructuralType.parseValue("DEL:ME:SINE"), equalTo(StructuralType.DEL_ME));
     }
 
     @Test

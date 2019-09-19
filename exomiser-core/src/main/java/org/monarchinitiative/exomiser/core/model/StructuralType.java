@@ -119,9 +119,31 @@ public enum StructuralType {
                 return DUP_INV_BEFORE;
             case "DUP:INV-AFTER":
                  return DUP_INV_AFTER;
-            default:
-                return UNKNOWN;
         }
+        // in other cases where we don't recognise the exact type, use the closest type or sub-type
+        // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN
+        if (stripped.startsWith("DEL:ME")) {
+            return DEL_ME;
+        }
+        if (stripped.startsWith("DEL")) {
+            return DEL;
+        }
+        if (stripped.startsWith("INS:ME")) {
+            return INS_ME;
+        }
+        if (stripped.startsWith("DUP:TANDEM")) {
+            return DUP_TANDEM;
+        }
+        if (stripped.startsWith("DUP")) {
+            return DUP;
+        }
+        if (stripped.startsWith("CNV")) {
+            return CNV;
+        }
+        if (stripped.startsWith("BND")) {
+            return BND;
+        }
+        return UNKNOWN;
     }
 
     private static String trimInput(String value) {
@@ -158,7 +180,38 @@ public enum StructuralType {
             default:
                 return this;
         }
+    }
 
+    public StructuralType getSubType() {
+        switch (this) {
+            case DEL:
+                return DEL;
+            case DEL_ME:
+            case DEL_ME_ALU:
+            case DEL_ME_HERV:
+            case DEL_ME_LINE1:
+            case DEL_ME_SVA:
+                return DEL_ME;
+
+            case INS:
+                return INS;
+            case INS_ME:
+            case INS_ME_ALU:
+            case INS_ME_HERV:
+            case INS_ME_LINE1:
+            case INS_ME_SVA:
+                return INS_ME;
+
+            case DUP:
+            case DUP_INV_AFTER:
+            case DUP_INV_BEFORE:
+                return DUP;
+            case DUP_TANDEM:
+                return DUP_TANDEM;
+
+            default:
+                return this;
+        }
     }
 
     public boolean isStructural() {

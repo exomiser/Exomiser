@@ -139,28 +139,28 @@ public class JannovarAnnotationService {
         int lowerCiEnd = endCiIntervals.get(0);
         int upperCiEnd = endCiIntervals.get(1);
 
-        String svType = structuralType.toString();
-        // could do switch with multiple fall-through cases to save all the string creation/matching
-        if (svType.equals("DEL")) {
-            return new SVDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.startsWith("DEL_ME")) {
-            return new SVMobileElementDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.equals("DUP")) {
-            return new SVDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.equals("DUP_TANDEM")) {
-            return new SVTandemDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.equals("INS")) {
-            return new SVInsertion(start, lowerCiStart, upperCiStart);
-        } else if (svType.startsWith("INS_ME")) {
-            return new SVMobileElementInsertion(start, lowerCiStart, upperCiStart);
-        } else if (svType.equals("INV")) {
-            return new SVInversion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.equals("CNV")) {
-            return new SVCopyNumberVariant(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else if (svType.equals("BND")) {
-            return buildBreakendVariant(alt, start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
-        } else {
-            return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+        StructuralType svSubType = structuralType.getSubType();
+        switch (svSubType) {
+            case DEL:
+                return new SVDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case DEL_ME:
+                return new SVMobileElementDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case DUP:
+                return new SVDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case DUP_TANDEM:
+                return new SVTandemDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case INS:
+                return new SVInsertion(start, lowerCiStart, upperCiStart);
+            case INS_ME:
+                return new SVMobileElementInsertion(start, lowerCiStart, upperCiStart);
+            case INV:
+                return new SVInversion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case CNV:
+                return new SVCopyNumberVariant(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            case BND:
+                return buildBreakendVariant(alt, start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+            default:
+                return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
         }
     }
 
