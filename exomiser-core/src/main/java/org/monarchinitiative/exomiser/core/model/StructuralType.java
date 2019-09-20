@@ -31,27 +31,27 @@ public enum StructuralType {
     // VCF standard reserved values for structural variants
     DEL,
     //DEL:ME
-    DEL_ME,
+    DEL_ME(DEL),
     //DEL:ME:ALU
-    DEL_ME_ALU,
-    DEL_ME_LINE1,
-    DEL_ME_SVA,
-    DEL_ME_HERV,
+    DEL_ME_ALU(DEL, DEL_ME),
+    DEL_ME_LINE1(DEL, DEL_ME),
+    DEL_ME_SVA(DEL, DEL_ME),
+    DEL_ME_HERV(DEL, DEL_ME),
 
     INS,
-    INS_ME,
-    INS_ME_ALU,
-    INS_ME_LINE1,
-    INS_ME_SVA,
-    INS_ME_HERV,
+    INS_ME(INS),
+    INS_ME_ALU(INS, INS_ME),
+    INS_ME_LINE1(INS, INS_ME),
+    INS_ME_SVA(INS, INS_ME),
+    INS_ME_HERV(INS, INS_ME),
 
     DUP,
     //DUP:TANDEM
-    DUP_TANDEM,
+    DUP_TANDEM(DUP),
     //DUP:INV-BEFORE
-    DUP_INV_BEFORE,
+    DUP_INV_BEFORE(DUP),
     //DUP:INV-AFTER
-    DUP_INV_AFTER,
+    DUP_INV_AFTER(DUP),
 
     INV,
     CNV,
@@ -62,6 +62,24 @@ public enum StructuralType {
     STR,
     //TRA - Translocation from Sniffles
     TRA;
+
+    private StructuralType baseType;
+    private StructuralType subType;
+
+    StructuralType() {
+        this.baseType = this;
+        this.subType = this;
+    }
+
+    StructuralType(StructuralType parent) {
+        this.baseType = parent;
+        this.subType = this;
+    }
+
+    StructuralType(StructuralType baseType, StructuralType subType) {
+        this.baseType = baseType;
+        this.subType = subType;
+    }
 
     public static StructuralType parseValue(String value) {
         String stripped = trimInput(value);
@@ -154,64 +172,11 @@ public enum StructuralType {
     }
 
     public StructuralType getBaseType() {
-        switch (this) {
-            case DEL:
-            case DEL_ME:
-            case DEL_ME_ALU:
-            case DEL_ME_HERV:
-            case DEL_ME_LINE1:
-            case DEL_ME_SVA:
-                return DEL;
-
-            case INS:
-            case INS_ME:
-            case INS_ME_ALU:
-            case INS_ME_HERV:
-            case INS_ME_LINE1:
-            case INS_ME_SVA:
-                return INS;
-
-            case DUP:
-            case DUP_INV_AFTER:
-            case DUP_INV_BEFORE:
-            case DUP_TANDEM:
-                return DUP;
-
-            default:
-                return this;
-        }
+        return baseType;
     }
 
     public StructuralType getSubType() {
-        switch (this) {
-            case DEL:
-                return DEL;
-            case DEL_ME:
-            case DEL_ME_ALU:
-            case DEL_ME_HERV:
-            case DEL_ME_LINE1:
-            case DEL_ME_SVA:
-                return DEL_ME;
-
-            case INS:
-                return INS;
-            case INS_ME:
-            case INS_ME_ALU:
-            case INS_ME_HERV:
-            case INS_ME_LINE1:
-            case INS_ME_SVA:
-                return INS_ME;
-
-            case DUP:
-            case DUP_INV_AFTER:
-            case DUP_INV_BEFORE:
-                return DUP;
-            case DUP_TANDEM:
-                return DUP_TANDEM;
-
-            default:
-                return this;
-        }
+        return subType;
     }
 
     public boolean isStructural() {
