@@ -143,7 +143,7 @@ public class VariantFactoryImpl implements VariantFactory {
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             List<Integer> startCi = getCiListOrDefault(variantContext, "CIPOS", ImmutableList.of(0, 0));
             List<Integer> endCi = getCiListOrDefault(variantContext, "CIEND", ImmutableList.of(0, 0));
-            int length = variantContext.getAttributeAsInt("SVLEN", 0);
+            int length = Math.abs(variantContext.getAttributeAsInt("SVLEN", end - start));
 //            logger.info("Annotating {}: {} {} {} {} {} {} {} {} {}", structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
             return variantAnnotator.annotateStructuralVariant(structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
         }

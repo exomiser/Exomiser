@@ -391,29 +391,85 @@ public class VariantFactoryImplTest {
     @Test
     public void testStructuralVariant() {
         Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
-                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256215;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
+                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256420;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
-        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FEATURE_TRUNCATION));
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_TRUNCATION));
         assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
 
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
-        assertThat(variantEvaluation.getStartMin(), equalTo(123256159));
-        assertThat(variantEvaluation.getStartMax(), equalTo(123256235));
+        assertThat(variantEvaluation.getStartMin(), equalTo(123256215 - 56));
+        assertThat(variantEvaluation.getStartMax(), equalTo(123256215 + 20));
 
-        assertThat(variantEvaluation.getEnd(), equalTo(123256215));
-        assertThat(variantEvaluation.getEndMin(), equalTo(123256205));
-        assertThat(variantEvaluation.getEndMax(), equalTo(123256277));
+        assertThat(variantEvaluation.getEnd(), equalTo(123256420));
+        assertThat(variantEvaluation.getEndMin(), equalTo(123256420 - 10));
+        assertThat(variantEvaluation.getEndMax(), equalTo(123256420 + 62));
 
-        assertThat(variantEvaluation.getLength(), equalTo(-205));
+        assertThat(variantEvaluation.getLength(), equalTo(205));
 
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("<DEL>"));
 
         assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.het())));
-
     }
+
+    @Test
+    void testStructuralVariantNoLength() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 212471179 esv3588749 T <CN0> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVTYPE=DEL;VT=SV GT 0|1");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+
+        assertThat(variantEvaluation.getStart(), equalTo(212471179));
+        assertThat(variantEvaluation.getStartMin(), equalTo(212471179 - 471));
+        assertThat(variantEvaluation.getStartMax(), equalTo(212471179));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(212472619));
+        assertThat(variantEvaluation.getEndMin(), equalTo(212472619));
+        assertThat(variantEvaluation.getEndMax(), equalTo(212472619 + 444));
+
+        assertThat(variantEvaluation.getLength(), equalTo(1440));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<CN0>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT))));
+    }
+
+    @Test
+    void testStructuralVariantNoEnd() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 112992009 esv3587212 T <INS:ME:ALU> 100 PASS SVLEN=280;SVTYPE=ALU;VT=SV GT 1|0");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.INS_ME_ALU));
+
+        assertThat(variantEvaluation.getStart(), equalTo(112992009));
+        assertThat(variantEvaluation.getStartMin(), equalTo(112992009));
+        assertThat(variantEvaluation.getStartMax(), equalTo(112992009));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(112992009));
+        assertThat(variantEvaluation.getEndMin(), equalTo(112992009));
+        assertThat(variantEvaluation.getEndMax(), equalTo(112992009));
+
+        assertThat(variantEvaluation.getLength(), equalTo(280));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<INS:ME:ALU>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF))));
+    }
+
 }
