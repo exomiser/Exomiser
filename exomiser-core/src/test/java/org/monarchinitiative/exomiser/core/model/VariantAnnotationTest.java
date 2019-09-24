@@ -182,6 +182,6 @@ public class VariantAnnotationTest {
     public void testToString() throws Exception {
         System.out.println(VariantAnnotation.empty());
         assertThat(VariantAnnotation.empty()
-                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, chromosomeName='', start=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
+                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, chromosomeName='', start=0, end=0, length=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
     }
 }

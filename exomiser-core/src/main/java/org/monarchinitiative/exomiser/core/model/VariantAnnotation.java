@@ -54,6 +54,8 @@ public class VariantAnnotation extends AbstractVariant {
                 ", chromosome=" + chromosome +
                 ", chromosomeName='" + chromosomeName + '\'' +
                 ", start=" + start +
+                ", end=" + end +
+                ", length=" + length +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 ", geneSymbol='" + geneSymbol + '\'' +
