@@ -37,7 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ChromosomalRegionIndexTest {
 
-    private final VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 50, "A", "T");
+    private final VariantCoordinates variant = SimpleVariantCoordinates.of(GenomeAssembly.HG19, 1, 50, "A", "T");
 
     @Test
     public void empty() {
@@ -104,7 +104,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, ImmutableMap.of());
         ChromosomalRegionIndex<TopologicalDomain> instance = ChromosomalRegionIndex.of(ImmutableList.of(tad));
 
-        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(GenomeAssembly.HG19, 100, 50, "A", "T")), equalTo(Collections
+        assertThat(instance.getRegionsContainingVariant(SimpleVariantCoordinates.of(GenomeAssembly.HG19, 100, 50, "A", "T")), equalTo(Collections
                 .emptyList()));
     }
 

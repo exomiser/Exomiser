@@ -20,93 +20,52 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleVariantCoordinates implements VariantCoordinates {
+public class SimpleVariantCoordinates extends AbstractVariantCoordinates {
 
-    private final GenomeAssembly genomeAssembly;
-    private final int chr;
-    private final int start;
-    private final String ref;
-    private final String alt;
-
-    public SimpleVariantCoordinates(GenomeAssembly genomeAssembly, int chr, int start, String ref, String alt) {
-        this.genomeAssembly = genomeAssembly;
-        this.chr = chr;
-        this.start = start;
-        this.ref = ref;
-        this.alt = alt;
+    private SimpleVariantCoordinates(Builder builder) {
+        super(builder);
     }
 
-    @Override
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    @Override
-    public int getChromosome() {
-        return chr;
-    }
-
-    @Override
-    public String getChromosomeName() {
-        return Contig.toString(chr);
-    }
-
-    @Override
-    public int getStart() {
-        return start;
-    }
-
-    @Override
-    public int getEnd() {
-        return start;
-    }
-
-    @Override
-    public String getRef() {
-        return ref;
-    }
-
-    @Override
-    public String getAlt() {
-        return alt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SimpleVariantCoordinates that = (SimpleVariantCoordinates) o;
-
-        if (chr != that.chr) return false;
-        if (start != that.start) return false;
-        if (ref != null ? !ref.equals(that.ref) : that.ref != null) return false;
-        return !(alt != null ? !alt.equals(that.alt) : that.alt != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = chr;
-        result = 31 * result + start;
-        result = 31 * result + (ref != null ? ref.hashCode() : 0);
-        result = 31 * result + (alt != null ? alt.hashCode() : 0);
-        return result;
+    public static SimpleVariantCoordinates of(GenomeAssembly genomeAssembly, int chr, int start, String alt, String ref) {
+        return new Builder()
+                .genomeAssembly(genomeAssembly)
+                .chromosome(chr)
+                .start(start)
+                .ref(ref)
+                .alt(alt)
+                .build();
     }
 
     @Override
     public String toString() {
         return "SimpleVariantCoordinates{" +
-                "chr=" + chr +
+                "chr=" + chromosome +
                 ", start=" + start +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 '}';
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder extends AbstractVariantCoordinates.Builder<Builder> {
+
+        @Override
+        public SimpleVariantCoordinates build() {
+            return new SimpleVariantCoordinates(this);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
 }

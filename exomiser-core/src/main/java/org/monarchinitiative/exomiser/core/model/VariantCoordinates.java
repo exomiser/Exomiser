@@ -34,7 +34,6 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
  */
 public interface VariantCoordinates extends ChromosomalRegion {
 
-    // TODO: should this go on to the ChromosomalRegion?
     public GenomeAssembly getGenomeAssembly();
 
     /**
@@ -60,8 +59,5 @@ public interface VariantCoordinates extends ChromosomalRegion {
         return getStructuralType() != StructuralType.NON_STRUCTURAL;
     }
 
-    //TODO: perhaps remove `default`?
-    public default StructuralType getStructuralType() {
-        return StructuralType.NON_STRUCTURAL;
-    }
+    public StructuralType getStructuralType();
 }
