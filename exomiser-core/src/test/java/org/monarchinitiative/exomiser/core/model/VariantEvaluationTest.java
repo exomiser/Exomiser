@@ -843,27 +843,27 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    void testGetHgvsGenomeSnv() {
-        assertThat(instance.getHgvsGenome(), equalTo("1-1-C-T"));
+    void testToGnomadSnv() {
+        assertThat(instance.toGnomad(), equalTo("1-1-C-T"));
     }
 
     @Test
-    void testGetHgvsGenomeSvIns() {
+    void testToGnomadSvIns() {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
                 .length(50)
                 .structuralType(StructuralType.INS)
                 .build();
-        assertThat(sv.getHgvsGenome(), equalTo("1-100-100-A-<INS> (50 bp)"));
+        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS>-50bp"));
     }
 
     @Test
-    void testGetHgvsGenomeSvDel() {
+    void testToGnomadSvDel() {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<DEL>")
                 .end(150)
                 .length(50)
                 .structuralType(StructuralType.DEL)
                 .build();
-        assertThat(sv.getHgvsGenome(), equalTo("1-100-150-A-<DEL> (50 bp)"));
+        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL>-50bp"));
     }
 
     @Test

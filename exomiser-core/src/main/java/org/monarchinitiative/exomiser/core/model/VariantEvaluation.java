@@ -167,11 +167,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return a String such as X-31517201-T-C or 4-65216746-65216746-G-<INS:ME:ALU>
      */
     @JsonIgnore
-    public String getHgvsGenome() {
+    public String toGnomad() {
         if (isStructuralVariant()) {
             // can be searched for in gnomad like so:
             // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2
-            return Contig.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + " (" + length + " bp)";
+            return Contig.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + '-' + length + "bp";
         }
         // can be searched for in gnomad like so:
         // https://gnomad.broadinstitute.org/variant/X-31517201-T-C

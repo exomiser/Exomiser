@@ -243,7 +243,7 @@
                             <div class="col-sm-12">
                                 <span class="label label-danger"
                                       th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
-                                <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
+                                <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                                     chr10:g.123256215T>G [0/1]</b>
                                 <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
                                           th:if="not ${rsId.isEmpty()}">
@@ -346,7 +346,7 @@
                  th:if="not ${variantEvaluation.contributesToGeneScore()}">
                 <div class="col-sm-12">
             <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
-                    <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
+                    <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                         chr10:g.123256215T>G [0/1]</b>
                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}" th:if="not ${rsId.isEmpty()}">
                         <a th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
