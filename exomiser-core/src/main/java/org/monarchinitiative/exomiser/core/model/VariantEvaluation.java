@@ -158,11 +158,24 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     /**
-     * @return a String such as chr6:g.29911092G>T
+     * Returns a gnomAD formatted string for easier identification of variants in output. HGVS doesn't look similar
+     * enough to VCF to enable linking to the source VCF in the output files.
+     *
+     * Structural variants will be displayed with chromosome-start-end-ref-alt and length, whereas small variants will
+     * have the more classical chromosome-start-ref-alt format.
+     *
+     * @return a String such as X-31517201-T-C or 4-65216746-65216746-G-<INS:ME:ALU>
      */
     @JsonIgnore
     public String getHgvsGenome() {
-        return chromosome + ":g." + start + ref + ">" + alt;
+        if (isStructuralVariant()) {
+            // can be searched for in gnomad like so:
+            // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2
+            return Contig.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + " (" + length + " bp)";
+        }
+        // can be searched for in gnomad like so:
+        // https://gnomad.broadinstitute.org/variant/X-31517201-T-C
+        return Contig.toString(chromosome) + '-' + start + '-' + ref + '-' + alt;
     }
 
     @JsonIgnore
@@ -520,10 +533,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " pos=" + start + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " start=" + start + " end=" + end + " length=" + length + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " pos=" + start + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " start=" + start + " end=" + end + " length=" + length + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
@@ -576,7 +589,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return a Builder instance pre-populated with fields copied from the input Variant
      * @since 13.0.0
      */
-    //TODO: should this not be a Builder.copy(Variant)?
     public static VariantEvaluation.Builder copy(Variant variant) {
         return new Builder()
                 .genomeAssembly(variant.getGenomeAssembly())

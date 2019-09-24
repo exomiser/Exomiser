@@ -829,17 +829,41 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
+    }
+
+    @Test
+    void testGetHgvsGenomeSnv() {
+        assertThat(instance.getHgvsGenome(), equalTo("1-1-C-T"));
+    }
+
+    @Test
+    void testGetHgvsGenomeSvIns() {
+        VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
+                .length(50)
+                .structuralType(StructuralType.INS)
+                .build();
+        assertThat(sv.getHgvsGenome(), equalTo("1-100-100-A-<INS> (50 bp)"));
+    }
+
+    @Test
+    void testGetHgvsGenomeSvDel() {
+        VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<DEL>")
+                .end(150)
+                .length(50)
+                .structuralType(StructuralType.DEL)
+                .build();
+        assertThat(sv.getHgvsGenome(), equalTo("1-100-150-A-<DEL> (50 bp)"));
     }
 
     @Test
