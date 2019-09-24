@@ -67,7 +67,6 @@ public class VcfResultsWriter implements ResultsWriter {
         GENE_VARIANT_SCORE("ExGeneSVar", VCFHeaderLineType.Float, "Exomiser gene variant score"),
         VARIANT_SCORE("ExVarScore", VCFHeaderLineType.Float, "Exomiser variant score"),
         VARIANT_EFFECT("ExVarEff", VCFHeaderLineType.String, "Exomiser variant effect"),
-        VARIANT_HGVS("ExVarHgvs", VCFHeaderLineType.String, "Exomiser variant hgvs"),
         ALLELE_CONTRIBUTES("ExContribAltAllele", VCFHeaderLineType.Flag, "Exomiser alt allele id contributing to score"),
         WARNING("ExWarn", VCFHeaderLineType.String, "Exomiser warning");
 
@@ -308,7 +307,6 @@ public class VcfResultsWriter implements ResultsWriter {
             //variant scores need a list of VariantEvaluations so as to concatenate the fields in Allele order
             builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations));
             builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
-            builder.attribute(ExomiserVcfInfoField.VARIANT_HGVS.getId(), buildHgvs(variantEvaluations));
             for (VariantEvaluation variantEvaluation : variantEvaluations) {
                 if (variantEvaluation.contributesToGeneScoreUnderMode(modeOfInheritance)) {
                     builder.attribute(ExomiserVcfInfoField.ALLELE_CONTRIBUTES.getId(), variantEvaluation.getAltAlleleId());
@@ -345,30 +343,6 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private String getSequenceOntologyTerm(VariantEvaluation variantEvaluation) {
         return variantEvaluation.getVariantEffect().getSequenceOntologyTerm();
-    }
-
-    private String buildHgvs(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.size() == 1) {
-            return String.valueOf(variantEvaluations.get(0).getHgvsGenome());
-        }
-        StringBuilder variantHgvsBuilder = new StringBuilder();
-        variantHgvsBuilder.append(variantEvaluations.get(0).getHgvsGenome());
-        for (int i = 1; i < variantEvaluations.size(); i++) {
-            variantHgvsBuilder.append(',').append(variantEvaluations.get(i).getHgvsGenome());
-        }
-        return variantHgvsBuilder.toString();
-    }
-
-    private String buildContributingAllele(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.size() == 1) {
-            return getContributingVariantFlag(variantEvaluations.get(0));
-        }
-        StringBuilder variantHgvsBuilder = new StringBuilder();
-        variantHgvsBuilder.append(variantEvaluations.get(0).getHgvsGenome());
-        for (int i = 1; i < variantEvaluations.size(); i++) {
-            variantHgvsBuilder.append(',').append(getContributingVariantFlag(variantEvaluations.get(0)));
-        }
-        return variantHgvsBuilder.toString();
     }
 
     private String getContributingVariantFlag(VariantEvaluation variantEvaluation) {
