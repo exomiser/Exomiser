@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -58,10 +59,18 @@ public class PrioritiserController {
     @Autowired
     public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService hg38GenomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = hg38GenomeAnalysisService.getKnownGeneIdentifiers().stream()
-                .filter(GeneIdentifier::hasEntrezId)
-                .distinct()
-                .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
+        Map<Integer, GeneIdentifier> map = new HashMap<>();
+        for (GeneIdentifier geneIdentifier : hg38GenomeAnalysisService.getKnownGeneIdentifiers()) {
+            // Don't add GeneIdentifiers without HGNC identifiers as these are superceeded by others with the same
+            // entrez id which will creat duplicate key errors and out of date gene symbols etc.
+            if (geneIdentifier.hasEntrezId() && !geneIdentifier.getHgncId().isEmpty()) {
+                GeneIdentifier previous = map.put(geneIdentifier.getEntrezIdAsInteger(), geneIdentifier);
+                if (previous != null) {
+                    logger.warn("Duplicate key added {} - was {}", geneIdentifier, previous);
+                }
+            }
+        }
+        this.geneIdentifiers = map;
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
