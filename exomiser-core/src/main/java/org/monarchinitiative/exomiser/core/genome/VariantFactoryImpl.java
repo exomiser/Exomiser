@@ -80,7 +80,7 @@ public class VariantFactoryImpl implements VariantFactory {
      * alternate allele.
      */
     private Function<VariantContext, Stream<VariantEvaluation>> toVariantEvaluations() {
-        return variantContext ->  variantContext.getAlternateAlleles().stream()
+        return variantContext -> variantContext.getAlternateAlleles().stream()
                     .map(buildAlleleVariantEvaluations(variantContext))
                     .flatMap(Collection::stream);
             // TODO: is this easier to use if we have streams all the way down rather than dealing with lists?
@@ -183,6 +183,7 @@ public class VariantFactoryImpl implements VariantFactory {
                 //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
+                .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())
                 .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())

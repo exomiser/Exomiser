@@ -47,7 +47,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "id", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation extends AbstractVariant implements Comparable<VariantEvaluation>, Filterable, Inheritable {
 
     //threshold over which a variant effect score is considered pathogenic
@@ -64,6 +64,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
+
+    private final String id;
 
     // VariantCoordinates variables - these are a minimal requirement for describing a variant
     private final String chromosomeName;
@@ -100,6 +102,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
         this.variantContext = builder.variantContext;
         this.altAlleleId = builder.altAlleleId;
+        this.id = builder.id;
         this.phredScore = builder.phredScore;
         // IMPORTANT! This map *MUST* be an ordered map
         this.sampleGenotypes = builder.sampleGenotypes.isEmpty() ? SINGLE_SAMPLE_HET_GENOTYPE
@@ -136,6 +139,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     public int getAltAlleleId() {
         return altAlleleId;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public double getPhredScore() {
@@ -570,6 +577,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 // VariantContext-derived fields
                 .variantContext(this.variantContext)
                 .altAlleleId(this.altAlleleId)
+                .id(this.id)
                 .sampleGenotypes(this.sampleGenotypes)
                 .quality(this.phredScore)
                 // Additional annotations
@@ -627,6 +635,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         private double phredScore = 0;
         private VariantContext variantContext;
         private int altAlleleId;
+        private String id = "";
         private Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
@@ -645,6 +654,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
         public Builder altAlleleId(int altAlleleId) {
             this.altAlleleId = altAlleleId;
+            return this;
+        }
+
+        public Builder id(String id) {
+            this.id = Objects.requireNonNullElse(id, "");
             return this;
         }
 
