@@ -106,8 +106,8 @@ public class VariantDataServiceImplTest {
                 .defaultPathogenicityDao(defaultPathogenicityDao)
                 .caddDao(mockCaddDao)
                 .remmDao(mockRemmDao)
-                .svFrequencyDao(svFrequencyDao)
-                .svPathogenicityDao(svPathogenicityDao)
+//                .svFrequencyDao(svFrequencyDao)
+//                .svPathogenicityDao(svPathogenicityDao)
                 .build();
     }
 
