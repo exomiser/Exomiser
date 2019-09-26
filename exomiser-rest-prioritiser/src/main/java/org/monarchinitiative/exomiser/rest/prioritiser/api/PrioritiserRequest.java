@@ -31,7 +31,7 @@ import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- * @since 13.0.0
+ * @since 12.1.0
  */
 @JsonDeserialize(builder = PrioritiserRequest.Builder.class)
 public class PrioritiserRequest {

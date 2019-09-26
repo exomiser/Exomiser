@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 12.1.0 2019-09-25
+- The JSON output now shows the id of the variantEvaluation taken from the VCF file.
+
 ## 12.0.0 2019-02-28
 This release contains significant diagnostic performance improvements due to the inclusion of a high-quality ClinVar whitelist and 'second generation' pathogenicity scores.
 
