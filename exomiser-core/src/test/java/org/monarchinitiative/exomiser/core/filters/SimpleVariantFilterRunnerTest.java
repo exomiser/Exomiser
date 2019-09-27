@@ -35,7 +35,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 
 import java.util.*;
 
@@ -51,9 +50,7 @@ import static org.monarchinitiative.exomiser.core.filters.FilterType.*;
 public class SimpleVariantFilterRunnerTest {
 
     private SimpleVariantFilterRunner instance;
-    
-    private VariantDataService variantDataService;
-    
+
     //Frequency run data
     private VariantFilter frequencyFilter;
     
@@ -99,7 +96,9 @@ public class SimpleVariantFilterRunnerTest {
                                            passesQualityFrequencyFilter, 
                                            passesTargetQualityFilter);
 
-        variantDataService = TestVariantDataService.builder().expectedFrequencyData(mockFrequencyData()).build();
+        VariantDataService variantDataService = TestVariantDataService.builder()
+                .expectedFrequencyData(mockFrequencyData())
+                .build();
         
         frequencyFilter = new FrequencyDataProvider(variantDataService, EnumSet.of(FrequencySource.UNKNOWN), new FrequencyFilter(1f));
         
@@ -107,8 +106,8 @@ public class SimpleVariantFilterRunnerTest {
     }
 
     private Map<Variant, FrequencyData> mockFrequencyData() {
-        FrequencyData passFrequency = FrequencyData.of(RsId.of(12345), Frequency.of(FrequencySource.UNKNOWN, 0.01f));
-        FrequencyData failFrequency = FrequencyData.of(RsId.of(54321), Frequency.of(FrequencySource.UNKNOWN, 100f));
+        FrequencyData passFrequency = FrequencyData.of("rs12345", Frequency.of(FrequencySource.UNKNOWN, 0.01f));
+        FrequencyData failFrequency = FrequencyData.of("rs54321", Frequency.of(FrequencySource.UNKNOWN, 100f));
 
         Map<Variant, FrequencyData> frequecyData = new HashMap<>();
         frequecyData.put(passesAllFilters, passFrequency);

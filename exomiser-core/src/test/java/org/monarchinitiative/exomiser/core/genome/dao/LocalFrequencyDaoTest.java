@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,7 +57,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private FrequencyData localFrequencyData(float freq) {
-        return FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, freq));
+        return FrequencyData.of(Frequency.of(FrequencySource.LOCAL, freq));
     }
 
     //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:

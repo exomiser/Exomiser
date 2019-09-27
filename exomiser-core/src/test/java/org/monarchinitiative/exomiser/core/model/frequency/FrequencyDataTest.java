@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -52,28 +52,29 @@ public class FrequencyDataTest {
     private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EUROPEAN_AMERICAN, PASS_FREQ);
     private static final Frequency DBSNP_PASS = Frequency.of(THOUSAND_GENOMES, PASS_FREQ);
 
-    private static final RsId RSID = RsId.of(12335);
+    private static final String RS_ID = "rs12335";
 
-    private static final FrequencyData FREQUENCY_DATA = FrequencyData.of(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
-    private static final FrequencyData RS_ID_ONLY_DATA = FrequencyData.of(RSID);
+    private static final FrequencyData FREQUENCY_DATA = FrequencyData.of(RS_ID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
+    private static final FrequencyData RS_ID_ONLY_DATA = FrequencyData.of(RS_ID);
     private static final FrequencyData EMPTY_DATA = FrequencyData.empty();
 
 
     @Test
     public void testEmptyData() {
-        assertThat(EMPTY_DATA.getRsId(), equalTo(RsId.empty()));
+        assertThat(EMPTY_DATA.getRsId(), equalTo(""));
         assertThat(EMPTY_DATA.getKnownFrequencies().isEmpty(), is(true));
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
     }
 
     @Test
-    public void testThrowsExceptionWithNullRsId() {
-        assertThrows(NullPointerException.class, () -> FrequencyData.of(null, Collections.emptyList()));
+    public void testReplacesNullRsIdWithEmptyValue() {
+        assertThat(FrequencyData.of(null, Collections.emptyList()), equalTo(FrequencyData.empty()));
+        assertThat(FrequencyData.of(Collections.emptyList()), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void testEmptyInputValuesReturnsEmpty() {
-        FrequencyData instance = FrequencyData.of(RsId.empty(), Collections.emptyList());
+        FrequencyData instance = FrequencyData.of();
         assertThat(instance, equalTo(FrequencyData.empty()));
     }
 
@@ -91,7 +92,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testSingleFrequencyValue() {
-        FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.of(FrequencySource.LOCAL, 0.001f));
+        FrequencyData localFrequency = FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 0.001f));
         assertThat(localFrequency.hasKnownFrequency(), is(true));
     }
 
@@ -102,12 +103,17 @@ public class FrequencyDataTest {
         listWithNull.add(null);
         listWithNull.add(ESP_ALL_PASS);
         listWithNull.add(Frequency.of(FrequencySource.LOCAL, 0.001f));
-        assertThrows(NullPointerException.class, () -> FrequencyData.of(RsId.empty(), listWithNull));
+        assertThrows(NullPointerException.class, () -> FrequencyData.of("", listWithNull));
     }
 
     @Test
     public void testGetRsId() {
-        assertThat(FREQUENCY_DATA.getRsId(), equalTo(RSID));
+        assertThat(FREQUENCY_DATA.getRsId(), equalTo(RS_ID));
+    }
+
+    @Test
+    public void testGetNonExistentFrequency() {
+        assertThat(EMPTY_DATA.getFrequencyForSource(THOUSAND_GENOMES), equalTo(null));
     }
 
     @Test
@@ -137,7 +143,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testRepresentedInDatabaseEspAllOnly() {
-        FrequencyData instance = FrequencyData.of(RsId.empty(), ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(ESP_ALL_PASS);
         assertThat(instance.isRepresentedInDatabase(), is(true));
     }
 
@@ -152,6 +158,11 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testHasNoDbSnpData() {
+        assertThat(EMPTY_DATA.hasDbSnpData(), is(false));
+    }
+
+    @Test
     public void testHasDbSnpRsIdTrue() {
         assertThat(RS_ID_ONLY_DATA.hasDbSnpRsID(), is(true));
     }
@@ -163,7 +174,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataTrue() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RS_ID, ESP_ALL_PASS);
         assertThat(instance.hasEspData(), is(true));
     }
 
@@ -174,26 +185,26 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataIsFalseWhenOnlyNonEspFrequenciesArePresent() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(EXAC_FINNISH, PASS_FREQ));
+        FrequencyData instance = FrequencyData.of(RS_ID, Frequency.of(EXAC_FINNISH, PASS_FREQ));
         assertThat(instance.hasEspData(), is(false));
     }
 
     @Test
     public void testHasEspDataIsTrueWhenOtherNonEspFrequenciesArePresent() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(THOUSAND_GENOMES, PASS_FREQ), ESP_AA_PASS, Frequency
+        FrequencyData instance = FrequencyData.of(RS_ID, Frequency.of(THOUSAND_GENOMES, PASS_FREQ), ESP_AA_PASS, Frequency
                 .of(EXAC_FINNISH, PASS_FREQ));
         assertThat(instance.hasEspData(), is(true));
     }
 
     @Test
     public void testHasExacDataTrue() {
-        FrequencyData instance = FrequencyData.of(RSID, Frequency.of(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, PASS_FREQ));
+        FrequencyData instance = FrequencyData.of(RS_ID, Frequency.of(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, PASS_FREQ));
         assertThat(instance.hasExacData(), is(true));
     }
 
     @Test
     public void testHasExacDataFalse() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RS_ID, ESP_ALL_PASS);
         assertThat(instance.hasExacData(), is(false));
     }
 
@@ -214,7 +225,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetKnownFrequencies() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = FrequencyData.of(RS_ID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
         expResult.add(ESP_AA_PASS);
@@ -226,7 +237,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetKnownFrequenciesIsImmutable() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
+        FrequencyData instance = FrequencyData.of(RS_ID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
         expResult.add(ESP_AA_PASS);
@@ -248,7 +259,7 @@ public class FrequencyDataTest {
     public void testGetMaxFreqWithData() {
         float maxFreq = 89.5f;
         Frequency maxFrequency = Frequency.of(UNKNOWN, maxFreq);
-        FrequencyData instance = FrequencyData.of(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = FrequencyData.of(RS_ID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
     }
 
@@ -271,7 +282,7 @@ public class FrequencyDataTest {
     public void testGetScoreCommonVariant() {
         float maxFreq = 100.0f;
         Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, maxFreq);
-        FrequencyData instance = FrequencyData.of(RSID, maxFrequency);
+        FrequencyData instance = FrequencyData.of(RS_ID, maxFrequency);
         assertThat(instance.getScore(), equalTo(0f));
     }
 
@@ -279,7 +290,7 @@ public class FrequencyDataTest {
     public void testGetScoreRareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.of(UNKNOWN, maxFreq);
-        FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);
+        FrequencyData instance = FrequencyData.of(maxFrequency);
         assertThat(instance.getScore(), equalTo(0.9857672f));
     }
 

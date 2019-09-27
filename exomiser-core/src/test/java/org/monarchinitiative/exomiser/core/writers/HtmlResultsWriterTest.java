@@ -42,7 +42,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
@@ -88,7 +87,7 @@ public class HtmlResultsWriterTest {
         TestVariantFactory varFactory = new TestVariantFactory();
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
-        fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of(RsId.of(123456), Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.01f)));
+        fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of("rs123456", Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.01f)));
         fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f), MutationTasterScore
                 .of(1f), SiftScore.of(0f), CaddScore.of(1f)));
         fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));

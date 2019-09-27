@@ -234,15 +234,10 @@
                                     <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                                         chr10:g.123256215T>G [0/1]</b>
                                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
-                                              th:if="not ${rsId.isEmpty()}">
-                                        <a th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
+                                              th:if="${#strings.startsWith(rsId,'rs')}">
+                                        <a th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${rsId}|}"
                                            th:text="${rsId}">rs141235720
                                         </a>
-                                        <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
-                                            (variation
-                                            viewer)
-                                        </a>
-                                        <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
                                     </th:block>
                                 </div>
                                 <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">

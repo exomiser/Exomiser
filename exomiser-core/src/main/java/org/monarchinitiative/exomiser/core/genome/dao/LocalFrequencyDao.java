@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -93,6 +92,6 @@ public class LocalFrequencyDao implements FrequencyDao {
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
         Frequency localFreq = Frequency.of(FrequencySource.LOCAL, value);
-        return FrequencyData.of(RsId.empty(), localFreq);
+        return FrequencyData.of(localFreq);
     }
 }

@@ -196,7 +196,6 @@ public class SvFrequencyDao implements FrequencyDao {
                 "  and POS_ONE <= ? + ?\n" +
                 "  and POS_TWO >= ? - ?\n" +
                 "  and POS_TWO <= ? + ?\n" +
-//                "  and SV_TYPE = ?\n" +
                 "  and AC != -1;";
 
         try (
@@ -212,7 +211,6 @@ public class SvFrequencyDao implements FrequencyDao {
             ps.setInt(7, margin);
             ps.setInt(8, variant.getEnd());
             ps.setInt(9, margin);
-//            ps.setString(10, variant.getStructuralType().getBaseType().toString());
 
             ResultSet rs = ps.executeQuery();
 
@@ -278,7 +276,7 @@ public class SvFrequencyDao implements FrequencyDao {
             this.length = length;
             this.svType = svType;
             this.source = source;
-            this.id = id;
+            this.id = ".".equals(id) ? "" : id;
             this.ac = ac;
             this.af = af;
         }
