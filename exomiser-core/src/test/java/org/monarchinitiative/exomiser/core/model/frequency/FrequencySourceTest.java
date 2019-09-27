@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,7 +74,13 @@ public class FrequencySourceTest {
                 FrequencySource.GNOMAD_G_FIN,
                 FrequencySource.GNOMAD_G_NFE,
                 FrequencySource.GNOMAD_G_OTH,
-                FrequencySource.GNOMAD_G_SAS
+                FrequencySource.GNOMAD_G_SAS,
+
+                FrequencySource.DBVAR,
+                FrequencySource.DECIPHER,
+                FrequencySource.DGV,
+                FrequencySource.GONL,
+                FrequencySource.GNOMAD_SV
         };
 
         assertThat(FrequencySource.values(), equalTo(values));
