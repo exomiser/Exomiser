@@ -163,7 +163,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 "  and POS_ONE <= ? + ?\n" +
                 "  and POS_TWO >= ? - ?\n" +
                 "  and POS_TWO <= ? + ?\n" +
-//                "  and SV_TYPE = ?\n" +
                 "  and CLNSIG != 'UNKNOWN';";
 
         try (
@@ -179,7 +178,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
             ps.setInt(7, margin);
             ps.setInt(8, variant.getEnd());
             ps.setInt(9, margin);
-//            ps.setString(10, variant.getStructuralType().getBaseType().toString());
 
             ResultSet rs = ps.executeQuery();
 
@@ -229,7 +227,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
             if (structuralType.getBaseType() == variant.getStructuralType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, svType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
                 svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
-
                 results.add(svResult);
             }
         }

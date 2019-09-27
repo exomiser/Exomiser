@@ -248,7 +248,6 @@ public class SvFrequencyDao implements FrequencyDao {
             if (structuralType.getBaseType() == variant.getStructuralType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, structuralType, source, id, ac, af);
                 svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
-
                 results.add(svResult);
             }
         }
