@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,21 +31,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -61,9 +57,18 @@ public class PrioritiserController {
     @Autowired
     public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService hg38GenomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = hg38GenomeAnalysisService.getKnownGeneIdentifiers().stream()
-                .filter(GeneIdentifier::hasEntrezId)
-                .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
+        Map<Integer, GeneIdentifier> map = new HashMap<>();
+        for (GeneIdentifier geneIdentifier : hg38GenomeAnalysisService.getKnownGeneIdentifiers()) {
+            // Don't add GeneIdentifiers without HGNC identifiers as these are superceeded by others with the same
+            // entrez id which will creat duplicate key errors and out of date gene symbols etc.
+            if (geneIdentifier.hasEntrezId() && !geneIdentifier.getHgncId().isEmpty()) {
+                GeneIdentifier previous = map.put(geneIdentifier.getEntrezIdAsInteger(), geneIdentifier);
+                if (previous != null) {
+                    logger.warn("Duplicate key added {} - was {}", geneIdentifier, previous);
+                }
+            }
+        }
+        this.geneIdentifiers = map;
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
@@ -72,7 +77,8 @@ public class PrioritiserController {
         return "This service will return a collection of prioritiser results for any given set of:" +
                 "\n\t - HPO identifiers e.g. HPO:00001" +
                 "\n\t - Entrez gene identifiers e.g. 23364" +
-                "\n\t - Specified prioritiser e.g. hiphive along with any prioritiser specific commands e.g. human,mouse,fish,ppi";
+                "\n\t - Specified prioritiser e.g. hiphive along with any prioritiser specific commands e.g. human,mouse,fish,ppi" +
+                "\n\t - limit the number of genes returned e.g. 10";
     }
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -82,27 +88,32 @@ public class PrioritiserController {
                                            @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
                                            @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
     ) {
+        PrioritiserRequest prioritiserRequest = PrioritiserRequest.builder()
+                .prioritiser(prioritiserName)
+                .prioritiserParams(prioritiserParams)
+                .genes(genesIds)
+                .phenotypes(phenotypes)
+                .limit(limit)
+                .build();
 
-        logger.info("phenotypes: {}({}) genes: {} prioritiser: {} prioritiser-params: {}", phenotypes, phenotypes.size(), genesIds, prioritiserName, prioritiserParams);
+        return prioritise(prioritiserRequest);
+    }
+
+    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public PrioritiserResultSet prioritise(@RequestBody PrioritiserRequest prioritiserRequest) {
+        logger.info("{}", prioritiserRequest);
 
         Instant start = Instant.now();
 
-        Prioritiser prioritiser = parsePrioritiser(prioritiserName, prioritiserParams);
-        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toImmutableList());
-        List<Gene> genes = makeGenesFromIdentifiers(genesIds);
-        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, uniquePhenotypes, genes, limit);
+        Prioritiser prioritiser = parsePrioritiser(prioritiserRequest.getPrioritiser(), prioritiserRequest.getPrioritiserParams());
+        List<Gene> genes = makeGenesFromIdentifiers(prioritiserRequest.getGenes());
+
+        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, prioritiserRequest.getPhenotypes(), genes, prioritiserRequest.getLimit());
 
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);
 
-        Map<String, String> params = new LinkedHashMap<>();
-        params.put("phenotypes", phenotypes.toString());
-        params.put("genes", genesIds.toString());
-        params.put("prioritiser", prioritiserName);
-        params.put("prioritiser-params", prioritiserParams);
-        params.put("limit", limit.toString());
-
-        return new PrioritiserResultSet(params, duration.toMillis(), results);
+        return new PrioritiserResultSet(prioritiserRequest, duration.toMillis(), results);
     }
 
     private Prioritiser parsePrioritiser(String prioritiserName, String prioritiserParams) {

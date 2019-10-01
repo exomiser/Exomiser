@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat;
 public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
-    public void genomeAnalysisService() throws Exception {
+    public synchronized void genomeAnalysisService() throws Exception {
 
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.local-frequency-path=../local/local_freq.tsv.gz");
 
@@ -61,7 +61,7 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
     }
 
     @Test
-    public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
+    public synchronized void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
 
         String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
