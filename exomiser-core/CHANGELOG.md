@@ -1,5 +1,11 @@
 # The Exomiser - Core Library Changelog
 
+## 12.1.0 2019-09-25
+- The JSON output now shows the id of the variantEvaluation taken from the VCF file.
+
+New APIs:
+- Added `VariantEvaluation.getId()` and `VariantEvaluation.Builder.id()` methods to store VCF id field contents.
+
 ## 12.0.0 2019-02-28
 Its Rare-Disease Day 2019! Although we're not officially releasing this on Feb 28, we're code-complete and undergoing final performance and quality tests, so it's as good as released. This was unplanned, and therefore proves that the universe can have a sense of humour/appropriateness.
 

@@ -35,12 +35,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -56,9 +57,18 @@ public class PrioritiserController {
     @Autowired
     public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService hg38GenomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = hg38GenomeAnalysisService.getKnownGeneIdentifiers().stream()
-                .filter(GeneIdentifier::hasEntrezId)
-                .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
+        Map<Integer, GeneIdentifier> map = new HashMap<>();
+        for (GeneIdentifier geneIdentifier : hg38GenomeAnalysisService.getKnownGeneIdentifiers()) {
+            // Don't add GeneIdentifiers without HGNC identifiers as these are superceeded by others with the same
+            // entrez id which will creat duplicate key errors and out of date gene symbols etc.
+            if (geneIdentifier.hasEntrezId() && !geneIdentifier.getHgncId().isEmpty()) {
+                GeneIdentifier previous = map.put(geneIdentifier.getEntrezIdAsInteger(), geneIdentifier);
+                if (previous != null) {
+                    logger.warn("Duplicate key added {} - was {}", geneIdentifier, previous);
+                }
+            }
+        }
+        this.geneIdentifiers = map;
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
@@ -72,8 +82,8 @@ public class PrioritiserController {
     }
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") Set<String> phenotypes,
-                                           @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
+    public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") List<String> phenotypes,
+                                           @RequestParam(value = "genes", required = false, defaultValue = "") List<Integer> genesIds,
                                            @RequestParam(value = "prioritiser") String prioritiserName,
                                            @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
                                            @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
@@ -121,7 +131,7 @@ public class PrioritiserController {
         }
     }
 
-    private List<Gene> makeGenesFromIdentifiers(Collection<Integer> genesIds) {
+    private List<Gene> makeGenesFromIdentifiers(List<Integer> genesIds) {
         if (genesIds.isEmpty()) {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.

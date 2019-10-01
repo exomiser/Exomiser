@@ -48,7 +48,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "id", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
 
     //threshold over which a variant effect score is considered pathogenic
@@ -61,6 +61,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
+
+    private final String id;
 
     // VariantCoordinates variables - these are a minimal requirement for describing a variant
     private final GenomeAssembly genomeAssembly;
@@ -106,6 +108,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         ref = builder.ref;
         alt = builder.alt;
 
+        this.id = builder.id;
         phredScore = builder.phredScore;
         variantEffect = builder.variantEffect;
         annotations = ImmutableList.copyOf(builder.annotations);
@@ -181,6 +184,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public int getAltAlleleId() {
         return altAlleleId;
+    }
+
+    /**
+     * An identifier for the variant. Note that this is implementation specific and can be any value. Typically it will
+     * be derived from the initial VCF id field.
+     *
+     * @return the id of the variant
+     * @since 12.1.0
+     */
+    public String getId() {
+        return id;
     }
 
     public double getPhredScore() {
@@ -644,6 +658,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private String vcfString;
         private VariantContext variantContext;
         private int altAlleleId;
+        private String id = "";
         private Map<String,SampleGenotype> sampleGenotypes = ImmutableMap.of();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
@@ -717,6 +732,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         public Builder altAlleleId(int altAlleleId) {
             this.altAlleleId = altAlleleId;
+            return this;
+        }
+
+        public Builder id(String id) {
+            this.id = Objects.requireNonNull(id);
             return this;
         }
 
