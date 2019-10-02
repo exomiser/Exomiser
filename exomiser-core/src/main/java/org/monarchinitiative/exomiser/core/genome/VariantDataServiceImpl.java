@@ -21,11 +21,10 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
-import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
-import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
-import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -36,6 +35,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySour
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,10 @@ public class VariantDataServiceImpl implements VariantDataService {
     private final PathogenicityDao remmDao;
     private final PathogenicityDao testPathScoreDao;
 
+    // Structural variant data sources
+    private final FrequencyDao svFrequencyDao;
+    private final PathogenicityDao svPathogenicityDao;
+
     private VariantDataServiceImpl(Builder builder) {
 
         this.whiteList = builder.variantWhiteList;
@@ -73,6 +78,36 @@ public class VariantDataServiceImpl implements VariantDataService {
         this.caddDao = builder.caddDao;
         this.remmDao = builder.remmDao;
         this.testPathScoreDao = builder.testPathScoreDao;
+
+        var testSv = false;
+        if (testSv) {
+            DataSource svDataSource = svDataSource();
+            this.svFrequencyDao = new SvFrequencyDao(svDataSource);
+            this.svPathogenicityDao = new SvPathogenicityDao(svDataSource);
+        } else {
+            this.svFrequencyDao = builder.svFrequencyDao;
+            this.svPathogenicityDao = builder.svPathogenicityDao;
+        }
+    }
+
+    // temporary hack
+    private HikariDataSource svDataSource() {
+        Path dbPath = Path.of("/Users/hhx640/Documents/sv_build/hg19_sv_database");
+//        Path dbPath = Path.of("/Users/damiansmedley/exomiser-data/hg19_sv_database");
+
+        String startUpArgs = ";SCHEMA=PBGA;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
+
+        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
+
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName("org.h2.Driver");
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername("sa");
+        config.setPassword("");
+        config.setMaximumPoolSize(3);
+        config.setPoolName("exomiser-sv");
+        logger.debug("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
+        return new HikariDataSource(config);
     }
 
     @Override
@@ -84,7 +119,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
 
         if (variant.isStructuralVariant()) {
-            return FrequencyData.empty();
+            return svFrequencyDao.getFrequencyData(variant);
         }
         // This could be run alongside the pathogenicities as they are all stored in the same datastore
         FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
@@ -108,7 +143,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
 
         if (variant.isStructuralVariant()) {
-            return PathogenicityData.empty();
+            return svPathogenicityDao.getPathogenicityData(variant);
         }
 
         // This could be run alongside the frequencies as they are all stored in the same datastore
@@ -179,6 +214,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         private PathogenicityDao remmDao;
         private PathogenicityDao testPathScoreDao;
 
+        private FrequencyDao svFrequencyDao = new StubFrequencyDao();
+        private PathogenicityDao svPathogenicityDao = new StubPathogenicityDao();
+
         public Builder variantWhiteList(VariantWhiteList variantWhiteList) {
             this.variantWhiteList = variantWhiteList;
             return this;
@@ -214,9 +252,32 @@ public class VariantDataServiceImpl implements VariantDataService {
             return this;
         }
 
+        public Builder svFrequencyDao(FrequencyDao svFrequencyDao) {
+            this.svFrequencyDao = svFrequencyDao;
+            return this;
+        }
+
+        public Builder svPathogenicityDao(PathogenicityDao svPathogenicityDao) {
+            this.svPathogenicityDao = svPathogenicityDao;
+            return this;
+        }
+
         public VariantDataServiceImpl build() {
             return new VariantDataServiceImpl(this);
         }
     }
 
+    private static class StubFrequencyDao implements FrequencyDao {
+        @Override
+        public FrequencyData getFrequencyData(Variant variant) {
+            return FrequencyData.empty();
+        }
+    }
+
+    private static class StubPathogenicityDao implements PathogenicityDao {
+        @Override
+        public PathogenicityData getPathogenicityData(Variant variant) {
+            return PathogenicityData.empty();
+        }
+    }
 }

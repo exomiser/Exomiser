@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.StructuralType;
@@ -34,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -53,27 +50,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
     private final DataSource svDataSource;
 
-    public SvPathogenicityDao() {
-        this.svDataSource = new HikariDataSource(svDataSourceConfig());
-    }
-
-    private HikariConfig svDataSourceConfig() {
-        Path dbPath = Path.of("C:/Users/hhx640/Documents/sv_build/hg19_sv_database");
-//        Path dbPath = Path.of("/Users/damiansmedley/exomiser-data/hg19_sv_database");
-
-        String startUpArgs = ";SCHEMA=PBGA;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setMaximumPoolSize(3);
-        config.setPoolName(String.format("exomiser-sv-path"));
-        logger.debug("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
-        return config;
+    public SvPathogenicityDao(DataSource svDataSource) {
+        this.svDataSource = svDataSource;
     }
 
     @Override
