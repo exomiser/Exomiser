@@ -30,7 +30,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public abstract class VariantEffectPathogenicityScore {
+public final class VariantEffectPathogenicityScore {
 
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)
@@ -85,17 +85,9 @@ public abstract class VariantEffectPathogenicityScore {
     }
 
     public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
-        if (variantEffect == VariantEffect.SEQUENCE_VARIANT) {
-            // no effect annotated
-            return NON_PATHOGENIC_SCORE; 
-        }
-        // highest priority effect
-        // guard against the case that the highest-impact effect is neither high nor moderate
-        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal()) {
-             // neither HIGH nor MODERATE
-            return NON_PATHOGENIC_SCORE;
-        }
         switch (variantEffect) {
+            case SEQUENCE_VARIANT:
+                return NON_PATHOGENIC_SCORE;
             case MISSENSE_VARIANT:
                 return DEFAULT_MISSENSE_SCORE;
             case SYNONYMOUS_VARIANT:
