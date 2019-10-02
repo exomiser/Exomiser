@@ -204,8 +204,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
         return variantEvaluation -> {
-            // need a nicer API for this.
-            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotypes().getOrDefault(probandSample.getId(), SampleGenotype.empty());
+            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandSample.getId());
             // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously
             // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
             return probandGenotype.getCalls().contains(AlleleCall.ALT);
