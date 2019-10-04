@@ -80,11 +80,11 @@ public class ChromosomalRegionUtil {
         if (x.getEnd() < y.getStart() || y.getEnd() < x.getStart()) {
             return 0;
         }
-        return Math.min(x.getEnd(), y.getEnd()) - Math.max(x.getStart(), y.getStart());
+        return Math.max(Math.min(x.getEnd(), y.getEnd()) - Math.max(x.getStart(), y.getStart()), 1);
     }
 
     // returns zero-based length
     private static int length(ChromosomalRegion region) {
-        return region.getEnd() - region.getStart();
+        return Math.max(region.getEnd() - region.getStart(), 1);
     }
 }

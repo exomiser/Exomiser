@@ -67,6 +67,28 @@ class ChromosomalRegionUtilTest {
     }
 
     @Test
+    void testJaccardInsertionOfLengthZeroWithNoGivenLength() {
+        // esv3304209 is an INS_ME with no length in DGV (DGV does not contain length information)
+        // this is represented in the DBVAR table as:
+        // DGV_VARIANTS:
+        // 10	23037996	23037996	CNV	MOBILE_ELEMENT_INSERTION	esv3304209	20981092	OLIGO_ACGH,DIGITAL_ARRAY,PCR,SEQUENCING	185	10	0
+        // DGV file:
+        // esv3304209	10	23037995	23037996	CNV	mobile element insertion	1000_Genomes_Consortium_Pilot_Project	20981092 Digital array,Oligo aCGH,PCR,Sequencing	essv7754847,essv7752925,essv7749293,essv7742151,essv7741351,essv7759021,essv7750468,essv7759990,essv7743888,essv7741543                                                                                        M        185     10      0               ""      NA18501,NA18502,NA18505,NA18508,NA18511,NA18519,NA18856,NA18861,NA18871,NA19257
+        // DBVAR_VARIANTS:
+        // 10	23037995	10	23037996	300	INS	0,0	0,0	essv7741351	-1	NaN	UNKNOWN	not_provided	""	true	false	""		""	UNKNOWN
+        // DBVAR VCF:
+        // 10	23037995	essv7741351	A	<INS:ME>	.	.	DBVARID;SVTYPE=INS;CIPOS=-32,32;CIEND=-32,32;IMPRECISE;END=23037996;SVLEN=300;EXPERIMENT=129;SAMPLE=NA18871;REGIONID=esv3304209
+        ChromosomalRegion insMe = new GeneticInterval(10, 23037996, 23037996);
+        assertThat(ChromosomalRegionUtil.jaccard(insMe, insMe), equalTo(1.0));
+    }
+
+    @Test
+    void testJaccardInsertionOfLengthOneWithNoGivenLength() {
+        ChromosomalRegion insMe = new GeneticInterval(10, 23037995, 23037996);
+        assertThat(ChromosomalRegionUtil.jaccard(insMe, insMe), equalTo(1.0));
+    }
+
+    @Test
     void bondaryCalcThrowsExceptionWithZeroValueInput() {
         ChromosomalRegion region = new GeneticInterval(1, 1, 100);
         assertThrows(IllegalArgumentException.class, () -> ChromosomalRegionUtil.getBoundaryMargin(region, -0.1));
