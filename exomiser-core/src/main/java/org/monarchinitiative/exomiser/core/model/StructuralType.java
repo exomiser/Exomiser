@@ -56,7 +56,16 @@ public enum StructuralType {
     INV,
     CNV,
     BND,
-    // Non-canonical types used by other progs
+
+    // Non-canonical types used by other progs,
+
+    // Canvas CNV types see: https://github.com/Illumina/canvas/wiki#output
+    // These are found in the ID field: Canvas:GAIN,  Canvas:LOSS,  Canvas:LOH,  Canvas:COMPLEX
+    // the SVTYPE=CNV
+    CNV_GAIN(CNV),
+    CNV_LOSS(CNV),
+    CNV_LOH(CNV),
+    CNV_COMPLEX(CNV),
 
     //STR - Short Tandem Repeat from ExpansionHunter
     STR,
@@ -136,7 +145,7 @@ public enum StructuralType {
             case "DUP:INV-BEFORE":
                 return DUP_INV_BEFORE;
             case "DUP:INV-AFTER":
-                 return DUP_INV_AFTER;
+                return DUP_INV_AFTER;
         }
         // in other cases where we don't recognise the exact type, use the closest type or sub-type
         // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN

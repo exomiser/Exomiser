@@ -91,4 +91,12 @@ class StructuralTypeTest {
         assertThat(StructuralType.UNKNOWN.isStructural(), is(true));
         assertThat(StructuralType.NON_STRUCTURAL.isStructural(), is(false));
     }
+
+    @Test
+    void testBaseTypeForCanvasTypes() {
+        assertThat(StructuralType.CNV_GAIN.getBaseType(), equalTo(StructuralType.CNV));
+        assertThat(StructuralType.CNV_LOSS.getBaseType(), equalTo(StructuralType.CNV));
+        assertThat(StructuralType.CNV_LOH.getBaseType(), equalTo(StructuralType.CNV));
+        assertThat(StructuralType.CNV_COMPLEX.getBaseType(), equalTo(StructuralType.CNV));
+    }
 }
