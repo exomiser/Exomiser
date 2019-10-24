@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,10 @@ package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 
 
@@ -83,7 +82,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     }
 
     private Function<PhenotypeMatch, String> makeKey() {
-        return match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId());
+        return match -> KeyGenerator.forwardKey(match.getQueryPhenotypeId(), match.getMatchPhenotypeId());
     }
 
     @Override
@@ -120,13 +119,12 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
      */
     @Override
     public PhenodigmMatchRawScore matchPhenotypeIds(List<String> modelPhenotypes) {
+        return getPhenodigmMatchRawScoreNew(modelPhenotypes);
+    }
+
+    private PhenodigmMatchRawScore getPhenodigmMatchRawScoreOriginal(List<String> modelPhenotypes) {
         // Could be HP, MP or ZP id
-        List<String> matchedModelPhenotypeIds = new ArrayList<>();
-        for (String modelPhenotype : modelPhenotypes) {
-            if (matchedOrganismPhenotypeIds.contains(modelPhenotype)) {
-                matchedModelPhenotypeIds.add(modelPhenotype);
-            }
-        }
+        List<String> matchedModelPhenotypeIds = getMatchedModelPhenotypeIds(modelPhenotypes);
 
         // return values
         double maxModelMatchScore = 0;
@@ -178,69 +176,124 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 .copyOf(bestPhenotypeMatchForTerms.values()));
     }
 
+    private PhenodigmMatchRawScore getPhenodigmMatchRawScoreNew(List<String> modelPhenotypes) {
+        // Could be HP, MP or ZP id
+        List<String> matchedModelPhenotypeIds = getMatchedModelPhenotypeIds(modelPhenotypes);
+
+        // return values
+        double maxModelMatchScore = 0;
+        double sumModelBestMatchScores = 0;
+        Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms = new LinkedHashMap<>();
+
+        List<PhenotypeMatch> bestForwardReverseMatches = findBestForwardAndReverseMatches(matchedModelPhenotypeIds);
+        for (PhenotypeMatch match : bestForwardReverseMatches) {
+            double score = match.getScore();
+            if (score > 0) {
+                addMatchIfAbsentOrBetterThanCurrent(match, bestPhenotypeMatchForTerms);
+                maxModelMatchScore = Math.max(score, maxModelMatchScore);
+                sumModelBestMatchScores += score;
+            }
+        }
+
+        return new PhenodigmMatchRawScore(maxModelMatchScore, sumModelBestMatchScores, matchedModelPhenotypeIds, ImmutableList
+                .copyOf(bestPhenotypeMatchForTerms.values()));
+    }
+
+    private List<String> getMatchedModelPhenotypeIds(List<String> modelPhenotypes) {
+        List<String> matchedModelPhenotypeIds = new ArrayList<>();
+        for (String modelPhenotype : modelPhenotypes) {
+            if (matchedOrganismPhenotypeIds.contains(modelPhenotype)) {
+                matchedModelPhenotypeIds.add(modelPhenotype);
+            }
+        }
+        return matchedModelPhenotypeIds;
+    }
+
     private void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match, Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms) {
         PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
-        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || bestPhenotypeMatchForTerms.get(matchQueryTerm)
-                .getScore() < match.getScore()) {
+        PhenotypeMatch currentBestMatch = bestPhenotypeMatchForTerms.get(matchQueryTerm);
+        if (currentBestMatch == null || currentBestMatch.getScore() < match.getScore()) {
             bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
         }
     }
 
-    /**
-     * @param modelPhenotypes
-     * @return
-     */
-    List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
-        List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
-                .filter(matchedOrganismPhenotypeIds::contains)
-                .collect(toList());
+    List<PhenotypeMatch> findBestForwardAndReverseMatches(List<String> matchedModelPhenotypeIds) {
+        // This is about 20% faster than the original implementation, is easier for the compiler to optimise and less
+        // repetitive. Doing this with streams is about 2x slower.
+        // Based on running the Pfeiffer sample three times in succession and averaging over 5 runs, time in ms
+        // 9009 human, 37522 mouse, 3157 fish models.
+        // Original implementation: 120,115,9 | 63,79,10 | 39,61,5
+        // New implementation:       98,99,10 | 60,52,15 | 29,48,8
+        List<PhenotypeMatch> bestForwardReverseMatches = new ArrayList<>();
+        // find forward matches: query-model
+        findForwardMatches(matchedModelPhenotypeIds, bestForwardReverseMatches);
+        // find reverse matches: model-query
+        findReverseMatches(matchedModelPhenotypeIds, bestForwardReverseMatches);
+        return bestForwardReverseMatches;
+    }
 
-        //loop - 191, 206, 211, 293, 260, 221, 229, 247, 203, 204. (226 ms)
-        //stream - 1208, 773, 1231, 799, 655, 566, 467, 1037, 792, 722. (825 ms)
-        //This takes ~0.7 secs compared to ~0.2 secs using the original loop implementation, although it is now returning
-        //the values. Can it be made faster? Do we care?
-        List<PhenotypeMatch> forwardMatches = matchedQueryPhenotypeIds.stream()
-                .map(hp -> matchedModelPhenotypeIds.stream()
-                        .map(mp -> String.join("", hp, mp))
-                        .map(mappedTerms::get)
-                        .filter(Objects::nonNull)
-                        .max(comparingDouble(PhenotypeMatch::getScore)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+    private void findForwardMatches(List<String> matchedModelPhenotypeIds, List<PhenotypeMatch> bestForwardReverseMatches) {
+        for (String hp : matchedQueryPhenotypeIds) {
+            PhenotypeMatch best = getBestPhenotypeMatch(hp, matchedModelPhenotypeIds, KeyGenerator.FORWARD);
+            if (best != null) {
+                bestForwardReverseMatches.add(best);
+            }
+        }
+    }
 
-        //CAUTION!!! This looks very similar to the forward match statement but there are several important differences...
-        List<PhenotypeMatch> reciprocalMatches = matchedModelPhenotypeIds.stream()
-                .map(mp -> matchedQueryPhenotypeIds.stream()
-                        .map(hp -> String.join("", hp, mp))
-                        .map(mappedTerms::get)
-                        .filter(Objects::nonNull)
-                        .max(comparingDouble(PhenotypeMatch::getScore)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+    private void findReverseMatches(List<String> matchedModelPhenotypeIds, List<PhenotypeMatch> bestForwardReverseMatches) {
+        for (String mp : matchedModelPhenotypeIds) {
+            PhenotypeMatch best = getBestPhenotypeMatch(mp, matchedQueryPhenotypeIds, KeyGenerator.REVERSE);
+            if (best != null) {
+                bestForwardReverseMatches.add(best);
+            }
+        }
+    }
 
-        //why turn the lists back into streams when they were streams to start with?
-        return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream())
-                .collect(ImmutableList.toImmutableList());
+    @Nullable
+    private PhenotypeMatch getBestPhenotypeMatch(String hp, Iterable<String> matchedModelPhenotypeIds, KeyGenerator keyGenerator) {
+        PhenotypeMatch best = null;
+        for (String mp : matchedModelPhenotypeIds) {
+            // mapped terms are indexed with hp-model phenotype keys. The similarity is reflexive so we just need to generate the
+            // correct key depending on which way were comparing the terms. This is handled by the relevant KeyGenerator.
+            String key = keyGenerator.getKey(hp, mp);
+            PhenotypeMatch match = mappedTerms.get(key);
+            if (match != null) {
+                if (best == null || match.getScore() > best.getScore()) {
+                    best = match;
+                }
+            }
+        }
+        return best;
     }
 
     /**
-     * Calculates the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches.     *
-     *
-     * @param bestForwardAndReciprocalMatches
-     * @return A list of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
+     * Generates keys for the mappedTerms map by concatenating the input values in the order defined in the implementation.
      */
-    List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
-        Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches
-                .stream()
-                .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
+    private interface KeyGenerator {
 
-        return bestOptionalPhenotypeMatchForTerms.values()
-                .stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+        KeyGenerator FORWARD = new ForwardKeyGenerator();
+        KeyGenerator REVERSE = new ReverseKeyGenerator();
+
+        String getKey(String a, String b);
+
+        static String forwardKey(String a, String b) {
+            return FORWARD.getKey(a, b);
+        }
+    }
+
+    private static class ForwardKeyGenerator implements KeyGenerator {
+        @Override
+        public String getKey(String a, String b) {
+            return a + b;
+        }
+    }
+
+    private static class ReverseKeyGenerator implements KeyGenerator {
+        @Override
+        public String getKey(String a, String b) {
+            return b + a;
+        }
     }
 
     @Override
