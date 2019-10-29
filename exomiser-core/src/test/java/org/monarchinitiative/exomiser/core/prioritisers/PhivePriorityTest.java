@@ -59,7 +59,7 @@ public class PhivePriorityTest {
     private Map<String, Double> expectedMouseScores() {
         Map<String, Double> expectedScores = new HashMap<>();
         expectedScores.put("FGFR2", 0.8278620340423056);
-        expectedScores.put("ROR2", 0.6999088391144016);
+        expectedScores.put("ROR2", 0.6999088391144017);
         expectedScores.put("FREM2", 0.6208762175615226);
         expectedScores.put("ZNF738", 0.6000000238418579);
         return expectedScores;
