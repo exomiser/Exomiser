@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.impl.intervals.IntervalEndExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -96,6 +97,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return !getRegionsOverlappingPosition(chromosome, position).isEmpty();
     }
 
+    @Nonnull
     public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
         int chromosome = variantCoordinates.getChromosome();
         int position = variantCoordinates.getStart();
@@ -109,13 +111,15 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
      * @param position
      * @return
      */
+    @Nonnull
     public List<T> getRegionsOverlappingPosition(int chromosome, int position) {
         IntervalArray<T> intervalTree = index.get(chromosome);
         if (intervalTree == null) {
             return Collections.emptyList();
         }
         IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
-        return queryResult.getEntries();
+        List<T> entries = queryResult.getEntries();
+        return (entries == null) ? Collections.emptyList() : entries;
     }
 
     /**
