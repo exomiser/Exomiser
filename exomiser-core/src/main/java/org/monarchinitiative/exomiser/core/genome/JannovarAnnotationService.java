@@ -28,11 +28,11 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
+import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
 import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +108,7 @@ public class JannovarAnnotationService {
         return VariantAnnotations.buildEmptyList(genomeVariant);
     }
 
-    public SVAnnotations annotateStructuralVariant(StructuralType structuralType, String alt, String startContig, int startPos, List<Integer> startCiIntervals, String endContig, int endPos, List<Integer> endCiIntervals) {
+    public SVAnnotations annotateStructuralVariant(StructuralType structuralType, String alt, String startContig, int startPos, ConfidenceInterval startCiIntervals, String endContig, int endPos, ConfidenceInterval endCiIntervals) {
         GenomePosition start = buildGenomePosition(startContig, startPos);
         GenomePosition end = buildGenomePosition(endContig, endPos);
 
@@ -131,36 +131,36 @@ public class JannovarAnnotationService {
         return SVAnnotations.buildEmptyList(svGenomeVariant);
     }
 
-    private SVGenomeVariant buildSvGenomeVariant(StructuralType structuralType, String alt, GenomePosition start, List<Integer> startCiIntervals, GenomePosition end, List<Integer> endCiIntervals) {
+    private SVGenomeVariant buildSvGenomeVariant(StructuralType structuralType, String alt, GenomePosition start, ConfidenceInterval startCiIntervals, GenomePosition end, ConfidenceInterval endCiIntervals) {
 
-        int lowerCiStart = startCiIntervals.get(0);
-        int upperCiStart = startCiIntervals.get(1);
+        int startCiLower = startCiIntervals.getLowerBound();
+        int startCiUpper = startCiIntervals.getUpperBound();
 
-        int lowerCiEnd = endCiIntervals.get(0);
-        int upperCiEnd = endCiIntervals.get(1);
+        int endCiLower = endCiIntervals.getLowerBound();
+        int endCiUpper = endCiIntervals.getUpperBound();
 
         StructuralType svSubType = structuralType.getSubType();
         switch (svSubType) {
             case DEL:
-                return new SVDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case DEL_ME:
-                return new SVMobileElementDeletion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case DUP:
-                return new SVDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case DUP_TANDEM:
-                return new SVTandemDuplication(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case INS:
-                return new SVInsertion(start, lowerCiStart, upperCiStart);
+                return new SVInsertion(start, startCiLower, startCiUpper);
             case INS_ME:
-                return new SVMobileElementInsertion(start, lowerCiStart, upperCiStart);
+                return new SVMobileElementInsertion(start, startCiLower, startCiUpper);
             case INV:
-                return new SVInversion(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case CNV:
-                return new SVCopyNumberVariant(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             case BND:
-                return buildBreakendVariant(alt, start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return buildBreakendVariant(alt, start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
             default:
-                return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+                return new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
         }
     }
 

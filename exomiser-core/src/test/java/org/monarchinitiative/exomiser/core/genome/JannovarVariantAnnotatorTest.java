@@ -319,27 +319,6 @@ public class JannovarVariantAnnotatorTest {
     }
 
     @Test
-    void testAnnotateStructuralVariant() {
-        // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
-        // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        List<VariantAnnotation> annotations = instance.annotateStructuralVariant(StructuralType.DEL, "T", "<DEL>", "10", 123237843, ImmutableList.of(0, 0), "10", 123357972, ImmutableList.of(0, 0), 120129);
-        assertThat(annotations.size(), equalTo(1));
-
-        VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
-        assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getStart(), equalTo(123237843));
-        assertThat(variantAnnotation.getEnd(), equalTo(123357972));
-        assertThat(variantAnnotation.getLength(), equalTo(120129));
-        assertThat(variantAnnotation.getRef(), equalTo("T"));
-        assertThat(variantAnnotation.getAlt(), equalTo("<DEL>"));
-        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
-    }
-
-    @Test
     void testTwoOverlappingGenesModerateImpact() {
         // These two transcripts are for two overlapping genes on GRCh38
         // Region view - http://www.ensembl.org/Homo_sapiens/Location/View?db=core;g=ENSG00000258947;r=16:89916965-89942476;t=ENST00000315491

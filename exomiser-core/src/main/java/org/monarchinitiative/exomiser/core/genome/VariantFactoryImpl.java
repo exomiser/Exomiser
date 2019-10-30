@@ -30,9 +30,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -40,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +56,10 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactoryImpl.class);
 
-    private final VariantAnnotator variantAnnotator;
+    private final VariantContextAnnotator variantContextAnnotator;
 
     public VariantFactoryImpl(VariantAnnotator variantAnnotator) {
-        this.variantAnnotator = variantAnnotator;
+        this.variantContextAnnotator = new VariantContextAnnotator(variantAnnotator);
     }
 
     @Override
@@ -111,63 +110,21 @@ public class VariantFactoryImpl implements VariantFactory {
      * VariantContext and VariantAnnotations for a given alternative allele.
      */
     private List<VariantEvaluation> buildVariantEvaluations(VariantContext variantContext, int altAlleleId, Allele altAllele) {
-        List<VariantAnnotation> variantAnnotations = annotateVariantAllele(variantContext, altAllele);
-
-        // symbolic alleles are reported as VariantEffect.STRUCTURAL_VARIANT
+        // It is possible for a variant to overlap two or more genes (see issue https://github.com/exomiser/Exomiser/issues/294)
+        // so we're expecting a single gene per variant annotation which might have different variant consequences and different
+        // phenotypes for each gene
+        List<VariantAnnotation> variantAnnotations = variantContextAnnotator.annotateAllele(variantContext, altAllele);
 
         // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
         // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
         // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
         // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
-        ImmutableList.Builder<VariantEvaluation> variantEvaluations = new ImmutableList.Builder<>();
+        List<VariantEvaluation> variantEvaluations = new ArrayList<>(variantAnnotations.size());
         for (VariantAnnotation variantAnnotation : variantAnnotations) {
             VariantEvaluation variantEvaluation = buildVariantEvaluation(variantContext, altAlleleId, altAllele, variantAnnotation);
             variantEvaluations.add(variantEvaluation);
         }
-        return variantEvaluations.build();
-    }
-
-    // It is possible for a variant to overlap two or more genes (see issue https://github.com/exomiser/Exomiser/issues/294)
-    // so we're expecting a single gene per variant annotation which might have different variant consequences and different
-    // phenotypes for each gene
-    private List<VariantAnnotation> annotateVariantAllele(VariantContext variantContext, Allele altAllele) {
-        String contig = variantContext.getContig();
-        int start = variantContext.getStart();
-        String ref = variantContext.getReference().getBaseString();
-        // Structural variants are 'symbolic' in that they have no actual reported bases
-        String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
-
-        StructuralType structuralType = detectAlleleVariantType(variantContext, altAllele);
-        if (structuralType.isStructural()) {
-            String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
-            int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
-            List<Integer> startCi = getCiListOrDefault(variantContext, "CIPOS", ImmutableList.of(0, 0));
-            List<Integer> endCi = getCiListOrDefault(variantContext, "CIEND", ImmutableList.of(0, 0));
-            int length = Math.abs(variantContext.getAttributeAsInt("SVLEN", end - start));
-//            logger.info("Annotating {}: {} {} {} {} {} {} {} {} {}", structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
-            return variantAnnotator.annotateStructuralVariant(structuralType, ref, alt, contig, start, startCi, endContig, end, endCi, length);
-        }
-
-        return variantAnnotator.annotate(contig, start, ref, alt);
-    }
-
-    private StructuralType detectAlleleVariantType(VariantContext variantContext, Allele altAllele) {
-        // WARNING! variantContext.getStructuralVariantType() IS NOT SAFE! It throws the following exception:
-        //  java.lang.IllegalArgumentException: No enum constant htsjdk.variant.variantcontext.StructuralVariantType.SVA
-        //  for the line
-        //  22   16918023    esv3647185  C   <INS:ME:SVA>    100 PASS    SVLEN=1312;SVTYPE=SVA;TSD=AAAAATACAAAAATTTGC;VT=SV   GT  0|1
-        if (altAllele.isSymbolic()){
-            String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, null);
-            // SV types should not be SMALL so try parsing the alt allele if the SVTYPE field isn't recognised (as in the case of ALU, LINE, SVA from 1000 genomes)
-            StructuralType parseValue = StructuralType.parseValue(altAllele.getDisplayString());
-            return parseValue == StructuralType.UNKNOWN ? StructuralType.parseValue(svTypeString) : parseValue;
-        }
-        return StructuralType.NON_STRUCTURAL;
-    }
-
-    private List<Integer> getCiListOrDefault(VariantContext variantContext, String cipos, List<Integer> defaultValue) {
-        List<Integer> ciList = variantContext.getCommonInfo().getAttributeAsIntList(cipos, -1);
-        return ciList.isEmpty() ? defaultValue : ciList;
+        return variantEvaluations;
     }
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele, VariantAnnotation variantAnnotation) {
