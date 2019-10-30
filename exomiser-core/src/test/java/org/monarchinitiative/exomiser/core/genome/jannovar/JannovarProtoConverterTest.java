@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -49,5 +49,10 @@ public class JannovarProtoConverterTest {
         // can't easily test getChromosomes() method as the underlying classes don't override equals() or hashCode()
         // given they are derived from the TranscriptModels and these have been asserted as equal we'll assume that we've
         // tested enough
+    }
+
+    @Test
+    void testTrimDuplicatedVersionFromEnst() {
+        assertThat(JannovarProtoConverter.trimDuplicatedEnsemblVersion("ENST00000523072.11.11"), equalTo("ENST00000523072.11"));
     }
 }

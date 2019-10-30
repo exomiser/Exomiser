@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
@@ -33,8 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.toSet;
+import java.util.regex.Pattern;
 
 /**
  * Ser/de-serialiser for JannovarData to/from protobuf.
@@ -56,12 +56,14 @@ public class JannovarProtoConverter {
         logger.debug("Converted referenceDictionary with {} contigs", protoReferenceDictionary.getContigNameToIdCount());
 
         Map<String, TranscriptModel> transcriptModelsByAccession = jannovarData.getTmByAccession();
-        Set<TranscriptModel> uniqueTranscriptModels = new HashSet<>(transcriptModelsByAccession.values());
-        logger.debug("Converting transcript models...");
+        Set<TranscriptModel> uniqueTranscriptModels = new TreeSet<>(transcriptModelsByAccession.values());
+        logger.debug("Converting {} transcript models...", uniqueTranscriptModels.size());
+        // sorting and preserving the order leads to much smaller files (~30% of original size) with identical sizes each run.
         Set<JannovarProto.TranscriptModel> protoTranscriptModels = uniqueTranscriptModels
                 .parallelStream()
+                .sorted()
                 .map(toProtoTranscriptModel())
-                .collect(toSet());
+                .collect(ImmutableSet.toImmutableSet());
         logger.debug("Added {} transcript models", protoTranscriptModels.size());
 
         return JannovarProto.JannovarData.newBuilder()
@@ -80,16 +82,41 @@ public class JannovarProtoConverter {
 
     private static Function<TranscriptModel, JannovarProto.TranscriptModel> toProtoTranscriptModel() {
         return transcriptModel -> JannovarProto.TranscriptModel.newBuilder()
-                .setAccession(transcriptModel.getAccession())
+                .setAccession(trimDuplicatedEnsemblVersion(transcriptModel.getAccession()))
                 .setGeneSymbol(transcriptModel.getGeneSymbol())
-                .setGeneID(transcriptModel.getGeneID() == null ? "" : transcriptModel.getGeneID())
-                .putAllAltGeneIds(transcriptModel.getAltGeneIDs())
+                .setGeneID((transcriptModel.getGeneID() == null || transcriptModel.getGeneID()
+                        .equals(".")) ? "" : transcriptModel.getGeneID())
+                .putAllAltGeneIds(replaceDotGeneIdWithEmpty(transcriptModel.getAltGeneIDs()))
                 .setTranscriptSupportLevel(transcriptModel.getTranscriptSupportLevel())
                 .setSequence(transcriptModel.getSequence())
                 .setCdsRegion(toProtoGenomeInterval(transcriptModel.getCDSRegion()))
                 .setTxRegion(toProtoGenomeInterval(transcriptModel.getTXRegion()))
                 .addAllExonRegions(toProtoExonRegions(transcriptModel.getExonRegions()))
                 .build();
+    }
+
+    private static final Pattern ENST_REPEAT_VERSION = Pattern.compile("ENST[0-9]{11}\\.[0-9]+\\.[0-9]+");
+
+    //TODO: REMOVE THIS for jannovar version 0.33!
+    // fix bug in Jannovar 0.29 where the transcript version is duplicated
+    static String trimDuplicatedEnsemblVersion(String transcriptAccession) {
+        if (ENST_REPEAT_VERSION.matcher(transcriptAccession).matches()) {
+            int lastDot = transcriptAccession.lastIndexOf('.');
+            String trimmed = transcriptAccession.substring(0, lastDot);
+            logger.debug("{} -> {}", transcriptAccession, trimmed);
+            return trimmed;
+        }
+        return transcriptAccession;
+    }
+
+    private static Map<String, String> replaceDotGeneIdWithEmpty(Map<String, String> altGeneIds) {
+        String entrezId = altGeneIds.getOrDefault("ENTREZ_ID", "");
+        if (entrezId.equals(".")) {
+            LinkedHashMap<String, String> altGeneIdsCopy = new LinkedHashMap<>(altGeneIds);
+            altGeneIdsCopy.replace("ENTREZ_ID", ".", "");
+            return altGeneIdsCopy;
+        }
+        return altGeneIds;
     }
 
     private static JannovarProto.GenomeInterval toProtoGenomeInterval(GenomeInterval genomeInterval) {
@@ -137,6 +164,8 @@ public class JannovarProtoConverter {
                 protoTranscriptModel.getGeneID(),
                 protoTranscriptModel.getTranscriptSupportLevel(),
                 protoTranscriptModel.getAltGeneIdsMap()
+                // TODO - add new Alignment and Anchor messages to jannovar.proto
+//                toAlignment(protoTranscriptModel.getAlignment());
         );
     }
 
