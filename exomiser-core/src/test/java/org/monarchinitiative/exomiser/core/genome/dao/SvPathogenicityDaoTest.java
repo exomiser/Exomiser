@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.core.model.StructuralType;
@@ -33,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Disabled
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestSvDataSourceConfig.class, SvPathogenicityDao.class})
 class SvPathogenicityDaoTest {
