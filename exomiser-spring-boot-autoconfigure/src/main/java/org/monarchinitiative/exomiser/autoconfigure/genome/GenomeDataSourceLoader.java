@@ -20,29 +20,17 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.Contig;
-import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
-import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -90,39 +78,7 @@ public class GenomeDataSourceLoader {
 
     private VariantWhiteList loadVariantWhiteList(Optional<Path> variantWhiteListPath) {
         if (variantWhiteListPath.isPresent()) {
-            Path whiteListPath = variantWhiteListPath.get();
-            logger.info("Loading variant whitelist from: {}", whiteListPath);
-            // this should be a tabix-indexed gzip file
-            ImmutableSet.Builder<AlleleProto.AlleleKey> whiteListBuilder = new ImmutableSet.Builder<>();
-            try(BufferedReader  bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(whiteListPath)), StandardCharsets.UTF_8))){
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (line.startsWith("#")) {
-                        // comment line
-                        continue;
-                    }
-                    String[] tokens = line.split("\t");
-                    if (tokens.length < 4) {
-                        logger.error("Error parsing variant whitelist. Require minimum 4 tokens in line {}", line);
-                        continue;
-                    }
-                    // Exomiser - simple VCF format
-                    AlleleProto.AlleleKey alleleKey = AlleleProto.AlleleKey.newBuilder()
-                            .setChr(Contig.parseId(tokens[0]))
-                            .setPosition(Integer.parseInt(tokens[1]))
-                            .setRef(tokens[2])
-                            .setAlt(tokens[3])
-                            .build();
-                    whiteListBuilder.add(alleleKey);
-                }
-            } catch (IOException e) {
-                logger.error("AAARRRGH!", e);
-                throw new RuntimeException("Unable to load variant whitelist", e);
-            }
-
-            ImmutableSet<AlleleProto.AlleleKey> whiteList = whiteListBuilder.build();
-            logger.info("Loaded {} variants into whitelist", whiteList.size());
-            return InMemoryVariantWhiteList.of(whiteList);
+            return VariantWhiteListLoader.loadVariantWhiteList(variantWhiteListPath.get());
         }
         return InMemoryVariantWhiteList.empty();
     }
