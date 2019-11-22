@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 
 import java.nio.file.Path;
 
@@ -38,6 +39,7 @@ import java.nio.file.Path;
  */
 @Configuration
 @Import({DataDirectoryAutoConfiguration.class})
+@PropertySource("classpath:application-default-jdbc.properties")
 @ConditionalOnProperty({"exomiser.hg19.data-version"})
 @EnableConfigurationProperties(Hg19GenomeProperties.class)
 public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisServiceConfigurer {
@@ -80,6 +82,12 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
         return super.buildGenomeDataService();
     }
 
+    @Bean("hg19VariantWhiteList")
+    @Override
+    public VariantWhiteList variantWhiteList() {
+        return genomeDataSourceLoader.getVariantWhiteList();
+    }
+
     //These require Spring to manage the caching and are called by buildVariantDataService
     @Bean("hg19genomeAnalysisService")
     @Override
@@ -90,30 +98,42 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg19allelePropertiesDao")
     @Override
     public AllelePropertiesDao allelePropertiesDao() {
-        return new AllelePropertiesDaoMvStore(mvStore);
+        return new AllelePropertiesDaoMvStore(genomeDataSourceLoader.getMvStore());
     }
 
     @Bean("hg19localFrequencyDao")
     @Override
     public FrequencyDao localFrequencyDao() {
-        return new LocalFrequencyDao(localFrequencyTabixDataSource);
+        return new LocalFrequencyDao(genomeDataSourceLoader.getLocalFrequencyTabixDataSource());
     }
 
     @Bean("hg19remmDao")
     @Override
     public RemmDao remmDao() {
-        return new RemmDao(remmTabixDataSource);
+        return new RemmDao(genomeDataSourceLoader.getRemmTabixDataSource());
     }
 
     @Bean("hg19caddDao")
     @Override
     public CaddDao caddDao() {
-        return new CaddDao(caddIndelTabixDataSource, caddSnvTabixDataSource);
+        return new CaddDao(genomeDataSourceLoader.getCaddIndelTabixDataSource(), genomeDataSourceLoader.getCaddSnvTabixDataSource());
     }
 
     @Bean("hg19testPathDao")
     @Override
     public PathogenicityDao testPathScoreDao() {
-        return new TestPathogenicityScoreDao(testPathogenicitySource);
+        return new TestPathogenicityScoreDao(genomeDataSourceLoader.getTestPathogenicityTabixDataSource());
+    }
+
+    @Bean("hg19svFrequencyDao")
+    @Override
+    public FrequencyDao svFrequencyDao() {
+        return new SvFrequencyDao(svDataSource);
+    }
+
+    @Bean("hg19svPathogenicityDao")
+    @Override
+    public PathogenicityDao svPathogenicityDao() {
+        return new SvPathogenicityDao(svDataSource);
     }
 }
