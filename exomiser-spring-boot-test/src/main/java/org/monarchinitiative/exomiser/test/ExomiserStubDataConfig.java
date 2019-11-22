@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.test;
 
 import com.google.common.collect.ImmutableList;
 import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import htsjdk.tribble.readers.TabixReader;
@@ -82,6 +83,11 @@ public class ExomiserStubDataConfig {
         Mockito.when(zpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
         logger.info("Mocking zpoDao");
         return zpoDao;
+    }
+
+    @Bean("phenotypeDataSource")
+    public HikariDataSource phenotypeDataSource() {
+        return new HikariDataSource();
     }
 
     @Bean
