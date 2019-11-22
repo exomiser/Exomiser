@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyD
 import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.phenotype.service.HpoIdChecker;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyServiceImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
@@ -54,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
+        TestDataSourceConfig.class,
         PriorityFactoryImpl.class,
         PriorityFactoryTestConfig.class,
         PriorityService.class,

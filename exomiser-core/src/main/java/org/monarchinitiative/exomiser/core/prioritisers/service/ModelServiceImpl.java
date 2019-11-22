@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -54,7 +55,7 @@ public class ModelServiceImpl implements ModelService {
 
     private final DataSource phenotypeDataSource;
 
-    public ModelServiceImpl(DataSource phenotypeDataSource) {
+    public ModelServiceImpl(@Qualifier("phenotypeDataSource") DataSource phenotypeDataSource) {
         this.phenotypeDataSource = phenotypeDataSource;
     }
 
