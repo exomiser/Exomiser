@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.nio.file.Path;
 
@@ -67,15 +66,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
         this.jannovarData = genomeDataSourceLoader.getJannovarData();
         this.mvStore = genomeDataSourceLoader.getMvStore();
-    }
-
-    /**
-     * Only one instance of an MVStore can access the store on disk at a time in a single JVM. This prevents tests failing
-     * when the store hasn't been properly closed.
-     */
-    @PreDestroy
-    public synchronized void closeMvStore() {
-        mvStore.close();
     }
 
     protected VariantAnnotator buildVariantAnnotator() {

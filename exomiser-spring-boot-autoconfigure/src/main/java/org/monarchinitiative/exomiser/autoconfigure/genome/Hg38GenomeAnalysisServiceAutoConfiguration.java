@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.annotation.PreDestroy;
 import java.nio.file.Path;
 
 /**
@@ -56,6 +57,15 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg38mvStore")
     public MVStore mvStore() {
         return mvStore;
+    }
+
+    /**
+     * Only one instance of an MVStore can access the store on disk at a time in a single JVM. This prevents tests failing
+     * when the store hasn't been properly closed.
+     */
+    @PreDestroy
+    public synchronized void closeMvStore() {
+        mvStore.close();
     }
 
     @Bean("hg38variantAnnotator")
