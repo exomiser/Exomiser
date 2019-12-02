@@ -27,15 +27,21 @@ import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
+import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoAdapter;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoMvStore;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -129,14 +135,57 @@ public class VariantFactoryPerformanceTest {
         variantFactory.createVariantEvaluations(variantContextStream).forEach(printVariant());
     }
 
+    @Disabled
+    @Test
+    void testSingleVariant() {
+        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
+                .empty());
+        VariantFactory variantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
+
+        Stream<VariantContext> variantContextStream = TestVcfParser.forSamples("Sample")
+                .parseVariantContext(
+                        "17       45221273        .      A       C  100     PASS    NM_001256;MISSENSE        GT     1/0",
+                        "17       45221318        .      A       C  100     PASS    NM_001256;MISSENSE        GT     1/0",
+                        "17       45221303        .      G       A  100     PASS    NM_001256;SYNONYMOUS        GT     1/0",
+                        "17       45234632        .      A       G  100     PASS    NM_001256;SYNONYMOUS        GT     1/0",
+                        "17       45221299        .      A       G  100     PASS    NM_001256;MISSENSE        GT     1/0",
+                        "17       45233654        .      T       G  100     PASS    NM_001256;MISSENSE        GT     1/0",
+                        "17       45232137        .      T       C  100     PASS    NM_001256;MISSENSE        GT     1/0"
+                );
+
+
+        AllelePropertiesDaoMvStore allelePropertiesDaoMvStore = new AllelePropertiesDaoMvStore(MVStore.open("C:/Users/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_variants.mv.db"));
+        AllelePropertiesDaoAdapter allelePropertiesDao = new AllelePropertiesDaoAdapter(allelePropertiesDaoMvStore);
+        VariantDataService variantDataService = VariantDataServiceImpl.builder()
+                .defaultFrequencyDao(allelePropertiesDao)
+                .defaultPathogenicityDao(allelePropertiesDao)
+                .build();
+
+        variantFactory.createVariantEvaluations(variantContextStream)
+                .forEach(vareval -> {
+                    FrequencyData frequencyData = variantDataService.getVariantFrequencyData(vareval, FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
+                    PathogenicityData pathogenicityData = variantDataService.getVariantPathogenicityData(vareval, EnumSet
+                            .of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER));
+                    vareval.setFrequencyData(frequencyData);
+                    vareval.setPathogenicityData(pathogenicityData);
+                    printVariant().accept(vareval);
+                });
+
+    }
+
     private Consumer<VariantEvaluation> printVariant() {
-        return variantEvaluation -> {
-            System.out.printf("%d:%d-%d length:%d %s %s score:%f %s dist=%d%n",
-                    variantEvaluation.getChromosome(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
-                    variantEvaluation.getLength(), variantEvaluation.getStructuralType(), variantEvaluation.getVariantEffect(),
-                    variantEvaluation.getVariantScore(), variantEvaluation.getGeneSymbol(),
-                    variantEvaluation.getTranscriptAnnotations().get(0).getDistanceFromNearestGene());
-        };
+        return variantEvaluation -> System.out.printf("%d:%d-%d %s>%s length:%d %s %s %s  %s %s score:%f freq:%f (max AF:%f) path:%f (%s)%n",
+                variantEvaluation.getChromosome(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
+                variantEvaluation.getRef(), variantEvaluation.getAlt(),
+                variantEvaluation.getLength(), variantEvaluation.getStructuralType(), variantEvaluation.getVariantEffect(),
+                variantEvaluation.getGeneSymbol(),
+                variantEvaluation.getTranscriptAnnotations().get(0).getAccession(),
+                variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
+                variantEvaluation.getVariantScore(),
+                variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().getMaxFreq(),
+                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData()
+                        .getPredictedPathogenicityScores()
+        );
     }
 
     private void runPerfTest(int numIterations, Path vcfPath, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
@@ -219,7 +268,7 @@ public class VariantFactoryPerformanceTest {
     }
 
     private JannovarData loadJannovarData() {
-        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1811_hg19/1811_hg19_transcripts_ucsc.ser");
+        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_transcripts_ensembl.ser");
         return JannovarDataProtoSerialiser.load(transcriptFilePath);
     }
 
