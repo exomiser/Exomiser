@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -60,8 +62,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
             int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
             List<SvResult> results = runQuery(variant, margin);
-//            logger.info("{}", variant);
-//            results.forEach(svResult -> logger.info("{}", svResult));
+            logger.info("{}", variant);
+            results.forEach(svResult -> logger.info("{}", svResult));
 
             Map<Double, List<SvResult>> resultsByScore = results.stream()
                     .collect(Collectors.groupingBy(SvResult::getJaccard));
@@ -71,8 +73,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
                     .map(Map.Entry::getValue)
                     .orElse(List.of());
 
-//            logger.info("Top match(es)");
-//            topMatches.forEach(svResult -> logger.info("{}", svResult));
+            logger.info("Top match(es)");
+            topMatches.forEach(svResult -> logger.info("{}", svResult));
 
             if (topMatches.isEmpty()) {
                 return PathogenicityData.empty();
@@ -89,9 +91,29 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 .alleleId(first.clinVarAccession)
                 .primaryInterpretation(first.clinSig)
                 .build();
-        //TODO: add a new Pathogenicity source
-        float score = mapClinSigToScore(clinVarData.getPrimaryInterpretation());
-        return PathogenicityData.of(clinVarData, PathogenicityScore.of(PathogenicitySource.TEST, score));
+
+        List<PathogenicityScore> pathogenicityScores = topMatches.stream()
+                .map(this::toPathScore)
+                .collect(toList());
+
+        return PathogenicityData.of(clinVarData, pathogenicityScores);
+    }
+
+    private PathogenicityScore toPathScore(SvResult svResult) {
+        PathogenicitySource source = mapToSource(svResult.source);
+        float score = mapClinSigToScore(svResult.clinSig);
+        return PathogenicityScore.of(source, score);
+    }
+
+    private PathogenicitySource mapToSource(String source) {
+        switch (source) {
+            case "DBVAR":
+                return PathogenicitySource.DBVAR;
+            case "ISCA":
+                return PathogenicitySource.ISCA;
+            default:
+                return PathogenicitySource.TEST;
+        }
     }
 
     private float mapClinSigToScore(ClinVarData.ClinSig primaryInterpretation) {

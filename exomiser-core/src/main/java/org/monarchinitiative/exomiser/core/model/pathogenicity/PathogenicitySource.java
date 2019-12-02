@@ -53,5 +53,9 @@ public enum PathogenicitySource {
     MVP,
     PRIMATE_AI,
     // An unspecified source for use in testing new pathogenicity scores
-    TEST;
+    TEST,
+
+    // SV data sources
+    DBVAR,
+    ISCA;
 }
