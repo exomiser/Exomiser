@@ -62,8 +62,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
             int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
             List<SvResult> results = runQuery(variant, margin);
-            logger.info("{}", variant);
-            results.forEach(svResult -> logger.info("{}", svResult));
+            logger.debug("{}", variant);
+            results.forEach(svResult -> logger.debug("{}", svResult));
 
             Map<Double, List<SvResult>> resultsByScore = results.stream()
                     .collect(Collectors.groupingBy(SvResult::getJaccard));
@@ -73,8 +73,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
                     .map(Map.Entry::getValue)
                     .orElse(List.of());
 
-            logger.info("Top match(es)");
-            topMatches.forEach(svResult -> logger.info("{}", svResult));
+            logger.debug("Top match(es)");
+            topMatches.forEach(svResult -> logger.debug("{}", svResult));
 
             if (topMatches.isEmpty()) {
                 return PathogenicityData.empty();
