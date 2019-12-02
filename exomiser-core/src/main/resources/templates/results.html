@@ -245,10 +245,22 @@
                                       th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                                 <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                                     chr10:g.123256215T>G [0/1]</b>
-                                <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
-                                          th:if="${#strings.startsWith(rsId,'rs')}">
-                                    <a th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${rsId}|}"
-                                       th:text="${rsId}">rs141235720
+                                <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
+                                          th:if="!${#strings.isEmpty(varId)}"
+                                          th:switch="${#strings.substring(varId, 0, 1)}">
+                                    <a th:case="'rs'" th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${varId}|}"
+                                       th:text="${varId}">rs141235720
+                                    </a>
+                                    <a th:case="'es'"
+                                       th:href="@{|https://www.ncbi.nlm.nih.gov/dbvar/variants/${varId}|}"
+                                       th:text="${varId}">esv3097123
+                                    </a>
+                                    <a th:case="'ns'"
+                                       th:href="@{|https://www.ncbi.nlm.nih.gov/dbvar/variants/${varId}|}"
+                                       th:text="${varId}">nsv819538
+                                    </a>
+                                    <a th:case="'dg'" th:href="@{|http://dgv.tcag.ca/dgv/app/variant(id=${varId})|}"
+                                       th:text="${varId}">dgv1891n106
                                     </a>
                                 </th:block>
                             </div>
