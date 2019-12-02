@@ -868,8 +868,9 @@ public class VariantEvaluationTest {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
                 .length(50)
                 .structuralType(StructuralType.INS)
+                .id("12345")
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS>-50bp"));
+        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> length: 50bp, id: 12345"));
     }
 
     @Test
@@ -879,7 +880,7 @@ public class VariantEvaluationTest {
                 .length(50)
                 .structuralType(StructuralType.DEL)
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL>-50bp"));
+        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> length: 50bp"));
     }
 
     @Test
