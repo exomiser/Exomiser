@@ -86,6 +86,10 @@ public class SvFrequencyDao implements FrequencyDao {
     private FrequencyData mapToFrequencyData(List<SvResult> topMatches) {
         SvResult first = topMatches.get(0);
         Frequency frequency = toFrequency(first);
+        if (frequency.getFrequency() == 0) {
+            // DGV has no frequency information, but does have an id
+            return FrequencyData.of(first.id);
+        }
         return FrequencyData.of(first.id, frequency);
     }
 
@@ -223,9 +227,11 @@ public class SvFrequencyDao implements FrequencyDao {
 
             StructuralType structuralType = StructuralType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
+            // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
             if (structuralType.getBaseType() == variant.getStructuralType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, structuralType, source, id, ac, af);
                 svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
+//                System.out.println(svResult);
                 results.add(svResult);
             }
         }
