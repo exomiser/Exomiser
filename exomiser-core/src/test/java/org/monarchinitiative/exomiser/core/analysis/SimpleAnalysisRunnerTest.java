@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -85,7 +85,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantEvaluation rbm8Variant2 = rbm8a.getPassedVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.getChromosome(), equalTo(1));
-        assertThat(rbm8Variant2.getPosition(), equalTo(145508800));
+        assertThat(rbm8Variant2.getStart(), equalTo(145508800));
 
     }
 
@@ -294,7 +294,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.getChromosome(), equalTo(1));
-        assertThat(rbm8Variant2.getPosition(), equalTo(145508800));
+        assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
     }
 
@@ -349,7 +349,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.getChromosome(), equalTo(1));
-        assertThat(rbm8Variant2.getPosition(), equalTo(145508800));
+        assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));

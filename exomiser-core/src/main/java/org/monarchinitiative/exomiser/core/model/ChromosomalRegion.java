@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,28 +23,62 @@ package org.monarchinitiative.exomiser.core.model;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface ChromosomalRegion extends Comparable<ChromosomalRegion> {
+public interface ChromosomalRegion {
 
     int getChromosome();
 
     int getStart();
 
+    default int getStartMin() {
+        return getStart();
+    }
+
+    default int getStartMax() {
+        return getStart();
+    }
+
+    /**
+     * The end chromosome of the region - this is usually the same as the start chromosome, apart from chromosomal
+     * re-arrangements (<BND> type in VCF parlance) where this will be on a different chromosome, if known. Maps to
+     * CHR2 in a VCF file.
+     *
+     * @return the int value of the end chromosome
+     * @since 13.0.0
+     */
+    default int getEndChromosome() {
+        return getChromosome();
+    }
+
     int getEnd();
 
-    @Override
-    default int compareTo(ChromosomalRegion other) {
-        int chr = this.getChromosome();
-        int otherChr = other.getChromosome();
+    default int getEndMin() {
+        return getEnd();
+    }
+
+    default int getEndMax() {
+        return getEnd();
+    }
+
+    default int getLength() {
+        return (getEnd() - getStart()) + 1;
+    }
+
+    public static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {
+        //TODO: implement compare with new fields
+        // Check out Guava ComparisonChain
+
+        int chr = c1.getChromosome();
+        int otherChr = c2.getChromosome();
         if (chr != otherChr) {
             return Integer.compare(chr, otherChr);
         }
 
-        int start = this.getStart();
-        int otherStart = other.getStart();
+        int start = c1.getStart();
+        int otherStart = c2.getStart();
         if (start != otherStart) {
             return Integer.compare(start, otherStart);
         }
 
-        return Integer.compare(this.getEnd(), other.getEnd());
+        return Integer.compare(c1.getEnd(), c2.getEnd());
     }
 }

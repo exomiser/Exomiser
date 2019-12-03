@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
@@ -106,7 +105,7 @@ public class AlleleProtoAdaptor {
         // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
         return AlleleKey.newBuilder()
                 .setChr(variant.getChromosome())
-                .setPosition(variant.getPosition())
+                .setPosition(variant.getStart())
                 .setRef(variant.getRef())
                 .setAlt(variant.getAlt())
                 .build();
@@ -116,9 +115,8 @@ public class AlleleProtoAdaptor {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return FrequencyData.empty();
         }
-        RsId rsId = RsId.of(alleleProperties.getRsId());
         List<Frequency> frequencies = parseFrequencyData(alleleProperties.getPropertiesMap());
-        return FrequencyData.of(rsId, frequencies);
+        return FrequencyData.of(alleleProperties.getRsId(), frequencies);
     }
 
     private static List<Frequency> parseFrequencyData(Map<String, Float> values) {

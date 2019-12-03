@@ -52,7 +52,7 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosome(), equalTo(0));
-        assertThat(variantAnnotation.getPosition(), equalTo(1));
+        assertThat(variantAnnotation.getStart(), equalTo(1));
         assertThat(variantAnnotation.getRef(), equalTo("A"));
         assertThat(variantAnnotation.getAlt(), equalTo("T"));
         assertThat(variantAnnotation.getGeneId(), equalTo(""));
@@ -72,7 +72,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
         assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getPosition(), equalTo(123256215));
+        assertThat(variantAnnotation.getStart(), equalTo(123256215));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -99,7 +99,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
         assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getPosition(), equalTo(123243319));
+        assertThat(variantAnnotation.getStart(), equalTo(123243319));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -126,7 +126,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
         assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getPosition(), equalTo(123237800));
+        assertThat(variantAnnotation.getStart(), equalTo(123237800));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -150,7 +150,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
         assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getPosition(), equalTo(123357973));
+        assertThat(variantAnnotation.getStart(), equalTo(123357973));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -174,7 +174,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
         assertThat(variantAnnotation.getChromosome(), equalTo(10));
-        assertThat(variantAnnotation.getPosition(), equalTo(150000000));
+        assertThat(variantAnnotation.getStart(), equalTo(150000000));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -203,8 +203,8 @@ public class JannovarVariantAnnotatorTest {
         assertThat(intergenicVariant.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
 
         //Regulatory regions containing the variants
-        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.getPosition(), upstreamVariant.getPosition(), RegulatoryFeature.FeatureType.ENHANCER);
-        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.getPosition(), intergenicVariant.getPosition(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
+        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.getStart(), upstreamVariant.getStart(), RegulatoryFeature.FeatureType.ENHANCER);
+        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.getStart(), intergenicVariant.getStart(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
 
         //Create new annotator with the regulatory regions
         VariantAnnotator annotatorWithRegulatoryRegions = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(),
@@ -213,10 +213,12 @@ public class JannovarVariantAnnotatorTest {
         );
 
         //Annotate the original positions using the new annotator...
-        List<VariantAnnotation> wasUpstream = annotatorWithRegulatoryRegions.annotate(upstreamVariant.getChromosomeName(), upstreamVariant.getPosition(), upstreamVariant.getRef(), upstreamVariant.getAlt());
+        List<VariantAnnotation> wasUpstream = annotatorWithRegulatoryRegions.annotate(upstreamVariant.getChromosomeName(), upstreamVariant
+                .getStart(), upstreamVariant.getRef(), upstreamVariant.getAlt());
         assertThat(wasUpstream.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
         //... and lo! They are designated as regulatory region variants!
-        List<VariantAnnotation> wasIntergenic = annotatorWithRegulatoryRegions.annotate(intergenicVariant.getChromosomeName(), intergenicVariant.getPosition(), intergenicVariant.getRef(), intergenicVariant.getAlt());
+        List<VariantAnnotation> wasIntergenic = annotatorWithRegulatoryRegions.annotate(intergenicVariant.getChromosomeName(), intergenicVariant
+                .getStart(), intergenicVariant.getRef(), intergenicVariant.getAlt());
         assertThat(wasIntergenic.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
@@ -261,11 +263,11 @@ public class JannovarVariantAnnotatorTest {
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
 
         System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n",
-                variantAnnotation.getPosition(), variantAnnotation.getRef(), variantAnnotation.getAlt());
+                variantAnnotation.getStart(), variantAnnotation.getRef(), variantAnnotation.getAlt());
         System.out.println(allelePosition);
 
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getPosition(), equalTo(allelePosition.getPos()));
+        assertThat(variantAnnotation.getStart(), equalTo(allelePosition.getStart()));
         assertThat(variantAnnotation.getRef(), equalTo(allelePosition.getRef()));
         assertThat(variantAnnotation.getAlt(), equalTo(allelePosition.getAlt()));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
@@ -286,32 +288,34 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
         System.out.println(variantAnnotation);
         System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n",
-                variantAnnotation.getPosition(), variantAnnotation.getRef(), variantAnnotation.getAlt());
+                variantAnnotation.getStart(), variantAnnotation.getRef(), variantAnnotation.getAlt());
         System.out.println("Trimmed: " + trimmed);
 
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(118608471));
+        assertThat(variantAnnotation.getEnd(), equalTo(118608472));
+        assertThat(variantAnnotation.getLength(), equalTo(-1));
+        assertThat(variantAnnotation.getRef(), equalTo("GT"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
     @Test
-    void testStructuralVariant() {
+    void testAnnotateStructuralVariantAsSnv() {
         int pos = 118608470;
         String ref = "A";
         String alt = "<INS>";
-
-        AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
 
         List<VariantAnnotation> annotations = instance.annotate("X", pos, ref, alt);
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(pos));
+        assertThat(variantAnnotation.getEnd(), equalTo(pos));
+        assertThat(variantAnnotation.getLength(), equalTo(0));
+        assertThat(variantAnnotation.getRef(), equalTo(ref));
+        assertThat(variantAnnotation.getAlt(), equalTo(alt));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
     }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.util.ArrayList;
@@ -189,7 +188,7 @@ public class FilterReportFactoryTest {
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(FrequencyData.of(RsId.of(123456), Frequency.of(FrequencySource.THOUSAND_GENOMES, 100f), Frequency
+        mostCommonVariantEvalInTheWorld.setFrequencyData(FrequencyData.of("rs123456", Frequency.of(FrequencySource.THOUSAND_GENOMES, 100f), Frequency
                 .of(FrequencySource.ESP_ALL, 100f), Frequency.of(FrequencySource.EXAC_OTHER, 100f)));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
 
@@ -212,10 +211,10 @@ public class FilterReportFactoryTest {
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
         mostCommonVariantEvalInTheWorld.setFrequencyData(
-                FrequencyData.of(RsId.of(123456),
-                    Frequency.of(FrequencySource.THOUSAND_GENOMES, 100f),
-                    Frequency.of(FrequencySource.ESP_ALL, 100f),
-                    Frequency.of(FrequencySource.EXAC_OTHER, 100f)
+                FrequencyData.of("rs123456",
+                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 100f),
+                        Frequency.of(FrequencySource.ESP_ALL, 100f),
+                        Frequency.of(FrequencySource.EXAC_OTHER, 100f)
                 ));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
 

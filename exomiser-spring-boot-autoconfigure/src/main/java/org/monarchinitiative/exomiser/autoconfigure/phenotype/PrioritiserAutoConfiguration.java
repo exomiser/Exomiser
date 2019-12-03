@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
 import org.monarchinitiative.exomiser.autoconfigure.UndefinedDataDirectoryException;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
@@ -38,7 +36,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -175,31 +172,4 @@ public class PrioritiserAutoConfiguration {
         return DataMatrixIO.loadOffHeapDataMatrix(randomWalkFilePath);
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "phenotypeDataSource")
-    public DataSource phenotypeDataSource() {
-        return new HikariDataSource(phenotypeDataSourceConfig());
-    }
-
-    private HikariConfig phenotypeDataSourceConfig() {
-        String version = phenotypeProperties.getDataVersion();
-        //omit the .h2.db extensions
-        String dbFileName = String.format("%s_phenotype", version);
-
-        Path dbPath = phenotypeDataDirectory().resolve(dbFileName);
-
-        String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setMaximumPoolSize(3);
-        config.setPoolName(String.format("exomiser-phenotype-%s", version));
-        logger.debug("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
-        return config;
-    }
 }

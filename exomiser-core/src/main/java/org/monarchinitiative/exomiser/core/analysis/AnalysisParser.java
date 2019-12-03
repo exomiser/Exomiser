@@ -201,9 +201,6 @@ public class AnalysisParser {
                     case "VCF":
                         parsedOutputFormats.add(OutputFormat.VCF);
                         break;
-                    case "PHENOGRID":
-                        parsedOutputFormats.add(OutputFormat.PHENOGRID);
-                        break;
                     case "JSON":
                         parsedOutputFormats.add(OutputFormat.JSON);
                         break;

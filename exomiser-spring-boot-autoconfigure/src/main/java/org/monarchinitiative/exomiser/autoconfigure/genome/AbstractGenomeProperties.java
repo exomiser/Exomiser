@@ -20,10 +20,8 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,9 +61,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
         this.dataDirectory = Paths.get(dataDirectory);
     }
 
-    @NestedConfigurationProperty
-    private DataSourceProperties datasource = new DataSourceProperties();
-
     public AbstractGenomeProperties(GenomeAssembly assembly) {
         this.assembly = assembly;
     }
@@ -92,14 +87,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     public void setTranscriptSource(String name) {
         this.transcriptSource = TranscriptSource.parseValue(name);
-    }
-
-    public DataSourceProperties getDatasource() {
-        return datasource;
-    }
-
-    public void setDatasource(DataSourceProperties dataSourceProperties) {
-        this.datasource = dataSourceProperties;
     }
 
     public String getVariantWhiteListPath() {

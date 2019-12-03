@@ -67,4 +67,29 @@ public class Contig {
         return CONTIG_MAP.getOrDefault(contig, 0);
     }
 
+    /**
+     * Converts the integer-based chromosome representation to a string value. Non-autosomal chromosomes are represented
+     * using X, Y or MT. Unplaced contigs should be represented as 0.
+     *
+     * @param chr the integer-based representation of the chromosome
+     * @return the string value of the chromosome
+     * @throws IllegalArgumentException for integers outside of the range 0-25
+     * @since 13.0.0
+     */
+    public static String toString(int chr) {
+        if (chr < 0 || chr > 25) {
+            // Exomiser uses '0' to represent unplaced contigs
+            throw new IllegalArgumentException("Unsupported chromosome number: " + chr);
+        }
+        switch (chr) {
+            case 23:
+                return "X";
+            case 24:
+                return "Y";
+            case 25:
+                return "MT";
+            default:
+                return Integer.toString(chr);
+        }
+    }
 }

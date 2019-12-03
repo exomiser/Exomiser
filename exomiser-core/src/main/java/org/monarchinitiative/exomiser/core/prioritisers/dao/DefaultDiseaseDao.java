@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
@@ -52,7 +53,7 @@ public class DefaultDiseaseDao implements DiseaseDao {
 
     private final DataSource dataSource;
 
-    public DefaultDiseaseDao(DataSource phenotypeDataSource) {
+    public DefaultDiseaseDao(@Qualifier("phenotypeDataSource") DataSource phenotypeDataSource) {
         this.dataSource = phenotypeDataSource;
     }
 

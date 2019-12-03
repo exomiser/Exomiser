@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,28 +20,41 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
+ * Class used for resolving files in the genome data directories e.g. 1909_hg19.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class GenomeDataResolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(GenomeDataResolver.class);
+
+    private final GenomeProperties genomeProperties;
 
     private final String versionAssemblyPrefix;
     private final Path assemblyDataDirectory;
 
     public GenomeDataResolver(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
+        this.genomeProperties = genomeProperties;
+
         this.versionAssemblyPrefix = String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getAssembly());
-        this.assemblyDataDirectory = findAssemblyDataDirectory(versionAssemblyPrefix, genomeProperties, exomiserDataDirectory);
+        this.assemblyDataDirectory = resolveAssemblyDataDirectory(versionAssemblyPrefix, exomiserDataDirectory);
+        logger.debug("Created resource resolver for release {} (transcript-source={})", versionAssemblyPrefix, genomeProperties
+                .getTranscriptSource());
     }
 
-    private Path findAssemblyDataDirectory(String versionDir, GenomeProperties genomeProperties, Path exomiserDataDirectory) {
-
+    private Path resolveAssemblyDataDirectory(String versionAssemblyPrefix, Path exomiserDataDirectory) {
         Path assemblyDataDir = genomeProperties.getDataDirectory();
-
         if (assemblyDataDir == null) {
-            return exomiserDataDirectory.resolve(versionDir).toAbsolutePath();
+            return exomiserDataDirectory.resolve(versionAssemblyPrefix).toAbsolutePath();
         } else {
             return assemblyDataDir.toAbsolutePath();
         }
@@ -64,6 +77,38 @@ public class GenomeDataResolver {
             return fileResourcePath;
         }
         return assemblyDataDirectory.resolve(fileResourcePath).toAbsolutePath();
+    }
+
+    @Nullable
+    public Path resolvePathOrNullIfEmpty(String fileResource) {
+        if (fileResource == null || fileResource.isEmpty()) {
+            return null;
+        }
+        return resolveAbsoluteResourcePath(fileResource);
+    }
+
+    public Path getTranscriptFilePath() {
+        TranscriptSource transcriptSource = genomeProperties.getTranscriptSource();
+        //e.g 1710_hg19_transcripts_ucsc.ser
+        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", versionAssemblyPrefix, transcriptSource
+                .toString());
+        return assemblyDataDirectory.resolve(transcriptFileNameValue);
+    }
+
+    public Path getVariantsMvStorePath() {
+        String mvStoreFileName = String.format("%s_variants.mv.db", versionAssemblyPrefix);
+        return resolveAbsoluteResourcePath(mvStoreFileName);
+    }
+
+    public Path getGenomeDbPath() {
+        //omit the .h2.db extensions
+        String dbFileName = String.format("%s_genome", versionAssemblyPrefix);
+        return resolveAbsoluteResourcePath(dbFileName);
+    }
+
+    public Path getSvDbPath() {
+        String dbFileName = String.format("%s_sv", versionAssemblyPrefix);
+        return resolveAbsoluteResourcePath(dbFileName);
     }
 }
 

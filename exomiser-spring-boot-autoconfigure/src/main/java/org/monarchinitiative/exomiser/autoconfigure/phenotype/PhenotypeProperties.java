@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,12 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,6 +33,8 @@ import java.nio.file.Paths;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Configuration
+@PropertySource("classpath:application-default-jdbc.properties")
 @ConfigurationProperties("exomiser.phenotype")
 public class PhenotypeProperties {
 
@@ -37,8 +42,17 @@ public class PhenotypeProperties {
 
     private String dataVersion = "";
 
-    @NestedConfigurationProperty
-    private DataSourceProperties datasource = new DataSourceProperties();
+    @Bean
+    @ConfigurationProperties("exomiser.phenotype.datasource")
+    public DataSourceProperties phenotypeDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean(name = "phenotypeDataSource")
+    @ConfigurationProperties("exomiser.phenotype.datasource.hikari")
+    public HikariDataSource phenotypeDataSource() {
+        return phenotypeDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    }
 
     //Random walk matrix for hiPhive and exomeWalker
     // pre 10.0.0. the randomWalkFileName ended with a .gz extension
@@ -66,14 +80,6 @@ public class PhenotypeProperties {
 
     public void setDataVersion(String dataVersion) {
         this.dataVersion = dataVersion;
-    }
-
-    public DataSourceProperties getDatasource() {
-        return this.datasource;
-    }
-
-    public void setDatasource(DataSourceProperties dataSourceProperties) {
-        this.datasource = dataSourceProperties;
     }
 
     public String getRandomWalkFileName() {
@@ -128,7 +134,6 @@ public class PhenotypeProperties {
     public String toString() {
         return "PhenotypeProperties{" +
                 "dataVersion='" + dataVersion + '\'' +
-                ", datasource=" + datasource +
                 ", randomWalkFileName='" + randomWalkFileName + '\'' +
                 ", randomWalkIndexFileName='" + randomWalkIndexFileName + '\'' +
                 ", phenixDataDir='" + phenixDataDir + '\'' +

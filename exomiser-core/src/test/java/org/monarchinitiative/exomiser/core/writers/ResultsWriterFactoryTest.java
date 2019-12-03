@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,13 +64,6 @@ public class ResultsWriterFactoryTest {
         OutputFormat outputFormat = OutputFormat.VCF;
         ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(VcfResultsWriter.class));
-    }
-
-    @Test
-    public void testGetPhenoGridResultsWriter() {
-        OutputFormat outputFormat = OutputFormat.PHENOGRID;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
-        assertThat(result, instanceOf(PhenogridWriter.class));
     }
 
     @Test

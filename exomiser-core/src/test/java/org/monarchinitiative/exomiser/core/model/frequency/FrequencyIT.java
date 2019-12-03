@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,176 +25,107 @@
  */
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- *
  * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FrequencyIT {
+class FrequencyIT {
 
-    private static final int VARIANTS_IN_GENOME = 4000000;
-    private static final int VARIANTS_IN_EXOME = 40000;
+    private static final int VARIANTS_IN_GENOME = 2000_000;
+    private static final int VARIANTS_IN_EXOME = 40_000;
 
-    public static void main(String[] args) {
-
-        sleep(10);
-
-        List exomeMafList = createObjects(VARIANTS_IN_EXOME);
-        compareThresholdForObjects(exomeMafList, 23.0f);
-
-        createPrimitives(VARIANTS_IN_EXOME);
-        List<Float> exomeFloats = createAutoBoxedPrimitives(VARIANTS_IN_EXOME);
-        compareThresholdForAutoBoxedPrimitives(exomeFloats, 23.0f);
-        
-        sleep(2);
-
-        List genomeMafList = createObjects(VARIANTS_IN_GENOME);
-        compareThresholdForObjects(genomeMafList, 23.0f);
-
-        createPrimitives(VARIANTS_IN_GENOME);
-        List<Float> genomeFloats = createAutoBoxedPrimitives(VARIANTS_IN_GENOME);
-        compareThresholdForAutoBoxedPrimitives(genomeFloats, 23.0f);
-    }
-
-    private static void sleep(int secs) {
-        System.out.printf("Sleeping for %d secs%n", secs);
-        try {
-            Thread.sleep(secs * 1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(FrequencyIT.class.getName()).log(Level.SEVERE, null, ex);
+    @Disabled
+    @Test
+    void testConstructorPerformance() {
+        FrequencySource[] sources = FrequencySource.values();
+        int[] sizes = {VARIANTS_IN_EXOME, VARIANTS_IN_GENOME};
+        for (int size : sizes) {
+            float[] freqs = createPrimitives(size, sources);
+            List<Frequency> frequencies = createFrequencies(freqs, sources);
+            compareThresholdForObjects(frequencies, 23.0f);
+            List<Float> floats = createAutoBoxedPrimitives(freqs, sources);
+            compareThresholdForAutoBoxedPrimitives(floats, 23.0f);
         }
     }
 
-    private static List<Frequency> createObjects(int numObjects) {
+    private float[] createPrimitives(int numVariants, FrequencySource[] sources) {
+        int numFreqs = numVariants * sources.length;
+        float[] freqs = new float[numFreqs];
         long start = System.currentTimeMillis();
-        int i = 0;
-        List<Frequency> mafList = new ArrayList<>();
-        while (i < numObjects) {
-            i++;
-            //we're creating four variants here
-            mafList.add(Frequency.of(FrequencySource.ESP_ALL, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.ESP_EUROPEAN_AMERICAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.THOUSAND_GENOMES, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_AMERICAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_FINNISH, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_EAST_ASIAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_NON_FINNISH_EUROPEAN, getRandomPercentage()));
-            mafList.add(Frequency.of(FrequencySource.EXAC_OTHER, getRandomPercentage()));
+
+        for (int i = 0; i < numFreqs; ) {
+            freqs[i++] = (float) Math.random() * 100;
         }
+
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to create %s %s objects", end - start, mafList.size(), Frequency.class.getName()));
-        return mafList;
+        System.out.println(String.format("Took %dms to create %d random floats", end - start, numFreqs));
+        return freqs;
     }
-    
-    private static void compareThresholdForObjects(List<Frequency> mafList, float threshold) {
-        
-        long start = System.currentTimeMillis();
 
-        long mafOverThrehold = 0;
-        for (Frequency minorAlleleFrequency : mafList) {
-            if (minorAlleleFrequency.getFrequency() > threshold) {
-                mafOverThrehold++;
+    private static List<Frequency> createFrequencies(float[] freqs, FrequencySource[] sources) {
+        long start = System.currentTimeMillis();
+        List<Frequency> mafList = new ArrayList<>(freqs.length);
+        for (int i = 0; i < freqs.length; ) {
+            for (int j = 0, sourcesLength = sources.length; j < sourcesLength; j++) {
+                mafList.add(Frequency.of(sources[j], freqs[i++]));
             }
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to compare %s %s objects  - %s were over threshold of %s", end - start, mafList.size(), Frequency.class.getName(), mafOverThrehold, threshold));
+        System.out.println(String.format("Took %dms to create %s %s objects", end - start, freqs.length, Frequency.class
+                .getName()));
+        return mafList;
     }
 
-    private static void createPrimitives(int numObjects) {
+    private static void compareThresholdForObjects(List<Frequency> mafList, float threshold) {
         long start = System.currentTimeMillis();
-        int i = 0;
-        while (i < numObjects) {
-            i++;
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
-            getRandomPercentage();
+
+        long overThreshold = 0;
+        for (Frequency frequency : mafList) {
+            if (frequency.isOverThreshold(threshold)) {
+                overThreshold++;
+            }
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to create %s primitives", end - start, (long) i * 4));
+        System.out.println(String.format("Took %dms to compare %s %s objects - %s were over threshold of %s", end - start, mafList
+                .size(), Frequency.class.getName(), overThreshold, threshold));
     }
-    
-    private static List<Float> createAutoBoxedPrimitives(int numObjects) {
+
+    private static List<Float> createAutoBoxedPrimitives(float[] freqs, FrequencySource[] sources) {
         long start = System.currentTimeMillis();
-        int i = 0;
-        List<Float> floatList = new ArrayList<>();
-        while (i < numObjects) {
-            i++;
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
-            floatList.add(getRandomPercentage());
+        List<Float> floatList = new ArrayList<>(freqs.length);
+        for (int i = 0; i < freqs.length; ) {
+            for (int j = 0, sourcesLength = sources.length; j < sourcesLength; j++) {
+                floatList.add(freqs[i++]);
+            }
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to create %s %s objects", end - start, floatList.size(), Float.class.getName()));
+        System.out.println(String.format("Took %dms to create %s %s objects", end - start, freqs.length, Float.class.getName()));
         return floatList;
     }
 
-    
+
     private static void compareThresholdForAutoBoxedPrimitives(List<Float> floatList, float threshold) {
-        
+
         long start = System.currentTimeMillis();
 
-        long overThrehold = 0;
+        long overThreshold = 0;
         for (Float value : floatList) {
             if (value > threshold) {
-                overThrehold++;
+                overThreshold++;
             }
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to compare %s %s objects  - %s were over threshold of %s", end - start, floatList.size(), Float.class.getName(), overThrehold, threshold));
-    }
-        
-    private static float getRandomPercentage() {
-        return (float) Math.random() * 100;
-    }
-
-    /**
-     * Attach the performance monitor to this method...
-     */
-    @Test
-    public void testConstructorPerformanceGenome() {
-        int i = 0;
-        while (i < VARIANTS_IN_GENOME * 10) {
-            i++;
-            Frequency.of(FrequencySource.UNKNOWN, 20f);
-        }
-        System.out.println(i);
-    }
-
-    /**
-     * Attach the performance monitor to this method...
-     */
-    @Test
-    public void testOverThresholdPerformanceGenome() {
-        float threshold = 24.56f;
-
-        for (int i = 0; i < VARIANTS_IN_GENOME * 10; i++) {
-            Frequency.of(FrequencySource.UNKNOWN, 20f);
-        }
+        System.out.println(String.format("Took %dms to compare %s %s objects - %s were over threshold of %s", end - start, floatList
+                .size(), Float.class.getName(), overThreshold, threshold));
     }
 }

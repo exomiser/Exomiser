@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,36 +26,39 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GenomeDataResolverTest {
+class GenomeDataResolverTest {
 
     private final Path exomiserDataDirectory = Paths.get("src/test/resources/data");
 
     @Test
-    public void testNoAssemblyDataDirDefined() {
+    void testNoAssemblyDataDirDefined() {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
 
         GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
-        assertThat(instance.getGenomeAssemblyDataPath(), equalTo(Paths.get("src/test/resources/data/1710_hg19").toAbsolutePath()));
+        assertThat(instance.getGenomeAssemblyDataPath(), equalTo(Paths.get("src/test/resources/data/1710_hg19")
+                .toAbsolutePath()));
     }
 
     @Test
-    public void testAssemblyDataDirOverridesDefault() {
+    void testAssemblyDataDirOverridesDefault() {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
         genomeProperties.setDataDirectory("src/test/resources/user-defined");
 
         GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
-        assertThat(instance.getGenomeAssemblyDataPath(), equalTo(Paths.get("src/test/resources/user-defined").toAbsolutePath()));
+        assertThat(instance.getGenomeAssemblyDataPath(), equalTo(Paths.get("src/test/resources/user-defined")
+                .toAbsolutePath()));
     }
 
     @Test
-    public void getAssemblyVersion() throws Exception {
+    void getAssemblyVersion() throws Exception {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
 
@@ -64,7 +67,7 @@ public class GenomeDataResolverTest {
     }
 
     @Test
-    public void testResolveAbsoluteResourcePathFromRelativePath() {
+    void testResolveAbsoluteResourcePathFromRelativePath() {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
         genomeProperties.setDataDirectory("src/test/resources/data");
@@ -76,7 +79,7 @@ public class GenomeDataResolverTest {
     }
 
     @Test
-    public void testResolveAbsoluteResourcePathFromAbsolutePath() {
+    void testResolveAbsoluteResourcePathFromAbsolutePath() {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
         genomeProperties.setDataDirectory("src/test/resources/data");
@@ -88,13 +91,78 @@ public class GenomeDataResolverTest {
     }
 
     @Test
-    public void testResolveAbsoluteResourcePathFromString() {
+    void testResolveAbsoluteResourcePathFromString() {
         GenomeProperties genomeProperties = new Hg19GenomeProperties();
         genomeProperties.setDataVersion("1710");
         genomeProperties.setDataDirectory("src/test/resources/user-defined");
 
         GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
         assertThat(instance.resolveAbsoluteResourcePath("genome.h2.db"), equalTo(Paths.get("src/test/resources/user-defined/genome.h2.db")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    void testResolveAbsolutePathOrNullIfEmpty() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+
+        assertThat(instance.resolvePathOrNullIfEmpty(null), nullValue());
+        assertThat(instance.resolvePathOrNullIfEmpty(""), nullValue());
+
+        assertThat(instance.resolvePathOrNullIfEmpty("1710_hg19_transcripts_ensembl.ser"),
+                equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_transcripts_ensembl.ser").toAbsolutePath()));
+    }
+
+    @Test
+    void testGetTranscriptPathDefault() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getTranscriptFilePath(), equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_transcripts_ensembl.ser")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    void testGetTranscriptPathRefseq() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+        genomeProperties.setTranscriptSource("refseq");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getTranscriptFilePath(), equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_transcripts_refseq.ser")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    void testGetVariantsMvStorePath() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getVariantsMvStorePath(), equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_variants.mv.db")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    void testGetGenomeDbPath() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getGenomeDbPath(), equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_genome")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    void testGetSvDbPath() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeDataResolver instance = new GenomeDataResolver(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getSvDbPath(), equalTo(exomiserDataDirectory.resolve("1710_hg19/1710_hg19_sv")
                 .toAbsolutePath()));
     }
 }

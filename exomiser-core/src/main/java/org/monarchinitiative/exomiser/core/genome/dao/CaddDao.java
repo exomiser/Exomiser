@@ -67,7 +67,7 @@ public class CaddDao implements PathogenicityDao {
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();
-        int start = variant.getPosition();
+        int start = variant.getStart();
         if (AllelePosition.isSnv(ref, alt)) {
             return getCaddPathogenicityData(caddSnvTabixDataSource, chromosome, start, ref, alt);
         }

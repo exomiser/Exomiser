@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -60,7 +59,7 @@ public class LocalFrequencyDao implements FrequencyDao {
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();
-        int start = variant.getPosition();
+        int start = variant.getStart();
 
         return getPositionFrequencyData(chromosome, start, ref, alt);
     }
@@ -93,6 +92,6 @@ public class LocalFrequencyDao implements FrequencyDao {
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
         Frequency localFreq = Frequency.of(FrequencySource.LOCAL, value);
-        return FrequencyData.of(RsId.empty(), localFreq);
+        return FrequencyData.of(localFreq);
     }
 }
