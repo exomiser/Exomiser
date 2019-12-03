@@ -21,10 +21,11 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
+import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
+import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
+import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
+import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -35,8 +36,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySour
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -79,35 +78,8 @@ public class VariantDataServiceImpl implements VariantDataService {
         this.remmDao = builder.remmDao;
         this.testPathScoreDao = builder.testPathScoreDao;
 
-        var testSv = false;
-        if (testSv) {
-            DataSource svDataSource = svDataSource();
-            this.svFrequencyDao = new SvFrequencyDao(svDataSource);
-            this.svPathogenicityDao = new SvPathogenicityDao(svDataSource);
-        } else {
-            this.svFrequencyDao = builder.svFrequencyDao;
-            this.svPathogenicityDao = builder.svPathogenicityDao;
-        }
-    }
-
-    // temporary hack
-    private HikariDataSource svDataSource() {
-        Path dbPath = Path.of("/Users/hhx640/Documents/sv_build/hg19_sv_database");
-//        Path dbPath = Path.of("/Users/damiansmedley/exomiser-data/hg19_sv_database");
-
-        String startUpArgs = ";SCHEMA=PBGA;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-
-        String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setMaximumPoolSize(3);
-        config.setPoolName("exomiser-sv");
-        logger.debug("Set up {} pool {} connections from {}", config.getPoolName(), config.getMaximumPoolSize(), config.getJdbcUrl());
-        return new HikariDataSource(config);
+        this.svFrequencyDao = builder.svFrequencyDao;
+        this.svPathogenicityDao = builder.svPathogenicityDao;
     }
 
     @Override
