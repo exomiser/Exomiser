@@ -496,27 +496,4 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getId(), equalTo(""));
     }
 
-    @Test
-    void testVariantContextIdIsCaptured() {
-        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
-                .parseVariantContext("1 112992009 esv3587212 T A 100 PASS . GT 1|0");
-        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
-                .peek(printVariant())
-                .collect(toList());
-        assertThat(variants.size(), equalTo(1));
-        VariantEvaluation variantEvaluation = variants.get(0);
-        assertThat(variantEvaluation.getId(), equalTo("esv3587212"));
-    }
-
-    @Test
-    void testVariantContextIdIsEmptyWhenDotInVcf() {
-        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
-                .parseVariantContext("1 112992009 . T A 100 PASS . GT 1|0");
-        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
-                .peek(printVariant())
-                .collect(toList());
-        assertThat(variants.size(), equalTo(1));
-        VariantEvaluation variantEvaluation = variants.get(0);
-        assertThat(variantEvaluation.getId(), equalTo(""));
-    }
 }
