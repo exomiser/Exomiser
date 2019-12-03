@@ -48,6 +48,7 @@ public class TestSvDataSourceConfig {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
+//        config.setJdbcUrl("jdbc:h2:mem:");
         config.setUsername("sa");
         config.setPassword("");
         config.setMaximumPoolSize(3);
