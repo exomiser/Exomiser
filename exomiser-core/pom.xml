@@ -58,6 +58,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.phenopackets</groupId>
+            <artifactId>phenopacket-schema</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
             <version>1.2.3</version>
