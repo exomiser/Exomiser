@@ -97,19 +97,22 @@ public class VariantFactoryPerformanceTest {
             countVariants(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"), stubAnnotationVariantFactory, new StubAllelePropertiesDao());
         }
 
-        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
+//        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
+        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/Pfeiffer-quartet.vcf.gz");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19240.sniffles.PB.vcf");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/example_sv.vcf");
 
         System.out.println("Read variants with stub annotations, stub data - baseline file reading and VariantEvaluation creation");
         runPerfTest(4, vcfPath, stubAnnotationVariantFactory, new StubAllelePropertiesDao());
 
+        List<VariantContext> variantContexts = VcfFiles.readVariantContexts(vcfPath).collect(Collectors.toList());
+
         VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
                 .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         System.out.println("Read variants with real annotations, stub data");
-        runPerfTest(4, vcfPath, jannovarVariantFactory, new StubAllelePropertiesDao());
+        runPerfTest(4, variantContexts, jannovarVariantFactory, new StubAllelePropertiesDao());
 
         // This should take about 10-15 mins as it annotates every variant in the file from the database
 //        System.out.println("Read variants with real annotations, real data");
@@ -202,6 +205,24 @@ public class VariantFactoryPerformanceTest {
 
     private long countVariants(Path vcfPath, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
         return variantFactory.createVariantEvaluations(vcfPath)
+                .map(annotateVariant(allelePropertiesDao))
+                .count();
+    }
+
+    private void runPerfTest(int numIterations, List<VariantContext> variantContexts, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
+        for (int i = 0; i < numIterations; i++) {
+            Instant start = Instant.now();
+
+            long numVariants = countVariants(variantContexts.stream(), variantFactory, allelePropertiesDao);
+
+            Duration duration = Duration.between(start, Instant.now());
+            long ms = duration.toMillis();
+            System.out.printf("Read %d alleles in %dm %ds %dms (%d ms)%n", numVariants, (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
+        }
+    }
+
+    private long countVariants(Stream<VariantContext> variantContextStream, VariantFactory variantFactory, AllelePropertiesDao allelePropertiesDao) {
+        return variantFactory.createVariantEvaluations(variantContextStream)
                 .map(annotateVariant(allelePropertiesDao))
                 .count();
     }
