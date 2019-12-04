@@ -100,9 +100,13 @@ public class VariantFactoryImpl implements VariantFactory {
 
     // this is required in case of incorrectly merged multi-sample VCF files to remove alleles not represented in the sample genotypes
     private synchronized boolean alleleIsObservedInGenotypes(Allele allele, GenotypesContext genotypesContext) {
-        return genotypesContext.stream()
-                .map(Genotype::getAlleles)
-                .anyMatch(genotypeAlleles -> genotypeAlleles.contains(allele));
+        for (Genotype genotype : genotypesContext) {
+            List<Allele> genotypeAlleles = genotype.getAlleles();
+            if (genotypeAlleles.contains(allele)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
