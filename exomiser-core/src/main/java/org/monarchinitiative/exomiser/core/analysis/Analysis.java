@@ -39,6 +39,7 @@ import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +149,7 @@ public class Analysis {
     public PriorityType getMainPrioritiserType() {
         for (AnalysisStep analysisStep : analysisSteps) {
             if (analysisStep instanceof Prioritiser) {
-                Prioritiser<?> prioritiser = (Prioritiser<?>) analysisStep;
+                Prioritiser<? extends PriorityResult> prioritiser = (Prioritiser<? extends PriorityResult>) analysisStep;
                 //OMIM, if combined with other prioritisers isn't the main one.
                 if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
                     return prioritiser.getPriorityType();
