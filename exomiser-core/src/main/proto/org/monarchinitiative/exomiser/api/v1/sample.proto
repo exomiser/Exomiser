@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package org.monarchinitiative.exomiser.api.v1;
+
+import "base.proto";
+import "phenopackets.proto";
+
+//option java_multiple_files = true;
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "SampleProto";
+
+// original Sample data
+message Sample {
+    string genome_assembly = 4;
+    string vcf = 5;
+    oneof pedigree_data {
+        string ped = 6;
+        // do we need this pedigree here?
+        org.phenopackets.schema.v1.core.Pedigree pedigree = 9;
+    }
+    string proband = 7;
+    repeated string hpo_ids = 8;
+}

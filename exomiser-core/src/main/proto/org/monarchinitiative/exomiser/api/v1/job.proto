@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package org.monarchinitiative.exomiser.api.v1;
+
+import "phenopackets.proto";
+
+import "org/monarchinitiative/exomiser/api/v1/sample.proto";
+import "org/monarchinitiative/exomiser/api/v1/analysis.proto";
+import "org/monarchinitiative/exomiser/api/v1/output.proto";
+
+//option java_multiple_files = true;
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "JobProto";
+
+message Job {
+    oneof sample_data {
+        org.phenopackets.schema.v1.Phenopacket phenopacket = 1;
+        org.phenopackets.schema.v1.Family family = 2;
+        Sample sample = 3;
+    }
+    oneof params {
+        Analysis analysis = 4;
+        Preset preset = 5;
+    }
+    OutputOptions output_options = 6;
+}

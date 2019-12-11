@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package org.monarchinitiative.exomiser.api.v1;
+
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "PrioritisersProto";
+
+// prioritisers
+message OmimPrioritiser {
+
+}
+
+message HiPhivePrioritiser {
+    string run_params = 1;
+    string disease_id = 2;
+    string candidate_gene_symbol = 3;
+}
+
+message PhivePrioritiser {
+
+}
+
+message PhenixPrioritiser {
+
+}

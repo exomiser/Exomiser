@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+// TODO: rename to exomiser.api.v1
+package org.monarchinitiative.exomiser.api.v1;
+
+import "org/monarchinitiative/exomiser/api/v1/filters.proto";
+import "org/monarchinitiative/exomiser/api/v1/prioritisers.proto";
+
+//option java_multiple_files = true;
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "AnalysisProto";
+
+enum Preset {
+    EXOME = 0;
+    GENOME = 1;
+}
+
+enum AnalysisMode {
+    PASS_ONLY = 0;
+    FULL = 1;
+}
+
+message Analysis {
+    // old fields to be replaced by sample/phenopacket/family in the Job message
+    string genome_assembly = 1;
+    string vcf = 2;
+    string ped = 3;
+    string proband = 4;
+    repeated string hpo_ids = 5;
+    // actual analysis fields
+    map<string, float> inheritance_modes = 6;
+    AnalysisMode analysis_mode = 7;
+    // using string for now, might move to enums
+    repeated string frequency_sources = 8;
+    repeated string pathogenicity_sources = 9;
+    repeated AnalysisStep steps = 10;
+}
+
+enum InheritanceMode {
+    AUTOSOMAL_DOMINANT = 0;
+    AUTOSOMAL_RECESSIVE_HOM_ALT = 1;
+    AUTOSOMAL_RECESSIVE_COMP_HET = 2;
+    X_DOMINANT = 3;
+    X_RECESSIVE_HOM_ALT = 4;
+    X_RECESSIVE_COMP_HET = 5;
+    MITOCHONDRIAL = 6;
+}
+
+message AnalysisStep {
+    oneof step {
+        IntervalFilter interval_filter = 1;
+        GenePanelFilter gene_panel_filter = 2;
+        FailedVariantFilter failed_variant_filter = 3;
+        QualityFilter quality_filter = 4;
+        VariantEffectFilter variant_effect_filter = 5;
+        RegulatoryFeatureFilter regulatory_feature_filter = 6;
+        FrequencyFilter frequency_filter = 7;
+        PathogenicityFilter pathogenicity_filter = 8;
+        KnownVariantFilter known_variant_filter = 9;
+        InheritanceFilter inheritance_filter = 10;
+        // prioritisers
+        OmimPrioritiser omim_prioritiser = 11;
+        HiPhivePrioritiser hi_phive_prioritiser = 12;
+        PhivePrioritiser phive_prioritiser = 13;
+        PhenixPrioritiser phenix_prioritiser = 14;
+        PriorityScoreFilter priority_score_filter = 15;
+    }
+}
+
+
