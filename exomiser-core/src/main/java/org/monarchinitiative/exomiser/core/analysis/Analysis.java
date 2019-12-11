@@ -161,31 +161,25 @@ public class Analysis {
 
     @JsonIgnore
     public List<List<AnalysisStep>> getAnalysisStepsGroupedByFunction() {
-        List<List<AnalysisStep>> groups = new ArrayList<>();
         if (analysisSteps.isEmpty()) {
             logger.debug("No AnalysisSteps to group.");
-            return groups;
+            return Collections.emptyList();
         }
-
-        AnalysisStep currentGroupStep = analysisSteps.get(0);
+        List<List<AnalysisStep>> groups = new ArrayList<>();
+        AnalysisStep.AnalysisStepType currentGroupType = analysisSteps.get(0).getType();
+        logger.debug("First group is for {} steps", currentGroupType);
         List<AnalysisStep> currentGroup = new ArrayList<>();
-        currentGroup.add(currentGroupStep);
-        logger.debug("First group is for {} steps", currentGroupStep.getType());
-        for (int i = 1; i < analysisSteps.size(); i++) {
-            AnalysisStep step = analysisSteps.get(i);
-
-            if (currentGroupStep.getType() != step.getType()) {
+        for (AnalysisStep step : analysisSteps) {
+            if (step.getType() != currentGroupType) {
                 logger.debug("Making new group for {} steps", step.getType());
                 groups.add(currentGroup);
                 currentGroup = new ArrayList<>();
-                currentGroupStep = step;
+                currentGroupType = step.getType();
             }
-
             currentGroup.add(step);
         }
         //make sure the last group is added too
         groups.add(currentGroup);
-
         return groups;
     }
 
