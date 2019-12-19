@@ -49,8 +49,7 @@ class SamplePhenopacketAdaptorTest {
                 .setId("manuel")
                 .build();
 
-//        Path vcfFile = Paths.get("src/test/resources/Pfeiffer.vcf");
-        Path vcfFile = Paths.get("/data/Pfeiffer.vcf");
+        Path vcfFile = Paths.get("src/test/resources/Pfeiffer.vcf");
 
         String uri = vcfFile.toUri().toString();
         System.out.println(uri);
