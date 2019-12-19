@@ -39,9 +39,9 @@ public class TestDataSourceConfig {
 
     @Bean("phenotypeDataSource")
     public DataSource dataSource() {
-        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;";
+        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;";
         String user = "sa";
-        String password = "sa";
+        String password = "";
 
         return JdbcConnectionPool.create(url, user, password);
     }
