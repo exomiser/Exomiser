@@ -96,14 +96,14 @@ public class DefaultDiseaseDao implements DiseaseDao {
                 ", symbol AS human_gene_symbol" +
                 ", d.disease_id AS disease_id" +
                 ", d.diseasename AS disease_name" +
-                ", d.TYPE AS disease_type" +
-                ", d.INHERITANCE AS inheritance_code" +
+                ", d.type AS disease_type" +
+                ", d.inheritance AS inheritance_code" +
                 ", hp_id AS pheno_ids " +
                 "FROM entrez2sym e, disease_hp dhp, disease d " +
-                "WHERE dhp.disease_id = d.DISEASE_ID " +
-                "AND e.entrezid = d.GENE_ID " +
-                "AND d.TYPE in ('D', 'C', 'S', '?')" +
-                "AND d.GENE_ID = ?";
+                "WHERE dhp.disease_id = d.disease_id " +
+                "AND e.entrezid = d.gene_id " +
+                "AND d.type in ('D', 'C', 'S', '?')" +
+                "AND d.gene_id = ?";
 
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -127,12 +127,18 @@ public class DefaultDiseaseDao implements DiseaseDao {
                     .diseaseName(rs.getString("disease_name"))
                     .associatedGeneId(rs.getInt("entrez_id"))
                     .associatedGeneSymbol(rs.getString("human_gene_symbol"))
-                    .inheritanceModeCode(rs.getString("inheritance_code"))
+                    .inheritanceModeCode(formatInheritanceCode(rs.getString("inheritance_code")))
                     .diseaseTypeCode(rs.getString("disease_type"))
                     .phenotypeIds(phenotypes)
                     .build();
             listBuilder.add(disease);
         }
         return listBuilder.build();
+    }
+
+    // work-around for the inheritance code being defined as a char and interpreted as a char2 which will contain whitespace
+    // this should be set to varchar(2). Not trimming the inheritanceCode results in all inheritance modes being UNKNOWN.
+    private String formatInheritanceCode(String inheritanceCode) {
+        return inheritanceCode == null ? "U" : inheritanceCode.trim();
     }
 }

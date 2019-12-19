@@ -94,7 +94,7 @@
         <htsjdk.version>2.19.0</htsjdk.version>
         <guava.version>27.1-jre</guava.version>
         <protobuf.version>3.8.0</protobuf.version>
-        <spring-boot.version>2.1.3.RELEASE</spring-boot.version>
+        <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -149,11 +149,11 @@
             <artifactId>h2</artifactId>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
-        <dependency>
-            <groupId>com.impossibl.pgjdbc-ng</groupId>
-            <artifactId>pgjdbc-ng</artifactId>
-            <version>0.4</version>
-        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.impossibl.pgjdbc-ng</groupId>-->
+        <!--            <artifactId>pgjdbc-ng</artifactId>-->
+        <!--            <version>0.4</version>-->
+        <!--        </dependency>-->
         <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
         https://github.com/brettwooldridge/HikariCP -->
         <dependency>
@@ -191,18 +191,8 @@
 
         <!--Test dependencies-->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -211,16 +201,10 @@
             <version>0.1.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Required to run Mockito with JUnit Jupiter-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>2.21.0</version>
             <scope>test</scope>
         </dependency>
         <!-- ByteBuddy 1.9.0+ required for compiling on Java 11 -->

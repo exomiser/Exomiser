@@ -1,7 +1,8 @@
-DROP TABLE disease_hp IF EXISTS;
+DROP TABLE IF EXISTS disease_hp;
 
-CREATE TABLE disease_hp (
-    disease_id character varying(20),
-    hp_id character varying(3000)
+CREATE TABLE disease_hp
+(
+    disease_id CHARACTER VARYING(20),
+    hp_id      CHARACTER VARYING(3000)
 );
 

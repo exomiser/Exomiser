@@ -1,4 +1,5 @@
-INSERT INTO TAD (CHROMOSOME, START, "end", ENTREZID, SYMBOL) VALUES
+INSERT INTO tad (chromosome, start, "end", entrezid, symbol)
+VALUES
 -- tad - two genes
 (1, 770137, 1250137, 9636, 'ISG15'),
 (1, 770137, 1250137, 7293, 'TNFRSF4'),

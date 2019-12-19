@@ -1,4 +1,4 @@
-INSERT INTO REGULATORY_REGIONS (CHROMOSOME, START, "END", FEATURE_TYPE) VALUES
-(11, 96762600, 96763399, 'Enhancer'),
-(11, 96798354, 96798827, 'FANTOM permissive'),
-(11, 96820460, 96821548, 'unrecognised type');
+INSERT INTO regulatory_regions (chromosome, start, "end", feature_type)
+VALUES (11, 96762600, 96763399, 'Enhancer'),
+       (11, 96798354, 96798827, 'FANTOM permissive'),
+       (11, 96820460, 96821548, 'unrecognised type');

@@ -1,4 +1,4 @@
-DROP TABLE pathogenicity IF EXISTS;
+DROP TABLE IF EXISTS pathogenicity;
 
 CREATE TABLE pathogenicity (
     chromosome smallint NOT NULL,

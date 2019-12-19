@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public class RegulatoryFeatureDao {
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
+                PreparedStatement preparedStatement = connection.prepareStatement("select chromosome as chr, start as start, \"end\" as \"end\", feature_type as feature_type from regulatory_regions");
                 ResultSet rs = preparedStatement.executeQuery()) {
 
                 return processRegulatoryFeatureResults(rs);

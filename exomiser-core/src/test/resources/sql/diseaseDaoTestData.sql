@@ -13,9 +13,9 @@ insert into disease_hp values
 ('OMIM:234567',	'HP:0000002');
 
 
-insert into ENTREZ2SYM VALUES
-(2263, 'FGFR2'),
-(2260, 'FGFR1'),
-(2222, 'GENE2'),
-(3333, 'GENE3'),
-(4444, 'GENE4');
+insert into entrez2sym
+VALUES (2263, 'FGFR2'),
+       (2260, 'FGFR1'),
+       (2222, 'GENE2'),
+       (3333, 'GENE3'),
+       (4444, 'GENE4');

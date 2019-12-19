@@ -41,7 +41,7 @@ public class TestSvDataSourceConfig {
         Path dbPath = Path.of("/Users/hhx640/Documents/sv_build/hg19_sv_database");
 //        Path dbPath = Path.of("/Users/damiansmedley/exomiser-data/hg19_sv_database");
 
-        String startUpArgs = ";SCHEMA=PBGA;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
+        String startUpArgs = ";SCHEMA=PBGA;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
 
         String jdbcUrl = String.format("jdbc:h2:file:%s%s", dbPath.toAbsolutePath(), startUpArgs);
 
