@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -49,25 +48,14 @@ public class PrioritiserController {
 
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserController.class);
 
-    private final PriorityFactory priorityFactory;
     private final Map<Integer, GeneIdentifier> geneIdentifiers;
+    private final PriorityFactory priorityFactory;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService hg38GenomeAnalysisService) {
+    public PrioritiserController(Map<Integer, GeneIdentifier> geneIdentifiers, PriorityFactory priorityFactory) {
+        this.geneIdentifiers = geneIdentifiers;
         this.priorityFactory = priorityFactory;
-        Map<Integer, GeneIdentifier> map = new HashMap<>();
-        for (GeneIdentifier geneIdentifier : hg38GenomeAnalysisService.getKnownGeneIdentifiers()) {
-            // Don't add GeneIdentifiers without HGNC identifiers as these are superceeded by others with the same
-            // entrez id which will create duplicate key errors and out of date gene symbols etc.
-            if (geneIdentifier.hasEntrezId() && !geneIdentifier.getHgncId().isEmpty()) {
-                GeneIdentifier previous = map.put(geneIdentifier.getEntrezIdAsInteger(), geneIdentifier);
-                if (previous != null) {
-                    logger.warn("Duplicate key added {} - was {}", geneIdentifier, previous);
-                }
-            }
-        }
-        this.geneIdentifiers = map;
-        logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
+        logger.info("Started PrioritiserController with GeneIdentifier cache of {} entries", geneIdentifiers.size());
     }
 
     @GetMapping(value = "about")
@@ -79,7 +67,7 @@ public class PrioritiserController {
                 "\n\t - limit the number of genes returned e.g. 10";
     }
 
-    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") Set<String> phenotypes,
                                            @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
                                            @RequestParam(value = "prioritiser") String prioritiserName,
@@ -97,7 +85,7 @@ public class PrioritiserController {
         return prioritise(prioritiserRequest);
     }
 
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public PrioritiserResultSet prioritise(@RequestBody PrioritiserRequest prioritiserRequest) {
         logger.info("{}", prioritiserRequest);
 
