@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -349,10 +349,25 @@ public class GeneTest {
         variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation2);
 
-        List<VariantEvaluation> passedVariantEvaluations = Arrays.asList(variantEvaluation1);
+        List<VariantEvaluation> passedVariantEvaluations = List.of(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
     }
+
+    @Test
+    public void testGetNonContributingPassedVariantEvaluations() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        variantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        instance.addVariant(variantEvaluation1);
+
+        variantEvaluation2.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
+
+        List<VariantEvaluation> nonContributingPassedVariantEvaluations = List.of(variantEvaluation2);
+
+        assertThat(instance.getNonContributingPassedVariantEvaluations(), equalTo(nonContributingPassedVariantEvaluations));
+    }
+
 
     @Test
     public void testAddVariantAfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {

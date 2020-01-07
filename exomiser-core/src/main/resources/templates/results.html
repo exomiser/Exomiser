@@ -1,7 +1,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2019 Queen Mary University of London.
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -196,18 +196,19 @@
                 </div>
             </div>
 
-            <!-- TODO: implement comparable on GeneScore th:each="geneScore: ${#lists.sort(gene.getGeneScores(), geneScoreComparator)}">-->
-            <div class="panel panel-default" th:each="geneScore: ${gene.getGeneScores()}" th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">
+            <div class="panel panel-default"
+                 th:each="geneScore: ${#lists.sort(gene.getGeneScores())}"
+                 th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">
 
                 <!--<div th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">-->
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h4 th:text="${geneScore.getModeOfInheritance()}">
-                                    <b><a th:case="'AUTOSOMAL_DOMINANT'"
-                                          th:text="'AD'">AUTOSOMAL_DOMINANT</a>
-                                    </b>
-                                    <!--<a th:case="'ENSEMBL'"-->
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h4 th:text="${geneScore.getModeOfInheritance()}">
+                                <b><a th:case="'AUTOSOMAL_DOMINANT'"
+                                      th:text="'AD'">AUTOSOMAL_DOMINANT</a>
+                                </b>
+                                <!--<a th:case="'ENSEMBL'"-->
                                     <!--th:href="@{http://grch37.ensembl.org/Homo_sapiens/Gene/Summary(g=${geneIdentifier.getEnsemblId()})}"-->
                                     <!--th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>-->
                                     <!--<a th:case="*"-->
@@ -245,10 +246,11 @@
                                       th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                                 <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                                     chr10:g.123256215T>G [0/1]</b>
-                                <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
+                                <th:block th:each="varId: ${variantEvaluation.id}"
                                           th:if="!${#strings.isEmpty(varId)}"
-                                          th:switch="${#strings.substring(varId, 0, 1)}">
-                                    <a th:case="'rs'" th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${varId}|}"
+                                          th:switch="${#strings.substring(varId, 0, 2)}">
+                                    <a th:case="'rs'"
+                                       th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${varId}|}"
                                        th:text="${varId}">rs141235720
                                     </a>
                                     <a th:case="'es'"
@@ -259,9 +261,13 @@
                                        th:href="@{|https://www.ncbi.nlm.nih.gov/dbvar/variants/${varId}|}"
                                        th:text="${varId}">nsv819538
                                     </a>
-                                    <a th:case="'dg'" th:href="@{|http://dgv.tcag.ca/dgv/app/variant(id=${varId})|}"
+                                    <a th:case="'dg'"
+                                       th:href="@{|http://dgv.tcag.ca/dgv/app/variant(id=${varId})|}"
                                        th:text="${varId}">dgv1891n106
                                     </a>
+                                    <span th:case="*"
+                                          th:text="${varId}">12345
+                                    </span>
                                 </th:block>
                             </div>
                             <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
@@ -344,99 +350,101 @@
                     </div> <!-- end panel-body -->
                 <!--</div> &lt;!&ndash; end gene score section&ndash;&gt;-->
             </div> <!-- end gene scores -->
-            <div class="row">
-                <div class="col-sm-12">
-                    <b>Other passed variants:</b>
+            <th:block th:if="${not #lists.isEmpty(gene.getNonContributingPassedVariantEvaluations)}">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <b>Other passed variants:</b>
+                    </div>
                 </div>
-            </div>
-            <div class="row"
-                 th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}"
-                 th:if="not ${variantEvaluation.contributesToGeneScore()}">
-                <div class="col-sm-12">
-                    <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
-                    <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
-                        chr10:g.123256215T>G [0/1]</b>
-                    <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
-                              th:if="${#strings.startsWith(rsId,'rs')}">
-                        <a th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${rsId}|}"
-                           th:text="${rsId}">rs141235720
-                        </a>
-                    </th:block>
-                </div>
-                <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
-                    <b>ClinVar: </b>
-                    <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
-                              th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                <div class="row"
+                     th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}"
+                     th:if="not ${variantEvaluation.contributesToGeneScore()}">
+                    <div class="col-sm-12">
+                        <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
+                        <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
+                            chr10:g.123256215T>G [0/1]</b>
+                        <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
+                                  th:if="${#strings.startsWith(rsId,'rs')}">
+                            <a th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${rsId}|}"
+                               th:text="${rsId}">rs141235720
+                            </a>
+                        </th:block>
+                    </div>
+                    <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                        <b>ClinVar: </b>
+                        <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                  th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
                         <span th:case="'BENIGN'" class="label label-success"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
-                        <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
-                        <span th:case="'LIKELY_BENIGN'" class="label label-info"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
-                        <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
-                        <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
-                        <span th:case="'PATHOGENIC'" class="label label-danger"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
-                        <span th:case="*" class="label label-default"
-                           th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
-                        <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
-                           th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
-                            (criteria_provided,_single_submitter)
-                        </a>
-                    </th:block>
+                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                            <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                            <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                            <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                            <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                            <span th:case="'PATHOGENIC'" class="label label-danger"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                            <span th:case="*" class="label label-default"
+                                  th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                            <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                               th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                (criteria_provided,_single_submitter)
+                            </a>
+                        </th:block>
+                    </div>
+                    <div class="col-sm-6">
+                        <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
+                            score: 0.600</b>
+                        <span class="label label-danger"
+                              th:if="${variantEvaluation.isWhiteListed()}"
+                              th:text="'WHITELIST VARIANT'">WHITELIST VARIANT</span>
+                        <dl class="list-unstyled">
+                            <dt>Transcripts:</dt>
+                            <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
+                                th:switch="${transcriptDb}">
+                                <a th:case="'UCSC'"
+                                   th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                <a th:case="'ENSEMBL'"
+                                   th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                <a th:case="'REFSEQ'"
+                                   th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-sm-3">
+                        <!--<b>Pathogenicity Score: 1.00</b>-->
+                        <dl class="list-unstyled"
+                            th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
+                            <dt>Pathogenicity Data:</dt>
+                            <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
+                                th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
+                            </dd>
+                            <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No
+                                pathogenicity data
+                            </dd>
+                            <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}"
+                                th:text="${pathScore}">Mutation Taster: 0.999 (P)
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-sm-3">
+                        <!--<b>Frequency Score: 0.95</b>-->
+                        <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                            <dt>Frequency Data:</dt>
+                            <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
+                            <dd th:each="freq: ${frequencyData.knownFrequencies}"
+                                th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">
+                                1000Genomes: 0.02%
+                            </dd>
+                        </dl>
+                    </div>
                 </div>
-                <div class="col-sm-6">
-                    <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
-                        score: 0.600</b>
-                    <span class="label label-danger"
-                          th:if="${variantEvaluation.isWhiteListed()}"
-                          th:text="'WHITELIST VARIANT'">WHITELIST VARIANT</span>
-                    <dl class="list-unstyled">
-                        <dt>Transcripts:</dt>
-                        <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
-                            th:switch="${transcriptDb}">
-                            <a th:case="'UCSC'"
-                               th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
-                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
-                            <a th:case="'ENSEMBL'"
-                               th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
-                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
-                            <a th:case="'REFSEQ'"
-                               th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
-                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
-                        </dd>
-                    </dl>
-                </div>
-                <div class="col-sm-3">
-                    <!--<b>Pathogenicity Score: 1.00</b>-->
-                    <dl class="list-unstyled"
-                        th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
-                        <dt>Pathogenicity Data:</dt>
-                        <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
-                            th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
-                        </dd>
-                        <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No
-                            pathogenicity data
-                        </dd>
-                        <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}"
-                            th:text="${pathScore}">Mutation Taster: 0.999 (P)
-                        </dd>
-                    </dl>
-                </div>
-                <div class="col-sm-3">
-                    <!--<b>Frequency Score: 0.95</b>-->
-                    <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                        <dt>Frequency Data:</dt>
-                        <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                        <dd th:each="freq: ${frequencyData.knownFrequencies}"
-                            th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">
-                            1000Genomes: 0.02%
-                        </dd>
-                    </dl>
-                </div>
-            </div>
+            </th:block>
         </div>
     </div>
 
