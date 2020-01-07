@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,8 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -53,6 +55,10 @@ public class SvFrequencyDao implements FrequencyDao {
         this.svDataSource = svDataSource;
     }
 
+    @Caching(cacheable = {
+            @Cacheable(cacheNames = "hg19.sv.freq", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.sv.freq", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+    })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
         if (variant.isStructuralVariant()) {
