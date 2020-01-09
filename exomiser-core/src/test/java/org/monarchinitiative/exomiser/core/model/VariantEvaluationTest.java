@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -868,11 +868,41 @@ public class VariantEvaluationTest {
     @Test
     void testToGnomadSvIns() {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
-                .length(50)
                 .structuralType(StructuralType.INS)
-                .id("12345")
+                .length(50)
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> length: 50bp, id: 12345"));
+        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> 50bp"));
+    }
+
+    @Test
+    void lengthFormat() {
+        VariantEvaluation.Builder sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
+                .structuralType(StructuralType.INS);
+
+        assertThat(toGnomadWithLength(sv, 0), equalTo("1-100-100-A-<INS> 0bp"));
+        assertThat(toGnomadWithLength(sv, 8), equalTo("1-100-100-A-<INS> 8bp"));
+        assertThat(toGnomadWithLength(sv, 87), equalTo("1-100-100-A-<INS> 87bp"));
+        assertThat(toGnomadWithLength(sv, 876), equalTo("1-100-100-A-<INS> 876bp"));
+        assertThat(toGnomadWithLength(sv, 1_000), equalTo("1-100-100-A-<INS> 1.0kb"));
+        assertThat(toGnomadWithLength(sv, 8_765), equalTo("1-100-100-A-<INS> 8.7kb"));
+        assertThat(toGnomadWithLength(sv, 10_000), equalTo("1-100-100-A-<INS> 10.0kb"));
+        assertThat(toGnomadWithLength(sv, 87_654), equalTo("1-100-100-A-<INS> 87.6kb"));
+        assertThat(toGnomadWithLength(sv, 99_999), equalTo("1-100-100-A-<INS> 99.9kb"));
+        assertThat(toGnomadWithLength(sv, 100_000), equalTo("1-100-100-A-<INS> 100.0kb"));
+        assertThat(toGnomadWithLength(sv, 100_001), equalTo("1-100-100-A-<INS> 100.0kb"));
+        assertThat(toGnomadWithLength(sv, 100_199), equalTo("1-100-100-A-<INS> 100.1kb"));
+        assertThat(toGnomadWithLength(sv, 876_543), equalTo("1-100-100-A-<INS> 876.5kb"));
+        assertThat(toGnomadWithLength(sv, 1_000_000), equalTo("1-100-100-A-<INS> 1.0Mb"));
+        assertThat(toGnomadWithLength(sv, 8_765_432), equalTo("1-100-100-A-<INS> 8.7Mb"));
+        assertThat(toGnomadWithLength(sv, 100_000_000), equalTo("1-100-100-A-<INS> 100.0Mb"));
+        assertThat(toGnomadWithLength(sv, 876_543_210), equalTo("1-100-100-A-<INS> 876.5Mb"));
+        assertThat(toGnomadWithLength(sv, 1_000_000_000), equalTo("1-100-100-A-<INS> 1.0Gb"));
+        assertThat(toGnomadWithLength(sv, 1_000_000_001), equalTo("1-100-100-A-<INS> 1.0Gb"));
+        assertThat(toGnomadWithLength(sv, Integer.MAX_VALUE), equalTo("1-100-100-A-<INS> 2.1Gb"));
+    }
+
+    private String toGnomadWithLength(VariantEvaluation.Builder sv, int length) {
+        return sv.length(length).build().toGnomad();
     }
 
     @Test
@@ -882,7 +912,7 @@ public class VariantEvaluationTest {
                 .length(50)
                 .structuralType(StructuralType.DEL)
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> length: 50bp"));
+        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> 50bp"));
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -184,22 +184,28 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     public String toGnomad() {
         if (isStructuralVariant()) {
             // can be searched for in gnomad like so:
-            // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(Contig.toString(chromosome)).append('-');
-            stringBuilder.append(start).append('-');
-            stringBuilder.append(end).append('-');
-            stringBuilder.append(ref).append('-');
-            stringBuilder.append(alt).append(' ');
-            stringBuilder.append("length: ").append(length).append("bp");
-            if (!id.isEmpty()) {
-                stringBuilder.append(", id: ").append(id);
-            }
-            return stringBuilder.toString();
+            // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2_1
+            return Contig.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + ' ' + unitLength();
         }
         // can be searched for in gnomad like so:
         // https://gnomad.broadinstitute.org/variant/X-31517201-T-C
         return Contig.toString(chromosome) + '-' + start + '-' + ref + '-' + alt;
+    }
+
+    private String unitLength() {
+        if (length < 1000) {
+            return length + "bp";
+        }
+        // this does not perform any rounding
+        if (length < 1_000_000) {
+            return (length / 1_000) + "." + (length / 100) % 10 + "kb";
+        }
+        if (length < 1_000_000_000) {
+            return (length / 1_000_000) + "." + (length / 100_000) % 10 + "Mb";
+        }
+        // Max integer is 2_147_483_647 i.e. 2.1Gb - given the whole human genome is ~ 3Gb, an int is way larger than we need
+        //  to represent the length of a variation, even if it involves 2/3 of the genome being fused into one enormous BND
+        return (length / 1_000_000_000) + "." + (length / 100_000_000) % 10 + "Gb";
     }
 
     @JsonIgnore
