@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -270,7 +270,7 @@ public class VcfResultsWriter implements ResultsWriter {
      * <code>builder</code>.
      */
     private Set<String> makeFailedFilters(Set<FilterType> failedFilterTypes) {
-        return failedFilterTypes.stream().map(FilterType::toVcfValue).collect(toSet());
+        return failedFilterTypes.stream().map(FilterType::vcfValue).collect(toSet());
     }
 
     /**
@@ -287,7 +287,7 @@ public class VcfResultsWriter implements ResultsWriter {
 
         // add FILTER descriptions
         for (FilterType ft : FilterType.values()) {
-            lines.add(new VCFFilterHeaderLine(ft.toVcfValue(), ft.toString()));
+            lines.add(new VCFFilterHeaderLine(ft.vcfValue(), ft.shortName()));
         }
 
         return lines;

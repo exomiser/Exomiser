@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -233,7 +233,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private String formatFailedFilters(Set<FilterType> failedFilters) {
         StringJoiner stringJoiner = new StringJoiner(";");
         for (FilterType filterType : failedFilters) {
-            stringJoiner.add(filterType.toVcfValue());
+            stringJoiner.add(filterType.vcfValue());
         }
         return stringJoiner.toString();
     }

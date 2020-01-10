@@ -134,11 +134,9 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
         logger.info("Variant filter stats are:");
-        analysisStepGroups.stream()
-                .flatMap(Collection::stream)
-                .filter(analysisStep -> analysisStep instanceof Filter)
-                .map(analysisStep -> ((Filter) analysisStep).getFilterType())
-                .forEach(filterType -> logger.info("{}: pass={} fail={}", filterType.name(), filterStats.getPassCountForFilter(filterType), filterStats.getFailCountForFilter(filterType)));
+        filterStats.getFilterCounts()
+                .forEach(filterStat -> logger.info("{}: pass={} fail={}", filterStat.getFilterType(), filterStat.getPassCount(), filterStat
+                        .getFailCount()));
 
         logger.info("Creating analysis results from VCF {}", vcfPath);
         AnalysisResults analysisResults = AnalysisResults.builder()
