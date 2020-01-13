@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.config;
 
+import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class ControllerConfig {
                 }
             }
         }
-        return geneIdentifierMap;
+        return ImmutableMap.copyOf(geneIdentifierMap);
     }
 
 //    private final Environment environment;
