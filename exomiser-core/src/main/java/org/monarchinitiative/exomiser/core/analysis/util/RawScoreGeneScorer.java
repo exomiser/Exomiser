@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -110,7 +110,8 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .average()
                 .orElse(0);
 
-        float combinedScore = calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults().keySet());
+        float combinedScore = (float) calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults()
+                .keySet());
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -129,24 +130,32 @@ public class RawScoreGeneScorer implements GeneScorer {
      * <p>
      * Note that this method assumes we have already calculated the filter and variant scores.
      */
-    private float calculateCombinedScore(float variantScore, float priorityScore, Set<PriorityType> prioritiesRun) {
-        if (variantScore == 0 && priorityScore == 0)  {
+    private double calculateCombinedScore(double variantScore, double priorityScore, Set<PriorityType> prioritiesRun) {
+        if (variantScore == 0 && priorityScore == 0) {
             return 0;
         }
         // its possible that all of these could have been run, but we'll just take the first. Ideally there should be a
         // check somewhere else in the system to prevent more than one prioritiser being run.
         if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
-            double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
-            return (float) logitScore;
+            return hiPhiveLogitScore(variantScore, priorityScore);
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
-            //NB this is based on raw walker score
-            double logitScore = 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * variantScore)));
-            return (float) logitScore;
+            return walkerLogitScore(variantScore, priorityScore);
         } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
-            double logitScore = 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * variantScore)));
-            return (float) logitScore;
-        } else {
-            return (priorityScore + variantScore) / 2f;
+            return phenixLogitScore(variantScore, priorityScore);
         }
+        return (priorityScore + variantScore) / 2f;
+    }
+
+    private double hiPhiveLogitScore(double variantScore, double priorityScore) {
+        return 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
+    }
+
+    private double walkerLogitScore(double variantScore, double priorityScore) {
+        //NB this is based on raw walker score
+        return 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * variantScore)));
+    }
+
+    private double phenixLogitScore(double variantScore, double priorityScore) {
+        return 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * variantScore)));
     }
 }

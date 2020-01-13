@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -118,9 +118,12 @@ public class RawScoreGeneScorerTest {
     }
 
     private List<GeneScore> scoreGene(Gene gene, InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample, Pedigree pedigree) {
+        return getInstance(inheritanceModeOptions, probandSample, pedigree).scoreGene().apply(gene);
+    }
+
+    private RawScoreGeneScorer getInstance(InheritanceModeOptions inheritanceModeOptions, SampleIdentifier probandSample, Pedigree pedigree) {
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(probandSample, inheritanceModeAnnotator);
-        return instance.scoreGene().apply(gene);
+        return new RawScoreGeneScorer(probandSample, inheritanceModeAnnotator);
     }
 
     @Test
