@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,15 +20,20 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser;
 
-import org.monarchinitiative.exomiser.autoconfigure.EnableExomiser;
+import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfiguration;
+import org.monarchinitiative.exomiser.autoconfigure.genome.GenomeAnalysisServiceAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@SpringBootApplication
-@EnableExomiser
+@SpringBootApplication(exclude = {
+        DataSourceAutoConfiguration.class,
+        ExomiserAutoConfiguration.class,
+        GenomeAnalysisServiceAutoConfiguration.class
+})
 public class ExomiserPrioritiserServer {
 
     public static void main(String[] args) {

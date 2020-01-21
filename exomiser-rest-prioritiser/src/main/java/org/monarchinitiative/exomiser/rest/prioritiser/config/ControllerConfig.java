@@ -21,15 +21,21 @@
 package org.monarchinitiative.exomiser.rest.prioritiser.config;
 
 import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashMap;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,48 +45,38 @@ public class ControllerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
 
-    private final GenomeAnalysisService genomeAnalysisService;
+    private final DataSource dataSource;
 
-    public ControllerConfig(GenomeAnalysisService genomeAnalysisService) {
-        this.genomeAnalysisService = genomeAnalysisService;
+    public ControllerConfig(@Qualifier("phenotypeDataSource") DataSource dataSource) {
+        this.dataSource = Objects.requireNonNull(dataSource);
     }
 
     @Bean
     public Map<Integer, GeneIdentifier> getGeneIdentifiers() {
-        Map<Integer, GeneIdentifier> geneIdentifierMap = new HashMap<>();
-        for (GeneIdentifier geneIdentifier : genomeAnalysisService.getKnownGeneIdentifiers()) {
-            // Don't add GeneIdentifiers without HGNC identifiers as these are superceeded by others with the same
-            // entrez id which will create duplicate key errors and out of date gene symbols etc.
-            if (geneIdentifier.hasEntrezId() && !geneIdentifier.getHgncId().isEmpty()) {
-                GeneIdentifier previous = geneIdentifierMap.put(geneIdentifier.getEntrezIdAsInteger(), geneIdentifier);
-                if (previous != null) {
-                    logger.warn("Duplicate key added {} - was {}", geneIdentifier, previous);
-                }
+        logger.info("Loading gene identifiers...");
+        Map<Integer, GeneIdentifier> geneIdentifierMap = new TreeMap<>();
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                        "select human_gene_symbol as gene_symbol, entrez_id from human2mouse_orthologs");
+                ResultSet rs = preparedStatement.executeQuery()) {
+            while (rs.next()) {
+                int entrezId = rs.getInt("entrez_id");
+                String entrezStringId = String.valueOf(entrezId);
+                String geneSymbol = rs.getString("gene_symbol");
+                GeneIdentifier geneIdentifier = GeneIdentifier.builder()
+                        .geneSymbol(geneSymbol)
+                        .geneId(entrezStringId)
+                        .entrezId(entrezStringId)
+                        .build();
+                geneIdentifierMap.put(entrezId, geneIdentifier);
             }
+            logger.info("Loaded {} gene identifiers", geneIdentifierMap.size());
+            return ImmutableMap.copyOf(geneIdentifierMap);
+        } catch (SQLException e) {
+            logger.error("Error executing getGenes query: ", e);
         }
-        return ImmutableMap.copyOf(geneIdentifierMap);
+        throw new RuntimeException("Unable to retrieve gene identifiers");
     }
-
-//    private final Environment environment;
-//
-//    public ControllerConfig(Environment environment) {
-//        this.environment = environment;
-//    }
-//
-//    @Bean
-//    public Path hgncFilePath() {
-//        String pathString = Objects.requireNonNull(environment.getProperty("hgnc.path"));
-//        return Paths.get(pathString).toAbsolutePath();
-//    }
-//
-//    @Bean
-//    public Map<Integer, GeneIdentifier> getGeneIdentifiers(Path hgncFilePath) {
-//        // TODO This should be able to replace the GenomeAnalysisService, but this causes issues with the
-//        //  AnalysisServiceAutoconfiguration
-//        HgncParser hgncParser = new HgncParser(hgncFilePath);
-//        return hgncParser.parseGeneIdentifiers()
-//                .filter(GeneIdentifier::hasEntrezId)
-//                .collect(toMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
-//    }
 
 }
