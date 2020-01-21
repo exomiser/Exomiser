@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -53,6 +53,7 @@ public class GenomeDataSourceLoader {
     private final TabixDataSource testPathogenicityTabixDataSource;
 
     public GenomeDataSourceLoader(GenomeProperties genomeProperties, GenomeDataResolver genomeDataResolver) {
+        logger.debug("Loading {} genome data sources...", genomeProperties.getAssembly());
         this.genomeProperties = genomeProperties;
         this.genomeDataResolver = genomeDataResolver;
 
@@ -65,6 +66,7 @@ public class GenomeDataSourceLoader {
         caddIndelTabixDataSource = getTabixDataSourceOrDefault("CADD InDel", genomeProperties.getCaddInDelPath());
         remmTabixDataSource = getTabixDataSourceOrDefault("REMM", genomeProperties.getRemmPath());
         testPathogenicityTabixDataSource = getTabixDataSourceOrDefault("TEST", genomeProperties.getTestPathogenicityScorePath());
+        logger.debug("{} genome data sources loaded", genomeProperties.getAssembly());
     }
 
     private JannovarData loadJannovarData() {

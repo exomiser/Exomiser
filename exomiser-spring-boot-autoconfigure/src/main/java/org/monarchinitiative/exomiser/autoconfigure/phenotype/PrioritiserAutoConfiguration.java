@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -117,6 +117,7 @@ public class PrioritiserAutoConfiguration {
 
     @Bean
     public Path phenotypeDataDirectory() {
+        logger.debug("Phenotype data directory {}", phenotypeDataDirectory);
         return phenotypeDataDirectory;
     }
 
@@ -169,6 +170,7 @@ public class PrioritiserAutoConfiguration {
             logger.info("Pre-loading in-memory random-walk matrix from {}", randomWalkFilePath);
             return DataMatrixIO.loadInMemoryDataMatrix(randomWalkFilePath);
         }
+        logger.debug("Using off-heap random-walk matrix from {}", randomWalkFilePath);
         return DataMatrixIO.loadOffHeapDataMatrix(randomWalkFilePath);
     }
 
