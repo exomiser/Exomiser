@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -64,6 +66,7 @@ public class InheritanceModeOptions {
         return EMPTY;
     }
 
+    @JsonCreator
     public static InheritanceModeOptions of(Map<SubModeOfInheritance, Float> values) {
         Objects.requireNonNull(values);
         return new InheritanceModeOptions(values);
@@ -190,18 +193,22 @@ public class InheritanceModeOptions {
      *
      * @return the maximum defined minor allele frequency  value for all modes of inheritance
      */
+    @JsonIgnore
     public float getMaxFreq() {
         return maxFreq;
     }
 
+    @JsonIgnore
     public Set<ModeOfInheritance> getDefinedModes() {
         return Sets.immutableEnumSet(moiMaxFreqs.keySet());
     }
 
+    @JsonIgnore
     public Set<SubModeOfInheritance> getDefinedSubModes() {
         return Sets.immutableEnumSet(subMoiMaxFreqs.keySet());
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return subMoiMaxFreqs.isEmpty();
     }
