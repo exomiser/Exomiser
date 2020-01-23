@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -155,6 +155,16 @@ public class InheritanceModeOptions {
             }
         }
         return Maps.immutableEnumMap(maxFreqs);
+    }
+
+    /**
+     * Returns the maximum minor allele frequency (as a percentage value) for each defined mode of inheritance.
+     *
+     * @return A map of the defined maximum minor allele frequency values
+     * @since 13.0.0
+     */
+    public Map<SubModeOfInheritance, Float> getMaxFreqs() {
+        return subMoiMaxFreqs;
     }
 
     /**
