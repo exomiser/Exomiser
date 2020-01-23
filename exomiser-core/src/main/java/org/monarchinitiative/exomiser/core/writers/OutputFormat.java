@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
 /**
  * Enum for representing the desired format of the output.
  *
@@ -38,6 +43,8 @@ public enum OutputFormat {
     TSV_VARIANT("variants.tsv"),
     JSON("json");
 
+    private static final Logger logger = LoggerFactory.getLogger(OutputFormat.class);
+
     private final String fileExtension;
 
     OutputFormat(String fileExtension) {
@@ -48,4 +55,26 @@ public enum OutputFormat {
         return fileExtension;
     }
 
+    public static OutputFormat parseFormat(String value) {
+        switch (value.trim().toUpperCase()) {
+            case "TSV_GENE":
+            case "TAB-GENE":
+            case "TSV-GENE":
+                return OutputFormat.TSV_GENE;
+            case "TSV_VARIANT":
+            case "TAB-VARIANT":
+            case "TSV-VARIANT":
+                return OutputFormat.TSV_VARIANT;
+            case "VCF":
+                return OutputFormat.VCF;
+            case "JSON":
+                return OutputFormat.JSON;
+            case "HTML":
+                return OutputFormat.HTML;
+            default:
+                logger.info("Unrecognised output format '{}'. Valid options are {} - defaulting to {}", value, List.of(OutputFormat
+                        .values()), OutputFormat.HTML);
+                return OutputFormat.HTML;
+        }
+    }
 }

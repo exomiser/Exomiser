@@ -149,7 +149,10 @@ public class AnalysisParser {
                 //despite being deprecated and functionally different, this has the same return value
                 return parseBooleanValue(deprecatedOption, analysisMap);
             }
-            return parseBooleanValue(outputContributingVariantsOnly, analysisMap);
+            if (analysisMap.containsKey(outputContributingVariantsOnly)) {
+                return parseBooleanValue(outputContributingVariantsOnly, analysisMap);
+            }
+            return false;
         }
 
         private Boolean parseBooleanValue(String key, Map<String, Boolean> analysisMap) {
@@ -182,35 +185,9 @@ public class AnalysisParser {
                 logger.info("No output format options supplied.");
                 return EnumSet.noneOf(OutputFormat.class);
             }
-            Set<OutputFormat> parsedOutputFormats = new LinkedHashSet<>();
-            for (String name : givenOutputFormats) {
-                switch (name.trim().toUpperCase()) {
-                    case "HTML":
-                        parsedOutputFormats.add(OutputFormat.HTML);
-                        break;
-                    case "TSV_GENE":
-                    case "TAB-GENE":
-                    case "TSV-GENE":
-                        parsedOutputFormats.add(OutputFormat.TSV_GENE);
-                        break;
-                    case "TSV_VARIANT":
-                    case "TAB-VARIANT":
-                    case "TSV-VARIANT":
-                        parsedOutputFormats.add(OutputFormat.TSV_VARIANT);
-                        break;
-                    case "VCF":
-                        parsedOutputFormats.add(OutputFormat.VCF);
-                        break;
-                    case "JSON":
-                        parsedOutputFormats.add(OutputFormat.JSON);
-                        break;
-                    default:
-                        logger.info("{} is not a recognised output format. Please choose one or more of HTML, TSV_GENE, TSV_VARIANT, VCF, JSON - defaulting to HTML", name);
-                        parsedOutputFormats.add(OutputFormat.HTML);
-                        break;
-                }
-            }
-            return EnumSet.copyOf(parsedOutputFormats);
+            return givenOutputFormats.stream()
+                    .map(OutputFormat::parseFormat)
+                    .collect(Sets.toImmutableEnumSet());
         }
     }
 
