@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -133,6 +133,21 @@ public class HiPhiveOptionsTest {
         assertThat(instance.runMouse(), is(true));
         assertThat(instance.runFish(), is(true));
         assertThat(instance.runPpi(), is(true));
+    }
+
+    @Test
+    void testGetRunParams() {
+        HiPhiveOptions defaultInstance = HiPhiveOptions.builder().runParams("human,mouse,fish , ppi").build();
+        assertThat(defaultInstance.getRunParams(), equalTo("human, mouse, fish, ppi"));
+
+        HiPhiveOptions humanOnly = HiPhiveOptions.builder().runParams("human").build();
+        assertThat(humanOnly.getRunParams(), equalTo("human"));
+
+        HiPhiveOptions humanMouseOnly = HiPhiveOptions.builder().runParams("human, mouse").build();
+        assertThat(humanMouseOnly.getRunParams(), equalTo("human, mouse"));
+
+        HiPhiveOptions fishOnly = HiPhiveOptions.builder().runParams("fish").build();
+        assertThat(fishOnly.getRunParams(), equalTo("fish"));
     }
 
     @Test
