@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@ public class OutputSettings {
     private final Set<OutputFormat> outputFormats;
 
     private OutputSettings(Builder builder) {
-        this.outputContributingVariantsOnly = builder.outputContributinVariantsOnly;
+        this.outputContributingVariantsOnly = builder.outputContributingVariantsOnly;
         this.numberOfGenesToShow = builder.numberOfGenesToShow;
         this.outputPrefix = builder.outputPrefix;
         this.outputFormats = builder.outputFormats;
@@ -62,7 +62,7 @@ public class OutputSettings {
 
     public static class Builder {
 
-        private boolean outputContributinVariantsOnly = false;
+        private boolean outputContributingVariantsOnly = false;
         private int numberOfGenesToShow = 0;
         private String outputPrefix = "";
         private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
@@ -75,7 +75,7 @@ public class OutputSettings {
 
         @JsonSetter
         public Builder outputContributingVariantsOnly(boolean outputContributingVariantsOnly) {
-            this.outputContributinVariantsOnly = outputContributingVariantsOnly;
+            this.outputContributingVariantsOnly = outputContributingVariantsOnly;
             return this;
         }
 
