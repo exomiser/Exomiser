@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -51,11 +51,8 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants
-            if(genes.containsKey(variantEvaluation.getGeneSymbol())) {
-                Gene gene = genes.get(variantEvaluation.getGeneSymbol());
-                return gene.passedFilters();
-            }
-            return false;
+            Gene gene = genes.get(variantEvaluation.getGeneSymbol());
+            return gene != null && gene.passedFilters();
         };
     }
 
