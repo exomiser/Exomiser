@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,6 +55,9 @@ public class SampleIdentifierUtil {
      */
     public static SampleIdentifier createProbandIdentifier(String probandSampleName, List<String> sampleNames) {
         logger.debug("Creating sample identifier for proband '{}'", probandSampleName);
+        if (!probandSampleName.isEmpty() && sampleNames.isEmpty()) {
+            return SampleIdentifier.of(probandSampleName, 0);
+        }
         int numSamples = sampleNames.size();
         if (probandSampleName.isEmpty() && numSamples > 1) {
             String message = String.format("Proband sample name not specified. Expected single sample VCF but got %d sample names - %s. Please check your sample and analysis files match.", numSamples, sampleNames);

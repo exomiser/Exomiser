@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.Individual;
@@ -75,8 +74,6 @@ class SamplePhenopacketAdaptorTest {
         assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
         assertThat(instance.getVcfPath(), equalTo(vcfFile.toAbsolutePath()));
         assertThat(instance.getProbandSampleName(), equalTo("manuel"));
-        assertThat(instance.getProbandSampleIdentifier(), equalTo(SampleIdentifier.of("manuel", 0)));
-        assertThat(instance.getSampleNames(), equalTo(List.of("manuel")));
         assertThat(instance.getPedigree(), equalTo(Pedigree.justProband("manuel")));
         assertThat(instance.getHpoIds(), equalTo(List.of("HP:0001363")));
     }

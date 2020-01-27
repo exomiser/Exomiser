@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,12 +21,9 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import com.google.common.collect.ImmutableList;
-import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -43,11 +40,7 @@ public class SampleAnalysisAdaptor implements Sample {
     private final GenomeAssembly genomeAssembly;
     private final Path vcfPath;
     private final String probandSampleName;
-    private final SampleIdentifier probandSampleIdentifier;
-    private final List<String> sampleNames;
-
     private final Pedigree pedigree;
-
     private final List<String> hpoIds;
 
     public SampleAnalysisAdaptor(Analysis analysis) {
@@ -55,12 +48,7 @@ public class SampleAnalysisAdaptor implements Sample {
         vcfPath = Objects.requireNonNull(analysis.getVcfPath());
         probandSampleName = analysis.getProbandSampleName();
         hpoIds = ImmutableList.copyOf(analysis.getHpoIds());
-
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
-        sampleNames = ImmutableList.copyOf(vcfHeader.getGenotypeSamples());
-
-        probandSampleIdentifier = SampleIdentifierUtil.createProbandIdentifier(analysis.getProbandSampleName(), sampleNames);
-        pedigree = PedigreeSampleValidator.validate(analysis.getPedigree(), probandSampleIdentifier, sampleNames);
+        pedigree = analysis.getPedigree();
     }
 
     @Override
@@ -76,16 +64,6 @@ public class SampleAnalysisAdaptor implements Sample {
     @Override
     public String getProbandSampleName() {
         return probandSampleName;
-    }
-
-    @Override
-    public SampleIdentifier getProbandSampleIdentifier() {
-        return probandSampleIdentifier;
-    }
-
-    @Override
-    public List<String> getSampleNames() {
-        return sampleNames;
     }
 
     @Override
@@ -106,14 +84,13 @@ public class SampleAnalysisAdaptor implements Sample {
         return genomeAssembly == that.genomeAssembly &&
                 Objects.equals(vcfPath, that.vcfPath) &&
                 Objects.equals(probandSampleName, that.probandSampleName) &&
-                Objects.equals(probandSampleIdentifier, that.probandSampleIdentifier) &&
                 Objects.equals(pedigree, that.pedigree) &&
                 Objects.equals(hpoIds, that.hpoIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, probandSampleIdentifier, pedigree, hpoIds);
+        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, pedigree, hpoIds);
     }
 
     @Override
@@ -122,8 +99,6 @@ public class SampleAnalysisAdaptor implements Sample {
                 "genomeAssembly=" + genomeAssembly +
                 ", vcfPath=" + vcfPath +
                 ", probandSampleName='" + probandSampleName + '\'' +
-                ", probandSampleIdentifier=" + probandSampleIdentifier +
-                ", sampleNames=" + sampleNames +
                 ", pedigree=" + pedigree +
                 ", hpoIds=" + hpoIds +
                 '}';

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,8 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import com.google.common.collect.ImmutableList;
-import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.OntologyClass;
@@ -45,12 +42,8 @@ class SamplePhenopacketAdaptor implements Sample {
 
     private final GenomeAssembly genomeAssembly;
     private final Path vcfPath;
-    private final String probandSampleName;
-    private final SampleIdentifier probandSampleIdentifier;
-    private final List<String> sampleNames;
-
     private final Pedigree pedigree;
-
+    private final String probandSampleName;
     private final List<String> hpoIds;
 
     SamplePhenopacketAdaptor(Phenopacket phenopacket) {
@@ -68,13 +61,14 @@ class SamplePhenopacketAdaptor implements Sample {
 
         genomeAssembly = GenomeAssembly.fromValue(htsFile.getGenomeAssembly());
         vcfPath = Paths.get(URI.create(htsFile.getUri()));//.toAbsolutePath();
+        // pedigree = unvalidated pedigree. The AnalysisRunner will validate this against the VCF just before the
+        // analysis is run. The reason being that its possible that the sample creation part could be happening
+        // sometime before the analysis happens and not in a process which has access to the VCF file.
 
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
-        sampleNames = ImmutableList.copyOf(vcfHeader.getGenotypeSamples());
-
-        probandSampleIdentifier = SampleIdentifierUtil.createProbandIdentifier(probandSampleName, sampleNames);
-
-        this.pedigree = PedigreeSampleValidator.validate(Pedigree.justProband(probandSampleName), probandSampleIdentifier, sampleNames);
+        // TODO: test creation of the pedigree when the htsFile.getIndividualToSampleIdentifiersMap() is not empty such that
+        //  the pedigree is made from the sampleIdentifiers so that Exomiser can validate the sample identifiers in the
+        //  pedigree against the sample identifiers in the VCF.
+        pedigree = Pedigree.justProband(probandSampleName);
     }
 
     private HtsFile validateAndExtractHtsFile(List<HtsFile> htsFiles) {
@@ -105,16 +99,6 @@ class SamplePhenopacketAdaptor implements Sample {
     }
 
     @Override
-    public SampleIdentifier getProbandSampleIdentifier() {
-        return probandSampleIdentifier;
-    }
-
-    @Override
-    public List<String> getSampleNames() {
-        return sampleNames;
-    }
-
-    @Override
     public Pedigree getPedigree() {
         return pedigree;
     }
@@ -132,14 +116,13 @@ class SamplePhenopacketAdaptor implements Sample {
         return genomeAssembly == that.genomeAssembly &&
                 Objects.equals(vcfPath, that.vcfPath) &&
                 Objects.equals(probandSampleName, that.probandSampleName) &&
-                Objects.equals(probandSampleIdentifier, that.probandSampleIdentifier) &&
                 Objects.equals(pedigree, that.pedigree) &&
                 Objects.equals(hpoIds, that.hpoIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, probandSampleIdentifier, pedigree, hpoIds);
+        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, pedigree, hpoIds);
     }
 
     @Override
@@ -148,8 +131,6 @@ class SamplePhenopacketAdaptor implements Sample {
                 "genomeAssembly=" + genomeAssembly +
                 ", vcfPath=" + vcfPath +
                 ", probandSampleName='" + probandSampleName + '\'' +
-                ", probandSampleIdentifier=" + probandSampleIdentifier +
-                ", sampleNames=" + sampleNames +
                 ", pedigree=" + pedigree +
                 ", hpoIds=" + hpoIds +
                 '}';
