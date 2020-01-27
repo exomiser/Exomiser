@@ -20,6 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.phenopackets.schema.v1.Phenopacket;
@@ -33,6 +36,8 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@JsonDeserialize(builder = Sample.Builder.class)
+@JsonPropertyOrder({"genomeAssembly", "vcf", "pedigree", "proband", "hpoIds"})
 public interface Sample {
 
     public GenomeAssembly getGenomeAssembly();
@@ -77,11 +82,13 @@ public interface Sample {
             return genomeAssembly;
         }
 
+        @JsonProperty("vcf")
         @Override
         public Path getVcfPath() {
             return vcfPath;
         }
 
+        @JsonProperty("proband")
         @Override
         public String getProbandSampleName() {
             return probandSampleName;
