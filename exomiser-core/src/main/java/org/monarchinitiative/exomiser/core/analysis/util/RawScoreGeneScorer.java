@@ -120,6 +120,8 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .phenotypeScore(priorityScore)
                 .combinedScore(combinedScore)
                 .contributingVariants(contributingVariants)
+                // TODO this would be a good place to put a contributingModel
+                //  i.e. from HiPhivePrioritiserResult see issue #363
                 .build();
     }
 
