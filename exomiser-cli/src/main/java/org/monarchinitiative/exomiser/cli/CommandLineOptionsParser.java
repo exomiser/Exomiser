@@ -66,13 +66,6 @@ public class CommandLineOptionsParser {
                 .build());
 
 //        options.addOption(Option.builder()
-//                .longOpt("family")
-//                .desc("Path to a phenopacket-schema family file. This should be in JSON or YAML format.")
-//                .hasArg()
-//                .argName("file")
-//                .build());
-
-//        options.addOption(Option.builder()
 //                .longOpt("preset")
 //                .desc("The Exomiser analysis preset for the input sample. One of EXOME or GENOME")
 //                .hasArg()
@@ -84,11 +77,10 @@ public class CommandLineOptionsParser {
     }
 
     public static CommandLine parse(String... args) {
-        CommandLineParser parser = new DefaultParser();
         try {
             // Beware! - the command line parser will fail if any spring-related options are provided before the exomiser ones
             // ensure all exomiser commands are provided before any spring boot command.
-            return parser.parse(options, args, true);
+            return new DefaultParser().parse(options, args, true);
         } catch (ParseException ex) {
             String message = "Unable to parse command line arguments. Please check you have typed the parameters correctly." +
                     " Use command --help for a list of commands.";
