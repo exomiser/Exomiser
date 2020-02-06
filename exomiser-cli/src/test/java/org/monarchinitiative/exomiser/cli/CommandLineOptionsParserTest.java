@@ -17,40 +17,42 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.CommandLine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.jupiter.api.Test;
 
-import java.util.Locale;
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Main class for calling off the command line in the Exomiser package.
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@SpringBootApplication
-public class Main {
+class CommandLineOptionsParserTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
-    public static void main(String[] args) {
-        // Parse the input to check for help etc. in order to fail fast before launching the context.
-        CommandLine commandLine = CommandLineOptionsParser.parse(args);
-        if (commandLine.hasOption("help") || commandLine.getOptions().length == 0) {
-            CommandLineOptionsParser.printHelpAndExit();
-        }
-
-        Locale.setDefault(Locale.UK);
-        logger.debug("Locale set to {}", Locale.getDefault());
-
-        SpringApplication.run(Main.class, args).close();
-
-        logger.info("Exomising finished - Bye!");
+    @Test
+    void parseIllegalArgument() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse("--analysis"));
     }
 
+    @Test
+    void parseWillIgnoreUnknownArgument() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--wibble");
+        assertThat(commandLine.getOptions().length, equalTo(0));
+    }
+
+    @Test
+    void parse() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "analysis/path");
+        assertTrue(commandLine.hasOption("analysis"));
+        assertThat(commandLine.getOptionValue("analysis"), equalTo("analysis/path"));
+    }
+
+    @Test
+    void printHelp() {
+        CommandLineOptionsParser.printHelp();
+    }
 }
