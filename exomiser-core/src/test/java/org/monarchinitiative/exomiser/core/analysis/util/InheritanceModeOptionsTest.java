@@ -41,8 +41,7 @@ public class InheritanceModeOptionsTest {
 
     private static final float DEFAULT_DOMINANT_FREQ = 0.1f;
 
-    //TODO: this value is too high and needs to be revised
-    private static final float DEFAULT_HOM_ALT_RECESSIVE_FREQ = 1.0f;
+    private static final float DEFAULT_HOM_ALT_RECESSIVE_FREQ = 0.1f;
     private static final float DEFAULT_COMP_HET_RECESSIVE_FREQ = 2.0f;
 
     private static final float DEFAULT_RECESSIVE_FREQ = DEFAULT_COMP_HET_RECESSIVE_FREQ;
@@ -251,11 +250,11 @@ public class InheritanceModeOptionsTest {
         Map<SubModeOfInheritance, Float> expected = new EnumMap<>(SubModeOfInheritance.class);
         expected.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
         expected.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
-        expected.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 1.0f);
+        expected.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 0.1f);
 
         expected.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
         expected.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, 2.0f);
-        expected.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 1.0f);
+        expected.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 0.1f);
 
         expected.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
 

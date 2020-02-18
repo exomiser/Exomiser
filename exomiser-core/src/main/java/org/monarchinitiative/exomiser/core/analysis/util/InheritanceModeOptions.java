@@ -42,11 +42,11 @@ public class InheritanceModeOptions {
     static {
         DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
         DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
-        DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 1.0f); //presumably hom alts need to be a lot rarer
+        DEFAULT_FREQ.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 0.1f); //presumably hom alts need to be a lot rarer
 
         DEFAULT_FREQ.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
         DEFAULT_FREQ.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, 2.0f);
-        DEFAULT_FREQ.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 1.0f);
+        DEFAULT_FREQ.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 0.1f);
 
         DEFAULT_FREQ.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
     }
