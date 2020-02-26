@@ -29,9 +29,11 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -58,13 +60,15 @@ public class PrioritiserController {
         logger.info("Started PrioritiserController with GeneIdentifier cache of {} entries", geneIdentifiers.size());
     }
 
-    @GetMapping(value = "about")
+    @GetMapping(value = "/about")
     public String about() {
-        return "This service will return a collection of prioritiser results for any given set of:" +
-                "\n\t - HPO identifiers e.g. HPO:00001" +
-                "\n\t - Entrez gene identifiers e.g. 23364" +
-                "\n\t - Specified prioritiser e.g. hiphive along with any prioritiser specific commands e.g. human,mouse,fish,ppi" +
-                "\n\t - limit the number of genes returned e.g. 10";
+        byte[] bytes = new byte[0];
+        try {
+            bytes = new ClassPathResource("about.html").getInputStream().readAllBytes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new String(bytes);
     }
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
