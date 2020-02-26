@@ -20,11 +20,15 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.phenopackets.schema.v1.Phenopacket;
 
 import javax.annotation.Nullable;
@@ -37,7 +41,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @JsonDeserialize(builder = Sample.Builder.class)
-@JsonPropertyOrder({"genomeAssembly", "vcf", "pedigree", "proband", "hpoIds"})
+@JsonPropertyOrder({"genomeAssembly", "vcf", "proband", "age", "sex", "hpoIds", "pedigree"})
 public interface Sample {
 
     public GenomeAssembly getGenomeAssembly();
@@ -45,9 +49,14 @@ public interface Sample {
     @Nullable
     public Path getVcfPath();
 
+    @JsonIgnore
+    public boolean hasVcf();
+
     public String getProbandSampleName();
 
-    //TODO add a probandAge and probandSex?
+    public Age getAge();
+
+    public Sex getSex();
 
     public Pedigree getPedigree();
 
@@ -63,18 +72,41 @@ public interface Sample {
 
     static class SampleImpl implements Sample {
 
-        final GenomeAssembly genomeAssembly;
-        final Path vcfPath;
-        final String probandSampleName;
-        final Pedigree pedigree;
-        final List<String> hpoIds;
+        private final GenomeAssembly genomeAssembly;
+        private final Path vcfPath;
+        private final String probandSampleName;
+        private final Age age;
+        private final Sex sex;
+        private final Pedigree pedigree;
+        private final List<String> hpoIds;
 
         SampleImpl(Builder builder) {
             this.genomeAssembly = builder.genomeAssembly;
             this.vcfPath = builder.vcfPath;
             this.probandSampleName = builder.probandSampleName;
+            this.age = builder.age;
+            this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
             this.pedigree = builder.pedigree;
             this.hpoIds = builder.hpoIds;
+        }
+
+        private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
+            if (pedigree.isEmpty()) {
+                return sex;
+            }
+            Pedigree.Individual proband = pedigree.getIndividualById(sampleName);
+            if (proband == null) {
+                throw new IllegalArgumentException("Proband '" + sampleName + "' not present in pedigree");
+            }
+            Sex probandSexInPedigree = proband.getSex();
+            if (sex == Sex.UNKNOWN && probandSexInPedigree != Sex.UNKNOWN) {
+                return probandSexInPedigree;
+            }
+            if (sex != probandSexInPedigree) {
+                throw new IllegalArgumentException("Proband sex stated as " + sex + " does not match pedigree stated sex of " + probandSexInPedigree);
+            }
+            // if we get here both stated sex and pedigree sex should be in agreement.
+            return sex;
         }
 
         @Override
@@ -88,10 +120,25 @@ public interface Sample {
             return vcfPath;
         }
 
+        @Override
+        public boolean hasVcf() {
+            return vcfPath != null;
+        }
+
         @JsonProperty("proband")
         @Override
         public String getProbandSampleName() {
             return probandSampleName;
+        }
+
+        @Override
+        public Age getAge() {
+            return age;
+        }
+
+        @Override
+        public Sex getSex() {
+            return sex;
         }
 
         @Override
@@ -111,22 +158,26 @@ public interface Sample {
             SampleImpl sample = (SampleImpl) o;
             return genomeAssembly == sample.genomeAssembly &&
                     Objects.equals(vcfPath, sample.vcfPath) &&
-                    probandSampleName.equals(sample.probandSampleName) &&
+                    Objects.equals(probandSampleName, sample.probandSampleName) &&
+                    age.equals(sample.age) &&
+                    sex == sample.sex &&
                     pedigree.equals(sample.pedigree) &&
                     hpoIds.equals(sample.hpoIds);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(genomeAssembly, vcfPath, probandSampleName, pedigree, hpoIds);
+            return Objects.hash(genomeAssembly, vcfPath, probandSampleName, age, sex, pedigree, hpoIds);
         }
 
         @Override
         public String toString() {
-            return "Sample{" +
+            return "SampleImpl{" +
                     "genomeAssembly=" + genomeAssembly +
                     ", vcfPath=" + vcfPath +
                     ", probandSampleName='" + probandSampleName + '\'' +
+                    ", age=" + age +
+                    ", sex=" + sex +
                     ", pedigree=" + pedigree +
                     ", hpoIds=" + hpoIds +
                     '}';
@@ -135,11 +186,13 @@ public interface Sample {
 
     class Builder {
 
-        GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
-        Path vcfPath = null;
-        String probandSampleName = "";
-        Pedigree pedigree = Pedigree.empty();
-        List<String> hpoIds = new ArrayList<>();
+        private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
+        private Path vcfPath = null;
+        private String probandSampleName = SampleIdentifier.defaultSample().getId();
+        private Age age = Age.unknown();
+        private Sex sex = Sex.UNKNOWN;
+        private Pedigree pedigree = Pedigree.empty();
+        private List<String> hpoIds = new ArrayList<>();
 
         public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
             this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
@@ -153,6 +206,16 @@ public interface Sample {
 
         public Builder probandSampleName(String probandSampleName) {
             this.probandSampleName = Objects.requireNonNull(probandSampleName);
+            return this;
+        }
+
+        public Builder age(Age age) {
+            this.age = Objects.requireNonNull(age);
+            return this;
+        }
+
+        public Builder sex(Sex sex) {
+            this.sex = Objects.requireNonNull(sex);
             return this;
         }
 
