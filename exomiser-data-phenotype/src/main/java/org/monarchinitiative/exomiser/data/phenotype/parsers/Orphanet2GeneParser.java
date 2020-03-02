@@ -64,19 +64,24 @@ public class Orphanet2GeneParser implements ResourceParser {
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
+            String lastkey = "";
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
-                final int expectedFields = 3;
+                final int expectedFields = 9;
                 if (fields.length != expectedFields) {
                     //logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
                     continue;
                 }
-                String diseaseId = fields[0];
+                String diseaseId = fields[8];
                 if (!diseaseId.startsWith("ORPHA"))
                     continue;
-                String entrezGeneId = fields[1];
-                String geneSymbol = fields[2];
+                String entrezGeneId = fields[0];
+                String geneSymbol = fields[1];
                 String key = diseaseId + geneSymbol;
+                if (key.equals(lastkey)){
+                    continue;// new file contains duplicated per HPO annotation
+                }
+                lastkey = key;
                 String diseaseTypeValue = diseaseGeneTypeMap.getOrDefault(key, "");
                 String type = mapToDiseaseType(diseaseTypeValue);
                 // ? if MOI in this file or easy to add
