@@ -156,50 +156,6 @@ CREATE TABLE disease (
                          inheritance CHARACTER VARYING(2)
 );
 
---
--- TOC entry 170 (class 1259 OID 16427)
--- Name: omim2gene; Type: TABLE; Schema: public; Owner: -
---
-DROP TABLE IF EXISTS omim2gene;
-
-CREATE TABLE omim2gene (
-  mimdiseaseid   INTEGER NOT NULL,
-  mimdiseasename CHARACTER VARYING(2056),
-  cytoband       CHARACTER VARYING(64),
-  mimgeneid      INTEGER,
-  entrezgeneid   INTEGER,
-  genesymbol     CHARACTER VARYING(64),
-  seriesid       INTEGER NOT NULL
-);
-
---
--- TOC entry 171 (class 1259 OID 16433)
--- Name: omim_terms; Type: TABLE; Schema: public; Owner: -
---
-DROP TABLE IF EXISTS omim_terms;
-
-CREATE TABLE omim_terms (
-  omim_disease_id CHARACTER VARYING(20),
-  omim_term       CHARACTER VARYING(512)
-);
-
---
--- TOC entry 172 (class 1259 OID 16439)
--- Name: phenoseries; Type: TABLE; Schema: public; Owner: -
---
-DROP TABLE IF EXISTS phenoseries;
-
-CREATE TABLE phenoseries (
-  seriesid  INTEGER NOT NULL,
-  name      CHARACTER VARYING(2056),
-  genecount INTEGER
-);
-
---CREATE TABLE disease_disease_summary (
---    disease_query character varying(20),
---    disease_hit character varying(20),
---    combined_perc double precision
---);
 DROP TABLE IF EXISTS hp_hp_mappings;
 
 CREATE TABLE hp_hp_mappings (
@@ -222,11 +178,6 @@ CREATE TABLE disease_hp (
   hp_id      CHARACTER VARYING(3000)
 );
 
---CREATE TABLE orphanet (
---    orphanumber  character varying(20), 
---    entrezgeneid integer not null, 
---    diseasename  character varying(2056)
---);
 DROP TABLE IF EXISTS metadata;
 
 CREATE TABLE metadata (
@@ -242,15 +193,6 @@ CREATE TABLE entrez2sym (
 );
 
 --
--- TOC entry 1860 (class 2606 OID 16454)
--- Name: omim2gene_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
--- ALTER TABLE ONLY omim2gene
-ALTER TABLE omim2gene
-  ADD CONSTRAINT omim2gene_pkey PRIMARY KEY (mimdiseaseid, seriesid);
-
---
 -- TOC entry 1858 (class 2606 OID 16456)
 -- Name: omim_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
@@ -260,14 +202,6 @@ ALTER TABLE omim2gene
 
 CREATE INDEX disease1
   ON disease (gene_id, disease_id);
-
---
--- TOC entry 1862 (class 2606 OID 16458)
--- Name: phenoseries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE phenoseries
-  ADD CONSTRAINT phenoseries_pkey PRIMARY KEY (seriesid);
 
 --
 -- TOC entry 1864 (class 2606 OID 16460)
@@ -304,6 +238,26 @@ CREATE INDEX human_gene_symbol_2
   ON human2fish_orthologs (human_gene_symbol);
 CREATE INDEX entrez_id_2
   ON human2fish_orthologs (entrez_id);
+
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 --
 -- TOC entry 1854 (class 1259 OID 16471)
