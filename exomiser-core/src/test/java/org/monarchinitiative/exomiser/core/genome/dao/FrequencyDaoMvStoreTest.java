@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 
@@ -43,7 +42,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
         return VariantAnnotation.builder()
                 .chromosome(chr)
-                .position(pos)
+                .start(pos)
                 .ref(ref)
                 .alt(alt)
                 .build();
@@ -65,7 +64,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     @Test
     public void getFrequencyDataKeyMismatchReturnsNoData() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(54321).ref("C").alt("G").build();
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(54321).ref("C").alt("G").build();
         AlleleKey key = AlleleKey.newBuilder().setChr(1).setPosition(12345).setRef("A").setAlt("T").build();
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
                 .putProperties("KG", 0.04f)
@@ -81,7 +80,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
         FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
-        assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of(RsId.of("rs54321"))));
+        assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of("rs54321")));
     }
 
     @Test
@@ -94,7 +93,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
                 .build();
         FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
-                equalTo(FrequencyData.of(RsId.of("rs54321"),
+                equalTo(FrequencyData.of("rs54321",
                         Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.04f),
                         Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.003f))));
     }

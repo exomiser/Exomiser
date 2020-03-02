@@ -20,15 +20,17 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 /**
+ * An in-memory implementation of the {@link VariantWhiteList}
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class InMemoryVariantWhiteList implements VariantWhiteList {
@@ -52,7 +54,7 @@ public class InMemoryVariantWhiteList implements VariantWhiteList {
     }
 
     private InMemoryVariantWhiteList(Set<AlleleProto.AlleleKey> whiteList) {
-        this.whiteList = new HashSet<>(whiteList);
+        this.whiteList = ImmutableSet.copyOf(whiteList);
     }
 
     @Override
@@ -66,6 +68,19 @@ public class InMemoryVariantWhiteList implements VariantWhiteList {
         return "InMemoryVariantWhiteList{" +
                 "whiteList=" + whiteList +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof InMemoryVariantWhiteList)) return false;
+        InMemoryVariantWhiteList that = (InMemoryVariantWhiteList) o;
+        return whiteList.equals(that.whiteList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(whiteList);
     }
 
     private static class EmptyVariantWhiteList implements VariantWhiteList {

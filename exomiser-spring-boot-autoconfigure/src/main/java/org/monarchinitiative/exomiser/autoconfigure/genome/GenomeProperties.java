@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
+import com.zaxxer.hikari.HikariDataSource;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 
@@ -51,11 +51,9 @@ interface GenomeProperties {
 
     public void setDataDirectory(String dataDirectory);
 
-    //IMPORTANT! Do not change this name to match the usual java conventions as this will break the application.properties parsing
-    //where the property path is exomiser.hg19.datasource....
-    public DataSourceProperties getDatasource();
+    public HikariDataSource genomeDataSource();
 
-    public void setDatasource(DataSourceProperties dataSourceProperties);
+    public HikariDataSource svDataSource();
 
     //Optional tabix variant data
 

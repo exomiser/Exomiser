@@ -1,0 +1,67 @@
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exomiser REST prioritiser</title>
+</head>
+<body>
+<p>This service will return a collection of prioritiser results for any given set of:</p>
+<ul>
+    <li>HPO identifiers e.g. HPO:00001</li>
+    <li>Entrez gene identifiers e.g. 23364</li>
+    <li>Specified prioritiser e.g. hiphive along with any prioritiser specific commands e.g. human,mouse,fish,ppi</li>
+    <ul>
+        <li>hiphive</li>
+        <li>phenix</li>
+        <li>phive</li>
+    </ul>
+    <li>limit the number of genes returned e.g. 10</li>
+</ul>
+<p>
+    It supports either GET:
+</p>
+<a href="http://localhost:8085/exomiser/api/prioritise/?phenotypes=HP:0001156,HP:0001363,HP:0011304,HP:0010055&prioritiser=hiphive&limit=10&prioritiser-params=human">
+    http://localhost:8085/exomiser/api/prioritise/?phenotypes=HP:0001156,HP:0001363,HP:0011304,HP:0010055&prioritiser=hiphive&limit=10&prioritiser-params=human
+</a>
+<p>
+    or POST:
+</p>
+<pre>
+    {
+        "phenotypes": [
+            "HP:0001156",
+            "HP:0001363",
+            "HP:0011304",
+            "HP:0010055"
+        ],
+        "genes": [
+            2263,
+            2264
+        ],
+        "prioritiser": "hiphive",
+        "prioritiserParams": "human,mouse,fish,ppi",
+        "limit": 20
+    }
+</pre>
+</body>
+</html>

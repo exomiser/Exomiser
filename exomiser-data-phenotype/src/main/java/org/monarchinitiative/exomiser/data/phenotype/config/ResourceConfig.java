@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -86,9 +86,6 @@ public class ResourceConfig {
         resources.add(hpoPhenotypeAnnotationsResource());
         resources.add(entrezToSymResource());
 
-        //Exome Walker
-        resources.add(exomeWalkerPhenotypicSeriesResource());
-        resources.add(exomeWalkerOmimToGeneResource());
         // mouse
         resources.add(mgiPhenotypeResource());
         resources.add(impcPhenotypeResource());
@@ -219,8 +216,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(Orphanet2GeneParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
@@ -233,8 +230,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(Disease2TermParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
@@ -247,8 +244,8 @@ public class ResourceConfig {
         //parsing
         resource.setParserClass(OrphanetDiseaseGeneTypeParser.class);
         //resource groups
-        resource.setResourceGroupName(DiseaseResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(DiseaseResourceGroupParser.class);
+        resource.setResourceGroupName(OrphanetResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(OrphanetResourceGroupParser.class);
 
         return resource;
     }
@@ -406,36 +403,6 @@ public class ResourceConfig {
         populateResourceFromProperty("string2entrez", resource);
         //
         resource.setParserClass(EntrezParser.class);
-        //
-        resource.setResourceGroupName("");
-        resource.setResourceGroupParserClass(null);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource exomeWalkerPhenotypicSeriesResource() {
-        logger.info("Making ExomeWalker_phenotypic_series resource");
-        Resource resource = new Resource("ExomeWalker_phenotypic_series");
-        populateResourceFromProperty("walkerpheno", resource);
-
-        //
-        resource.setParserClass(PhenoSeriesParser.class);
-        //
-        resource.setResourceGroupName(null);
-        resource.setResourceGroupParserClass(null);
-
-        return resource;
-    }
-
-
-    @Bean
-    public Resource exomeWalkerOmimToGeneResource() {
-        logger.info("Making ExomeWalker_omim2gene resource");
-        Resource resource = new Resource("ExomeWalker_omim2gene");
-        populateResourceFromProperty("walkergene", resource);
-        //
-        resource.setParserClass(Omim2GeneParser.class);
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);

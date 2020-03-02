@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,14 +41,14 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void wrongMapName() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T").build();
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T").build();
         PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
         assertThat(instance.getPathogenicityData(variant), equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void getPathogenicityDataNoData() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
         PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
@@ -57,7 +57,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataNonMissenseVariant() throws Exception {
-        Variant frameShiftVariant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant frameShiftVariant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .build();
         PathogenicityDao instance = newInstanceWithData(ImmutableMap.of());
@@ -66,7 +66,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataNoInfo() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -79,7 +79,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataNonPathogenicityInfo() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -94,7 +94,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataJustSift() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -110,7 +110,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataJustPolyphen() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -125,7 +125,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataJustMutationTaster() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -140,7 +140,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataJustClinVar() {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 
@@ -160,7 +160,7 @@ public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest 
 
     @Test
     public void getPathogenicityDataAll() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).position(12345).ref("A").alt("T")
+        Variant variant = VariantAnnotation.builder().chromosome(1).start(12345).ref("A").alt("T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
 

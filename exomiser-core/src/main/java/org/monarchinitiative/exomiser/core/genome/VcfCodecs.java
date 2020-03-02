@@ -33,6 +33,7 @@ import java.util.*;
  * Class enabling trivial inter-conversion of {@link htsjdk.variant.variantcontext.VariantContext} to the VCF format and
  * back. This requires that the sampleGenotypes supplied are as an *ORDERED* set.
  *
+ * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VcfCodecs {

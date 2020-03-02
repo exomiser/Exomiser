@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ public class HgncParser {
 
         return IntStream.range(0, columnHeaders.size())
                 .boxed()
-                .collect(toMap(i -> columnHeaders.get(i), Function.identity()));
+                .collect(toMap(columnHeaders::get, Function.identity()));
 
     }
 
@@ -96,7 +96,6 @@ public class HgncParser {
                 return GeneIdentifier.builder()
                         .hgncId(getField(tokens, "hgnc_id"))
                         .geneSymbol(getField(tokens, "symbol"))
-//                        .withdrawn(true)
                         .build();
             }
 

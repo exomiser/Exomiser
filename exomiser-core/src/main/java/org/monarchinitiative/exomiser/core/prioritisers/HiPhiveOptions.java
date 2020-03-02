@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,10 +27,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class for specifying HiPhive options. These can trigger benchmarking mode or allow specification of
@@ -71,6 +68,23 @@ public class HiPhiveOptions {
 
     public static HiPhiveOptions defaults() {
         return DEFAULT;
+    }
+
+    public String getRunParams() {
+        StringJoiner stringJoiner = new StringJoiner(", ");
+        if (runHuman) {
+            stringJoiner.add("human");
+        }
+        if (runMouse) {
+            stringJoiner.add("mouse");
+        }
+        if (runFish) {
+            stringJoiner.add("fish");
+        }
+        if (runPpi) {
+            stringJoiner.add("ppi");
+        }
+        return stringJoiner.toString();
     }
 
     public String getDiseaseId() {

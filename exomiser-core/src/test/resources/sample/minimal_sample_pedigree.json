@@ -1,0 +1,20 @@
+{
+  "genomeAssembly": "hg19",
+  "vcf": "Pfeiffer.vcf",
+  "pedigree": {
+    "persons": [
+      {
+        "individualId": "manuel",
+        "sex": "MALE",
+        "affectedStatus": "AFFECTED"
+      }
+    ]
+  },
+  "proband": "manuel",
+  "hpoIds": [
+    "HP:0001156",
+    "HP:0001363",
+    "HP:0011304",
+    "HP:0010055"
+  ]
+}

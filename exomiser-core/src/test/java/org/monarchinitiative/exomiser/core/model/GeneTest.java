@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,10 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
 
 import java.util.*;
 
@@ -352,10 +349,25 @@ public class GeneTest {
         variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation2);
 
-        List<VariantEvaluation> passedVariantEvaluations = Arrays.asList(variantEvaluation1);
+        List<VariantEvaluation> passedVariantEvaluations = List.of(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
     }
+
+    @Test
+    public void testGetNonContributingPassedVariantEvaluations() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        variantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        instance.addVariant(variantEvaluation1);
+
+        variantEvaluation2.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
+
+        List<VariantEvaluation> nonContributingPassedVariantEvaluations = List.of(variantEvaluation2);
+
+        assertThat(instance.getNonContributingPassedVariantEvaluations(), equalTo(nonContributingPassedVariantEvaluations));
+    }
+
 
     @Test
     public void testAddVariantAfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
@@ -402,6 +414,16 @@ public class GeneTest {
         instance.addPriorityResult(omimPriorityResult);
         instance.addPriorityResult(new ExomeWalkerPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 0.0d));
         assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
+    }
+
+    @Test
+    public void testCanAddAndRetrievePriorityScoreByPriorityClass() {
+        MockPriorityResult mockPriorityResult = new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, instance.getEntrezGeneID(), instance
+                .getGeneSymbol(), 1d);
+        instance.addPriorityResult(mockPriorityResult);
+
+        assertThat(instance.getPriorityResult(MockPriorityResult.class), equalTo(mockPriorityResult));
+        assertThat(instance.getPriorityResult(HiPhivePriorityResult.class), equalTo(null));
     }
 
     @Test

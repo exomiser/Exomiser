@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -135,7 +135,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // CHROM
         record.add(ve.getChromosomeName());
         // POS
-        record.add(ve.getPosition());
+        record.add(ve.getStart());
         // REF
         record.add(ve.getRef());
         // ALT
@@ -183,7 +183,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     private void addFrequencyData(FrequencyData frequencyData, List<Object> record) {
         // DBSNP_ID
-        record.add(dotIfNull(frequencyData.getRsId()));
+        record.add(dotIfEmpty(frequencyData.getRsId()));
         // MAX_FREQUENCY
         record.add(dotIfNull(frequencyData.getMaxFreq()));
         // Don't change the order of these - it's necessary for the data to end up in the correct column
@@ -199,28 +199,20 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
+    private String dotIfEmpty(String id) {
+        return id.isEmpty() ? "." : id;
+    }
+
     private Object dotIfNull(Object o) {
-        if (o == null) {
-            return ".";
-        } else {
-            return o;
-        }
+        return o == null ? "." : o;
     }
 
     private Object dotIfFrequencyNull(Frequency frequency) {
-        if (frequency == null) {
-            return ".";
-        } else {
-            return frequency.getFrequency();
-        }
+        return frequency == null ? "." : frequency.getFrequency();
     }
 
     private Object getPathScore(PathogenicityScore score) {
-        if (score == null) {
-            return ".";
-        } else {
-            return score.getScore();
-        }
+        return score == null ? "." : score.getScore();
     }
 
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
@@ -241,7 +233,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private String formatFailedFilters(Set<FilterType> failedFilters) {
         StringJoiner stringJoiner = new StringJoiner(";");
         for (FilterType filterType : failedFilters) {
-            stringJoiner.add(filterType.toVcfValue());
+            stringJoiner.add(filterType.vcfValue());
         }
         return stringJoiner.toString();
     }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,8 @@ public class VariantAnnotationTest {
                 .genomeAssembly(GenomeAssembly.HG19)
                 .chromosome(0)
                 .chromosomeName("")
-                .position(0)
+                .start(0)
+                .end(0)
                 .ref("")
                 .alt("")
                 .geneId("")
@@ -76,11 +77,20 @@ public class VariantAnnotationTest {
     }
 
     @Test
-    public void position() {
+    public void start() {
         VariantAnnotation instance = VariantAnnotation.builder()
-                .position(123456)
+                .start(123456)
                 .build();
-        assertThat(instance.getPosition(), equalTo(123456));
+        assertThat(instance.getStart(), equalTo(123456));
+    }
+
+    @Test
+    public void end() {
+        VariantAnnotation instance = VariantAnnotation.builder()
+                .start(123456)
+                .build();
+        assertThat(instance.getStart(), equalTo(123456));
+        assertThat(instance.getEnd(), equalTo(123456));
     }
 
     @Test
@@ -97,6 +107,43 @@ public class VariantAnnotationTest {
                 .alt("T")
                 .build();
         assertThat(instance.getAlt(), equalTo("T"));
+    }
+
+    @Test
+    public void length() {
+        VariantAnnotation instance = VariantAnnotation.builder()
+                .length(2)
+                .build();
+        assertThat(instance.getLength(), equalTo(2));
+    }
+
+    @Test
+    public void lengthSetFromAlleleLength() {
+        VariantAnnotation snp = VariantAnnotation.builder()
+                .ref("A")
+                .alt("G")
+                .build();
+        assertThat(snp.getLength(), equalTo(0));
+
+
+        VariantAnnotation insertion = VariantAnnotation.builder()
+                .ref("AT")
+                .alt("GTT")
+                .build();
+        assertThat(insertion.getLength(), equalTo(1));
+
+        VariantAnnotation deletion = VariantAnnotation.builder()
+                .ref("ACT")
+                .alt("G")
+                .build();
+        assertThat(deletion.getLength(), equalTo(-2));
+
+
+        VariantAnnotation mnv = VariantAnnotation.builder()
+                .ref("ATC")
+                .alt("GTT")
+                .build();
+        assertThat(mnv.getLength(), equalTo(0));
     }
 
     @Test
@@ -135,6 +182,6 @@ public class VariantAnnotationTest {
     public void testToString() throws Exception {
         System.out.println(VariantAnnotation.empty());
         assertThat(VariantAnnotation.empty()
-                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, chromosomeName='', position=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
+                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, chromosomeName='', start=0, end=0, length=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
     }
 }

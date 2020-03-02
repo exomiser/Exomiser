@@ -20,7 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome.jannovar;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,9 @@ import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,36 +68,53 @@ class JannovarDataFactoryTest {
         assertThrows(NullPointerException.class, () -> instance.buildAndWrite(GenomeAssembly.HG19, TranscriptSource.UCSC, null));
     }
 
-    @Disabled
+    @Disabled()
     @Test
     void testBuildData(@TempDir Path tempDir) {
 
         Path jannovarOutputDir = Paths.get("C:/Users/hhx640/Documents/Jannovar/data");
         JannovarDataFactory instance = JannovarDataFactory.builder(iniFile).downloadDir(jannovarOutputDir).build();
 
-        JannovarData jannovarData = instance.buildData(GenomeAssembly.HG19, TranscriptSource.ENSEMBL);
+        TranscriptSource[] transcriptSources = {TranscriptSource.ENSEMBL};
+        Arrays.stream(transcriptSources).forEach(transcriptSource -> {
+            String buildString = "1909";
+            GenomeAssembly genomeAssembly = GenomeAssembly.HG19;
+            String outputName = String.format("%s_%s_transcripts_%s.ser", buildString, genomeAssembly, transcriptSource);
+            JannovarData jannovarData = instance.buildData(genomeAssembly, transcriptSource);
+            JannovarDataProtoSerialiser.save(jannovarOutputDir.resolve(outputName), jannovarData);
 
-        JannovarDataProtoSerialiser.save(jannovarOutputDir.resolve("1902_transcripts_ensembl.ser"), jannovarData);
+            JannovarData roundTripped = JannovarDataSourceLoader.loadJannovarData(jannovarOutputDir.resolve(outputName));
+            JannovarData preOrdered = JannovarDataSourceLoader.loadJannovarData(Paths.get("C:/Users/hhx640/Documents/Jannovar/data/old")
+                    .resolve(outputName));
 
-        JannovarData roundTripped = JannovarDataSourceLoader.loadJannovarData(jannovarOutputDir.resolve("1902_transcripts_ensembl.ser"));
-        roundTripped.getChromosomes().values().forEach(chromosome -> System.out.printf("Chrom: %d %s num genes: %d%n", chromosome.getChrID(), chromosome.getChromosomeName(), chromosome.getNumberOfGenes()));
-
-        VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, roundTripped, ChromosomalRegionIndex
-                .empty());
-
-        VariantAnnotation variantAnnotation = variantAnnotator.annotate("19", 36227863, "C", "T");
-        System.out.println(variantAnnotation);
-
-        GeneFactory geneFactory = new GeneFactory(roundTripped);
-        for (Gene gene : geneFactory.createKnownGenes()) {
-            if (gene.getGeneSymbol().equals(variantAnnotation.getGeneSymbol())) {
-                System.out.println(gene.getGeneIdentifier());
+            ImmutableMap<String, TranscriptModel> preOrderedTmByAccession = preOrdered.getTmByAccession();
+            ImmutableMap<String, TranscriptModel> roundTrippedTmByAccession = roundTripped.getTmByAccession();
+            for (Map.Entry<String, TranscriptModel> entry : preOrderedTmByAccession.entrySet()) {
+                assertThat(roundTrippedTmByAccession.get(entry.getKey()), equalTo(entry.getValue()));
             }
-            if (!gene.getGeneSymbol().contains(".") && !gene.getGeneIdentifier().hasEntrezId()) {
-                System.out.println(gene.getGeneIdentifier());
-            }
-        }
 
+            roundTripped.getChromosomes()
+                    .values()
+                    .forEach(chromosome -> System.out.printf("Chrom: %d %s num genes: %d%n", chromosome.getChrID(), chromosome
+                            .getChromosomeName(), chromosome.getNumberOfGenes()));
+
+            VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(genomeAssembly, roundTripped, ChromosomalRegionIndex
+                    .empty());
+
+            List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate("19", 36227863, "C", "T");
+            System.out.println(variantAnnotations);
+            assertThat(variantAnnotations.size(), equalTo(1));
+            VariantAnnotation variantAnnotation = variantAnnotations.get(0);
+
+            GeneFactory geneFactory = new GeneFactory(roundTripped);
+            List<Gene> knownGenes = geneFactory.createKnownGenes();
+
+            for (Gene gene : knownGenes) {
+                if (gene.getGeneSymbol().equals(variantAnnotation.getGeneSymbol())) {
+                    System.out.println(gene.getGeneIdentifier());
+                }
+            }
+        });
     }
 
     @Disabled

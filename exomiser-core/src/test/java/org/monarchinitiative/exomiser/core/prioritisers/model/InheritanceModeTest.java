@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -119,6 +119,28 @@ public class InheritanceModeTest {
         assertThat(InheritanceMode.MITOCHONDRIAL.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.MITOCHONDRIAL)));
         assertThat(InheritanceMode.X_LINKED.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT)));
         assertThat(InheritanceMode.POLYGENIC.toModeOfInheritance(), equalTo(EnumSet.noneOf(ModeOfInheritance.class)));
+    }
+
+    @Test
+    public void testIsCompatibleWithModeOfInheritance() {
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+
+        assertThat(InheritanceMode.X_DOMINANT.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
+        assertThat(InheritanceMode.X_RECESSIVE.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(InheritanceMode.X_RECESSIVE.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(false));
+
+        assertThat(InheritanceMode.X_LINKED.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
+        assertThat(InheritanceMode.X_LINKED.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+
+        assertThat(InheritanceMode.MITOCHONDRIAL.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(true));
+
+        assertThat(InheritanceMode.POLYGENIC.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(InheritanceMode.POLYGENIC.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
 
     @Test

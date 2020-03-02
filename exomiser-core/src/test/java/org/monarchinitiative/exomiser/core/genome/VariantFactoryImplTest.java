@@ -27,21 +27,23 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.AlleleCall;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -63,7 +65,7 @@ public class VariantFactoryImplTest {
         return variant -> {
             GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
             List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
-            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getChromosome(), variant.getPosition(), variant
+            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getChromosome(), variant.getStart(), variant
                             .getRef(), variant.getAlt(), variant.getGenotypeString(), genotypes, genotypeTypes,
                     variant.getGeneSymbol(), variant.getGeneId(), variant.getVariantContext());
         };
@@ -146,7 +148,9 @@ public class VariantFactoryImplTest {
 
         assertThat(variantEvaluation.getChromosome(), equalTo(10));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("10"));
-        assertThat(variantEvaluation.getPosition(), equalTo(123256215));
+        assertThat(variantEvaluation.getStart(), equalTo(123256215));
+        assertThat(variantEvaluation.getEnd(), equalTo(123256215));
+        assertThat(variantEvaluation.getLength(), equalTo(0));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -169,7 +173,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(0));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("UNKNOWN"));
-        assertThat(variantEvaluation.getPosition(), equalTo(12345));
+        assertThat(variantEvaluation.getStart(), equalTo(12345));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(false));
@@ -195,7 +199,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(1));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
-        assertThat(variantEvaluation.getPosition(), equalTo(123256213));
+        assertThat(variantEvaluation.getStart(), equalTo(123256213));
         assertThat(variantEvaluation.getRef(), equalTo("CA"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -252,7 +256,9 @@ public class VariantFactoryImplTest {
         System.out.println(firstAllele);
         assertThat(firstAllele.getChromosome(), equalTo(1));
         assertThat(firstAllele.getChromosomeName(), equalTo("1"));
-        assertThat(firstAllele.getPosition(), equalTo(120612040));
+        assertThat(firstAllele.getStart(), equalTo(120612040));
+        assertThat(firstAllele.getEnd(), equalTo(120612040));
+        assertThat(firstAllele.getLength(), equalTo(6));
         assertThat(firstAllele.getRef(), equalTo("T"));
         assertThat(firstAllele.getAlt(), equalTo("TCCGCCG"));
         assertThat(firstAllele.hasTranscriptAnnotations(), is(true));
@@ -271,7 +277,9 @@ public class VariantFactoryImplTest {
         System.out.println(secondAllele);
         assertThat(secondAllele.getChromosome(), equalTo(1));
         assertThat(secondAllele.getChromosomeName(), equalTo("1"));
-        assertThat(secondAllele.getPosition(), equalTo(120612040));
+        assertThat(secondAllele.getStart(), equalTo(120612040));
+        assertThat(secondAllele.getEnd(), equalTo(120612040));
+        assertThat(secondAllele.getLength(), equalTo(9));
         assertThat(secondAllele.getRef(), equalTo("T"));
         assertThat(secondAllele.getAlt(), equalTo("TCCTCCGCCG"));
         assertThat(secondAllele.hasTranscriptAnnotations(), is(true));
@@ -299,7 +307,7 @@ public class VariantFactoryImplTest {
         System.out.println(variantEvaluation);
         assertThat(variantEvaluation.getChromosome(), equalTo(1));
         assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
-        assertThat(variantEvaluation.getPosition(), equalTo(120612040));
+        assertThat(variantEvaluation.getStart(), equalTo(120612040));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("TCCGCCG"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
@@ -316,14 +324,176 @@ public class VariantFactoryImplTest {
     }
 
     @Test
+    void testTranscriptsOverlappingTwoGenes() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                //145510184
+                .parseVariantContext("16 89935214 . G A 6 PASS GENE=TUBB3,AC092143.1 GT:GQ 0/1:12");
+
+        GeneIdentifier AC092143 = GeneIdentifier.builder().geneSymbol("AC092143.1").build();
+        TranscriptModel ENST00000556922 = TestTranscriptModelFactory.builder()
+                .geneIdentifier(AC092143)
+                .knownGeneLine("ENST00000556922.1\tchr16\t+\t89919164\t89936092\t89919258\t89935804\t5\t89919164,89920589,89932570,89933467,89934728,\t89920208,89920737,89932679,89933578,89936092,\tA0A0B4J269\tuc002fpf.3")
+                .mRnaSequence("GGCAGCACCATGAACTAAGCAGGACACCTGGAGGGGAAGAACTGTGGGGACCTGGAGGCCTCCAACGACTCCTTCCTGCTTCCTGGACAGGACTATGGCTGTGCAGGGATCCCAGAGAAGACTTCTGGGCTCCCTCAACTCCACCCCCACAGCCATCCCCCAGCTGGGGCTGGCTGCCAACCAGACAGGAGCCCGGTGCCTGGAGGTGTCCATCTCTGACGGGCTCTTCCTCAGCCTGGGGCTGGTGAGCTTGGTGGAGAACGCGCTGGTGGTGGCCACCATCGCCAAGAACCGGAACCTGCACTCACCCATGTACTGCTTCATCTGCTGCCTGGCCTTGTCGGACCTGCTGGTGAGCGGGAGCAACGTGCTGGAGACGGCCGTCATCCTCCTGCTGGAGGCCGGTGCACTGGTGGCCCGGGCTGCGGTGCTGCAGCAGCTGGACAATGTCATTGACGTGATCACCTGCAGCTCCATGCTGTCCAGCCTCTGCTTCCTGGGCGCCATCGCCGTGGACCGCTACATCTCCATCTTCTACGCACTGCGCTACCACAGCATCGTGACCCTGCCGCGGGCGCGGCGAGCCGTTGCGGCCATCTGGGTGGCCAGTGTCGTCTTCAGCACGCTCTTCATCGCCTACTACGACCACGTGGCCGTCCTGCTGTGCCTCGTGGTCTTCTTCCTGGCTATGCTGGTGCTCATGGCCGTGCTGTACGTCCACATGCTGGCCCGGGCCTGCCAGCACGCCCAGGGCATCGCCCGGCTCCACAAGAGGCAGCGCCCGGTCCACCAGGGCTTTGGCCTTAAAGGCGCTGTCACCCTCACCATCCTGCTGGGCATTTTCTTCCTCTGCTGGGGCCCCTTCTTCCTGCATCTCACACTCATCGTCCTCTGCCCCGAGCACCCCACGTGCGGCTGCATCTTCAAGAACTTCAACCTCTTTCTCGCCCTCATCATCTGCAATGCCATCATCGACCCCCTCATCTACGCCTTCCACAGCCAGGAGCTCCGCAGGACGCTCAAGGAGGTGCTGACATGCTCCTGCTCTCAGGACCGTGCCCTCGTCAGCTGGGATGTGAAGTCTCTGGGTGGAAGTGTGTGCCAAGAGCTACTCCCACAGCAGCCCCAGGAGAAGGGGCTTTGTGACCAGAAAGCTTCATCCACAGCCTTGCAGCGGCTCCTGCAAAAGGAGTTCTGGGAAGTCATCAGTGATGAGCATGGCATCGACCCCAGCGGCAACTACGTGGGCGACTCGGACTTGCAGCTGGAGCGGATCAGCGTCTACTACAACGAGGCCTCTTCTCACAAGTACGTGCCTCGAGCCATTCTGGTGGACCTGGAACCCGGAACCATGGACAGTGTCCGCTCAGGGGCCTTTGGACATCTCTTCAGGCCTGACAATTTCATCTTTGGTCAGAGTGGGGCCGGCAACAACTGGGCCAAGGGTCACTACACGGAGGGGGCGGAGCTGGTGGATTCGGTCCTGGATGTGGTGCGGAAGGAGTGTGAAAACTGCGACTGCCTGCAGGGCTTCCAGCTGACCCACTCGCTGGGGGGCGGCACGGGCTCCGGCATGGGCACGTTGCTCATCAGCAAGGTGCGTGAGGAGTATCCCGACCGCATCATGAACACCTTCAGCGTCGTGCCCTCACCCAAGGTGTCAGACACGGTGGTGGAGCCCTACAACGCCACGCTGTCCATCCACCAGCTGGTGGAGAACACGGATGAGACCTACTGCATCGACAACGAGGCGCTCTACGACATCTGCTTCCGCACCCTCAAGCTGGCCACGCCCACCTACGGGGACCTCAACCACCTGGTATCGGCCACCATGAGCGGAGTCACCACCTCCTTGCGCTTCCCGGGCCAGCTCAACGCTGACCTGCGCAAGCTGGCCGTCAACATGGTGCCCTTCCCGCGCCTGCACTTCTTCATGCCCGGCTTCGCCCCCCTCACAGCCCGGGGCAGCCAGCAGTACCGGGCCCTGACCGTGCCCGAGCTCACCCAGCAGATGTTCGATGCCAAGAACATGATGGCCGCCTGCGACCCGCGCCACGGCCGCTACCTGACGGTGGCCACCGTGTTCCGGGGCCGCATGTCCATGAAGGAGGTGGACGAGCAGATGCTGGCCATCCAGAGCAAGAACAGCAGCTACTTCGTGGAGTGGATCCCCAACAACGTGAAGGTGGCCGTGTGTGACATCCCGCCCCGCGGCCTCAAGATGTCCTCCACCTTCATCGGGAACAGCACGGCCATCCAGGAGCTGTTCAAGCGCATCTCCGAGCAGTTCACGGCCATGTTCCGGCGCAAGGCCTTCCTGCACTGGTACACGGGCGAGGGCATGGACGAGATGGAGTTCACCGAGGCCGAGAGCAACATGAACGACCTGGTGTCCGAGTACCAGCAGTACCAGGACGCCACGGCCGAGGAAGAGGGCGAGATGTACGAAGACGACGAGGAGGAGTCGGAGGCCCAGGGCCCCAAGTGAAGCTGCTCGCAGCTGGAGTGAGAGGCAGGTGGCGGCCGGGGCCGAAGCCAGCAGTGTCTAAACCCCCGGAGCCATCTTGCTGCCGACACCCTGCTTTCCCCTCGCCCTAGGGCTCCCTTGCCGCCCTCCTGCAGTATTTATGGCCTCGTCCTCCCCACCTAGGCCACGTGTGAGCTGCTCCTGTCTCTGTCTTATTGCAGCTCCAGGCCTGACGTTTTACGGTTTTGTTTTTTACTGGTTTGTGTTTATATTTTCGGGGATACTTAATAAATCTATTGCTGTCAGATA")
+                .build();
+
+        GeneIdentifier tubb3 = GeneIdentifier.builder().geneSymbol("TUBB3").build();
+        TranscriptModel ENST00000315491 = TestTranscriptModelFactory.builder()
+                .geneIdentifier(tubb3)
+                .knownGeneLine("ENST00000315491.11\tchr16\t+\t89923278\t89936097\t89923401\t89935804\t4\t89923278,89932570,89933467,89934728,\t89923458,89932679,89933578,89936097,\tQ13509\tuc002fph.2")
+                .mRnaSequence("GACATCAGCCGATGCGAAGGGCGGGGCCGCGGCTATAAGAGCGCGCGGCCGCGGTCCCCGACCCTCAGCAGCCAGCCCGGCCCGCCCGCGCCCGTCCGCAGCCGCCCGCCAGACGCGCCCAGTATGAGGGAGATCGTGCACATCCAGGCCGGCCAGTGCGGCAACCAGATCGGGGCCAAGTTCTGGGAAGTCATCAGTGATGAGCATGGCATCGACCCCAGCGGCAACTACGTGGGCGACTCGGACTTGCAGCTGGAGCGGATCAGCGTCTACTACAACGAGGCCTCTTCTCACAAGTACGTGCCTCGAGCCATTCTGGTGGACCTGGAACCCGGAACCATGGACAGTGTCCGCTCAGGGGCCTTTGGACATCTCTTCAGGCCTGACAATTTCATCTTTGGTCAGAGTGGGGCCGGCAACAACTGGGCCAAGGGTCACTACACGGAGGGGGCGGAGCTGGTGGATTCGGTCCTGGATGTGGTGCGGAAGGAGTGTGAAAACTGCGACTGCCTGCAGGGCTTCCAGCTGACCCACTCGCTGGGGGGCGGCACGGGCTCCGGCATGGGCACGTTGCTCATCAGCAAGGTGCGTGAGGAGTATCCCGACCGCATCATGAACACCTTCAGCGTCGTGCCCTCACCCAAGGTGTCAGACACGGTGGTGGAGCCCTACAACGCCACGCTGTCCATCCACCAGCTGGTGGAGAACACGGATGAGACCTACTGCATCGACAACGAGGCGCTCTACGACATCTGCTTCCGCACCCTCAAGCTGGCCACGCCCACCTACGGGGACCTCAACCACCTGGTATCGGCCACCATGAGCGGAGTCACCACCTCCTTGCGCTTCCCGGGCCAGCTCAACGCTGACCTGCGCAAGCTGGCCGTCAACATGGTGCCCTTCCCGCGCCTGCACTTCTTCATGCCCGGCTTCGCCCCCCTCACAGCCCGGGGCAGCCAGCAGTACCGGGCCCTGACCGTGCCCGAGCTCACCCAGCAGATGTTCGATGCCAAGAACATGATGGCCGCCTGCGACCCGCGCCACGGCCGCTACCTGACGGTGGCCACCGTGTTCCGGGGCCGCATGTCCATGAAGGAGGTGGACGAGCAGATGCTGGCCATCCAGAGCAAGAACAGCAGCTACTTCGTGGAGTGGATCCCCAACAACGTGAAGGTGGCCGTGTGTGACATCCCGCCCCGCGGCCTCAAGATGTCCTCCACCTTCATCGGGAACAGCACGGCCATCCAGGAGCTGTTCAAGCGCATCTCCGAGCAGTTCACGGCCATGTTCCGGCGCAAGGCCTTCCTGCACTGGTACACGGGCGAGGGCATGGACGAGATGGAGTTCACCGAGGCCGAGAGCAACATGAACGACCTGGTGTCCGAGTACCAGCAGTACCAGGACGCCACGGCCGAGGAAGAGGGCGAGATGTACGAAGACGACGAGGAGGAGTCGGAGGCCCAGGGCCCCAAGTGAAGCTGCTCGCAGCTGGAGTGAGAGGCAGGTGGCGGCCGGGGCCGAAGCCAGCAGTGTCTAAACCCCCGGAGCCATCTTGCTGCCGACACCCTGCTTTCCCCTCGCCCTAGGGCTCCCTTGCCGCCCTCCTGCAGTATTTATGGCCTCGTCCTCCCCACCTAGGCCACGTGTGAGCTGCTCCTGTCTCTGTCTTATTGCAGCTCCAGGCCTGACGTTTTACGGTTTTGTTTTTTACTGGTTTGTGTTTATATTTTCGGGGATACTTAATAAATCTATTGCTGTCAGATACCCTT")
+                .build();
+
+        JannovarData jannovarData = TestFactory.buildJannovarData(ENST00000556922, ENST00000315491);
+        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG38, jannovarData, ChromosomalRegionIndex.empty());
+        VariantFactory variantFactory = new VariantFactoryImpl(variantAnnotator);
+
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(2));
+
+        Map<String, List<VariantEvaluation>> variantsByGeneSymbol = variants.stream()
+                .collect(groupingBy(VariantEvaluation::getGeneSymbol));
+
+        variantsByGeneSymbol.get("TUBB3")
+                .forEach(variantEvaluation -> {
+                    System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
+                    assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getStart(), equalTo(89935214));
+                    assertThat(variantEvaluation.getRef(), equalTo("G"));
+                    assertThat(variantEvaluation.getAlt(), equalTo("A"));
+                    assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+                    variantEvaluation.getTranscriptAnnotations().forEach(
+                            transcriptAnnotation -> {
+                                assertThat(transcriptAnnotation.getAccession(), equalTo(ENST00000315491.getAccession()));
+                                assertThat(transcriptAnnotation.getGeneSymbol(), equalTo(ENST00000315491.getGeneSymbol()));
+                            }
+                    );});
+        variantsByGeneSymbol.get("AC092143.1")
+                .forEach(variantEvaluation -> {
+                    System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
+                    assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getStart(), equalTo(89935214));
+                    assertThat(variantEvaluation.getRef(), equalTo("G"));
+                    assertThat(variantEvaluation.getAlt(), equalTo("A"));
+                    assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+                    variantEvaluation.getTranscriptAnnotations().forEach(
+                            transcriptAnnotation -> {
+                                assertThat(transcriptAnnotation.getAccession(), equalTo(ENST00000556922.getAccession()));
+                                assertThat(transcriptAnnotation.getGeneSymbol(), equalTo(ENST00000556922.getGeneSymbol()));
+                            }
+                    );
+                });
+    }
+
+    @Test
     public void testStructuralVariant() {
         Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
-                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256110;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
+                .parseVariantContext("10 123256215 . T <DEL> 6 PASS SVTYPE=DEL;END=123256420;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62 GT:GQ 0/1:12");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
-        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_TRUNCATION));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+
+        assertThat(variantEvaluation.getStart(), equalTo(123256215));
+        assertThat(variantEvaluation.getStartMin(), equalTo(123256215 - 56));
+        assertThat(variantEvaluation.getStartMax(), equalTo(123256215 + 20));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(123256420));
+        assertThat(variantEvaluation.getEndMin(), equalTo(123256420 - 10));
+        assertThat(variantEvaluation.getEndMax(), equalTo(123256420 + 62));
+
+        assertThat(variantEvaluation.getLength(), equalTo(205));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<DEL>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.het())));
     }
+
+    @Test
+    void testStructuralVariantNoLength() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 212471179 esv3588749 T <CN0> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVTYPE=DEL;VT=SV GT 0|1");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+
+        assertThat(variantEvaluation.getStart(), equalTo(212471179));
+        assertThat(variantEvaluation.getStartMin(), equalTo(212471179 - 471));
+        assertThat(variantEvaluation.getStartMax(), equalTo(212471179));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(212472619));
+        assertThat(variantEvaluation.getEndMin(), equalTo(212472619));
+        assertThat(variantEvaluation.getEndMax(), equalTo(212472619 + 444));
+
+        assertThat(variantEvaluation.getLength(), equalTo(1440));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<CN0>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT))));
+    }
+
+    @Test
+    void testStructuralVariantNoEnd() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 112992009 esv3587212 T <INS:ME:ALU> 100 PASS SVLEN=280;SVTYPE=ALU;VT=SV GT 1|0");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.INS_ME_ALU));
+
+        assertThat(variantEvaluation.getStart(), equalTo(112992009));
+        assertThat(variantEvaluation.getStartMin(), equalTo(112992009));
+        assertThat(variantEvaluation.getStartMax(), equalTo(112992009));
+
+        assertThat(variantEvaluation.getEnd(), equalTo(112992009));
+        assertThat(variantEvaluation.getEndMin(), equalTo(112992009));
+        assertThat(variantEvaluation.getEndMax(), equalTo(112992009));
+
+        assertThat(variantEvaluation.getLength(), equalTo(280));
+
+        assertThat(variantEvaluation.getRef(), equalTo("T"));
+        assertThat(variantEvaluation.getAlt(), equalTo("<INS:ME:ALU>"));
+
+        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample1", SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF))));
+    }
+
+    @Test
+    void testVariantContextIdIsCaptured() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 112992009 esv3587212 T A 100 PASS . GT 1|0");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getId(), equalTo("esv3587212"));
+    }
+
+    @Test
+    void testVariantContextIdIsEmptyWhenDotInVcf() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1")
+                .parseVariantContext("1 112992009 . T A 100 PASS . GT 1|0");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .peek(printVariant())
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getId(), equalTo(""));
+    }
+
 }

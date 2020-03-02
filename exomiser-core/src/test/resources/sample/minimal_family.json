@@ -1,0 +1,49 @@
+{
+  "proband": {
+    "subject": {
+      "id": "manuel"
+    },
+    "phenotypicFeatures": [
+      {
+        "type": {
+          "id": "HP:0001156",
+          "label": "Brachydactyly"
+        }
+      },
+      {
+        "type": {
+          "id": "HP:0001363",
+          "label": "Craniosynostosis"
+        }
+      },
+      {
+        "type": {
+          "id": "HP:0011304",
+          "label": "Broad thumb"
+        }
+      },
+      {
+        "type": {
+          "id": "HP:0010055",
+          "label": "Broad hallux"
+        }
+      }
+    ],
+    "htsFiles": [
+      {
+        "uri": "file://Pfeiffer.vcf",
+        "htsFormat": "VCF",
+        "genomeAssembly": "GRCh37"
+      }
+    ]
+  },
+  "pedigree": {
+    "persons": [
+      {
+        "individualId": "manuel",
+        "sex": "MALE",
+        "affectedStatus": "AFFECTED"
+      }
+    ]
+  }
+}

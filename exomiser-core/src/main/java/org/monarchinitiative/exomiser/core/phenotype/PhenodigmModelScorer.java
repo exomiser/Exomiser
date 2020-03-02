@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -136,10 +136,6 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
     }
 
     private double calculateCombinedScore(PhenodigmMatchRawScore rawModelScore) {
-        double maxModelMatchScore = rawModelScore.getMaxModelMatchScore();
-        double sumModelBestMatchScores = rawModelScore.getSumModelBestMatchScores();
-        int numMatchingPhenotypesForModel = rawModelScore.getMatchingPhenotypes().size();
-
         /*
          * hpIdsWithPhenotypeMatch.size() = no. of HPO disease annotations for human and the no. of annotations with an entry in hp_*_mappings table for other species
          * matchedPhenotypeIDsForModel.size() = no. of annotations for model with a match in hp_*_mappings table for at least one of the disease annotations
@@ -153,16 +149,14 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
          * models with large numbers of phenotypes (e.g. 40+) performed badly compared to models with smaller number when matched against a small query. So we have
          * implemented a sort of semi-symmetrical comparison which only takes into account the model terms matching those in the query HP-MP subsets.
          */
+        double maxModelMatchScore = rawModelScore.getMaxModelMatchScore();
+        double sumModelBestMatchScores = rawModelScore.getSumModelBestMatchScores();
 
-        int totalPhenotypesWithMatch = numQueryPhenotypes + numMatchingPhenotypesForModel;
         if (sumModelBestMatchScores > 0) {
+            int totalPhenotypesWithMatch = numQueryPhenotypes + rawModelScore.getMatchingPhenotypes().size();
             double modelBestAvgScore = sumModelBestMatchScores / totalPhenotypesWithMatch;
-            // calculate combined score
-            double combinedScore = 50 * (maxModelMatchScore / theoreticalMaxMatchScore + modelBestAvgScore / theoreticalBestAvgScore);
-            if (combinedScore > 100) {
-                combinedScore = 100;
-            }
-            return combinedScore / 100;
+            // combined score ranging from 0.0 - 1.0
+            return Math.min((maxModelMatchScore / theoreticalMaxMatchScore + modelBestAvgScore / theoreticalBestAvgScore) / 2, 1);
         }
         return 0;
     }

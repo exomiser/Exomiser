@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public abstract class VariantEffectPathogenicityScore {
+public final class VariantEffectPathogenicityScore {
 
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)
@@ -38,6 +38,8 @@ public abstract class VariantEffectPathogenicityScore {
      * or SIFT.
      */
     public static final float DEFAULT_MISSENSE_SCORE = 0.6f;
+
+    public static final float DEFAULT_HIGH_SCORE = 1.0f;
     /**
      * Pathogenicity score for a mutation class such as INTERGENIC where we are
      * entirely sure it is nonpathogenic (for the purposes of this software).
@@ -76,22 +78,16 @@ public abstract class VariantEffectPathogenicityScore {
      */
     public static final float STARTLOSS_SCORE = 1.00f;
 
+    public static final float INVERSION_SCORE = 0.6f;
+
     private VariantEffectPathogenicityScore() {
         //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
     }
 
     public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
-        if (variantEffect == VariantEffect.SEQUENCE_VARIANT) {
-            // no effect annotated
-            return NON_PATHOGENIC_SCORE; 
-        }
-        // highest priority effect
-        // guard against the case that the highest-impact effect is neither high nor moderate
-        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal()) {
-             // neither HIGH nor MODERATE
-            return NON_PATHOGENIC_SCORE;
-        }
         switch (variantEffect) {
+            case SEQUENCE_VARIANT:
+                return NON_PATHOGENIC_SCORE;
             case MISSENSE_VARIANT:
                 return DEFAULT_MISSENSE_SCORE;
             case SYNONYMOUS_VARIANT:
@@ -120,12 +116,25 @@ public abstract class VariantEffectPathogenicityScore {
                 return STOPLOSS_SCORE;
             case STOP_GAINED:
                 return NONSENSE_SCORE;
-            // NO REGULATORY_REGION, FIVE_PRIME_UTR_EXON_VARIANT, FIVE_PRIME_UTR_TRUNCATION
-            // FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT.... ?
-            // There, are many other missing cases which really need default scores!
+            case INVERSION:
+                // down-ranking this from HIGH to MODERATE as we're not certain of the impact unless it affects the
+                // transcript e.g. transcript ablation if the inversion happens in the middle of a gene.
+                return INVERSION_SCORE;
             default:
-                return NON_PATHOGENIC_SCORE;
+                return defaultImpactScore(variantEffect.getImpact());
         }
+    }
+
+    private static float defaultImpactScore(PutativeImpact putativeImpact) {
+        // guard against overlooking MODERATE and HIGH impact effects
+        int effectOrdinal = putativeImpact.ordinal();
+        if (effectOrdinal == PutativeImpact.MODERATE.ordinal()) {
+            return DEFAULT_MISSENSE_SCORE;
+        }
+        if (effectOrdinal == PutativeImpact.HIGH.ordinal()) {
+            return DEFAULT_HIGH_SCORE;
+        }
+        return NON_PATHOGENIC_SCORE;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,17 +20,21 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import de.charite.compbio.jannovar.annotation.SVAnnotations;
+import de.charite.compbio.jannovar.annotation.SVAnnotator;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.*;
+import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
+import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Wrapper to build Jannovar annotations for variants. CAUTION! This class returns native Jannovar objects which use zero-based
@@ -42,18 +46,22 @@ public class JannovarAnnotationService {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarAnnotationService.class);
 
+    // Regular expression pattern for matching breakends in VCF.
+    private static final Pattern BND_PATTERN = Pattern.compile(
+            "^(?<leadingBases>\\w*)(?<firstBracket>[\\[\\]])(?<targetChrom>[^:]+):(?<targetPos>\\w+)(?<secondBracket>[\\[\\]])(?<trailingBases>\\w*)$");
+
     //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
     //requirement of a variant having an integer chromosome
     private static final int UNKNOWN_CHROMOSOME = 0;
 
     private final ReferenceDictionary referenceDictionary;
     private final VariantAnnotator variantAnnotator;
-
+    private final SVAnnotator structuralVariantAnnotator;
 
     public JannovarAnnotationService(JannovarData jannovarData) {
         this.referenceDictionary = jannovarData.getRefDict();
         this.variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
-
+        this.structuralVariantAnnotator = new SVAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
     }
 
     /**
@@ -68,14 +76,14 @@ public class JannovarAnnotationService {
      * conventions.
      */
     public VariantAnnotations annotateVariant(String contig, int pos, String ref, String alt) {
-        GenomeVariant genomeVariant = buildOneBasedFwdStrandGenomicVariant(contig, pos, ref, alt);
+        GenomePosition genomePosition = buildGenomePosition(contig, pos);
+        GenomeVariant genomeVariant = new GenomeVariant(genomePosition, ref, alt);
         return annotateGenomeVariant(genomeVariant);
     }
 
-    private GenomeVariant buildOneBasedFwdStrandGenomicVariant(String contig, int pos, String ref, String alt) {
+    private GenomePosition buildGenomePosition(String contig, int pos) {
         int chr = getIntValueOfChromosomeOrZero(contig);
-        GenomePosition genomePosition = new GenomePosition(referenceDictionary, Strand.FWD, chr, pos, PositionType.ONE_BASED);
-        return new GenomeVariant(genomePosition, ref, alt);
+        return new GenomePosition(referenceDictionary, Strand.FWD, chr, pos, PositionType.ONE_BASED);
     }
 
     private Integer getIntValueOfChromosomeOrZero(String contig) {
@@ -100,4 +108,82 @@ public class JannovarAnnotationService {
         return VariantAnnotations.buildEmptyList(genomeVariant);
     }
 
+    public SVAnnotations annotateStructuralVariant(StructuralType structuralType, String alt, String startContig, int startPos, ConfidenceInterval startCiIntervals, String endContig, int endPos, ConfidenceInterval endCiIntervals) {
+        GenomePosition start = buildGenomePosition(startContig, startPos);
+        GenomePosition end = buildGenomePosition(endContig, endPos);
+
+        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(structuralType, alt, start, startCiIntervals, end, endCiIntervals);
+        // Unsupported types
+        if (structuralType == StructuralType.NON_STRUCTURAL) {
+            logger.info("{} is not a supported structural type", structuralType);
+            return SVAnnotations.buildEmptyList(svGenomeVariant);
+        }
+
+        try {
+            return structuralVariantAnnotator.buildAnnotations(svGenomeVariant);
+        } catch (Exception e) {
+            logger.debug("Unable to annotate variant {}-{}-{}",
+                    svGenomeVariant.getChrName(),
+                    svGenomeVariant.getPos(),
+                    svGenomeVariant.getPos2(),
+                    e);
+        }
+        return SVAnnotations.buildEmptyList(svGenomeVariant);
+    }
+
+    private SVGenomeVariant buildSvGenomeVariant(StructuralType structuralType, String alt, GenomePosition start, ConfidenceInterval startCiIntervals, GenomePosition end, ConfidenceInterval endCiIntervals) {
+
+        int startCiLower = startCiIntervals.getLowerBound();
+        int startCiUpper = startCiIntervals.getUpperBound();
+
+        int endCiLower = endCiIntervals.getLowerBound();
+        int endCiUpper = endCiIntervals.getUpperBound();
+
+        StructuralType svSubType = structuralType.getSubType();
+        switch (svSubType) {
+            case DEL:
+                return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DEL_ME:
+                return new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP:
+                return new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP_TANDEM:
+                return new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case INS:
+                return new SVInsertion(start, startCiLower, startCiUpper);
+            case INS_ME:
+                return new SVMobileElementInsertion(start, startCiLower, startCiUpper);
+            case INV:
+                return new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case CNV:
+                return new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case BND:
+                return buildBreakendVariant(alt, start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            default:
+                return new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+        }
+    }
+
+    private SVGenomeVariant buildBreakendVariant(String alt, GenomePosition start, GenomePosition end, int lowerCiStart, int upperCiStart, int lowerCiEnd, int upperCiEnd) {
+        Matcher matcher = BND_PATTERN.matcher(alt);
+        if (matcher.matches()) {
+            String firstBracket = matcher.group("firstBracket");
+            String secondBracket = matcher.group("secondBracket");
+            if (firstBracket.equals(secondBracket)) {
+                String contig2 = matcher.group("targetChrom");
+                int pos2 = Integer.parseInt(matcher.group("targetPos"));
+                GenomePosition gBNDPos2 = buildGenomePosition(contig2, pos2);
+
+                String leadingBases = matcher.group("leadingBases");
+                String trailingBases = matcher.group("trailingBases");
+
+                return new SVBreakend(
+                        start, gBNDPos2, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd,
+                        leadingBases, trailingBases,
+                        "]".equals(firstBracket) ? SVBreakend.Side.LEFT_END : SVBreakend.Side.RIGHT_END);
+            }
+        }
+        logger.error("Invalid BND alternative allele: {}", alt);
+        return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
+    }
 }

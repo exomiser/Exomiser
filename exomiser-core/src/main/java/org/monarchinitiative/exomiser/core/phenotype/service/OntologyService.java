@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -53,5 +53,13 @@ public interface OntologyService {
 
     PhenotypeTerm getPhenotypeTermForHpoId(String hpoId);
 
+    /**
+     * Checks the input list of HPO ids and returns a new list of HPO ids where any obsolete or outdated ids are
+     * replaced with the current version.
+     *
+     * @since 12.0.0
+     * @param hpoIds list of HPO ids to be checked
+     * @return a list of current HPO ids generated form the input
+     */
     List<String> getCurrentHpoIds(List<String> hpoIds);
 }

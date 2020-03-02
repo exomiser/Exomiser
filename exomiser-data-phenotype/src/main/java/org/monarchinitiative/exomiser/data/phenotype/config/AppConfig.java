@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,16 +32,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -83,25 +75,6 @@ public class AppConfig {
             logger.info("Made new download directory: {}", downloadPath.toAbsolutePath());
         }
         return downloadPath;
-    }
-
-    /**
-     * Dirty hack to copy the static data into the data directory.
-     */
-    @Bean
-    public boolean copyPheno2GeneResource() {
-        Resource resource = new ClassPathResource("data/pheno2gene.txt");
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
-             BufferedWriter writer = Files.newBufferedWriter(downloadPath().resolve("pheno2gene.txt"), Charset.forName("UTF-8"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                writer.write(line + "\n");
-            }
-            logger.info("Copied {} to {}", resource, downloadPath());
-        } catch (IOException ex) {
-            logger.error("Unable to copy resource {}", resource, ex);
-        }
-        return true;
     }
 
     @Bean

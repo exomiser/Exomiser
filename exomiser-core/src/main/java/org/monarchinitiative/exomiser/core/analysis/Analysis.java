@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,6 +39,7 @@ import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,16 +121,16 @@ public class Analysis {
         return probandSampleName;
     }
 
-    public InheritanceModeOptions getInheritanceModeOptions() {
-        return inheritanceModeOptions;
-    }
-
     public List<String> getHpoIds() {
         return hpoIds;
     }
 
     public AnalysisMode getAnalysisMode() {
         return analysisMode;
+    }
+
+    public InheritanceModeOptions getInheritanceModeOptions() {
+        return inheritanceModeOptions;
     }
 
     public Set<FrequencySource> getFrequencySources() {
@@ -147,8 +148,8 @@ public class Analysis {
     @JsonIgnore
     public PriorityType getMainPrioritiserType() {
         for (AnalysisStep analysisStep : analysisSteps) {
-            if (Prioritiser.class.isInstance(analysisStep)) {
-                Prioritiser prioritiser = (Prioritiser) analysisStep;
+            if (analysisStep instanceof Prioritiser) {
+                Prioritiser<? extends PriorityResult> prioritiser = (Prioritiser<? extends PriorityResult>) analysisStep;
                 //OMIM, if combined with other prioritisers isn't the main one.
                 if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
                     return prioritiser.getPriorityType();
@@ -160,31 +161,25 @@ public class Analysis {
 
     @JsonIgnore
     public List<List<AnalysisStep>> getAnalysisStepsGroupedByFunction() {
-        List<List<AnalysisStep>> groups = new ArrayList<>();
         if (analysisSteps.isEmpty()) {
             logger.debug("No AnalysisSteps to group.");
-            return groups;
+            return Collections.emptyList();
         }
-
-        AnalysisStep currentGroupStep = analysisSteps.get(0);
+        List<List<AnalysisStep>> groups = new ArrayList<>();
+        AnalysisStep.AnalysisStepType currentGroupType = analysisSteps.get(0).getType();
+        logger.debug("First group is for {} steps", currentGroupType);
         List<AnalysisStep> currentGroup = new ArrayList<>();
-        currentGroup.add(currentGroupStep);
-        logger.debug("First group is for {} steps", currentGroupStep.getType());
-        for (int i = 1; i < analysisSteps.size(); i++) {
-            AnalysisStep step = analysisSteps.get(i);
-
-            if (currentGroupStep.getType() != step.getType()) {
+        for (AnalysisStep step : analysisSteps) {
+            if (step.getType() != currentGroupType) {
                 logger.debug("Making new group for {} steps", step.getType());
                 groups.add(currentGroup);
                 currentGroup = new ArrayList<>();
-                currentGroupStep = step;
+                currentGroupType = step.getType();
             }
-
             currentGroup.add(step);
         }
         //make sure the last group is added too
         groups.add(currentGroup);
-
         return groups;
     }
 

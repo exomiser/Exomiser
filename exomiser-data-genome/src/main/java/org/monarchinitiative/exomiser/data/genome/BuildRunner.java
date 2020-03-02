@@ -105,6 +105,10 @@ public class BuildRunner implements ApplicationRunner {
 
         List<AlleleResource> userDefinedAlleleResources = getUserDefinedResources(args, alleleResources);
 
+        logger.info("Building Jannovar transcript data...");
+        TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, jannovarDataFactory, outPath);
+        transcriptDataBuildRunner.run();
+
         logger.info("Downloading variant resources");
         userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
 
@@ -120,11 +124,6 @@ public class BuildRunner implements ApplicationRunner {
         logger.info("Building genome database...");
         GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
         genomeDatabaseBuildRunner.run();
-
-        // Add in Jannovar gubbins
-        logger.info("Building Jannovar transcript data...");
-        TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, jannovarDataFactory, outPath);
-        transcriptDataBuildRunner.run();
 
         logger.info("Finished build {}", buildInfo.getBuildString());
     }

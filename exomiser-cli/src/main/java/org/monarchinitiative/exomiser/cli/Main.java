@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.monarchinitiative.exomiser.cli;
 
+import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -38,8 +39,14 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        // Parse the input to check for help etc. in order to fail fast before launching the context.
+        CommandLine commandLine = CommandLineOptionsParser.parse(args);
+        if (commandLine.hasOption("help") || commandLine.getOptions().length == 0) {
+            CommandLineOptionsParser.printHelpAndExit();
+        }
+
         Locale.setDefault(Locale.UK);
-        logger.info("Locale set to {}", Locale.getDefault());
+        logger.debug("Locale set to {}", Locale.getDefault());
 
         SpringApplication.run(Main.class, args).close();
 

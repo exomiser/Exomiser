@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
-import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,7 +56,7 @@ public class AnalysisTest {
 
     private List<AnalysisStep> getAnalysisSteps() {
         VariantFilter geneIdFilter = new GeneSymbolFilter(new HashSet<>());
-        Prioritiser noneTypePrioritiser = new NoneTypePrioritiser();
+        Prioritiser<?> noneTypePrioritiser = new NoneTypePrioritiser();
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.ANY);
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
@@ -201,11 +201,49 @@ public class AnalysisTest {
 
     @Test
     public void testCanAddPrioritiserAsAnAnalysisStep() {
-        Prioritiser prioritiser = new NoneTypePrioritiser();
+        Prioritiser<? extends PriorityResult> prioritiser = new NoneTypePrioritiser();
         Analysis instance = newBuilder()
                 .addStep(prioritiser)
                 .build();
         assertThat(instance.getAnalysisSteps(), hasItem(prioritiser));
+    }
+
+    @Test
+    public void testGetMainPrioritiserType() {
+        Prioritiser<? extends PriorityResult> prioritiser = new NoneTypePrioritiser();
+        Analysis instance = newBuilder()
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(prioritiser)
+                .build();
+        assertThat(instance.getMainPrioritiserType(), equalTo(prioritiser.getPriorityType()));
+    }
+
+    @Test
+    public void testGetMainPrioritiserTypeNoPrioritisersSet() {
+        Analysis instance = newBuilder()
+                .build();
+        assertThat(instance.getMainPrioritiserType(), equalTo(PriorityType.NONE));
+    }
+
+    @Test
+    void testGetAnalysisStepsGroupedByFunction() {
+        Analysis instance = newBuilder()
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
+                .addStep(new FrequencyFilter(2f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new InheritanceFilter())
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(new NoneTypePrioritiser())
+                .build();
+
+        List<List<AnalysisStep>> expected = new ArrayList<>();
+        // variant dependent
+        expected.add(List.of(new FrequencyFilter(2f), new PathogenicityFilter(true)));
+        // inheritance mode dependent
+        expected.add(List.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())));
+        // gene only dependent
+        expected.add(List.of(new NoneTypePrioritiser()));
+        assertThat(instance.getAnalysisStepsGroupedByFunction(), equalTo(expected));
     }
 
     @Test

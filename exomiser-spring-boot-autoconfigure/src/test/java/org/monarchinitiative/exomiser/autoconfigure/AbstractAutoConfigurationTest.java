@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,13 +33,13 @@ import java.nio.file.Paths;
  */
 public abstract class AbstractAutoConfigurationTest {
 
-    protected static final Path TEST_DATA = Paths.get("src/test/resources/data");
+    protected static final Path TEST_DATA = Paths.get("src/test/resources/data").toAbsolutePath();
     protected static final String TEST_DATA_ENV = "exomiser.data-directory=" + TEST_DATA;
 
     protected ConfigurableApplicationContext context;
 
     @AfterEach
-    public void closeContext() {
+    public synchronized void closeContext() {
         if (this.context != null) {
             this.context.close();
         }

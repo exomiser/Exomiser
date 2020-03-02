@@ -62,6 +62,10 @@ public class VariantDataServiceImpl implements VariantDataService {
     private final PathogenicityDao remmDao;
     private final PathogenicityDao testPathScoreDao;
 
+    // Structural variant data sources
+    private final FrequencyDao svFrequencyDao;
+    private final PathogenicityDao svPathogenicityDao;
+
     private VariantDataServiceImpl(Builder builder) {
 
         this.whiteList = builder.variantWhiteList;
@@ -73,6 +77,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         this.caddDao = builder.caddDao;
         this.remmDao = builder.remmDao;
         this.testPathScoreDao = builder.testPathScoreDao;
+
+        this.svFrequencyDao = builder.svFrequencyDao;
+        this.svPathogenicityDao = builder.svPathogenicityDao;
     }
 
     @Override
@@ -83,6 +90,9 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
 
+        if (variant.isStructuralVariant()) {
+            return svFrequencyDao.getFrequencyData(variant);
+        }
         // This could be run alongside the pathogenicities as they are all stored in the same datastore
         FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
 
@@ -103,6 +113,10 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+
+        if (variant.isStructuralVariant()) {
+            return svPathogenicityDao.getPathogenicityData(variant);
+        }
 
         // This could be run alongside the frequencies as they are all stored in the same datastore
         PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
@@ -172,6 +186,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         private PathogenicityDao remmDao;
         private PathogenicityDao testPathScoreDao;
 
+        private FrequencyDao svFrequencyDao = new StubFrequencyDao();
+        private PathogenicityDao svPathogenicityDao = new StubPathogenicityDao();
+
         public Builder variantWhiteList(VariantWhiteList variantWhiteList) {
             this.variantWhiteList = variantWhiteList;
             return this;
@@ -207,9 +224,32 @@ public class VariantDataServiceImpl implements VariantDataService {
             return this;
         }
 
+        public Builder svFrequencyDao(FrequencyDao svFrequencyDao) {
+            this.svFrequencyDao = svFrequencyDao;
+            return this;
+        }
+
+        public Builder svPathogenicityDao(PathogenicityDao svPathogenicityDao) {
+            this.svPathogenicityDao = svPathogenicityDao;
+            return this;
+        }
+
         public VariantDataServiceImpl build() {
             return new VariantDataServiceImpl(this);
         }
     }
 
+    private static class StubFrequencyDao implements FrequencyDao {
+        @Override
+        public FrequencyData getFrequencyData(Variant variant) {
+            return FrequencyData.empty();
+        }
+    }
+
+    private static class StubPathogenicityDao implements PathogenicityDao {
+        @Override
+        public PathogenicityData getPathogenicityData(Variant variant) {
+            return PathogenicityData.empty();
+        }
+    }
 }

@@ -1,5 +1,14 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 12.1.0 2019-09-25
+- The JSON output now shows the id of the variantEvaluation taken from the VCF file.
+
+## 12.0.0 2019-02-28
+This release contains significant diagnostic performance improvements due to the inclusion of a high-quality ClinVar whitelist and 'second generation' pathogenicity scores.
+
+- Added new ```PathogenicitySource``` sources - ```M_CAP, MPC, MVP, PRIMATE_AI```. Be aware that these may not be free for commercial use. _Check the licencing before use!_
+- Added new variant whitelist feature which enables flagging of variants on a whitelist and bypassing of ```FrequencyFilter``` and ```VariantEffectFilter```. By default this will use ClinVar variants listed as ```Pathogenic``` or ```Likely_pathogenic``` and with a review status of ```criteria provided, single submitter``` or better. See https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/ for an explanation of the ClinVar review status. 
+
 ## 11.0.0 2018-09-21
 - Removed ```analysisMode: SPARSE``` option - this will default to ```PASS_ONLY```
 - Removed ```phenixPrioritiser: {}``` option - we recommend using ```hiPhivePrioritiser: {runParams: 'human'}``` for human-only model comparisons

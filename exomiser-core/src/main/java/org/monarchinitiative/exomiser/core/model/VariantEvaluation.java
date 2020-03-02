@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -33,7 +32,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
@@ -48,42 +47,37 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
-public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
+@JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "id", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+public class VariantEvaluation extends AbstractVariant implements Comparable<VariantEvaluation>, Filterable, Inheritable {
 
     //threshold over which a variant effect score is considered pathogenic
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
 
+    private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
+    // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
+    static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(
+            DEFAULT_SAMPLE_NAME, SampleGenotype.het()
+    );
+
     // HTSJDK {@link VariantContext} instance of this allele
-    @JsonIgnore
     private final VariantContext variantContext;
-//    private final String vcfString;
 
     // numeric index of the alternative allele in {@link #vc}.
     private final int altAlleleId;
 
+    private final String id;
+
     // VariantCoordinates variables - these are a minimal requirement for describing a variant
-    private final GenomeAssembly genomeAssembly;
-    private final int chr;
     private final String chromosomeName;
-    private final int pos;
-    private final String ref;
-    private final String alt;
 
     // Variant variables, for a richer more VCF-like experience
     private final double phredScore;
 
-    @JsonIgnore
     // IMPORTANT! This map *MUST* be an ordered map
     private Map<String, SampleGenotype> sampleGenotypes;
 
     //VariantAnnotation
-    private VariantEffect variantEffect;
-    private List<TranscriptAnnotation> annotations;
-    @JsonIgnore
     private String geneSymbol;
-    @JsonIgnore
-    private String geneId;
 
     // results from filters
     // mutable
@@ -95,49 +89,39 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     @JsonProperty("contributingInheritanceModes")
-    private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
-    private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+    private Set<ModeOfInheritance> contributingModes;
+    private Set<ModeOfInheritance> compatibleInheritanceModes;
 
     private VariantEvaluation(Builder builder) {
-        genomeAssembly = builder.genomeAssembly;
-        chr = builder.chr;
-        chromosomeName = builder.chromosomeName;
-        pos = builder.pos;
-        ref = builder.ref;
-        alt = builder.alt;
+        super(builder);
 
-        phredScore = builder.phredScore;
-        variantEffect = builder.variantEffect;
-        annotations = ImmutableList.copyOf(builder.annotations);
-        geneSymbol = builder.geneSymbol;
-        geneId = builder.geneId;
+        this.chromosomeName = ((super.chromosomeName == null) || super.chromosomeName.isEmpty())
+                ? Contig.toString(super.chromosome) : super.chromosomeName;
 
-//        vcfString = builder.vcfString;
-        variantContext = builder.variantContext;
-        altAlleleId = builder.altAlleleId;
+        this.geneSymbol = inputOrFirstValueInCommaSeparatedString((super.geneSymbol.isEmpty()) ? "." : super.geneSymbol);
+
+        this.variantContext = builder.variantContext;
+        this.altAlleleId = builder.altAlleleId;
+        this.id = builder.id;
+        this.phredScore = builder.phredScore;
         // IMPORTANT! This map *MUST* be an ordered map
-        sampleGenotypes = ImmutableMap.copyOf(builder.sampleGenotypes);
+        this.sampleGenotypes = builder.sampleGenotypes.isEmpty() ? SINGLE_SAMPLE_HET_GENOTYPE
+                : ImmutableMap.copyOf(builder.sampleGenotypes);
 
-        passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
-        failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
+        this.passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
+        this.failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
 
-        whiteListed = builder.whiteListed;
-        frequencyData = builder.frequencyData;
-        pathogenicityData = builder.pathogenicityData;
+        this.compatibleInheritanceModes = EnumSet.copyOf(builder.compatibleInheritanceModes);
+        this.contributingModes = EnumSet.copyOf(builder.contributingModes);
+
+        this.whiteListed = builder.whiteListed;
+        this.frequencyData = builder.frequencyData;
+        this.pathogenicityData = builder.pathogenicityData;
     }
 
-    @Override
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    /**
-     * @return an integer representing the chromosome. 1-22 are obvious,
-     * chrX=23, ChrY=24, ChrM=25.
-     */
-    @Override
-    public int getChromosome() {
-        return chr;
+    private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
+        int commaIndex = geneSymbol.indexOf(',');
+        return (commaIndex > -1) ? geneSymbol.substring(0, commaIndex) : geneSymbol;
     }
 
     /**
@@ -148,34 +132,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return chromosomeName;
     }
 
-    /**
-     * @return Return the 1-based start position of the variant on its
-     * chromosome.
-     */
-    @Override
-    public int getPosition() {
-        return pos;
-    }
-
-    /**
-     * @return reference allele, or "-" in case of insertions.
-     */
-    @Override
-    public String getRef() {
-        return ref;
-    }
-
-    /**
-     * @return alternative allele, or "-" in case of deletions.
-     */
-    @Override
-    public String getAlt() {
-        return alt;
-    }
-
+    @JsonIgnore
     public VariantContext getVariantContext() {
-//        VCFCodec vcfCodec = VcfCodecs.decoder(sampleGenotypes.keySet());
-//        return vcfCodec.decode(vcfString);
         return variantContext;
     }
 
@@ -183,78 +141,71 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return altAlleleId;
     }
 
+    /**
+     * An identifier for the variant. Note that this is implementation specific and can be any value. Typically it will
+     * be derived from the initial VCF id field.
+     *
+     * @return the id of the variant
+     * @since 12.1.0
+     */
+    public String getId() {
+        return id;
+    }
+
     public double getPhredScore() {
         return phredScore;
     }
 
     /**
-     * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
-     * {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
-     * if there is no annotated effect.
-     */
-    @Override
-    public VariantEffect getVariantEffect() {
-        return variantEffect;
-    }
-    
-    public void setVariantEffect (VariantEffect ve){
-        variantEffect = ve;
-    }
-
-    /**
      * @return the gene symbol associated with the variant.
      */
+    @JsonIgnore
     @Override
     public String getGeneSymbol() {
         return geneSymbol;
     }
 
-    public void setGeneSymbol(String symbol) {
-        geneSymbol = symbol;
-    }
-
+    @JsonIgnore
     @Override
     public String getGeneId() {
         return geneId;
     }
 
-    public void setGeneId(String geneId) {
-        this.geneId = geneId;
-    }
-
     /**
-     * This function returns a list of all of the
-     * {@link de.charite.compbio.jannovar.annotation.Annotation Annotation} objects that have been
-     * associated with the current variant. This function can be called if
-     * client code wants to display one line for each affected transcript, e.g.,
-     * <ul>
-     * <li>LTF(uc003cpr.3:exon5:c.30_31insAAG:p.R10delinsRR)
-     * <li>LTF(uc003cpq.3:exon2:c.69_70insAAG:p.R23delinsRR)
-     * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
-     * </ul>
+     * Returns a gnomAD formatted string for easier identification of variants in output. HGVS doesn't look similar
+     * enough to VCF to enable linking to the source VCF in the output files.
      * <p>
+     * Structural variants will be displayed with chromosome-start-end-ref-alt and length, whereas small variants will
+     * have the more classical chromosome-start-ref-alt format.
+     *
+     * @return a String such as X-31517201-T-C or 4-65216746-65216746-G-<INS:ME:ALU>
      */
-    @Override
-    public List<TranscriptAnnotation> getTranscriptAnnotations() {
-        return annotations;
-    }
-    
-    public void setAnnotations(List<TranscriptAnnotation> annotations) {
-        this.annotations = annotations;
-    }
-
-    @Override
-    public boolean hasTranscriptAnnotations() {
-        return !annotations.isEmpty();
-    }
-
-    /**
-     * @return a String such as chr6:g.29911092G>T
-     */
-    // SPDI?
     @JsonIgnore
-    public String getHgvsGenome() {
-        return chr + ":g." + pos + ref + ">" + alt;
+    public String toGnomad() {
+        if (isStructuralVariant()) {
+            // can be searched for in gnomad like so:
+            // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2_1
+            return Contig.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + ' ' + unitLength();
+        }
+        // can be searched for in gnomad like so:
+        // https://gnomad.broadinstitute.org/variant/X-31517201-T-C
+        return Contig.toString(chromosome) + '-' + start + '-' + ref + '-' + alt;
+    }
+
+    private String unitLength() {
+        if (length < 1000) {
+            return length + "bp";
+        }
+        // this does not perform any rounding
+        if (length < 1_000_000) {
+            return (length / 1_000) + "." + (length / 100) % 10 + "kb";
+        }
+        if (length < 1_000_000_000) {
+            return (length / 1_000_000) + "." + (length / 100_000) % 10 + "Mb";
+        }
+        // Max integer is 2_147_483_647 i.e. 2.1Gb - given the whole human genome is ~ 3Gb, an int is way larger than we need
+        //  to represent the length of a variation, even if it involves 2/3 of the genome being fused into one enormous BND
+        return (length / 1_000_000_000) + "." + (length / 100_000_000) % 10 + "Gb";
     }
 
     @JsonIgnore
@@ -275,6 +226,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return A map of sample ids and their corresponding {@link SampleGenotype}
      * @since 11.0.0
      */
+    @JsonIgnore
     public Map<String, SampleGenotype> getSampleGenotypes() {
         return sampleGenotypes;
     }
@@ -342,7 +294,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @param modeOfInheritance the mode of inheritance under which the failed filters are required.
      * @return a set of failed {@code FilterType} for the variant under the {@code ModeOfInheritance} input model.
      */
-    public synchronized Set<FilterType> getFailedFilterTypesForMode(ModeOfInheritance modeOfInheritance){
+    public synchronized Set<FilterType> getFailedFilterTypesForMode(ModeOfInheritance modeOfInheritance) {
         EnumSet<FilterType> failedFiltersCopy = EnumSet.copyOf(failedFilterTypes);
         if (!isCompatibleWith(modeOfInheritance)) {
             failedFiltersCopy.add(FilterType.INHERITANCE_FILTER);
@@ -416,17 +368,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * Some variants such as splice site variants, are assumed to be pathogenic. At the moment no particular
      * software is used to evaluate this, we merely take the variant class from the Jannovar code and assign a score.
-     *
+     * <p>
      * Note that we use results of filtering to remove Variants that are predicted to be simply non-pathogenic. However,
      * amongst variants predicted to be potentially pathogenic, there are different strengths of prediction, which is
      * what this score tries to reflect.
-     *
+     * <p>
      * For missense mutations, we use the predictions of MutationTaster, polyphen, and SIFT taken from the dbNSFP
      * project, if present, or otherwise return a default score.
-     *
+     * <p>
      * The score returned here is therefore an overall pathogenicity score defined on the basis of
      * "medical genetic intuition".
-
+     *
      * @return a score between 0 and 1
      */
     public float getPathogenicityScore() {
@@ -485,10 +437,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.pathogenicityData = pathogenicityData;
     }
 
+    /**
+     * @return true if the VariantEvaluation has been marked as whitelisted
+     * @since 12.0.0
+     */
     public boolean isWhiteListed() {
         return whiteListed;
     }
 
+    /**
+     * @since 12.0.0
+     */
     public void setWhiteListed(boolean whiteListed) {
         this.whiteListed = whiteListed;
     }
@@ -513,7 +472,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             this.compatibleInheritanceModes = EnumSet.copyOf(compatibleModes);
         }
     }
-    
+
     @Override
     public Set<ModeOfInheritance> getCompatibleInheritanceModes() {
         return EnumSet.copyOf(compatibleInheritanceModes);
@@ -523,7 +482,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
         return modeOfInheritance == ModeOfInheritance.ANY || compatibleInheritanceModes.contains(modeOfInheritance);
     }
-    
+
     /**
      * Sorts variants according to their natural ordering of genome position. Variants are sorted according to
      * chromosome number, chromosome position, reference sequence then alternative sequence.
@@ -533,11 +492,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        if (this.chr != other.chr) {
-            return Integer.compare(this.chr, other.chr);
+        if (this.chromosome != other.chromosome) {
+            return Integer.compare(this.chromosome, other.chromosome);
         }
-        if (this.pos != other.pos) {
-            return Integer.compare(this.pos, other.pos);
+        if (this.start != other.start) {
+            return Integer.compare(this.start, other.start);
         }
         if (!this.ref.equals(other.ref)) {
             return this.ref.compareTo(other.ref);
@@ -562,11 +521,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if (thisScore != otherScore) {
             return -Float.compare(thisScore, otherScore);
         }
-        if (some.chr != other.chr) {
-            return Integer.compare(some.chr, other.chr);
+        if (some.chromosome != other.chromosome) {
+            return Integer.compare(some.chromosome, other.chromosome);
         }
-        if (some.pos != other.pos) {
-            return Integer.compare(some.pos, other.pos);
+        if (some.start != other.start) {
+            return Integer.compare(some.start, other.start);
         }
         if (!some.ref.equals(other.ref)) {
             return some.ref.compareTo(other.ref);
@@ -576,7 +535,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, chr, pos, ref, alt);
+        return Objects.hash(genomeAssembly, chromosome, start, ref, alt);
     }
 
     @Override
@@ -591,10 +550,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if (this.genomeAssembly != other.genomeAssembly) {
             return false;
         }
-        if (this.chr != other.chr) {
+        if (this.chromosome != other.chromosome) {
             return false;
         }
-        if (this.pos != other.pos) {
+        if (this.start != other.start) {
             return false;
         }
         return Objects.equals(this.ref, other.ref) && Objects.equals(this.alt, other.alt);
@@ -602,114 +561,126 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public String toString() {
         // expose frequency and pathogenicity scores?
-        if(contributesToGeneScore()) {
+        if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " start=" + start + " end=" + end + " length=" + length + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chromosome + " start=" + start + " end=" + end + " length=" + length + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
-    public static Builder builder(int chr, int pos, String ref, String alt) {
-        return new Builder(chr, pos, ref, alt);
+    /**
+     * @return
+     * @since 13.0.0
+     */
+    public VariantEvaluation.Builder toBuilder() {
+        return new Builder()
+                //ChromosomalRegion fields
+                .genomeAssembly(this.genomeAssembly)
+                .chromosomeName(this.chromosomeName)
+                .chromosome(this.chromosome)
+                .start(this.start)
+                .startMin(this.end)
+                .startMax(this.startMax)
+                .endChromosome(this.endChromosome)
+                .end(this.end)
+                .endMin(this.endMin)
+                .endMax(this.endMax)
+                .length(this.length)
+                // Variant fields
+                .structuralType(this.structuralType)
+                .ref(this.ref)
+                .alt(this.alt)
+                .geneSymbol(this.geneSymbol)
+                .geneId(this.geneId)
+                .variantEffect(this.variantEffect)
+                .annotations(this.annotations)
+                // VariantContext-derived fields
+                .variantContext(this.variantContext)
+                .altAlleleId(this.altAlleleId)
+                .id(this.id)
+                .sampleGenotypes(this.sampleGenotypes)
+                .quality(this.phredScore)
+                // Additional annotations
+                .whiteListed(this.whiteListed)
+                .frequencyData(this.frequencyData)
+                .pathogenicityData(this.pathogenicityData)
+                .failedFilters(this.failedFilterTypes)
+                .passedFilters(this.passedFilterTypes)
+                .compatibleInheritanceModes(this.compatibleInheritanceModes)
+                .contributingModes(this.contributingModes);
+    }
+
+    /**
+     * Copies all variant fields into a new VariantEvaluation.Builder
+     *
+     * @param variant
+     * @return a Builder instance pre-populated with fields copied from the input Variant
+     * @since 13.0.0
+     */
+    public static VariantEvaluation.Builder copy(Variant variant) {
+        return new Builder()
+                .genomeAssembly(variant.getGenomeAssembly())
+                .chromosomeName(variant.getChromosomeName())
+                .chromosome(variant.getChromosome())
+                .start(variant.getStart())
+                .startMin(variant.getStartMin())
+                .startMax(variant.getStartMax())
+                .endChromosome(variant.getEndChromosome())
+                .end(variant.getEnd())
+                .endMin(variant.getEndMin())
+                .endMax(variant.getEndMax())
+                .length(variant.getLength())
+                .structuralType(variant.getStructuralType())
+                .ref(variant.getRef())
+                .alt(variant.getAlt())
+                .geneSymbol(variant.getGeneSymbol())
+                .geneId(variant.getGeneId())
+                .variantEffect(variant.getVariantEffect())
+                .annotations(variant.getTranscriptAnnotations());
+    }
+
+    public static VariantEvaluation.Builder builder(int chr, int start, String ref, String alt) {
+        return new Builder()
+                .chromosome(chr)
+                .start(start)
+                .ref(ref)
+                .alt(alt);
     }
 
     /**
      * Builder class for producing a valid VariantEvaluation.
      */
-    public static class Builder {
-
-        private GenomeAssembly genomeAssembly = GenomeAssembly.HG19;
-        private int chr;
-        private String chromosomeName;
-        private int pos;
-        private String ref;
-        private String alt;
+    public static class Builder extends AbstractVariant.Builder<Builder> {
 
         private double phredScore = 0;
-
-        private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
-        private List<TranscriptAnnotation> annotations = Collections.emptyList();
-        private String geneSymbol = ".";
-        private String geneId = GeneIdentifier.EMPTY_FIELD;
-
-        private String vcfString;
         private VariantContext variantContext;
         private int altAlleleId;
-        private Map<String,SampleGenotype> sampleGenotypes = ImmutableMap.of();
+        private String id = "";
+        private Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
         private FrequencyData frequencyData = FrequencyData.empty();
 
         private boolean whiteListed = false;
-        private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
-        private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
-
-        private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
-        // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
-        static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(DEFAULT_SAMPLE_NAME, SampleGenotype.het());
-
-        /**
-         * Creates a minimal variant
-         *
-         * @param chr
-         * @param pos
-         * @param ref
-         * @param alt
-         */
-        private Builder(int chr, int pos, String ref, String alt) {
-            this.chr = chr;
-            this.pos = pos;
-            this.ref = ref;
-            this.alt = alt;
-        }
-
-        public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
-            this.genomeAssembly = genomeAssembly;
-            return this;
-        }
-
-        public Builder genomeAssembly(String genomeAssembly) {
-            this.genomeAssembly = GenomeAssembly.fromValue(genomeAssembly);
-            return this;
-        }
-
-        public Builder chromosomeName(String chromosomeName) {
-            this.chromosomeName = chromosomeName;
-            return this;
-        }
-
-        /**
-         * Safety method to handle creating the chromosome name in cases where
-         * the name is not explicitly set. This should happen in the
-         * VariantFactory, but for testing we're happy with a sensible default
-         * value. It's not critical, but is nice to prevent a lot of silly
-         * duplicate code.
-         *
-         * @param chr
-         * @return
-         */
-        private String buildChromosomeName(int chr) {
-            switch (chr) {
-                case 23:
-                    return "X";
-                case 24:
-                    return "Y";
-                case 25:
-                    return "MT";
-                default:
-                    return String.valueOf(chr);
-            }
-        }
+        private Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
+        private Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        private Set<ModeOfInheritance> contributingModes = EnumSet.noneOf(ModeOfInheritance.class);
+        private Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
         public Builder variantContext(VariantContext variantContext) {
-            this.variantContext = variantContext;
+            this.variantContext = Objects.requireNonNull(variantContext);
             return this;
         }
 
         public Builder altAlleleId(int altAlleleId) {
             this.altAlleleId = altAlleleId;
+            return this;
+        }
+
+        public Builder id(String id) {
+            this.id = Objects.requireNonNullElse(id, "");
             return this;
         }
 
@@ -721,39 +692,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //TODO - this is error-prone as it is possible to supply a HashMap which would screw-up the fact that we're
         // relying on the inherently ORDERED ImmutableMap implementation
         public Builder sampleGenotypes(Map<String, SampleGenotype> sampleGenotypes) {
-            Objects.requireNonNull(sampleGenotypes);
-            this.sampleGenotypes = sampleGenotypes;
-            return this;
-        }
-
-        public Builder variantEffect(VariantEffect variantEffect) {
-            Objects.requireNonNull(variantEffect);
-            this.variantEffect = variantEffect;
-            return this;
-        }
-
-        public Builder annotations(List<TranscriptAnnotation> annotations) {
-            Objects.requireNonNull(annotations);
-            this.annotations = annotations;
-            return this;
-        }
-
-        public Builder geneSymbol(String geneSymbol) {
-            Objects.requireNonNull(geneSymbol);
-            if (geneSymbol.isEmpty()) {
-                throw new IllegalArgumentException("Variant gene symbol cannot be empty");
-            }
-            this.geneSymbol = inputOrfirstValueInCommaSeparatedString(geneSymbol);
-            return this;
-        }
-
-        private String inputOrfirstValueInCommaSeparatedString(String geneSymbol) {
-            int commaIndex = geneSymbol.indexOf(',');
-            return (commaIndex > -1) ? geneSymbol.substring(0, commaIndex) : geneSymbol;
-        }
-
-        public Builder geneId(String geneId) {
-            this.geneId = geneId;
+            this.sampleGenotypes = Objects.requireNonNull(sampleGenotypes);
             return this;
         }
 
@@ -763,12 +702,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
 
         public Builder pathogenicityData(PathogenicityData pathogenicityData) {
-            this.pathogenicityData = pathogenicityData;
+            this.pathogenicityData = Objects.requireNonNull(pathogenicityData);
             return this;
         }
 
         public Builder frequencyData(FrequencyData frequencyData) {
-            this.frequencyData = frequencyData;
+            this.frequencyData = Objects.requireNonNull(frequencyData);
             return this;
         }
 
@@ -776,7 +715,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return filterResults(Arrays.asList(filterResults));
         }
 
-        public Builder filterResults(Collection<FilterResult> filterResults) {
+        Builder filterResults(Collection<FilterResult> filterResults) {
             for (FilterResult filterResult : filterResults) {
                 if (filterResult.passed()) {
                     this.passedFilterTypes.add(filterResult.getFilterType());
@@ -787,55 +726,41 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
+        Builder failedFilters(Set<FilterType> failedFilterTypes) {
+            this.failedFilterTypes = Objects.requireNonNull(failedFilterTypes);
+            return this;
+        }
+
+        Builder passedFilters(Set<FilterType> passedFilterTypes) {
+            this.passedFilterTypes = Objects.requireNonNull(passedFilterTypes);
+            return this;
+        }
+
+        Builder compatibleInheritanceModes(Set<ModeOfInheritance> compatibleInheritanceModes) {
+            this.compatibleInheritanceModes = Objects.requireNonNull(compatibleInheritanceModes);
+            return this;
+        }
+
+        public Builder contributingModes(Set<ModeOfInheritance> contributingModes) {
+            this.contributingModes = Objects.requireNonNull(contributingModes);
+            return this;
+        }
+
         public VariantEvaluation build() {
-            if (chromosomeName == null || chromosomeName.isEmpty()) {
-                chromosomeName = buildChromosomeName(chr);
-            }
 
             if (variantContext == null) {
                 // We don't check that the variant context agrees with the coordinates here as the variant context could
                 // have been split into different allelic variants so the positions and alleles could differ.
-                variantContext = buildVariantContext(chr, pos, ref, alt, phredScore);
+// TODO: awaiting further production checks before removing this.
+//                variantContext = buildVariantContext(chromosome, start, ref, alt, phredScore);
             }
-            // Should this be here? Would it be safer to validate for null/empty fields here? This is primarily for
-            // ease of testing. The TestAlleleFactory should fill in the missing fields for tests, although this
-            // replicates what buildVariantContext is doing for the SampleGenotypes
-            if (sampleGenotypes.isEmpty()) {
-                sampleGenotypes = SINGLE_SAMPLE_HET_GENOTYPE;
-            }
-
-            // n.b Storing the VariantContext in its raw string state as found in the file
-            // can save a significant amount of RAM, at the expense of having to decode and encode the variant context
-            // object twice.
-            //
-            // Standard POMP sample (4.3 million variants, single sample) Oracle JDK 11 (G1CG), Windows 10 release 1803
-            // -Xmx4G, preload random walk, caching maximumSize=6000000
-            // Heap used = max heap used after final GC event during variant filtering. RW matrix etc uses 2G.
-            // running on PASS_ONLY and discarding failed variants
-            //                | Heap Used |  TIME
-            // VariantContext | 3.1G   |  3m50s
-            // String         | 2.9G   |  4m45s
-            //
-            // running on PASS_ONLY but *RETAINING* all variants
-            //                | Heap Used |  TIME
-            // VariantContext | 4G+   |  didn't complete - constant GC churn after 2.3 mill variants
-            // String         | 3.4G  |  5m30s (constant spiky 30-60% CPU three full (90% CPU) GC events towards end)
-            //
-            // -Xmx8G, preload random walk, caching maximumSize=6000000
-            // running on PASS_ONLY and discarding failed variants
-            //                | Heap Used |  TIME
-            // VariantContext | 3.1G   |  3m55s (2 partial GC (60% CPU), avg 30-40% CPU)
-            // String         | 2.9G   |  4m25s (several partial GC (60% CPU), avg 30-40% CPU)
-            //
-            // running on PASS_ONLY but *RETAINING* all variants
-            //                | Heap Used |  TIME
-            // VariantContext | 5.9G  |  4m10s (7 partial GC (60% CPU), avg 50-60% CPU)
-            // String         | 4.3G  |  4m30s (3 partial GC (60% CPU), avg 30-40% CPU)
-
-//            VCFEncoder vcfEncoder = VcfCodecs.encoder(sampleGenotypes.keySet());
-//            vcfString = vcfEncoder.encode(variantContext);
 
             return new VariantEvaluation(this);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
         }
 
         /**

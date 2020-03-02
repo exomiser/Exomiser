@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,68 +41,73 @@ import java.util.Objects;
  */
 public class AllelePosition {
 
-    private final int pos;
+    private final int start;
     private final String ref;
     private final String alt;
 
     /**
-     * @param pos
+     * @param start
      * @param ref
      * @param alt
      * @return an exact representation of the input coordinates.
      */
-    public static AllelePosition of(int pos, String ref, String alt) {
+    public static AllelePosition of(int start, String ref, String alt) {
         Objects.requireNonNull(ref, "REF string cannot be null");
         Objects.requireNonNull(alt, "ALT string cannot be null");
-        return new AllelePosition(pos, ref, alt);
+        return new AllelePosition(start, ref, alt);
     }
 
     /**
      * Trims the right, then left side of the given variant allele.
      *
-     * @param pos
+     * @param start
      * @param ref
      * @param alt
      * @return a minimised representation of the input coordinates.
      */
-    public static AllelePosition trim(int pos, String ref, String alt) {
+    public static AllelePosition trim(int start, String ref, String alt) {
         Objects.requireNonNull(ref, "REF string cannot be null");
         Objects.requireNonNull(alt, "ALT string cannot be null");
 
         if (cantTrim(ref, alt)) {
-            return new AllelePosition(pos, ref, alt);
+            return new AllelePosition(start, ref, alt);
         }
+
+        // copy these here in order not to change input params
+        int trimStart = start;
+        String trimRef = ref;
+        String trimAlt = alt;
 
         // Can't do left alignment as have no reference seq and are assuming this has happened already.
         // Therefore check the sequence is first right trimmed, then left trimmed as per the wiki link above.
-        if (needsRightTrim(ref, alt)) {
-            int rightIdx = ref.length();
-            int diff = ref.length() - alt.length();
+        if (canRightTrim(trimRef, trimAlt)) {
+            int rightIdx = trimRef.length();
+            int diff = trimRef.length() - trimAlt.length();
             // scan from right to left, ensure right index > 1 so as not to fall off the left end
-            while (rightIdx > 1 && rightIdx - diff > 0 && ref.charAt(rightIdx - 1) == alt.charAt(rightIdx - 1 - diff)) {
+            while (rightIdx > 1 && rightIdx - diff > 0 && trimRef.charAt(rightIdx - 1) == trimAlt.charAt(rightIdx - 1 - diff)) {
                 rightIdx--;
             }
 
-            ref = ref.substring(0, rightIdx);
-            alt = alt.substring(0, rightIdx - diff);
+            trimRef = trimRef.substring(0, rightIdx);
+            trimAlt = trimAlt.substring(0, rightIdx - diff);
         }
 
-        if (needsLeftTrim(ref, alt)) {
+        if (canLeftTrim(trimRef, trimAlt)) {
             int leftIdx = 0;
             // scan from left to right
-            while (leftIdx < ref.length() && leftIdx < alt.length() && ref.charAt(leftIdx) == alt.charAt(leftIdx)) {
+            while (leftIdx < trimRef.length() && leftIdx < trimAlt.length() && trimRef.charAt(leftIdx) == trimAlt.charAt(leftIdx)) {
                 leftIdx++;
             }
             // correct index so as not to fall off the right end
-            if (leftIdx > 0 && leftIdx == ref.length() || leftIdx == alt.length()) {
+            if (leftIdx > 0 && leftIdx == trimRef.length() || leftIdx == trimAlt.length()) {
                 leftIdx -= 1;
             }
-            pos += leftIdx;
-            ref = ref.substring(leftIdx);
-            alt = alt.substring(leftIdx);
+            trimStart += leftIdx;
+            trimRef = trimRef.substring(leftIdx);
+            trimAlt = trimAlt.substring(leftIdx);
         }
 
-        return new AllelePosition(pos, ref, alt);
+        return new AllelePosition(trimStart, trimRef, trimAlt);
     }
 
     public static boolean isSnv(String ref, String alt) {
@@ -117,6 +122,13 @@ public class AllelePosition {
         return ref.length() < alt.length();
     }
 
+    /**
+     *
+     * @since 12.0.0
+     * @param ref the reference allele
+     * @param alt the alternate allele
+     * @return true if the ref or alt allele is considered symbolic
+     */
     public static boolean isSymbolic(String ref, String alt) {
         // The VCF spec only mentions alt alleles as having symbolic characters, so check these first then check the ref
         // just in case.
@@ -136,24 +148,24 @@ public class AllelePosition {
         return ref.length() == 1 || alt.length() == 1;
     }
 
-    private static boolean needsRightTrim(String ref, String alt) {
+    private static boolean canRightTrim(String ref, String alt) {
         int refLength = ref.length();
         int altLength = alt.length();
         return refLength > 1 && altLength > 1 && ref.charAt(refLength - 1) == alt.charAt(altLength - 1);
     }
 
-    private static boolean needsLeftTrim(String ref, String alt) {
+    private static boolean canLeftTrim(String ref, String alt) {
         return ref.length() > 1 && alt.length() > 1 && ref.charAt(0) == alt.charAt(0);
     }
 
-    private AllelePosition(int pos, String ref, String alt) {
-        this.pos = pos;
+    private AllelePosition(int start, String ref, String alt) {
+        this.start = start;
         this.ref = ref;
         this.alt = alt;
     }
 
-    public int getPos() {
-        return pos;
+    public int getStart() {
+        return start;
     }
 
     public String getRef() {
@@ -173,20 +185,20 @@ public class AllelePosition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AllelePosition that = (AllelePosition) o;
-        return pos == that.pos &&
+        return start == that.start &&
                 Objects.equals(ref, that.ref) &&
                 Objects.equals(alt, that.alt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pos, ref, alt);
+        return Objects.hash(start, ref, alt);
     }
 
     @Override
     public String toString() {
         return "AllelePosition{" +
-                "pos=" + pos +
+                "start=" + start +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
                 '}';

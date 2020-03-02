@@ -109,20 +109,20 @@ public class TsvVariantResultsWriterTest {
     }
 
     private VariantEvaluation makeFailVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30,1.0);
         variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
         return variant;
     }
 
     private VariantEvaluation makePassVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        VariantEvaluation variant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         return variant;
     }
 
     private VariantEvaluation makeContributingVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         return variant;

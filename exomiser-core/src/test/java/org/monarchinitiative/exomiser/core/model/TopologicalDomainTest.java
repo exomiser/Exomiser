@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,14 +66,14 @@ public class TopologicalDomainTest {
 
     @Test
     public void testVariantIsWithinDomain() {
-        VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 5, "A", "T");
+        VariantCoordinates variant = SimpleVariantCoordinates.of(GenomeAssembly.HG19, 1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1, 10, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(true));
     }
 
     @Test
     public void testVariantIsOutsideDomain() {
-        VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 5, "A", "T");
+        VariantCoordinates variant = SimpleVariantCoordinates.of(GenomeAssembly.HG19, 1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1000, 10000, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(false));
     }

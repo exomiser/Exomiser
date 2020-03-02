@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -79,7 +79,14 @@ public enum FrequencySource {
     GNOMAD_G_FIN("gnomAD_G_FIN"),
     GNOMAD_G_NFE("gnomAD_G_NFE"),
     GNOMAD_G_OTH("gnomAD_G_OTH"),
-    GNOMAD_G_SAS("gnomAD_G_SAS");
+    GNOMAD_G_SAS("gnomAD_G_SAS"),
+
+    // structural variant frequency sources
+    DBVAR("dbVar"),
+    DECIPHER("DECIPHER"),
+    DGV("DGV"),
+    GONL("GoNL"),
+    GNOMAD_SV("gnomAD_SV");
 
     public static final Set<FrequencySource> ALL_ESP_SOURCES = Sets.immutableEnumSet(EnumSet.range(ESP_AFRICAN_AMERICAN, ESP_ALL));
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -53,7 +54,7 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
 
     private final DataSource dataSource;
 
-    public HumanPhenotypeOntologyDao(DataSource phenotypeDataSource) {
+    public HumanPhenotypeOntologyDao(@Qualifier("phenotypeDataSource") DataSource phenotypeDataSource) {
         this.dataSource = phenotypeDataSource;
     }
 

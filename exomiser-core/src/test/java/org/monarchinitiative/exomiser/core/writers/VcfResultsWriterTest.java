@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
@@ -87,12 +88,12 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=ExGeneSymbId,Number=A,Type=String,Description=\"Exomiser gene id\">\n"
             + "##INFO=<ID=ExGeneSymbol,Number=A,Type=String,Description=\"Exomiser gene symbol\">\n"
             + "##INFO=<ID=ExVarEff,Number=A,Type=String,Description=\"Exomiser variant effect\">\n"
-            + "##INFO=<ID=ExVarHgvs,Number=A,Type=String,Description=\"Exomiser variant hgvs\">\n"
             + "##INFO=<ID=ExVarScore,Number=A,Type=Float,Description=\"Exomiser variant score\">\n"
             + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
+            + "##INFO=<ID=SVANN,Number=1,Type=String,Description=\"Functional SV Annotation:'Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|ERRORS / WARNINGS / INFO'\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
-    private static final String CHR10_FGFR2_CONTRIBUTING_VARIANT = "chr10\t123256215\t.\tT\tG\t2.20\tPASS\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
-    private static final String CHR10_FGFR2_PASS_VARIANT = "chr10\t123256214\t.\tA\tG\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256214A>G;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
+    private static final String CHR10_FGFR2_CONTRIBUTING_VARIANT = "chr10\t123256215\t.\tT\tG\t2.20\tPASS\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+    private static final String CHR10_FGFR2_PASS_VARIANT = "chr10\t123256214\t.\tA\tG\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
 
     private static final FilterResult PASS_TARGET_RESULT = FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER);
     private static final FilterResult FAIL_TARGET_RESULT = FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER);
@@ -137,7 +138,7 @@ public class VcfResultsWriterTest {
     }
 
     private void setUpShhGene() {
-        shhIndelVariant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        shhIndelVariant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 1.0);
 
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariant);
@@ -145,9 +146,9 @@ public class VcfResultsWriterTest {
     }
 
     private void setUpFgfr2Gene() {
-        fgfr2PassMissenseVariant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        fgfr2PassMissenseVariant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 2.2);
         fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
-        fgfr2ContributingVariant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        fgfr2ContributingVariant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
         fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
@@ -171,11 +172,12 @@ public class VcfResultsWriterTest {
     /* test writing out unannotated variants */
     @Test
     public void testWriteUnannotatedVariants() {
+        TestVcfParser testVcfParser = TestVcfParser.forSamples("Sample");
         VariantEvaluation unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "C", "T")
-                .quality(1)
+                .variantContext(testVcfParser.toVariantContext("5 11 . C T 1 PASS . GT 0/1"))
                 .build();
         VariantEvaluation unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG")
-                .quality(1)
+                .variantContext(testVcfParser.toVariantContext("5 14 . T TG 1 PASS . GT 0/1"))
                 .build();
 
         AnalysisResults analysisResults = AnalysisResults.builder()
@@ -197,9 +199,9 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr10\t123256214\t.\tA\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256214A>G;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n"
-                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr10\t123256214\t.\tA\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n"
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -225,7 +227,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -274,7 +276,7 @@ public class VcfResultsWriterTest {
 
     private String failedFgfr2VariantWithFilterField(String filterFieldAD) {
         return EXPECTED_HEADER
-                    + "chr10\t123256214\t.\tA\tG\t2.20\t" + filterFieldAD + "\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256214A>G;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123256214\t.\tA\tG\t2.20\t" + filterFieldAD + "\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
     }
 
     @Test
@@ -335,8 +337,8 @@ public class VcfResultsWriterTest {
     @Test
     public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
         TestVariantFactory varFactory = new TestVariantFactory();
-        VariantEvaluation alt1 = varFactory.buildVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 0, 258.62);
-        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 0, 258.62);
+        VariantEvaluation alt1 = varFactory.buildVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 258.62);
+        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 258.62);
         Gene gene = new Gene("TEST", 12345);
         gene.addVariant(alt1);
         gene.addVariant(alt2);
@@ -347,8 +349,8 @@ public class VcfResultsWriterTest {
         String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
         System.out.println(output);
         String expected = EXPECTED_HEADER
-                + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040T>TCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040T>TCCTCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
+                + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
         assertThat(output, equalTo(expected));
     }
 
@@ -359,11 +361,12 @@ public class VcfResultsWriterTest {
         List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(System.out::println);
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
-        VariantEvaluation altAlleleOne = variants.get(3);
-        //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
-        //variant score is 0.95 - contributes to score
-        altAlleleOne.setVariantEffect(VariantEffect.FRAMESHIFT_VARIANT);
-        altAlleleOne.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        VariantEvaluation altAlleleOne = variants.get(3).toBuilder()
+                //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
+                //variant score is 0.95 - contributes to score
+                .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
+                .contributingModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .build();
 
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);
@@ -382,7 +385,7 @@ public class VcfResultsWriterTest {
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER
-                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=1.0,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarScore=1.0,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,9 +39,9 @@ import java.util.Objects;
  */
 @JsonPropertyOrder({"query", "match", "lcs", "ic", "simj", "score"})
 public final class PhenotypeMatch {
-    
-    private final PhenotypeTerm matchPhenotype;
+
     private final PhenotypeTerm queryPhenotype;
+    private final PhenotypeTerm matchPhenotype;
     //lowest common subsumer
     private final PhenotypeTerm lcs;
     //Jaccard similarity score
@@ -50,8 +50,8 @@ public final class PhenotypeMatch {
     private final double score;
 
     public PhenotypeMatch(Builder builder) {
-        this.matchPhenotype = builder.matchPhenotype;
         this.queryPhenotype = builder.queryPhenotype;
+        this.matchPhenotype = builder.matchPhenotype;
         this.ic = builder.ic;
         this.lcs = builder.lcs;
         this.simJ = builder.simJ;
@@ -106,19 +106,26 @@ public final class PhenotypeMatch {
         return Double.compare(that.ic, ic) == 0 &&
                 Double.compare(that.simJ, simJ) == 0 &&
                 Double.compare(that.score, score) == 0 &&
-                Objects.equals(matchPhenotype, that.matchPhenotype) &&
                 Objects.equals(queryPhenotype, that.queryPhenotype) &&
+                Objects.equals(matchPhenotype, that.matchPhenotype) &&
                 Objects.equals(lcs, that.lcs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(matchPhenotype, queryPhenotype, lcs, ic, simJ, score);
+        return Objects.hash(queryPhenotype, matchPhenotype, lcs, ic, simJ, score);
     }
 
     @Override
     public String toString() {
-        return "PhenotypeMatch{" + "matchPhenotype=" + matchPhenotype + ", queryPhenotype=" + queryPhenotype + ", lcs=" + lcs + ", simJ=" + simJ + ", score=" + score + '}';
+        return "PhenotypeMatch{" +
+                "queryPhenotype=" + queryPhenotype +
+                ", matchPhenotype=" + matchPhenotype +
+                ", lcs=" + lcs +
+                ", ic=" + ic +
+                ", simJ=" + simJ +
+                ", score=" + score +
+                '}';
     }
 
     @JsonCreator

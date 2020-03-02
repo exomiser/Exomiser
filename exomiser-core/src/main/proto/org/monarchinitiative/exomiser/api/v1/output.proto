@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package org.monarchinitiative.exomiser.api.v1;
+
+//option java_multiple_files = true;
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "OutputProto";
+
+enum OutputFormat {
+    HTML = 0;
+    VCF = 1;
+    TSV_GENE = 2;
+    TSV_VARIANT = 3;
+    JSON = 4;
+}
+
+message OutputOptions {
+    bool outputContributingVariantsOnly = 1;
+    int32 numGenes = 2;
+    string outputPrefix = 3;
+    repeated OutputFormat outputFormats = 4;
+}

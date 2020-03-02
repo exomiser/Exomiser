@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -116,7 +116,22 @@ class FilterStatsTest {
     }
 
     @Test
-    void canLogMultiplePassAndFailCountsForMultipleFiltersWithMultipleThreads() throws Exception {
+    void getFilterCountsReturnedInOrder() {
+        FilterStats instance = new FilterStats();
+
+        List<FilterType> filters = ImmutableList.of(FilterType.PRIORITY_SCORE_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.QUALITY_FILTER, FilterType.FREQUENCY_FILTER, FilterType.PATHOGENICITY_FILTER, FilterType.INHERITANCE_FILTER);
+        filters.forEach(filterType -> new FilterRunner(filterType, 1, 2, instance).run());
+
+        List<FilterStats.FilterCount> filterCounts = instance.getFilterCounts();
+        assertThat(filterCounts.size(), equalTo(filters.size()));
+        for (int i = 0; i < filterCounts.size(); i++) {
+            System.out.println(filterCounts.get(i));
+            assertThat(filterCounts.get(i).getFilterType(), equalTo(filters.get(i)));
+        }
+    }
+
+    @Test
+    void canLogMultiplePassAndFailCountsForMultipleFiltersWithMultipleThreads() {
         for (int i = 0; i < 1000; i++) {
             FilterStats instance = new FilterStats();
 
@@ -144,11 +159,27 @@ class FilterStatsTest {
 
             assertThat(instance.getPassCountForFilter(FilterType.PATHOGENICITY_FILTER), equalTo(numPathPasses));
             assertThat(instance.getFailCountForFilter(FilterType.PATHOGENICITY_FILTER), equalTo(numPathFails));
+
+            List<FilterStats.FilterCount> filterCounts = instance.getFilterCounts();
+            for (FilterStats.FilterCount filterCount : filterCounts) {
+                if (filterCount.getFilterType() == FilterType.FREQUENCY_FILTER) {
+                    assertThat(filterCount.getPassCount(), equalTo(numFrequencyPasses));
+                    assertThat(filterCount.getFailCount(), equalTo(numFrequencyFails));
+                }
+                if (filterCount.getFilterType() == FilterType.VARIANT_EFFECT_FILTER) {
+                    assertThat(filterCount.getPassCount(), equalTo(numVarEffPasses));
+                    assertThat(filterCount.getFailCount(), equalTo(numVarEffFails));
+                }
+                if (filterCount.getFilterType() == FilterType.PATHOGENICITY_FILTER) {
+                    assertThat(filterCount.getPassCount(), equalTo(numPathPasses));
+                    assertThat(filterCount.getFailCount(), equalTo(numPathFails));
+                }
+            }
         }
     }
 
     @Test
-    void canLogMultiplePassAndFailCountsForSameFilterWithMultipleThreads() throws Exception {
+    void canLogMultiplePassAndFailCountsForSameFilterWithMultipleThreads() {
 
         for (int i = 0; i < 1000; i++) {
             FilterStats instance = new FilterStats();
@@ -178,7 +209,7 @@ class FilterStatsTest {
     /**
      * Utility class for testing FilterStats in a multi-threaded environment.
      */
-    private class FilterRunner implements Runnable {
+    private static class FilterRunner implements Runnable {
 
         private final FilterType filterType;
 

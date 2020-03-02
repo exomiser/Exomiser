@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package org.monarchinitiative.exomiser.api.v1;
+
+option java_package = "org.monarchinitiative.exomiser.api.v1";
+option java_outer_classname = "FiltersProto";
+
+// filters
+
+// intervalFilter: {interval: 'chr10:123256200-123256300'},
+// or for multiple intervals:
+// intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+// or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+// intervalFilter: {bed: /full/path/to/bed_file.bed},
+message IntervalFilter {
+    string interval = 1;
+    repeated string intervals = 2;
+    string bed = 3;
+}
+
+// genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
+message GenePanelFilter {
+    repeated string gene_symbols = 1;
+}
+
+// failedVariantFilter: {},
+message FailedVariantFilter {
+
+}
+
+// qualityFilter: {minQuality: 50.0},
+message QualityFilter {
+    float min_quality = 1;
+}
+
+message VariantEffectFilter {
+    repeated string remove = 1;
+}
+
+// knownVariantFilter: {}
+// removes variants represented in the database
+message KnownVariantFilter {
+
+}
+
+message FrequencyFilter {
+    float max_frequency = 1;
+}
+
+message PathogenicityFilter {
+    bool keep_non_pathogenic = 1;
+}
+
+message InheritanceFilter {
+}
+
+// Running the prioritiser followed by a priorityScoreFilter will remove genes
+// which are least likely to contribute to the phenotype defined in hpoIds, this will
+// dramatically reduce the time and memory required to analyse a genome.
+// 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
+message PriorityScoreFilter {
+    string priority_type = 1;
+    float min_priority_score = 2;
+}
+
+// regulatoryFeatureFilter removes all non-regulatory non-coding variants over 20Kb from a known gene.
+message RegulatoryFeatureFilter {
+
+}
+
+//omimPrioritiser isn't mandatory.
+//omimPrioritiser: {},
+//priorityScoreFilter: {minPriorityScore: 0.4},
+//Other prioritisers: Only combine omimPrioritiser with one of these.
+//Don't include any if you only want to filter the variants.
+//hiPhivePrioritiser: {},
+// or run hiPhive in benchmarking mode:
+//hiPhivePrioritiser: {runParams: 'mouse'},
+//phivePrioritiser: {}
+//phenixPrioritiser: {}
+//exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}

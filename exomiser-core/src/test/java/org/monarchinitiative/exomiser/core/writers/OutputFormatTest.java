@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,10 +55,12 @@ public class OutputFormatTest {
     }
 
     @Test
-    public void testHasPhenogridJsonOutput() {
-        OutputFormat instance = OutputFormat.PHENOGRID;
-        String expResult = "phenogrid.json";
-        String result = instance.getFileExtension();
-        assertThat(result, equalTo(expResult));
+    void testParseFormat() {
+        assertThat(OutputFormat.parseFormat("wibble"), equalTo(OutputFormat.HTML));
+        assertThat(OutputFormat.parseFormat("HTML"), equalTo(OutputFormat.HTML));
+        assertThat(OutputFormat.parseFormat("JSON"), equalTo(OutputFormat.JSON));
+        assertThat(OutputFormat.parseFormat("json"), equalTo(OutputFormat.JSON));
+        assertThat(OutputFormat.parseFormat("TSV-GENE"), equalTo(OutputFormat.TSV_GENE));
+        assertThat(OutputFormat.parseFormat("TSV_GENE"), equalTo(OutputFormat.TSV_GENE));
     }
 }

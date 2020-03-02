@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -40,8 +41,7 @@ public class InheritanceModeOptionsTest {
 
     private static final float DEFAULT_DOMINANT_FREQ = 0.1f;
 
-    //TODO: this value is too high and needs to be revised
-    private static final float DEFAULT_HOM_ALT_RECESSIVE_FREQ = 1.0f;
+    private static final float DEFAULT_HOM_ALT_RECESSIVE_FREQ = 0.1f;
     private static final float DEFAULT_COMP_HET_RECESSIVE_FREQ = 2.0f;
 
     private static final float DEFAULT_RECESSIVE_FREQ = DEFAULT_COMP_HET_RECESSIVE_FREQ;
@@ -238,6 +238,38 @@ public class InheritanceModeOptionsTest {
         Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
         InheritanceModeOptions userDefined = InheritanceModeOptions.of(userDefinedThresholds);
         assertThat(userDefined.getMaxFreq(), equalTo(1f));
+    }
+
+    @Test
+    void getMaxFreqsEmpty() {
+        assertThat(InheritanceModeOptions.empty().getMaxFreqs(), equalTo(ImmutableMap.of()));
+    }
+
+    @Test
+    void getMaxFreqsDefaults() {
+        Map<SubModeOfInheritance, Float> expected = new EnumMap<>(SubModeOfInheritance.class);
+        expected.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        expected.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        expected.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, 0.1f);
+
+        expected.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
+        expected.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, 2.0f);
+        expected.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, 0.1f);
+
+        expected.put(SubModeOfInheritance.MITOCHONDRIAL, 0.2f);
+
+        InheritanceModeOptions instance = InheritanceModeOptions.defaults();
+        assertThat(instance.getMaxFreqs(), equalTo(expected));
+    }
+
+    @Test
+    void getMaxFreqUserDefined() {
+        Map<SubModeOfInheritance, Float> expected = new EnumMap<>(SubModeOfInheritance.class);
+        expected.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f);
+        expected.put(SubModeOfInheritance.X_DOMINANT, 0.1f);
+
+        InheritanceModeOptions instance = InheritanceModeOptions.of(expected);
+        assertThat(instance.getMaxFreqs(), equalTo(expected));
     }
 
     @Test

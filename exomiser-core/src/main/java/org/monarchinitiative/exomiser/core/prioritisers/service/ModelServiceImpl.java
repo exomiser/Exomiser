@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -54,16 +55,13 @@ public class ModelServiceImpl implements ModelService {
 
     private final DataSource phenotypeDataSource;
 
-    public ModelServiceImpl(DataSource phenotypeDataSource) {
+    public ModelServiceImpl(@Qualifier("phenotypeDataSource") DataSource phenotypeDataSource) {
         this.phenotypeDataSource = phenotypeDataSource;
     }
 
     @Override
     public List<GeneModel> getHumanGeneDiseaseModels() {
-        // We only connect to human2mouse_orthologs to get the human_gene_symbol but if there is no orthology mapping we get 0 results and no disease hit at all - this is daft!
-        // Tried to replace with the below - should be more successful
-        String modelQuery = "SELECT distinct 'HUMAN' as organism, gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM entrez2sym e, disease_hp M, disease d WHERE e.entrezid=d.gene_id and M.disease_id=d.disease_id"; 
-        //String modelQuery = "SELECT 'HUMAN' as organism, gene_id as entrez_id, human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM human2mouse_orthologs hm, disease_hp M, disease d WHERE hm.entrez_id=d.gene_id AND M.disease_id=d.disease_id;";
+        String modelQuery = "SELECT distinct 'HUMAN' as organism, gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM entrez2sym e, disease_hp M, disease d WHERE e.entrezid=d.gene_id and M.disease_id=d.disease_id AND d.TYPE in ('D', 'C', 'S', '?')";
         return runGeneDiseaseModelQuery(modelQuery);
     }
 

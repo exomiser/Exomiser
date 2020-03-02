@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,17 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.*;
 
-import static org.hamcrest.CoreMatchers.*;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -38,36 +45,41 @@ public class JannovarVariantAnnotatorTest {
 
 
     @Test
-    public void testGetAnnotationsForUnknownContigVariant() {
-        VariantAnnotation annotations = instance.annotate("UNKNOWN", 1, "A", "T");
+    void testGetAnnotationsForUnknownContigVariant() {
+        List<VariantAnnotation> annotations = instance.annotate("UNKNOWN", 1, "A", "T");
         System.out.println(annotations);
-        assertThat(annotations, not(nullValue()));
-        assertThat(annotations.getChromosome(), equalTo(0));
-        assertThat(annotations.getPosition(), equalTo(1));
-        assertThat(annotations.getRef(), equalTo("A"));
-        assertThat(annotations.getAlt(), equalTo("T"));
-        assertThat(annotations.getGeneId(), equalTo(""));
-        assertThat(annotations.getGeneSymbol(), equalTo("."));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(false));
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosome(), equalTo(0));
+        assertThat(variantAnnotation.getStart(), equalTo(1));
+        assertThat(variantAnnotation.getRef(), equalTo("A"));
+        assertThat(variantAnnotation.getAlt(), equalTo("T"));
+        assertThat(variantAnnotation.getGeneId(), equalTo(""));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("."));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
     @Test
-    public void testAnnotateMissenseVariant() {
+    void testAnnotateMissenseVariant() {
         // This transcript is on the negative strand
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantAnnotation annotations = instance.annotate("10", 123256215, "T", "G");
-        assertThat(annotations.getChromosomeName(), equalTo("10"));
-        assertThat(annotations.getChromosome(), equalTo(10));
-        assertThat(annotations.getPosition(), equalTo(123256215));
-        assertThat(annotations.getRef(), equalTo("T"));
-        assertThat(annotations.getAlt(), equalTo("G"));
-        assertThat(annotations.getGeneId(), equalTo("2263"));
-        assertThat(annotations.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = annotations.getTranscriptAnnotations().get(0);
+        List<VariantAnnotation> annotations = instance.annotate("10", 123256215, "T", "G");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(123256215));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(Integer.MIN_VALUE));
@@ -77,21 +89,24 @@ public class JannovarVariantAnnotatorTest {
     }
 
     @Test
-    public void testAnnotateSpliceAcceptorVariant() {
+    void testAnnotateSpliceAcceptorVariant() {
         // This transcript is on the negative strand
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantAnnotation annotations = instance.annotate("10", 123243319, "T", "G");
-        assertThat(annotations.getChromosomeName(), equalTo("10"));
-        assertThat(annotations.getChromosome(), equalTo(10));
-        assertThat(annotations.getPosition(), equalTo(123243319));
-        assertThat(annotations.getRef(), equalTo("T"));
-        assertThat(annotations.getAlt(), equalTo("G"));
-        assertThat(annotations.getGeneId(), equalTo("2263"));
-        assertThat(annotations.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.SPLICE_ACCEPTOR_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = annotations.getTranscriptAnnotations().get(0);
+        List<VariantAnnotation> annotations = instance.annotate("10", 123243319, "T", "G");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(123243319));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.SPLICE_ACCEPTOR_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(Integer.MIN_VALUE));
@@ -101,80 +116,95 @@ public class JannovarVariantAnnotatorTest {
     }
 
     @Test
-    public void testAnnotateDownstreamVariant() {
+    void testAnnotateDownstreamVariant() {
         // This transcript is on the negative strand
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantAnnotation annotations = instance.annotate("10", 123237800, "T", "G");
-        assertThat(annotations.getChromosomeName(), equalTo("10"));
-        assertThat(annotations.getChromosome(), equalTo(10));
-        assertThat(annotations.getPosition(), equalTo(123237800));
-        assertThat(annotations.getRef(), equalTo("T"));
-        assertThat(annotations.getAlt(), equalTo("G"));
-        assertThat(annotations.getGeneId(), equalTo("2263"));
-        assertThat(annotations.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = annotations.getTranscriptAnnotations().get(0);
+        List<VariantAnnotation> annotations = instance.annotate("10", 123237800, "T", "G");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(123237800));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(-120171));
     }
 
     @Test
-    public void testAnnotateUpstreamVariant() {
+    void testAnnotateUpstreamVariant() {
         // This transcript is on the negative strand
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantAnnotation annotations = instance.annotate("10", 123357973, "T", "G");
-        assertThat(annotations.getChromosomeName(), equalTo("10"));
-        assertThat(annotations.getChromosome(), equalTo(10));
-        assertThat(annotations.getPosition(), equalTo(123357973));
-        assertThat(annotations.getRef(), equalTo("T"));
-        assertThat(annotations.getAlt(), equalTo("G"));
-        assertThat(annotations.getGeneId(), equalTo("2263"));
-        assertThat(annotations.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = annotations.getTranscriptAnnotations().get(0);
+        List<VariantAnnotation> annotations = instance.annotate("10", 123357973, "T", "G");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(123357973));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(120130));
     }
 
     @Test
-    public void testAnnotateIntergenicVariant() {
+    void testAnnotateIntergenicVariant() {
         // This transcript is on the negative strand
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantAnnotation annotations = instance.annotate("10", 150000000, "T", "G");
-        assertThat(annotations.getChromosomeName(), equalTo("10"));
-        assertThat(annotations.getChromosome(), equalTo(10));
-        assertThat(annotations.getPosition(), equalTo(150000000));
-        assertThat(annotations.getRef(), equalTo("T"));
-        assertThat(annotations.getAlt(), equalTo("G"));
-        assertThat(annotations.getGeneId(), equalTo("2263"));
-        assertThat(annotations.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(annotations.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
-        assertThat(annotations.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = annotations.getTranscriptAnnotations().get(0);
+        List<VariantAnnotation> annotations = instance.annotate("10", 150000000, "T", "G");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.getChromosomeName(), equalTo("10"));
+        assertThat(variantAnnotation.getChromosome(), equalTo(10));
+        assertThat(variantAnnotation.getStart(), equalTo(150000000));
+        assertThat(variantAnnotation.getRef(), equalTo("T"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(26762157));
     }
 
     @Test
-    public void testUpstreamGeneIntergenicVariantsInRegulatoryRegion() {
+    void testUpstreamGeneIntergenicVariantsInRegulatoryRegion() {
         //Without the regulatory regions in the annotator
-        VariantAnnotation upstreamVariant = instance.annotate("10", 123357973, "T", "G");
+        List<VariantAnnotation> upstreamVariantAnnots = instance.annotate("10", 123357973, "T", "G");
+        assertThat(upstreamVariantAnnots.size(), equalTo(1));
+        VariantAnnotation upstreamVariant = upstreamVariantAnnots.get(0);
+
         assertThat(upstreamVariant.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
 
-        VariantAnnotation intergenicVariant = instance.annotate("10", 150000000, "T", "G");
+        List<VariantAnnotation> intergenicVariantAnnots = instance.annotate("10", 150000000, "T", "G");
+        assertThat(intergenicVariantAnnots.size(), equalTo(1));
+        VariantAnnotation intergenicVariant = intergenicVariantAnnots.get(0);
+
         assertThat(intergenicVariant.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
 
         //Regulatory regions containing the variants
-        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.getPosition(), upstreamVariant.getPosition(), RegulatoryFeature.FeatureType.ENHANCER);
-        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.getPosition(), intergenicVariant.getPosition(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
+        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.getStart(), upstreamVariant.getStart(), RegulatoryFeature.FeatureType.ENHANCER);
+        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.getStart(), intergenicVariant.getStart(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
 
         //Create new annotator with the regulatory regions
         VariantAnnotator annotatorWithRegulatoryRegions = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(),
@@ -183,15 +213,17 @@ public class JannovarVariantAnnotatorTest {
         );
 
         //Annotate the original positions using the new annotator...
-        VariantAnnotation wasUpstream = annotatorWithRegulatoryRegions.annotate(upstreamVariant.getChromosomeName(), upstreamVariant.getPosition(), upstreamVariant.getRef(), upstreamVariant.getAlt());
-        assertThat(wasUpstream.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        List<VariantAnnotation> wasUpstream = annotatorWithRegulatoryRegions.annotate(upstreamVariant.getChromosomeName(), upstreamVariant
+                .getStart(), upstreamVariant.getRef(), upstreamVariant.getAlt());
+        assertThat(wasUpstream.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
         //... and lo! They are designated as regulatory region variants!
-        VariantAnnotation wasIntergenic = annotatorWithRegulatoryRegions.annotate(intergenicVariant.getChromosomeName(), intergenicVariant.getPosition(), intergenicVariant.getRef(), intergenicVariant.getAlt());
-        assertThat(wasIntergenic.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        List<VariantAnnotation> wasIntergenic = annotatorWithRegulatoryRegions.annotate(intergenicVariant.getChromosomeName(), intergenicVariant
+                .getStart(), intergenicVariant.getRef(), intergenicVariant.getAlt());
+        assertThat(wasIntergenic.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
     @Test
-    public void testGetAnnotationsForUnTrimmedDeletionReturnsValueOfAllelePositionTrim() {
+    void testGetAnnotationsForUnTrimmedDeletionReturnsValueOfAllelePositionTrim() {
 
         //Given a single allele from a multi-positional site, they might not be fully trimmed. In cases where there is repetition, depending on the program used, the final
         // variant allele will be different.
@@ -222,25 +254,27 @@ public class JannovarVariantAnnotatorTest {
         String ref = "AGTT";
         String alt = "AGT";
 
-        VariantAnnotation annotations = instance.annotate("X", pos, ref, alt);
+        List<VariantAnnotation> annotations = instance.annotate("X", pos, ref, alt);
+        assertThat(annotations.size(), equalTo(1));
+        VariantAnnotation variantAnnotation = annotations.get(0);
 
-        System.out.println(annotations);
+        System.out.println(variantAnnotation);
 
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
 
-        System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n", annotations.getPosition(), annotations.getRef(), annotations
-                .getAlt());
+        System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n",
+                variantAnnotation.getStart(), variantAnnotation.getRef(), variantAnnotation.getAlt());
         System.out.println(allelePosition);
 
-        assertThat(annotations.getChromosome(), equalTo(23));
-        assertThat(annotations.getPosition(), equalTo(allelePosition.getPos()));
-        assertThat(annotations.getRef(), equalTo(allelePosition.getRef()));
-        assertThat(annotations.getAlt(), equalTo(allelePosition.getAlt()));
-        assertThat(annotations.hasTranscriptAnnotations(), is(false));
+        assertThat(variantAnnotation.getChromosome(), equalTo(23));
+        assertThat(variantAnnotation.getStart(), equalTo(allelePosition.getStart()));
+        assertThat(variantAnnotation.getRef(), equalTo(allelePosition.getRef()));
+        assertThat(variantAnnotation.getAlt(), equalTo(allelePosition.getAlt()));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
     @Test
-    public void testGetAnnotationsForUnTrimmedDeletionTrimmedWithAllelePosition() {
+    void testGetAnnotationsForUnTrimmedDeletionTrimmedWithAllelePosition() {
 
         int pos = 118608470;
         String ref = "AGTT";
@@ -248,35 +282,94 @@ public class JannovarVariantAnnotatorTest {
 
         AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
 
-        VariantAnnotation variantAnnotation = instance.annotate("X", pos, ref, alt);
+        List<VariantAnnotation> annotations = instance.annotate("X", pos, ref, alt);
+        assertThat(annotations.size(), equalTo(1));
 
+        VariantAnnotation variantAnnotation = annotations.get(0);
         System.out.println(variantAnnotation);
-        System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n", variantAnnotation.getPosition(), variantAnnotation
-                .getRef(), variantAnnotation.getAlt());
+        System.out.printf("AnnotationList{pos=%d, ref='%s', alt='%s'}%n",
+                variantAnnotation.getStart(), variantAnnotation.getRef(), variantAnnotation.getAlt());
         System.out.println("Trimmed: " + trimmed);
 
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(118608471));
+        assertThat(variantAnnotation.getEnd(), equalTo(118608472));
+        assertThat(variantAnnotation.getLength(), equalTo(-1));
+        assertThat(variantAnnotation.getRef(), equalTo("GT"));
+        assertThat(variantAnnotation.getAlt(), equalTo("G"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
     @Test
-    void testStructuralVariant() {
+    void testAnnotateStructuralVariantAsSnv() {
         int pos = 118608470;
         String ref = "A";
         String alt = "<INS>";
 
-        AllelePosition trimmed = AllelePosition.trim(pos, ref, alt);
+        List<VariantAnnotation> annotations = instance.annotate("X", pos, ref, alt);
+        assertThat(annotations.size(), equalTo(1));
 
-        VariantAnnotation variantAnnotation = instance.annotate("X", pos, ref, alt);
-
+        VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getChromosome(), equalTo(23));
-        assertThat(variantAnnotation.getPosition(), equalTo(trimmed.getPos()));
-        assertThat(variantAnnotation.getRef(), equalTo(trimmed.getRef()));
-        assertThat(variantAnnotation.getAlt(), equalTo(trimmed.getAlt()));
+        assertThat(variantAnnotation.getStart(), equalTo(pos));
+        assertThat(variantAnnotation.getEnd(), equalTo(pos));
+        assertThat(variantAnnotation.getLength(), equalTo(0));
+        assertThat(variantAnnotation.getRef(), equalTo(ref));
+        assertThat(variantAnnotation.getAlt(), equalTo(alt));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+    }
+
+    @Test
+    void testTwoOverlappingGenesModerateImpact() {
+        // These two transcripts are for two overlapping genes on GRCh38
+        // Region view - http://www.ensembl.org/Homo_sapiens/Location/View?db=core;g=ENSG00000258947;r=16:89916965-89942476;t=ENST00000315491
+        // AC092143 has 5 exons which appear to be a fusion of MC1R (not shown) and TUBB3.
+        // These two transcripts have the same final 3 exons but AC092143 exons 1-2 and TUBB3 exon 1 do not overlap as shown below:
+        // AC092143  ENST00000556922  ------   --                         --   --   ------
+        // TUBB3     ENST00000315491                  --                  --   --   ------
+        GeneIdentifier AC092143 = GeneIdentifier.builder().geneSymbol("AC092143.1").build();
+        TranscriptModel ENST00000556922 = TestTranscriptModelFactory.builder()
+                .geneIdentifier(AC092143)
+                .knownGeneLine("ENST00000556922.1\tchr16\t+\t89919164\t89936092\t89919258\t89935804\t5\t89919164,89920589,89932570,89933467,89934728,\t89920208,89920737,89932679,89933578,89936092,\tA0A0B4J269\tuc002fpf.3")
+                .mRnaSequence("GGCAGCACCATGAACTAAGCAGGACACCTGGAGGGGAAGAACTGTGGGGACCTGGAGGCCTCCAACGACTCCTTCCTGCTTCCTGGACAGGACTATGGCTGTGCAGGGATCCCAGAGAAGACTTCTGGGCTCCCTCAACTCCACCCCCACAGCCATCCCCCAGCTGGGGCTGGCTGCCAACCAGACAGGAGCCCGGTGCCTGGAGGTGTCCATCTCTGACGGGCTCTTCCTCAGCCTGGGGCTGGTGAGCTTGGTGGAGAACGCGCTGGTGGTGGCCACCATCGCCAAGAACCGGAACCTGCACTCACCCATGTACTGCTTCATCTGCTGCCTGGCCTTGTCGGACCTGCTGGTGAGCGGGAGCAACGTGCTGGAGACGGCCGTCATCCTCCTGCTGGAGGCCGGTGCACTGGTGGCCCGGGCTGCGGTGCTGCAGCAGCTGGACAATGTCATTGACGTGATCACCTGCAGCTCCATGCTGTCCAGCCTCTGCTTCCTGGGCGCCATCGCCGTGGACCGCTACATCTCCATCTTCTACGCACTGCGCTACCACAGCATCGTGACCCTGCCGCGGGCGCGGCGAGCCGTTGCGGCCATCTGGGTGGCCAGTGTCGTCTTCAGCACGCTCTTCATCGCCTACTACGACCACGTGGCCGTCCTGCTGTGCCTCGTGGTCTTCTTCCTGGCTATGCTGGTGCTCATGGCCGTGCTGTACGTCCACATGCTGGCCCGGGCCTGCCAGCACGCCCAGGGCATCGCCCGGCTCCACAAGAGGCAGCGCCCGGTCCACCAGGGCTTTGGCCTTAAAGGCGCTGTCACCCTCACCATCCTGCTGGGCATTTTCTTCCTCTGCTGGGGCCCCTTCTTCCTGCATCTCACACTCATCGTCCTCTGCCCCGAGCACCCCACGTGCGGCTGCATCTTCAAGAACTTCAACCTCTTTCTCGCCCTCATCATCTGCAATGCCATCATCGACCCCCTCATCTACGCCTTCCACAGCCAGGAGCTCCGCAGGACGCTCAAGGAGGTGCTGACATGCTCCTGCTCTCAGGACCGTGCCCTCGTCAGCTGGGATGTGAAGTCTCTGGGTGGAAGTGTGTGCCAAGAGCTACTCCCACAGCAGCCCCAGGAGAAGGGGCTTTGTGACCAGAAAGCTTCATCCACAGCCTTGCAGCGGCTCCTGCAAAAGGAGTTCTGGGAAGTCATCAGTGATGAGCATGGCATCGACCCCAGCGGCAACTACGTGGGCGACTCGGACTTGCAGCTGGAGCGGATCAGCGTCTACTACAACGAGGCCTCTTCTCACAAGTACGTGCCTCGAGCCATTCTGGTGGACCTGGAACCCGGAACCATGGACAGTGTCCGCTCAGGGGCCTTTGGACATCTCTTCAGGCCTGACAATTTCATCTTTGGTCAGAGTGGGGCCGGCAACAACTGGGCCAAGGGTCACTACACGGAGGGGGCGGAGCTGGTGGATTCGGTCCTGGATGTGGTGCGGAAGGAGTGTGAAAACTGCGACTGCCTGCAGGGCTTCCAGCTGACCCACTCGCTGGGGGGCGGCACGGGCTCCGGCATGGGCACGTTGCTCATCAGCAAGGTGCGTGAGGAGTATCCCGACCGCATCATGAACACCTTCAGCGTCGTGCCCTCACCCAAGGTGTCAGACACGGTGGTGGAGCCCTACAACGCCACGCTGTCCATCCACCAGCTGGTGGAGAACACGGATGAGACCTACTGCATCGACAACGAGGCGCTCTACGACATCTGCTTCCGCACCCTCAAGCTGGCCACGCCCACCTACGGGGACCTCAACCACCTGGTATCGGCCACCATGAGCGGAGTCACCACCTCCTTGCGCTTCCCGGGCCAGCTCAACGCTGACCTGCGCAAGCTGGCCGTCAACATGGTGCCCTTCCCGCGCCTGCACTTCTTCATGCCCGGCTTCGCCCCCCTCACAGCCCGGGGCAGCCAGCAGTACCGGGCCCTGACCGTGCCCGAGCTCACCCAGCAGATGTTCGATGCCAAGAACATGATGGCCGCCTGCGACCCGCGCCACGGCCGCTACCTGACGGTGGCCACCGTGTTCCGGGGCCGCATGTCCATGAAGGAGGTGGACGAGCAGATGCTGGCCATCCAGAGCAAGAACAGCAGCTACTTCGTGGAGTGGATCCCCAACAACGTGAAGGTGGCCGTGTGTGACATCCCGCCCCGCGGCCTCAAGATGTCCTCCACCTTCATCGGGAACAGCACGGCCATCCAGGAGCTGTTCAAGCGCATCTCCGAGCAGTTCACGGCCATGTTCCGGCGCAAGGCCTTCCTGCACTGGTACACGGGCGAGGGCATGGACGAGATGGAGTTCACCGAGGCCGAGAGCAACATGAACGACCTGGTGTCCGAGTACCAGCAGTACCAGGACGCCACGGCCGAGGAAGAGGGCGAGATGTACGAAGACGACGAGGAGGAGTCGGAGGCCCAGGGCCCCAAGTGAAGCTGCTCGCAGCTGGAGTGAGAGGCAGGTGGCGGCCGGGGCCGAAGCCAGCAGTGTCTAAACCCCCGGAGCCATCTTGCTGCCGACACCCTGCTTTCCCCTCGCCCTAGGGCTCCCTTGCCGCCCTCCTGCAGTATTTATGGCCTCGTCCTCCCCACCTAGGCCACGTGTGAGCTGCTCCTGTCTCTGTCTTATTGCAGCTCCAGGCCTGACGTTTTACGGTTTTGTTTTTTACTGGTTTGTGTTTATATTTTCGGGGATACTTAATAAATCTATTGCTGTCAGATA")
+                .build();
+        GeneIdentifier TUBB3 = GeneIdentifier.builder().geneSymbol("TUBB3").build();
+        TranscriptModel ENST00000315491 = TestTranscriptModelFactory.builder()
+                .geneIdentifier(TUBB3)
+                .knownGeneLine("ENST00000315491.11\tchr16\t+\t89923278\t89936097\t89923401\t89935804\t4\t89923278,89932570,89933467,89934728,\t89923458,89932679,89933578,89936097,\tQ13509\tuc002fph.2")
+                .mRnaSequence("GACATCAGCCGATGCGAAGGGCGGGGCCGCGGCTATAAGAGCGCGCGGCCGCGGTCCCCGACCCTCAGCAGCCAGCCCGGCCCGCCCGCGCCCGTCCGCAGCCGCCCGCCAGACGCGCCCAGTATGAGGGAGATCGTGCACATCCAGGCCGGCCAGTGCGGCAACCAGATCGGGGCCAAGTTCTGGGAAGTCATCAGTGATGAGCATGGCATCGACCCCAGCGGCAACTACGTGGGCGACTCGGACTTGCAGCTGGAGCGGATCAGCGTCTACTACAACGAGGCCTCTTCTCACAAGTACGTGCCTCGAGCCATTCTGGTGGACCTGGAACCCGGAACCATGGACAGTGTCCGCTCAGGGGCCTTTGGACATCTCTTCAGGCCTGACAATTTCATCTTTGGTCAGAGTGGGGCCGGCAACAACTGGGCCAAGGGTCACTACACGGAGGGGGCGGAGCTGGTGGATTCGGTCCTGGATGTGGTGCGGAAGGAGTGTGAAAACTGCGACTGCCTGCAGGGCTTCCAGCTGACCCACTCGCTGGGGGGCGGCACGGGCTCCGGCATGGGCACGTTGCTCATCAGCAAGGTGCGTGAGGAGTATCCCGACCGCATCATGAACACCTTCAGCGTCGTGCCCTCACCCAAGGTGTCAGACACGGTGGTGGAGCCCTACAACGCCACGCTGTCCATCCACCAGCTGGTGGAGAACACGGATGAGACCTACTGCATCGACAACGAGGCGCTCTACGACATCTGCTTCCGCACCCTCAAGCTGGCCACGCCCACCTACGGGGACCTCAACCACCTGGTATCGGCCACCATGAGCGGAGTCACCACCTCCTTGCGCTTCCCGGGCCAGCTCAACGCTGACCTGCGCAAGCTGGCCGTCAACATGGTGCCCTTCCCGCGCCTGCACTTCTTCATGCCCGGCTTCGCCCCCCTCACAGCCCGGGGCAGCCAGCAGTACCGGGCCCTGACCGTGCCCGAGCTCACCCAGCAGATGTTCGATGCCAAGAACATGATGGCCGCCTGCGACCCGCGCCACGGCCGCTACCTGACGGTGGCCACCGTGTTCCGGGGCCGCATGTCCATGAAGGAGGTGGACGAGCAGATGCTGGCCATCCAGAGCAAGAACAGCAGCTACTTCGTGGAGTGGATCCCCAACAACGTGAAGGTGGCCGTGTGTGACATCCCGCCCCGCGGCCTCAAGATGTCCTCCACCTTCATCGGGAACAGCACGGCCATCCAGGAGCTGTTCAAGCGCATCTCCGAGCAGTTCACGGCCATGTTCCGGCGCAAGGCCTTCCTGCACTGGTACACGGGCGAGGGCATGGACGAGATGGAGTTCACCGAGGCCGAGAGCAACATGAACGACCTGGTGTCCGAGTACCAGCAGTACCAGGACGCCACGGCCGAGGAAGAGGGCGAGATGTACGAAGACGACGAGGAGGAGTCGGAGGCCCAGGGCCCCAAGTGAAGCTGCTCGCAGCTGGAGTGAGAGGCAGGTGGCGGCCGGGGCCGAAGCCAGCAGTGTCTAAACCCCCGGAGCCATCTTGCTGCCGACACCCTGCTTTCCCCTCGCCCTAGGGCTCCCTTGCCGCCCTCCTGCAGTATTTATGGCCTCGTCCTCCCCACCTAGGCCACGTGTGAGCTGCTCCTGTCTCTGTCTTATTGCAGCTCCAGGCCTGACGTTTTACGGTTTTGTTTTTTACTGGTTTGTGTTTATATTTTCGGGGATACTTAATAAATCTATTGCTGTCAGATACCCTT")
+                .build();
+
+        JannovarData jannovarData = TestFactory.buildJannovarData(ENST00000556922, ENST00000315491);
+        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG38, jannovarData, ChromosomalRegionIndex.empty());
+
+        List<VariantAnnotation> overlappingMissenseAnnotations = variantAnnotator.annotate("16", 89935214, "G", "A");
+        assertThat(overlappingMissenseAnnotations.size(), equalTo(2));
+        overlappingMissenseAnnotations.forEach(variantAnnotation -> {
+            assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+            // the transcript annotations should be split into new variant annotations for each gene
+            assertThat(variantAnnotation.getTranscriptAnnotations().size(), equalTo(1));
+        });
+
+        List<VariantAnnotation> annotations = variantAnnotator.annotate("16", 89923407, "G", "TA");
+        assertThat(annotations.size(), equalTo(1));
+        annotations.forEach(variantAnnotation -> {
+            System.out.println(variantAnnotation);
+            assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION));
+            // the transcript annotations should remain together as the position on the AC092143 transcript
+            assertThat(variantAnnotation.getTranscriptAnnotations().size(), equalTo(2));
+        });
+
+        Map<String, List<TranscriptAnnotation>> annotationsByGeneSymbol = annotations.stream()
+                .flatMap(variantAnnotation -> variantAnnotation.getTranscriptAnnotations().stream())
+                .collect(groupingBy(TranscriptAnnotation::getGeneSymbol));
+
+        annotationsByGeneSymbol.get("TUBB3")
+                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION)));
+
+        annotationsByGeneSymbol.get("AC092143.1")
+                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)));
+
     }
 }

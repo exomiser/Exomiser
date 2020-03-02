@@ -21,6 +21,10 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import htsjdk.variant.vcf.VCFHeader;
+import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.analysis.sample.SampleIdentifierUtil;
+import org.monarchinitiative.exomiser.core.analysis.sample.SampleAnalysisAdaptor;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
@@ -130,11 +134,9 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
         logger.info("Variant filter stats are:");
-        analysisStepGroups.stream()
-                .flatMap(Collection::stream)
-                .filter(analysisStep -> analysisStep instanceof Filter)
-                .map(analysisStep -> ((Filter) analysisStep).getFilterType())
-                .forEach(filterType -> logger.info("{}: pass={} fail={}", filterType.name(), filterStats.getPassCountForFilter(filterType), filterStats.getFailCountForFilter(filterType)));
+        filterStats.getFilterCounts()
+                .forEach(filterStat -> logger.info("{}: pass={} fail={}", filterStat.getFilterType(), filterStat.getPassCount(), filterStat
+                        .getFailCount()));
 
         logger.info("Creating analysis results from VCF {}", vcfPath);
         AnalysisResults analysisResults = AnalysisResults.builder()
@@ -169,10 +171,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             filteredVariants = variantStream
                     .peek(variantLogger.logLoadedAndPassedVariants())
                     .filter(isObservedInProband(probandSample))
-                    .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(geneReassigner))
-                    .map(reassignNonCodingVariantToBestGeneInTad(geneReassigner))
-                    //TODO: is this a good idea here? This could seriously impact performance.
-                    // An alternative would be in a VariantFilterDataProvider
+                    .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
                     .map(flagWhiteListedVariants())
                     .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters, filterStats))
@@ -207,28 +206,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
         return variantEvaluation -> {
-            // need a nicer API for this.
-            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotypes().get(probandSample.getId());
-            // a possible NPE here, but this really shouldn't happen, as the samples and pedigree should have been checked previously
+            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandSample.getId());
+            // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously
             // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
             return probandGenotype.getCalls().contains(AlleleCall.ALT);
-        };
-    }
-
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
-        return variantEvaluation -> {
-            if (variantEvaluation.isNonCodingVariant()) {
-                geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
-            }
-            return variantEvaluation;
-        };
-    }
-
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
-        // Caution! This won't function correctly if run before a prioritiser has been run
-        return variantEvaluation -> {
-            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
-            return variantEvaluation;
         };
     }
 
