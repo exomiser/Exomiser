@@ -139,6 +139,8 @@ public class DiseaseInheritanceCache implements ResourceParser {
             //and store them in this intermediate map
             Map<Integer, List<InheritanceMode>> intermediateDiseaseInheritanceMap = new HashMap<>();
             //so let's parse...
+            // skip header
+            line = br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split("\t");
                 if (fields[1].equals("OMIM") || fields[3].equals("NOT")) {
