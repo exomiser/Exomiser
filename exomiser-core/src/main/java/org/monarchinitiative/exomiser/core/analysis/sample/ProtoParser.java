@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -78,13 +78,14 @@ public class ProtoParser {
         String jsonString = new ObjectMapper().writeValueAsString(tree);
         JsonFormat.parser()
                 // should we be permissive or not?
-//                .ignoringUnknownFields()
+                .ignoringUnknownFields()
                 .merge(jsonString, protoBuilder);
         return protoBuilder;
     }
 
     private static <U extends Message.Builder> U parseJson(U protoBuilder, Reader reader) throws IOException {
         JsonFormat.parser()
+                .ignoringUnknownFields()
                 .merge(reader, protoBuilder);
         return protoBuilder;
     }

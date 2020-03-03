@@ -46,6 +46,7 @@ class SamplePhenopacketAdaptorTest {
     void wellFormedPhenopacket() {
         Individual subject = Individual.newBuilder()
                 .setId("manuel")
+                .setAgeAtCollection(org.phenopackets.schema.v1.core.Age.newBuilder().setAge("P3Y").build())
                 .build();
 
         Path vcfFile = Paths.get("src/test/resources/Pfeiffer.vcf");
@@ -75,6 +76,7 @@ class SamplePhenopacketAdaptorTest {
         assertThat(instance.getVcfPath(), equalTo(vcfFile.toAbsolutePath()));
         assertThat(instance.getProbandSampleName(), equalTo("manuel"));
         assertThat(instance.getPedigree(), equalTo(Pedigree.justProband("manuel")));
+        assertThat(instance.getAge(), equalTo(Age.of(3, 0, 0)));
         assertThat(instance.getHpoIds(), equalTo(List.of("HP:0001363")));
     }
 }

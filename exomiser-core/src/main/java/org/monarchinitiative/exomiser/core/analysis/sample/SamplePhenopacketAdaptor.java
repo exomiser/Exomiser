@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
+import org.phenopackets.schema.v1.core.Individual;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.PhenotypicFeature;
 
@@ -43,11 +44,15 @@ class SamplePhenopacketAdaptor implements Sample {
     private final GenomeAssembly genomeAssembly;
     private final Path vcfPath;
     private final Pedigree pedigree;
+    private final Age age;
+    private final Pedigree.Individual.Sex sex;
     private final String probandSampleName;
     private final List<String> hpoIds;
 
     SamplePhenopacketAdaptor(Phenopacket phenopacket) {
         probandSampleName = phenopacket.getSubject().getId();
+        age = extractAge(phenopacket);
+        sex = extractSex(phenopacket);
         hpoIds = phenopacket.getPhenotypicFeaturesList()
                 .stream()
                 // ensure we only have positive phenotypes
@@ -58,7 +63,7 @@ class SamplePhenopacketAdaptor implements Sample {
 
 
         HtsFile htsFile = validateAndExtractHtsFile(phenopacket.getHtsFilesList());
-
+        //TODO: allow HtsFile to be null as vcfPath can be null
         genomeAssembly = GenomeAssembly.fromValue(htsFile.getGenomeAssembly());
         vcfPath = Paths.get(URI.create(htsFile.getUri()));//.toAbsolutePath();
         // pedigree = unvalidated pedigree. The AnalysisRunner will validate this against the VCF just before the
@@ -69,6 +74,25 @@ class SamplePhenopacketAdaptor implements Sample {
         //  the pedigree is made from the sampleIdentifiers so that Exomiser can validate the sample identifiers in the
         //  pedigree against the sample identifiers in the VCF.
         pedigree = Pedigree.justProband(probandSampleName);
+    }
+
+    private Pedigree.Individual.Sex extractSex(Phenopacket phenopacket) {
+        Individual subject = phenopacket.getSubject();
+        switch (subject.getSex()) {
+            case MALE:
+                return Pedigree.Individual.Sex.MALE;
+            case FEMALE:
+                return Pedigree.Individual.Sex.FEMALE;
+        }
+        return Pedigree.Individual.Sex.UNKNOWN;
+    }
+
+    private Age extractAge(Phenopacket phenopacket) {
+        if (phenopacket.getSubject().hasAgeAtCollection()) {
+            org.phenopackets.schema.v1.core.Age ageAtCollection = phenopacket.getSubject().getAgeAtCollection();
+            return Age.parse(ageAtCollection.getAge());
+        }
+        return Age.unknown();
     }
 
     private HtsFile validateAndExtractHtsFile(List<HtsFile> htsFiles) {
@@ -94,8 +118,23 @@ class SamplePhenopacketAdaptor implements Sample {
     }
 
     @Override
+    public boolean hasVcf() {
+        return vcfPath != null;
+    }
+
+    @Override
     public String getProbandSampleName() {
         return probandSampleName;
+    }
+
+    @Override
+    public Age getAge() {
+        return age;
+    }
+
+    @Override
+    public Pedigree.Individual.Sex getSex() {
+        return sex;
     }
 
     @Override
@@ -115,14 +154,16 @@ class SamplePhenopacketAdaptor implements Sample {
         SamplePhenopacketAdaptor that = (SamplePhenopacketAdaptor) o;
         return genomeAssembly == that.genomeAssembly &&
                 Objects.equals(vcfPath, that.vcfPath) &&
-                Objects.equals(probandSampleName, that.probandSampleName) &&
                 Objects.equals(pedigree, that.pedigree) &&
+                Objects.equals(age, that.age) &&
+                sex == that.sex &&
+                Objects.equals(probandSampleName, that.probandSampleName) &&
                 Objects.equals(hpoIds, that.hpoIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, pedigree, hpoIds);
+        return Objects.hash(genomeAssembly, vcfPath, pedigree, age, sex, probandSampleName, hpoIds);
     }
 
     @Override
@@ -130,8 +171,10 @@ class SamplePhenopacketAdaptor implements Sample {
         return "SamplePhenopacketAdaptor{" +
                 "genomeAssembly=" + genomeAssembly +
                 ", vcfPath=" + vcfPath +
-                ", probandSampleName='" + probandSampleName + '\'' +
                 ", pedigree=" + pedigree +
+                ", age=" + age +
+                ", sex=" + sex +
+                ", probandSampleName='" + probandSampleName + '\'' +
                 ", hpoIds=" + hpoIds +
                 '}';
     }
