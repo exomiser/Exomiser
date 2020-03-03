@@ -24,7 +24,6 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleIdentifierUtil;
-import org.monarchinitiative.exomiser.core.analysis.sample.SampleAnalysisAdaptor;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
