@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,16 +25,16 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
 /**
- * Class for converting contig names to integer ids
+ * Class for converting contig names to integer ids.
  *
- * @since 12.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 12.0.0
  */
 public class Contig {
 
     private static final Map<String, Integer> CONTIG_MAP;
 
-    static  {
+    static {
         ImmutableMap.Builder<String, Integer> mapBuilder = new ImmutableMap.Builder<>();
 
         // add autosomes 1-22
@@ -57,12 +57,34 @@ public class Contig {
         }
         mapBuilder.put("MT", 25);
 
+        //NC accessions for chromosomes 1-24
+        for (int i = 1; i < 25; i++) {
+            mapBuilder.put(GenomeAssembly.HG19.getReferenceAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG38.getReferenceAccession(i), i);
+        }
+        // Mitochondrial chromosome has same NC accession
+        mapBuilder.put(GenomeAssembly.HG19.getReferenceAccession(25), 25);
+
         CONTIG_MAP = mapBuilder.build();
     }
 
     private Contig() {
     }
 
+    /**
+     * Converts the string-based chromosome representation to an integer value in the range of 0-25 where 0 represents
+     * unknown or unplaced contigs. 1-22 are the autosomes, 23 = X, 24 = Y and 25 = M.
+     * <p>
+     * This method will support numeric, chr-prefixed or NC accessions as valid input. For example 1, chr1, NC_000001.10
+     * or NC_000001.11 will return the value 1.
+     * <p>
+     * Valid sex chromosomes are 23, X, chrX, 24, Y, chrY or the NC accessions. Valid mitochondrial values are M, MT,
+     * chrM, 25 or NC_012920.1. Unrecognised and unplaced contigs will have the value 0 returned.
+     *
+     * @param contig the string-based representation of the chromosome
+     * @return the integer value of the chromosome
+     * @since 12.0.0
+     */
     public static int parseId(String contig) {
         return CONTIG_MAP.getOrDefault(contig, 0);
     }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,9 +44,13 @@ class ContigTest {
         }
         assertThat(Contig.parseId("1"), equalTo(1));
         assertThat(Contig.parseId("chr1"), equalTo(1));
+        assertThat(Contig.parseId("NC_000001.10"), equalTo(1));
+        assertThat(Contig.parseId("NC_000001.11"), equalTo(1));
 
         assertThat(Contig.parseId("22"), equalTo(22));
         assertThat(Contig.parseId("chr22"), equalTo(22));
+        assertThat(Contig.parseId("NC_000022.10"), equalTo(22));
+        assertThat(Contig.parseId("NC_000022.11"), equalTo(22));
     }
 
     @Test
@@ -55,6 +59,8 @@ class ContigTest {
         assertThat(Contig.parseId("chr23"), equalTo(23));
         assertThat(Contig.parseId("X"), equalTo(23));
         assertThat(Contig.parseId("chrX"), equalTo(23));
+        assertThat(Contig.parseId("NC_000023.10"), equalTo(23));
+        assertThat(Contig.parseId("NC_000023.11"), equalTo(23));
     }
 
     @Test
@@ -63,6 +69,8 @@ class ContigTest {
         assertThat(Contig.parseId("chr24"), equalTo(24));
         assertThat(Contig.parseId("Y"), equalTo(24));
         assertThat(Contig.parseId("chrY"), equalTo(24));
+        assertThat(Contig.parseId("NC_000024.9"), equalTo(24));
+        assertThat(Contig.parseId("NC_000024.10"), equalTo(24));
     }
 
     @Test
@@ -72,5 +80,6 @@ class ContigTest {
         assertThat(Contig.parseId("M"), equalTo(25));
         assertThat(Contig.parseId("MT"), equalTo(25));
         assertThat(Contig.parseId("chrM"), equalTo(25));
+        assertThat(Contig.parseId("NC_012920.1"), equalTo(25));
     }
 }
