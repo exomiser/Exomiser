@@ -80,15 +80,11 @@ owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove
 owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
 owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 
-OWLTOOLS_MEMORY=50G owltools Homo_sapiens-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,HP -a
-hp-hp-phenodigm-cache.txt
-
+bsub -qmedium -Pbio 'owltools Homo_sapiens-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,HP -a hp-hp-phenodigm-cache.txt'
 bsub -qmedium -Pbio 'owltools Mus_musculus-all-merged.owl Homo_sapiens-all-merged.owl mp_hp-align-equiv.owl --merge-support-ontologies --sim-save-phenodigm-class-scores -m 2.5 -x HP,MP -a hp-mp-phenodigm-cache.txt'
+bsub -qmedium -Pbio 'owltools hp-zp-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,ZP -a hp-zp-phenodigm-cache.txt'
 
-OWLTOOLS_MEMORY=50G owltools Mus_musculus-all-merged.owl Homo_sapiens-all-merged.owl upheno/hp-mp/mp_hp-align-equiv.owl
---merge-support-ontologies --sim-save-phenodigm-class-scores -m 2.5 -x HP,MP -a hp-mp-phenodigm-cache.txt
-OWLTOOLS_MEMORY=50G owltools hp-zp-all-merged.owl --sim-save-phenodigm-class-scores -m 2.5 -x HP,ZP -a
-hp-zp-phenodigm-cache.txt
+
 ```
 8. mv *-cache.txt to downloads directory of database build
 
