@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import com.google.common.collect.ImmutableSet;
+import org.monarchinitiative.exomiser.core.genome.Contig;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
     private List<Allele> parseAlleles(String[] fields) {
 
-        byte chr = ChromosomeParser.parseChr(fields[0]);
+        int chr = Contig.parseId(fields[0]);
         if (chr == 0 || !unfilteredOrPassed(fields[6])) {
             return Collections.emptyList();
         }
@@ -115,7 +116,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
         return true;
     }
 
-    private Allele makeAllele(byte chr, int pos, String ref, String alt) {
+    private Allele makeAllele(int chr, int pos, String ref, String alt) {
         AllelePosition allelePosition = AllelePosition.trim(pos, ref, alt);
         return new Allele(chr, allelePosition.getStart(), allelePosition.getRef(), allelePosition.getAlt());
     }
