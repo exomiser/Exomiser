@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -72,12 +72,33 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
                 String frequencyValues = getFrequencyValues(infoField);
                 mafMap.put(AlleleProperty.TOPMED, parseFreqField(frequencyValues));
             }
+            // newer b152+ format has all the frequency data in the FREQ field which requires further parsing
+            if (infoField.startsWith("FREQ=")) {
+                String[] sources = infoField.substring(infoField.indexOf('=') + 1).split("\\|");
+                for (String source : sources) {
+                    int colonPos = source.indexOf(':');
+                    String sourceId = source.substring(0, colonPos);
+                    String frequencyValues = source.substring(colonPos + 1);
+                    switch (sourceId) {
+                        case "1000Genomes":
+                            mafMap.put(AlleleProperty.KG, parseFreqField(frequencyValues));
+                        case "TOPMED":
+                            mafMap.put(AlleleProperty.TOPMED, parseFreqField(frequencyValues));
+//                        case "TWINSUK":
+//                            // https://twinsuk.ac.uk/about-us/what-is-twinsuk/
+//                            mafMap.put(AlleleProperty.TWINSUK, parseFreqField(frequencyValues));
+//                        case "ALSPAC":
+//                            // http://www.bristol.ac.uk/alspac/researchers/cohort-profile/
+//                            mafMap.put(AlleleProperty.ALSPAC, parseFreqField(frequencyValues));
+                    }
+                }
+            }
         }
         return mafMap;
     }
 
     private String getFrequencyValues(String infoField) {
-        return infoField.substring(infoField.indexOf('='));
+        return infoField.substring(infoField.indexOf('=') + 1);
     }
 
     private List<String> parseFreqField(String infoField) {

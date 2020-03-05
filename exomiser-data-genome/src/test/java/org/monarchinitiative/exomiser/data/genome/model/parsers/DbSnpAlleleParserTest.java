@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -268,6 +268,25 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         Allele allele2 = new Allele(1, 9974103, "A", "T");
         allele2.setRsId("rs527824753");
         allele2.addValue(AlleleProperty.KG, 0.03994f);
+
+        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+    }
+
+    @Test
+    void testBuild152FormatMultiAlleleCafAndTopMedMixedRepresentation() {
+        String line = "" +
+                "NC_000001.10\t9974103\trs527824753\tA\tC,T\t.\t.\tRS=527824753;dbSNPBuildID=142;SSR=0;VC=SNV;GNO;FREQ=1000Genomes:0.9996,0.0003994,.|ALSPAC:0.9997,0.0002595,.|GnomAD:0.9999,0.0001279,.|TOPMED:0.9997,0.0002389,5.575e-05|TWINSUK:0.9989,0.001079,.";
+
+        Allele allele1 = new Allele(1, 9974103, "A", "C");
+        allele1.setRsId("rs527824753");
+        allele1.addValue(AlleleProperty.KG, 0.03994f);
+        allele1.addValue(AlleleProperty.TOPMED, 0.02389f);
+//        allele1.addValue(AlleleProperty.ALSPAC, 0.02595f);
+//        allele1.addValue(AlleleProperty.TWINSUK, 0.10789999f);
+
+        Allele allele2 = new Allele(1, 9974103, "A", "T");
+        allele2.setRsId("rs527824753");
+        allele2.addValue(AlleleProperty.TOPMED, 0.005575f);
 
         assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
     }
