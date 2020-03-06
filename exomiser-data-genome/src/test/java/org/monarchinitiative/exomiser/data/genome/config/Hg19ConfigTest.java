@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,10 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.config;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.model.archive.AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.model.archive.DbNsfp3AlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.model.archive.EspAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.model.archive.TabixAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.*;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -80,7 +77,7 @@ public class Hg19ConfigTest {
     public void dbSnpAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.dbSnpAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/00-All.vcf.gz"));
+        AlleleArchive expectedArchive = new DbSnpAlleleArchive(Paths.get("src/test/resources/hg19/variants/00-All.vcf.gz"));
         assertThat(alleleResource.getAlleleParser(), instanceOf(DbSnpAlleleParser.class));
         assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
     }

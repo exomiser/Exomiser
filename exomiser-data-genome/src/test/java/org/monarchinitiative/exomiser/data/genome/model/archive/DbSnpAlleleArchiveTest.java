@@ -18,20 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.model.resource;
+package org.monarchinitiative.exomiser.data.genome.model.archive;
 
-import org.monarchinitiative.exomiser.data.genome.model.archive.DbSnpAlleleArchive;
-import org.monarchinitiative.exomiser.data.genome.model.parsers.DbSnpAlleleParser;
+import org.junit.jupiter.api.Test;
 
-import java.net.URL;
-import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbSnpAlleleResource extends AbstractAlleleResource {
+class DbSnpAlleleArchiveTest {
 
-    public DbSnpAlleleResource(String name, URL resourceUrl, Path resourcePath) {
-        super(name, resourceUrl, new DbSnpAlleleArchive(resourcePath), new DbSnpAlleleParser());
+    private final DbSnpAlleleArchive dbSnpArchive = new DbSnpAlleleArchive(Paths.get("GCF_000001405.25.gz"));
+
+    @Test
+    public void archiveFileFormat() throws Exception {
+        assertThat(dbSnpArchive.getArchiveFileFormat(), equalTo("gz"));
+    }
+
+    @Test
+    public void dataFileFormat() throws Exception {
+        assertThat(dbSnpArchive.getDataFileFormat(), equalTo(""));
     }
 }
