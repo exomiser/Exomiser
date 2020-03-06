@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataFactory;
+import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
@@ -32,11 +33,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Main logic for building the exomiser hg37 genome data distribution.
@@ -47,6 +46,11 @@ import java.util.stream.Collectors;
 public class BuildRunner implements ApplicationRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildRunner.class);
+
+    public static final String BUILD_TRANSCRIPT = "transcripts";
+    public static final String BUILD_CLINVAR = "clinvar";
+    public static final String BUILD_VARIANT_DB = "variants";
+    public static final String BUILD_GENOME_DB = "genome";
 
     private final Path buildDir;
     private final Path hg19GenomePath;
@@ -74,8 +78,8 @@ public class BuildRunner implements ApplicationRunner {
 
         // --assembly=hg19
         // --version=1711
-        // --resources=exac,gnomad-exome
         // --build-dir=
+        // --resources=exac,gnomad-exome
 
         if (!args.containsOption("assembly")){
             throw new IllegalArgumentException("Missing assembly argument");
@@ -91,41 +95,102 @@ public class BuildRunner implements ApplicationRunner {
         BuildInfo buildInfo = BuildInfo.of(assembly, version);
         String buildString = buildInfo.getBuildString();
 
-        logger.info("Build set to {}", buildString);
+        logger.info("Building version {}", buildString);
         Path outPath = buildDir.resolve(buildString);
         logger.info("Build directory set to {}", outPath);
         if (!outPath.toFile().exists()) {
             Files.createDirectory(outPath);
         }
 
-        logger.info("Building {}", buildInfo.getBuildString());
-        Path genomePath = getGenomePathForAssembly(assembly);
-        logger.info("Genome Path: {}", genomePath);
         Map<String, AlleleResource> alleleResources = getAlleleResourcesForAssembly(assembly);
 
-        List<AlleleResource> userDefinedAlleleResources = getUserDefinedResources(args, alleleResources);
+        Set<String> optionalArgs = Set.of(BUILD_TRANSCRIPT, BUILD_CLINVAR, BUILD_VARIANT_DB, BUILD_GENOME_DB);
+        if (shouldBuildAllData(args, optionalArgs)) {
+            logger.info("BUILDING ALLL THIe THINGS!");
+            buildTranscriptData(buildInfo, outPath, List.of(TranscriptSource.values()));
+            buildClinVarData(buildInfo, outPath, alleleResources.get("clinvar"));
+            buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()));
+            buildGenomeData(buildInfo, outPath);
+        }
 
-        logger.info("Building Jannovar transcript data...");
+        if (args.containsOption(BUILD_TRANSCRIPT)) {
+            List<String> optionValues = parseOptionValues(args.getOptionValues(BUILD_TRANSCRIPT));
+            List<TranscriptSource> transcriptSources = getTranscriptSources(optionValues);
+            buildTranscriptData(buildInfo, outPath, transcriptSources);
+        }
+
+        if (args.containsOption(BUILD_CLINVAR)) {
+            AlleleResource clinVarResource = alleleResources.get("clinvar");
+            buildClinVarData(buildInfo, outPath, clinVarResource);
+        }
+
+        if (args.containsOption(BUILD_VARIANT_DB)) {
+            List<String> optionValues = parseOptionValues(args.getOptionValues(BUILD_VARIANT_DB));
+            List<AlleleResource> userDefinedAlleleResources = getUserDefinedResources(optionValues, alleleResources);
+            buildVariantData(buildInfo, outPath, userDefinedAlleleResources);
+        }
+
+        if (args.containsOption(BUILD_GENOME_DB)) {
+            buildGenomeData(buildInfo, outPath);
+        }
+
+        logger.info("Finished build {}", buildInfo.getBuildString());
+    }
+
+    private boolean shouldBuildAllData(ApplicationArguments args, Set<String> optionalArgs) {
+        for (String arg : args.getOptionNames()) {
+            if (optionalArgs.contains(arg)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void buildTranscriptData(BuildInfo buildInfo, Path outPath, List<TranscriptSource> transcriptSources) {
+        logger.info("Building Jannovar transcript data sources - {}", transcriptSources);
         TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, jannovarDataFactory, outPath);
         transcriptDataBuildRunner.run();
+    }
 
-        logger.info("Downloading variant resources");
-        userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
-
+    private void buildClinVarData(BuildInfo buildInfo, Path outPath, AlleleResource clinVarResource) {
         logger.info("Creating ClinVar variant whitelist");
-        AlleleResource clinVarResource = alleleResources.get("clinvar");
+        AlleleResourceDownloader.download(clinVarResource);
         ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
         clinVarWhiteListBuildRunner.run();
+    }
 
+    private void buildVariantData(BuildInfo buildInfo, Path outPath, List<AlleleResource> userDefinedAlleleResources) {
+        logger.info("Downloading variant resources - {}", userDefinedAlleleResources.stream()
+                .map(AlleleResource::getName)
+                .collect(toList()));
+        userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
         logger.info("Building variant database...");
         VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);
         variantDatabaseBuildRunner.run();
+    }
 
+    private void buildGenomeData(BuildInfo buildInfo, Path outPath) {
         logger.info("Building genome database...");
+        Path genomePath = getGenomePathForAssembly(buildInfo.getAssembly());
+        logger.info("Genome Path: {}", genomePath);
         GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
         genomeDatabaseBuildRunner.run();
+    }
 
-        logger.info("Finished build {}", buildInfo.getBuildString());
+    private List<String> parseOptionValues(List<String> optionValues) {
+        Set<String> cleanedOptions = new LinkedHashSet<>();
+        for (String optionValue : optionValues) {
+            System.out.println(optionValue);
+            if (optionValue.contains(",")) {
+                String[] splitValues = optionValue.split(",");
+                for (String value : splitValues) {
+                    cleanedOptions.add(value.trim());
+                }
+            } else {
+                cleanedOptions.add(optionValue.trim());
+            }
+        }
+        return new ArrayList<>(cleanedOptions);
     }
 
     private Path getGenomePathForAssembly(GenomeAssembly genomeAssembly) {
@@ -136,16 +201,23 @@ public class BuildRunner implements ApplicationRunner {
         return genomeAssembly == GenomeAssembly.HG19 ? this.hg19AlleleResources : this.hg38AlleleResources;
     }
 
-    private List<AlleleResource> getUserDefinedResources(ApplicationArguments args, Map<String, AlleleResource> alleleResources) {
-        if (args.containsOption("resources")) {
-            List<String> resources = args.getOptionValues("resources");
-            logger.info("Creating resources: {}", resources.get(0));
-            return Arrays.stream(resources.get(0).split(","))
-                    .filter(alleleResources::containsKey)
-                    .map(alleleResources::get)
-                    .collect(Collectors.toList());
+    private List<TranscriptSource> getTranscriptSources(List<String> optionValues) {
+        if (optionValues.isEmpty()) {
+            return Arrays.asList(TranscriptSource.values());
         }
-        return new ArrayList<>(alleleResources.values());
+        return optionValues.stream()
+                .map(TranscriptSource::parseValue)
+                .collect(toList());
     }
 
+    private List<AlleleResource> getUserDefinedResources(List<String> optionValues, Map<String, AlleleResource> alleleResources) {
+        if (optionValues.isEmpty()) {
+            return new ArrayList<>(alleleResources.values());
+        }
+        logger.info("Creating resources: {}", optionValues);
+        return optionValues.stream()
+                .filter(alleleResources::containsKey)
+                .map(alleleResources::get)
+                .collect(toList());
+    }
 }
