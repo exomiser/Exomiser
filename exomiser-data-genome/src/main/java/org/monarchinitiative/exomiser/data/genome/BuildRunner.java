@@ -180,7 +180,6 @@ public class BuildRunner implements ApplicationRunner {
     private List<String> parseOptionValues(List<String> optionValues) {
         Set<String> cleanedOptions = new LinkedHashSet<>();
         for (String optionValue : optionValues) {
-            System.out.println(optionValue);
             if (optionValue.contains(",")) {
                 String[] splitValues = optionValue.split(",");
                 for (String value : splitValues) {
