@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,20 +30,21 @@ import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import java.util.List;
 
 /**
- * Handles Annotation of {@link VariantContext} objects to produce {@link VariantAnnotation} objects.
+ * Handles Annotation of {@link VariantContext} objects to produce {@link VariantAnnotation} objects. This
+ * implementation will handle both small and structural variants.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-class VariantContextAnnotator {
+public class VariantContextAnnotator {
 
-    private final VariantAnnotator variantAnnotator;
+    protected final VariantAnnotator variantAnnotator;
 
-    VariantContextAnnotator(VariantAnnotator variantAnnotator) {
+    public VariantContextAnnotator(VariantAnnotator variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
     }
 
-    List<VariantAnnotation> annotateAllele(VariantContext variantContext, Allele altAllele) {
+    public List<VariantAnnotation> annotateAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
         int start = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
