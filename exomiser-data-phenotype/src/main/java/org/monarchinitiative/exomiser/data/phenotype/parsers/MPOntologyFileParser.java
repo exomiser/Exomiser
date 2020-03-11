@@ -90,10 +90,12 @@ public class MPOntologyFileParser implements ResourceParser {
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)){
             for (OboOntologyTerm ontologyTerm : ontologyTerms) {
                 StringJoiner stringJoiner = new StringJoiner("|");
-                stringJoiner.add(ontologyTerm.getId());
-                stringJoiner.add(ontologyTerm.getLabel());
-                writer.write(stringJoiner.toString());
-                writer.newLine();
+                if (ontologyTerm.getId().contains("MP:")) {
+                    stringJoiner.add(ontologyTerm.getId());
+                    stringJoiner.add(ontologyTerm.getLabel());
+                    writer.write(stringJoiner.toString());
+                    writer.newLine();
+                }
             }
             return ResourceOperationStatus.SUCCESS;
         } catch (FileNotFoundException ex) {

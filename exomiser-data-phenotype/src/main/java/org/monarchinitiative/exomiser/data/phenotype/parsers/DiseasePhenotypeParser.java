@@ -59,6 +59,8 @@ public class DiseasePhenotypeParser implements ResourceParser {
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
+            // skip header
+            line = reader.readLine();
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t");
                 String diseaseId = fields[0] + ":" + fields[1];
