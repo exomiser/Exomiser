@@ -18,17 +18,17 @@
 --
 DROP TABLE IF EXISTS hp_mp_mappings;
 
-CREATE TABLE hp_mp_mappings (
-  mapping_id INTEGER,
-  hp_id      CHARACTER VARYING(10),
-  hp_term    CHARACTER VARYING(200),
-  mp_id      CHARACTER VARYING(10),
-  mp_term    CHARACTER VARYING(200),
-  simJ       DOUBLE PRECISION,
-  ic         DOUBLE PRECISION,
-  score      DOUBLE PRECISION,
-  lcs_id     CHARACTER VARYING(20),
-  lcs_term   CHARACTER VARYING(150)
+CREATE TABLE hp_mp_mappings(
+                             mapping_id INTEGER,
+                             hp_id      CHARACTER VARYING(10),
+                             hp_term    CHARACTER VARYING(200),
+                             mp_id      CHARACTER VARYING(10),
+                             mp_term    CHARACTER VARYING(200),
+                             simj       DOUBLE PRECISION,
+                             ic         DOUBLE PRECISION,
+                             score      DOUBLE PRECISION,
+                             lcs_id     CHARACTER VARYING(20),
+                             lcs_term   CHARACTER VARYING(150)
 );
 
 DROP TABLE IF EXISTS mp;
@@ -40,13 +40,14 @@ CREATE TABLE mp (
 
 DROP TABLE IF EXISTS hp_zp_mappings;
 
-CREATE TABLE hp_zp_mappings (
+CREATE TABLE hp_zp_mappings
+(
   mapping_id INTEGER,
   hp_id      CHARACTER VARYING(10),
   hp_term    CHARACTER VARYING(200),
   zp_id      CHARACTER VARYING(10),
   zp_term    CHARACTER VARYING(200),
-  simJ       DOUBLE PRECISION,
+  simj       DOUBLE PRECISION,
   ic         DOUBLE PRECISION,
   score      DOUBLE PRECISION,
   lcs_id     CHARACTER VARYING(40),
@@ -158,13 +159,14 @@ CREATE TABLE disease (
 
 DROP TABLE IF EXISTS hp_hp_mappings;
 
-CREATE TABLE hp_hp_mappings (
+CREATE TABLE hp_hp_mappings
+(
   mapping_id  INTEGER,
   hp_id       CHARACTER VARYING(10),
   hp_term     CHARACTER VARYING(200),
   hp_id_hit   CHARACTER VARYING(10),
   hp_hit_term CHARACTER VARYING(200),
-  simJ        DOUBLE PRECISION,
+  simj        DOUBLE PRECISION,
   ic          DOUBLE PRECISION,
   score       DOUBLE PRECISION,
   lcs_id      CHARACTER VARYING(20),
@@ -187,8 +189,9 @@ CREATE TABLE metadata (
 
 DROP TABLE IF EXISTS entrez2sym;
 
-CREATE TABLE entrez2sym (
-  entrezID INTEGER PRIMARY KEY,
+CREATE TABLE entrez2sym
+(
+  entrezid INTEGER PRIMARY KEY,
   symbol   VARCHAR(100)
 );
 
