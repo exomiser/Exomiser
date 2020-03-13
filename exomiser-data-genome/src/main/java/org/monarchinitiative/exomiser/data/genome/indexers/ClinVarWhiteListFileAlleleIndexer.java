@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,6 +70,18 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
         }
     }
 
+    //  CLNREVSTAT
+    //  Zero starts - ignore these:
+    //   no_assertion_criteria_provided,
+    //   no_assertion_provided,
+    //   no_interpretation_for_the_single_variant,
+    //  One star:
+    //   1* criteria_provided,_conflicting_interpretations,
+    //   1* criteria_provided,_single_submitter,
+    //  Keep These:
+    //   2* criteria_provided,_multiple_submitters,_no_conflicts,
+    //   3* reviewed_by_expert_panel
+    //   4* practice_guideline,
     private boolean hasAssertionCriteria(ClinVarData clinVarData) {
         // maps to the CLNREVSTAT subfield in the VCF INFO. Many alleles with 'no_assertion_criteria_provided'
         // or 'no_assertion_provided' have incredibly high MAF, some even as high as 98% in some populations.
@@ -77,7 +89,10 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
     }
 
     private boolean isPathOrLikelyPath(ClinVarData clinVarData) {
-        switch(clinVarData.getPrimaryInterpretation()) {
+        if (clinVarData.isSecondaryAssociationRiskFactorOrOther()) {
+            return false;
+        }
+        switch (clinVarData.getPrimaryInterpretation()) {
             case PATHOGENIC:
             case PATHOGENIC_OR_LIKELY_PATHOGENIC:
             case LIKELY_PATHOGENIC:
@@ -92,6 +107,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
         stringJoiner.add("ALLELEID=" + clinVarData.getAlleleId());
         stringJoiner.add("CLNSIG=" + clinVarData.getPrimaryInterpretation());
         stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus());
+        stringJoiner.add("STARS=" + clinVarData.getStarRating());
         return stringJoiner;
     }
 

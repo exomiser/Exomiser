@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -99,6 +100,60 @@ public class ClinVarData {
 
     public Map<String, ClinSig> getIncludedAlleles() {
         return includedAlleles;
+    }
+
+    /**
+     * @return true if the secondary CLNSIG contains one of 'affects', 'other', 'association', 'risk factor' or
+     * 'protective'. These are considered unimportant from the mendelian disease perspective. The category 'drug response'
+     * is *not* included here as these are also associated with CFTR alleles known to be pathogenic/likely pathogenic
+     * for CF.
+     * @since 13.0.0
+     */
+    @JsonIgnore
+    public boolean isSecondaryAssociationRiskFactorOrOther() {
+        for (ClinVarData.ClinSig secondaryClinSig : secondaryInterpretations) {
+            switch (secondaryClinSig) {
+                case AFFECTS:
+                case OTHER:
+                case ASSOCIATION:
+                case RISK_FACTOR:
+                case PROTECTIVE:
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the ClinVar star rating according to the criteria provided at
+     * https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/#revstat_def
+     * <p>
+     * In the VCF CLNREVSTAT the start ratings are mapped as follows:
+     * <p>
+     * 1* criteria_provided,_conflicting_interpretations
+     * 1* criteria_provided,_single_submitter
+     * 2* criteria_provided,_multiple_submitters,_no_conflicts
+     * 3* reviewed_by_expert_panel
+     * 4* practice_guideline
+     *
+     * @return an integer value between 0 (worst) and 4 (best)
+     * @since 13.0.0
+     */
+    @JsonIgnore
+    public int getStarRating() {
+        switch (reviewStatus) {
+            case "criteria_provided,_single_submitter":
+            case "criteria_provided,_conflicting_interpretations":
+                return 1;
+            case "criteria_provided,_multiple_submitters,_no_conflicts":
+                return 2;
+            case "reviewed_by_expert_panel":
+                return 3;
+            case "practice_guideline":
+                return 4;
+            default:
+                return 0;
+        }
     }
 
     @Override
