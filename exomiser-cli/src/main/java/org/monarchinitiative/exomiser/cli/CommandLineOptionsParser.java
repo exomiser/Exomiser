@@ -24,6 +24,10 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -52,7 +56,6 @@ public class CommandLineOptionsParser {
 
         options.addOption(Option.builder()
                 .longOpt("sample")
-                // TODO add Family
                 .desc("Path to sample or phenopacket file. This should be in JSON or YAML format.")
                 .hasArg()
                 .argName("file")
@@ -65,12 +68,19 @@ public class CommandLineOptionsParser {
                 .argName("file")
                 .build());
 
-//        options.addOption(Option.builder()
-//                .longOpt("preset")
-//                .desc("The Exomiser analysis preset for the input sample. One of EXOME or GENOME")
-//                .hasArg()
-//                .argName("String")
-//                .build());
+        options.addOption(Option.builder()
+                .longOpt("preset")
+                .desc("The Exomiser analysis preset for the input sample. One of 'exome' or 'genome'")
+                .hasArg()
+                .argName("String")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output")
+                .desc("Path to outputOptions file. This should be in JSON or YAML format.")
+                .hasArg()
+                .argName("String")
+                .build());
     }
 
     private CommandLineOptionsParser() {
@@ -86,6 +96,13 @@ public class CommandLineOptionsParser {
                     " Use command --help for a list of commands.";
             throw new CommandLineParseError(message, ex);
         }
+    }
+
+    public static List<String> fileDependentOptions() {
+        return options.getOptions().stream()
+                .filter(option -> "file".equals(option.getArgName()))
+                .map(Option::getLongOpt)
+                .collect(toList());
     }
 
     public static void printHelp() {

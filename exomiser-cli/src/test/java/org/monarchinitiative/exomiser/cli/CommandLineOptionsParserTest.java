@@ -23,6 +23,8 @@ package org.monarchinitiative.exomiser.cli;
 import org.apache.commons.cli.CommandLine;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,14 +47,54 @@ class CommandLineOptionsParserTest {
     }
 
     @Test
-    void parse() {
+    void parseAnalysis() {
         CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "analysis/path");
         assertTrue(commandLine.hasOption("analysis"));
         assertThat(commandLine.getOptionValue("analysis"), equalTo("analysis/path"));
     }
 
     @Test
+    void parseAnalysisBatch() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis-batch", "analysis-batch/path");
+        assertTrue(commandLine.hasOption("analysis-batch"));
+        assertThat(commandLine.getOptionValue("analysis-batch"), equalTo("analysis-batch/path"));
+    }
+
+    @Test
+    void parseSample() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--sample", "sample/path");
+        assertTrue(commandLine.hasOption("sample"));
+        assertThat(commandLine.getOptionValue("sample"), equalTo("sample/path"));
+    }
+
+    @Test
+    void parseOutput() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--output", "output/path");
+        assertTrue(commandLine.hasOption("output"));
+        assertThat(commandLine.getOptionValue("output"), equalTo("output/path"));
+    }
+
+    @Test
+    void parsePreset() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--preset", "exome");
+        assertTrue(commandLine.hasOption("preset"));
+        assertThat(commandLine.getOptionValue("preset"), equalTo("exome"));
+    }
+
+    @Test
+    void parseJob() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "job/path");
+        assertTrue(commandLine.hasOption("job"));
+        assertThat(commandLine.getOptionValue("job"), equalTo("job/path"));
+    }
+
+    @Test
     void printHelp() {
         CommandLineOptionsParser.printHelp();
+    }
+
+    @Test
+    void fileDependentOptions() {
+        assertThat(CommandLineOptionsParser.fileDependentOptions(), equalTo(List.of("analysis", "analysis-batch", "sample", "job")));
     }
 }
