@@ -47,6 +47,7 @@ public class BuildRunner implements ApplicationRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildRunner.class);
 
+    // input options
     public static final String BUILD_TRANSCRIPT = "transcripts";
     public static final String BUILD_CLINVAR = "clinvar";
     public static final String BUILD_VARIANT_DB = "variants";

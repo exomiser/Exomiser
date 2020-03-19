@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,10 @@ import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.index.tabix.TabixFormat;
 import htsjdk.tribble.index.tabix.TabixIndex;
 import htsjdk.tribble.readers.LineIterator;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.indexers.AlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.ClinVarWhiteListFileAlleleIndexer;
+import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
@@ -38,6 +40,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * Creates the standard variant whitelist from ClinVar data
@@ -47,6 +50,16 @@ import java.nio.file.Path;
 public class ClinVarWhiteListBuildRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListBuildRunner.class);
+
+    // These are two mitochondrial alleles which are probably wrongly assigned in ClinVar and should be benign
+    private static final Set<Allele> HG19_BLACKLIST = Set.of(
+            new Allele(25, 11467, "A", "G"),
+            new Allele(25, 12372, "G", "A")
+    );
+    private static final Set<Allele> HG38_BLACKLIST = Set.of(
+            new Allele(25, 11467, "A", "G"),
+            new Allele(25, 12372, "G", "A")
+    );
 
     private final Path outPath;
     private final BuildInfo buildInfo;
@@ -68,7 +81,8 @@ public class ClinVarWhiteListBuildRunner {
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(blockCompressedOutputStream);
 
         try (BufferedWriter bgZipWriter = new BufferedWriter(outputStreamWriter)) {
-            AlleleIndexer alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter);
+            Set<Allele> blacklist = buildInfo.getAssembly() == GenomeAssembly.HG19 ? HG19_BLACKLIST : HG38_BLACKLIST;
+            AlleleIndexer alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter, blacklist);
             alleleIndexer.index(clinVarAlleleResource);
         } catch (IOException e) {
             logger.error("Unable to write bgzip. {}", e);

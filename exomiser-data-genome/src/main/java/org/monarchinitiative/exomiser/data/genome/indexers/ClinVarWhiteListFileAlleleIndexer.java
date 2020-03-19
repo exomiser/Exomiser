@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,16 +41,19 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListFileAlleleIndexer.class);
 
     private final BufferedWriter bufferedWriter;
+    private final Set<Allele> blacklist;
     private final AtomicLong count = new AtomicLong(0);
 
-    public ClinVarWhiteListFileAlleleIndexer(BufferedWriter bufferedWriter) {
+
+    public ClinVarWhiteListFileAlleleIndexer(BufferedWriter bufferedWriter, Set<Allele> blacklist) {
         this.bufferedWriter = bufferedWriter;
+        this.blacklist = blacklist;
     }
 
     @Override
     public void writeAllele(Allele allele) {
         ClinVarData clinVarData = allele.getClinVarData();
-        if (isPathOrLikelyPath(clinVarData) && hasAssertionCriteria(clinVarData)) {
+        if (isPathOrLikelyPath(clinVarData) && hasAssertionCriteria(clinVarData) && notOnBlackList(allele)) {
             StringJoiner stringJoiner = new StringJoiner("\t");
             stringJoiner.add(Integer.toString(allele.getChr()));
             stringJoiner.add(Integer.toString(allele.getPos()));
@@ -68,6 +72,10 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
             }
             count.incrementAndGet();
         }
+    }
+
+    private boolean notOnBlackList(Allele allele) {
+        return !blacklist.contains(allele);
     }
 
     //  CLNREVSTAT
