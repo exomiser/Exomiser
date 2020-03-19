@@ -25,6 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 
@@ -45,12 +48,39 @@ public class Main {
             CommandLineOptionsParser.printHelpAndExit();
         }
 
-        Locale.setDefault(Locale.UK);
-        logger.debug("Locale set to {}", Locale.getDefault());
+        if (!hasInputFileOption(commandLine)) {
+            logger.error("Missing an input file option!");
+            CommandLineOptionsParser.printHelpAndExit();
+        }
+        //check file paths exist before launching.
+        checkFilesExist(commandLine);
 
+        // all ok so far - try launching the app
+        Locale.setDefault(Locale.UK);
         SpringApplication.run(Main.class, args).close();
 
         logger.info("Exomising finished - Bye!");
+    }
+
+    private static boolean hasInputFileOption(CommandLine commandLine) {
+        for (String s : CommandLineOptionsParser.fileDependentOptions()) {
+            if (commandLine.hasOption(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void checkFilesExist(CommandLine commandLine) {
+        for (String option : CommandLineOptionsParser.fileDependentOptions()) {
+            if (commandLine.hasOption(option)) {
+                Path optionPath = Paths.get(commandLine.getOptionValue(option));
+                if (Files.notExists(optionPath)) {
+                    logger.error("FATAL ERROR - {} file '{}' not found", option, optionPath);
+                    System.exit(0);
+                }
+            }
+        }
     }
 
 }
