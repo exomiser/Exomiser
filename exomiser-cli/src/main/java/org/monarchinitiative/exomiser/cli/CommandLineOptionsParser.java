@@ -72,14 +72,14 @@ public class CommandLineOptionsParser {
                 .longOpt("preset")
                 .desc("The Exomiser analysis preset for the input sample. One of 'exome' or 'genome'")
                 .hasArg()
-                .argName("String")
+                .argName("string")
                 .build());
 
         options.addOption(Option.builder()
                 .longOpt("output")
                 .desc("Path to outputOptions file. This should be in JSON or YAML format.")
                 .hasArg()
-                .argName("String")
+                .argName("string")
                 .build());
     }
 
