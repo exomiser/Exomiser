@@ -26,7 +26,7 @@ import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
-import org.monarchinitiative.exomiser.core.analysis.sample.ProtoParser;
+import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.slf4j.Logger;
