@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,25 +20,24 @@
 
 package org.monarchinitiative.exomiser.cli;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisParser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
+import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -48,85 +47,61 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCommandLineRunner.class);
 
-    @Autowired
-    private Options options;
-
-    @Autowired
-    private AnalysisParser analysisParser;
-    @Autowired
     private Exomiser exomiser;
 
-    @Value("buildVersion")
-    private String buildVersion;
+    public ExomiserCommandLineRunner(Exomiser exomiser) {
+        this.exomiser = exomiser;
+    }
 
     @Override
-    public void run(String... strings) throws Exception {
-        if (strings.length == 0) {
-            logger.error("Please supply some command line arguments - none found");
-            printHelpAndExit();
-        }
-        CommandLine commandLine = parseCommandLineOptions(strings);
-        if (commandLine.hasOption("help")) {
-            printHelpAndExit();
-        }
+    public void run(String... strings) {
+        CommandLine commandLine = CommandLineOptionsParser.parse(strings);
+        CommandLineJobReader jobReader = new CommandLineJobReader();
+        List<JobProto.Job> jobs = jobReader.readJobs(commandLine);
         logger.info("Exomiser running...");
         try {
-            runAnalyses(commandLine);
+            runJobs(jobs);
         } catch (Exception e) {
             logger.error("", e);
         }
     }
 
-    private void runAnalyses(CommandLine commandLine) {
-        if (commandLine.hasOption("analysis")) {
-            Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
-            runAnalysisFromScript(analysisScript);
-        } else if (commandLine.hasOption("analysis-batch")) {
-            Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
-            List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
-            logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
+    private void runJobs(List<JobProto.Job> jobs) {
+        if (jobs.size() == 1) {
+            runJob(jobs.get(0));
+        }
+        if (jobs.size() > 1) {
             Instant timeStart = Instant.now();
             //this *could* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //HOWEVER there may be threading issues so this needs investigation.
-            analysisScripts.forEach(analysis ->{
-                logger.info("Running analysis: {}", analysis);
-                runAnalysisFromScript(analysis);
-            });
+            for (int i = 0; i < jobs.size(); i++) {
+                logger.info("Running job {} of {}", i + 1, jobs.size());
+                runJob(jobs.get(i));
+            }
             Duration duration = Duration.between(timeStart, Instant.now());
             long ms = duration.toMillis();
-            logger.info("Finished batch of {} samples in {}m {}s ({} ms)", analysisScripts.size(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
+            logger.info("Finished batch of {} samples in {}m {}s ({} ms)", jobs.size(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
         }
     }
 
-    private CommandLine parseCommandLineOptions(String[] args) {
-        CommandLineParser parser = new DefaultParser();
-        try {
-            // Beware! - the command line parser will fail if any spring-related options are provided before the exomiser ones
-            // ensure all exomiser commands are provided before any spring boot command.
-            return parser.parse(options, args, true);
-        } catch (ParseException ex) {
-            String message = "Unable to parse command line arguments. Please check you have typed the parameters correctly." +
-                    " Use command --help for a list of commands.";
-            throw new CommandLineParseError(message, ex);
-        }
+    private void runJob(JobProto.Job job) {
+        OutputSettings outputSettings = toSettings(job.getOutputOptions());
+        AnalysisResults analysisResults = exomiser.run(job);
+        AnalysisResultsWriter.writeToFile(analysisResults, outputSettings);
     }
 
-    private void printHelpAndExit() {
-        HelpFormatter formatter = new HelpFormatter();
-        String launchCommand = String.format("java -jar exomiser-cli-%s.jar [...]", buildVersion);
-        formatter.printHelp(launchCommand, options);
-        System.exit(0);
+    //TODO: Create a Converter class to do this? e.g. AlleleProtoAdaptor or JannovarProtoConverter
+    // - there are others e.g the Job and Sample do we use Adaptor or Converter?
+    // What about the Serde interface in Akka?
+    private OutputSettings toSettings(OutputProto.OutputOptions outputOptions) {
+        return OutputSettings.builder()
+                .outputPrefix(outputOptions.getOutputPrefix())
+                .numberOfGenesToShow(outputOptions.getNumGenes())
+                .outputContributingVariantsOnly(outputOptions.getOutputContributingVariantsOnly())
+                .outputFormats(outputOptions
+                        .getOutputFormatsList().stream()
+                        .map(format -> OutputFormat.parseFormat(format.toString()))
+                        .collect(toSet()))
+                .build();
     }
-
-    private void runAnalysisFromScript(Path analysisScript) {
-        Analysis analysis = analysisParser.parseAnalysis(analysisScript);
-        OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
-        runAnalysisAndWriteResults(analysis, outputSettings);
-    }
-
-    private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
-        AnalysisResults analysisResults = exomiser.run(analysis);
-        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
-    }
-
 }

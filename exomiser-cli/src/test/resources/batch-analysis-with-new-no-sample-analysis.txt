@@ -1,0 +1,2 @@
+src/test/resources/pfeiffer_job_phenopacket.yml
+src/test/resources/exome-analysis.yml

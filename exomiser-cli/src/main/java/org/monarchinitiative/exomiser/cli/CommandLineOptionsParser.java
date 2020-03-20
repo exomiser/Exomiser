@@ -24,6 +24,9 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -90,7 +93,7 @@ public class CommandLineOptionsParser {
         try {
             // Beware! - the command line parser will fail if any spring-related options are provided before the exomiser ones
             // ensure all exomiser commands are provided before any spring boot command.
-            return new DefaultParser().parse(options, args, true);
+            return validate(new DefaultParser().parse(options, args, true));
         } catch (ParseException ex) {
             String message = "Unable to parse command line arguments. Please check you have typed the parameters correctly." +
                     " Use command --help for a list of commands.";
@@ -98,7 +101,45 @@ public class CommandLineOptionsParser {
         }
     }
 
-    public static List<String> fileDependentOptions() {
+    private static CommandLine validate(CommandLine commandLine) throws CommandLineParseError {
+        if (commandLine.hasOption("job") && commandLine.getOptions().length > 1) {
+            throw new CommandLineParseError("job option is exclusive");
+        }
+
+        if (commandLine.hasOption("analysis") && commandLine.hasOption("preset")) {
+            throw new CommandLineParseError("preset and analysis options are mutually exclusive");
+        }
+
+        if (!hasInputFileOption(commandLine)) {
+            throw new CommandLineParseError("Missing an input file option!");
+        }
+        //check file paths exist before launching.
+        checkFilesExist(commandLine);
+        return commandLine;
+    }
+
+    private static boolean hasInputFileOption(CommandLine commandLine) {
+        for (String option : fileDependentOptions()) {
+            if (commandLine.hasOption(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void checkFilesExist(CommandLine commandLine) throws CommandLineParseError {
+        for (String option : fileDependentOptions()) {
+            if (commandLine.hasOption(option)) {
+                Path optionPath = Paths.get(commandLine.getOptionValue(option));
+                if (Files.notExists(optionPath)) {
+                    throw new CommandLineParseError(String.format("%s file '%s' not found", option, optionPath));
+                }
+            }
+        }
+    }
+
+    // protected for ease of testing
+    protected static List<String> fileDependentOptions() {
         return options.getOptions().stream()
                 .filter(option -> "file".equals(option.getArgName()))
                 .map(Option::getLongOpt)
@@ -108,10 +149,5 @@ public class CommandLineOptionsParser {
     public static void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("java -jar exomiser-cli-{build.version}.jar [...]", options);
-    }
-
-    public static void printHelpAndExit() {
-        printHelp();
-        System.exit(0);
     }
 }

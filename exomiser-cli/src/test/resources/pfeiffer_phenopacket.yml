@@ -1,0 +1,39 @@
+---
+id: manuel
+subject:
+  id: manuel
+  sex: MALE
+phenotypicFeatures:
+  - type:
+      id: HP:0001159
+      label: Syndactyly
+  - type:
+      id: HP:0000486
+      label: Strabismus
+  - type:
+      id: HP:0000327
+      label: Hypoplasia of the maxilla
+  - type:
+      id: HP:0000520
+      label: Proptosis
+  - type:
+      id: HP:0000316
+      label: Hypertelorism
+  - type:
+      id: HP:0000244
+      label: Brachyturricephaly
+htsFiles:
+  - uri: file:///data/Pfeiffer.vcf
+    htsFormat: VCF
+    genomeAssembly: hg19
+metaData:
+  created: '2019-11-12T13:47:51.948Z'
+  createdBy: julesj
+  resources:
+    - id: hp
+      name: human phenotype ontology
+      url: http://purl.obolibrary.org/obo/hp.owl
+      version: hp/releases/2019-11-08
+      namespacePrefix: HP
+      iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
+  phenopacketSchemaVersion: 1.0.0

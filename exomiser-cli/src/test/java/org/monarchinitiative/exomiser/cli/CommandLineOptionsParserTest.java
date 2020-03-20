@@ -27,13 +27,17 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class CommandLineOptionsParserTest {
+
+
+    private String resource(String fileName) {
+        return "src/test/resources/" + fileName;
+    }
 
     @Test
     void parseIllegalArgument() {
@@ -41,51 +45,100 @@ class CommandLineOptionsParserTest {
     }
 
     @Test
-    void parseWillIgnoreUnknownArgument() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--wibble");
-        assertThat(commandLine.getOptions().length, equalTo(0));
+    void parseIllegalAnalysisPresetCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--analysis", resource("pfeiffer_analysis_v8_12.yml"),
+                "--preset", "exome"));
+    }
+
+    @Test
+    void parseIllegalJobCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--job", resource("pfeiffer_job_sample.yml"),
+                "--preset", "exome"));
+    }
+
+    @Test
+    void parseIllegalJobOutputCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--job", resource("pfeiffer_job_sample.yml"),
+                "--output", "src/test/resources/pfeiffer_output_options.yml"
+        ));
+    }
+
+    @Test
+    void parseIllegalPresetOutputCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--preset", "exome",
+                "--output", resource("pfeiffer_output_options.yml")
+        ));
+    }
+
+    @Test
+    void parseIllegalOutputCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--output", resource("pfeiffer_output_options.yml")
+        ));
+    }
+
+    @Test
+    void parseWillStopAtUnknownArgumentBefore() {
+        // This happens due to the stopAtNonOptions = true argument in DefaultParser().parse(options, args, true)
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "-wibble", "--output", "output/path"),
+                "Missing an input file option!");
+    }
+
+    @Test
+    void parseWillStopAtUnknownArgumentAfter() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis", resource("exome-analysis.yml"), "-wibble");
+        assertEquals(commandLine.getOptions().length, 1);
+        assertTrue(commandLine.hasOption("analysis"));
+        assertThat(commandLine.getOptionValue("analysis"), equalTo(resource("exome-analysis.yml")));
     }
 
     @Test
     void parseAnalysis() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "analysis/path");
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis", resource("exome-analysis.yml"), "--wibble");
         assertTrue(commandLine.hasOption("analysis"));
-        assertThat(commandLine.getOptionValue("analysis"), equalTo("analysis/path"));
+        assertThat(commandLine.getOptionValue("analysis"), equalTo(resource("exome-analysis.yml")));
     }
 
     @Test
     void parseAnalysisBatch() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis-batch", "analysis-batch/path");
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis-batch", resource("exome-analysis.yml"));
         assertTrue(commandLine.hasOption("analysis-batch"));
-        assertThat(commandLine.getOptionValue("analysis-batch"), equalTo("analysis-batch/path"));
+        assertThat(commandLine.getOptionValue("analysis-batch"), equalTo(resource("exome-analysis.yml")));
     }
 
     @Test
     void parseSample() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--sample", "sample/path");
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", resource("exome-analysis.yml"));
         assertTrue(commandLine.hasOption("sample"));
-        assertThat(commandLine.getOptionValue("sample"), equalTo("sample/path"));
+        assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
     }
 
     @Test
     void parseOutput() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--output", "output/path");
-        assertTrue(commandLine.hasOption("output"));
-        assertThat(commandLine.getOptionValue("output"), equalTo("output/path"));
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse("--output", "output/path"),
+                "Missing an input file option!");
     }
 
     @Test
     void parsePreset() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--preset", "exome");
-        assertTrue(commandLine.hasOption("preset"));
-        assertThat(commandLine.getOptionValue("preset"), equalTo("exome"));
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse("--preset", "exome"),
+                "Missing an input file option!");
     }
 
     @Test
     void parseJob() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "job/path");
+        CommandLine commandLine = CommandLineOptionsParser.parse("--job", resource("exome-analysis.yml"));
         assertTrue(commandLine.hasOption("job"));
-        assertThat(commandLine.getOptionValue("job"), equalTo("job/path"));
+        assertThat(commandLine.getOptionValue("job"), equalTo(resource("exome-analysis.yml")));
     }
 
     @Test
