@@ -45,18 +45,6 @@ public class Age {
     }
 
     /**
-     * The age of an individual represented as a {@link Period}. The returned {@linkplain Age} instance will have been
-     * normalised so that an input of 1 year 15 months will be returned as an age of 2 years 3 months.
-     *
-     * @param period {@link Period} representing the age of an individual
-     * @return a normalised Age instance
-     */
-    public static Age of(Period period) {
-        Period normalised = Objects.requireNonNull(period.normalized());
-        return new Age(normalised.getYears(), normalised.getMonths(), normalised.getDays());
-    }
-
-    /**
      * The age of an individual stated in years, months and days. The returned {@linkplain Age} instance will have been
      * normalised so that an input of 1 year 15 months will be returned as an age of 2 years 3 months.
      *
@@ -68,6 +56,18 @@ public class Age {
     public static Age of(int years, int months, int days) {
         Period period = Period.of(years, months, days);
         return Age.of(period);
+    }
+
+    /**
+     * The age of an individual represented as a {@link Period}. The returned {@linkplain Age} instance will have been
+     * normalised so that an input of 1 year 15 months will be returned as an age of 2 years 3 months.
+     *
+     * @param period {@link Period} representing the age of an individual
+     * @return a normalised Age instance
+     */
+    public static Age of(Period period) {
+        Period normalised = Objects.requireNonNull(period.normalized());
+        return new Age(normalised.getYears(), normalised.getMonths(), normalised.getDays());
     }
 
     /**
