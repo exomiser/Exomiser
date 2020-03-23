@@ -31,9 +31,9 @@ import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-class SampleAnalysisUtil {
+class AnalysisConverter {
 
-    public static Sample extractSample(Analysis analysis) {
+    public static Sample toSample(Analysis analysis) {
         Pedigree pedigree = analysis.getPedigree();
         String probandSampleName = analysis.getProbandSampleName();
         Sex sex = extractProbandSex(probandSampleName, pedigree);

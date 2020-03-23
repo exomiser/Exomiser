@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class SampleAnalysisUtilTest {
+class AnalysisConverterTest {
 
     private final GenomeAssembly hg38 = GenomeAssembly.HG38;
     private final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
@@ -52,7 +52,7 @@ class SampleAnalysisUtilTest {
                 .hpoIds(hpoIds)
                 .build();
 
-        Sample sample = SampleAnalysisUtil.extractSample(analysis);
+        Sample sample = AnalysisConverter.toSample(analysis);
 
         assertThat(sample.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
         assertThat(sample.getVcfPath(), equalTo(null));
@@ -72,7 +72,7 @@ class SampleAnalysisUtilTest {
                 .hpoIds(hpoIds)
                 .build();
 
-        Sample sample = SampleAnalysisUtil.extractSample(analysis);
+        Sample sample = AnalysisConverter.toSample(analysis);
 
         assertThat(sample.getGenomeAssembly(), equalTo(hg38));
         assertThat(sample.getVcfPath(), equalTo(vcfPath));
@@ -95,7 +95,7 @@ class SampleAnalysisUtilTest {
                 .pedigree(pedigree)
                 .build();
 
-        Sample sample = SampleAnalysisUtil.extractSample(analysis);
+        Sample sample = AnalysisConverter.toSample(analysis);
 
         assertThat(sample.getGenomeAssembly(), equalTo(hg38));
         assertThat(sample.getVcfPath(), equalTo(vcfPath));
@@ -122,7 +122,7 @@ class SampleAnalysisUtilTest {
                 .pedigree(pedigree)
                 .build();
 
-        Sample sample = SampleAnalysisUtil.extractSample(analysis);
+        Sample sample = AnalysisConverter.toSample(analysis);
 
         assertThat(sample.getGenomeAssembly(), equalTo(hg38));
         assertThat(sample.getVcfPath(), equalTo(vcfPath));
@@ -149,6 +149,6 @@ class SampleAnalysisUtilTest {
                 .pedigree(pedigree)
                 .build();
 
-        assertThrows(IllegalArgumentException.class, () -> SampleAnalysisUtil.extractSample(analysis));
+        assertThrows(IllegalArgumentException.class, () -> AnalysisConverter.toSample(analysis));
     }
 }

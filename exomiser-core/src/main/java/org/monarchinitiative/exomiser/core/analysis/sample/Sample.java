@@ -63,7 +63,7 @@ public interface Sample {
     public List<String> getHpoIds();
 
     public static Sample from(Analysis analysis) {
-        return SampleAnalysisUtil.extractSample(analysis);
+        return AnalysisConverter.toSample(analysis);
     }
 
     public static Sample from(Phenopacket phenopacket) {
