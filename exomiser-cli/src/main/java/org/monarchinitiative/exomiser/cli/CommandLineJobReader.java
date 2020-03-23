@@ -46,9 +46,6 @@ public class CommandLineJobReader {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandLineJobReader.class);
 
-    public CommandLineJobReader() {
-    }
-
     public List<JobProto.Job> readJobs(CommandLine commandLine) {
         Set<String> userOptions = Arrays.stream(commandLine.getOptions())
                 .map(Option::getLongOpt)
