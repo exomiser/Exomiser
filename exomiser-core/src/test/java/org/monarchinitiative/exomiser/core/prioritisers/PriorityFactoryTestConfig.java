@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,10 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -43,17 +39,6 @@ import java.nio.file.Paths;
 @Configuration
 public class PriorityFactoryTestConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(PriorityFactoryTestConfig.class);
-
-    @Bean
-    DataSource dataSource() {
-        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;";
-        String user = "sa";
-        String password = "";
-
-        return JdbcConnectionPool.create(url, user, password);
-    }
-    
     @Bean
     DataMatrix randomWalkMatrix() {
         return DataMatrix.empty();
