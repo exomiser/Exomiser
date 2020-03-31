@@ -20,12 +20,15 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.Period;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Age {
 
     private static final Age UNKNOWN = new Age(0, 0, 0);
