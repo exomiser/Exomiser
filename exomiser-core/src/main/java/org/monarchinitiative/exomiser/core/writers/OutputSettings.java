@@ -25,9 +25,11 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings.Builder;
 
 import java.util.EnumSet;
@@ -42,6 +44,8 @@ import java.util.Set;
 @JsonDeserialize(builder = Builder.class)
 public class OutputSettings {
 
+    private static final OutputSettings DEFAULTS = OutputSettings.builder().build();
+
     @JsonProperty
     private final boolean outputContributingVariantsOnly;
     @JsonProperty("numGenes")
@@ -53,7 +57,12 @@ public class OutputSettings {
         this.outputContributingVariantsOnly = builder.outputContributingVariantsOnly;
         this.numberOfGenesToShow = builder.numberOfGenesToShow;
         this.outputPrefix = builder.outputPrefix;
-        this.outputFormats = builder.outputFormats;
+        this.outputFormats = Sets.immutableEnumSet(builder.outputFormats);
+    }
+
+    @JsonIgnore
+    public static OutputSettings defaults() {
+        return DEFAULTS;
     }
 
     public static Builder builder() {
