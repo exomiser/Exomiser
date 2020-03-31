@@ -240,7 +240,6 @@ public class CommandLineJobReader {
         jobAnalysisBuilder.clearVcf();
         jobAnalysisBuilder.clearPed();
         jobAnalysisBuilder.clearProband();
-        //TODO Age, Sex
         jobAnalysisBuilder.clearHpoIds();
 
         return jobBuilder.build();

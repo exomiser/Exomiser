@@ -102,6 +102,10 @@ public class CommandLineOptionsParser {
     }
 
     private static CommandLine validate(CommandLine commandLine) throws CommandLineParseError {
+        if (commandLine.hasOption("help") || commandLine.getOptions().length == 0) {
+            // return the commandLine here as this will allow Main to print the help message
+            return commandLine;
+        }
         if (commandLine.hasOption("job") && commandLine.getOptions().length > 1) {
             throw new CommandLineParseError("job option is exclusive");
         }

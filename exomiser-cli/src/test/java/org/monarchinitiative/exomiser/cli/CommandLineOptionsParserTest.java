@@ -84,9 +84,9 @@ class CommandLineOptionsParserTest {
     @Test
     void parseWillStopAtUnknownArgumentBefore() {
         // This happens due to the stopAtNonOptions = true argument in DefaultParser().parse(options, args, true)
-        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-                "-wibble", "--output", "output/path"),
-                "Missing an input file option!");
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "-wibble", "--output", "output/path");
+        assertThat(commandLine.getOptions().length, equalTo(0));
     }
 
     @Test
