@@ -24,11 +24,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
+import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 
 import javax.annotation.Nullable;
@@ -39,12 +40,13 @@ import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 13.0.0
  */
 @JsonDeserialize(builder = Sample.Builder.class)
 @JsonPropertyOrder({"genomeAssembly", "vcf", "proband", "age", "sex", "hpoIds", "pedigree"})
 public interface Sample {
-
-    public GenomeAssembly getGenomeAssembly();
+ // TODO shouldn't this just be a class?
+ public GenomeAssembly getGenomeAssembly();
 
     @Nullable
     public Path getVcfPath();
@@ -66,8 +68,16 @@ public interface Sample {
         return AnalysisConverter.toSample(analysis);
     }
 
+    public static Sample from(Family family) {
+        return PhenopacketConverter.toSample(family);
+    }
+
     public static Sample from(Phenopacket phenopacket) {
-        return new SamplePhenopacketAdaptor(phenopacket);
+        return PhenopacketConverter.toSample(phenopacket);
+    }
+
+    public static Sample from(SampleProto.Sample sampleProto) {
+        return new SampleProtoConverter().toDomain(sampleProto);
     }
 
     public static Builder builder() {
@@ -192,7 +202,7 @@ public interface Sample {
 
         private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
         private Path vcfPath = null;
-        private String probandSampleName = SampleIdentifier.defaultSample().getId();
+        private String probandSampleName = ""; // Specifying this as a default here breaks existing tests. SampleIdentifier.defaultSample().getId();
         private Age age = Age.unknown();
         private Sex sex = Sex.UNKNOWN;
         private Pedigree pedigree = Pedigree.empty();

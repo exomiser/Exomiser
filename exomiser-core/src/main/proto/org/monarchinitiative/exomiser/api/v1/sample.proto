@@ -20,4 +20,12 @@ message Sample {
     }
     string proband = 7;
     repeated string hpo_ids = 8;
+    org.phenopackets.schema.v1.core.Sex sex = 10;
+    Age age = 11;
+}
+
+message Age {
+    int32 years = 1;
+    int32 months = 2;
+    int32 days = 3;
 }

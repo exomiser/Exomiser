@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-// TODO: rename to exomiser.api.v1
 package org.monarchinitiative.exomiser.api.v1;
 
 import "org/monarchinitiative/exomiser/api/v1/filters.proto";
@@ -22,11 +21,17 @@ enum AnalysisMode {
 
 message Analysis {
     // old fields to be replaced by sample/phenopacket/family in the Job message
+    // @Deprecated - use a Sample, Phenopacket or Family
     string genome_assembly = 1;
+    // @Deprecated - use a Sample, Phenopacket or Family
     string vcf = 2;
+    // @Deprecated - use a Sample, Phenopacket or Family
     string ped = 3;
+    // @Deprecated - use a Sample, Phenopacket or Family
     string proband = 4;
+    // @Deprecated - use a Sample, Phenopacket or Family
     repeated string hpo_ids = 5;
+
     // actual analysis fields
     map<string, float> inheritance_modes = 6;
     AnalysisMode analysis_mode = 7;
