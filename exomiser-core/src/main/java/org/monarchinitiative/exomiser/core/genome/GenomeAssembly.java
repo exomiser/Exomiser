@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,15 +34,18 @@ import java.util.stream.Collectors;
 public enum GenomeAssembly {
 
     //TODO: there is a circular dependency between GenomeAssembly and Chromosomes
-    HG19("hg19", Hg19.values()),
-    HG38("hg38", Hg38.values());
+    HG19("hg19", "GRCh37", Hg19.values()),
+    HG38("hg38", "GRCh38", Hg38.values());
 
     private final String value;
+    private final String grcValue;
+
     private final List<Chromosome> chromosomes;
     private final int numChromsomes;
 
-    GenomeAssembly(String value, Chromosome[] chromosomes) {
+    GenomeAssembly(String value, String grcValue, Chromosome[] chromosomes) {
         this.value = value;
+        this.grcValue = grcValue;
         this.chromosomes = Arrays.stream(chromosomes)
                 .sorted(Comparator.comparingInt(Chromosome::getId))
                 .collect(Collectors.toList());
@@ -53,7 +56,7 @@ public enum GenomeAssembly {
         return GenomeAssembly.HG19;
     }
 
-    public static GenomeAssembly fromValue(String value) {
+    public static GenomeAssembly parseAssembly(String value) {
         Objects.requireNonNull(value, "Genome build cannot be null");
         switch (value.toLowerCase()) {
             case "hg19":
@@ -73,6 +76,10 @@ public enum GenomeAssembly {
         return value;
     }
 
+    public String toGrcString() {
+        return grcValue;
+    }
+
     // https://www.ncbi.nlm.nih.gov/genome/?term=txid9606[orgn]
     // Returns the RefSeq id for the given chromosome number for the assembly.
     public String getReferenceAccession(int chr) {
@@ -81,6 +88,10 @@ public enum GenomeAssembly {
             return chromosomes.get(0).getAccession();
         }
         return chromosomes.get(chr).getAccession();
+    }
+
+    public List<Chromosome> getChromosomes() {
+        return chromosomes;
     }
 
     public static class InvalidGenomeAssemblyException extends RuntimeException {
@@ -110,7 +121,7 @@ public enum GenomeAssembly {
     // Source: https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     // For gory details, see:
     // ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt
-    public enum Hg19 implements Chromosome {
+    protected enum Hg19 implements Chromosome {
 
         UNKNOWN(0, ".", "UNKNOWN"),
         CHR_1(1, "1", "NC_000001.10"),
@@ -174,7 +185,7 @@ public enum GenomeAssembly {
     // https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39
     // For gory details, see:
     // ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt
-    public enum Hg38 implements Chromosome {
+    protected enum Hg38 implements Chromosome {
 
         UNKNOWN(0, ".", "UNKNOWN"),
         CHR_1(1, "1", "NC_000001.11"),

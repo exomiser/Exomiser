@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,38 +38,38 @@ public class GenomeAssemblyTest {
 
     @Test
     public void testNamesIncludeHg19() {
-        assertThat(GenomeAssembly.fromValue("hg19"), equalTo(GenomeAssembly.HG19));
+        assertThat(GenomeAssembly.parseAssembly("hg19"), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
     public void testNamesIncludeHg37() {
-        assertThat(GenomeAssembly.fromValue("hg37"), equalTo(GenomeAssembly.HG19));
+        assertThat(GenomeAssembly.parseAssembly("hg37"), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
     public void testNamesIncludeHg38() {
-        assertThat(GenomeAssembly.fromValue("hg38"), equalTo(GenomeAssembly.HG38));
+        assertThat(GenomeAssembly.parseAssembly("hg38"), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
     public void testCanUseGrchNomenclature() {
-        assertThat(GenomeAssembly.fromValue("GRCh37"), equalTo(GenomeAssembly.HG19));
-        assertThat(GenomeAssembly.fromValue("GRCh38"), equalTo(GenomeAssembly.HG38));
+        assertThat(GenomeAssembly.parseAssembly("GRCh37"), equalTo(GenomeAssembly.HG19));
+        assertThat(GenomeAssembly.parseAssembly("GRCh38"), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
     public void testEmptyNameThrowsException() {
-        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.fromValue(""));
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.parseAssembly(""));
     }
 
     @Test
     public void testNullNameThrowsException() {
-        assertThrows(NullPointerException.class, () -> GenomeAssembly.fromValue(null));
+        assertThrows(NullPointerException.class, () -> GenomeAssembly.parseAssembly(null));
     }
 
     @Test
     public void testUnrecognisedNameThrowsException() {
-        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.fromValue("unrecognised build number"));
+        assertThrows(GenomeAssembly.InvalidGenomeAssemblyException.class, () -> GenomeAssembly.parseAssembly("unrecognised build number"));
     }
 
     @Test

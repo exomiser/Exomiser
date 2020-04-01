@@ -86,7 +86,7 @@ public class BuildRunner implements ApplicationRunner {
             throw new IllegalArgumentException("Missing assembly argument");
         }
         String assemblyOption = args.getOptionValues("assembly").get(0);
-        GenomeAssembly assembly = GenomeAssembly.fromValue(assemblyOption);
+        GenomeAssembly assembly = GenomeAssembly.parseAssembly(assemblyOption);
 
         if (!args.containsOption("version")){
             throw new IllegalArgumentException("Missing version argument");
