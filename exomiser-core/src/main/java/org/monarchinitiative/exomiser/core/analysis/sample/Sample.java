@@ -44,25 +44,15 @@ import java.util.Objects;
  */
 @JsonDeserialize(builder = Sample.Builder.class)
 @JsonPropertyOrder({"genomeAssembly", "vcf", "proband", "age", "sex", "hpoIds", "pedigree"})
-public interface Sample {
- // TODO shouldn't this just be a class?
- public GenomeAssembly getGenomeAssembly();
+public class Sample {
 
-    @Nullable
-    public Path getVcfPath();
-
-    @JsonIgnore
-    public boolean hasVcf();
-
-    public String getProbandSampleName();
-
-    public Age getAge();
-
-    public Sex getSex();
-
-    public Pedigree getPedigree();
-
-    public List<String> getHpoIds();
+    private final GenomeAssembly genomeAssembly;
+    private final Path vcfPath;
+    private final String probandSampleName;
+    private final Age age;
+    private final Sex sex;
+    private final Pedigree pedigree;
+    private final List<String> hpoIds;
 
     public static Sample from(Analysis analysis) {
         return AnalysisConverter.toSample(analysis);
@@ -80,125 +70,107 @@ public interface Sample {
         return new SampleProtoConverter().toDomain(sampleProto);
     }
 
+    private Sample(Builder builder) {
+        this.genomeAssembly = builder.genomeAssembly;
+        this.vcfPath = builder.vcfPath;
+        this.probandSampleName = builder.probandSampleName;
+        this.age = builder.age;
+        this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
+        this.pedigree = builder.pedigree;
+        this.hpoIds = builder.hpoIds;
+    }
+
+    private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
+        if (pedigree.isEmpty()) {
+            return sex;
+        }
+        Pedigree.Individual proband = pedigree.getIndividualById(sampleName);
+        if (proband == null) {
+            throw new IllegalArgumentException("Proband '" + sampleName + "' not present in pedigree");
+        }
+        Sex probandSexInPedigree = proband.getSex();
+        if (sex == Sex.UNKNOWN && probandSexInPedigree != Sex.UNKNOWN) {
+            return probandSexInPedigree;
+        }
+        if (sex != probandSexInPedigree) {
+            throw new IllegalArgumentException("Proband sex stated as " + sex + " does not match pedigree stated sex of " + probandSexInPedigree);
+        }
+        // if we get here both stated sex and pedigree sex should be in agreement.
+        return sex;
+    }
+
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
+    }
+
+    @JsonProperty("vcf")
+    @Nullable
+    public Path getVcfPath() {
+        return vcfPath;
+    }
+
+    @JsonIgnore
+    public boolean hasVcf() {
+        return vcfPath != null;
+    }
+
+    @JsonProperty("proband")
+    public String getProbandSampleName() {
+        return probandSampleName;
+    }
+
+    public Age getAge() {
+        return age;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public Pedigree getPedigree() {
+        return pedigree;
+    }
+
+    public List<String> getHpoIds() {
+        return hpoIds;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sample)) return false;
+        Sample sample = (Sample) o;
+        return genomeAssembly == sample.genomeAssembly &&
+                Objects.equals(vcfPath, sample.vcfPath) &&
+                Objects.equals(probandSampleName, sample.probandSampleName) &&
+                age.equals(sample.age) &&
+                sex == sample.sex &&
+                pedigree.equals(sample.pedigree) &&
+                hpoIds.equals(sample.hpoIds);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, age, sex, pedigree, hpoIds);
+    }
+
+    @Override
+    public String toString() {
+        return "Sample{" +
+                "genomeAssembly=" + genomeAssembly +
+                ", vcfPath=" + vcfPath +
+                ", probandSampleName='" + probandSampleName + '\'' +
+                ", age=" + age +
+                ", sex=" + sex +
+                ", pedigree=" + pedigree +
+                ", hpoIds=" + hpoIds +
+                '}';
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    static class SampleImpl implements Sample {
-
-        private final GenomeAssembly genomeAssembly;
-        private final Path vcfPath;
-        private final String probandSampleName;
-        private final Age age;
-        private final Sex sex;
-        private final Pedigree pedigree;
-        private final List<String> hpoIds;
-
-        SampleImpl(Builder builder) {
-            this.genomeAssembly = builder.genomeAssembly;
-            this.vcfPath = builder.vcfPath;
-            this.probandSampleName = builder.probandSampleName;
-            this.age = builder.age;
-            this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
-            this.pedigree = builder.pedigree;
-            this.hpoIds = builder.hpoIds;
-        }
-
-        private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
-            if (pedigree.isEmpty()) {
-                return sex;
-            }
-            Pedigree.Individual proband = pedigree.getIndividualById(sampleName);
-            if (proband == null) {
-                throw new IllegalArgumentException("Proband '" + sampleName + "' not present in pedigree");
-            }
-            Sex probandSexInPedigree = proband.getSex();
-            if (sex == Sex.UNKNOWN && probandSexInPedigree != Sex.UNKNOWN) {
-                return probandSexInPedigree;
-            }
-            if (sex != probandSexInPedigree) {
-                throw new IllegalArgumentException("Proband sex stated as " + sex + " does not match pedigree stated sex of " + probandSexInPedigree);
-            }
-            // if we get here both stated sex and pedigree sex should be in agreement.
-            return sex;
-        }
-
-        @Override
-        public GenomeAssembly getGenomeAssembly() {
-            return genomeAssembly;
-        }
-
-        @JsonProperty("vcf")
-        @Override
-        public Path getVcfPath() {
-            return vcfPath;
-        }
-
-        @Override
-        public boolean hasVcf() {
-            return vcfPath != null;
-        }
-
-        @JsonProperty("proband")
-        @Override
-        public String getProbandSampleName() {
-            return probandSampleName;
-        }
-
-        @Override
-        public Age getAge() {
-            return age;
-        }
-
-        @Override
-        public Sex getSex() {
-            return sex;
-        }
-
-        @Override
-        public Pedigree getPedigree() {
-            return pedigree;
-        }
-
-        @Override
-        public List<String> getHpoIds() {
-            return hpoIds;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof SampleImpl)) return false;
-            SampleImpl sample = (SampleImpl) o;
-            return genomeAssembly == sample.genomeAssembly &&
-                    Objects.equals(vcfPath, sample.vcfPath) &&
-                    Objects.equals(probandSampleName, sample.probandSampleName) &&
-                    age.equals(sample.age) &&
-                    sex == sample.sex &&
-                    pedigree.equals(sample.pedigree) &&
-                    hpoIds.equals(sample.hpoIds);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(genomeAssembly, vcfPath, probandSampleName, age, sex, pedigree, hpoIds);
-        }
-
-        @Override
-        public String toString() {
-            return "SampleImpl{" +
-                    "genomeAssembly=" + genomeAssembly +
-                    ", vcfPath=" + vcfPath +
-                    ", probandSampleName='" + probandSampleName + '\'' +
-                    ", age=" + age +
-                    ", sex=" + sex +
-                    ", pedigree=" + pedigree +
-                    ", hpoIds=" + hpoIds +
-                    '}';
-        }
-    }
-
-    class Builder {
+    public static class Builder {
 
         private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
         private Path vcfPath = null;
@@ -244,7 +216,7 @@ public interface Sample {
         }
 
         public Sample build() {
-            return new SampleImpl(this);
+            return new Sample(this);
         }
     }
 }
