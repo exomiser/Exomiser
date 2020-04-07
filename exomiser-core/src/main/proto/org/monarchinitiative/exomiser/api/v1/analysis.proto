@@ -49,6 +49,7 @@ enum InheritanceMode {
     X_RECESSIVE_HOM_ALT = 4;
     X_RECESSIVE_COMP_HET = 5;
     MITOCHONDRIAL = 6;
+    ANY = 7;
 }
 
 message AnalysisStep {
