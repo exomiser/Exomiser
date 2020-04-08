@@ -44,7 +44,6 @@ import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.api.v1.OutputProto.OutputFormat.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
@@ -119,14 +118,14 @@ class CommandLineJobReaderTest {
             .setOutputPrefix("results/Pfeiffer-hiphive-exome")
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
-            .addAllOutputFormats(List.of(HTML, JSON, TSV_GENE, TSV_VARIANT, VCF))
+            .addAllOutputFormats(List.of("HTML", "JSON", "TSV_GENE", "TSV_VARIANT", "VCF"))
             .build();
 
     private static final OutputProto.OutputOptions DEFAULT_OUTPUT_OPTIONS = OutputProto.OutputOptions.newBuilder()
             .setOutputPrefix("")
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
-            .addAllOutputFormats(List.of(HTML, JSON))
+            .addAllOutputFormats(List.of("HTML", "JSON"))
             .build();
 
     private static final AnalysisProto.Analysis ANALYSIS = AnalysisProtoBuilder.builder()
