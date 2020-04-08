@@ -39,8 +39,8 @@ class OutputSettingsProtoConverterTest {
             .setOutputContributingVariantsOnly(true)
             .setNumGenes(10)
             .setOutputPrefix("frood")
-            .addOutputFormats(OutputProto.OutputFormat.HTML)
-            .addOutputFormats(OutputProto.OutputFormat.JSON)
+            .addOutputFormats(OutputFormat.HTML.toString())
+            .addOutputFormats(OutputFormat.JSON.toString())
             .build();
 
     private final OutputSettings domain = OutputSettings.builder()
