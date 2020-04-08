@@ -30,7 +30,11 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 
 /**
+ * Class for reading {@link JobProto.Job} objects from disk or input string. Will accept a legacy (pre-version 13.0.0)
+ * analysis.yaml or a v13.0.0 job.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 13.0.0
  */
 public class JobReader {
 
