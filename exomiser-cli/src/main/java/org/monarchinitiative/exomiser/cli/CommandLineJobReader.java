@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 13.0.0
  */
 public class CommandLineJobReader {
 

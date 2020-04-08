@@ -22,12 +22,9 @@ package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.CommandLine;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
-import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
-import org.monarchinitiative.exomiser.core.writers.OutputFormat;
-import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -36,8 +33,6 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-
-import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -54,8 +49,8 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... strings) {
-        CommandLine commandLine = CommandLineOptionsParser.parse(strings);
+    public void run(String... args) {
+        CommandLine commandLine = CommandLineOptionsParser.parse(args);
         CommandLineJobReader jobReader = new CommandLineJobReader();
         List<JobProto.Job> jobs = jobReader.readJobs(commandLine);
         logger.info("Exomiser running...");
@@ -85,23 +80,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     }
 
     private void runJob(JobProto.Job job) {
-        OutputSettings outputSettings = toSettings(job.getOutputOptions());
         AnalysisResults analysisResults = exomiser.run(job);
-        AnalysisResultsWriter.writeToFile(analysisResults, outputSettings);
-    }
-
-    //TODO: Create a Converter class to do this? e.g. AlleleProtoAdaptor or JannovarProtoConverter
-    // - there are others e.g the Job and Sample do we use Adaptor or Converter?
-    // What about the Serde interface in Akka?
-    private OutputSettings toSettings(OutputProto.OutputOptions outputOptions) {
-        return OutputSettings.builder()
-                .outputPrefix(outputOptions.getOutputPrefix())
-                .numberOfGenesToShow(outputOptions.getNumGenes())
-                .outputContributingVariantsOnly(outputOptions.getOutputContributingVariantsOnly())
-                .outputFormats(outputOptions
-                        .getOutputFormatsList().stream()
-                        .map(format -> OutputFormat.parseFormat(format.toString()))
-                        .collect(toSet()))
-                .build();
+        AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
     }
 }
