@@ -26,7 +26,9 @@ import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
+import org.monarchinitiative.exomiser.core.analysis.JobReader;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
+import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.slf4j.Logger;
@@ -56,14 +58,14 @@ public class CommandLineJobReader {
         // this is maintained for backwards-compatibility
         if (userOptions.equals(Set.of("analysis"))) {
             Path analysisPath = Paths.get(commandLine.getOptionValue("analysis"));
-            JobProto.Job job = readJobOrLegacyAnalysis(analysisPath);
+            JobProto.Job job = JobReader.readJob(analysisPath);
             return List.of(job);
         }
         // old cli option for running a batch of analyses
         if (userOptions.equals(Set.of("analysis-batch"))) {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
-            return analysisScripts.stream().map(this::readJobOrLegacyAnalysis).collect(Collectors.toList());
+            return analysisScripts.stream().map(JobReader::readJob).collect(Collectors.toList());
         }
         // new option replacing the analysis with job. These are functionally equivalent, but the sample is separated
         // from the analysis part to allow for greater flexibility
@@ -72,7 +74,7 @@ public class CommandLineJobReader {
         // analysis?
         if (userOptions.equals(Set.of("job"))) {
             Path jobPath = Paths.get(commandLine.getOptionValue("job"));
-            JobProto.Job job = readJob(jobPath);
+            JobProto.Job job = JobReader.readJob(jobPath);
             return List.of(job);
         }
 
@@ -120,8 +122,8 @@ public class CommandLineJobReader {
     private OutputProto.OutputOptions createDefaultOutputOptions() {
         return OutputProto.OutputOptions.newBuilder()
                 .setOutputPrefix("")
-                .addOutputFormats(OutputProto.OutputFormat.HTML)
-                .addOutputFormats(OutputProto.OutputFormat.JSON)
+                .addOutputFormats(OutputFormat.HTML.toString())
+                .addOutputFormats(OutputFormat.JSON.toString())
                 .setNumGenes(0)
                 .setOutputContributingVariantsOnly(false)
                 .build();
@@ -199,66 +201,4 @@ public class CommandLineJobReader {
         }
         return outputOptions;
     }
-
-    private JobProto.Job readJob(Path jobPath) {
-        JobProto.Job job = ProtoParser.parseFromJsonOrYaml(JobProto.Job.newBuilder(), jobPath).build();
-        if (job.equals(JobProto.Job.getDefaultInstance())) {
-            throw new IllegalArgumentException("Unable to parse job from file " + jobPath + " please check the format");
-        }
-        return job;
-    }
-
-    /**
-     * Reads a legacy analysis file as used in versions 8.0.0-12.1.0. This contains the sample and the analysis in the
-     * same YAML object.
-     *
-     * @param analysisPath
-     * @return
-     */
-    private JobProto.Job readJobOrLegacyAnalysis(Path analysisPath) {
-        JobProto.Job parsedJob = readJob(analysisPath);
-        if (parsedJob.hasSample() || parsedJob.hasPhenopacket() || parsedJob.hasFamily()) {
-            //new job!
-            return parsedJob;
-        }
-        // legacy job
-        return migrateLegacyAnalysisToJob(parsedJob);
-    }
-
-    private JobProto.Job migrateLegacyAnalysisToJob(JobProto.Job parsedJob) {
-        JobProto.Job.Builder jobBuilder = parsedJob.toBuilder();
-
-        // the legacy analysis contains the sample information, which is different to the newer analysis which does not.
-        AnalysisProto.Analysis.Builder jobAnalysisBuilder = jobBuilder.getAnalysisBuilder();
-        // extract Sample from legacy Analysis
-        SampleProto.Sample sample = extractSample(jobAnalysisBuilder);
-        jobBuilder.setSample(sample);
-
-        // these fields are deprecated, but are maintained for backwards compatibility of input, hence
-        // we need to clear them before returning the job
-        jobAnalysisBuilder.clearGenomeAssembly();
-        jobAnalysisBuilder.clearVcf();
-        jobAnalysisBuilder.clearPed();
-        jobAnalysisBuilder.clearProband();
-        jobAnalysisBuilder.clearHpoIds();
-
-        return jobBuilder.build();
-    }
-
-    private SampleProto.Sample extractSample(AnalysisProto.Analysis.Builder jobAnalysisBuilder) {
-        SampleProto.Sample sample = SampleProto.Sample.newBuilder()
-                .setGenomeAssembly(jobAnalysisBuilder.getGenomeAssembly())
-                .setVcf(jobAnalysisBuilder.getVcf())
-                .setPed(jobAnalysisBuilder.getPed())
-                .setProband(jobAnalysisBuilder.getProband())
-                .addAllHpoIds(jobAnalysisBuilder.getHpoIdsList())
-                .build();
-        // guard against people running the new analysis.yml which has no sample information
-        // TODO: decide if VCF only filtering is OK otherwise change this to an AND
-        if (sample.getHpoIdsList().isEmpty() || sample.getVcf().isEmpty()) {
-            throw new IllegalArgumentException("No sample specified!");
-        }
-        return sample;
-    }
-
 }

@@ -1,0 +1,174 @@
+## Exomiser Analysis Template.
+# This is the original analysis template used for Exomiser versions 7-12. It is *almost* the same as the pfeiffer_job.yml
+---
+phenopacket:
+  id: manuel
+  subject:
+    id: manuel
+    sex: MALE
+  phenotypicFeatures:
+    - type:
+        id: HP:0001159
+        label: Syndactyly
+    - type:
+        id: HP:0000486
+        label: Strabismus
+    - type:
+        id: HP:0000327
+        label: Hypoplasia of the maxilla
+    - type:
+        id: HP:0000520
+        label: Proptosis
+    - type:
+        id: HP:0000316
+        label: Hypertelorism
+    - type:
+        id: HP:0000244
+        label: Brachyturricephaly
+  htsFiles:
+    - uri: file:///data/Pfeiffer.vcf
+      htsFormat: VCF
+      genomeAssembly: hg19
+  metaData:
+    created: '2019-11-12T13:47:51.948Z'
+    createdBy: julesj
+    resources:
+      - id: hp
+        name: human phenotype ontology
+        url: http://purl.obolibrary.org/obo/hp.owl
+        version: hp/releases/2019-11-08
+        namespacePrefix: HP
+        iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
+    phenopacketSchemaVersion: 1.0.0
+analysis:
+  #FULL or PASS_ONLY
+  analysisMode: PASS_ONLY
+  # In cases where you do not want any cut-offs applied an empty map should be used e.g. inheritanceModes: {}
+  # These are the default settings, with values representing the maximum minor allele frequency in percent (%) permitted for an
+  # allele to be considered as a causative candidate under that mode of inheritance.
+  # If you just want to analyse a sample under a single inheritance mode, delete/comment-out the others. For AUTOSOMAL_RECESSIVE
+  # or X_RECESSIVE ensure *both* relevant HOM_ALT and COMP_HET modes are present.
+  inheritanceModes: {
+    AUTOSOMAL_DOMINANT: 0.1,
+    AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
+    AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
+    X_DOMINANT: 0.1,
+    X_RECESSIVE_COMP_HET: 2.0,
+    X_RECESSIVE_HOM_ALT: 0.1,
+    MITOCHONDRIAL: 0.2
+  }
+  #Possible frequencySources:
+  #Thousand Genomes project http://www.1000genomes.org/
+  #   THOUSAND_GENOMES,
+  #ESP project http://evs.gs.washington.edu/EVS/
+  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+  #ExAC project http://exac.broadinstitute.org/about
+  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+  #   EXAC_OTHER
+  #Possible frequencySources:
+  #Thousand Genomes project - http://www.1000genomes.org/ (THOUSAND_GENOMES)
+  #TOPMed - https://www.nhlbi.nih.gov/science/precision-medicine-activities (TOPMED)
+  #UK10K - http://www.uk10k.org/ (UK10K)
+  #ESP project - http://evs.gs.washington.edu/EVS/ (ESP_)
+  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+  #ExAC project http://exac.broadinstitute.org/about (EXAC_)
+  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+  #   EXAC_OTHER
+  #gnomAD - http://gnomad.broadinstitute.org/ (GNOMAD_E, GNOMAD_G)
+  frequencySources: [
+    THOUSAND_GENOMES,
+    TOPMED,
+    UK10K,
+
+    ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+
+    EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+    EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+    EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+    EXAC_OTHER,
+
+    GNOMAD_E_AFR,
+    GNOMAD_E_AMR,
+    #        GNOMAD_E_ASJ,
+    GNOMAD_E_EAS,
+    GNOMAD_E_FIN,
+    GNOMAD_E_NFE,
+    GNOMAD_E_OTH,
+    GNOMAD_E_SAS,
+
+    GNOMAD_G_AFR,
+    GNOMAD_G_AMR,
+    #        GNOMAD_G_ASJ,
+    GNOMAD_G_EAS,
+    GNOMAD_G_FIN,
+    GNOMAD_G_NFE,
+    GNOMAD_G_OTH,
+    GNOMAD_G_SAS
+  ]
+  #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
+  #REMM is trained on non-coding regulatory regions
+  #*WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+  #and updated their location in the application.properties. Exomiser will not run without this.
+  pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT]
+  #this is the standard exomiser order.
+  #all steps are optional
+  steps: [
+    #hiPhivePrioritiser: {},
+    #priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.500},
+    #intervalFilter: {interval: 'chr10:123256200-123256300'},
+    # or for multiple intervals:
+    #intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']},
+    # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
+    #intervalFilter: {bed: /full/path/to/bed_file.bed},
+    #genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
+    #failedVariantFilter: {},
+    #qualityFilter: {minQuality: 50.0},
+    variantEffectFilter: {
+      remove: [
+        FIVE_PRIME_UTR_EXON_VARIANT,
+        FIVE_PRIME_UTR_INTRON_VARIANT,
+        THREE_PRIME_UTR_EXON_VARIANT,
+        THREE_PRIME_UTR_INTRON_VARIANT,
+        NON_CODING_TRANSCRIPT_EXON_VARIANT,
+        UPSTREAM_GENE_VARIANT,
+        INTERGENIC_VARIANT,
+        REGULATORY_REGION_VARIANT,
+        CODING_TRANSCRIPT_INTRON_VARIANT,
+        NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+        DOWNSTREAM_GENE_VARIANT
+      ]
+    },
+    # removes variants represented in the database
+    #knownVariantFilter: {},
+    frequencyFilter: {maxFrequency: 2.0},
+    pathogenicityFilter: {keepNonPathogenic: true},
+    # inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
+    # they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
+    inheritanceFilter: {},
+    # omimPrioritiser isn't mandatory.
+    omimPrioritiser: {},
+    #priorityScoreFilter: {minPriorityScore: 0.4},
+    # Other prioritisers: Only combine omimPrioritiser with one of these.
+    # Don't include any if you only want to filter the variants.
+    hiPhivePrioritiser: {},
+    # or run hiPhive in benchmarking mode:
+    #hiPhivePrioritiser: {runParams: 'mouse'},
+    #phivePrioritiser: {}
+    #phenixPrioritiser: {}
+    #exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}
+  ]
+outputOptions:
+  outputContributingVariantsOnly: false
+  #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
+  numGenes: 0
+  #outputPrefix options: specify the path/filename without an extension and this will be added
+  # according to the outputFormats option. If unspecified this will default to the following:
+  # {exomiserDir}/results/input-vcf-name-exomiser-results.html
+  # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis
+  outputPrefix: results/Pfeiffer-hiphive-exome
+  #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+  outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
