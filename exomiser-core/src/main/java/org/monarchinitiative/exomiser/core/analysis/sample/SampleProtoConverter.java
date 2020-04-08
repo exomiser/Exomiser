@@ -69,10 +69,14 @@ public class SampleProtoConverter implements ProtoConverter<Sample, SampleProto.
                 .sex(toExomiserSex(protoSample.getSex()))
                 .age(toDomainAge(protoSample.getAge()))
                 .hpoIds(protoSample.getHpoIdsList())
-                .genomeAssembly(GenomeAssembly.parseAssembly(protoSample.getGenomeAssembly()))
+                .genomeAssembly(parseGenomeAssembly(protoSample.getGenomeAssembly()))
                 .vcfPath(protoSample.getVcf().isEmpty() ? null : Paths.get(protoSample.getVcf()))
                 .pedigree(toDomainPedigree(protoSample))
                 .build();
+    }
+
+    private GenomeAssembly parseGenomeAssembly(String protoAssembly) {
+        return (protoAssembly == null || protoAssembly.isEmpty()) ? GenomeAssembly.defaultBuild() : GenomeAssembly.parseAssembly(protoAssembly);
     }
 
     private Age toDomainAge(SampleProto.Age age) {

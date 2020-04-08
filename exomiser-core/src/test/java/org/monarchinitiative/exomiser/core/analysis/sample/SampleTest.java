@@ -47,7 +47,7 @@ class SampleTest {
         assertThat(instance.hasVcf(), is(false));
         assertThat(instance.getVcfPath(), equalTo(null));
         assertThat(instance.getPedigree(), equalTo(Pedigree.empty()));
-        assertThat(instance.getProbandSampleName(), equalTo("sample"));
+        assertThat(instance.getProbandSampleName(), equalTo(""));
         assertThat(instance.getSex(), equalTo(Pedigree.Individual.Sex.UNKNOWN));
         assertThat(instance.getAge(), equalTo(Age.unknown()));
         assertThat(instance.getHpoIds(), equalTo(Collections.emptyList()));
