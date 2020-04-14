@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
@@ -38,6 +39,7 @@ public class TestOntologyService implements OntologyService {
 
 
     private final Map<String, PhenotypeTerm> hpIdPhenotypeTerms;
+    private final Map<String, String> obsoleteToCurrentTerms;
 
     private final Map<PhenotypeTerm, List<PhenotypeMatch>> humanHumanMappings;
     private final Map<PhenotypeTerm, List<PhenotypeMatch>> humanMouseMappings;
@@ -48,6 +50,7 @@ public class TestOntologyService implements OntologyService {
         this.humanHumanMappings = builder.humanHumanMappings;
         this.humanMouseMappings = builder.humanMouseMappings;
         this.humanFishMappings = builder.humanFishMappings;
+        this.obsoleteToCurrentTerms = builder.obsoleteToCurrentTerms;
     }
 
     @Override
@@ -90,7 +93,10 @@ public class TestOntologyService implements OntologyService {
 
     @Override
     public List<String> getCurrentHpoIds(List<String> hpoIds) {
-        return hpoIds;
+        return hpoIds.stream()
+                .map(hpoId -> obsoleteToCurrentTerms.getOrDefault(hpoId, hpoId))
+                .distinct()
+                .collect(ImmutableList.toImmutableList());
     }
 
     public static Builder builder() {
@@ -100,6 +106,7 @@ public class TestOntologyService implements OntologyService {
     public static class Builder {
 
         private Map<String, PhenotypeTerm> hpIdPhenotypeTerms = Collections.emptyMap();
+        private Map<String, String> obsoleteToCurrentTerms = Collections.emptyMap();
 
         private Map<PhenotypeTerm, List<PhenotypeMatch>> humanHumanMappings = Collections.emptyMap();
         private Map<PhenotypeTerm, List<PhenotypeMatch>> humanMouseMappings = Collections.emptyMap();
@@ -126,6 +133,11 @@ public class TestOntologyService implements OntologyService {
 
         public Builder setHumanFishMappings(Map<PhenotypeTerm, List<PhenotypeMatch>> humanFishMappings) {
             this.humanFishMappings = humanFishMappings;
+            return this;
+        }
+
+        public Builder setObsoleteToCurrentTerms(Map<String, String> obsoleteToCurrentTerms) {
+            this.obsoleteToCurrentTerms = obsoleteToCurrentTerms;
             return this;
         }
 
