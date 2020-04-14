@@ -24,8 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
@@ -34,7 +34,6 @@ import org.phenopackets.schema.v1.Phenopacket;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,10 +52,6 @@ public class Sample {
     private final Sex sex;
     private final Pedigree pedigree;
     private final List<String> hpoIds;
-
-    public static Sample from(Analysis analysis) {
-        return AnalysisConverter.toSample(analysis);
-    }
 
     public static Sample from(Family family) {
         return PhenopacketConverter.toSample(family);
@@ -77,7 +72,7 @@ public class Sample {
         this.age = builder.age;
         this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
         this.pedigree = builder.pedigree;
-        this.hpoIds = builder.hpoIds;
+        this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
     }
 
     private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
@@ -178,14 +173,15 @@ public class Sample {
         private Age age = Age.unknown();
         private Sex sex = Sex.UNKNOWN;
         private Pedigree pedigree = Pedigree.empty();
-        private List<String> hpoIds = new ArrayList<>();
+        private List<String> hpoIds = ImmutableList.of();
 
         public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
             this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
             return this;
         }
 
-        public Builder vcfPath(Path vcfPath) {
+        public Builder vcfPath(@Nullable Path vcfPath) {
+            // null is allowed
             this.vcfPath = vcfPath;
             return this;
         }
@@ -212,6 +208,17 @@ public class Sample {
 
         public Builder hpoIds(List<String> hpoIds) {
             this.hpoIds = Objects.requireNonNull(hpoIds);
+            return this;
+        }
+
+        public Builder from(Sample sample) {
+            this.genomeAssembly = sample.genomeAssembly;
+            this.vcfPath = sample.vcfPath;
+            this.probandSampleName = sample.probandSampleName;
+            this.age = sample.age;
+            this.sex = sample.sex;
+            this.pedigree = sample.pedigree;
+            this.hpoIds = sample.hpoIds;
             return this;
         }
 

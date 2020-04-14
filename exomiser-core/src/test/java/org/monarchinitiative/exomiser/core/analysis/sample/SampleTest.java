@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -180,5 +181,36 @@ class SampleTest {
                 .hpoIds(List.of("HP:0000001", "HP:0000002"))
                 .build();
         assertThat(instance.getHpoIds(), equalTo(List.of("HP:0000001", "HP:0000002")));
+    }
+
+    @Test
+    void fromSample() {
+        Sample firstSample = Sample.builder()
+                .sex(FEMALE)
+                .probandSampleName("Lisa")
+                .pedigree(Pedigree.of(Pedigree.Individual.builder().id("Lisa").sex(FEMALE).build()))
+                .hpoIds(List.of("HP:0000001", "HP:0000002"))
+                .build();
+
+        Sample.Builder fromFirstBuilder = Sample.builder().from(firstSample);
+
+        assertThat(fromFirstBuilder.build(), equalTo(firstSample));
+
+        Path vcfPath = Paths.get("genome.vcf");
+        Age age = Age.of(3, 2, 1);
+
+        Sample fromFirstWithAge = fromFirstBuilder
+                .genomeAssembly(GenomeAssembly.HG38)
+                .vcfPath(vcfPath)
+                .age(age)
+                .build();
+
+        assertThat(fromFirstWithAge.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(fromFirstWithAge.getVcfPath(), equalTo(vcfPath));
+        assertThat(fromFirstWithAge.getAge(), equalTo(age));
+        assertThat(fromFirstWithAge.getSex(), equalTo(firstSample.getSex()));
+        assertThat(fromFirstWithAge.getProbandSampleName(), equalTo(firstSample.getProbandSampleName()));
+        assertThat(fromFirstWithAge.getPedigree(), equalTo(firstSample.getPedigree()));
+        assertThat(fromFirstWithAge.getHpoIds(), equalTo(firstSample.getHpoIds()));
     }
 }
