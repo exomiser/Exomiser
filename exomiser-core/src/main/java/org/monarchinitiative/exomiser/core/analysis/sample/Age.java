@@ -26,7 +26,10 @@ import java.time.Period;
 import java.util.Objects;
 
 /**
+ * A period of time representing a persons age.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 13.0.0
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Age {
