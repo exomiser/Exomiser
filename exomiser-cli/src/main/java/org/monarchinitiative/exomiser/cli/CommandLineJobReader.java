@@ -42,6 +42,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Reads {@link org.monarchinitiative.exomiser.api.v1.JobProto.Job} instances from the {@link CommandLine}.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
@@ -71,8 +73,8 @@ public class CommandLineJobReader {
         // new option replacing the analysis with job. These are functionally equivalent, but the sample is separated
         // from the analysis part to allow for greater flexibility
 
-        //TODO: do we need a job option if the analysis and analysis-batch options can read either a new job or old
-        // analysis?
+        // TODO: do we need a job option if the analysis and analysis-batch options can read either a new job or old
+        //  analysis?
         if (userOptions.equals(Set.of("job"))) {
             Path jobPath = Paths.get(commandLine.getOptionValue("job"));
             JobProto.Job job = JobReader.readJob(jobPath);
@@ -88,8 +90,6 @@ public class CommandLineJobReader {
         // "sample", "preset", "output"
         // "sample", "output"
         if (userOptions.contains("sample")) {
-            // TODO: check the sample input has at least a list of phenotypes or a VCF? Need to decide how to handle
-            //  VCF-only at this point as there will be memory issues if the data isn't streamed and written to disk.
             JobProto.Job.Builder jobBuilder = newDefaultJobBuilder();
             for (String option : userOptions) {
                 String optionValue = commandLine.getOptionValue(option);
@@ -106,7 +106,6 @@ public class CommandLineJobReader {
                     handleOutputOption(optionValue, jobBuilder);
                 }
             }
-            ///TODO: check output prefix here and use the filename of the input sample as the output?
             return List.of(jobBuilder.build());
         }
 
