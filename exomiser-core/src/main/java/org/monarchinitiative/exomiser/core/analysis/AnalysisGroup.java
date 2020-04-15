@@ -20,6 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,12 +37,47 @@ import java.util.Objects;
  */
 class AnalysisGroup {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisGroup.class);
+
     private final AnalysisStep.AnalysisStepType analysisStepType;
     private final List<AnalysisStep> analysisSteps;
 
     private AnalysisGroup(AnalysisStep.AnalysisStepType analysisStepType, List<AnalysisStep> analysisSteps) {
         this.analysisStepType = analysisStepType;
         this.analysisSteps = analysisSteps;
+    }
+
+    /**
+     * Groups {@link AnalysisStep} together by function into an {@link AnalysisGroup} to be used by the
+     * {@link AnalysisRunner}.
+     * <p>
+     * The groups are ordered as they are defined in the input analysisSteps, with the steps maintaining
+     * the same ordering within a group.
+     *
+     * @param analysisSteps the {@link AnalysisStep} for the {@link Analysis}
+     * @return a list of {@link AnalysisGroup} containing {@link AnalysisStep} grouped by function.
+     */
+    public static List<AnalysisGroup> groupAnalysisSteps(List<AnalysisStep> analysisSteps) {
+        if (analysisSteps.isEmpty()) {
+            logger.debug("No AnalysisSteps to group.");
+            return Collections.emptyList();
+        }
+        List<AnalysisGroup> groups = new ArrayList<>();
+        AnalysisStep.AnalysisStepType currentGroupType = analysisSteps.get(0).getType();
+        logger.debug("First group is for {} steps", currentGroupType);
+        List<AnalysisStep> currentGroupSteps = new ArrayList<>();
+        for (AnalysisStep step : analysisSteps) {
+            if (step.getType() != currentGroupType) {
+                logger.debug("Making new group for {} steps", step.getType());
+                groups.add(AnalysisGroup.of(currentGroupSteps));
+                currentGroupSteps = new ArrayList<>();
+                currentGroupType = step.getType();
+            }
+            currentGroupSteps.add(step);
+        }
+        //make sure the last group is added too
+        groups.add(AnalysisGroup.of(currentGroupSteps));
+        return groups;
     }
 
     public static AnalysisGroup of(AnalysisStep... analysisSteps) {

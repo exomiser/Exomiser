@@ -20,11 +20,21 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,5 +75,30 @@ class AnalysisGroupTest {
         AnalysisStep pathogenicityFilter = new PathogenicityFilter(true);
         assertThat(AnalysisGroup.of(frequencyFilter, pathogenicityFilter).getAnalysisSteps(),
                 equalTo(List.of(frequencyFilter, pathogenicityFilter)));
+    }
+
+    @Test
+    void getAnalysisStepGroups() {
+        Analysis analysis = Analysis.builder()
+                .inheritanceModeOptions(InheritanceModeOptions.defaults())
+                .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
+                .pathogenicitySources(EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.MVP))
+                .addStep(new FrequencyFilter(2f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new InheritanceFilter())
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(new NoneTypePrioritiser())
+                .build();
+
+        List<AnalysisGroup> expected = new ArrayList<>();
+        // variant dependent
+        expected.add(AnalysisGroup.of(new FrequencyFilter(2f), new PathogenicityFilter(true)));
+        // inheritance mode dependent
+        expected.add(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())));
+        // gene only dependent
+        expected.add(AnalysisGroup.of(new NoneTypePrioritiser()));
+
+        List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
+        Assert.assertThat(analysisStepGroups, CoreMatchers.equalTo(expected));
     }
 }
