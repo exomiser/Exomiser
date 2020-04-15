@@ -78,8 +78,8 @@ class FilterStats {
     static class FilterCount {
 
         private final FilterType filterType;
-        private int passCount;
-        private int failCount;
+        private final int passCount;
+        private final int failCount;
 
         private FilterCount(FilterType filterType, FilterCounter filterCounter) {
             this.filterType = filterType;
