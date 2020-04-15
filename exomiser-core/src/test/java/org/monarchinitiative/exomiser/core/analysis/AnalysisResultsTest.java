@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
@@ -38,7 +39,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -48,21 +50,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AnalysisResultsTest {
 
     @Test
-    public void noArgsConstructorInitialisesGenesVariantEvalations() {
+    public void defaultConstructorInitialisesGenesVariantEvalations() {
         AnalysisResults instance = AnalysisResults.builder().build();
-        assertThat(instance.getGenes(), notNullValue());
-        assertThat(instance.getVariantEvaluations(), notNullValue());
+        assertThat(instance.getSample(), equalTo(Sample.builder().build()));
+        assertThat(instance.getAnalysis(), equalTo(Analysis.builder().build()));
+        assertThat(instance.getGenes(), equalTo(Collections.emptyList()));
+        assertThat(instance.getVariantEvaluations(), equalTo(Collections.emptyList()));
     }
 
     @Test
-    public void testCanSetAndGetProbandSampleName() {
-        String probandSampleName = "Slartibartfast";
+    public void testSample() {
+        Sample sample = Sample.builder().probandSampleName("Slartibartfast").build();
 
         AnalysisResults instance = AnalysisResults.builder()
-                .probandSampleName(probandSampleName)
+                .sample(sample)
                 .build();
 
-        assertThat(instance.getProbandSampleName(), equalTo(probandSampleName));
+        assertThat(instance.getProbandSampleName(), equalTo(sample.getProbandSampleName()));
+        assertThat(instance.getSample(), equalTo(sample));
     }
 
     @Test
@@ -97,7 +102,6 @@ public class AnalysisResultsTest {
     @Test
     public void testGetGeneScoresReturnsEmptyListWithNoResults() {
         AnalysisResults empty = AnalysisResults.builder().build();
-
         assertThat(empty.getGeneScores(), equalTo(Collections.emptyList()));
     }
 
@@ -220,22 +224,27 @@ public class AnalysisResultsTest {
 
     @Test
     public void testEquals() {
-        AnalysisResults instance = AnalysisResults.builder().probandSampleName("wibble").build();
-        AnalysisResults other = AnalysisResults.builder().probandSampleName("wibble").build();
+        Sample sample = Sample.builder().probandSampleName("wibble").build();
+        AnalysisResults instance = AnalysisResults.builder().sample(sample).build();
+        AnalysisResults other = AnalysisResults.builder().sample(sample).build();
         assertThat(instance, equalTo(other));
     }
 
     @Test
     public void testNotEquals() {
-        AnalysisResults instance = AnalysisResults.builder().probandSampleName("wibble").build();
-        AnalysisResults other = AnalysisResults.builder().probandSampleName("wibble").sampleNames(ImmutableList.of("Fred", "Wilma")).build();
+        Sample sample = Sample.builder().probandSampleName("wibble").build();
+        AnalysisResults instance = AnalysisResults.builder().sample(sample).build();
+        AnalysisResults other = AnalysisResults.builder()
+                .sample(sample)
+                .sampleNames(ImmutableList.of("Fred", "Wilma"))
+                .build();
         assertThat(instance, not(equalTo(other)));
     }
 
     @Test
     public void testString() {
-        AnalysisResults instance = AnalysisResults.builder().probandSampleName("Zaphod_Beeblebrox").build();
-
+        Sample sample = Sample.builder().probandSampleName("Zaphod_Beeblebrox").build();
+        AnalysisResults instance = AnalysisResults.builder().sample(sample).build();
         System.out.println(instance);
     }
 }

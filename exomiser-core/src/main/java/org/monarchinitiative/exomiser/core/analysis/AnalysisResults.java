@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -42,13 +43,14 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * The results of an Exomiser Analysis run.
- * 
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
 public class AnalysisResults {
 
-    private final String probandSampleName;
+    private final Sample sample;
+    private final Analysis analysis;
 
     @JsonIgnore
     private final List<String> sampleNames;
@@ -58,7 +60,8 @@ public class AnalysisResults {
     private final List<VariantEvaluation> variantEvaluations;
 
     public AnalysisResults(Builder builder) {
-        this.probandSampleName = builder.probandSampleName;
+        this.sample = builder.sample;
+        this.analysis = builder.analysis;
 
         this.sampleNames = builder.sampleNames;
 
@@ -72,7 +75,7 @@ public class AnalysisResults {
      * @return the proband sample name.
      */
     public String getProbandSampleName() {
-        return probandSampleName;
+        return sample.getProbandSampleName();
     }
 
     /**
@@ -83,8 +86,24 @@ public class AnalysisResults {
     }
 
     /**
+     * @return The {@link Sample} which was run through the {@link Analysis} to generate the {@link AnalysisResults}.
+     * @since 13.0.0
+     */
+    public Sample getSample() {
+        return sample;
+    }
+
+    /**
+     * @return The {@link Analysis} through which the {@link Sample} was run in order to generate the {@link AnalysisResults}.
+     * @since 13.0.0
+     */
+    public Analysis getAnalysis() {
+        return analysis;
+    }
+
+    /**
      * A list of {@link Gene} objects resulting from an {@link Analysis}.
-     *
+     * <p>
      * IMPORTANT: A {@link Gene} could have several {@link GeneScore}, with different overall ranks depending on the
      * {@link ModeOfInheritance} and the scoring from the OmimPrioritiser with the inheritance mode compatibility.
      * For this reason directly iterating through the genes and their scores in order will result in incorrect overall
@@ -99,7 +118,7 @@ public class AnalysisResults {
 
     /**
      * A list of {@link VariantEvaluation} objects resulting from an {@link Analysis}.
-     *
+     * <p>
      * IMPORTANT: A {@link VariantEvaluation} could be compatible with several {@link ModeOfInheritance} and may or may
      * not contribute to the overall {@link GeneScore}. For this reason directly iterating through the {@link VariantEvaluation}
      * and their scores in order will result in incorrect overall rankings. To get the correct contributing variant rankings
@@ -115,7 +134,7 @@ public class AnalysisResults {
      * Returns a list of {@link GeneScore} objects computed from the gene results. These {@link GeneScore} will be ranked
      * by the combined score and will contain the results for all {@link ModeOfInheritance}. The {@link GeneScore} objects
      * will all contain contributing variants.
-     *
+     * <p>
      * If you require a ranked list of {@link GeneScore} and their contributing variants, use this method.
      *
      * @return a ranked list of {@link GeneScore} and their contributing variants.
@@ -131,7 +150,7 @@ public class AnalysisResults {
      * Returns a list of {@link GeneScore} objects computed from the gene results for the given {@link ModeOfInheritance}.
      * These {@link GeneScore} will be ranked  by the combined score and will only contain the results for the stated
      * {@link ModeOfInheritance}. The {@link GeneScore} objects will all contain contributing variants.
-     *
+     * <p>
      * If you require a ranked list of {@link GeneScore} and their contributing variants for a specific
      * {@link ModeOfInheritance}, use this method.
      *
@@ -145,7 +164,6 @@ public class AnalysisResults {
     }
 
     /**
-     *
      * @return the ranked variants contributing to the gene score under all modes of inheritance
      * @since 10.1.0
      */
@@ -158,7 +176,6 @@ public class AnalysisResults {
     }
 
     /**
-     *
      * @return
      * @since 10.1.0
      */
@@ -195,7 +212,7 @@ public class AnalysisResults {
 
     @Override
     public int hashCode() {
-        return Objects.hash(probandSampleName, sampleNames, variantEvaluations, genes);
+        return Objects.hash(sample, sampleNames, variantEvaluations, genes);
     }
 
     @Override
@@ -203,7 +220,7 @@ public class AnalysisResults {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AnalysisResults that = (AnalysisResults) o;
-        return Objects.equals(probandSampleName, that.probandSampleName) &&
+        return Objects.equals(sample, that.sample) &&
                 Objects.equals(sampleNames, that.sampleNames) &&
                 Objects.equals(variantEvaluations, that.variantEvaluations) &&
                 Objects.equals(genes, that.genes);
@@ -212,7 +229,7 @@ public class AnalysisResults {
     @Override
     public String toString() {
         return "AnalysisResults{" +
-                "probandSampleName='" + probandSampleName + '\'' +
+                "sample='" + sample + '\'' +
                 ", sampleNames=" + sampleNames +
                 ", genes=" + genes.size() +
                 ", variantEvaluations=" + variantEvaluations.size() +
@@ -225,30 +242,37 @@ public class AnalysisResults {
 
     public static class Builder {
 
-        private String probandSampleName = "";
+        private Sample sample = Sample.builder().build();
+        private Analysis analysis = Analysis.builder().build();
 
         private List<String> sampleNames = Collections.emptyList();
 
         private List<VariantEvaluation> variantEvaluations = Collections.emptyList();
         private List<Gene> genes = Collections.emptyList();
 
-        public Builder probandSampleName(String probandSampleName) {
-            this.probandSampleName = probandSampleName;
+
+        public Builder sample(Sample sample) {
+            this.sample = Objects.requireNonNull(sample);
+            return this;
+        }
+
+        public Builder analysis(Analysis analysis) {
+            this.analysis = Objects.requireNonNull(analysis);
             return this;
         }
 
         public Builder sampleNames(List<String> sampleNames) {
-            this.sampleNames = sampleNames;
+            this.sampleNames = Objects.requireNonNull(sampleNames);
             return this;
         }
 
         public Builder variantEvaluations(List<VariantEvaluation> variantList) {
-            this.variantEvaluations = variantList;
+            this.variantEvaluations = Objects.requireNonNull(variantList);
             return this;
         }
 
         public Builder genes(List<Gene> geneList) {
-            this.genes = geneList;
+            this.genes = Objects.requireNonNull(geneList);
             return this;
         }
 
