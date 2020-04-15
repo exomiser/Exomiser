@@ -131,6 +131,16 @@ class FilterStatsTest {
     }
 
     @Test
+    void isEmpty() {
+        FilterStats instance = new FilterStats();
+        assertThat(instance.isEmpty(), equalTo(true));
+
+        instance.addResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
+        assertThat(instance.isEmpty(), equalTo(false));
+    }
+
+
+    @Test
     void canLogMultiplePassAndFailCountsForMultipleFiltersWithMultipleThreads() {
         for (int i = 0; i < 1000; i++) {
             FilterStats instance = new FilterStats();

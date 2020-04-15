@@ -36,7 +36,7 @@ class FilterStats {
     // filtersRun requires an ordered map.
     private final Set<FilterType> filtersRun = new LinkedHashSet<>();
 
-    synchronized void addResult(FilterResult result) {
+    public synchronized void addResult(FilterResult result) {
         FilterType filterType = result.getFilterType();
         filtersRun.add(filterType);
 
@@ -49,24 +49,31 @@ class FilterStats {
         filterCounters.put(filterType, counter);
     }
 
-    int getPassCountForFilter(FilterType filterType) {
+    public int getPassCountForFilter(FilterType filterType) {
         FilterCounter filterCounter = filterCounters.get(filterType);
         return filterCounter == null ? 0 : filterCounter.getPassCount();
     }
 
-    int getFailCountForFilter(FilterType filterType) {
+    public int getFailCountForFilter(FilterType filterType) {
         FilterCounter filterCounter = filterCounters.get(filterType);
         return filterCounter == null ? 0 : filterCounter.getFailCount();
     }
 
-    List<FilterType> getFilters() {
+    public List<FilterType> getFilters() {
         return new ArrayList<>(filtersRun);
     }
 
     /**
      * @since 13.0.0
      */
-    List<FilterCount> getFilterCounts() {
+    public boolean isEmpty() {
+        return filtersRun.isEmpty();
+    }
+
+    /**
+     * @since 13.0.0
+     */
+    public List<FilterCount> getFilterCounts() {
         return filtersRun.stream()
                 .map(filterType -> new FilterCount(filterType, filterCounters.get(filterType)))
                 .collect(Collectors.toList());
@@ -75,7 +82,7 @@ class FilterStats {
     /**
      * @since 13.0.0
      */
-    static class FilterCount {
+    public static class FilterCount {
 
         private final FilterType filterType;
         private final int passCount;
