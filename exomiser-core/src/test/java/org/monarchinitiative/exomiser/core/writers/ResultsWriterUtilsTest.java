@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -71,7 +72,7 @@ public class ResultsWriterUtilsTest {
         Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(failedGene.passedFilters()).thenReturn(Boolean.FALSE);
     }
-    
+
     private List<Gene> getGenes() {
         List<Gene> genes = new ArrayList<>();
         genes.add(passedGeneOne);
@@ -81,21 +82,31 @@ public class ResultsWriterUtilsTest {
     }
 
     @Test
+    void testNullVcfAndEmptyOutputPrefixUsesVcfFileName() {
+        String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(result, equalTo("results/exomiser_AD.json"));
+    }
+
+    @Test
+    void testEmptyOutputPrefixUsesVcfFileName() {
+        String result = ResultsWriterUtils.makeOutputFilename(Paths.get("/data/vcf/sample1_genome.vcf.gz"), "", OutputFormat.TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(result, equalTo("results/sample1_genome_exomiser_AD.variants.tsv"));
+    }
+
+    @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = String.format("%s/wibble_exomiser_AD.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo(expResult));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AD.genes.tsv"));
     }
 
     @Test
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = String.format("%s/wibble_exomiser_AR.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(result, equalTo(expResult));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AR.vcf"));
     }
 
     @Test
@@ -103,18 +114,16 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
         OutputSettings settings = OutputSettings.builder().outputPrefix(outputPrefix).build();
-        String expResult = String.format("%s_XD.%s", outputPrefix, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(result, equalTo(expResult));
+        assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml_XD.vcf"));
     }
     
     @Test
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
         OutputSettings settings = OutputSettings.builder().build();
-        String expResult = DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html";
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
-        assertThat(result, equalTo(expResult));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html"));
     }
     
     @Test
@@ -122,7 +131,8 @@ public class ResultsWriterUtilsTest {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009";
         OutputSettings settings = OutputSettings.builder().outputPrefix(outFilePrefix).build();
-        assertThat(ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
+        String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
     }
 
     @Test
@@ -130,22 +140,22 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.HTML;
         OutputSettings settings = OutputSettings.builder().build();
 
-        String any = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
+        String any = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.ANY);
         assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html"));
 
-        String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AD.html"));
 
-        String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AR.html"));
 
-        String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_DOMINANT);
+        String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_DOMINANT);
         assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XD.html"));
 
-        String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_RECESSIVE);
+        String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_RECESSIVE);
         assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XR.html"));
 
-        String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.MITOCHONDRIAL);
+        String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.MITOCHONDRIAL);
         assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_MT.html"));
     }
 
@@ -161,26 +171,36 @@ public class ResultsWriterUtilsTest {
     }
     
     @Test
-    public void canMakeFilterReportsFromAnalysisReturnsEmptyListWhenNoFiltersAdded(){
+    public void canMakeFilterReportsFromAnalysisReturnsEmptyListWhenNoFiltersAdded() {
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResults analysisResults = AnalysisResults.builder().build();
+        AnalysisResults analysisResults = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
-        
+
         assertThat(results.isEmpty(), is(true));
     }
     
     @Test
-    public void canMakeFilterReportsFromAnalysis(){
+    public void canMakeFilterReportsFromAnalysis() {
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder()
                 .addStep(new PassAllVariantEffectsFilter())
                 .build();
-        AnalysisResults analysisResults = AnalysisResults.builder().build();
+
+        AnalysisResults analysisResults = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
+                .build();
+
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
-        
+
         for (FilterReport result : results) {
             System.out.println(result);
         }
-        
+
         assertThat(results.isEmpty(), is(false));
     }
 

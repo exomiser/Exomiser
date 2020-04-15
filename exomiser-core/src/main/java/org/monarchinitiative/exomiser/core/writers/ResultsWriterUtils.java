@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -69,8 +69,14 @@ public class ResultsWriterUtils {
      */
     public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat, ModeOfInheritance modeOfInheritance) {
         String moiAbbreviation = moiAbbreviation(modeOfInheritance);
+        if (outputPrefix.isEmpty() && vcfPath == null) {
+            String defaultOutputPrefix = String.format("%s/exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR);
+            logger.debug("Output prefix and VCF was unspecified. Will write out to: {}", defaultOutputPrefix);
+            return String.format("%s%s.%s", defaultOutputPrefix, moiAbbreviation, outputFormat.getFileExtension());
+        }
         if (outputPrefix.isEmpty()) {
-            String defaultOutputPrefix = String.format("%s/%s_exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, vcfPath.getFileName());
+            String fileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
+            String defaultOutputPrefix = String.format("%s/%s_exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, fileName);
             logger.debug("Output prefix was unspecified. Will write out to: {}", defaultOutputPrefix);
             return String.format("%s%s.%s", defaultOutputPrefix, moiAbbreviation, outputFormat.getFileExtension());
         }
