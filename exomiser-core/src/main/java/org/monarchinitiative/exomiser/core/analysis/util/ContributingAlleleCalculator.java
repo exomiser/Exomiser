@@ -109,17 +109,15 @@ class ContributingAlleleCalculator {
 
         double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
 
-        if (BigDecimal.valueOf(bestScore).equals(BigDecimal.valueOf(bestCompHetScore)) && bestCompHetPair.isPresent()) {
+        if (Double.compare(bestScore, bestCompHetScore) == 0 && bestCompHetPair.isPresent()) {
             CompHetPair compHetPair = bestCompHetPair.get();
             compHetPair.setContributesToGeneScoreUnderMode(modeOfInheritance);
             logger.debug("Top scoring comp het: {}", compHetPair);
-
             return bestCompHetPair.get().getAlleles();
         } else if (bestHomozygousAlt.isPresent()) {
             VariantEvaluation topHomAlt = bestHomozygousAlt.get();
             topHomAlt.setContributesToGeneScoreUnderMode(modeOfInheritance);
             logger.debug("Top scoring hom alt het: {}", topHomAlt);
-
             return ImmutableList.of(topHomAlt);
         }
         return Collections.emptyList();
