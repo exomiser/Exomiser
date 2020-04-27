@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,7 @@ public class FrequencyData {
 
     private final String rsId;
 
-    private int size;
+    private final int size;
     private final FrequencySource[] sources;
     private final float[] values;
 
@@ -104,6 +104,7 @@ public class FrequencyData {
         this.size = countNotNullFrequencies(sorted);
         this.sources = new FrequencySource[size];
         this.values = new float[size];
+        // TODO add AN and AC to Frequency
 
         int pos = 0;
         for (Frequency entry : sorted) {
