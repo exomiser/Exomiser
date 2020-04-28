@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -143,6 +143,17 @@ public class SampleGenotype {
 
     public List<AlleleCall> getCalls() {
         return ImmutableList.copyOf(alleleCalls);
+    }
+
+    /**
+     * Returns the number of calls for the {@link SampleGenotype}. For example a monoploid sample would return 1,
+     * diploid 2, triploid 3 etc.
+     *
+     * @return the number of calls for this {@link SampleGenotype}
+     * @since 13.0.0
+     */
+    public int numCalls() {
+        return alleleCalls.length;
     }
 
     /**

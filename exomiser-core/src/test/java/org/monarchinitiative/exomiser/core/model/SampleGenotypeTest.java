@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -161,13 +161,27 @@ public class SampleGenotypeTest {
 
     @Test
     public void testTriploid() {
-        assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL, AlleleCall.NO_CALL).toString(), equalTo("././."));
+        assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL, AlleleCall.NO_CALL)
+                .toString(), equalTo("././."));
         assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF, AlleleCall.ALT).toString(), equalTo("0/1/1"));
         assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF, AlleleCall.ALT).toString(), equalTo("1|0|1"));
     }
 
     @Test
-    public void testEquals(){
+    void testNumCalls() {
+        assertThat(SampleGenotype.empty().numCalls(), equalTo(0));
+        SampleGenotype monoploid = SampleGenotype.of(AlleleCall.REF);
+        assertThat(monoploid.numCalls(), equalTo(1));
+
+        SampleGenotype diploid = SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT);
+        assertThat(diploid.numCalls(), equalTo(2));
+
+        SampleGenotype triploid = SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL, AlleleCall.NO_CALL);
+        assertThat(triploid.numCalls(), equalTo(3));
+    }
+
+    @Test
+    public void testEquals() {
         assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
         assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
 
