@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -59,11 +60,11 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @throws NullPointerException if any input arguments are null.
      * @since 10.0.0
      */
-    public RawScoreGeneScorer(SampleIdentifier probandSampleIdentifier, InheritanceModeAnnotator inheritanceModeAnnotator) {
+    public RawScoreGeneScorer(SampleIdentifier probandSampleIdentifier, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
         Objects.requireNonNull(probandSampleIdentifier);
         Objects.requireNonNull(inheritanceModeAnnotator);
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
-        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleIdentifier, inheritanceModeAnnotator);
+        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleIdentifier, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
     }
 
