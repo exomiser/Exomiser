@@ -53,6 +53,8 @@ public class InheritanceModeOptions {
 
     private static final InheritanceModeOptions DEFAULT = new InheritanceModeOptions(DEFAULT_FREQ);
     private static final InheritanceModeOptions EMPTY = new InheritanceModeOptions(Collections.emptyMap());
+    // Max frequency is 100%
+    public static final float MAX_FREQ = 100f;
 
     private final Map<SubModeOfInheritance, Float> subMoiMaxFreqs;
     private final Map<ModeOfInheritance, Float> moiMaxFreqs;
@@ -106,7 +108,7 @@ public class InheritanceModeOptions {
         this.subMoiMaxFreqs = Maps.immutableEnumMap(values);
         this.subMoiMaxFreqs.forEach(InheritanceModeOptions::checkBounds);
         this.moiMaxFreqs = createInheritanceModeMaxFreqs(subMoiMaxFreqs);
-        this.maxFreq = moiMaxFreqs.values().stream().max(Comparator.naturalOrder()).orElse(Float.MAX_VALUE);
+        this.maxFreq = moiMaxFreqs.values().stream().max(Comparator.naturalOrder()).orElse(MAX_FREQ);
     }
 
     private static void checkBounds(SubModeOfInheritance key, Float value) {
@@ -175,7 +177,7 @@ public class InheritanceModeOptions {
      * @return the maximum minor allele frequency value for this {@code ModeOfInheritance}.
      */
     public float getMaxFreqForMode(ModeOfInheritance modeOfInheritance) {
-        return moiMaxFreqs.getOrDefault(modeOfInheritance, Float.MAX_VALUE);
+        return moiMaxFreqs.getOrDefault(modeOfInheritance, MAX_FREQ);
     }
 
     /**
@@ -185,7 +187,7 @@ public class InheritanceModeOptions {
      * @return the maximum minor allele frequency value for this {@code SubModeOfInheritance}.
      */
     public float getMaxFreqForSubMode(SubModeOfInheritance subModeOfInheritance) {
-        return subMoiMaxFreqs.getOrDefault(subModeOfInheritance, Float.MAX_VALUE);
+        return subMoiMaxFreqs.getOrDefault(subModeOfInheritance, MAX_FREQ);
     }
 
     /**
