@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -89,6 +89,15 @@ public class Pedigree {
 
     public static Pedigree justProband(String id) {
         Individual individual = Individual.builder().id(id).status(Individual.Status.AFFECTED).build();
+        return Pedigree.of(individual);
+    }
+
+    public static Pedigree justProband(String id, Individual.Sex sex) {
+        Individual individual = Individual.builder()
+                .id(id)
+                .status(Individual.Status.AFFECTED)
+                .sex(sex)
+                .build();
         return Pedigree.of(individual);
     }
 
