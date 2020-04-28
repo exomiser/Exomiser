@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -73,7 +73,7 @@ public class GeneticInterval implements ChromosomalRegion {
 
         String[] intervalSections = interval.split(":");
         int localChr = Contig.parseId(intervalSections[0]);
-
+        System.out.println(intervalSections[0] + " " + localChr);
         String positions = intervalSections[1];
         String[] startEnd = positions.split("-");
 
@@ -127,6 +127,11 @@ public class GeneticInterval implements ChromosomalRegion {
 
     @Override
     public String toString() {
-        return String.format("chr%d:%d-%d", chromosome, start, end);
+        return String.format("chr%s:%d-%d", toChrString(chromosome), start, end);
+    }
+
+    private String toChrString(int chromosome) {
+        String chr = Contig.toString(chromosome);
+        return "MT".equals(chr) ? "M" : chr;
     }
 }
