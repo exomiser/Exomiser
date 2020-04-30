@@ -29,10 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -64,36 +63,30 @@ public class GenomeDataSourceLoader {
         this.jannovarData = loadJannovarData();
         // n.b. the JannovarData can be loaded asynchronously, but it takes about a second longer to do so. Meanwhile the rest
         // of the data requiring loading here takes about 1-2 secs, so there isn't really a lot to gain from all the concurrency
-        // shenanigans. I've left the code here as a reminder.
+        // shenanigans, but I've left the code here as a reminder.
         // start this here as it'll take a while longer than all the others put together
-//        Future<JannovarData> jannovarDataFuture = loadJannovarDataAsync();
+//        CompletableFuture<JannovarData> jannovarDataFuture = loadJannovarDataAsync();
         this.mvStore = loadMvStore();
         this.variantWhiteList = loadVariantWhiteList();
 
-        localFrequencyTabixDataSource = getTabixDataSourceOrDefault("LOCAL", genomeProperties.getLocalFrequencyPath());
-        caddSnvTabixDataSource = getTabixDataSourceOrDefault("CADD snv", genomeProperties.getCaddSnvPath());
-        caddIndelTabixDataSource = getTabixDataSourceOrDefault("CADD InDel", genomeProperties.getCaddInDelPath());
-        remmTabixDataSource = getTabixDataSourceOrDefault("REMM", genomeProperties.getRemmPath());
-        testPathogenicityTabixDataSource = getTabixDataSourceOrDefault("TEST", genomeProperties.getTestPathogenicityScorePath());
-//        this.jannovarData = getJannovarData(jannovarDataFuture);
+        this.localFrequencyTabixDataSource = getTabixDataSourceOrDefault("LOCAL", genomeProperties.getLocalFrequencyPath());
+        this.caddSnvTabixDataSource = getTabixDataSourceOrDefault("CADD snv", genomeProperties.getCaddSnvPath());
+        this.caddIndelTabixDataSource = getTabixDataSourceOrDefault("CADD InDel", genomeProperties.getCaddInDelPath());
+        this.remmTabixDataSource = getTabixDataSourceOrDefault("REMM", genomeProperties.getRemmPath());
+        this.testPathogenicityTabixDataSource = getTabixDataSourceOrDefault("TEST", genomeProperties.getTestPathogenicityScorePath());
+//        this.jannovarData = jannovarDataFuture.join();
         logger.debug("{} genome data sources loaded", genomeProperties.getAssembly());
     }
 
-    private Future<JannovarData> loadJannovarDataAsync() {
+    private CompletableFuture<JannovarData> loadJannovarDataAsync() {
+        // Can't wait for Project Loom to arrive!
+//        try (ExecutorService executorService = Executors.newUnboundedVirtualThreadExecutor()) {
+//            return CompletableFuture.supplyAsync(this::loadJannovarData, executorService);
+//        }
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Path transcriptFilePath = genomeDataResolver.getTranscriptFilePath();
-        logger.debug("Loading async transcript data from {}", transcriptFilePath);
-        Future<JannovarData> jannovarDataFuture = executorService.submit(() -> JannovarDataSourceLoader.loadJannovarData(transcriptFilePath));
+        CompletableFuture<JannovarData> jannovarDataFuture = CompletableFuture.supplyAsync(this::loadJannovarData, executorService);
         executorService.shutdown();
         return jannovarDataFuture;
-    }
-
-    private JannovarData getJannovarData(Future<JannovarData> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Unable to load JannovarData", e);
-        }
     }
 
     private JannovarData loadJannovarData() {
