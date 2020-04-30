@@ -29,6 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -58,6 +62,11 @@ public class GenomeDataSourceLoader {
         this.genomeDataResolver = genomeDataResolver;
 
         this.jannovarData = loadJannovarData();
+        // n.b. the JannovarData can be loaded asynchronously, but it takes about a second longer to do so. Meanwhile the rest
+        // of the data requiring loading here takes about 1-2 secs, so there isn't really a lot to gain from all the concurrency
+        // shenanigans. I've left the code here as a reminder.
+        // start this here as it'll take a while longer than all the others put together
+//        Future<JannovarData> jannovarDataFuture = loadJannovarDataAsync();
         this.mvStore = loadMvStore();
         this.variantWhiteList = loadVariantWhiteList();
 
@@ -66,7 +75,25 @@ public class GenomeDataSourceLoader {
         caddIndelTabixDataSource = getTabixDataSourceOrDefault("CADD InDel", genomeProperties.getCaddInDelPath());
         remmTabixDataSource = getTabixDataSourceOrDefault("REMM", genomeProperties.getRemmPath());
         testPathogenicityTabixDataSource = getTabixDataSourceOrDefault("TEST", genomeProperties.getTestPathogenicityScorePath());
+//        this.jannovarData = getJannovarData(jannovarDataFuture);
         logger.debug("{} genome data sources loaded", genomeProperties.getAssembly());
+    }
+
+    private Future<JannovarData> loadJannovarDataAsync() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Path transcriptFilePath = genomeDataResolver.getTranscriptFilePath();
+        logger.debug("Loading async transcript data from {}", transcriptFilePath);
+        Future<JannovarData> jannovarDataFuture = executorService.submit(() -> JannovarDataSourceLoader.loadJannovarData(transcriptFilePath));
+        executorService.shutdown();
+        return jannovarDataFuture;
+    }
+
+    private JannovarData getJannovarData(Future<JannovarData> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Unable to load JannovarData", e);
+        }
     }
 
     private JannovarData loadJannovarData() {
