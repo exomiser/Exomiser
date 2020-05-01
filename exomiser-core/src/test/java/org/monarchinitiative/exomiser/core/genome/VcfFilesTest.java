@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -85,5 +85,12 @@ public class VcfFilesTest {
         Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
         VCFHeader header = VcfFiles.readVcfHeader(vcfPath);
         assertThat(header.getGenotypeSamples(), equalTo(ImmutableList.of("sample")));
+    }
+
+    @Test
+    public void testReadSampleIdentifiers() {
+        Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
+        List<String> samples = VcfFiles.readSampleIdentifiers(vcfPath);
+        assertThat(samples, equalTo(ImmutableList.of("sample")));
     }
 }
