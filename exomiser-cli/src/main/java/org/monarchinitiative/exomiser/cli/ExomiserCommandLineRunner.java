@@ -42,7 +42,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCommandLineRunner.class);
 
-    private Exomiser exomiser;
+    private final Exomiser exomiser;
 
     public ExomiserCommandLineRunner(Exomiser exomiser) {
         this.exomiser = exomiser;
