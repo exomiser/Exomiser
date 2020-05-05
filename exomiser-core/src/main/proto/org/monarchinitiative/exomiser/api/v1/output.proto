@@ -18,5 +18,5 @@ message OutputOptions {
     bool outputContributingVariantsOnly = 1;
     int32 numGenes = 2;
     string outputPrefix = 3;
-    repeated OutputFormat outputFormats = 4;
+    repeated string outputFormats = 4;
 }

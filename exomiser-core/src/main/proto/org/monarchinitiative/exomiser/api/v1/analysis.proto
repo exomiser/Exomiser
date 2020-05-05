@@ -22,15 +22,15 @@ enum AnalysisMode {
 message Analysis {
     // old fields to be replaced by sample/phenopacket/family in the Job message
     // @Deprecated - use a Sample, Phenopacket or Family
-    string genome_assembly = 1;
+    string genome_assembly = 1 [deprecated = true];
     // @Deprecated - use a Sample, Phenopacket or Family
-    string vcf = 2;
+    string vcf = 2 [deprecated = true];
     // @Deprecated - use a Sample, Phenopacket or Family
-    string ped = 3;
+    string ped = 3 [deprecated = true];
     // @Deprecated - use a Sample, Phenopacket or Family
-    string proband = 4;
+    string proband = 4 [deprecated = true];
     // @Deprecated - use a Sample, Phenopacket or Family
-    repeated string hpo_ids = 5;
+    repeated string hpo_ids = 5 [deprecated = true];
 
     // actual analysis fields
     map<string, float> inheritance_modes = 6;
