@@ -55,7 +55,7 @@ public class ProtoParser {
         try (Reader fileReader = Files.newBufferedReader(path)) {
             return parseYaml(protoBuilder, fileReader);
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse file " + path, e);
+            throw new ProtoParserException("Unable to parse file " + path, e);
         }
     }
 
@@ -69,7 +69,7 @@ public class ProtoParser {
         try (Reader stringReader = new StringReader(inputString)) {
             return parseYaml(protoBuilder, stringReader);
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse input string", e);
+            throw new ProtoParserException("Unable to parse input string", e);
         }
     }
 
@@ -88,6 +88,12 @@ public class ProtoParser {
                 .ignoringUnknownFields()
                 .merge(reader, protoBuilder);
         return protoBuilder;
+    }
+
+    public static class ProtoParserException extends RuntimeException {
+        public ProtoParserException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
 }
