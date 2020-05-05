@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -150,7 +150,7 @@ class AnalysisStepChecker {
 
     private void removePriorityScoreFiltersNotOfType(List<AnalysisStep> analysisSteps, Set<PriorityType> prioritiserTypes) {
         analysisSteps.removeIf(step -> {
-            if (PriorityScoreFilter.class.isInstance(step)) {
+            if (step instanceof PriorityScoreFilter) {
                 PriorityScoreFilter filter = (PriorityScoreFilter) step;
                 if (!prioritiserTypes.contains(filter.getPriorityType())) {
                     logger.info("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
@@ -187,7 +187,7 @@ class AnalysisStepChecker {
 
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
-            if (Prioritiser.class.isInstance(step)) {
+            if (step instanceof Prioritiser) {
                 Prioritiser prioritiser = (Prioritiser) step;
                 if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
                     containsMatchingPrioritiser = true;
@@ -207,7 +207,7 @@ class AnalysisStepChecker {
      * correct ordering over longer ranges so purely using the Comparator isn't enough to be able to sort the
      * AnalysisSteps.
      */
-    private class AnalysisStepComparator implements Comparator<AnalysisStep> {
+    private static class AnalysisStepComparator implements Comparator<AnalysisStep> {
 
         private static final int BEFORE = -1;
         private static final int EQUAL = 0;
@@ -219,7 +219,7 @@ class AnalysisStepChecker {
             if (o1.isVariantFilter() && o2.isVariantFilter()) {
                 return EQUAL;
             }
-            if (Prioritiser.class.isInstance(o1) && Prioritiser.class.isInstance(o2)) {
+            if (o1 instanceof Prioritiser && o2 instanceof Prioritiser) {
                 return EQUAL;
             }
 
@@ -232,15 +232,15 @@ class AnalysisStepChecker {
             }
 
             //OmimPrioritiser must run after InheritanceFilter.
-            if (InheritanceFilter.class.isInstance(o1) && OmimPriority.class.isInstance(o2)) {
+            if (o1 instanceof InheritanceFilter && o2 instanceof OmimPriority) {
                 return BEFORE;
             }
-            if (OmimPriority.class.isInstance(o1) && InheritanceFilter.class.isInstance(o2)) {
+            if (o1 instanceof OmimPriority && o2 instanceof InheritanceFilter) {
                 return AFTER;
             }
 
             //PriorityScoreFilter must run after corresponding Prioritiser.
-            if (Prioritiser.class.isInstance(o1) && PriorityScoreFilter.class.isInstance(o2)) {
+            if (o1 instanceof Prioritiser && o2 instanceof PriorityScoreFilter) {
                 Prioritiser prioritiser = (Prioritiser) o1;
                 PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) o2;
                 if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
@@ -248,7 +248,7 @@ class AnalysisStepChecker {
                 }
                 return EQUAL;
             }
-            if (PriorityScoreFilter.class.isInstance(o1) && Prioritiser.class.isInstance(o2)) {
+            if (o1 instanceof PriorityScoreFilter && o2 instanceof Prioritiser) {
                 PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) o1;
                 Prioritiser prioritiser = (Prioritiser) o2;
                 if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
