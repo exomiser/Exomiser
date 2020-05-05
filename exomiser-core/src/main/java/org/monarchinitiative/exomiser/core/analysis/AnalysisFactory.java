@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,10 +34,10 @@ import org.springframework.stereotype.Component;
 /**
  * High-level factory for creating an {@link Analysis} and {@link AnalysisRunner}. This is
  * pretty much all that's needed to run an analysis with.
- * 
+ *
  * @see Exomiser
  * @see AnalysisMode
- * 
+ *
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -77,4 +77,12 @@ public class AnalysisFactory {
         return new AnalysisBuilder(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
     }
 
+    // The AnalysisParser contains methods for parsing Sample and Analysis objects out of a Job
+
+    /**
+     * @return
+     */
+    public AnalysisParser getAnalysisParser() {
+        return new AnalysisParser(genomeAnalysisServiceProvider, priorityFactory, ontologyService);
+    }
 }

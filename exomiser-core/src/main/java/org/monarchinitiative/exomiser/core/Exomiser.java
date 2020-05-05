@@ -25,7 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core;
 
+import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.core.analysis.*;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * This is the main entry point for analysing data using the Exomiser. An {@link Analysis}
- * should be built with an {@link AnalysisParser} or programmatically using the {@link AnalysisBuilder}
+ * should be built with an {@link AnalysisParser} or programmatically using the {@link AnalysisBuilder}. The {@link JobProto}
+ * should be read from file or created using the the fluent API provided by the {@link AnalysisProtoBuilder}
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -54,14 +57,29 @@ public class Exomiser {
         return analysisFactory.getAnalysisBuilder();
     }
 
-    public AnalysisResults run(Analysis analysis) {
-        //TODO: This might be better returning a Mono.just(analysisRunner.run(analysis)) and running the job on an async queue, or a CompletableFuture
-        //or maybe better keep this and add a runAsync(Analysis) method.
-        GenomeAssembly genomeAssembly = analysis.getGenomeAssembly();
+    /**
+     * @param job a {@link JobProto.Job} specifying how Exomiser should analyse the sample
+     * @return an {@link AnalysisResults} instance
+     * @since 13.0.0
+     */
+    public AnalysisResults run(JobProto.Job job) {
+        AnalysisParser analysisParser = analysisFactory.getAnalysisParser();
+        Sample sample = analysisParser.parseSample(job);
+        Analysis analysis = analysisParser.parseAnalysis(job);
+        return run(sample, analysis);
+    }
+
+    /**
+     * @param sample   The {@link Sample} representing the proband and possibly the proband's family to be analysed
+     * @param analysis The {@link Analysis} through which a {@link Sample} is to be run.
+     * @return an {@link AnalysisResults} instance
+     * @since 13.0.0
+     */
+    public AnalysisResults run(Sample sample, Analysis analysis) {
+        GenomeAssembly genomeAssembly = sample.getGenomeAssembly();
         AnalysisMode analysisMode = analysis.getAnalysisMode();
         logger.info("Running analysis using {} assembly with mode: {}", genomeAssembly, analysisMode);
         AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunner(genomeAssembly, analysisMode);
-        return analysisRunner.run(analysis);
+        return analysisRunner.run(sample, analysis);
     }
-
 }

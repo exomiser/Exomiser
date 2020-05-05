@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,19 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+
 /**
- *
- * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @since 7.0.0
  */
 public interface AnalysisRunner {
-    AnalysisResults run(Analysis analysis);
+
+    /**
+     * @param sample   The {@link Sample} data detailing the phenotypes and genome source data.
+     * @param analysis The {@link Analysis} settings to be run on the {@link Sample}
+     * @return The results of the {@link Analysis} having been run on the {@link Sample}
+     * @since 13.0.0
+     */
+    public AnalysisResults run(Sample sample, Analysis analysis);
 }

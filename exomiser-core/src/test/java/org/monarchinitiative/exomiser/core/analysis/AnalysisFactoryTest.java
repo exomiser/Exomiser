@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryS
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -61,12 +60,16 @@ public class AnalysisFactoryTest {
 
     @Test
     public void testGetAnalysisRunnerThrowsExceptionWhenUnsupportedGenomeAssemblyIsSpecified() {
-        assertThrows(UnsupportedGenomeAssemblyException.class, ()-> instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL));
+        assertThrows(UnsupportedGenomeAssemblyException.class, () -> instance.getAnalysisRunner(GenomeAssembly.HG38, AnalysisMode.FULL));
     }
 
     @Test
     public void testCanMakeAnalysisBuilder() {
-        assertThat(instance.getAnalysisBuilder(), notNullValue());
+        assertThat(instance.getAnalysisBuilder(), instanceOf(AnalysisBuilder.class));
     }
 
+    @Test
+    public void testCanMakeAnalysisParser() {
+        assertThat(instance.getAnalysisParser(), instanceOf(AnalysisParser.class));
+    }
 }

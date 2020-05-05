@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,15 +28,11 @@ import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -61,41 +57,6 @@ public class AnalysisTest {
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
         return Lists.newArrayList(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
-    }
-
-    @Test
-    public void testCanSetAndGetVcfFilePath() {
-        Path vcfPath = Paths.get("vcf");
-        Analysis instance = newBuilder()
-                .vcfPath(vcfPath)
-                .build();
-        assertThat(instance.getVcfPath(), equalTo(vcfPath));
-    }
-
-    @Test
-    public void testCanSetAndGetPedigree() {
-        Pedigree pedigree = Pedigree.empty();
-        Analysis instance = newBuilder()
-                .pedigree(pedigree)
-                .build();
-        assertThat(instance.getPedigree(), equalTo(pedigree));
-    }
-
-    @Test
-    public void canSetProbandSampleName() {
-        String probandSampleName = "Slartibartfast";
-        Analysis instance = Analysis.builder()
-                .probandSampleName(probandSampleName)
-                .build();
-        assertThat(instance.getProbandSampleName(), equalTo(probandSampleName));
-    }
-
-    @Test
-    public void canSetGenomeAssembly() {
-        Analysis instance = Analysis.builder()
-                .genomeAssembly(GenomeAssembly.HG19)
-                .build();
-        assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
@@ -223,27 +184,6 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .build();
         assertThat(instance.getMainPrioritiserType(), equalTo(PriorityType.NONE));
-    }
-
-    @Test
-    void testGetAnalysisStepsGroupedByFunction() {
-        Analysis instance = newBuilder()
-                .inheritanceModeOptions(InheritanceModeOptions.defaults())
-                .addStep(new FrequencyFilter(2f))
-                .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
-                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
-                .addStep(new NoneTypePrioritiser())
-                .build();
-
-        List<List<AnalysisStep>> expected = new ArrayList<>();
-        // variant dependent
-        expected.add(List.of(new FrequencyFilter(2f), new PathogenicityFilter(true)));
-        // inheritance mode dependent
-        expected.add(List.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())));
-        // gene only dependent
-        expected.add(List.of(new NoneTypePrioritiser()));
-        assertThat(instance.getAnalysisStepsGroupedByFunction(), equalTo(expected));
     }
 
     @Test
