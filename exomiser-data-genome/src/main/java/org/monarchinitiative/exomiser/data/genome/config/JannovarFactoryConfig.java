@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,8 @@ public class JannovarFactoryConfig {
     @Bean
     JannovarDataFactory jannovarDataFactory() {
         Path jannovarIniFilePath = getPathForProperty("jannovar.ini-file");
-        return JannovarDataFactory.builder(jannovarIniFilePath).build();
+        Path buildDir = getPathForProperty("build-dir").resolve("jannovar");
+        return JannovarDataFactory.builder(jannovarIniFilePath).downloadDir(buildDir).build();
     }
 
     private Path getPathForProperty(String propertyKey) {
