@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,8 @@ package org.monarchinitiative.exomiser.core.genome.jannovar;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.jannovar.datasource.DataSource;
 import de.charite.compbio.jannovar.datasource.DataSourceFactory;
 import de.charite.compbio.jannovar.datasource.DatasourceOptions;
@@ -60,11 +62,13 @@ public class JannovarDataFactory {
     }
 
     /**
-     * Downloads, builds and writes a serialised {@link JannovarData} file to the specified output path.
+     * Downloads, builds and writes a serialised {@link JannovarData} file to the specified output path. The serialised
+     * format written by this method is the Exomiser protobuf format. This format offers 2-3x faster loading speeds than
+     * the native format.
      *
-     * @param assembly  the desired {@link GenomeAssembly}
-     * @param source    the desired {@link TranscriptSource}
-     * @param outPath   the output file to which the {@link JannovarData} should be written
+     * @param assembly the desired {@link GenomeAssembly}
+     * @param source   the desired {@link TranscriptSource}
+     * @param outPath  the output file to which the {@link JannovarData} should be written
      */
     public void buildAndWrite(GenomeAssembly assembly, TranscriptSource source, Path outPath) {
         Objects.requireNonNull(outPath);
@@ -73,13 +77,32 @@ public class JannovarDataFactory {
     }
 
     /**
+     * Downloads, builds and writes a serialised {@link JannovarData} file to the specified output path. The serialised
+     * format written by this method is the Jannovar native format.
+     *
+     * @param assembly the desired {@link GenomeAssembly}
+     * @param source   the desired {@link TranscriptSource}
+     * @param outPath  the output file to which the {@link JannovarData} should be written
+     */
+    public void buildAndWriteNative(GenomeAssembly assembly, TranscriptSource source, Path outPath) {
+        Objects.requireNonNull(outPath);
+        JannovarData data = buildData(assembly, source);
+        JannovarDataSerializer serializer = new JannovarDataSerializer(outPath.toAbsolutePath().toString());
+        try {
+            serializer.save(data);
+        } catch (SerializationException e) {
+            logger.error("Jannovar error", e);
+        }
+    }
+
+    /**
      * Downloads the source files and builds a {@link JannovarData} object for the {@link GenomeAssembly} and {@link TranscriptSource}
      * specified.
      *
-     * @param assembly  the desired {@link GenomeAssembly}
-     * @param source    the desired {@link TranscriptSource}
-     * @throws JannovarException    on unsupported {@link GenomeAssembly} or {@link TranscriptSource}
+     * @param assembly the desired {@link GenomeAssembly}
+     * @param source   the desired {@link TranscriptSource}
      * @return
+     * @throws JannovarException on unsupported {@link GenomeAssembly} or {@link TranscriptSource}
      */
     public JannovarData buildData(GenomeAssembly assembly, TranscriptSource source)  {
         String name = createJannovarName(assembly, source);
