@@ -37,7 +37,6 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.Job;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -50,7 +49,6 @@ import org.thymeleaf.context.Context;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -102,26 +100,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         Analysis analysis = analysisResults.getAnalysis();
         Sample sample = analysisResults.getSample();
 
-        //write the settings
-//        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-//        //required for correct output of Path types
-//        mapper.registerModule(new Jdk7Module());
-//        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-//        //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
-//        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
-        StringWriter jsonSettings = new StringWriter();
-        Job job = Job.builder().sample(sample).analysis(analysis).outputOptions(settings).build();
-
         String yamlString = toYamlJobString(sample, analysis, settings);
         context.setVariable("settings", yamlString);
-
-//        try {
-//            mapper.writeValue(jsonSettings, job);
-//        } catch (Exception ex) {
-//            logger.error("Unable to process JSON settings", ex);
-//        }
-//        context.setVariable("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
