@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,13 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleMismatchException;
-import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -49,9 +50,10 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisNoFiltersNoPrioritisers() {
-        Analysis analysis = makeAnalysis(vcfPath);
+        Sample sample = vcfOnlySample;
+        Analysis analysis = makeAnalysis();
 
-        AnalysisResults analysisResults = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(2));
@@ -65,16 +67,19 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisRemovesAllelesUnobservedForProband() {
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"))
                 .probandSampleName("Seth")
                 .pedigree(TestPedigrees.trioChildAffected())
+                .build();
+
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 //need at least one filter step to trigger the code path
                 .addStep(new FailedVariantFilter())
                 .build();
 
-        AnalysisResults analysisResults = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
@@ -94,8 +99,9 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void testRunAnalysisVariantFilterOnlyOneVariantPasses() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
-        Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = vcfOnlySample;
+        Analysis analysis = makeAnalysis(intervalFilter);
+        AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -108,8 +114,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void testRunAnalysisFailVariantFilterOnlyOneVariantPasses() {
         VariantFilter failedVariantFilter = new FailedVariantFilter();
 
-        Analysis analysis = makeAnalysis(Paths.get("src/test/resources/failedVariant.vcf"), failedVariantFilter);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = Sample.builder().vcfPath(Paths.get("src/test/resources/failedVariant.vcf")).build();
+        Analysis analysis = makeAnalysis(failedVariantFilter);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -132,8 +141,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
-        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = vcfOnlySample;
+        Analysis analysis = makeAnalysis(intervalFilter, qualityFilter);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().isEmpty(), is(true));
         assertThat(analysisResults.getVariantEvaluations().isEmpty(), is(true));
@@ -148,8 +160,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         hiPhiveGeneScores.put("RBM8A", 0.65f);
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
 
-        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = vcfandPhenotypesSample;
+        Analysis analysis = makeAnalysis(intervalFilter, qualityFilter, mockHiPhivePrioritiser);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -168,28 +183,34 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisWhenProbandSampleNameIsNotInSingleSampleVcf() {
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(vcfPath)
                 .probandSampleName("mickyMouse")
                 .build();
-        assertThrows(SampleMismatchException.class , () -> instance.run(analysis));
+        Analysis analysis = Analysis.builder()
+                .build();
+        assertThrows(SampleMismatchException.class, () -> instance.run(sample, analysis));
     }
 
     @Test
     public void testRunAnalysisWhenProbandSampleNameIsNotSpecifiedAndHaveSingleSampleVcf() {
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(vcfPath)
                 .build();
-        instance.run(analysis);
+        Analysis analysis = Analysis.builder()
+                .build();
+        instance.run(sample, analysis);
     }
 
     @Test
     public void testRunAnalysisWhenProbandSampleNameIsNotInMultiSampleVcf() {
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .probandSampleName("mickyMouse")
                 .build();
-        assertThrows(SampleMismatchException.class , () -> instance.run(analysis));
+        Analysis analysis = Analysis.builder()
+                .build();
+        assertThrows(SampleMismatchException.class, () -> instance.run(sample, analysis));
     }
 
     @Test
@@ -199,18 +220,20 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Map<String, Float> hiPhiveGeneScores = new HashMap<>();
         hiPhiveGeneScores.put("GNRHR2", 0.75f);
         hiPhiveGeneScores.put("RBM8A", 0.65f);
-        Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
+        Prioritiser<?> mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
+        Sample sample = vcfandPhenotypesSample;
         Analysis analysis = Analysis.builder()
-                .vcfPath(vcfPath)
+                .frequencySources(FrequencySource.ALL_EXAC_SOURCES)
                 .addStep(intervalFilter)
                 .addStep(qualityFilter)
+                .addStep(new FrequencyFilter(0.1f))
                 .addStep(mockHiPhivePrioritiser)
                 .addStep(inheritanceFilter)
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        AnalysisResults analysisResults = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -226,6 +249,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+        System.out.println(rbm8Variant2.getFrequencyData());
     }
 
     @Test
@@ -235,11 +259,14 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
 
         PriorityType prioritiserTypeToMock = PriorityType.HIPHIVE_PRIORITY;
-        Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
+        Prioritiser<?> prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
 
-        Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = vcfandPhenotypesSample;
+        Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -262,8 +289,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
-        Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
-        AnalysisResults analysisResults = instance.run(analysis);
+        Sample sample = vcfandPhenotypesSample;
+        Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter, intervalFilter);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -296,9 +326,9 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        
+
+        Sample sample = vcfandPhenotypesSample;
         Analysis analysis = Analysis.builder()
-                .vcfPath(vcfPath)
                 .addStep(qualityFilter)
                 .addStep(prioritiser)
                 .addStep(priorityScoreFilter)
@@ -306,7 +336,9 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        AnalysisResults analysisResults = instance.run(analysis);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
 
@@ -332,20 +364,25 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisAutosomalDominantTrioDeNovoInheritanceFilter() {
-    	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    	Analysis analysis = Analysis.builder()
+        VariantFilter qualityFilter = new QualityFilter(5);
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+
+        Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAffected())
                 .probandSampleName(TestPedigrees.affectedChild().getId())
+                .build();
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
-        AnalysisResults analysisResults = instance.run(analysis);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
-        
+
         Map<String, Gene> results = makeResults(analysisResults.getGenes());
         Gene passedGene = results.get("GNRHR2");
         assertThat(passedGene.passedFilters(), is(true));
@@ -360,20 +397,25 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisAutosomalDominantTrioSharedInheritanceFilter() {
-    	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        Analysis analysis = Analysis.builder()
+        VariantFilter qualityFilter = new QualityFilter(5);
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+
+        Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAndFatherAffected())
                 .probandSampleName(TestPedigrees.affectedChild().getId())
+                .build();
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
-        AnalysisResults analysisResults = instance.run(analysis);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(1));
-        
+
         Map<String, Gene> results = makeResults(analysisResults.getGenes());
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
@@ -388,17 +430,23 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysisAutosomalRecessiveTrioInheritanceFilter() {
-    	VariantFilter qualityFilter = new QualityFilter(5);
-    	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-    	Analysis analysis = Analysis.builder()
+        VariantFilter qualityFilter = new QualityFilter(5);
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAffected())
                 .probandSampleName(TestPedigrees.affectedChild().getId())
+                .build();
+
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
                 .build();
-        AnalysisResults analysisResults = instance.run(analysis);
+
+        AnalysisResults analysisResults = instance.run(sample, analysis);
+
         printResults(analysisResults);
         assertThat(analysisResults.getGenes().size(), equalTo(2));
 

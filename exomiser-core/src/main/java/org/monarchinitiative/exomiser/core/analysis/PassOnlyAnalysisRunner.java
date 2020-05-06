@@ -30,9 +30,8 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.function.UnaryOperator;
 
 import static java.util.stream.Collectors.toList;
 
@@ -71,15 +70,16 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Stream<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
+    protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
                 .filter(Gene::hasVariants)
                 .filter(Gene::passedFilters)
-                .map(removeFailedVariants());
+                .map(removeFailedVariants())
+                .collect(toList());
     }
 
-    private Function<Gene, Gene> removeFailedVariants() {
+    private UnaryOperator<Gene> removeFailedVariants() {
         return gene -> {
             gene.getVariantEvaluations().removeIf(variantFailedFilters());
             return gene;
