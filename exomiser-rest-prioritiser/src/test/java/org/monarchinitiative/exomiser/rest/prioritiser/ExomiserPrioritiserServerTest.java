@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,16 +21,47 @@
 package org.monarchinitiative.exomiser.rest.prioritiser;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@SpringBootTest(classes = {ExomiserPrioritiserServer.class, ExomiserStubDataConfig.class})
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {ExomiserPrioritiserServer.class, ExomiserStubDataConfig.class, ExomiserPrioritiserServerTest.TestControllerConfig.class})
 public class ExomiserPrioritiserServerTest {
 
     @Test
     public void testContextLoads() {
+    }
+
+    @Configuration
+    public static class TestControllerConfig {
+
+        @Bean("exomiserDataDirectory")
+        public Path exomiserDataDirectory() {
+            return Paths.get("test");
+        }
+
+        @Bean
+        public Map<Integer, GeneIdentifier> getGeneIdentifiers() {
+            return Map.of();
+        }
+
+        @Bean
+        public PriorityFactory priorityFactory() {
+            return Mockito.mock(PriorityFactory.class);
+        }
     }
 }
