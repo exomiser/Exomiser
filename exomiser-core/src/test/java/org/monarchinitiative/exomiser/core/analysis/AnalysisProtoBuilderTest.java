@@ -84,6 +84,10 @@ class AnalysisProtoBuilderTest {
                 .setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.getDefaultInstance())
                 .build();
 
+        AnalysisProto.AnalysisStep inheritanceFilter = AnalysisProto.AnalysisStep.newBuilder()
+                .setInheritanceFilter(FiltersProto.InheritanceFilter.getDefaultInstance())
+                .build();
+
         AnalysisProto.Analysis analysis = AnalysisProtoBuilder.builder()
                 .inheritanceModes(InheritanceModeOptions.defaults())
                 .analysisMode(AnalysisMode.FULL)
@@ -93,6 +97,7 @@ class AnalysisProtoBuilderTest {
                 .addPriorityScoreFilter(priorityType, minPriorityScore)
                 .addRegulatoryFeatureFilter()
                 .addFrequencyFilter(frequencyCutOff)
+                .addInheritanceFilter()
                 .build();
 
         Map<String, Float> inhertanceModeMaxFreqs = InheritanceModeOptions.defaults()
@@ -117,6 +122,8 @@ class AnalysisProtoBuilderTest {
                 phivePrioritiser,
                 priorityScoreFilter,
                 regulatoryFeatureFilter,
-                frequencyFilter)));
+                frequencyFilter,
+                inheritanceFilter
+        )));
     }
 }

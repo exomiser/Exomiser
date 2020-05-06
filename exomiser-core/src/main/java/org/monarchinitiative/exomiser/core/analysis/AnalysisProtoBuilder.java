@@ -220,9 +220,9 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
             logger.info("Not adding an inheritance filter for undefined mode of inheritance");
             return this;
         }
-        FiltersProto.InheritanceFilter.Builder inheritanceFilterBuilder = FiltersProto.InheritanceFilter.newBuilder();
-        inheritanceModeOptions.getDefinedModes()
-                .forEach(modeOfInheritance -> inheritanceFilterBuilder.addInheritanceModes(modeOfInheritance.toString()));
+//        FiltersProto.InheritanceFilter.Builder inheritanceFilterBuilder = FiltersProto.InheritanceFilter.newBuilder();
+//        inheritanceModeOptions.getDefinedModes()
+//                .forEach(modeOfInheritance -> inheritanceFilterBuilder.addInheritanceModes(modeOfInheritance.toString()));
 //        builder.addSteps(stepBuilder().setInheritanceFilter(inheritanceFilterBuilder));
 
         builder.addSteps(stepBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.getDefaultInstance()));
