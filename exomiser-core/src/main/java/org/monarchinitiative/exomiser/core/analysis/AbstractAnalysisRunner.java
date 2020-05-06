@@ -96,8 +96,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         Map<String, Gene> allGenes = makeKnownGenes();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
         FilterStats filterStats = new FilterStats();
-//        some kind of multi-map with ordered duplicate keys would allow for easy grouping of steps for running the groups together.
-        List<List<AnalysisStep>> analysisStepGroups = analysis.getAnalysisStepsGroupedByFunction();
+
+        // TODO: there needs to be some logic to distinguish samples with (vfc only || hpo + vcf || hpo only) alternatively,
+        //  just expose the hpo-only analysis in the cli
+        // TODO: might also be easier to work with returning a list of Genes from this which may/may not contain variants.
         boolean variantsLoaded = false;
         List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
         for (AnalysisGroup analysisGroup : analysisStepGroups) {
@@ -204,7 +206,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return new GeneReassigner(mainPriorityType, allGenes, tadIndex);
     }
 
-    private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
+    // TODO: might be worth pulling out into an AnalysisSupport class
+    private List<VariantFilter> prepareVariantFilterSteps(Analysis analysis, AnalysisGroup analysisGroup) {
         logger.info("Filtering variants with:");
         List<VariantFilter> list = new ArrayList<>();
         for (AnalysisStep analysisStep : analysisGroup.getAnalysisSteps()) {
