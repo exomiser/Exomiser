@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -145,85 +146,111 @@ public class JsonResultsWriterTest {
 
     @Test
     public void writeToStringPassOnlyAutosomalDominant() throws Exception {
+        Sample sample = Sample.builder().build();
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
+        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, outputSettings);
+        System.out.println(result);
         String expected = readFromFile("src/test/resources/writers/contributing_only_autosomal_dominant_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
     public void writeToStringPassOnlyAnyModeOfInheritance() throws Exception {
-        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        Sample sample = Sample.builder().build();
+        Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.PASS_ONLY)
+                .build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
     public void writeToStringFullAnalysisAnyModeOfInheritanceAllVariants() throws Exception {
+        Sample sample = Sample.builder().build();
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(false).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/full_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
     public void writeToStringFullAnalysisNoModeOfInheritanceMatchAllVariants() throws Exception {
+        Sample sample = Sample.builder().build();
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(false).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
         //we have no MITOCHONDRIAL matches in the results set
-        String result = instance.writeString(ModeOfInheritance.MITOCHONDRIAL, analysis, analysisResults, outputSettings);
+        String result = instance.writeString(ModeOfInheritance.MITOCHONDRIAL, analysisResults, outputSettings);
         String expected = "[]";
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
     public void writeToStringFullAnalysisAnyModeOfInheritancePassOnlyVariants() throws Exception {
+        Sample sample = Sample.builder().build();
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
 
     @Test
     public void writeToFileOutputFullAnyModeOfInheritancePassOnlyVariants() throws IOException {
+        Sample sample = Sample.builder().build();
         Analysis analysis = this.analysisBuilder.analysisMode(AnalysisMode.FULL).build();
-        AnalysisResults analysisResults = this.analysisResultsBuilder.build();
+        AnalysisResults analysisResults = this.analysisResultsBuilder
+                .sample(sample)
+                .analysis(analysis)
+                .build();
 
         Path outPath = Files.createTempFile("exomiser_test", "");
         OutputSettings outputSettings = settingsBuilder.outputPrefix(outPath + "testWrite").build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        instance.writeFile(ModeOfInheritance.ANY, analysis, analysisResults, outputSettings);
+        instance.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
         Path anyOutputPath = Paths.get(outPath + "testWrite.json");
         assertThat(anyOutputPath.toFile().exists(), is(true));
         assertThat(anyOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, outputSettings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysisResults, outputSettings);
         Path arOutputPath = Paths.get(outPath + "testWrite_AR.json");
         assertThat(arOutputPath.toFile().exists(), is(true));
         assertThat(arOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, outputSettings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, outputSettings);
         Path adOutputPath = Paths.get(outPath + "testWrite_AD.json");
         assertThat(adOutputPath.toFile().exists(), is(true));
         assertThat(adOutputPath.toFile().delete(), is(true));

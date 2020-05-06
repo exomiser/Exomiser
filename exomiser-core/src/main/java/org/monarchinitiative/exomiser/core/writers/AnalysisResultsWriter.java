@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -43,22 +44,33 @@ public class AnalysisResultsWriter {
     private AnalysisResultsWriter() {
     }
 
-    public static void writeToFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    /**
+     * @param analysisResults
+     * @param outputOptions
+     * @since 13.0.0
+     */
+    public static void writeToFile(AnalysisResults analysisResults, OutputProto.OutputOptions outputOptions) {
+        OutputSettings outputSettings = new OutputSettingsProtoConverter().toDomain(outputOptions);
+        writeToFile(analysisResults, outputSettings);
+    }
+
+    public static void writeToFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         ResultsWriterFactory resultsWriterFactory = new ResultsWriterFactory();
         logger.info("Writing results...");
 
         Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
         for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
             if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {
-                writeResultsToFileForMoiWithFormat(ModeOfInheritance.ANY, outputFormat, analysis, analysisResults, outputSettings, resultsWriterFactory);
+                writeResultsToFileForMoiWithFormat(ModeOfInheritance.ANY, outputFormat, analysisResults, outputSettings, resultsWriterFactory);
             } else {
                 outputFormatsForAnyMoi.add(outputFormat);
             }
         }
 
+        Analysis analysis = analysisResults.getAnalysis();
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
         if (inheritanceModeOptions.isEmpty()) {
-            writeForInheritanceMode(ModeOfInheritance.ANY, outputFormatsForAnyMoi, analysis, analysisResults, outputSettings, resultsWriterFactory);
+            writeForInheritanceMode(ModeOfInheritance.ANY, outputFormatsForAnyMoi, analysisResults, outputSettings, resultsWriterFactory);
         } else {
             for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
                 logger.debug("Writing {} results:", modeOfInheritance);
@@ -67,19 +79,19 @@ public class AnalysisResultsWriter {
                 // without interfering with other writes for different modes. Check RAM requirements.
                 // Will only save a few seconds, so is not a rate-limiting step.
                 analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
-                writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysis, analysisResults, outputSettings, resultsWriterFactory);
+                writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysisResults, outputSettings, resultsWriterFactory);
             }
         }
     }
 
-    private static void writeForInheritanceMode(ModeOfInheritance modeOfInheritance, Set<OutputFormat> outputFormats, Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
+    private static void writeForInheritanceMode(ModeOfInheritance modeOfInheritance, Set<OutputFormat> outputFormats, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
         for (OutputFormat outFormat : outputFormats) {
-            writeResultsToFileForMoiWithFormat(modeOfInheritance, outFormat, analysis, analysisResults, outputSettings, resultsWriterFactory);
+            writeResultsToFileForMoiWithFormat(modeOfInheritance, outFormat, analysisResults, outputSettings, resultsWriterFactory);
         }
     }
 
-    private static void writeResultsToFileForMoiWithFormat(ModeOfInheritance modeOfInheritance, OutputFormat outputFormat, Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
+    private static void writeResultsToFileForMoiWithFormat(ModeOfInheritance modeOfInheritance, OutputFormat outputFormat, AnalysisResults analysisResults, OutputSettings outputSettings, ResultsWriterFactory resultsWriterFactory) {
         ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outputFormat);
-        resultsWriter.writeFile(modeOfInheritance, analysis, analysisResults, outputSettings);
+        resultsWriter.writeFile(modeOfInheritance, analysisResults, outputSettings);
     }
 }

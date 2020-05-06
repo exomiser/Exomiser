@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,8 +28,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
@@ -89,8 +89,9 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        Sample sample = analysisResults.getSample();
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
             writeData(modeOfInheritance, analysisResults, printer);
@@ -101,7 +102,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(stringBuilder, format)) {
             writeData(modeOfInheritance, analysisResults, printer);

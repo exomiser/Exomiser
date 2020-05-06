@@ -24,8 +24,8 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
@@ -75,11 +75,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        Sample sample = analysisResults.getSample();
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -87,17 +88,17 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(modeOfInheritance, analysis, analysisResults, settings.outputContributingVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}", output, ex);
         }
         return output.toString();
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults,
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults,
                            boolean writeOnlyContributingVariants, CSVPrinter printer) throws IOException {
         if (writeOnlyContributingVariants) {
             logger.debug("Writing out only CONTRIBUTING variants");

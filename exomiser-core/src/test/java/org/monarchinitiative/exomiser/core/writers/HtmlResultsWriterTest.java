@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
@@ -108,8 +109,10 @@ public class HtmlResultsWriterTest {
         unAnnotatedVariantEvaluation2 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30 , 1.0);
     }
 
-    private AnalysisResults buildAnalysisResults(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
+    private AnalysisResults buildAnalysisResults(Sample sample, Analysis analysis, List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         return AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
                 .sampleNames(Lists.newArrayList("Slartibartfast"))
                 .genes(genes)
                 .variantEvaluations(variantEvaluations)
@@ -118,16 +121,16 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithEmptyData() {
-
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), Collections.emptyList());
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
 
         String outputPrefix = testOutDir.resolve("testWriteTemplateWithEmptyData").toString();
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(outputPrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         Path testOutFile = Paths.get(outputPrefix + "_AD.html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
@@ -135,17 +138,18 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() {
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
-        AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), variants);
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), variants);
 
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantData").toString();
         OutputSettings settings = OutputSettings.builder()
                 .outputPrefix(testOutFilePrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix + "_AD.html");
         assertTrue(testOutFile.toFile().exists());
@@ -154,16 +158,17 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
-        AnalysisResults analysisResults = buildAnalysisResults(genes, variants);
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, genes, variants);
 
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.ANY, analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
 
         List<String> lines = Files.readAllLines(testOutFile);
@@ -176,19 +181,21 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithEmptyDataAndFullAnalysis() throws Exception {
 
-        AnalysisResults analysisResults = buildAnalysisResults(Collections.emptyList(), Collections.emptyList());
+        Sample sample = Sample.builder()
+                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .build();
 
         Analysis analysis = Analysis.builder()
-                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))
                 .addStep(new PathogenicityFilter(true))
                 .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
 
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
         assertFalse(output.isEmpty());
     }
 
@@ -199,19 +206,22 @@ public class HtmlResultsWriterTest {
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
-        AnalysisResults analysisResults = buildAnalysisResults(genes, variants);
+
+        Sample sample = Sample.builder()
+                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .build();
 
         Analysis analysis = Analysis.builder()
-                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))
                 .addStep(new PathogenicityFilter(true))
                 .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, genes, variants);
 
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
         assertTrue(output.contains("Exomiser Analysis Results for"));
         assertTrue(output.contains("FGFR2"));
         assertTrue(output.contains("SHH"));

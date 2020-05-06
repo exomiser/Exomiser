@@ -24,6 +24,8 @@ import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.proto.ProtoConverter;
 
+import java.util.stream.Collectors;
+
 /**
  * Class for inter-converting output settings/options between the domain and proto formats.
  *
@@ -41,8 +43,8 @@ public class OutputSettingsProtoConverter implements ProtoConverter<OutputSettin
                 .addAllOutputFormats(outputOptions
                         .getOutputFormats()
                         .stream()
-                        .map(outputFormat -> OutputProto.OutputFormat.valueOf(outputFormat.toString()))
-                        .collect(Sets.toImmutableEnumSet()))
+                        .map(OutputFormat::toString)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
@@ -54,7 +56,7 @@ public class OutputSettingsProtoConverter implements ProtoConverter<OutputSettin
                 .outputContributingVariantsOnly(outputOptions.getOutputContributingVariantsOnly())
                 .outputFormats(outputOptions
                         .getOutputFormatsList().stream()
-                        .map(format -> OutputFormat.parseFormat(format.toString()))
+                        .map(OutputFormat::parseFormat)
                         .collect(Sets.toImmutableEnumSet()))
                 .build();
     }

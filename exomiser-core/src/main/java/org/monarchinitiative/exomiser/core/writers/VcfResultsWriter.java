@@ -29,9 +29,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.vcf.*;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -110,11 +109,17 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+        Sample sample = analysisResults.getSample();
+        Path vcfPath = sample.getVcfPath();
+        if (vcfPath == null) {
+            logger.info("Skipping writing VCF results as no input VCF has been defined");
+            return;
+        }
+        String outFileName = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
-        VCFHeader vcfHeader = getVcfHeader(analysis);
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(
                 vcfHeader,
                 outFile.toString(),
@@ -125,19 +130,15 @@ public class VcfResultsWriter implements ResultsWriter {
         logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
 
-    private VCFHeader getVcfHeader(Analysis analysis) {
-        Path vcfPath = analysis.getVcfPath();
-        try {
-            return VcfFiles.readVcfHeader(vcfPath);
-        } catch (Exception e) {
-            logger.error("Unable to read vcf file - using empty header instead", e);
-        }
-        return new VCFHeader();
-    }
-
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(analysis.getVcfPath());
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        Sample sample = analysisResults.getSample();
+        Path vcfPath = sample.getVcfPath();
+        if (vcfPath == null) {
+            logger.info("Skipping writing VCF results as no input VCF has been defined. Returning empty string.");
+            return "";
+        }
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos, getAdditionalHeaderLines())) {
@@ -216,9 +217,8 @@ public class VcfResultsWriter implements ResultsWriter {
 
     /**
      * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
-     * Also simply using toString isn't an option as the compatible variants returned from the
-     * {@link InheritanceModeAnalyser#checkInheritanceCompatibilityOfPassedVariants(Gene)}
-     * are different instances and have had their genotype strings changed. This method solves these problems.
+     * Also simply using toString isn't an option as the compatible variants are different instances and have had their
+     * genotype strings changed. This method solves these problems.
      */
     private String variantContextKeyValue(VariantContext variantContext) {
         //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF

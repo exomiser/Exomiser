@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -53,10 +54,13 @@ public class JsonResultsWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.JSON;
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        Sample sample = analysisResults.getSample();
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
-        ObjectWriter objectWriter = new ObjectMapper().writer();
+        ObjectWriter objectWriter = new ObjectMapper()
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+                .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, bufferedWriter);
         } catch (IOException ex) {
@@ -67,7 +71,7 @@ public class JsonResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         //Add prettyPrintJson option to outputSettings?
         ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
@@ -84,7 +88,6 @@ public class JsonResultsWriter implements ResultsWriter {
 
     private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
         List<Gene> compatibleGenes = getCompatibleGene(modeOfInheritance, analysisResults.getGenes());
-
         if (writeOnlyContributingVariants) {
             logger.debug("Writing out only CONTRIBUTING variants");
             List<Gene> passedGenes = makePassedGenes(modeOfInheritance, compatibleGenes);

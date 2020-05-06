@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,13 +26,20 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.api.v1.OutputProto;
+import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.Job;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -43,6 +50,7 @@ import org.thymeleaf.context.Context;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,12 +75,13 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
-        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+        Sample sample = analysisResults.getSample();
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            Context context = buildContext(modeOfInheritance, analysis, analysisResults, settings);
+            Context context = buildContext(modeOfInheritance, analysisResults, settings);
             templateEngine.process("results", context, writer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
@@ -81,29 +90,38 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
-        Context context = buildContext(modeOfInheritance, analysis, analysisResults, settings);
+        Context context = buildContext(modeOfInheritance, analysisResults, settings);
         return templateEngine.process("results", context);
     }
 
-    private Context buildContext(ModeOfInheritance modeOfInheritance, Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+    private Context buildContext(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         Context context = new Context();
+
+        Analysis analysis = analysisResults.getAnalysis();
+        Sample sample = analysisResults.getSample();
+
         //write the settings
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        //required for correct output of Path types
-        mapper.registerModule(new Jdk7Module());
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        StringBuilder jsonSettings = new StringBuilder();
-        try {
-            jsonSettings.append(mapper.writeValueAsString(analysis));
-            jsonSettings.append(mapper.writeValueAsString(settings));
-        } catch (JsonProcessingException ex) {
-            logger.error("Unable to process JSON settings", ex);
-        }
-        context.setVariable("settings", jsonSettings.toString());
+//        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+//        //required for correct output of Path types
+//        mapper.registerModule(new Jdk7Module());
+//        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+//        //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
+//        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        StringWriter jsonSettings = new StringWriter();
+        Job job = Job.builder().sample(sample).analysis(analysis).outputOptions(settings).build();
+
+        String yamlString = toYamlJobString(sample, analysis, settings);
+        context.setVariable("settings", yamlString);
+
+//        try {
+//            mapper.writeValue(jsonSettings, job);
+//        } catch (Exception ex) {
+//            logger.error("Unable to process JSON settings", ex);
+//        }
+//        context.setVariable("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
@@ -117,8 +135,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults
                 .getVariantEvaluations());
         String sampleName = "Anonymous";
-        if (!analysis.getProbandSampleName().isEmpty()) {
-            sampleName = analysis.getProbandSampleName();
+        if (!sample.getProbandSampleName().isEmpty()) {
+            sampleName = sample.getProbandSampleName();
         }
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
@@ -135,6 +153,27 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("transcriptDb", "ENSEMBL");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return context;
+    }
+
+    String toYamlJobString(Sample sample, Analysis analysis, OutputSettings outputSettings) {
+        SampleProto.Sample protoSample = new SampleProtoConverter().toProto(sample);
+        // TODO: AnalysisProtoConverter().toProto(analysis) ?
+        OutputProto.OutputOptions protoOutputOptions = new OutputSettingsProtoConverter().toProto(outputSettings);
+
+        JobProto.Job protoJob = JobProto.Job.newBuilder()
+                .setSample(protoSample)
+//                .setAnalysis(protoAnalysis)
+                .setOutputOptions(protoOutputOptions)
+                .build();
+
+        try {
+            String jsonString = JsonFormat.printer().print(protoJob);
+            JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
+            return new YAMLMapper().writeValueAsString(jsonNodeTree);
+        } catch (InvalidProtocolBufferException | JsonProcessingException e) {
+            logger.error("Unable to process JSON settings", e);
+        }
+        return "";
     }
 
 }

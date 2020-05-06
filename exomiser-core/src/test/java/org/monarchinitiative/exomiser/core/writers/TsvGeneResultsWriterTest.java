@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
@@ -69,7 +70,7 @@ public class TsvGeneResultsWriterTest {
             .add("MOUSE_PPI_EVIDENCE")
             .add("FISH_PPI_EVIDENCE\n")
             .toString();
-    
+
     private static final String FGFR2_GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
     private static final String RBM8A_GENE_STRING = "RBM8A	9939	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
 
@@ -77,14 +78,19 @@ public class TsvGeneResultsWriterTest {
 
     private AnalysisResults analysisResults;
     private Analysis analysis = Analysis.builder().build();
-    
+    private Sample sample = Sample.builder().build();
+
     @BeforeEach
     public void setUp() {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         Gene rbm8a = TestFactory.newGeneRBM8A();
         rbm8a.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        analysisResults = AnalysisResults.builder().genes(Arrays.asList(fgfr2, rbm8a)).build();
+        analysisResults = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
+                .genes(Arrays.asList(fgfr2, rbm8a))
+                .build();
     }
 
     @Test
@@ -97,7 +103,7 @@ public class TsvGeneResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
 
         Path outputPath = tempFolder.resolve("testWrite_AD.genes.tsv");
         assertThat(outputPath.toFile().exists(), is(true));
@@ -110,7 +116,7 @@ public class TsvGeneResultsWriterTest {
         OutputSettings settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         assertThat(outString, equalTo(HEADER + FGFR2_GENE_STRING + RBM8A_GENE_STRING));
     }
 
@@ -119,7 +125,7 @@ public class TsvGeneResultsWriterTest {
         OutputSettings settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));
     }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -93,6 +94,7 @@ public class TsvVariantResultsWriterTest {
     private final Builder settingsBuilder = OutputSettings.builder()
             .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
     private final Analysis analysis = Analysis.builder().build();
+    private final Sample sample = Sample.builder().build();
     private AnalysisResults analysisResults;
 
     @BeforeEach
@@ -104,6 +106,8 @@ public class TsvVariantResultsWriterTest {
         shh.addVariant(makeFailVariant());
 
         analysisResults = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
                 .genes(Arrays.asList(fgfr2, shh))
                 .build();
     }
@@ -134,12 +138,12 @@ public class TsvVariantResultsWriterTest {
         String outPrefix = tempFolder.resolve("testWrite").toString();
 
         OutputSettings settings = settingsBuilder.outputPrefix(outPrefix).build();
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysisResults, settings);
         Path arOutputPath = tempFolder.resolve("testWrite_AR.variants.tsv");
         assertThat(arOutputPath.toFile().exists(), is(true));
         assertThat(arOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         Path adOutputPath = tempFolder.resolve("testWrite_AD.variants.tsv");
         assertThat(adOutputPath.toFile().exists(), is(true));
         assertThat(adOutputPath.toFile().delete(), is(true));
@@ -151,7 +155,7 @@ public class TsvVariantResultsWriterTest {
     public void testWriteStringUnderAnyInheritanceModeContainsAllVariants() {
         OutputSettings settings = settingsBuilder.build();
 
-        String outString = instance.writeString(ModeOfInheritance.ANY, analysis, analysisResults, settings);
+        String outString = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
@@ -183,10 +187,12 @@ public class TsvVariantResultsWriterTest {
         fgfr2.addGeneScore(geneScore);
 
         AnalysisResults results = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, results, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, results, settings);
         String expected = HEADER
                 + CONTRIBUTING_VARIANT_LINE;
         assertThat(outString, equalTo(expected));
@@ -217,10 +223,12 @@ public class TsvVariantResultsWriterTest {
         fgfr2.addGeneScore(geneScore);
 
         AnalysisResults results = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysis, results, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_RECESSIVE, results, settings);
         String expected = HEADER;
         assertThat(outString, equalTo(expected));
     }
@@ -237,10 +245,12 @@ public class TsvVariantResultsWriterTest {
         fgfr2.addVariant(contributing);
 
         AnalysisResults results = AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysis, results, settings);
+        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, results, settings);
         String expected = HEADER +
                 CONTRIBUTING_VARIANT_LINE;
         assertThat(outString, equalTo(expected));

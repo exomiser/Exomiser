@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,10 @@ package org.monarchinitiative.exomiser.core.writers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -35,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -57,10 +60,14 @@ public class AnalysisResultsWriterTest {
         Files.delete(tempFile);
     }
 
-    private AnalysisResults newAnalysisResults() {
+    private AnalysisResults newAnalysisResults(Sample sample, Analysis analysis) {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         Gene rbm8a = TestFactory.newGeneRBM8A();
-        return AnalysisResults.builder().genes(Arrays.asList(fgfr2, rbm8a)).build();
+        return AnalysisResults.builder()
+                .sample(sample)
+                .analysis(analysis)
+                .genes(Arrays.asList(fgfr2, rbm8a))
+                .build();
     }
 
     @Test
@@ -72,11 +79,14 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.HTML, OutputFormat.VCF))
                 .build();
 
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
+                .build();
+
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         //HTML writer is a special case where it presents a combined view of the results
         Path htmlOutputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
@@ -102,11 +112,14 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.HTML, OutputFormat.VCF))
                 .build();
 
-        Analysis analysis = Analysis.builder()
+        Sample sample = Sample.builder()
                 .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
+                .build();
+
+        Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.empty())
                 .build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : Arrays.asList(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF)) {
             Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
@@ -124,8 +137,9 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.HTML))
                 .build();
 
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
@@ -141,8 +155,9 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.JSON))
                 .build();
 
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
@@ -159,8 +174,9 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(singleFileFormats)
                 .build();
 
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : singleFileFormats) {
             Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
@@ -170,7 +186,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileDoesNotOutputsSingleHtmlFileIfAbsentFromSettings() throws Exception {
+    public void testWriteToFileDoesNotOutputSingleHtmlFileIfAbsentFromSettings() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -178,10 +194,31 @@ public class AnalysisResultsWriterTest {
                 .outputFormats(EnumSet.noneOf(OutputFormat.class))
                 .build();
 
+        Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        AnalysisResultsWriter.writeToFile(analysis, newAnalysisResults(), settings);
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
         assertThat(outputPath.toFile().exists(), is(false));
+    }
+
+    @Test
+    public void testWriteToFileWithOutputOptions() {
+        String outputPrefix = tempFile.toString();
+
+        OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
+                .setOutputPrefix(outputPrefix)
+                .addAllOutputFormats(List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString()))
+                .build();
+
+        Sample sample = Sample.builder().build();
+        Analysis analysis = Analysis.builder().build();
+        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), outputOptions);
+
+        for (OutputFormat outputFormat : EnumSet.of(OutputFormat.HTML, OutputFormat.JSON)) {
+            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
+            assertThat(outputPath.toFile().exists(), is(true));
+            assertThat(outputPath.toFile().delete(), is(true));
+        }
     }
 }
