@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AnalysisBuilder {
+public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisBuilder.class);
 
@@ -71,6 +71,9 @@ public class AnalysisBuilder {
         this.builder = Analysis.builder();
     }
 
+    // TODO: Should this be building an AnalysisProto (rename to Analysis), then the AnalysisProto is wrapped in an AnalysisRunnerSupport?
+    //  alternatively the AnalysisParser could be used for creating a RunnableAnalysis which has all the decorated filters and so on ready to roll
+    //  i.e. rename the current Analysis to Job and split into Sample and Analysis
     public Analysis build() {
         new AnalysisStepChecker().check(analysisSteps);
         builder.steps(analysisSteps);
