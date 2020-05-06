@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.monarchinitiative.exomiser.web.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -33,6 +32,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
@@ -59,6 +59,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -157,8 +158,9 @@ public class SubmitJobController {
             logger.info("{} contains {} variants - within set limit of {}", vcfPath, numVariantsInSample, maxVariants);
         }
 
-        Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
-        AnalysisResults analysisResults = exomiser.run(analysis);
+        Sample sample = buildSample(vcfPath, pedPath, proband, phenotypes);
+        Analysis analysis = buildAnalysis(geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
+        AnalysisResults analysisResults = exomiser.run(sample, analysis);
 
 //        writeResultsToFile(analysisId, analysis, analysisResults);
 
@@ -168,6 +170,16 @@ public class SubmitJobController {
         return "results";
     }
 
+    private Sample buildSample(Path vcfPath, Path pedPath, String proband, List<String> phenotypes) {
+        return Sample.builder()
+                .genomeAssembly(GenomeAssembly.HG19)
+                .vcfPath(vcfPath)
+                .pedigree((pedPath == null) ? Pedigree.empty() : PedFiles.readPedigree(pedPath))
+                .probandSampleName(proband)
+                .hpoIds(phenotypes)
+                .build();
+    }
+
     private List<String> getDiseasePhenotypes(String diseaseId) {
         if (diseaseId == null || diseaseId.isEmpty()) {
             return Collections.emptyList();
@@ -175,16 +187,12 @@ public class SubmitJobController {
         return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
         AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder()
                 .analysisMode(AnalysisMode.PASS_ONLY)
-                .genomeAssembly(GenomeAssembly.HG19)
-                .vcfPath(vcfPath)
-                .pedigree((pedPath == null) ? Pedigree.empty() : PedFiles.readPedigree(pedPath))
-                .probandSampleName(proband)
-                .hpoIds(phenotypes)
-                .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY"))? InheritanceModeOptions.defaults() : InheritanceModeOptions.defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
+                .inheritanceModes((modeOfInheritance.equalsIgnoreCase("ANY")) ? InheritanceModeOptions.defaults() : InheritanceModeOptions
+                        .defaultForModes(ModeOfInheritance.valueOf(modeOfInheritance)))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN));
 
@@ -221,7 +229,7 @@ public class SubmitJobController {
             analysisBuilder.addKnownVariantFilter();
         }
         //Maximum minor allele frequency:
-        analysisBuilder.addFrequencyFilter(Float.valueOf(frequency));
+        analysisBuilder.addFrequencyFilter(Float.parseFloat(frequency));
         //Keep non-pathogenic variants:
         analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
     }
@@ -240,7 +248,7 @@ public class SubmitJobController {
         }
     }
 
-    private void writeResultsToFile(UUID analysisId, Analysis analysis, AnalysisResults analysisResults) {
+    private void writeResultsToFile(UUID analysisId, AnalysisResults analysisResults) {
         Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
         try {
             Files.createDirectory(outputDir);
@@ -256,7 +264,7 @@ public class SubmitJobController {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.JSON))
                 .build();
 
-        AnalysisResultsWriter.writeToFile(analysis, analysisResults, outputSettings);
+        AnalysisResultsWriter.writeToFile(analysisResults, outputSettings);
     }
 
     private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {
@@ -265,13 +273,14 @@ public class SubmitJobController {
         mapper.registerModule(new Jdk7Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        String jsonSettings = "";
+        StringWriter jsonSettings = new StringWriter();
         try {
-            jsonSettings = mapper.writeValueAsString(analysis);
-        } catch (JsonProcessingException ex) {
+            mapper.writeValue(jsonSettings, analysisResults.getSample());
+            mapper.writeValue(jsonSettings, analysisResults.getAnalysis());
+        } catch (Exception ex) {
             logger.error("Unable to process JSON settings", ex);
         }
-        model.addAttribute("settings", jsonSettings);
+        model.addAttribute("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
