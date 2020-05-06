@@ -31,6 +31,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -537,6 +538,7 @@ public class AnalysisParserTest {
 //        );
     }
 
+    @Disabled("Non-functional in proto version")
     @Test
     public void testParseAnalysisStepWalkerPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}"));
