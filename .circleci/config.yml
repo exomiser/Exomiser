@@ -23,8 +23,9 @@ jobs:
       - run: ./mvnw sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$SONAR_TOKEN \
-          -Dsonar.organization=org.monarchinitiative.exomiser \
-        #-Dsonar.projectKey=org.monarchinitiative.exomiser:Exomiser \
+          -Dsonar.organization=exomiser \
+          -Dsonar.projectKey=exomiser_Exomiser \
+      #          -Dsonar.projectKey=org.monarchinitiative.exomiser:Exomiser \
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
