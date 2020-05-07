@@ -85,7 +85,7 @@ public class ClinVarWhiteListBuildRunner {
             AlleleIndexer alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter, blacklist);
             alleleIndexer.index(clinVarAlleleResource);
         } catch (IOException e) {
-            logger.error("Unable to write bgzip. {}", e);
+            logger.error("Unable to write whitelist to bgzip.", e);
         }
 
         // use HTSJDK to create tabix index...
@@ -94,7 +94,7 @@ public class ClinVarWhiteListBuildRunner {
             TabixIndex index = IndexFactory.createTabixIndex(whiteListBgZipPath.toFile(), new ExomiserTabixCodec(), null);
             index.write(whiteListIndexPath);
         } catch (IOException e) {
-            logger.error("Unable to write tabix index. {}", e);
+            logger.error("Unable to write whitelist tabix index.", e);
         }
     }
 
