@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ public class HgvsUtil {
     private HgvsUtil() {
     }
 
-    public static String toHgvs(Variant variant) {
+    public static String toHgvsGenomic(Variant variant) {
         // order is important here as some variants can fit into more than one category:
         // When a description is possible according to several types, the preferred description is:
         //   (1) deletion, (2) inversion, (3) duplication, (4) conversion, (5) insertion.
