@@ -27,7 +27,6 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-
 public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     final GenomeAssembly genomeAssembly;
@@ -77,7 +76,12 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     private int calculateLength(int length, String ref, String alt) {
         if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
-            return (alt.length() - ref.length());
+            // SNP/MNV
+            if (ref.length() == alt.length()) {
+                return ref.length();
+            }
+            // InDel
+            return Math.abs(alt.length() - ref.length());
         }
         return length;
     }
