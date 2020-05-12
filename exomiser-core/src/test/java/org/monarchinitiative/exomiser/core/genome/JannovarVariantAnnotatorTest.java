@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -82,7 +82,7 @@ public class JannovarVariantAnnotatorTest {
         TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(Integer.MIN_VALUE));
+        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
         assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.12278533A>C"));
         assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.1694A>C"));
         assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Glu565Ala)"));
@@ -109,7 +109,7 @@ public class JannovarVariantAnnotatorTest {
         TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(Integer.MIN_VALUE));
+        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
         assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.12291429A>C"));
         assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.2196-2A>C"));
         assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.?"));
