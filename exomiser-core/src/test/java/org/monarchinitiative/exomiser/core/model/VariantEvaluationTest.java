@@ -847,14 +847,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
@@ -970,7 +970,7 @@ public class VariantEvaluationTest {
     void testLengthUsesAllelesIfNotSetSnp() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "T")
                 .build();
-        assertThat(zero.getLength(), equalTo(1));
+        assertThat(zero.getLength(), equalTo(0));
     }
 
     @Test
@@ -984,14 +984,14 @@ public class VariantEvaluationTest {
     void testLengthUsesAllelesIfNotSetDeletion() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "CTA", "T")
                 .build();
-        assertThat(zero.getLength(), equalTo(2));
+        assertThat(zero.getLength(), equalTo(-2));
     }
 
     @Test
     void testLengthUsesAllelesIfNotSetMnv() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "CTA", "TCG")
                 .build();
-        assertThat(zero.getLength(), equalTo(3));
+        assertThat(zero.getLength(), equalTo(0));
     }
 
     @Test

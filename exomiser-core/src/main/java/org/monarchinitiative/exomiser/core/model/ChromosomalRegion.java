@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -59,8 +59,15 @@ public interface ChromosomalRegion {
         return getEnd();
     }
 
+    /**
+     * Returns the length of the variation, as in the VCF 4.3 specification for SVLEN which is defined as the "Difference
+     * in length between REF and ALT alleles".
+     *
+     * @return a positive integer for an insertion, negative for a deletion or zero for a SNP or MNV
+     * @since 13.0.0
+     */
     default int getLength() {
-        return (getEnd() - getStart()) + 1;
+        return getEnd() - getStart();
     }
 
     public static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {

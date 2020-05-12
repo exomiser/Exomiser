@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,14 +74,11 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         this.structuralType = builder.structuralType;
     }
 
+    // This is defined in VCF 4.3 as:
+    // #INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
     private int calculateLength(int length, String ref, String alt) {
         if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
-            // SNP/MNV
-            if (ref.length() == alt.length()) {
-                return ref.length();
-            }
-            // InDel
-            return Math.abs(alt.length() - ref.length());
+            return alt.length() - ref.length();
         }
         return length;
     }
@@ -137,7 +134,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
 
-    //no endChromosomeName/Contig???
+    // TODO: no endChromosomeName/Contig???
 
     @Override
     public int getEndChromosome() {
