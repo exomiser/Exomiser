@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,13 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,30 +63,32 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         setPhenotypeEvidenceScores(phenotypeEvidence);
 
         this.phenotypeEvidence = phenotypeEvidence;
+        this.phenotypeEvidence.sort(Comparator.comparing(GeneModelPhenotypeMatch::getScore).reversed());
+
         this.ppiEvidence = ppiEvidence;
         this.ppiScore = ppiScore;
-        
+
         this.candidateGeneMatch = candidateGeneMatch;
     }
 
     private void setPhenotypeEvidenceScores(List<GeneModelPhenotypeMatch> phenotypeEvidence) {
         if (phenotypeEvidence != null) {
-            for (GeneModelPhenotypeMatch model : phenotypeEvidence) {
-                switch (model.getOrganism()) {
-                    case HUMAN:
-                        humanScore = model.getScore();
-                        break;
-                    case MOUSE:
-                        mouseScore = model.getScore();
-                        break;
-                    case FISH:
-                        fishScore = model.getScore();
-                        break;
-                }
-            }
+            humanScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.HUMAN);
+            mouseScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.MOUSE);
+            fishScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.FISH);
         }
     }
 
+    private double getMaxScoreForOrganism(List<GeneModelPhenotypeMatch> phenotypeEvidence, Organism organism) {
+        double best = 0;
+        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence) {
+            if (geneModelPhenotypeMatch.getOrganism() == organism) {
+                double matchScore = geneModelPhenotypeMatch.getScore();
+                best = Math.max(matchScore, best);
+            }
+        }
+        return best;
+    }
 
     @Override
     public String getGeneSymbol() {

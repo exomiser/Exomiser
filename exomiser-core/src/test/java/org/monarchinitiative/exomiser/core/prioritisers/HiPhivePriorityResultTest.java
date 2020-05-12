@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -110,7 +110,7 @@ public class HiPhivePriorityResultTest {
     public void testGetHumanScoreIsZeroWithNoDiseaseEvidence() {
         assertThat(instance.getHumanScore(), equalTo(0d));
     }
-    
+
     @Test
     public void testGetHumanScoreMatchesModelScore() {
         double modelScore = 1d;
@@ -120,6 +120,20 @@ public class HiPhivePriorityResultTest {
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
         assertThat(instance.getHumanScore(), equalTo(modelScore));
+    }
+
+    @Test
+    public void testGetHumanScoreMatchesTopModelScore() {
+        double modelScore = 1d;
+        GeneModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, modelScore);
+        GeneModelPhenotypeMatch poorMatchModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, 0.5);
+
+        // note these are provided with the worst score first to test that the HiPhivePriorityResult orders things internally
+        List<GeneModelPhenotypeMatch> models = Arrays.asList(poorMatchModel, geneModel);
+        instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
+
+        assertThat(instance.getHumanScore(), equalTo(modelScore));
+        assertThat(instance.getPhenotypeEvidence(), equalTo(List.of(geneModel, poorMatchModel)));
     }
 
     @Test
