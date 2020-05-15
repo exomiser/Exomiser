@@ -32,10 +32,10 @@ import java.util.*;
 /**
  * Class for specifying HiPhive options. These can trigger benchmarking mode or allow specification of
  * which organism to run against and whether or not to run against the PPI matrix.
- *
+ * <p>
  * Valid run parameters are 'human', 'mouse', 'fish', 'ppi'. Combinations must be comma separated, for example
  * 'human,fish,ppi' will only run the genes against human and fish phenotypes and the ppi matrix.
- *
+ * <p>
  * Both the diseaseId and the candidate gene symbol must be valid in order to trigger benchmarking mode. When these are
  * specified the relevant models will be removed from the result set.
  *
@@ -115,32 +115,46 @@ public class HiPhiveOptions {
         return runHuman;
     }
 
-    public boolean isBenchmarkHit(GeneModel model) {
+    /**
+     * Tests whether of not the {@link GeneModel} is a benchmarking model. This method takes into account whether or not
+     * the instance is benchmarkingEnabled so clients do not need to check this first.
+     *
+     * @param geneModel the {@link GeneModel} to be tested
+     * @return true if the {@link GeneModel} matches either the disease or gene specified in the options. Will return
+     * false if the instance is not benchmarkingEnabled.
+     * @since 13.0.0
+     */
+    public boolean isBenchmarkingModel(GeneModel geneModel) {
+        return benchmarkingEnabled && isBenchmarkHit(geneModel);
+    }
+
+    private boolean isBenchmarkHit(GeneModel model) {
         return matchesDisease(model) && matchesCandidateGeneSymbol(model);
     }
 
     private boolean matchesCandidateGeneSymbol(GeneModel model) {
-        return model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol().equals(candidateGeneSymbol);
+        return model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol()
+                .equals(candidateGeneSymbol);
     }
 
     private boolean matchesDisease(Model model) {
         // human model ID is now disease plus entrezgene to ensure uniqueness in HiPhive code
-        return model.getId() == null ? diseaseId  == null : model.getId().split("_")[0].equals(diseaseId);
+        return model.getId() == null ? diseaseId == null : model.getId().split("_")[0].equals(diseaseId);
     }
 
     public Set<Organism> getOrganismsToRun() {
         List<Organism> organismsToRun = new ArrayList<>();
-        if (runHuman){
+        if (runHuman) {
             organismsToRun.add(Organism.HUMAN);
         }
-        if(runMouse) {
+        if (runMouse) {
             organismsToRun.add(Organism.MOUSE);
         }
         if (runFish) {
             organismsToRun.add(Organism.FISH);
         }
 
-        if(organismsToRun.isEmpty()) {
+        if (organismsToRun.isEmpty()) {
             return Collections.emptySet();
         }
         return Sets.immutableEnumSet(organismsToRun);
@@ -227,11 +241,13 @@ public class HiPhiveOptions {
         private boolean runFish = true;
 
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Parses the runParams to determine what needs running. By default all options are enabled. Expects a comma-separated list of parameters. For example
          * 'human,mouse,fish,ppi' is equivalent to the default, 'human,mouse' will only run HiPhive against human and mouse models.
+         *
          * @param runParams
          * @return
          */

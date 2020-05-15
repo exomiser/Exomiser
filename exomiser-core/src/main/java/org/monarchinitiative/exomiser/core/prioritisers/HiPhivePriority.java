@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
@@ -138,12 +139,14 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
         if (bestQueryPhenotypeMatch.getBestPhenotypeMatches().isEmpty()) {
             logger.warn("{} has no phenotype matches for input set {}", bestQueryPhenotypeMatch, hpoPhenotypeTerms);
         }
-        List<PhenotypeMatcher> bestOrganismPhenotypeMatches = getBestOrganismPhenotypeMatches(hpoPhenotypeTerms, referenceOrganismPhenotypeMatcher, organismsToCompare);
+        List<PhenotypeMatcher> phenotypeMatchers = getBestOrganismPhenotypeMatches(hpoPhenotypeTerms, referenceOrganismPhenotypeMatcher, organismsToCompare);
 
         ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
-        for (PhenotypeMatcher organismPhenotypeMatcher : bestOrganismPhenotypeMatches) {
+        for (PhenotypeMatcher organismPhenotypeMatcher : phenotypeMatchers) {
             Set<GeneModel> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatcher.getOrganism())
                     .stream()
+                    // remove known disease-gene models for purposes of benchmarking i.e to simulate novel gene discovery performance
+                    .filter(removeBenchmarkingModels())
                     .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
                     .collect(toSet());
 
@@ -153,6 +156,10 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
         }
 
         return bestGeneModels;
+    }
+
+    private Predicate<GeneModel> removeBenchmarkingModels() {
+        return geneModel -> !options.isBenchmarkingModel(geneModel);
     }
 
     private List<PhenotypeMatcher> getBestOrganismPhenotypeMatches(List<PhenotypeTerm> hpoPhenotypeTerms, PhenotypeMatcher referenceOrganismPhenotypeMatcher, Set<Organism> organismsToCompare) {
@@ -178,15 +185,6 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
     }
 
     private Stream<Optional<GeneModelPhenotypeMatch>> getBestModelsByGene(List<GeneModelPhenotypeMatch> organismModels) {
-        if (options.isBenchmarkingEnabled()) {
-            return organismModels.parallelStream()
-                    .filter(model -> model.getScore() > 0)
-                    // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
-                    .filter(model -> !options.isBenchmarkHit(model))
-                    .collect(groupingByConcurrent(GeneModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::getScore))))
-                    .values()
-                    .stream();
-        }
         return organismModels.parallelStream()
                 .filter(model -> model.getScore() > 0)
                 .collect(groupingByConcurrent(GeneModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::getScore))))

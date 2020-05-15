@@ -56,7 +56,7 @@ public class HiPhiveOptionsTest {
     @Test
     public void testReturnsFalseWithDefaultConstructor() {
         HiPhiveOptions instance = HiPhiveOptions.builder().build();
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -189,7 +189,7 @@ public class HiPhiveOptionsTest {
                 .candidateGeneSymbol(candidateGeneSymbol)
                 .diseaseId(diseaseId)
                 .build();
-        assertThat(instance.isBenchmarkHit(model), is(true));
+        assertThat(instance.isBenchmarkingModel(model), is(true));
     }
 
     @Test
@@ -204,7 +204,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(true));
+        assertThat(instance.isBenchmarkingModel(model), is(true));
     }
 
     @Test
@@ -217,7 +217,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -242,7 +242,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(null)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -255,7 +255,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -268,7 +268,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -281,7 +281,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -294,7 +294,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -308,7 +308,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
@@ -323,7 +323,7 @@ public class HiPhiveOptionsTest {
                 .diseaseId(diseaseId)
                 .build();
 
-        assertThat(instance.isBenchmarkHit(model), is(false));
+        assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
