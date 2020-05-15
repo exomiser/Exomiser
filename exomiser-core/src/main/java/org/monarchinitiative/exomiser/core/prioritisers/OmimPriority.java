@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -164,15 +164,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
         if (gene.getCompatibleInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
             return true;
         }
-        Set<ModeOfInheritance> compatibleDiseaseModes = inheritanceMode.toModeOfInheritance();
-        //as long as the gene is compatible with at least one of the known modes for the disease we'll return the
-        //default score
-        for (ModeOfInheritance mode : compatibleDiseaseModes) {
-            if (gene.isCompatibleWith(mode) && mode == currentMode) {
-                return true;
-            }
-        }
-        return false;
+        return gene.isCompatibleWith(currentMode) && inheritanceMode.isCompatibleWith(currentMode);
     }
 
     @Override
