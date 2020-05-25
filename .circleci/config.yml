@@ -20,7 +20,7 @@ jobs:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
       - run: ./mvnw test -B
-      - run: ./mvnw sonar:sonar
+      - run: ./mvnw sonar:sonar org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dsonar.login=$SONAR_TOKEN \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.organization=exomiser \
