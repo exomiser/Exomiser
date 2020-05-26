@@ -50,7 +50,13 @@ class OrphanetInheritanceXmlParserTest {
 
         assertThat(disease2inheritanceMultimap.get("ORPHA:461"), equalTo(List.of(X_RECESSIVE)));
         assertThat(disease2inheritanceMultimap.get("ORPHA:586"), equalTo(List.of(AUTOSOMAL_RECESSIVE)));
+        // Emery-Dreifuss muscular dystrophy (ORPHA:261) is a parent of three sub-types each with a specific MOI
         assertThat(disease2inheritanceMultimap.get("ORPHA:261"), equalTo(List.of(AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE)));
+        // Emery-Dreifuss subtypes:
+        assertThat(disease2inheritanceMultimap.get("ORPHA:98853"), equalTo(List.of(AUTOSOMAL_DOMINANT)));
+        assertThat(disease2inheritanceMultimap.get("ORPHA:98855"), equalTo(List.of(AUTOSOMAL_RECESSIVE)));
+        assertThat(disease2inheritanceMultimap.get("ORPHA:98863"), equalTo(List.of(X_RECESSIVE)));
+
         assertThat(disease2inheritanceMultimap.get("ORPHA:550"), equalTo(List.of(MITOCHONDRIAL)));
         assertThat(disease2inheritanceMultimap.get("ORPHA:480"), equalTo(List.of(AUTOSOMAL_RECESSIVE, MITOCHONDRIAL)));
         assertThat(disease2inheritanceMultimap.get("ORPHA:163937"), equalTo(List.of(X_DOMINANT)));

@@ -315,6 +315,72 @@
         </TypeOfInheritance>
       </TypeOfInheritanceList>
     </Disorder>
+    <Disorder id="13870">
+      <OrphaNumber>98853</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98853</ExpertLink>
+      <Name lang="en">Autosomal dominant Emery-Dreifuss muscular dystrophy</Name>
+      <DisorderType id="21443">
+        <Name lang="en">Etiological subtype</Name>
+      </DisorderType>
+      <DisorderGroup id="36554">
+        <Name lang="en">Subtype of disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23627">
+          <Name lang="en">adult</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23410">
+          <Name lang="en">Autosomal dominant</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="13880">
+      <OrphaNumber>98863</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98863</ExpertLink>
+      <Name lang="en">X-linked Emery-Dreifuss muscular dystrophy</Name>
+      <DisorderType id="21443">
+        <Name lang="en">Etiological subtype</Name>
+      </DisorderType>
+      <DisorderGroup id="36554">
+        <Name lang="en">Subtype of disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="0">
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23431">
+          <Name lang="en">X-linked recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="13872">
+      <OrphaNumber>98855</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98855</ExpertLink>
+      <Name lang="en">Autosomal recessive Emery-Dreifuss muscular dystrophy</Name>
+      <DisorderType id="21443">
+        <Name lang="en">Etiological subtype</Name>
+      </DisorderType>
+      <DisorderGroup id="36554">
+        <Name lang="en">Subtype of disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="0">
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
     <Disorder id="63">
       <OrphaNumber>550</OrphaNumber>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=550</ExpertLink>
