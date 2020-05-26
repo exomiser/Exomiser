@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<JDBOR date="2020-05-22 04:15:59" version="1.3.1 / 4.1.7 [2019-11-24] (orientdb version)" copyright="Orphanet (c) 2020">
+  <Availability> 
+    <Licence>
+      <FullName lang="en">Creative Commons Attribution 4.0 International</FullName>
+      <ShortIdentifier>CC-BY-4.0</ShortIdentifier>
+      <LegalCode>https://creativecommons.org/licenses/by/4.0/legalcode</LegalCode>
+    </Licence>
+  </Availability>
+  <DisorderList count="6590">
+    <Disorder id="17601">
+      <OrphaNumber>166024</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166024</ExpertLink>
+      <Name lang="en">Multiple epiphyseal dysplasia, Al-Gazali type</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="2">
+      <OrphaNumber>58</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=58</ExpertLink>
+      <Name lang="en">Alexander disease</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23557">
+          <Name lang="en">All ages</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23648">
+          <Name lang="en">any age</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23410">
+          <Name lang="en">Autosomal dominant</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17603">
+      <OrphaNumber>166032</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166032</ExpertLink>
+      <Name lang="en">Multiple epiphyseal dysplasia, with miniepiphyses</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23655">
+          <Name lang="en">No data available</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="0">
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17613">
+      <OrphaNumber>166084</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166084</ExpertLink>
+      <Name lang="en">Von Willebrand disease type 2A</Name>
+      <DisorderType id="21450">
+        <Name lang="en">Clinical subtype</Name>
+      </DisorderType>
+      <DisorderGroup id="36554">
+        <Name lang="en">Subtype of disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="0">
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="2">
+        <TypeOfInheritance id="23410">
+          <Name lang="en">Autosomal dominant</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="23">
+      <OrphaNumber>535</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=535</ExpertLink>
+      <Name lang="en">Rare cutaneous lupus erythematosus</Name>
+      <DisorderType id="21436">
+        <Name lang="en">Clinical group</Name>
+      </DisorderType>
+      <DisorderGroup id="36540">
+        <Name lang="en">Group of disorders</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23557">
+          <Name lang="en">All ages</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23641">
+          <Name lang="en">normal life expectancy</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23424">
+          <Name lang="en">Multigenic/multifactorial</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17622">
+      <OrphaNumber>166119</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166119</ExpertLink>
+      <Name lang="en">Isolated osteopoikilosis</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="3">
+        <AverageAgeOfOnset id="23536">
+          <Name lang="en">Adolescent</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23543">
+          <Name lang="en">Adult</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23641">
+          <Name lang="en">normal life expectancy</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23410">
+          <Name lang="en">Autosomal dominant</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="22">
+      <OrphaNumber>487</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=487</ExpertLink>
+      <Name lang="en">Krabbe disease</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="5">
+        <AverageAgeOfOnset id="23536">
+          <Name lang="en">Adolescent</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23543">
+          <Name lang="en">Adult</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23648">
+          <Name lang="en">any age</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17630">
+      <OrphaNumber>166291</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166291</ExpertLink>
+      <Name lang="en">Dirofilariasis</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23557">
+          <Name lang="en">All ages</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23494">
+          <Name lang="en">Not applicable</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="42">
+      <OrphaNumber>461</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=461</ExpertLink>
+      <Name lang="en">Recessive X-linked ichthyosis</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23641">
+          <Name lang="en">normal life expectancy</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23431">
+          <Name lang="en">X-linked recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="49">
+      <OrphaNumber>586</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=586</ExpertLink>
+      <Name lang="en">Cystic fibrosis</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23557">
+          <Name lang="en">All ages</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="2">
+        <AverageAgeOfDeath id="23627">
+          <Name lang="en">adult</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23620">
+          <Name lang="en">young Adult</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="59">
+      <OrphaNumber>261</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=261</ExpertLink>
+      <Name lang="en">Emery-Dreifuss muscular dystrophy</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23627">
+          <Name lang="en">adult</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="3">
+        <TypeOfInheritance id="23410">
+          <Name lang="en">Autosomal dominant</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23431">
+          <Name lang="en">X-linked recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="63">
+      <OrphaNumber>550</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=550</ExpertLink>
+      <Name lang="en">MELAS</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="3">
+        <AverageAgeOfOnset id="23536">
+          <Name lang="en">Adolescent</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23543">
+          <Name lang="en">Adult</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="5">
+        <AverageAgeOfDeath id="23613">
+          <Name lang="en">adolescent</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23627">
+          <Name lang="en">adult</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23634">
+          <Name lang="en">elderly</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23606">
+          <Name lang="en">late childhood</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23620">
+          <Name lang="en">young Adult</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="2">
+        <TypeOfInheritance id="23438">
+          <Name lang="en">Mitochondrial inheritance</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23494">
+          <Name lang="en">Not applicable</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="61">
+      <OrphaNumber>480</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=480</ExpertLink>
+      <Name lang="en">Kearns-Sayre syndrome</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="4">
+        <AverageAgeOfOnset id="23536">
+          <Name lang="en">Adolescent</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23543">
+          <Name lang="en">Adult</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23529">
+          <Name lang="en">Childhood</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="6">
+        <AverageAgeOfDeath id="23613">
+          <Name lang="en">adolescent</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23627">
+          <Name lang="en">adult</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23634">
+          <Name lang="en">elderly</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23606">
+          <Name lang="en">late childhood</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23641">
+          <Name lang="en">normal life expectancy</Name>
+        </AverageAgeOfDeath>
+        <AverageAgeOfDeath id="23620">
+          <Name lang="en">young Adult</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="3">
+        <TypeOfInheritance id="23417">
+          <Name lang="en">Autosomal recessive</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23438">
+          <Name lang="en">Mitochondrial inheritance</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23494">
+          <Name lang="en">Not applicable</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17551">
+      <OrphaNumber>163937</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163937</ExpertLink>
+      <Name lang="en">X-linked intellectual disability, Najm type</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23445">
+          <Name lang="en">X-linked dominant</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17556">
+      <OrphaNumber>163966</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163966</ExpertLink>
+      <Name lang="en">X-linked dominant chondrodysplasia, Chassaing-Lacombe type</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23445">
+          <Name lang="en">X-linked dominant</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="17557">
+      <OrphaNumber>163971</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163971</ExpertLink>
+      <Name lang="en">X-linked intellectual disability, Cilliers type</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="1">
+        <TypeOfInheritance id="23431">
+          <Name lang="en">X-linked recessive</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="101">
+      <OrphaNumber>1941</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=1941</ExpertLink>
+      <Name lang="en">Juvenile absence epilepsy</Name>
+      <DisorderType id="21394">
+        <Name lang="en">Disease</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="1">
+        <AverageAgeOfOnset id="23536">
+          <Name lang="en">Adolescent</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23655">
+          <Name lang="en">No data available</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="2">
+        <TypeOfInheritance id="23424">
+          <Name lang="en">Multigenic/multifactorial</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23480">
+          <Name lang="en">Unknown</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="14344">
+      <OrphaNumber>99771</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=99771</ExpertLink>
+      <Name lang="en">Bifid uvula</Name>
+      <DisorderType id="21415">
+        <Name lang="en">Morphological anomaly</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="0">
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="2">
+        <TypeOfInheritance id="23424">
+          <Name lang="en">Multigenic/multifactorial</Name>
+        </TypeOfInheritance>
+        <TypeOfInheritance id="23494">
+          <Name lang="en">Not applicable</Name>
+        </TypeOfInheritance>
+      </TypeOfInheritanceList>
+    </Disorder>
+    <Disorder id="14349">
+      <OrphaNumber>99776</OrphaNumber>
+      <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=99776</ExpertLink>
+      <Name lang="en">Mosaic trisomy 9</Name>
+      <DisorderType id="21401">
+        <Name lang="en">Malformation syndrome</Name>
+      </DisorderType>
+      <DisorderGroup id="36547">
+        <Name lang="en">Disorder</Name>
+      </DisorderGroup>
+      <AverageAgeOfOnsetList count="2">
+        <AverageAgeOfOnset id="23522">
+          <Name lang="en">Infancy</Name>
+        </AverageAgeOfOnset>
+        <AverageAgeOfOnset id="23515">
+          <Name lang="en">Neonatal</Name>
+        </AverageAgeOfOnset>
+      </AverageAgeOfOnsetList>
+      <AverageAgeOfDeathList count="1">
+        <AverageAgeOfDeath id="23592">
+          <Name lang="en">infantile</Name>
+        </AverageAgeOfDeath>
+      </AverageAgeOfDeathList>
+      <TypeOfInheritanceList count="0">
+      </TypeOfInheritanceList>
+    </Disorder>
+  </DisorderList>
+</JDBOR>
