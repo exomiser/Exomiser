@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -425,10 +425,69 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList
+                .of(alleleOne, alleleTwo));
 
         Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        );
+
+        assertThat(results, equalTo(expected));
+    }
+
+    @Disabled("Awaiting CompHet fix in Jannovar")
+    @Test
+    public void testCompHetAutosomalRecessiveIndividualSubModesFromDeNovoWithTrio() {
+        List<Allele> alleles = buildAlleles("A", "G");
+        Genotype proband = buildUnPhasedSampleGenotype("Cain", alleles.get(0), alleles.get(1));
+        Genotype mother = buildUnPhasedSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        Genotype father = buildUnPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(0));
+
+        VariantContext variantContext = buildVariantContext(1, 136429677, alleles, proband, mother, father);
+        VariantEvaluation alleleOne = filteredVariant(1, 136429677, "A", "G", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
+
+
+        List<Allele> alleles2 = buildAlleles("T", "C");
+        Genotype proband2 = buildUnPhasedSampleGenotype("Cain", alleles2.get(0), alleles2.get(1));
+        Genotype mother2 = buildUnPhasedSampleGenotype("Eve", alleles2.get(0), alleles2.get(0));
+        Genotype father2 = buildUnPhasedSampleGenotype("Adam", alleles2.get(0), alleles2.get(0));
+
+        VariantContext variantContext2 = buildVariantContext(1, 136430395, alleles2, proband2, mother2, father2);
+        VariantEvaluation alleleTwo = filteredVariant(1, 136430395, "T", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext2);
+
+
+        Individual probandIndividual = Individual.builder()
+                .id("Cain")
+                .fatherId("Adam")
+                .motherId("Eve")
+                .sex(Sex.MALE)
+                .status(Status.AFFECTED)
+                .build();
+        Individual motherIndividual = Individual.builder()
+                .id("Eve")
+                .fatherId("")
+                .motherId("")
+                .sex(Sex.FEMALE)
+                .status(Status.UNAFFECTED)
+                .build();
+        Individual fatherIndividual = Individual.builder()
+                .id("Adam")
+                .fatherId("")
+                .motherId("")
+                .sex(Sex.MALE)
+                .status(Status.UNAFFECTED)
+                .build();
+
+        Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual);
+
+
+        InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList
+                .of(alleleOne, alleleTwo));
+
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
                 SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
         );
 
