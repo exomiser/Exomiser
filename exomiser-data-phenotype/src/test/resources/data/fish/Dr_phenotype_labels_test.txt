@@ -1,0 +1,21 @@
+GO:1990523PHENOTYPE	bone regeneration phenotype
+GO:2000145PHENOTYPE	regulation of cell motility phenotype
+GO:2000252PHENOTYPE	negative regulation of feeding behavior phenotype
+GO:2000310PHENOTYPE	regulation of N-methyl-D-aspartate selective glutamate receptor activity phenotype
+GO:2000377PHENOTYPE	regulation of reactive oxygen species metabolic process phenotype
+HP:0000504	Abnormality of vision
+HP:0000505	Visual impairment
+HP:0000618	Blindness
+HP:0001508	Failure to thrive
+HP:0001510	Growth delay
+MP:0005573	increased pulmonary respiratory rate
+MP:0008261	arrest of male meiosis
+MP:0012177	delayed head development
+ZP:0000002	somitogenesis disrupted, abnormal
+ZP:0000003	somite specification disrupted, abnormal
+ZP:0000004	determination of left/right asymmetry in lateral mesoderm disrupted, abnormal
+ZP:0000005	ectoderm development disrupted, abnormal
+ZP:0000006	lateral mesoderm development disrupted, abnormal
+ZP:0000007	blood vessel morphogenesis disrupted, abnormal
+ZP:0000008	hematopoietic stem cell differentiation disrupted, abnormal
+ZP:0000009	blood decreased amount, abnormal

@@ -1,0 +1,82 @@
+format-version: 1.2
+data-version: releases/2020-05-05
+subsetdef: CvDC_Terms "NHLBI Cardiovascular Development Consortium (CvDC) Terms"
+subsetdef: Europhenome_Terms "Terms in use by Europhenome"
+subsetdef: IMPC "Terms in use by IMPC"
+subsetdef: IMPC_Prenatal "Terms in use by IMPC Early Viability Group"
+subsetdef: Sanger_Terms "Terms in use by Mouse Genetics Project, Sanger Institute, Wellcome Trust Genome Campus"
+default-namespace: MPheno.ontology
+remark: The Mammalian Phenotype Ontology Copyright © 2007, 2008, 2011, 2012, 2015 by The Jackson Laboratory.
+ontology: mp
+property_value: http://purl.org/dc/elements/1.1/contributor "Alicia Valenzuela" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Anna Anagnostopolous" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Christopher Mungall" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Georgios V. Gkoutos" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Howard Dene" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Melissa Berry" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Michelle Knowlton" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Nicole Vasilevsky" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Paul Schofield" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Carroll W. Goldsmith" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Cynthia L. Smith" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Janan T. Eppig" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Susan Bello" xsd:string
+property_value: http://purl.org/dc/elements/1.1/description "The Mammalian Phenotype Ontology is being developed by Cynthia L. Smith, Susan M. Bello, Carroll W. Goldsmith and Janan T. Eppig, as part of the Mouse Genome Database (MGD) Project, Mouse Genome Informatics (MGI), The Jackson Laboratory, Bar Harbor, ME. This file contains pre-coordinated phenotype terms, definitions and synonyms that can be used to describe mammalian phenotypes. The ontology is represented as a directed acyclic graph (DAG). It organizes phenotype terms into major biological system headers such as nervous system and respiratory system.  This ontology is currently under development. Weekly updates are available at the Mouse Genome Informatics (MGI) ftp site (ftp://ftp.informatics.jax.org/pub/reports/index.html#pheno) as well as the OBO Foundry site (http://obofoundry.org/). Questions, comments and suggestions are welcome, and should be directed to pheno@jax.org, Susan.Bello@jax.org or to GitHub tracker (https://github.com/obophenotype/mammalian-phenotype-ontology/issues) MGD is funded by NIH/NHGRI grant HG000330." xsd:string
+property_value: http://purl.org/dc/elements/1.1/language "English" xsd:string
+property_value: http://purl.org/dc/elements/1.1/title "The Mammalian Phenotype Ontology" xsd:string
+property_value: http://purl.org/dc/terms/license https://creativecommons.org/licenses/by/4.0/
+property_value: IAO:0000700 MP:0000001
+
+[Term]
+id: MP:0000001
+name: mammalian phenotype
+def: "the observable morphological, physiological, behavioral and other characteristics of mammalian organisms that are manifested through development and lifespan" [MGI:csmith]
+
+[Term]
+id: MP:0000002
+name: obsolete Morphology
+def: "OBSOLETE." [MGI:csmith]
+synonym: "Anatomy" EXACT []
+is_obsolete: true
+
+[Term]
+id: MP:0000003
+name: abnormal adipose tissue morphology
+alt_id: MP:0000011
+def: "any structural anomaly of the connective tissue composed of fat cells enmeshed in areolar tissue" [MESH:A10.165.114, MGI:cwg]
+synonym: "abnormality of adipose tissue" BROAD []
+synonym: "adipose tissue abnormalities" BROAD []
+synonym: "adipose tissue dysplasia" EXACT []
+is_a: MP:0005375 ! adipose tissue phenotype
+
+[Typedef]
+id: after
+name: after
+
+[Typedef]
+id: during
+name: during
+
+[Typedef]
+id: exists_during
+name: exists_during
+
+[Typedef]
+id: has_central_participant
+name: has_central_participant
+
+[Typedef]
+id: has_quality
+name: has quality
+
+[Typedef]
+id: occurs_in
+name: occurs in
+
+[Typedef]
+id: preceded_by
+name: preceded_by
+
+[Typedef]
+id: results_from
+name: results from

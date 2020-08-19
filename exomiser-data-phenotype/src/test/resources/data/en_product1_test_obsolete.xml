@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<JDBOR date="2020-05-06 14:38:21" version="1.3.1 / 4.1.7 [2019-11-24] (orientdb version)" copyright="Orphanet (c) 2020">
+    <Availability>
+        <Licence>
+            <FullName lang="en">Creative Commons Attribution 4.0 International</FullName>
+            <ShortIdentifier>CC-BY-4.0</ShortIdentifier>
+            <LegalCode>https://creativecommons.org/licenses/by/4.0/legalcode</LegalCode>
+        </Licence>
+    </Availability>
+    <DisorderList count="10466">
+        <Disorder id="12193">
+            <OrphaCode>93216</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=93216</ExpertLink>
+            <Name lang="en">OBSOLETE: Familial idiopathic steroid-resistant nephrotic syndrome with minimal changes
+            </Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="455">
+                    <Value>16</Value>
+                    <Label>Obsolete entity</Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="0">
+            </SynonymList>
+            <DisorderType id="21457">
+                <Name lang="en">Histopathological subtype</Name>
+            </DisorderType>
+            <DisorderGroup id="36554">
+                <Name lang="en">Subtype of disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="0">
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="1">
+                <DisorderDisorderAssociation>
+                    <Disorder1 id="3551">
+                        <OrphaCode>656</OrphaCode>
+                        <Name lang="en">Genetic steroid-resistant nephrotic syndrome</Name>
+                    </Disorder1>
+                    <Disorder2 id="12193" cycle="true"/>
+                    <DisorderDisorderAssociationType id="27341">
+                        <Name lang="en">Referred to</Name>
+                    </DisorderDisorderAssociationType>
+                </DisorderDisorderAssociation>
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="0">
+            </TextualInformationList>
+        </Disorder>
+    </DisorderList>
+</JDBOR>

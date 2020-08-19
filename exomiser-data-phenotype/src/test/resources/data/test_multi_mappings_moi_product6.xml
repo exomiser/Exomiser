@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<JDBOR date="2020-05-22 04:15:34" version="1.3.1 / 4.1.7 [2019-11-24] (orientdb version)" copyright="Orphanet (c) 2020">
+    <Availability>
+        <Licence>
+            <FullName lang="en">Creative Commons Attribution 4.0 International</FullName>
+            <ShortIdentifier>CC-BY-4.0</ShortIdentifier>
+            <LegalCode>https://creativecommons.org/licenses/by/4.0/legalcode</LegalCode>
+        </Licence>
+    </Availability>
+    <DisorderList count="3854">
+        <Disorder id="10760">
+            <OrphaCode>55654</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=55654</ExpertLink>
+            <Name lang="en">Hypotrichosis simplex</Name>
+            <DisorderType id="21394">
+                <Name lang="en">Disease</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <DisorderGeneAssociationList count="7">
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>30401459[PMID]</SourceOfValidation>
+                    <Gene id="23345">
+                        <Name lang="en">lanosterol synthase</Name>
+                        <Symbol>LSS</Symbol>
+                        <SynonymList count="2">
+                            <Synonym lang="en">OSC</Synonym>
+                            <Synonym lang="en">Oxidosqualene-lanosterol cyclase</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="7">
+                            <ExternalReference id="96188">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000160285</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96185">
+                                <Source>Genatlas</Source>
+                                <Reference>LSS</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96183">
+                                <Source>HGNC</Source>
+                                <Reference>6708</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96189">
+                                <Source>IUPHAR</Source>
+                                <Reference>2434</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96184">
+                                <Source>OMIM</Source>
+                                <Reference>600909</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96187">
+                                <Source>Reactome</Source>
+                                <Reference>P48449</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="96186">
+                                <Source>SwissProt</Source>
+                                <Reference>P48449</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="16043">
+                                <GeneLocus>21q22.3</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>18445047[PMID]</SourceOfValidation>
+                    <Gene id="17304">
+                        <Name lang="en">lipase H</Name>
+                        <Symbol>LIPH</Symbol>
+                        <SynonymList count="5">
+                            <Synonym lang="en">LPDLR</Synonym>
+                            <Synonym lang="en">PLA1B</Synonym>
+                            <Synonym lang="en">mPA-PLA1</Synonym>
+                            <Synonym lang="en">mPA-PLA1alpha</Synonym>
+                            <Synonym lang="en">phospholipase A(1)</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="6">
+                            <ExternalReference id="58820">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000163898</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36743">
+                                <Source>Genatlas</Source>
+                                <Reference>LIPH</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36745">
+                                <Source>HGNC</Source>
+                                <Reference>18483</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36744">
+                                <Source>OMIM</Source>
+                                <Reference>607365</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="98075">
+                                <Source>Reactome</Source>
+                                <Reference>Q8WWY8</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36746">
+                                <Source>SwissProt</Source>
+                                <Reference>Q8WWY8</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="22081">
+                                <GeneLocus>3q27.2</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>20393562[PMID]</SourceOfValidation>
+                    <Gene id="19139">
+                        <Name lang="en">APC down-regulated 1</Name>
+                        <Symbol>APCDD1</Symbol>
+                        <SynonymList count="1">
+                            <Synonym lang="en">B7323</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="5">
+                            <ExternalReference id="59146">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000154856</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="45564">
+                                <Source>Genatlas</Source>
+                                <Reference>APCDD1</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="45563">
+                                <Source>HGNC</Source>
+                                <Reference>15718</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="45566">
+                                <Source>OMIM</Source>
+                                <Reference>607479</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="45565">
+                                <Source>SwissProt</Source>
+                                <Reference>Q8J025</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="22563">
+                                <GeneLocus>18p11.22</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>21412954[PMID]</SourceOfValidation>
+                    <Gene id="20668">
+                        <Name lang="en">ribosomal protein L21</Name>
+                        <Symbol>RPL21</Symbol>
+                        <SynonymList count="7">
+                            <Synonym lang="en">60S ribosomal protein L21</Synonym>
+                            <Synonym lang="en">DKFZp686C06101</Synonym>
+                            <Synonym lang="en">FLJ27458</Synonym>
+                            <Synonym lang="en">L21</Synonym>
+                            <Synonym lang="en">MGC104274</Synonym>
+                            <Synonym lang="en">MGC104275</Synonym>
+                            <Synonym lang="en">MGC71252</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="6">
+                            <ExternalReference id="59148">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000122026</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="54889">
+                                <Source>Genatlas</Source>
+                                <Reference>RPL21</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="54890">
+                                <Source>HGNC</Source>
+                                <Reference>10313</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="54892">
+                                <Source>OMIM</Source>
+                                <Reference>603636</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="59149">
+                                <Source>Reactome</Source>
+                                <Reference>P46778</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="54891">
+                                <Source>SwissProt</Source>
+                                <Reference>P46778</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="11691">
+                                <GeneLocus>13q12.2</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>23246290[PMID]</SourceOfValidation>
+                    <Gene id="21748">
+                        <Name lang="en">small nuclear ribonucleoprotein polypeptide E</Name>
+                        <Symbol>SNRPE</Symbol>
+                        <SynonymList count="1">
+                            <Synonym lang="en">Sm-E</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="6">
+                            <ExternalReference id="83631">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000182004</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="76328">
+                                <Source>Genatlas</Source>
+                                <Reference>SNRPE</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="76326">
+                                <Source>HGNC</Source>
+                                <Reference>11161</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="76327">
+                                <Source>OMIM</Source>
+                                <Reference>128260</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="83630">
+                                <Source>Reactome</Source>
+                                <Reference>P62304</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="76329">
+                                <Source>SwissProt</Source>
+                                <Reference>P62304</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="21649">
+                                <GeneLocus>1q32.1</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>18461368[PMID]</SourceOfValidation>
+                    <Gene id="17277">
+                        <Name lang="en">lysophosphatidic acid receptor 6</Name>
+                        <Symbol>LPAR6</Symbol>
+                        <SynonymList count="1">
+                            <Synonym lang="en">P2Y5</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="7">
+                            <ExternalReference id="58822">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000139679</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36586">
+                                <Source>Genatlas</Source>
+                                <Reference>P2RY5</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36585">
+                                <Source>HGNC</Source>
+                                <Reference>15520</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="83064">
+                                <Source>IUPHAR</Source>
+                                <Reference>163</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36587">
+                                <Source>OMIM</Source>
+                                <Reference>609239</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="58823">
+                                <Source>Reactome</Source>
+                                <Reference>P43657</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36588">
+                                <Source>SwissProt</Source>
+                                <Reference>P43657</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="23777">
+                                <GeneLocus>13q14.2</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+                <DisorderGeneAssociation>
+                    <SourceOfValidation>16770573[PMID]</SourceOfValidation>
+                    <Gene id="17330">
+                        <Name lang="en">desmoglein 4</Name>
+                        <Symbol>DSG4</Symbol>
+                        <SynonymList count="2">
+                            <Synonym lang="en">CDHF13</Synonym>
+                            <Synonym lang="en">LAH</Synonym>
+                        </SynonymList>
+                        <GeneType id="25993">
+                            <Name lang="en">gene with protein product</Name>
+                        </GeneType>
+                        <ExternalReferenceList count="6">
+                            <ExternalReference id="126372">
+                                <Source>Reactome</Source>
+                                <Reference>Q86SJ6</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="59147">
+                                <Source>Ensembl</Source>
+                                <Reference>ENSG00000175065</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="38371">
+                                <Source>Genatlas</Source>
+                                <Reference>DSG4</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36840">
+                                <Source>HGNC</Source>
+                                <Reference>21307</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36839">
+                                <Source>OMIM</Source>
+                                <Reference>607892</Reference>
+                            </ExternalReference>
+                            <ExternalReference id="36841">
+                                <Source>SwissProt</Source>
+                                <Reference>Q86SJ6</Reference>
+                            </ExternalReference>
+                        </ExternalReferenceList>
+                        <LocusList count="1">
+                            <Locus id="26729">
+                                <GeneLocus>18q12.1</GeneLocus>
+                                <LocusKey>1</LocusKey>
+                            </Locus>
+                        </LocusList>
+                    </Gene>
+                    <DisorderGeneAssociationType id="17949">
+                        <Name lang="en">Disease-causing germline mutation(s) in</Name>
+                    </DisorderGeneAssociationType>
+                    <DisorderGeneAssociationStatus id="17991">
+                        <Name lang="en">Assessed</Name>
+                    </DisorderGeneAssociationStatus>
+                </DisorderGeneAssociation>
+            </DisorderGeneAssociationList>
+        </Disorder>
+    </DisorderList>
+</JDBOR>

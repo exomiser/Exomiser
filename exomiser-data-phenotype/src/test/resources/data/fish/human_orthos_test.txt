@@ -1,0 +1,33 @@
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	AA	ZDB-PUB-060313-16
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	AA	ZDB-PUB-070210-39
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	AA	ZDB-PUB-071118-46
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	AA	ZDB-PUB-150121-5
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	AA	ZDB-PUB-150226-13
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	CL	ZDB-PUB-060313-16
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	CL	ZDB-PUB-150121-5
+ZDB-GENE-000112-47	ppardb	peroxisome proliferator-activated receptor delta b	PPARD	peroxisome proliferator activated receptor delta	600409	5467	9235	PT	ZDB-PUB-150226-13
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-000111-5
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-050823-6
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-080924-1
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-081218-26
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-090428-2
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-120910-1
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	AA	ZDB-PUB-140513-246
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	CL	ZDB-PUB-050823-6
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	CL	ZDB-PUB-080924-1
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	CL	ZDB-PUB-081218-26
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	PT	ZDB-PUB-100119-23
+ZDB-GENE-000125-12	igfbp2a	insulin-like growth factor binding protein 2a	IGFBP2	insulin like growth factor binding protein 2	146731	3485	5471	PT	ZDB-PUB-170204-4
+ZDB-GENE-000125-4	dlc	deltaC	DLL3	delta like canonical Notch ligand 3	602768	10683	2909	AA	ZDB-PUB-050823-6
+ZDB-GENE-000125-4	dlc	deltaC	DLL3	delta like canonical Notch ligand 3	602768	10683	2909	CL	ZDB-PUB-030905-1
+ZDB-GENE-000128-11	dbx1b	developing brain homeobox 1b	DBX1	developing brain homeobox 1		120237	33185	AA	ZDB-PUB-030905-1
+ZDB-GENE-000128-11	dbx1b	developing brain homeobox 1b	DBX1	developing brain homeobox 1		120237	33185	CL	ZDB-PUB-030905-1
+ZDB-GENE-000128-13	dbx2	developing brain homeobox 2	DBX2	developing brain homeobox 2		440097	33186	AA	ZDB-PUB-050823-6
+ZDB-GENE-000128-13	dbx2	developing brain homeobox 2	DBX2	developing brain homeobox 2		440097	33186	CL	ZDB-PUB-050823-6
+ZDB-GENE-000128-8	dbx1a	developing brain homeobox 1a	DBX1	developing brain homeobox 1		120237	33185	AA	ZDB-PUB-050823-6
+ZDB-GENE-000128-8	dbx1a	developing brain homeobox 1a	DBX1	developing brain homeobox 1		120237	33185	CL	ZDB-PUB-050823-6
+ZDB-GENE-000201-18	pbx4	pre-B-cell leukemia transcription factor 4	PBX4	PBX homeobox 4	608127	80714	13403	AA	ZDB-PUB-001220-4
+ZDB-GENE-000201-18	pbx4	pre-B-cell leukemia transcription factor 4	PBX4	PBX homeobox 4	608127	80714	13403	CL	ZDB-PUB-030905-1
+ZDB-SNORNAG-120314-7	snord31.3	small nucleolar RNA, C/D box 31.3	SNORD31	small nucleolar RNA, C/D box 31	603230	9298	10158	NT	ZDB-PUB-110920-7
+ZDB-SNORNAG-150916-2	snord7	small nucleolar RNA, C/D box 7	SNORD7	small nucleolar RNA, C/D box 7		692076	32704	CL	ZDB-PUB-030905-1
+ZDB-SNORNAG-150916-2	snord7	small nucleolar RNA, C/D box 7	SNORD7	small nucleolar RNA, C/D box 7		692076	32704	NT	ZDB-PUB-150429-4

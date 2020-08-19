@@ -1,0 +1,726 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<JDBOR date="2020-05-06 14:38:21" version="1.3.1 / 4.1.7 [2019-11-24] (orientdb version)" copyright="Orphanet (c) 2020">
+    <Availability>
+        <Licence>
+            <FullName lang="en">Creative Commons Attribution 4.0 International</FullName>
+            <ShortIdentifier>CC-BY-4.0</ShortIdentifier>
+            <LegalCode>https://creativecommons.org/licenses/by/4.0/legalcode</LegalCode>
+        </Licence>
+    </Availability>
+    <DisorderList count="10466">
+        <Disorder id="17601">
+            <OrphaCode>166024</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166024</ExpertLink>
+            <Name lang="en">Multiple epiphyseal dysplasia, Al-Gazali type</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="1">
+                <Synonym lang="en">Multiple epiphyseal dysplasia-macrocephaly-distinctive facies syndrome</Synonym>
+            </SynonymList>
+            <DisorderType id="21394">
+                <Name lang="en">Disease</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="3">
+                <ExternalReference id="120419">
+                    <Source>ICD-10</Source>
+                    <Reference>Q77.3</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="38949">
+                    <Source>OMIM</Source>
+                    <Reference>607131</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="139761">
+                    <Source>UMLS</Source>
+                    <Reference>C1846722</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="1">
+                <TextualInformation id="63385" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="83697" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>Multiple epiphyseal dysplasia, Al-Gazali type is a skeletal dysplasia characterized by multiple epiphyseal dysplasia (see this term), macrocephaly and facial dysmorphism.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="2">
+            <OrphaCode>58</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=58</ExpertLink>
+            <Name lang="en">Alexander disease</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="1">
+                <Synonym lang="en">AxD</Synonym>
+            </SynonymList>
+            <DisorderType id="21394">
+                <Name lang="en">Disease</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="4">
+                <ExternalReference id="3649">
+                    <Source>OMIM</Source>
+                    <Reference>203450</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="104490">
+                    <Source>MeSH</Source>
+                    <Reference>D038261</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="104491">
+                    <Source>UMLS</Source>
+                    <Reference>C0270726</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="104493">
+                    <Source>ICD-10</Source>
+                    <Reference>E75.2</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="4">
+                <TextualInformation id="998" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="72783" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>A rare neurodegenerative disorder of the astrocytes comprised of two clinical forms: Alexander disease (AxD) type I and type II manifesting with various degrees of macrocephaly, spasticity, ataxia and seizures and leading to psychomotor regression and death.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="90941" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="76098" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="87411" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="19796">
+            <OrphaCode>254892</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=254892</ExpertLink>
+            <Name lang="en">Autosomal dominant progressive external ophthalmoplegia</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="1">
+                <Synonym lang="en">adPEO</Synonym>
+            </SynonymList>
+            <DisorderType id="21394">
+                <Name lang="en">Disease</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="6">
+                <ExternalReference id="51690">
+                    <Source>OMIM</Source>
+                    <Reference>609283</Reference>
+                    <DisorderMappingRelation id="21541">
+                        <Name lang="en">BTNT (broader term maps to a narrower term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="51691">
+                    <Source>OMIM</Source>
+                    <Reference>609286</Reference>
+                    <DisorderMappingRelation id="21541">
+                        <Name lang="en">BTNT (broader term maps to a narrower term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="51692">
+                    <Source>OMIM</Source>
+                    <Reference>610131</Reference>
+                    <DisorderMappingRelation id="21541">
+                        <Name lang="en">BTNT (broader term maps to a narrower term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="51693">
+                    <Source>OMIM</Source>
+                    <Reference>613077</Reference>
+                    <DisorderMappingRelation id="21541">
+                        <Name lang="en">BTNT (broader term maps to a narrower term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="51689">
+                    <Source>OMIM</Source>
+                    <Reference>157640</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="122184">
+                    <Source>ICD-10</Source>
+                    <Reference>H49.4</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="2">
+                <TextualInformation id="114356" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="142847" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>A rare genetic, neuro-ophthalmological disease characterized by progressive weakness of the external eye muscles, resulting in bilateral ptosis and diffuse symmetric ophthalmoparesis. Additional signs may include skeletal muscle weakness, cataracts, hearing loss, sensory axonal neuropathy, ataxia, parkinsonism, cardiomyopathy, hypogonadism and depression. It is usually less severe than autosomal recessive form.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="87442" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="12203">
+            <OrphaCode>93260</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=93260</ExpertLink>
+            <Name lang="en">Pfeiffer syndrome type 3</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="0">
+            </SynonymList>
+            <DisorderType id="21450">
+                <Name lang="en">Clinical subtype</Name>
+            </DisorderType>
+            <DisorderGroup id="36554">
+                <Name lang="en">Subtype of disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="2">
+                <ExternalReference id="117181">
+                    <Source>ICD-10</Source>
+                    <Reference>Q87.0</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="144868">
+                    <Source>OMIM</Source>
+                    <Reference>101600</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="4">
+                <TextualInformation id="35822" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="82047" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>Pfeiffer syndrome type 3 (PS3) is a severe type of Pfeiffer syndrome (PS; see this term), characterized by bicoronal craniosynostosis, severe associated functional disorders, and hand, foot and elbow abnormalities.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="86336" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="88704" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="68041" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="12202">
+            <OrphaCode>93259</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=93259</ExpertLink>
+            <Name lang="en">Pfeiffer syndrome type 2</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="0">
+            </SynonymList>
+            <DisorderType id="21450">
+                <Name lang="en">Clinical subtype</Name>
+            </DisorderType>
+            <DisorderGroup id="36554">
+                <Name lang="en">Subtype of disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="2">
+                <ExternalReference id="144867">
+                    <Source>OMIM</Source>
+                    <Reference>101600</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="117180">
+                    <Source>ICD-10</Source>
+                    <Reference>Q87.0</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="4">
+                <TextualInformation id="23062" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="82048" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>Pfeiffer syndrome type 2 (PS2) is a frequent and severe type of Pfeiffer syndrome (PS; see this term), characterized by cloverleaf skull, severe associated functional disorders, and hand/foot and elbow/knee abnormalities.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="86335" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="88703" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="68040" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="12201">
+            <OrphaCode>93258</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=93258</ExpertLink>
+            <Name lang="en">Pfeiffer syndrome type 1</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="1">
+                <Synonym lang="en">Classic Pfeiffer syndrome</Synonym>
+            </SynonymList>
+            <DisorderType id="21450">
+                <Name lang="en">Clinical subtype</Name>
+            </DisorderType>
+            <DisorderGroup id="36554">
+                <Name lang="en">Subtype of disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="2">
+                <ExternalReference id="144866">
+                    <Source>OMIM</Source>
+                    <Reference>101600</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="117179">
+                    <Source>ICD-10</Source>
+                    <Reference>Q87.0</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="4">
+                <TextualInformation id="23056" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="82045" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>Pfeiffer syndrome type 1 (PS1) is a mild to moderately severe type of Pfeiffer syndrome (PS; see this term), characterized by bicoronal craniosynostosis, variable finger and toe malformations, and in most cases, normal intellectual development.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="86334" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="88702" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="68039" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="234">
+            <OrphaCode>710</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=710</ExpertLink>
+            <Name lang="en">Pfeiffer syndrome</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="2">
+                <Synonym lang="en">ACS5</Synonym>
+                <Synonym lang="en">Acrocephalosyndactyly type 5</Synonym>
+            </SynonymList>
+            <DisorderType id="21401">
+                <Name lang="en">Malformation syndrome</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="6">
+                <ExternalReference id="105318">
+                    <Source>ICD-10</Source>
+                    <Reference>Q87.0</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="4081">
+                    <Source>OMIM</Source>
+                    <Reference>101600</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="140736">
+                    <Source>UMLS</Source>
+                    <Reference>C0220658</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="140752">
+                    <Source>UMLS</Source>
+                    <Reference>C0265303</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="105315">
+                    <Source>MeSH</Source>
+                    <Reference>C538582</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="105316">
+                    <Source>UMLS</Source>
+                    <Reference>C2931888</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="5">
+                <TextualInformation id="1596" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="82049" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>An acrocephalosyndactyly associated with craniosynostosis, midfacial hypoplasia, hand and foot malformation with a wide range of clinical expression and severity. Most of the affected patients show various other associated manifestations.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="86333" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="1597" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="88701" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="68038" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+        <Disorder id="21528">
+            <OrphaCode>314777</OrphaCode>
+            <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=314777</ExpertLink>
+            <Name lang="en">Familial isolated pituitary adenoma</Name>
+            <DisorderFlagList count="1">
+                <DisorderFlag id="475">
+                    <Value>1</Value>
+                    <Label></Label>
+                </DisorderFlag>
+            </DisorderFlagList>
+            <SynonymList count="1">
+                <Synonym lang="en">FIPA</Synonym>
+            </SynonymList>
+            <DisorderType id="21394">
+                <Name lang="en">Disease</Name>
+            </DisorderType>
+            <DisorderGroup id="36547">
+                <Name lang="en">Disorder</Name>
+            </DisorderGroup>
+            <ExternalReferenceList count="4">
+                <ExternalReference id="140111">
+                    <Source>UMLS</Source>
+                    <Reference>C1863340</Reference>
+                    <DisorderMappingRelation id="21527">
+                        <Name lang="en">E (exact mapping (the terms and the concepts are equivalent))</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="75138">
+                    <Source>OMIM</Source>
+                    <Reference>102200</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="82629">
+                    <Source>OMIM</Source>
+                    <Reference>600634</Reference>
+                    <DisorderMappingRelation id="21541">
+                        <Name lang="en">BTNT (broader term maps to a narrower term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation/>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+                <ExternalReference id="123571">
+                    <Source>ICD-10</Source>
+                    <Reference>D35.2</Reference>
+                    <DisorderMappingRelation id="21534">
+                        <Name lang="en">NTBT (narrower term maps to a broader term)</Name>
+                    </DisorderMappingRelation>
+                    <DisorderMappingICDRelation id="21604">
+                        <Name lang="en">Attributed</Name>
+                    </DisorderMappingICDRelation>
+                    <DisorderMappingValidationStatus id="21611">
+                        <Name lang="en">Validated</Name>
+                    </DisorderMappingValidationStatus>
+                </ExternalReference>
+            </ExternalReferenceList>
+            <DisorderDisorderAssociationList count="0">
+            </DisorderDisorderAssociationList>
+            <TextualInformationList count="2">
+                <TextualInformation id="108535" lang="en">
+                    <TextSectionList count="1">
+                        <TextSection id="136934" lang="en">
+                            <TextSectionType id="16907">
+                                <Name lang="en">Definition</Name>
+                            </TextSectionType>
+                            <Contents>A rare, hereditary endocrine tumor characterized by a benign pituitary adenoma that is either secreting (e.g. prolactin, growth hormone, thyroid stimulating hormone) or non-secreting. Symptoms may occur due to either the hormonal hypersecretion and/or the mass effect of the lesion on local structures in the brain.</Contents>
+                        </TextSection>
+                    </TextSectionList>
+                </TextualInformation>
+                <TextualInformation id="70781" lang="en">
+                    <TextSectionList count="0">
+                    </TextSectionList>
+                </TextualInformation>
+            </TextualInformationList>
+        </Disorder>
+    </DisorderList>
+</JDBOR>

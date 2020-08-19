@@ -14,3 +14,4 @@
 123467	moved/removed
 123468	gene	87	GENE1	ENSG12345678902
 123469	predominantly phenotypes
+516003	gene	4538	MT-ND4

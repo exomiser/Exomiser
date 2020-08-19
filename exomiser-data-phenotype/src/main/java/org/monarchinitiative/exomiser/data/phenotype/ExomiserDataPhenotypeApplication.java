@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,14 @@
 
 package org.monarchinitiative.exomiser.data.phenotype;
 
+import org.monarchinitiative.exomiser.data.phenotype.config.ApplicationConfigurationProperties;
+import org.monarchinitiative.exomiser.data.phenotype.config.ResourceConfigurationProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
+@EnableConfigurationProperties({ApplicationConfigurationProperties.class, ResourceConfigurationProperties.class})
 public class ExomiserDataPhenotypeApplication {
 
     public static void main(String[] args) {

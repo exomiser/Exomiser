@@ -1,0 +1,16 @@
+# name  phenotype_mim    type    symbols(current, synonyms...)   gene_mim   locus
+# n.b. entries with a missing 'phenotype_mim' (column2) have no known gene so the gene_mim
+# is replaced by the phenotype_mim. Someone evidently thought this was a good idea, but they were wrong.
+# e.g. Hypotrichosis 5, 9 & 10
+Hypotrichosis 1, 605389 (3)	APCDD1, HHS, HYPT1, HTS	607479	18p11.22
+Hypotrichosis 10 (2)	HYPT10	614238	7p22.3-p21.3
+Hypotrichosis 11, 615059 (3)	SNRPE, HYPT11	128260	1q32.1
+Hypotrichosis 12, 615885 (3)	RPL21, HYPT12	603636	13q12.2
+Hypotrichosis 14, 618275 (3)	LSS, OSC, CTRCT44, HYPT14, APMR4	600909	21q22.3
+Hypotrichosis 2, 146520 (3)	CDSN, HTSS1, HYPT2, PSS1	602593	6p21.33
+Hypotrichosis 4, 146550 (3)	HR, AU, MUHH1, HYPT4	602302	8p21.3
+Hypotrichosis 5 (2)	HYPT5, MUHH2	612841	1p21.1-q21.3
+Hypotrichosis 6, 607903 (3)	DSG4, LAH, HYPT6	607892	18q12.1
+Hypotrichosis 7, 604379 (3)	LIPH, LAH2, ARWH2, HYPT7	607365	3q27.2
+Hypotrichosis 8, 278150 (3)	LPAR6, P2RY5, P2Y5, LAH3, ARWH1, HYPT8	609239	13q14.2
+Hypotrichosis 9 (2)	HYPT9	614237	10q11.23-q22.3

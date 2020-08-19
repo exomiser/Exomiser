@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <JDBOR date="2020-05-22 04:15:59" version="1.3.1 / 4.1.7 [2019-11-24] (orientdb version)" copyright="Orphanet (c) 2020">
   <Availability> 
     <Licence>
@@ -9,7 +29,7 @@
   </Availability>
   <DisorderList count="6590">
     <Disorder id="17601">
-      <OrphaNumber>166024</OrphaNumber>
+      <OrphaCode>166024</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166024</ExpertLink>
       <Name lang="en">Multiple epiphyseal dysplasia, Al-Gazali type</Name>
       <DisorderType id="21394">
@@ -35,7 +55,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="2">
-      <OrphaNumber>58</OrphaNumber>
+      <OrphaCode>58</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=58</ExpertLink>
       <Name lang="en">Alexander disease</Name>
       <DisorderType id="21394">
@@ -61,7 +81,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17603">
-      <OrphaNumber>166032</OrphaNumber>
+      <OrphaCode>166032</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166032</ExpertLink>
       <Name lang="en">Multiple epiphyseal dysplasia, with miniepiphyses</Name>
       <DisorderType id="21394">
@@ -87,7 +107,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17613">
-      <OrphaNumber>166084</OrphaNumber>
+      <OrphaCode>166084</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166084</ExpertLink>
       <Name lang="en">Von Willebrand disease type 2A</Name>
       <DisorderType id="21450">
@@ -110,7 +130,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="23">
-      <OrphaNumber>535</OrphaNumber>
+      <OrphaCode>535</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=535</ExpertLink>
       <Name lang="en">Rare cutaneous lupus erythematosus</Name>
       <DisorderType id="21436">
@@ -136,7 +156,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17622">
-      <OrphaNumber>166119</OrphaNumber>
+      <OrphaCode>166119</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166119</ExpertLink>
       <Name lang="en">Isolated osteopoikilosis</Name>
       <DisorderType id="21394">
@@ -168,7 +188,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="22">
-      <OrphaNumber>487</OrphaNumber>
+      <OrphaCode>487</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=487</ExpertLink>
       <Name lang="en">Krabbe disease</Name>
       <DisorderType id="21394">
@@ -206,7 +226,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17630">
-      <OrphaNumber>166291</OrphaNumber>
+      <OrphaCode>166291</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=166291</ExpertLink>
       <Name lang="en">Dirofilariasis</Name>
       <DisorderType id="21394">
@@ -229,7 +249,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="42">
-      <OrphaNumber>461</OrphaNumber>
+      <OrphaCode>461</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=461</ExpertLink>
       <Name lang="en">Recessive X-linked ichthyosis</Name>
       <DisorderType id="21394">
@@ -255,7 +275,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="49">
-      <OrphaNumber>586</OrphaNumber>
+      <OrphaCode>586</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=586</ExpertLink>
       <Name lang="en">Cystic fibrosis</Name>
       <DisorderType id="21394">
@@ -284,7 +304,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="59">
-      <OrphaNumber>261</OrphaNumber>
+      <OrphaCode>261</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=261</ExpertLink>
       <Name lang="en">Emery-Dreifuss muscular dystrophy</Name>
       <DisorderType id="21394">
@@ -316,7 +336,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="13870">
-      <OrphaNumber>98853</OrphaNumber>
+      <OrphaCode>98853</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98853</ExpertLink>
       <Name lang="en">Autosomal dominant Emery-Dreifuss muscular dystrophy</Name>
       <DisorderType id="21443">
@@ -342,7 +362,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="13880">
-      <OrphaNumber>98863</OrphaNumber>
+      <OrphaCode>98863</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98863</ExpertLink>
       <Name lang="en">X-linked Emery-Dreifuss muscular dystrophy</Name>
       <DisorderType id="21443">
@@ -362,7 +382,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="13872">
-      <OrphaNumber>98855</OrphaNumber>
+      <OrphaCode>98855</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=98855</ExpertLink>
       <Name lang="en">Autosomal recessive Emery-Dreifuss muscular dystrophy</Name>
       <DisorderType id="21443">
@@ -382,7 +402,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="63">
-      <OrphaNumber>550</OrphaNumber>
+      <OrphaCode>550</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=550</ExpertLink>
       <Name lang="en">MELAS</Name>
       <DisorderType id="21394">
@@ -429,7 +449,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="61">
-      <OrphaNumber>480</OrphaNumber>
+      <OrphaCode>480</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=480</ExpertLink>
       <Name lang="en">Kearns-Sayre syndrome</Name>
       <DisorderType id="21394">
@@ -485,7 +505,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17551">
-      <OrphaNumber>163937</OrphaNumber>
+      <OrphaCode>163937</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163937</ExpertLink>
       <Name lang="en">X-linked intellectual disability, Najm type</Name>
       <DisorderType id="21394">
@@ -511,7 +531,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17556">
-      <OrphaNumber>163966</OrphaNumber>
+      <OrphaCode>163966</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163966</ExpertLink>
       <Name lang="en">X-linked dominant chondrodysplasia, Chassaing-Lacombe type</Name>
       <DisorderType id="21394">
@@ -537,7 +557,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="17557">
-      <OrphaNumber>163971</OrphaNumber>
+      <OrphaCode>163971</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=163971</ExpertLink>
       <Name lang="en">X-linked intellectual disability, Cilliers type</Name>
       <DisorderType id="21394">
@@ -563,7 +583,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="101">
-      <OrphaNumber>1941</OrphaNumber>
+      <OrphaCode>1941</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=1941</ExpertLink>
       <Name lang="en">Juvenile absence epilepsy</Name>
       <DisorderType id="21394">
@@ -592,7 +612,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="14344">
-      <OrphaNumber>99771</OrphaNumber>
+      <OrphaCode>99771</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=99771</ExpertLink>
       <Name lang="en">Bifid uvula</Name>
       <DisorderType id="21415">
@@ -621,7 +641,7 @@
       </TypeOfInheritanceList>
     </Disorder>
     <Disorder id="14349">
-      <OrphaNumber>99776</OrphaNumber>
+      <OrphaCode>99776</OrphaCode>
       <ExpertLink lang="en">http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&amp;Expert=99776</ExpertLink>
       <Name lang="en">Mosaic trisomy 9</Name>
       <DisorderType id="21401">

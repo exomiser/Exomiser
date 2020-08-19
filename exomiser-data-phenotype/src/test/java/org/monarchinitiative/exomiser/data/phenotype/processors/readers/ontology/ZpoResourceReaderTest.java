@@ -1,0 +1,53 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology;
+
+import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
+import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
+
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+/**
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ */
+class ZpoResourceReaderTest {
+
+    @Test
+    void read() {
+        Resource zpResource = Resource.of("src/test/resources/data/fish/Dr_phenotype_labels_test.txt");
+        ZpoResourceReader instance = new ZpoResourceReader(zpResource);
+        List<OboOntologyTerm>  expected = List.of(
+                OboOntologyTerm.builder().id("ZP:0000002").label("somitogenesis disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000003").label("somite specification disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000004").label("determination of left/right asymmetry in lateral mesoderm disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000005").label("ectoderm development disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000006").label("lateral mesoderm development disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000007").label("blood vessel morphogenesis disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000008").label("hematopoietic stem cell differentiation disrupted, abnormal").build(),
+                OboOntologyTerm.builder().id("ZP:0000009").label("blood decreased amount, abnormal").build()
+        );
+        assertThat(instance.read(), equalTo(expected));
+    }
+}

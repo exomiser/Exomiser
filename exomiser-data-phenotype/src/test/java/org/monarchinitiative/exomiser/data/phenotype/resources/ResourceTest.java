@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,30 +18,98 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.monarchinitiative.exomiser.data.phenotype.resources;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ResourceTest {
+class ResourceTest {
 
-    /**
-     * Test of getStatus method, of class Resource.
-     */
     @Test
-    public void testGetStatus() {
-        Resource instance = new Resource("test");
-        assertThat(instance.getStatus(), equalTo("Status for: test                    Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED"));
+    void remoteResource() throws MalformedURLException {
+        Resource instance = Resource.builder()
+                .fileName("en_product1_test.xml")
+                .fileDirectory(Paths.get("src/test/resources/data"))
+                .remoteFileUrl("http://www.orphadata.org/data/xml")
+                .remoteFileName("en_product1.xml")
+                .build();
+
+        System.out.println(instance);
+        assertThat(instance.getFileName(), equalTo("en_product1_test.xml"));
+        assertThat(instance.getResourcePath(), equalTo(Paths.get("src/test/resources/data/en_product1_test.xml")));
+
+        assertTrue(instance.hasRemoteResource());
+        assertThat(instance.getRemoteResourceUrl(), equalTo(new URL("http://www.orphadata.org/data/xml/en_product1.xml")));
+        assertThat(instance.getRemoteFileName(), equalTo("en_product1.xml"));
+    }
+
+    @Test
+    void localResource() {
+        Resource instance = Resource.builder()
+                .fileName("hp-hp-phenodigm-cache.txt")
+                .fileDirectory(Paths.get("src/test/resources/data"))
+                .build();
+
+        System.out.println(instance);
+        assertThat(instance.getFileName(), equalTo("hp-hp-phenodigm-cache.txt"));
+        assertThat(instance.getResourcePath(), equalTo(Paths.get("src/test/resources/data/hp-hp-phenodigm-cache.txt")));
+
+        assertFalse(instance.hasRemoteResource());
+        assertThat(instance.getRemoteResourceUrl(), equalTo(null));
+        assertThat(instance.getRemoteFileName(), equalTo(""));
+    }
+
+    @Test
+    void checkNotNullPathAndFileName() {
+        assertThrows(NullPointerException.class, () -> Resource.builder()
+                .fileDirectory(null)
+                .fileName(null)
+                .build());
+    }
+
+    @Test
+    void wontBuildWithoutPathAndFileName() {
+        assertThrows(NullPointerException.class, () -> Resource.builder().build());
+    }
+
+    @Test
+    void throwsExceptionWithMalformedUrl() {
+        assertThrows(RuntimeException.class, () -> {
+            Resource.builder()
+                    .fileName("wibble")
+                    .fileDirectory(Paths.get(""))
+                    .remoteFileUrl("htp://thinggov")
+                    .remoteFileName("thing")
+                    .build();
+        });
+    }
+
+    @Test
+    void acceptsNullsInExternalUrlDefaultsToEmpty() {
+        Resource instance = Resource.builder()
+                .fileName("hp-hp-phenodigm-cache.txt")
+                .fileDirectory(Paths.get("src/test/resources/data"))
+                .remoteFileUrl(null)
+                .remoteFileName(null)
+                .build();
+
+        System.out.println(instance);
+        assertThat(instance.getFileName(), equalTo("hp-hp-phenodigm-cache.txt"));
+        assertThat(instance.getResourcePath(), equalTo(Paths.get("src/test/resources/data/hp-hp-phenodigm-cache.txt")));
+
+        assertThat(instance.hasRemoteResource(), equalTo(false));
+        assertThat(instance.getRemoteResourceUrl(), equalTo(null));
+        assertThat(instance.getRemoteFileName(), equalTo(""));
     }
 }

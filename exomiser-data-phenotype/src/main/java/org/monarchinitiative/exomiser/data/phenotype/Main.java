@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,23 +20,21 @@
 
 package org.monarchinitiative.exomiser.data.phenotype;
 
-import com.google.common.collect.ImmutableMap;
 import org.flywaydb.core.Flyway;
-import org.monarchinitiative.exomiser.data.phenotype.config.AppConfig;
-import org.monarchinitiative.exomiser.data.phenotype.resources.Resource;
-import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceDownloadHandler;
-import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceExtractionHandler;
-import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceParserHandler;
+import org.monarchinitiative.exomiser.data.phenotype.config.ApplicationConfigurationProperties;
+import org.monarchinitiative.exomiser.data.phenotype.config.ReleaseFileSystem;
+import org.monarchinitiative.exomiser.data.phenotype.processors.ResourceChecker;
+import org.monarchinitiative.exomiser.data.phenotype.processors.groups.DiseaseProcessingGroup;
+import org.monarchinitiative.exomiser.data.phenotype.processors.groups.GeneProcessingGroup;
+import org.monarchinitiative.exomiser.data.phenotype.processors.groups.OntologyProcessingGroup;
+import org.monarchinitiative.exomiser.data.phenotype.processors.groups.ProcessingGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Main class for building the exomiser database. This will attempt to download
@@ -48,81 +46,66 @@ public class Main implements ApplicationRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private final AppConfig appConfig;
-    private final Set<Resource> externalResources;
-    private final DataSource h2DataSource;
+    private final ApplicationConfigurationProperties applicationConfigurationProperties;
+    private final ReleaseFileSystem releaseFileSystem;
 
-    public Main(AppConfig appConfig, Set<Resource> resources, DataSource exomiserH2DataSource) {
-        this.appConfig = appConfig;
-        this.externalResources = resources;
-        this.h2DataSource = exomiserH2DataSource;
+    private final DiseaseProcessingGroup diseaseProcessingGroup;
+    private final GeneProcessingGroup geneProcessingGroup;
+    private final OntologyProcessingGroup ontologyProcessingGroup;
+
+    private final Flyway flyway;
+
+    public Main(ApplicationConfigurationProperties applicationConfigurationProperties,
+                ReleaseFileSystem releaseFileSystem,
+                DiseaseProcessingGroup diseaseProcessingGroup,
+                GeneProcessingGroup geneProcessingGroup,
+                OntologyProcessingGroup ontologyProcessingGroup,
+                Flyway flyway
+    ) {
+        this.applicationConfigurationProperties = applicationConfigurationProperties;
+        this.releaseFileSystem = releaseFileSystem;
+        this.diseaseProcessingGroup = diseaseProcessingGroup;
+        this.geneProcessingGroup = geneProcessingGroup;
+        this.ontologyProcessingGroup = ontologyProcessingGroup;
+        this.flyway = flyway;
     }
 
     @Override
     public void run(ApplicationArguments applicationArguments) {
-        //set the Paths
-        Path dataPath = appConfig.dataPath();
-        Path downloadPath = appConfig.downloadPath();
+        logger.info("Building Exomiser {}_phenotype database...", applicationConfigurationProperties.getBuildVersion());
 
-        //Download the Resources
-        boolean downloadResources = appConfig.downloadResources();
-        if (downloadResources) {
-            //download and unzip the necessary input files
-            logger.info("Downloading required flatfiles...");
-            ResourceDownloadHandler.downloadResources(externalResources, downloadPath);
-        } else {
-            logger.info("Skipping download of external resource files.");
-        }
-        //Path for processing the downloaded files to prepare them for parsing (i.e. unzip, untar)
-        Path proccessPath = appConfig.processPath();
-
-        //Extract the Resources
-        boolean extractResources = appConfig.extractResources();
-        if (extractResources) {
-            //process the downloaded files to prepare them for parsing (i.e. unzip, untar)
-            logger.info("Extracting required flatfiles...");
-            ResourceExtractionHandler.extractResources(externalResources, downloadPath, proccessPath);
-        } else {
-            logger.info("Skipping extraction of external resource files.");
-        }
-
-        //Parse the Resources
-        boolean parseResources = appConfig.parseResources();
-        if (parseResources) {
-            //parse the file and output to the project output dir.
-            logger.info("Parsing resource files...");
-            ResourceParserHandler.parseResources(externalResources, proccessPath, dataPath);
-
-        } else {
-            logger.info("Skipping parsing of external resource files.");
+        List<ProcessingGroup> processingGroups = List.of(diseaseProcessingGroup, geneProcessingGroup, ontologyProcessingGroup);
+        for (ProcessingGroup processingGroup : processingGroups) {
+            String processingGroupName = processingGroup.getName();
+            logger.info("==== Starting processing group: {} ====", processingGroupName);
+            if (applicationConfigurationProperties.isDownloadResources()) {
+                logger.info("Downloading {} required flatfiles...", processingGroupName);
+                processingGroup.downloadResources();
+            } else {
+                logger.info("Skipping download of {} external resource files.", processingGroupName);
+            }
+            if (applicationConfigurationProperties.isProcessResources()) {
+                ResourceChecker resourceChecker = ResourceChecker.check(processingGroup.getResources());
+                if (resourceChecker.resourcesPresent()) {
+                    logger.info("Processing resource {} files...", processingGroupName);
+                    processingGroup.processResources();
+                } else {
+                    logger.error("{} unable to run due to missing resource(s):", processingGroupName);
+                    resourceChecker.getMissingResources()
+                            .forEach(externalResource -> logger.error("{} MISSING RESOURCE: {}", processingGroupName, externalResource.getResourcePath()));
+                }
+            } else {
+                logger.info("Skipping processing of {} external resource files.", processingGroupName);
+            }
         }
 
-        logger.info("Statuses for external resources:");
-        for (Resource resource : externalResources) {
-            logger.info(resource.getStatus());
-        }
-
-        boolean migrateH2 = appConfig.migrateH2();
+        boolean migrateH2 = applicationConfigurationProperties.isMigrateDatabase();
         if (migrateH2) {
             logger.info("Migrating exomiser databases...");
-            migrateH2Database(dataPath);
+            flyway.clean();
+            flyway.migrate();
         } else {
             logger.info("Skipping migration of H2 database.");
         }
-    }
-
-    private void migrateH2Database(Path importDataPath) {
-        //define where the data import path is for Flyway to read in the data
-        Map<String, String> propertyPlaceHolders = ImmutableMap.of("import.path", importDataPath.toString());
-
-        logger.info("Migrating exomiser H2 database...");
-        Flyway h2Flyway = Flyway.configure()
-                .dataSource(h2DataSource)
-                .schemas("EXOMISER")
-                .locations("migration/common", "migration/h2")
-                .placeholders(propertyPlaceHolders)
-                .load();
-        h2Flyway.clean();
-        h2Flyway.migrate();
     }
 }
