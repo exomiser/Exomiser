@@ -47,22 +47,22 @@ class CommandLineOptionsParserTest {
     @Test
     void parseIllegalAnalysisPresetCombination() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-                "--analysis", resource("pfeiffer_analysis_v8_12.yml"),
+                "--analysis", resource("pfeiffer-analysis-v8-12.yml"),
                 "--preset", "exome"));
     }
 
     @Test
     void parseIllegalJobCombination() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-                "--job", resource("pfeiffer_job_sample.yml"),
+                "--job", resource("pfeiffer-job-sample.yml"),
                 "--preset", "exome"));
     }
 
     @Test
     void parseIllegalJobOutputCombination() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-                "--job", resource("pfeiffer_job_sample.yml"),
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--job", resource("pfeiffer-job-sample.yml"),
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         ));
     }
 
@@ -70,14 +70,14 @@ class CommandLineOptionsParserTest {
     void parseIllegalPresetOutputCombination() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
                 "--preset", "exome",
-                "--output", resource("pfeiffer_output_options.yml")
+                "--output", resource("pfeiffer-output-options.yml")
         ));
     }
 
     @Test
     void parseIllegalOutputCombination() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-                "--output", resource("pfeiffer_output_options.yml")
+                "--output", resource("pfeiffer-output-options.yml")
         ));
     }
 

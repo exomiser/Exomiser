@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.cli;
 
+import com.google.protobuf.Message;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
@@ -160,26 +161,38 @@ public class CommandLineJobReader {
     }
 
     private JobProto.Job readSampleJob(Path samplePath) {
+        logger.debug("Reading sample from {}", samplePath);
         JobProto.Job.Builder jobBuilder = JobProto.Job.newBuilder();
-        SampleProto.Sample sampleProto = ProtoParser.parseFromJsonOrYaml(SampleProto.Sample.newBuilder(), samplePath)
-                .build();
+        SampleProto.Sample sampleProto = tryParseJsonOrYaml(SampleProto.Sample.newBuilder(), samplePath).build();
         if (!sampleProto.equals(SampleProto.Sample.getDefaultInstance())) {
             jobBuilder.setSample(sampleProto);
             return jobBuilder.build();
         }
         //try phenopacket:
-        Phenopacket phenopacket = ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), samplePath).build();
-        if (!phenopacket.equals(Phenopacket.getDefaultInstance())) {
+        Phenopacket phenopacket = tryParseJsonOrYaml(Phenopacket.newBuilder(), samplePath).build();
+        // note that the underlying ProtoParser uses permissive parsing so it is possible to extract an imperfectly
+        // formed phenopacket from a family message so these need to be checked before returning.
+        if (!phenopacket.equals(Phenopacket.getDefaultInstance()) && !phenopacket.getPhenotypicFeaturesList()
+                .isEmpty()) {
             jobBuilder.setPhenopacket(phenopacket);
             return jobBuilder.build();
         }
         //try family:
-        Family family = ProtoParser.parseFromJsonOrYaml(Family.newBuilder(), samplePath).build();
+        Family family = tryParseJsonOrYaml(Family.newBuilder(), samplePath).build();
         if (!family.equals(Family.getDefaultInstance())) {
             jobBuilder.setFamily(family);
             return jobBuilder.build();
         }
         throw new IllegalArgumentException("Unable to parse sample from file " + samplePath + " please check the format");
+    }
+
+    private <U extends Message.Builder> U tryParseJsonOrYaml(U messageBuilder, Path path) {
+        try {
+            return ProtoParser.parseFromJsonOrYaml(messageBuilder, path);
+        } catch (Exception exception) {
+            logger.info("{} not parsable as a {} ...", path, messageBuilder.getClass().getName());
+        }
+        return messageBuilder;
     }
 
     private AnalysisProto.Preset parsePreset(String presetValue) {

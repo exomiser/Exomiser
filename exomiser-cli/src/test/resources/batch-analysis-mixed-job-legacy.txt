@@ -1,2 +1,2 @@
-src/test/resources/pfeiffer_analysis_v8_12.yml
-src/test/resources/pfeiffer_job_phenopacket.yml
+src/test/resources/pfeiffer-analysis-v8-12.yml
+src/test/resources/pfeiffer-job-phenopacket.yml

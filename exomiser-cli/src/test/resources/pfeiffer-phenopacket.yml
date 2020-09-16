@@ -23,7 +23,7 @@ phenotypicFeatures:
       id: HP:0000244
       label: Brachyturricephaly
 htsFiles:
-  - uri: file:///data/Pfeiffer.vcf
+  - uri: examples/Pfeiffer.vcf
     htsFormat: VCF
     genomeAssembly: hg19
 metaData:

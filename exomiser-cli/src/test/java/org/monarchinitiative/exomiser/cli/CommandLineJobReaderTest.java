@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoBuilder;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
 
@@ -92,7 +93,7 @@ class CommandLineJobReaderTest {
                     .setLabel("Brachyturricephaly")
                     .build()))
             .addHtsFiles(HtsFile.newBuilder()
-                    .setUri("file:///data/Pfeiffer.vcf")
+                    .setUri("examples/Pfeiffer.vcf")
                     .setHtsFormat(HtsFile.HtsFormat.VCF)
                     .setGenomeAssembly("hg19")
                     .build())
@@ -111,6 +112,71 @@ class CommandLineJobReaderTest {
                             .setIriPrefix("http://purl.obolibrary.org/obo/HP_")
                             .build())
                     .setPhenopacketSchemaVersion("1.0.0")
+                    .build())
+            .build();
+
+    private static final Family FAMILY = Family.newBuilder()
+            .setId("ISDBM322017-family")
+            .setProband(Phenopacket.newBuilder()
+                    .setSubject(Individual.newBuilder()
+                            .setId("ISDBM322017")
+                            .setSex(Sex.FEMALE)
+                            .build())
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0001159")
+                            .setLabel("Syndactyly")
+                            .build()))
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0000486")
+                            .setLabel("Strabismus")
+                            .build()))
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0000327")
+                            .setLabel("Hypoplasia of the maxilla")
+                            .build()))
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0000520")
+                            .setLabel("Proptosis")
+                            .build()))
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0000316")
+                            .setLabel("Hypertelorism")
+                            .build()))
+                    .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder()
+                            .setId("HP:0000244")
+                            .setLabel("Brachyturricephaly")
+                            .build()))
+                    .build())
+            .setPedigree(Pedigree.newBuilder()
+                    .addPersons(Pedigree.Person.newBuilder()
+                            .setIndividualId("ISDBM322017")
+                            .setPaternalId("ISDBM322016")
+                            .setMaternalId("ISDBM322018")
+                            .setSex(Sex.FEMALE)
+                            .setAffectedStatus(Pedigree.Person.AffectedStatus.AFFECTED)
+                            .build())
+                    .addPersons(Pedigree.Person.newBuilder()
+                            .setIndividualId("ISDBM322015")
+                            .setPaternalId("ISDBM322016")
+                            .setMaternalId("ISDBM322018")
+                            .setSex(Sex.MALE)
+                            .setAffectedStatus(Pedigree.Person.AffectedStatus.UNAFFECTED)
+                            .build())
+                    .addPersons(Pedigree.Person.newBuilder()
+                            .setIndividualId("ISDBM322016")
+                            .setSex(Sex.MALE)
+                            .setAffectedStatus(Pedigree.Person.AffectedStatus.UNAFFECTED)
+                            .build())
+                    .addPersons(Pedigree.Person.newBuilder()
+                            .setIndividualId("ISDBM322018")
+                            .setSex(Sex.FEMALE)
+                            .setAffectedStatus(Pedigree.Person.AffectedStatus.UNAFFECTED)
+                            .build())
+                    .build())
+            .addHtsFiles(HtsFile.newBuilder()
+                    .setUri("examples/Pfeiffer-quartet.vcf.gz")
+                    .setHtsFormat(HtsFile.HtsFormat.VCF)
+                    .setGenomeAssembly("GRCh37")
                     .build())
             .build();
 
@@ -210,7 +276,7 @@ class CommandLineJobReaderTest {
     void readIllegalAnalysisOutputNoSampleCombination() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--analysis", "src/test/resources/exome-analysis.yml",
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         assertThrows(CommandLineParseError.class, () -> instance.readJobs(commandLine));
     }
@@ -219,21 +285,29 @@ class CommandLineJobReaderTest {
     void readIllegalAnalysisBatchOutputNoSampleCombination() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--analysis-batch", "src/test/resources/batch-analysis-job.txt",
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         assertThrows(CommandLineParseError.class, () -> instance.readJobs(commandLine));
     }
 
     @Test
+    void readAnalysisIncorrectInputFile() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis", "src/test/resources/application.properties"
+        );
+        assertThrows(IllegalArgumentException.class, () -> instance.readJobs(commandLine));
+    }
+
+    @Test
     void readCliAnalysisLegacy() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/pfeiffer_analysis_v8_12.yml");
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/pfeiffer-analysis-v8-12.yml");
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
         assertThat(jobs, equalTo(List.of(PFEIFFER_SAMPLE_JOB)));
     }
 
     @Test
     void readCliAnalysisWithJobSample() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/pfeiffer_job_sample.yml");
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/pfeiffer-job-sample.yml");
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
         assertThat(jobs, equalTo(List.of(PFEIFFER_SAMPLE_JOB)));
     }
@@ -281,14 +355,14 @@ class CommandLineJobReaderTest {
 
     @Test
     void readCliJobSample() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "src/test/resources/pfeiffer_job_sample.yml");
+        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "src/test/resources/pfeiffer-job-sample.yml");
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
         assertThat(jobs, equalTo(List.of(PFEIFFER_SAMPLE_JOB)));
     }
 
     @Test
     void readCliJobPhenopacket() {
-        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "src/test/resources/pfeiffer_job_phenopacket.yml");
+        CommandLine commandLine = CommandLineOptionsParser.parse("--job", "src/test/resources/pfeiffer-job-phenopacket.yml");
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
         assertThat(jobs, equalTo(List.of(PFEIFFER_PHENOPACKET_JOB)));
     }
@@ -296,9 +370,9 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleAnalysisOutput() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_sample.yml",
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
                 "--analysis", "src/test/resources/exome-analysis.yml",
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
         assertThat(jobs, equalTo(List.of(PFEIFFER_SAMPLE_JOB)));
@@ -307,7 +381,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleOnlyWithSample() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_sample.yml"
+                "--sample", "src/test/resources/pfeiffer-sample.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -323,7 +397,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleOnlyWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml"
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -339,7 +413,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSamplePresetExome() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_sample.yml",
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
                 "--preset=exome"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -354,9 +428,25 @@ class CommandLineJobReaderTest {
     }
 
     @Test
+    void readCliFamilyExome() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-family.yml"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setFamily(FAMILY)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
     void readCliSampleIllegalPreset() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_sample.yml",
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
                 "--preset=wibble!"
         );
         assertThrows(IllegalArgumentException.class, () -> instance.readJobs(commandLine));
@@ -365,7 +455,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSamplePresetGenome() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_sample.yml",
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
                 "--preset=genome"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -382,7 +472,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSamplePresetWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml",
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--preset=exome"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -399,9 +489,9 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSamplePresetOutputWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml",
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--preset=exome",
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -417,8 +507,8 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleOutputWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml",
-                "--output", "src/test/resources/pfeiffer_output_options.yml"
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -434,7 +524,7 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleAnalysisWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml",
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--analysis", "src/test/resources/exome-analysis.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -451,8 +541,8 @@ class CommandLineJobReaderTest {
     @Test
     void readCliSampleWithLegacyAnalysisThrowsException() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
-                "--sample", "src/test/resources/pfeiffer_phenopacket.yml",
-                "--analysis", "src/test/resources/pfeiffer_analysis_v8_12.yml"
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/pfeiffer-analysis-v8-12.yml"
         );
         // the old analysis is really now a job, so it could be read as a Job, but then the sample would be over-writing
         // the sample details supplied in the old analysis job which can make for confusing behaviour. For this reason
