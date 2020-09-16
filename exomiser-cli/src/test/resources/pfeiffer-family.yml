@@ -1,0 +1,47 @@
+---
+id: ISDBM322017-family
+proband:
+  subject:
+    id: ISDBM322017
+    sex: FEMALE
+  phenotypicFeatures:
+    - type:
+        id: HP:0001159
+        label: Syndactyly
+    - type:
+        id: HP:0000486
+        label: Strabismus
+    - type:
+        id: HP:0000327
+        label: Hypoplasia of the maxilla
+    - type:
+        id: HP:0000520
+        label: Proptosis
+    - type:
+        id: HP:0000316
+        label: Hypertelorism
+    - type:
+        id: HP:0000244
+        label: Brachyturricephaly
+pedigree:
+  persons:
+    - individualId: ISDBM322017
+      paternalId: ISDBM322016
+      maternalId: ISDBM322018
+      sex: FEMALE
+      affectedStatus: AFFECTED
+    - individualId: ISDBM322015
+      paternalId: ISDBM322016
+      maternalId: ISDBM322018
+      sex: MALE
+      affectedStatus: UNAFFECTED
+    - individualId: ISDBM322016
+      sex: MALE
+      affectedStatus: UNAFFECTED
+    - individualId: ISDBM322018
+      sex: FEMALE
+      affectedStatus: UNAFFECTED
+htsFiles:
+  - uri: examples/Pfeiffer-quartet.vcf.gz
+    htsFormat: VCF
+    genomeAssembly: GRCh37
