@@ -30,13 +30,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class JobReaderTest {
+
+    @Test
+    void readNonJobFileThrowsException() {
+        Path someRandomVcfFile = Paths.get("src/test/resources/headerOnly.vcf");
+        assertThrows(IllegalArgumentException.class, () -> JobReader.readJob(someRandomVcfFile));
+    }
 
     @Test
     void readLegacyJobFromFile() {
