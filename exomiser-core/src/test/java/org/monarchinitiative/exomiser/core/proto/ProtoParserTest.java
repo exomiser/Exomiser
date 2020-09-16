@@ -31,6 +31,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -50,6 +51,11 @@ class ProtoParserTest {
     private Family parseFamily(Path path) {
         Family.Builder builder = ProtoParser.parseFromJsonOrYaml(Family.newBuilder(), path);
         return builder.build();
+    }
+
+    @Test
+    void readIncorrectFileTypeThrowsException() {
+        assertThrows(ProtoParser.ProtoParserException.class, () -> parseSample(Paths.get("src/test/resources/minimal.vcf")));
     }
 
     @Test

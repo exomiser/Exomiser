@@ -55,7 +55,9 @@ public class ProtoParser {
         try (Reader fileReader = Files.newBufferedReader(path)) {
             return parseYaml(protoBuilder, fileReader);
         } catch (IOException e) {
-            throw new ProtoParserException("Unable to parse file " + path, e);
+            throw new ProtoParserException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
+                    .getClass()
+                    .getName() + " from file " + path, e);
         }
     }
 
@@ -69,7 +71,9 @@ public class ProtoParser {
         try (Reader stringReader = new StringReader(inputString)) {
             return parseYaml(protoBuilder, stringReader);
         } catch (IOException e) {
-            throw new ProtoParserException("Unable to parse input string", e);
+            throw new ProtoParserException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
+                    .getClass()
+                    .getName() + " from input string " + inputString.substring(20), e);
         }
     }
 
