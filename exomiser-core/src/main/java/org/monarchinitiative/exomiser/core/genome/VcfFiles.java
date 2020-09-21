@@ -27,6 +27,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -74,13 +75,13 @@ public class VcfFiles {
     }
 
     /**
-     * Reads the sample identifiers from the VCF header.
+     * Reads the sample identifiers from the VCF header. This method will accept a null input and return an empty list.
      *
      * @param vcfPath path to the VCF file
      * @return a list of sample identifiers in order of appearance in the genotype columns. May be empty.
      * @since 13.0.0
      */
-    public static List<String> readSampleIdentifiers(Path vcfPath) {
+    public static List<String> readSampleIdentifiers(@Nullable Path vcfPath) {
         if (vcfPath == null) {
             return ImmutableList.of();
         }
@@ -88,7 +89,7 @@ public class VcfFiles {
             VCFHeader vcfHeader = readVcfHeader(vcfPath);
             return ImmutableList.copyOf(vcfHeader.getGenotypeSamples());
         } catch (Exception ex) {
-            logger.debug("Error reading VCF sample identifiers from file {}", vcfPath);
+            logger.error("Unable to read VCF sample identifiers from file {}", vcfPath);
         }
         return ImmutableList.of();
     }

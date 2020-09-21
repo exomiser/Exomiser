@@ -35,6 +35,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -85,6 +86,19 @@ public class VcfFilesTest {
         Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
         VCFHeader header = VcfFiles.readVcfHeader(vcfPath);
         assertThat(header.getGenotypeSamples(), equalTo(ImmutableList.of("sample")));
+    }
+
+    @Test
+    public void testReadSampleIdentifiersNullPath() {
+        List<String> sampleIdentifiers = VcfFiles.readSampleIdentifiers(null);
+        assertTrue(sampleIdentifiers.isEmpty());
+    }
+
+    @Test
+    public void testReadSampleIdentifiersNonExistentFile() {
+        Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
+        List<String> sampleIdentifiers = VcfFiles.readSampleIdentifiers(vcfPath);
+        assertTrue(sampleIdentifiers.isEmpty());
     }
 
     @Test
