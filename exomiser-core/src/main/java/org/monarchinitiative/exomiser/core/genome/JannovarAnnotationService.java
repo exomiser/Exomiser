@@ -29,7 +29,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
 import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,14 +108,14 @@ public class JannovarAnnotationService {
         return VariantAnnotations.buildEmptyList(genomeVariant);
     }
 
-    public SVAnnotations annotateStructuralVariant(StructuralType structuralType, String alt, String startContig, int startPos, ConfidenceInterval startCiIntervals, String endContig, int endPos, ConfidenceInterval endCiIntervals) {
+    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String startContig, int startPos, ConfidenceInterval startCiIntervals, String endContig, int endPos, ConfidenceInterval endCiIntervals) {
         GenomePosition start = buildGenomePosition(startContig, startPos);
         GenomePosition end = buildGenomePosition(endContig, endPos);
 
-        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(structuralType, alt, start, startCiIntervals, end, endCiIntervals);
+        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startCiIntervals, end, endCiIntervals);
         // Unsupported types
-        if (structuralType == StructuralType.NON_STRUCTURAL) {
-            logger.info("{} is not a supported structural type", structuralType);
+        if (!variantType.isStructural()) {
+            logger.info("{} is not a supported structural type", variantType);
             return SVAnnotations.buildEmptyList(svGenomeVariant);
         }
 
@@ -131,7 +131,7 @@ public class JannovarAnnotationService {
         return SVAnnotations.buildEmptyList(svGenomeVariant);
     }
 
-    private SVGenomeVariant buildSvGenomeVariant(StructuralType structuralType, String alt, GenomePosition start, ConfidenceInterval startCiIntervals, GenomePosition end, ConfidenceInterval endCiIntervals) {
+    private SVGenomeVariant buildSvGenomeVariant(VariantType variantType, String alt, GenomePosition start, ConfidenceInterval startCiIntervals, GenomePosition end, ConfidenceInterval endCiIntervals) {
 
         int startCiLower = startCiIntervals.getLowerBound();
         int startCiUpper = startCiIntervals.getUpperBound();
@@ -139,7 +139,7 @@ public class JannovarAnnotationService {
         int endCiLower = endCiIntervals.getLowerBound();
         int endCiUpper = endCiIntervals.getUpperBound();
 
-        StructuralType svSubType = structuralType.getSubType();
+        VariantType svSubType = variantType.getSubType();
         switch (svSubType) {
             case DEL:
                 return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
