@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,27 +36,27 @@ import java.util.List;
  */
 public interface Variant extends VariantCoordinates {
 
-    public String getGeneSymbol();
+    String getGeneSymbol();
 
-    public String getGeneId();
+    String getGeneId();
 
-    public VariantEffect getVariantEffect();
+    VariantEffect getVariantEffect();
 
-    public List<TranscriptAnnotation> getTranscriptAnnotations();
+    List<TranscriptAnnotation> getTranscriptAnnotations();
 
-    public boolean hasTranscriptAnnotations();
+    boolean hasTranscriptAnnotations();
 
     @JsonIgnore
-    public default boolean isNonCodingVariant() {
+    default boolean isNonCodingVariant() {
         return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
     }
 
     /**
-     * @since 12.0.0
      * @return true if the Variant is in a coding region, otherwise false
+     * @since 12.0.0
      */
     @JsonIgnore
-    public default boolean isCodingVariant() {
+    default boolean isCodingVariant() {
         return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
     }
 }

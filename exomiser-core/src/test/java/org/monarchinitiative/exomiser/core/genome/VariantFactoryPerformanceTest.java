@@ -180,7 +180,7 @@ public class VariantFactoryPerformanceTest {
         return variantEvaluation -> System.out.printf("%d:%d-%d %s>%s length:%d %s %s %s  %s %s score:%f freq:%f (max AF:%f) path:%f (%s)%n",
                 variantEvaluation.getChromosome(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
                 variantEvaluation.getRef(), variantEvaluation.getAlt(),
-                variantEvaluation.getLength(), variantEvaluation.getStructuralType(), variantEvaluation.getVariantEffect(),
+                variantEvaluation.getLength(), variantEvaluation.getVariantType(), variantEvaluation.getVariantEffect(),
                 variantEvaluation.getGeneSymbol(),
                 variantEvaluation.getTranscriptAnnotations().get(0).getAccession(),
                 variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
@@ -267,7 +267,7 @@ public class VariantFactoryPerformanceTest {
         }
 
         @Override
-        public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, StructuralType structuralType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
+        public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
             VariantAnnotation variantAnnotation = VariantAnnotation.builder()
                     .chromosomeName(startContig)
                     .chromosome(Contig.parseId(startContig))
@@ -276,12 +276,12 @@ public class VariantFactoryPerformanceTest {
                     .startMax(ciStart.getMaxPos(startPos))
                     .ref(ref)
                     .alt(alt)
-                    .endContig(endContig)
+                    .endChromosomeName(endContig)
                     .endChromosome(Contig.parseId(endContig))
                     .end(endPos)
                     .endMin(ciEnd.getMinPos(endPos))
                     .endMax(ciEnd.getMinPos(endPos))
-                    .structuralType(structuralType)
+                    .variantType(variantType)
                     .geneSymbol("GENE")
                     .build();
             return ImmutableList.of(variantAnnotation);

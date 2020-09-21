@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,30 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import javax.annotation.Nonnull;
+import java.util.Objects;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public enum StructuralType {
-    // encompasses all non-structural variants, i.e. SNV, MNV, INDEL < 999 bases
-    NON_STRUCTURAL,
-    // Structural, but not of a recognised type
+public enum VariantType {
+
+    // default unrecognised type
     UNKNOWN,
+
+    // encompasses all 'non-structural' variants, i.e. SNV, MNV, INDEL < 50 bases
+    // n.b. there are differences in definitions of how big a structural variant is ranging from
+    // >= 50 (An integrated map of structural variation in 2,504 human genomes https://www.nature.com/articles/nature15394,
+    //   A structural variation reference for medical and population genetics https://www.nature.com/articles/s41586-020-2287-8)
+    // >150 (HTSJDK VariantContext.MAX_ALLELE_SIZE_FOR_NON_SV)
+    // >=1000 (Jannovar VariantAnnotator)
+    SNV,
+    MNV,    // a multi-nucleotide variation
+    INDEL, // non-symbolic and < 999 bases TODO: what cutoff? or remove in favour of INS or DEL
+    // start, end, length
+    // pos
+
+    SYMBOLIC,
     // VCF standard reserved values for structural variants
     DEL,
     //DEL:ME
@@ -72,31 +88,39 @@ public enum StructuralType {
     //TRA - Translocation from Sniffles
     TRA;
 
-    private StructuralType baseType;
-    private StructuralType subType;
+    private final VariantType baseType;
+    private final VariantType subType;
 
-    StructuralType() {
+    VariantType() {
         this.baseType = this;
         this.subType = this;
     }
 
-    StructuralType(StructuralType parent) {
+    VariantType(VariantType parent) {
         this.baseType = parent;
         this.subType = this;
     }
 
-    StructuralType(StructuralType baseType, StructuralType subType) {
+    VariantType(VariantType baseType, VariantType subType) {
         this.baseType = baseType;
         this.subType = subType;
     }
 
-    public static StructuralType parseValue(String value) {
-        String stripped = trimInput(value);
+    public static VariantType parseValue(@Nonnull String value) {
+        String stripped = trimAngleBrackets(Objects.requireNonNull(value));
         // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
         if (stripped.startsWith("STR")) {
             return STR;
         }
         switch (stripped) {
+            case "SNP":
+            case "SNV":
+                return SNV;
+            case "MNP":
+            case "MNV":
+                return MNV;
+            case "INDEL":
+                return INDEL;
             case "DEL":
                 return DEL;
             case "INS":
@@ -170,25 +194,46 @@ public enum StructuralType {
         if (stripped.startsWith("BND")) {
             return BND;
         }
+        if (isSymbolic(value)) {
+            return SYMBOLIC;
+        }
         return UNKNOWN;
     }
 
-    private static String trimInput(String value) {
+//    public static VariantType parseAllele(String ref, String alt) {
+//        if (AllelePosition.isSymbolic(ref, alt)) {
+//            return parseValue(alt);
+//        }
+//        if (ref.length() == alt.length()) {
+//            if (alt.length() == 1) {
+//                return VariantType.SNV;
+//            }
+//            return VariantType.MNV;
+//        }
+////        return AllelePosition.isInsertion(ref, alt) ? VariantType.INS : VariantType.DEL;
+//        return VariantType.INDEL;
+//    }
+
+    private static boolean isSymbolic(String value) {
+        return AllelePosition.isSymbolic(value);
+    }
+
+    private static String trimAngleBrackets(String value) {
         if (value.startsWith("<") && value.endsWith(">")) {
             return value.substring(1, value.length() - 1);
         }
         return value;
     }
 
-    public StructuralType getBaseType() {
+    public VariantType getBaseType() {
         return baseType;
     }
 
-    public StructuralType getSubType() {
+    public VariantType getSubType() {
         return subType;
     }
 
     public boolean isStructural() {
-        return this != NON_STRUCTURAL;
+        return this != SNV && this != INDEL && this != MNV;
     }
 }

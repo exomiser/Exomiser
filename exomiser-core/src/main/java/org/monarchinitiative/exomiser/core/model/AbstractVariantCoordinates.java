@@ -43,14 +43,14 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     final int startMin;
     final int startMax;
 
-    final String endContig;
+    final String endChromosomeName;
     final int endChromosome;
     final int end;
 
     final int endMin;
     final int endMax;
 
-    final StructuralType structuralType;
+    final VariantType variantType;
 
     protected AbstractVariantCoordinates(Builder<?> builder) {
         this.genomeAssembly = builder.genomeAssembly;
@@ -59,28 +59,19 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         this.start = builder.start;
         this.ref = builder.ref;
         this.alt = builder.alt;
-        this.length = calculateLength(builder.length, ref, alt);
+        this.length = builder.length;
 
         // additional fields for structural variants
         this.startMin = builder.startMin;
         this.startMax = builder.startMax;
 
-        this.endContig = builder.endContig.isEmpty() ? builder.chromosomeName : builder.endContig;
+        this.endChromosomeName = builder.endChromosomeName.isEmpty() ? builder.chromosomeName : builder.endChromosomeName;
         this.endChromosome = builder.endChromosome == 0 ? builder.startChr : builder.endChromosome;
         this.end = builder.end == 0 ? builder.start : builder.end;
         this.endMin = builder.endMin;
         this.endMax = builder.endMax;
 
-        this.structuralType = builder.structuralType;
-    }
-
-    // This is defined in VCF 4.3 as:
-    // #INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
-    private int calculateLength(int length, String ref, String alt) {
-        if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
-            return alt.length() - ref.length();
-        }
-        return length;
+        this.variantType = builder.variantType;
     }
 
     @Override
@@ -109,8 +100,8 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
     @Override
-    public StructuralType getStructuralType() {
-        return structuralType;
+    public VariantType getVariantType() {
+        return variantType;
     }
 
     @Override
@@ -133,8 +124,10 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         return startMax;
     }
 
-
-    // TODO: no endChromosomeName/Contig???
+    @Override
+    public String getEndChromosomeName() {
+        return endChromosomeName;
+    }
 
     @Override
     public int getEndChromosome() {
@@ -171,15 +164,15 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
                 endMax == that.endMax &&
                 genomeAssembly == that.genomeAssembly &&
                 chromosomeName.equals(that.chromosomeName) &&
+                endChromosomeName.equals(that.endChromosomeName) &&
                 ref.equals(that.ref) &&
                 alt.equals(that.alt) &&
-                endContig.equals(that.endContig) &&
-                structuralType == that.structuralType;
+                variantType == that.variantType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, chromosomeName, chromosome, start, ref, alt, startMin, startMax, endContig, endChromosome, end, endMin, endMax, length, structuralType);
+        return Objects.hash(genomeAssembly, chromosomeName, chromosome, start, ref, alt, startMin, startMax, endChromosomeName, endChromosome, end, endMin, endMax, length, variantType);
     }
 
     @Override
@@ -193,13 +186,13 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
                 ", alt='" + alt + '\'' +
                 ", startMin=" + startMin +
                 ", startMax=" + startMax +
-                ", endContig='" + endContig + '\'' +
+                ", endChromosomeName='" + endChromosomeName + '\'' +
                 ", endChromosome=" + endChromosome +
                 ", endPos=" + end +
                 ", endMin=" + endMin +
                 ", endMax=" + endMax +
                 ", length=" + length +
-                ", structuralType=" + structuralType +
+                ", variantType=" + variantType +
                 '}';
     }
 
@@ -211,7 +204,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         private String alt = "";
 
         private int length = 0;
-        private StructuralType structuralType = StructuralType.NON_STRUCTURAL;
+        private VariantType variantType = VariantType.UNKNOWN;
 
         private String chromosomeName = "";
         private int startChr;
@@ -219,7 +212,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         private int startMin;
         private int startMax;
 
-        private String endContig = "";
+        private String endChromosomeName = "";
         private int endChromosome;
         private int end;
         private int endMin;
@@ -230,7 +223,6 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        // TODO: rename to contig?
         public T chromosomeName(String chromosomeName) {
             this.chromosomeName = Objects.requireNonNull(chromosomeName);
             return self();
@@ -261,8 +253,8 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        public T structuralType(StructuralType structuralType) {
-            this.structuralType = Objects.requireNonNull(structuralType);
+        public T variantType(VariantType variantType) {
+            this.variantType = Objects.requireNonNull(variantType);
             return self();
         }
 
@@ -276,8 +268,8 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        public T endContig(String endContig) {
-            this.endContig = Objects.requireNonNull(endContig);
+        public T endChromosomeName(String endChromosomeName) {
+            this.endChromosomeName = Objects.requireNonNull(endChromosomeName);
             return self();
         }
 

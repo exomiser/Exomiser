@@ -868,7 +868,7 @@ public class VariantEvaluationTest {
     @Test
     void testToGnomadSvIns() {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
-                .structuralType(StructuralType.INS)
+                .variantType(VariantType.INS)
                 .length(50)
                 .build();
         assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> 50bp"));
@@ -877,7 +877,7 @@ public class VariantEvaluationTest {
     @Test
     void lengthFormat() {
         VariantEvaluation.Builder sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
-                .structuralType(StructuralType.INS);
+                .variantType(VariantType.INS);
 
         assertThat(toGnomadWithLength(sv, 0), equalTo("1-100-100-A-<INS> 0bp"));
         assertThat(toGnomadWithLength(sv, 8), equalTo("1-100-100-A-<INS> 8bp"));
@@ -910,7 +910,7 @@ public class VariantEvaluationTest {
         VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<DEL>")
                 .end(150)
                 .length(50)
-                .structuralType(StructuralType.DEL)
+                .variantType(VariantType.DEL)
                 .build();
         assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> 50bp"));
     }

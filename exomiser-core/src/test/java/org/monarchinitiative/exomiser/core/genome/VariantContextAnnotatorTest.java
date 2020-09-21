@@ -22,9 +22,10 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 
 import java.util.List;
 
@@ -40,7 +41,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class VariantContextAnnotatorTest {
 
-    private final VariantContextAnnotator instance = new VariantContextAnnotator(TestFactory.buildDefaultVariantAnnotator());
+    protected VariantContextAnnotator instance;
+
+    @BeforeEach
+    void setUp() {
+        instance = new VariantContextAnnotator(TestFactory.buildDefaultVariantAnnotator());
+    }
 
     @Test
     public void testKnownSingleSampleSnp() {
@@ -76,8 +82,11 @@ class VariantContextAnnotatorTest {
 
         assertThat(variants.size(), equalTo(1));
         VariantAnnotation variantAnnotation = variants.get(0);
+        // note that the VariantEffect will be 'INTERGENIC_VARIANT' unless the variant overlaps with a gene. In this case there
+        // are no transcript models covering this region loaded in the test data, so 'INTERGENIC_VARIANT' is correct
+        // functionality here.
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
-        assertThat(variantAnnotation.getStructuralType(), equalTo(StructuralType.DEL));
+        assertThat(variantAnnotation.getVariantType(), equalTo(VariantType.DEL));
 
         assertThat(variantAnnotation.getStart(), equalTo(212471179));
         assertThat(variantAnnotation.getStartMin(), equalTo(212471179 - 471));

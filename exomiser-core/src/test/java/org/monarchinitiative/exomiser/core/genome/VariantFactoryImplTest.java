@@ -398,7 +398,7 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_TRUNCATION));
-        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+        assertThat(variantEvaluation.getVariantType(), equalTo(VariantType.DEL));
 
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
         assertThat(variantEvaluation.getStartMin(), equalTo(123256215 - 56));
@@ -425,8 +425,11 @@ public class VariantFactoryImplTest {
                 .collect(toList());
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
+        // note that the VariantEffect will be 'INTERGENIC_VARIANT' unless the variant overlaps with a gene. In this case there
+        // are no transcript models covering this region loaded in the test data, so 'INTERGENIC_VARIANT' is correct
+        // functionality here.
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
-        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.DEL));
+        assertThat(variantEvaluation.getVariantType(), equalTo(VariantType.DEL));
 
         assertThat(variantEvaluation.getStart(), equalTo(212471179));
         assertThat(variantEvaluation.getStartMin(), equalTo(212471179 - 471));
@@ -454,7 +457,7 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
-        assertThat(variantEvaluation.getStructuralType(), equalTo(StructuralType.INS_ME_ALU));
+        assertThat(variantEvaluation.getVariantType(), equalTo(VariantType.INS_ME_ALU));
 
         assertThat(variantEvaluation.getStart(), equalTo(112992009));
         assertThat(variantEvaluation.getStartMin(), equalTo(112992009));

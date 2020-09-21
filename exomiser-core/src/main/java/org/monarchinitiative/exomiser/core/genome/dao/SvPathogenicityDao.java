@@ -22,8 +22,8 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
@@ -228,9 +228,9 @@ public class SvPathogenicityDao implements PathogenicityDao {
             String clnsig = rs.getString("CLNSIG");
             String clinvarAccession = rs.getString("CLINVAR_ACCESSIONS");
 
-            StructuralType structuralType = StructuralType.valueOf(svType);
+            VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
-            if (structuralType.getBaseType() == variant.getStructuralType().getBaseType()) {
+            if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, svType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
                 svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
                 results.add(svResult);

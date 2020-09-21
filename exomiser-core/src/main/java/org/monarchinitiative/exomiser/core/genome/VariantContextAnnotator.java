@@ -24,8 +24,10 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -51,32 +53,49 @@ public class VariantContextAnnotator {
         // Structural variants are 'symbolic' in that they have no actual reported bases
         String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
 
-        StructuralType structuralType = detectAlleleVariantType(variantContext, altAllele);
-        if (structuralType.isStructural()) {
+        VariantType variantType = detectAlleleVariantType(variantContext, altAllele);
+        if (variantType.isStructural()) {
             String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             ConfidenceInterval startCi = getConfidenceInterval(variantContext, "CIPOS");
             ConfidenceInterval endCi = getConfidenceInterval(variantContext, "CIEND");
             int length = Math.abs(variantContext.getAttributeAsInt("SVLEN", end - start));
-//            logger.info("Annotating {}: {} {} {} {} {} {} {} {} {}", contig, start, ref, alt, structuralType, length, startCi, endContig, end, endCi);
-            return variantAnnotator.annotate(contig, start, ref, alt, structuralType, length, startCi, endContig, end, endCi);
+//            logger.info("Annotating contig={}: start={} ref={} alt={} variantType={} length={} startCi={} endContig={} end={} endCi={}", contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
+            return variantAnnotator.annotate(contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
         }
 
-        return variantAnnotator.annotate(contig, start, ref, alt);
+        return variantAnnotator.annotate(contig, allele.getStart(), allele.getRef(), allele.getAlt());
     }
 
-    private StructuralType detectAlleleVariantType(VariantContext variantContext, Allele altAllele) {
+    private VariantType detectAlleleVariantType(VariantContext variantContext, Allele altAllele) {
         // WARNING! variantContext.getStructuralVariantType() IS NOT SAFE! It throws the following exception:
         //  java.lang.IllegalArgumentException: No enum constant htsjdk.variant.variantcontext.StructuralVariantType.SVA
         //  for the line
         //  22   16918023    esv3647185  C   <INS:ME:SVA>    100 PASS    SVLEN=1312;SVTYPE=SVA;TSD=AAAAATACAAAAATTTGC;VT=SV   GT  0|1
         if (altAllele.isSymbolic()) {
-            String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, null);
+            String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, "");
             // SV types should not be SMALL so try parsing the alt allele if the SVTYPE field isn't recognised (as in the case of ALU, LINE, SVA from 1000 genomes)
-            StructuralType parseValue = StructuralType.parseValue(altAllele.getDisplayString());
-            return parseValue == StructuralType.UNKNOWN ? StructuralType.parseValue(svTypeString) : parseValue;
+            VariantType parseValue = VariantType.parseValue(altAllele.getDisplayString());
+            return parseValue == VariantType.SYMBOLIC ? VariantType.parseValue(svTypeString) : parseValue;
         }
-        return StructuralType.NON_STRUCTURAL;
+
+        if (variantContext.getReference().length() == altAllele.length()) {
+            if (altAllele.length() == 1) {
+                return VariantType.SNV;
+            }
+            return VariantType.MNV;
+        }
+        return VariantType.INDEL;
+    }
+
+    // non-symbolc alleles should be one of these types
+    // This is defined in VCF 4.3 as:
+    // #INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+    public int calculateLength(int length, String ref, String alt) {
+        if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
+            return alt.length() - ref.length();
+        }
+        return length;
     }
 
     private ConfidenceInterval getConfidenceInterval(VariantContext variantContext, String ciKey) {

@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -77,7 +76,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     private Map<String, SampleGenotype> sampleGenotypes;
 
     //VariantAnnotation
-    private String geneSymbol;
+    private final String geneSymbol;
 
     // results from filters
     // mutable
@@ -589,7 +588,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 .endMax(this.endMax)
                 .length(this.length)
                 // Variant fields
-                .structuralType(this.structuralType)
+                .variantType(this.variantType)
                 .ref(this.ref)
                 .alt(this.alt)
                 .geneSymbol(this.geneSymbol)
@@ -632,7 +631,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 .endMin(variant.getEndMin())
                 .endMax(variant.getEndMax())
                 .length(variant.getLength())
-                .structuralType(variant.getStructuralType())
+                .variantType(variant.getVariantType())
                 .ref(variant.getRef())
                 .alt(variant.getAlt())
                 .geneSymbol(variant.getGeneSymbol())
@@ -751,7 +750,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             if (variantContext == null) {
                 // We don't check that the variant context agrees with the coordinates here as the variant context could
                 // have been split into different allelic variants so the positions and alleles could differ.
-// TODO: awaiting further production checks before removing this.
+//             TODO: This was removed post 12.1.0 release awaiting further production checks before fully removing this.
 //                variantContext = buildVariantContext(chromosome, start, ref, alt, phredScore);
             }
 

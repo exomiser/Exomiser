@@ -22,8 +22,8 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -231,11 +231,11 @@ public class SvFrequencyDao implements FrequencyDao {
             int ac = rs.getInt("AC");
             float af = rs.getFloat("AF");
 
-            StructuralType structuralType = StructuralType.valueOf(svType);
+            VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
             // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
-            if (structuralType.getBaseType() == variant.getStructuralType().getBaseType()) {
-                SvResult svResult = new SvResult(chr, start, end, length, structuralType, source, id, ac, af);
+            if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
+                SvResult svResult = new SvResult(chr, start, end, length, variantType, source, id, ac, af);
                 svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
 //                System.out.println(svResult);
                 results.add(svResult);
@@ -244,13 +244,13 @@ public class SvFrequencyDao implements FrequencyDao {
         return results;
     }
 
-    private static class SvResult implements ChromosomalRegion {
+    static class SvResult implements ChromosomalRegion {
 
         private final int chr;
         private final int start;
         private final int end;
         private final int length;
-        private final StructuralType svType;
+        private final VariantType svType;
         private final String source;
         private final String id;
         private final int ac;
@@ -258,7 +258,7 @@ public class SvFrequencyDao implements FrequencyDao {
 
         private double jaccard;
 
-        private SvResult(int chr, int start, int end, int length, StructuralType svType, String source, String id, int ac, float af) {
+        SvResult(int chr, int start, int end, int length, VariantType svType, String source, String id, int ac, float af) {
             this.chr = chr;
             this.start = start;
             this.end = end;

@@ -32,30 +32,32 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
  */
 public interface VariantCoordinates extends ChromosomalRegion {
 
-    public GenomeAssembly getGenomeAssembly();
+    GenomeAssembly getGenomeAssembly();
 
     /**
      * @return String representation of the chromosome. Chromosomes 1-22 will return
      * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=MT.
      */
-    // TODO: should this go on to the ChromosomalRegion? Need a getEndChromosomeName()
-    public String getChromosomeName();
+    // TODO: Could use the Chromosome/Contig class...
+    String getChromosomeName();
+
+    String getEndChromosomeName();
 
     /**
      * @return String with the reference allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    public String getRef();
+    String getRef();
 
     /**
      * @return String with the alternative allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    public String getAlt();
+    String getAlt();
 
-    public default boolean isStructuralVariant() {
-        return getStructuralType() != StructuralType.NON_STRUCTURAL;
+    default boolean isStructuralVariant() {
+        return getVariantType().isStructural();
     }
 
-    public StructuralType getStructuralType();
+    VariantType getVariantType();
 }

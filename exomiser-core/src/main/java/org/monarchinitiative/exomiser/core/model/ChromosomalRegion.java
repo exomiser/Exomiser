@@ -21,6 +21,9 @@
 package org.monarchinitiative.exomiser.core.model;
 
 /**
+ * Interface to represent a simple region on a chromosome. For a representation of variation over a region use the
+ * {@link VariantCoordinates} or {@link Variant} for biological annotations of variation over a region.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface ChromosomalRegion {
@@ -70,10 +73,7 @@ public interface ChromosomalRegion {
         return getEnd() - getStart();
     }
 
-    public static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {
-        //TODO: implement compare with new fields
-        // Check out Guava ComparisonChain
-
+    static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {
         int chr = c1.getChromosome();
         int otherChr = c2.getChromosome();
         if (chr != otherChr) {

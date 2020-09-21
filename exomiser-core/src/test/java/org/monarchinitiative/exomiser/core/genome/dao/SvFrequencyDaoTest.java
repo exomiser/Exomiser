@@ -23,9 +23,10 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
+import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,7 +50,7 @@ class SvFrequencyDaoTest {
                 .start(24538029)
                 .end(67519385)
                 .length(319)
-                .structuralType(StructuralType.INS)
+                .variantType(VariantType.INS)
                 .build();
 
         FrequencyData result = instance.getFrequencyData(variant);
@@ -64,7 +65,7 @@ class SvFrequencyDaoTest {
                 .start(4972268)
                 .end(4973271)
                 .length(1003)
-                .structuralType(StructuralType.DEL)
+                .variantType(VariantType.DEL)
                 .build();
 
         FrequencyData result = instance.getFrequencyData(variant);
@@ -79,7 +80,7 @@ class SvFrequencyDaoTest {
                 .start(521332)
                 .end(521332)
                 .length(0)
-                .structuralType(StructuralType.INS_ME)
+                .variantType(VariantType.INS_ME)
                 .build();
 
         FrequencyData result = instance.getFrequencyData(variant);
@@ -95,7 +96,7 @@ class SvFrequencyDaoTest {
                 .start(23037996)
                 .end(23037996)
                 .length(0)
-                .structuralType(StructuralType.CNV)
+                .variantType(VariantType.CNV)
                 .build();
 
         FrequencyData result = instance.getFrequencyData(variant);
@@ -110,7 +111,7 @@ class SvFrequencyDaoTest {
                 .start(62706090)
                 .end(62707793)
                 .length(0)
-                .structuralType(StructuralType.DEL)
+                .variantType(VariantType.DEL)
                 .build();
 
         FrequencyData result = instance.getFrequencyData(variant);
@@ -125,7 +126,7 @@ class SvFrequencyDaoTest {
                 .start(20194092)
                 .end(20424243)
                 .length(230151)
-                .structuralType(StructuralType.CNV)
+                .variantType(VariantType.CNV)
                 .build();
 
         System.out.println(variant.getLength());
@@ -141,7 +142,7 @@ class SvFrequencyDaoTest {
                 .start(62_706_194)
                 .end(62_707_654)
                 .length(0)
-                .structuralType(StructuralType.CNV_LOSS)
+                .variantType(VariantType.CNV_LOSS)
                 .build();
 
         System.out.println(variant.getLength());
@@ -158,7 +159,7 @@ class SvFrequencyDaoTest {
                 .end(4288450)
                 .length(300)
                 // this should be an INS_ME
-                .structuralType(StructuralType.CNV_LOSS)
+                .variantType(VariantType.CNV_LOSS)
                 .build();
 
         System.out.println(variant.getLength());
@@ -174,7 +175,7 @@ class SvFrequencyDaoTest {
                 .start(24346935)
                 .end(24394915)
                 .length(-47980)
-                .structuralType(StructuralType.CNV_LOSS)
+                .variantType(VariantType.CNV_LOSS)
                 .build();
 
         System.out.println(variant.getLength());
@@ -190,7 +191,7 @@ class SvFrequencyDaoTest {
                 .start(37958137)
                 .end(38002170)
                 .length(0)
-                .structuralType(StructuralType.CNV_GAIN)
+                .variantType(VariantType.CNV_GAIN)
                 .build();
 
         System.out.println(variant.getLength());
