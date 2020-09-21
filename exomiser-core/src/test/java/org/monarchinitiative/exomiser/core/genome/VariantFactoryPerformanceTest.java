@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoAdapter;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoMvStore;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -290,7 +290,7 @@ public class VariantFactoryPerformanceTest {
 
     private JannovarData loadJannovarData() {
         Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_transcripts_ensembl.ser");
-        return JannovarDataProtoSerialiser.load(transcriptFilePath);
+        return JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
     }
 
     private static class StubAllelePropertiesDao implements AllelePropertiesDao {
