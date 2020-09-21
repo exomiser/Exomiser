@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,14 +41,14 @@ public class VcfCodecs {
     private static final Logger logger = LoggerFactory.getLogger(VcfCodecs.class);
 
     // TODO: use Caffeine cache with TTL as this could get really large for a long-running process
-    private static Map<Set<String>, VCFEncoder> encoderCache = new HashMap<>();
-    private static Map<Set<String>, VCFCodec> decoderCache = new HashMap<>();
+    private static final Map<Set<String>, VCFEncoder> encoderCache = new HashMap<>();
+    private static final Map<Set<String>, VCFCodec> decoderCache = new HashMap<>();
 
     private VcfCodecs() {
     }
 
     /**
-     * This requires that the sampleGenotypes supplied are as an *ORDERED* set. Not supplying such a set wil result in
+     * This requires that the sampleGenotypes supplied are as an *ORDERED* set. Not supplying such a set will result in
      * incorrect encoding of sample genotypes.
      *
      * @param sampleGenotypes
@@ -63,7 +63,7 @@ public class VcfCodecs {
     }
 
     /**
-     * This requires that the sampleGenotypes supplied are as an *ORDERED* set. Not supplying such a set wil result in
+     * This requires that the sampleGenotypes supplied are as an *ORDERED* set. Not supplying such a set will result in
      * incorrect decoding of sample genotypes.
      *
      * @param sampleGenotypes
