@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,6 @@ import java.util.List;
  */
 public interface SmallVariantAnnotator {
 
-    public List<VariantAnnotation> annotate(String contig, int start, String ref, String alt);
+    List<VariantAnnotation> annotate(String contig, int start, String ref, String alt);
 
 }

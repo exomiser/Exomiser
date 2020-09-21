@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,8 +24,8 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 
 import java.util.List;
 
@@ -38,14 +38,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class JannovarStructuralVariantAnnotatorTest {
 
-    private JannovarStructuralVariantAnnotator instance = new JannovarStructuralVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
+    private final JannovarStructuralVariantAnnotator instance = new JannovarStructuralVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
             .buildDefaultJannovarData(), ChromosomalRegionIndex.empty());
 
     @Test
     void testAnnotateStructuralVariant() {
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        List<VariantAnnotation> annotations = instance.annotate("10", 123237843, "T", "<DEL>", StructuralType.DEL, 120129, ConfidenceInterval
+        List<VariantAnnotation> annotations = instance.annotate("10", 123237843, "T", "<DEL>", VariantType.DEL, 120129, ConfidenceInterval
                 .of(0, 0), "10", 123357972, ConfidenceInterval.of(0, 0));
         assertThat(annotations.size(), equalTo(1));
 
@@ -57,7 +57,7 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(variantAnnotation.getLength(), equalTo(120129));
         assertThat(variantAnnotation.getRef(), equalTo("T"));
         assertThat(variantAnnotation.getAlt(), equalTo("<DEL>"));
-        assertThat(variantAnnotation.getStructuralType(), equalTo(StructuralType.DEL));
+        assertThat(variantAnnotation.getVariantType(), equalTo(VariantType.DEL));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));

@@ -40,7 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class JannovarVariantAnnotatorTest {
 
-    private JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
+    private final JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
             .buildDefaultJannovarData(), ChromosomalRegionIndex.empty());
 
 

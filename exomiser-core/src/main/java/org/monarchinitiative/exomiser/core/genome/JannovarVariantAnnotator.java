@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -87,21 +87,21 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      * Returns {@link VariantAnnotation}s which overlap the genomic region covered by input parameters. These are assumed
      * to have been derived from a VCF file.
      *
-     * @param startContig    start chromosome identifier
-     * @param startPos       1-based position of the first base of the ref string
-     * @param ref            reference base
-     * @param alt            alternate base (should be symbolic)
-     * @param structuralType the structural type of the variant
-     * @param length         length of the variant
-     * @param ciStart        confidence intervals for the start position
-     * @param endContig      end chromosome identifier
-     * @param endPos         1-based position for the end of the alt string
-     * @param ciEnd          confidence intervals for the end position
+     * @param startContig start chromosome identifier
+     * @param startPos    1-based position of the first base of the ref string
+     * @param ref         reference base
+     * @param alt         alternate base (should be symbolic)
+     * @param variantType the structural type of the variant
+     * @param length      length of the variant
+     * @param ciStart     confidence intervals for the start position
+     * @param endContig   end chromosome identifier
+     * @param endPos      1-based position for the end of the alt string
+     * @param ciEnd       confidence intervals for the end position
      * @return {@link VariantAnnotation} objects for the variant annotated with Jannovar
      * @since 13.0.0
      */
     @Override
-    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, StructuralType structuralType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
-        return structuralVariantAnnotator.annotate(startContig, startPos, ref, alt, structuralType, length, ciStart, endContig, endPos, ciEnd);
+    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
+        return structuralVariantAnnotator.annotate(startContig, startPos, ref, alt, variantType, length, ciStart, endContig, endPos, ciEnd);
     }
 }

@@ -55,14 +55,14 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, StructuralType structuralType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
+    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
 //        logger.info("Annotating {} {} {} {} {} {} {} {} {}", structuralType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
         SVAnnotations svAnnotations = jannovarAnnotationService
-                .annotateStructuralVariant(structuralType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd);
-        return buildVariantAnnotations(svAnnotations, structuralType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
+                .annotateStructuralVariant(variantType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd);
+        return buildVariantAnnotations(svAnnotations, variantType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, StructuralType structuralType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
+    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, VariantType variantType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
         // This is a map of gene symbol to SVAnnotation
         // each SVAnnotation contains a TranscriptModel mapped to a geneSymbol. Transcripts overlapping multiple genes will be seen multiple times.
         Map<String, List<SVAnnotation>> annotationsByGeneSymbol = svAnnotations.getAnnotations()
@@ -79,7 +79,7 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
         return svAnnotation == null ? "." : TranscriptModelUtil.getTranscriptGeneSymbol(svAnnotation.getTranscript());
     }
 
-    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, StructuralType structuralType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
+    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, VariantType variantType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
         svAnnotations.sort(SVAnnotation::compareTo);
         SVAnnotation highestImpactAnnotation = svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
@@ -107,12 +107,12 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
                 .startMin(startPos + genomeVariant.getPosCILowerBound())
                 .startMax(startPos + genomeVariant.getPosCIUpperBound())
                 .endChromosome(endChr)
-                .endContig(endContig)
+                .endChromosomeName(endContig)
                 .end(endPos)
                 .endMin(endPos + genomeVariant.getPos2CILowerBound())
                 .endMax(endPos + genomeVariant.getPos2CIUpperBound())
                 .length(length)
-                .structuralType(structuralType)
+                .variantType(variantType)
                 .ref(ref)
                 .alt(alt)
                 .build();

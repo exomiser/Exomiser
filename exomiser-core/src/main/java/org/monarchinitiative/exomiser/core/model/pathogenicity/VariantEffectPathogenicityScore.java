@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -121,6 +121,7 @@ public final class VariantEffectPathogenicityScore {
                 // transcript e.g. transcript ablation if the inversion happens in the middle of a gene.
                 return INVERSION_SCORE;
             default:
+                // Hopefully shouldn't get to here, but in case we do...
                 return defaultImpactScore(variantEffect.getImpact());
         }
     }
