@@ -164,13 +164,13 @@ public class Pedigree {
         public enum Sex {
             UNKNOWN,
             MALE,
-            FEMALE;
+            FEMALE
         }
 
         public enum Status {
             UNKNOWN,
             UNAFFECTED,
-            AFFECTED;
+            AFFECTED
         }
 
         private final String familyId;
