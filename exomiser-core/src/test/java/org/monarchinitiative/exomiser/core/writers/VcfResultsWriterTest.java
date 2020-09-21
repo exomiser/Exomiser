@@ -109,10 +109,10 @@ public class VcfResultsWriterTest {
     //    private Path outPath;
     private OutputSettings settings;
 
-    private Sample sample = Sample.builder()
+    private final Sample sample = Sample.builder()
             .vcfPath(Paths.get("src/test/resources/minimal.vcf"))
             .build();
-    private Analysis analysis = Analysis.builder()
+    private final Analysis analysis = Analysis.builder()
             .inheritanceModeOptions(InheritanceModeOptions.defaults())
             .build();
     /**
