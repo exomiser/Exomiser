@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,10 +33,10 @@ import java.io.Closeable;
  */
 public interface TabixDataSource extends Closeable {
 
-    public TabixReader.Iterator query(String query);
+    TabixReader.Iterator query(String query);
 
-    public TabixReader.Iterator query(String chromosome, int start, int end);
+    TabixReader.Iterator query(String chromosome, int start, int end);
 
-    public String getSource();
+    String getSource();
 
 }
