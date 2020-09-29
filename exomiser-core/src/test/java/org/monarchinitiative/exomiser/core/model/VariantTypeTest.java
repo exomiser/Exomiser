@@ -114,4 +114,29 @@ class VariantTypeTest {
         assertThat(VariantType.CNV_LOH.getBaseType(), equalTo(VariantType.CNV));
         assertThat(VariantType.CNV_COMPLEX.getBaseType(), equalTo(VariantType.CNV));
     }
+
+    @Test
+    void parseAlleleSymbolic() {
+        assertThat(VariantType.parseAllele("A", "<INS>"), equalTo(VariantType.INS));
+    }
+
+    @Test
+    void parseAlleleSnv() {
+        assertThat(VariantType.parseAllele("A", "T"), equalTo(VariantType.SNV));
+    }
+
+    @Test
+    void parseAlleleMnv() {
+        assertThat(VariantType.parseAllele("ATG", "TCA"), equalTo(VariantType.MNV));
+    }
+
+    @Test
+    void parseAlleleInsertion() {
+        assertThat(VariantType.parseAllele("A", "TC"), equalTo(VariantType.INDEL));
+    }
+
+    @Test
+    void parseAlleleDeletion() {
+        assertThat(VariantType.parseAllele("AT", "C"), equalTo(VariantType.INDEL));
+    }
 }

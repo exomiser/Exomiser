@@ -200,19 +200,19 @@ public enum VariantType {
         return UNKNOWN;
     }
 
-//    public static VariantType parseAllele(String ref, String alt) {
-//        if (AllelePosition.isSymbolic(ref, alt)) {
-//            return parseValue(alt);
-//        }
-//        if (ref.length() == alt.length()) {
-//            if (alt.length() == 1) {
-//                return VariantType.SNV;
-//            }
-//            return VariantType.MNV;
-//        }
-////        return AllelePosition.isInsertion(ref, alt) ? VariantType.INS : VariantType.DEL;
-//        return VariantType.INDEL;
-//    }
+    public static VariantType parseAllele(String ref, String alt) {
+        if (AllelePosition.isSymbolic(ref, alt)) {
+            return parseValue(alt);
+        }
+        if (ref.length() == alt.length()) {
+            if (alt.length() == 1) {
+                return VariantType.SNV;
+            }
+            return VariantType.MNV;
+        }
+//        return AllelePosition.isInsertion(ref, alt) ? VariantType.INS : VariantType.DEL;
+        return VariantType.INDEL;
+    }
 
     private static boolean isSymbolic(String value) {
         return AllelePosition.isSymbolic(value);
