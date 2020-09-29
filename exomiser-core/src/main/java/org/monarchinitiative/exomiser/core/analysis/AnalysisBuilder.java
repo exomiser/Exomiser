@@ -62,7 +62,7 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
     private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
 
-    private List<AnalysisStep> analysisSteps = new ArrayList<>();
+    private final List<AnalysisStep> analysisSteps = new ArrayList<>();
 
     AnalysisBuilder(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory, OntologyService ontologyService) {
         this.ontologyService = ontologyService;
