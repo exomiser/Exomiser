@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -67,8 +67,8 @@ public class OntologyServiceImplTest {
     private final PhenotypeTerm thinEarHelix = PhenotypeTerm.of("HP:0009905", "Thin ear helix");
 
     private final Set<PhenotypeTerm> hpoTerms = ImmutableSet.of(fingerJointHyperExtensibility, conjunctivalNodule, cleftHelix, thinEarHelix);
-    private Set<PhenotypeTerm> mpoTerms = Collections.emptySet();
-    private Set<PhenotypeTerm> zpoTerms = Collections.emptySet();
+    private final Set<PhenotypeTerm> mpoTerms = Collections.emptySet();
+    private final Set<PhenotypeTerm> zpoTerms = Collections.emptySet();
 
     @BeforeEach
     public void setUp() {

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,8 +41,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PhenodigmModelScorerTest {
 
-    private OntologyService ontologyService = TestPriorityServiceFactory.testOntologyService();
-    private PhenotypeMatchService priorityService = new PhenotypeMatchService(ontologyService);
+    private final OntologyService ontologyService = TestPriorityServiceFactory.testOntologyService();
+    private final PhenotypeMatchService priorityService = new PhenotypeMatchService(ontologyService);
 
     private GeneDiseaseModel makeBestHumanModel(PhenotypeMatcher referenceOrganismPhenotypeMatcher) {
         List<String> exactHumanPhenotypes = getBestMatchedPhenotypes(referenceOrganismPhenotypeMatcher);

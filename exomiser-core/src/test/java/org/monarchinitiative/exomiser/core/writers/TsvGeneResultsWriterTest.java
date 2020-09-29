@@ -77,8 +77,8 @@ public class TsvGeneResultsWriterTest {
     private final TsvGeneResultsWriter instance = new TsvGeneResultsWriter();
 
     private AnalysisResults analysisResults;
-    private Analysis analysis = Analysis.builder().build();
-    private Sample sample = Sample.builder().build();
+    private final Analysis analysis = Analysis.builder().build();
+    private final Sample sample = Sample.builder().build();
 
     @BeforeEach
     public void setUp() {

@@ -48,8 +48,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

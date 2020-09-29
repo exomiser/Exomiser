@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
