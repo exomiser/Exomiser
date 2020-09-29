@@ -49,7 +49,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 
@@ -579,14 +578,14 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisNonExistentFile() {
-        assertThrows(ProtoParser.ProtoParserException.class, () ->
+        assertThrows(IllegalArgumentException.class, () ->
                 instance.parseAnalysis(Paths.get("src/test/resources/wibble"))
         );
     }
 
     @Test
     public void testParseOutputSettingsNonExistentFile() {
-        assertThrows(ProtoParser.ProtoParserException.class, () ->
+        assertThrows(IllegalArgumentException.class, () ->
                 instance.parseOutputSettings(Paths.get("src/test/resources/wibble"))
         );
     }
