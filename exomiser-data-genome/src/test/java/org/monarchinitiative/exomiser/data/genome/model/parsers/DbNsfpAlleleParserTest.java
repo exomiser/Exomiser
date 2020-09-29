@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
@@ -28,8 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
 
 /**
@@ -46,7 +45,7 @@ public class DbNsfpAlleleParserTest {
     private void assertParseLineEqualsExpected(DbNsfpColumnIndex columnIndex, String line, List<Allele> expectedAlleles) {
         List<Allele> alleles = parseLine(columnIndex, line);
 
-        Assert.assertThat(alleles.size(), equalTo(expectedAlleles.size()));
+        assertThat(alleles.size(), equalTo(expectedAlleles.size()));
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
             System.out.println(allele.toString());

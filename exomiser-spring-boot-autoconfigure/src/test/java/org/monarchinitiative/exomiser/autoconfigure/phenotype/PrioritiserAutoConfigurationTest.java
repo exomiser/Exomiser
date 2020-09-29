@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,10 +36,8 @@ import org.springframework.context.annotation.Import;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -61,7 +59,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         assertThat(context.getBean("phenotypeDataDirectory"), not(nullValue()));
     }
 
-//this works in prod, but fails to autowire the phenotypeDataSource in test, despite being able to load the dataSource.
+    //this works in prod, but fails to autowire the phenotypeDataSource in test, despite being able to load the dataSource.
     @Disabled
     @Test
     public void canDefinePhenotypeDataDirectory() {

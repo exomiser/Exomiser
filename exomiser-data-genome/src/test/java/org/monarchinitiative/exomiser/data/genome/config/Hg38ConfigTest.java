@@ -32,9 +32,9 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
