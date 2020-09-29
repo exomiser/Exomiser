@@ -37,9 +37,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class SampleProtoConverterTest {
 
-    private SampleProtoConverter instance = new SampleProtoConverter();
+    private final SampleProtoConverter instance = new SampleProtoConverter();
 
-    private SampleProto.Sample.Builder protoSample = SampleProto.Sample.newBuilder()
+    private final SampleProto.Sample.Builder protoSample = SampleProto.Sample.newBuilder()
             .setProband(TestPedigrees.affectedChild().getId())
             .addAllHpoIds(List.of("HP:0000001"))
             .setGenomeAssembly("hg19")
@@ -48,7 +48,7 @@ class SampleProtoConverterTest {
             .setAge(SampleProto.Age.newBuilder().setYears(3).setMonths(4).setDays(5).build())
             .setPed(TestPedigrees.trioChildAffectedPedPath().toString());
 
-    private Sample.Builder sample = Sample.builder()
+    private final Sample.Builder sample = Sample.builder()
             .probandSampleName(TestPedigrees.affectedChild().getId())
             .hpoIds(List.of("HP:0000001"))
             .genomeAssembly(GenomeAssembly.HG19)
