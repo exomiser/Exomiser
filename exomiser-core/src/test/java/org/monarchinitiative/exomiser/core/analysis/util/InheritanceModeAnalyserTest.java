@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,7 +60,8 @@ public class InheritanceModeAnalyserTest {
     }
 
     private String variantString(VariantEvaluation variant) {
-        return String.format("%s\t%s\t%s\t%s\t%s\tcompatibleWith=%s",variant.getChromosome(), variant.getRef(), variant.getAlt(), variant.getAltAlleleId(), variant.getGenotypeString(), variant.getCompatibleInheritanceModes());
+        return String.format("%s\t%s\t%s\t%s\t%s\tcompatibleWith=%s", variant.getStartContigId(), variant.getRef(), variant
+                .getAlt(), variant.getAltAlleleId(), variant.getGenotypeString(), variant.getCompatibleInheritanceModes());
     }
 
     private InheritanceModeAnalyser newInheritanceModeAnalyser(Pedigree pedigree) {

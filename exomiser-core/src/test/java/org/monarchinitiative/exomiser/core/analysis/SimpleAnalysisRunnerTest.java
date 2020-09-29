@@ -105,7 +105,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = rbm8a.getPassedVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getChromosome(), equalTo(1));
+        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
         assertThat(rbm8Variant2.getStart(), equalTo(145508800));
 
     }
@@ -325,7 +325,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getChromosome(), equalTo(1));
+        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
         assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
     }
@@ -380,7 +380,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getChromosome(), equalTo(1));
+        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
         assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));

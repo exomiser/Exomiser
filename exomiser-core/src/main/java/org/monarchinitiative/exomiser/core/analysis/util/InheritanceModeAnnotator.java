@@ -149,6 +149,9 @@ public class InheritanceModeAnnotator {
         List<VariantEvaluation> compatibleVariants = new ArrayList<>();
         for (GenotypeCalls callResults : genotypeCalls) {
             VariantEvaluation variantEvaluation = (VariantEvaluation) callResults.getPayload();
+            // Issue #361 Add logic here to ignore a given list of frequency sources when checking against the maxFreqForMode e.g. LOCAL
+            // float maxFreq = frequencyData.maxFreqIgnoring(Set.of(LOCAL, ESP))
+            // float maxFreq = frequencyData.maxFreqFrom(Set.of(LOCAL, ESP))
             FrequencyData frequencyData = variantEvaluation.getFrequencyData();
             if (frequencyData.getMaxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
                 compatibleVariants.add(variantEvaluation);
@@ -165,7 +168,7 @@ public class InheritanceModeAnnotator {
 
             genotypeCallsBuilder.setPayload(variantEvaluation);
 
-            ChromosomeType chromosomeType = toChromosomeType(variantEvaluation.getChromosome());
+            ChromosomeType chromosomeType = toChromosomeType(variantEvaluation.getStartContigId());
             genotypeCallsBuilder.setChromType(chromosomeType);
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation

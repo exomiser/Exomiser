@@ -130,7 +130,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation passedVariant = passedGene.getPassedVariantEvaluations().get(0);
         //1	145508800	rs12345678	T	C	123.15	PASS	GENE=RBM8A	GT:DP	1/1:33
-        assertThat(passedVariant.getChromosome(), equalTo(1));
+        assertThat(passedVariant.getStartContigId(), equalTo(1));
         assertThat(passedVariant.getStart(), equalTo(145508800));
         assertThat(passedVariant.getRef(), equalTo("T"));
         assertThat(passedVariant.getAlt(), equalTo("C"));
@@ -309,7 +309,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getChromosome(), equalTo(1));
+        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
         assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
     }
@@ -354,7 +354,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getChromosome(), equalTo(1));
+        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
         assertThat(rbm8Variant2.getStart(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));

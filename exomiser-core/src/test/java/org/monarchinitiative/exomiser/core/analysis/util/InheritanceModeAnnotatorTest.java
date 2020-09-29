@@ -531,7 +531,7 @@ public class InheritanceModeAnnotatorTest {
         );
 
         for (Map.Entry<SubModeOfInheritance, Set<VariantEvaluation>> entry : expected.entrySet()) {
-            assertThat(expected.keySet().contains(entry.getKey()), is(true));
+            assertThat(expected.containsKey(entry.getKey()), is(true));
             List<VariantEvaluation> resultValue = results.get(entry.getKey());
             //In this case the order the results are returned in is not guaranteed by jannovar. Consider returning a Set in the first place?
             assertThat(entry.getValue(), equalTo(new HashSet<>(resultValue)));

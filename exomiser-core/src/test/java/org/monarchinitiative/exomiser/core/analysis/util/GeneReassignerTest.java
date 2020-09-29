@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,15 +94,15 @@ public class GeneReassignerTest {
     }
 
     private VariantEvaluation regulatoryVariantInTad(TopologicalDomain tad, Gene associatedGene) {
-        return variant(tad.getChromosome(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
+        return variant(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
     }
 
     private VariantEvaluation.Builder regulatoryVariantBuilderInTad(TopologicalDomain tad, Gene associatedGene) {
-        return variantBuilder(tad.getChromosome(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
+        return variantBuilder(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
     }
 
     private VariantEvaluation.Builder variantBuilderInTadWithEffect(TopologicalDomain tad, VariantEffect variantEffect, Gene associatedGene) {
-        return variantBuilder(tad.getChromosome(), getMiddlePosition(tad), "A", "T", variantEffect, associatedGene);
+        return variantBuilder(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", variantEffect, associatedGene);
     }
 
     private int getMiddlePosition(TopologicalDomain tad) {
@@ -579,10 +579,10 @@ public class GeneReassignerTest {
     }
 
     private void logVariantInfo(VariantEvaluation variant) {
-        logger.info("{} {}:{} {} {} {}", variant.getGeneSymbol(), variant.getChromosome(), variant.getStart(),
+        logger.info("{} {}:{} {} {} {}", variant.getGeneSymbol(), variant.getStartContigId(), variant.getStart(),
                 variant.getRef(), variant.getAlt(), variant.getVariantEffect());
         variant.getTranscriptAnnotations()
-                .forEach(transcriptAnnotation -> logger.info("{} {}:{} {}", variant.getGeneSymbol(), variant.getChromosome(),
+                .forEach(transcriptAnnotation -> logger.info("{} {}:{} {}", variant.getGeneSymbol(), variant.getStartContigId(),
                         variant.getStart(), transcriptAnnotation));
     }
 
