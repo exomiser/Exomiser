@@ -97,6 +97,6 @@ class AnalysisGroupTest {
         expected.add(AnalysisGroup.of(new NoneTypePrioritiser()));
 
         List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
-        Assert.assertThat(analysisStepGroups, CoreMatchers.equalTo(expected));
+        assertThat(analysisStepGroups, equalTo(expected));
     }
 }
