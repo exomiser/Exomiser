@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -75,29 +75,12 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
 
     private Map<String, List<Term>> geneId2annotations;
 
-    private boolean symmetric;
+    private final boolean symmetric;
     /**
      * Path to the directory that has the files needed to calculate the score
      * distribution.
      */
     private String scoredistributionFolder;
-
-//counters for stats
-    /**
-     * A counter of the number of genes that could not be found in the database
-     * as being associated with a defined disease gene.
-     */
-    private int offTargetGenes = 0;
-    /**
-     * Total number of genes used for the query, including genes with no
-     * associated disease.
-     */
-    private int analysedGenes;
-    /**
-     * Keeps track of the maximum semantic similarity score to date
-     */
-    private double maxSemSim = 0d;
-
 
     /**
      * Create a new instance of the PhenixPriority.
@@ -319,7 +302,7 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
             double semanticSimilarityScore = similarityMeasure.computeObjectSimilarity( (ArrayList<Term>) queryTerms, (ArrayList<Term>) geneAnnotations);
 
             if (Double.isNaN(semanticSimilarityScore)) {
-                logger.error("Score was NaN for geneId: {} : ", entrezGeneId, queryTerms);
+                logger.error("Score was NaN for geneId: {} : {}", entrezGeneId, queryTerms);
             }
             ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(geneIdString);
 
@@ -340,9 +323,9 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
 
     /**
      * The gene relevance scores are to be normalized to lie between zero and
-     * one. This function, which relies upon the variable {@link #maxSemSim}
-     * being set in {@link #scoreGene}, divides each score by
-     * {@link #maxSemSim}, which has the effect of putting the phenomizer scores
+     * one. This function, which relies upon the input variable maxSemSim
+     * being set in {@link #scoreGene}, divides each score by maxSemSim,
+     * which has the effect of putting the phenomizer scores
      * in the range [0..1]. Note that for now we are using the semantic
      * similarity scores, but we should also try the P value version (TODO).
      * Note that this is not the same as rank normalization!
@@ -383,7 +366,7 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
     }
 
     //Tuple-esq container
-    private class PhenixScore {
+    private static class PhenixScore {
 
         private final double semanticSimilarityScore;
         private final double negativeLogP;

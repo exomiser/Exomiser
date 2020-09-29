@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
      * Phenomizer). Note that this is not the p-value methodology in that paper,
      * but merely the simple semantic similarity score.
      */
-    private double hpoSemSimScore;
+    private final double hpoSemSimScore;
     /**
      * The negative logarithm of the p-value. e.g., 10 means p=10^{-10}
      */
