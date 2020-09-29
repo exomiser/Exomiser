@@ -54,7 +54,7 @@ public class ClinVarData {
         NOT_PROVIDED,
         OTHER,
         PROTECTIVE,
-        RISK_FACTOR;
+        RISK_FACTOR
     }
 
     //https://www.ncbi.nlm.nih.gov/clinvar/?term=99222[alleleid]
