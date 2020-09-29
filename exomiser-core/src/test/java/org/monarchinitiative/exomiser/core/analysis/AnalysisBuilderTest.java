@@ -58,7 +58,7 @@ public class AnalysisBuilderTest {
 
     private AnalysisBuilder analysisBuilder;
 
-    private List<String> hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
+    private final List<String> hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
 
     @BeforeEach
     public void setUp() {
@@ -303,7 +303,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyOmimPrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makeOmimPrioritiser();
+        OmimPriority prioritiser = priorityFactory.makeOmimPrioritiser();
 
         analysisBuilder.addOmimPrioritiser();
 
@@ -312,7 +312,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyPhivePrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makePhivePrioritiser();
+        PhivePriority prioritiser = priorityFactory.makePhivePrioritiser();
 
         analysisBuilder.addPhivePrioritiser();
 
@@ -321,7 +321,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyHiPhivePrioritiserNoOptions() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults());
+        HiPhivePriority prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.defaults());
 
         analysisBuilder.addHiPhivePrioritiser();
 
@@ -336,7 +336,7 @@ public class AnalysisBuilderTest {
                 .runParams("human,mouse,fish,ppi")
                 .build();
 
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(options);
+        HiPhivePriority prioritiser = priorityFactory.makeHiPhivePrioritiser(options);
 
         analysisBuilder.addHiPhivePrioritiser(options);
 
@@ -345,7 +345,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyPhenixPrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
+        PhenixPriority prioritiser = priorityFactory.makePhenixPrioritiser();
 
         analysisBuilder.addPhenixPrioritiser();
 
@@ -365,7 +365,7 @@ public class AnalysisBuilderTest {
     @Test
     public void testCanSpecifyExomeWalkerPrioritiser() {
         List<Integer> seedGenes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
-        Prioritiser prioritiser = priorityFactory.makeExomeWalkerPrioritiser(seedGenes);
+        ExomeWalkerPriority prioritiser = priorityFactory.makeExomeWalkerPrioritiser(seedGenes);
 
         analysisBuilder.addExomeWalkerPrioritiser(seedGenes);
 
@@ -374,8 +374,8 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyTwoPrioritisers() {
-        Prioritiser omimPrioritiser = priorityFactory.makeOmimPrioritiser();
-        Prioritiser phivePrioritiser = priorityFactory.makePhivePrioritiser();
+        OmimPriority omimPrioritiser = priorityFactory.makeOmimPrioritiser();
+        PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser();
         List<AnalysisStep> steps = Arrays.asList(omimPrioritiser, phivePrioritiser);
 
         analysisBuilder
