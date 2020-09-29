@@ -20,21 +20,15 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.monarchinitiative.exomiser.core.model.VariantCoordinates;
 
 import java.util.List;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface VariantAnnotator extends StructuralVariantAnnotator, SmallVariantAnnotator {
+public interface VariantAnnotator {
 
-    @Override
-    List<VariantAnnotation> annotate(String contig, int start, String ref, String alt);
-
-    @Override
-    List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd);
-
+    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates);
 }

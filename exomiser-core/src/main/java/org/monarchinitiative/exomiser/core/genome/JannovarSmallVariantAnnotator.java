@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-class JannovarSmallVariantAnnotator implements SmallVariantAnnotator {
+class JannovarSmallVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarSmallVariantAnnotator.class);
 
@@ -58,25 +58,24 @@ class JannovarSmallVariantAnnotator implements SmallVariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(String contig, int start, String ref, String alt) {
-        //so given the above, trim the allele first, then annotate it otherwise untrimmed alleles from multi-allelic sites will give different results
-        AllelePosition trimmedAllele = AllelePosition.trim(start, ref, alt);
+    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
         VariantAnnotations variantAnnotations = jannovarAnnotationService
-                .annotateVariant(contig, trimmedAllele.getStart(), trimmedAllele.getRef(), trimmedAllele.getAlt());
-        return buildVariantAnnotations(contig, trimmedAllele, variantAnnotations);
+                .annotateVariant(variantCoordinates.getStartContigName(), variantCoordinates.getStart(), variantCoordinates
+                        .getRef(), variantCoordinates.getAlt());
+        return buildVariantAnnotations(variantCoordinates, variantAnnotations);
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(String chr, AllelePosition trimmedAllele, VariantAnnotations variantAnnotations) {
+    private List<VariantAnnotation> buildVariantAnnotations(VariantCoordinates variantCoordinates, VariantAnnotations variantAnnotations) {
         // Group annotations by geneSymbol then create new Jannovar.VariantAnnotations from these then return List<VariantAnnotation>
         // see issue https://github.com/exomiser/Exomiser/issues/294. However it creates approximately 2x as many variants
         // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the amount of new
         // VariantAnnotations returned by only splitting those with a MODERATE or greater putative impact.
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
-                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, chr, trimmedAllele, variantGeneAnnotations))
+                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, variantCoordinates, variantGeneAnnotations))
                     .collect(toList());
         }
-        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, chr, trimmedAllele, variantAnnotations));
+        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, variantCoordinates, variantAnnotations));
     }
 
     private boolean effectsMoreThanOneGeneWithMinimumImpact(VariantAnnotations variantAnnotations, PutativeImpact minimumImpact) {
@@ -118,8 +117,8 @@ class JannovarSmallVariantAnnotator implements SmallVariantAnnotator {
                 .map(annos -> new VariantAnnotations(genomeVariant, annos));
     }
 
-    private String toAnnotationString(StructuralType structuralType, SVAnnotation annotation) {
-        return structuralType + ", " +
+    private String toAnnotationString(VariantType variantType, SVAnnotation annotation) {
+        return variantType + ", " +
                 annotation.getVariant() + ", " +
                 annotation.getTranscript().getGeneSymbol() + ", " +
                 annotation.getTranscript().getGeneID() + ", " +
@@ -132,7 +131,7 @@ class JannovarSmallVariantAnnotator implements SmallVariantAnnotator {
         return chrName == null ? startContig : chrName;
     }
 
-    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, String contig, AllelePosition allelePosition, VariantAnnotations variantAnnotations) {
+    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, VariantCoordinates variantCoordinates, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
@@ -141,25 +140,22 @@ class JannovarSmallVariantAnnotator implements SmallVariantAnnotator {
         String geneId = buildGeneId(highestImpactAnnotation);
 
         //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
-        VariantEffect highestImpactEffect = allelePosition.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
+        VariantEffect highestImpactEffect = variantCoordinates.isStructuralVariant() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
                 .getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
-        int start = allelePosition.getStart();
-        String ref = allelePosition.getRef();
-        String alt = allelePosition.getAlt();
-        int end = start + Math.max(ref.length() - 1, 0);
-
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, start);
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, variantCoordinates.getStart());
         //TODO: Add method to return highest impact annotation?
         return VariantAnnotation.builder()
                 .genomeAssembly(genomeAssembly)
                 .chromosome(chr)
-                .chromosomeName(getChromosomeNameOrDefault(genomeVariant.getChrName(), contig))
-                .start(start)
-                .end(end)
-                .ref(ref)
-                .alt(alt)
+                .contig(getChromosomeNameOrDefault(genomeVariant.getChrName(), variantCoordinates.getStartContigName()))
+                .start(variantCoordinates.getStart())
+                .end(variantCoordinates.getEnd())
+                .length(variantCoordinates.getLength())
+                .ref(variantCoordinates.getRef())
+                .alt(variantCoordinates.getAlt())
+                .variantType(variantCoordinates.getVariantType())
                 .geneId(geneId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)

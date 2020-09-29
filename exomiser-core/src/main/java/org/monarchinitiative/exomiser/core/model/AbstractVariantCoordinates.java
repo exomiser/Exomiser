@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-
 import java.util.Objects;
 
 /**
@@ -29,9 +27,7 @@ import java.util.Objects;
  */
 public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
-    final GenomeAssembly genomeAssembly;
-
-    final String chromosomeName;
+    final String contig;
     final int chromosome;
     final int start;
     final String ref;
@@ -40,21 +36,16 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     // additional fields for describing structural variants. These need overriding in
     // the case of SNVs to default values based on chromosomeName, startChr, startPos, ref and alt
-    final int startMin;
-    final int startMax;
+    final ConfidenceInterval startCi;
 
-    final String endChromosomeName;
+    final String endContig;
     final int endChromosome;
     final int end;
-
-    final int endMin;
-    final int endMax;
-
+    final ConfidenceInterval endCi;
     final VariantType variantType;
 
     protected AbstractVariantCoordinates(Builder<?> builder) {
-        this.genomeAssembly = builder.genomeAssembly;
-        this.chromosomeName = builder.chromosomeName;
+        this.contig = builder.contig;
         this.chromosome = builder.startChr;
         this.start = builder.start;
         this.ref = builder.ref;
@@ -62,26 +53,19 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         this.length = builder.length;
 
         // additional fields for structural variants
-        this.startMin = builder.startMin;
-        this.startMax = builder.startMax;
+        this.startCi = builder.startCi;
 
-        this.endChromosomeName = builder.endChromosomeName.isEmpty() ? builder.chromosomeName : builder.endChromosomeName;
+        this.endContig = builder.endContig.isEmpty() ? builder.contig : builder.endContig;
         this.endChromosome = builder.endChromosome == 0 ? builder.startChr : builder.endChromosome;
         this.end = builder.end == 0 ? builder.start : builder.end;
-        this.endMin = builder.endMin;
-        this.endMax = builder.endMax;
+        this.endCi = builder.endCi;
 
         this.variantType = builder.variantType;
     }
 
     @Override
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    @Override
-    public String getChromosomeName() {
-        return chromosomeName;
+    public String getStartContigName() {
+        return contig;
     }
 
     @Override
@@ -105,7 +89,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
     @Override
-    public int getChromosome() {
+    public int getStartContigId() {
         return chromosome;
     }
 
@@ -115,22 +99,22 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
     @Override
-    public int getStartMin() {
-        return startMin;
+    public ConfidenceInterval getStartCi() {
+        return startCi;
     }
 
     @Override
-    public int getStartMax() {
-        return startMax;
+    public ConfidenceInterval getEndCi() {
+        return endCi;
     }
 
     @Override
-    public String getEndChromosomeName() {
-        return endChromosomeName;
+    public String getEndContigName() {
+        return endContig;
     }
 
     @Override
-    public int getEndChromosome() {
+    public int getEndContigId() {
         return endChromosome;
     }
 
@@ -140,31 +124,19 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
     }
 
     @Override
-    public int getEndMin() {
-        return endMin;
-    }
-
-    @Override
-    public int getEndMax() {
-        return endMax;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractVariantCoordinates)) return false;
         AbstractVariantCoordinates that = (AbstractVariantCoordinates) o;
         return chromosome == that.chromosome &&
                 start == that.start &&
-                startMin == that.startMin &&
-                startMax == that.startMax &&
+                startCi == that.startCi &&
                 endChromosome == that.endChromosome &&
                 end == that.end &&
-                endMin == that.endMin &&
-                endMax == that.endMax &&
-                genomeAssembly == that.genomeAssembly &&
-                chromosomeName.equals(that.chromosomeName) &&
-                endChromosomeName.equals(that.endChromosomeName) &&
+                endCi == that.endCi &&
+//                genomeAssembly == that.genomeAssembly &&
+                contig.equals(that.contig) &&
+                endContig.equals(that.endContig) &&
                 ref.equals(that.ref) &&
                 alt.equals(that.alt) &&
                 variantType == that.variantType;
@@ -172,25 +144,24 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeAssembly, chromosomeName, chromosome, start, ref, alt, startMin, startMax, endChromosomeName, endChromosome, end, endMin, endMax, length, variantType);
+//        return Objects.hash(genomeAssembly, contig, chromosome, start, ref, alt, startCi, endContig, endChromosome, end, endCi, length, variantType);
+        return Objects.hash(contig, chromosome, start, ref, alt, startCi, endContig, endChromosome, end, endCi, length, variantType);
     }
 
     @Override
     public String toString() {
         return "AbstractVariantCoordinates{" +
-                "genomeAssembly=" + genomeAssembly +
-                ", chromosomeName='" + chromosomeName + '\'' +
+//                "genomeAssembly=" + genomeAssembly +
+                "contig='" + contig + '\'' +
                 ", chromosome=" + chromosome +
-                ", startPos=" + start +
+                ", start=" + start +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
-                ", startMin=" + startMin +
-                ", startMax=" + startMax +
-                ", endChromosomeName='" + endChromosomeName + '\'' +
+                ", startCi=" + startCi +
+                ", endContig='" + endContig + '\'' +
                 ", endChromosome=" + endChromosome +
-                ", endPos=" + end +
-                ", endMin=" + endMin +
-                ", endMax=" + endMax +
+                ", end=" + end +
+                ", endCi=" + endCi +
                 ", length=" + length +
                 ", variantType=" + variantType +
                 '}';
@@ -198,7 +169,7 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
 
     protected abstract static class Builder<T extends Builder<T>> {
 
-        private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
+//        private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
 
         private String ref = "";
         private String alt = "";
@@ -206,25 +177,23 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
         private int length = 0;
         private VariantType variantType = VariantType.UNKNOWN;
 
-        private String chromosomeName = "";
+        private String contig = "";
         private int startChr;
         private int start;
-        private int startMin;
-        private int startMax;
+        private ConfidenceInterval startCi = ConfidenceInterval.precise();
 
-        private String endChromosomeName = "";
+        private String endContig = "";
         private int endChromosome;
         private int end;
-        private int endMin;
-        private int endMax;
+        private ConfidenceInterval endCi = ConfidenceInterval.precise();
 
-        public T genomeAssembly(GenomeAssembly genomeAssembly) {
-            this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
-            return self();
-        }
+//        public T genomeAssembly(GenomeAssembly genomeAssembly) {
+//            this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
+//            return self();
+//        }
 
-        public T chromosomeName(String chromosomeName) {
-            this.chromosomeName = Objects.requireNonNull(chromosomeName);
+        public T contig(String chromosomeName) {
+            this.contig = Objects.requireNonNull(chromosomeName);
             return self();
         }
 
@@ -258,18 +227,13 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        public T startMin(int startMin) {
-            this.startMin = startMin;
+        public T startCi(ConfidenceInterval startCi) {
+            this.startCi = startCi;
             return self();
         }
 
-        public T startMax(int startMax) {
-            this.startMax = startMax;
-            return self();
-        }
-
-        public T endChromosomeName(String endChromosomeName) {
-            this.endChromosomeName = Objects.requireNonNull(endChromosomeName);
+        public T endContig(String endContig) {
+            this.endContig = Objects.requireNonNull(endContig);
             return self();
         }
 
@@ -283,13 +247,8 @@ public abstract class AbstractVariantCoordinates implements VariantCoordinates {
             return self();
         }
 
-        public T endMin(int endMin) {
-            this.endMin = endMin;
-            return self();
-        }
-
-        public T endMax(int endMax) {
-            this.endMax = endMax;
+        public T endCi(ConfidenceInterval endCi) {
+            this.endCi = endCi;
             return self();
         }
 

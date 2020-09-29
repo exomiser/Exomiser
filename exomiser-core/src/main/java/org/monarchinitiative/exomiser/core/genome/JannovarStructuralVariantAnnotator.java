@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.core.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
+class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarStructuralVariantAnnotator.class);
 
@@ -55,14 +56,19 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
-//        logger.info("Annotating {} {} {} {} {} {} {} {} {}", structuralType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
+    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
         SVAnnotations svAnnotations = jannovarAnnotationService
-                .annotateStructuralVariant(variantType, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd);
-        return buildVariantAnnotations(svAnnotations, variantType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length);
+                .annotateStructuralVariant(variantCoordinates.getVariantType(), variantCoordinates.getAlt(), variantCoordinates
+                        .getStartContigName(), variantCoordinates.getStart(), variantCoordinates.getStartCi(), variantCoordinates
+                        .getEndContigName(), variantCoordinates.getEnd(), variantCoordinates.getEndCi());
+        return buildVariantAnnotations(svAnnotations, variantCoordinates);
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, VariantType variantType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
+    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, VariantCoordinates varCoords) {
+        if (!svAnnotations.hasAnnotation()) {
+            return List.of(toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), new ArrayList<>(), varCoords));
+        }
+
         // This is a map of gene symbol to SVAnnotation
         // each SVAnnotation contains a TranscriptModel mapped to a geneSymbol. Transcripts overlapping multiple genes will be seen multiple times.
         Map<String, List<SVAnnotation>> annotationsByGeneSymbol = svAnnotations.getAnnotations()
@@ -71,17 +77,18 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
 
         return annotationsByGeneSymbol.values()
                 .stream()
-                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, structuralType, ref, alt, startContig, startPos, ciStart, endContig, endPos, ciEnd, length))
+                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, varCoords))
                 .collect(toList());
     }
 
-    private String buildGeneSymbol(SVAnnotation svAnnotation) {
+    private String buildGeneSymbol(@Nullable SVAnnotation svAnnotation) {
         return svAnnotation == null ? "." : TranscriptModelUtil.getTranscriptGeneSymbol(svAnnotation.getTranscript());
     }
 
-    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, VariantType variantType, String ref, String alt, String startContig, int startPos, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd, int length) {
+    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, VariantCoordinates varCoords) {
         svAnnotations.sort(SVAnnotation::compareTo);
-        SVAnnotation highestImpactAnnotation = svAnnotations.get(0);
+//        svAnnotations.forEach(svAnnotation -> logger.info("{}", svAnnotation));
+        SVAnnotation highestImpactAnnotation = svAnnotations.isEmpty() ? null : svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
         VariantEffect highestImpactEffect = getHighestImpactEffect(highestImpactAnnotation);
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
@@ -93,7 +100,7 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
         // The genomeVariant.getStart() seems to be 0-based despite being constructed using 1-based coordinates
         //  so ensure we use the original startPos from the VCF to avoid confusion.
         //TODO: enable this to do regulatory gubbins with SVs
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, startPos);
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, varCoords.getStart());
 
         return VariantAnnotation.builder()
                 .geneId(geneId)
@@ -102,28 +109,26 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
                 .annotations(annotations)
                 .genomeAssembly(genomeAssembly)
                 .chromosome(chr)
-                .chromosomeName(getChromosomeNameOrDefault(genomeVariant.getChrName(), startContig))
-                .start(startPos)
-                .startMin(startPos + genomeVariant.getPosCILowerBound())
-                .startMax(startPos + genomeVariant.getPosCIUpperBound())
+                .contig(getChromosomeNameOrDefault(genomeVariant.getChrName(), varCoords.getStartContigName()))
+                .start(varCoords.getStart())
+                .startCi(varCoords.getStartCi())
                 .endChromosome(endChr)
-                .endChromosomeName(endContig)
-                .end(endPos)
-                .endMin(endPos + genomeVariant.getPos2CILowerBound())
-                .endMax(endPos + genomeVariant.getPos2CIUpperBound())
-                .length(length)
-                .variantType(variantType)
-                .ref(ref)
-                .alt(alt)
+                .endContig(varCoords.getEndContigName())
+                .end(varCoords.getEnd())
+                .endCi(varCoords.getEndCi())
+                .length(varCoords.getLength())
+                .variantType(varCoords.getVariantType())
+                .ref(varCoords.getRef())
+                .alt(varCoords.getAlt())
                 .build();
     }
 
-    private VariantEffect getHighestImpactEffect(SVAnnotation highestImpactAnnotation) {
+    private VariantEffect getHighestImpactEffect(@Nullable SVAnnotation highestImpactAnnotation) {
         return (highestImpactAnnotation == null || highestImpactAnnotation.getMostPathogenicVariantEffect() == null) ? VariantEffect.STRUCTURAL_VARIANT : highestImpactAnnotation
                 .getMostPathogenicVariantEffect();
     }
 
-    private String getChromosomeNameOrDefault(String chrName, String startContig) {
+    private String getChromosomeNameOrDefault(@Nullable String chrName, String startContig) {
         return chrName == null ? startContig : chrName;
     }
 
@@ -147,7 +152,7 @@ class JannovarStructuralVariantAnnotator implements StructuralVariantAnnotator {
         return annotatedEffect == null ? defaultEffect : annotatedEffect;
     }
 
-    private String buildGeneId(SVAnnotation svAnnotation) {
+    private String buildGeneId(@Nullable SVAnnotation svAnnotation) {
         return svAnnotation == null ? "" : TranscriptModelUtil.getTranscriptGeneId(svAnnotation.getTranscript());
     }
 

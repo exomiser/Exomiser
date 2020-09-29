@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +32,8 @@ import java.util.Objects;
  */
 public abstract class AbstractVariant extends AbstractVariantCoordinates implements Variant {
 
+    final GenomeAssembly genomeAssembly;
+
     final String geneSymbol;
     final String geneId;
     final VariantEffect variantEffect;
@@ -38,10 +41,16 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
 
     AbstractVariant(Builder<?> builder) {
         super(builder);
+        this.genomeAssembly = builder.genomeAssembly;
         this.geneSymbol = builder.geneSymbol;
         this.geneId = builder.geneId;
         this.variantEffect = builder.variantEffect;
         this.annotations = ImmutableList.copyOf(builder.annotations);
+    }
+
+    @Override
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
     }
 
     public String getGeneSymbol() {
@@ -71,7 +80,8 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
         if (!(o instanceof AbstractVariant)) return false;
         if (!super.equals(o)) return false;
         AbstractVariant that = (AbstractVariant) o;
-        return geneSymbol.equals(that.geneSymbol) &&
+        return genomeAssembly == that.genomeAssembly &&
+                geneSymbol.equals(that.geneSymbol) &&
                 geneId.equals(that.geneId) &&
                 variantEffect == that.variantEffect &&
                 annotations.equals(that.annotations);
@@ -79,15 +89,22 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), geneSymbol, geneId, variantEffect, annotations);
+        return Objects.hash(super.hashCode(), genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
     }
 
     abstract static class Builder<T extends Builder<T>> extends AbstractVariantCoordinates.Builder<T> {
+
+        private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
 
         private String geneSymbol = "";
         private String geneId = "";
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
         private List<TranscriptAnnotation> annotations = ImmutableList.of();
+
+        public T genomeAssembly(GenomeAssembly genomeAssembly) {
+            this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
+            return self();
+        }
 
         public T geneSymbol(String geneSymbol) {
             this.geneSymbol = Objects.requireNonNull(geneSymbol);

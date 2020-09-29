@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,39 +25,38 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public interface VariantCoordinates extends ChromosomalRegion {
-
-    GenomeAssembly getGenomeAssembly();
 
     /**
      * @return String representation of the chromosome. Chromosomes 1-22 will return
      * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=MT.
      */
-    // TODO: Could use the Chromosome/Contig class...
-    String getChromosomeName();
+    public String getStartContigName();
 
-    String getEndChromosomeName();
+    public String getEndContigName();
 
     /**
      * @return String with the reference allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    String getRef();
+    public String getRef();
 
     /**
      * @return String with the alternative allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    String getAlt();
+    public String getAlt();
 
-    default boolean isStructuralVariant() {
+    public default boolean isStructuralVariant() {
         return getVariantType().isStructural();
     }
 
-    VariantType getVariantType();
+    public VariantType getVariantType();
 }

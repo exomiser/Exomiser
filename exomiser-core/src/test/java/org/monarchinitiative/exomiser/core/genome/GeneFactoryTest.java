@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ public class GeneFactoryTest {
 
     private static final JannovarData DEFAULT_JANNOVAR_DATA = TestFactory.buildDefaultJannovarData();
 
-    private GeneFactory instance = new GeneFactory(DEFAULT_JANNOVAR_DATA);
+    private final GeneFactory instance = new GeneFactory(DEFAULT_JANNOVAR_DATA);
 
     @Test
     public void testCreateKnownGeneIds() {

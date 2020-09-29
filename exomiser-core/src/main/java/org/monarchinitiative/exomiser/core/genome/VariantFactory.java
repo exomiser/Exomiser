@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,10 +35,10 @@ import java.util.stream.Stream;
  */
 public interface VariantFactory {
 
-    default Stream<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
+    public default Stream<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
         return createVariantEvaluations(VcfFiles.readVariantContexts(vcfPath));
     }
 
-    Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream);
+    public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream);
 
 }

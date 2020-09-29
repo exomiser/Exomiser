@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.genome.Contig;
+import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ public class GeneticInterval implements ChromosomalRegion {
         }
 
         String[] intervalSections = interval.split(":");
-        int localChr = Contig.parseId(intervalSections[0]);
+        int localChr = Contigs.parseId(intervalSections[0]);
         System.out.println(intervalSections[0] + " " + localChr);
         String positions = intervalSections[1];
         String[] startEnd = positions.split("-");
@@ -84,7 +84,7 @@ public class GeneticInterval implements ChromosomalRegion {
     }
 
     @Override
-    public int getChromosome() {
+    public int getStartContigId() {
         return chromosome;
     }
 
@@ -131,7 +131,7 @@ public class GeneticInterval implements ChromosomalRegion {
     }
 
     private String toChrString(int chromosome) {
-        String chr = Contig.toString(chromosome);
+        String chr = Contigs.toString(chromosome);
         return "MT".equals(chr) ? "M" : chr;
     }
 }

@@ -149,18 +149,18 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetChromosome() {
-        assertThat(instance.getChromosome(), equalTo(CHROMOSOME));
+        assertThat(instance.getStartContigId(), equalTo(CHROMOSOME));
     }
 
     @Test
-    public void testGetChromosomeName() {
-        assertThat(instance.getChromosomeName(), equalTo(CHROMOSOME_NAME));
+    public void testGetContig() {
+        assertThat(instance.getStartContigName(), equalTo(CHROMOSOME_NAME));
     }
 
     @Test
-    public void testBuilderChromosomeName() {
-        VariantEvaluation variantEvaluation = testVariantBuilder().chromosomeName("Can be anything").build();
-        assertThat(variantEvaluation.getChromosomeName(), equalTo("Can be anything"));
+    public void testBuilderContig() {
+        VariantEvaluation variantEvaluation = testVariantBuilder().contig("Can be anything").build();
+        assertThat(variantEvaluation.getStartContigName(), equalTo("Can be anything"));
     }
 
     @Test
@@ -646,19 +646,19 @@ public class VariantEvaluationTest {
     @Test
     public void testGetChromosomeName23isX() {
         instance = VariantEvaluation.builder(23, 1, "A", "T").build();
-        assertThat(instance.getChromosomeName(), equalTo("X"));
+        assertThat(instance.getStartContigName(), equalTo("X"));
     }
 
     @Test
     public void testGetChromosomeName24isY() {
         instance = VariantEvaluation.builder(24, 1, "A", "T").build();
-        assertThat(instance.getChromosomeName(), equalTo("Y"));
+        assertThat(instance.getStartContigName(), equalTo("Y"));
     }
 
     @Test
     public void testGetChromosomeName25isMT() {
         instance = VariantEvaluation.builder(25, 1, "A", "T").build();
-        assertThat(instance.getChromosomeName(), equalTo("MT"));
+        assertThat(instance.getStartContigName(), equalTo("MT"));
     }
 
 //    @Test
@@ -771,7 +771,7 @@ public class VariantEvaluationTest {
         Collections.shuffle(variants);
 
         System.out.println("Shuffled:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getStartContigId(), variant
                 .getStart(), variant.getRef(), variant.getAlt()));
 
         Collections.sort(variants);
@@ -779,7 +779,7 @@ public class VariantEvaluationTest {
         List<VariantEvaluation> expected = Arrays.asList(zero, one, two, three, four);
 
         System.out.println("Sorted:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getStartContigId(), variant
                 .getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(expected));
     }
@@ -817,13 +817,13 @@ public class VariantEvaluationTest {
 
         System.out.println("Shuffled:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
 
         variants.sort(new VariantEvaluation.RankBasedComparator());
 
         System.out.println("Sorted:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 
@@ -835,26 +835,26 @@ public class VariantEvaluationTest {
 
         System.out.println("Shuffled:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
 
         variants.sort(VariantEvaluation::compareByRank);
 
         System.out.println("Sorted:");
         variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getChromosome(), variant.getStart(), variant.getRef(), variant.getAlt()));
+                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=0 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

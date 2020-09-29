@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ public class BedFiles {
                 if (tokens.length > 3) {
                     logger.warn("Line contains more than 3 columns - ignoring optional columns 4+. Therefore STRAND will all be +");
                 }
-                int chr = Contig.parseId(tokens[0]);
+                int chr = Contigs.parseId(tokens[0]);
                 //BED format is 0-based - we use 1-based in the exomiser.
                 int start = Integer.parseInt(tokens[1]) + 1;
                 int end = Integer.parseInt(tokens[2]);

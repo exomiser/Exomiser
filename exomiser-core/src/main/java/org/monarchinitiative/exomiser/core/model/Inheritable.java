@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,15 +37,15 @@ import java.util.Set;
  */
 public interface Inheritable {
 
-    Set<ModeOfInheritance> getCompatibleInheritanceModes();
+    public Set<ModeOfInheritance> getCompatibleInheritanceModes();
 
-    void setCompatibleInheritanceModes(Set<ModeOfInheritance> inheritanceModes);
+    public void setCompatibleInheritanceModes(Set<ModeOfInheritance> inheritanceModes);
 
     /**
      * @param modeOfInheritance
      * @return true if the variants for this gene are compatible with the given
      * {@code ModeOfInheritance} otherwise false.
      */
-    boolean isCompatibleWith(ModeOfInheritance modeOfInheritance);
+    public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance);
 
 }

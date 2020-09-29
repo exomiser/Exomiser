@@ -134,7 +134,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         List<Object> record = new ArrayList<>();
         VariantContext variantContext = ve.getVariantContext();
         // CHROM
-        record.add(ve.getChromosomeName());
+        record.add(ve.getStartContigName());
         // POS
         record.add(ve.getStart());
         // REF

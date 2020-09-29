@@ -36,8 +36,8 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarVariantAnnotator.class);
 
-    private final SmallVariantAnnotator smallVariantAnnotator;
-    private final StructuralVariantAnnotator structuralVariantAnnotator;
+    private final JannovarSmallVariantAnnotator smallVariantAnnotator;
+    private final JannovarStructuralVariantAnnotator structuralVariantAnnotator;
 
     public JannovarVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData, ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         this.smallVariantAnnotator = new JannovarSmallVariantAnnotator(genomeAssembly, jannovarData, regulatoryRegionIndex);
@@ -71,37 +71,15 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      * Jannovar:
      * https://github.com/charite/jannovar/blob/master/jannovar-core/src/main/java/de/charite/compbio/jannovar/reference/VariantDataCorrector.java
      *
-     * @param contig chromosome identifier
-     * @param start 1-based start position of the first base of the ref string
-     * @param ref reference base(s)
-     * @param alt alternate bases
+     * @param variantCoordinates
      * @return {@link VariantAnnotation} objects trimmed according to {@link AllelePosition#trim(int, String, String)} and annotated using Jannovar.
      * @since 13.0.0
      */
     @Override
-    public List<VariantAnnotation> annotate(String contig, int start, String ref, String alt) {
-        return smallVariantAnnotator.annotate(contig, start, ref, alt);
-    }
-
-    /**
-     * Returns {@link VariantAnnotation}s which overlap the genomic region covered by input parameters. These are assumed
-     * to have been derived from a VCF file.
-     *
-     * @param startContig start chromosome identifier
-     * @param startPos    1-based position of the first base of the ref string
-     * @param ref         reference base
-     * @param alt         alternate base (should be symbolic)
-     * @param variantType the structural type of the variant
-     * @param length      length of the variant
-     * @param ciStart     confidence intervals for the start position
-     * @param endContig   end chromosome identifier
-     * @param endPos      1-based position for the end of the alt string
-     * @param ciEnd       confidence intervals for the end position
-     * @return {@link VariantAnnotation} objects for the variant annotated with Jannovar
-     * @since 13.0.0
-     */
-    @Override
-    public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
-        return structuralVariantAnnotator.annotate(startContig, startPos, ref, alt, variantType, length, ciStart, endContig, endPos, ciEnd);
+    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
+        if (variantCoordinates.isStructuralVariant()) {
+            return structuralVariantAnnotator.annotate(variantCoordinates);
+        }
+        return smallVariantAnnotator.annotate(variantCoordinates);
     }
 }

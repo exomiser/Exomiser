@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -65,7 +65,7 @@ public class VariantFactoryImplTest {
         return variant -> {
             GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
             List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
-            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getChromosome(), variant.getStart(), variant
+            System.out.printf("%s %s %s %s %s %s %s gene={%s %s} %s%n", variant.getStartContigId(), variant.getStart(), variant
                             .getRef(), variant.getAlt(), variant.getGenotypeString(), genotypes, genotypeTypes,
                     variant.getGeneSymbol(), variant.getGeneId(), variant.getVariantContext());
         };
@@ -123,7 +123,7 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(2));
 
         for (VariantEvaluation variant : variants) {
-            System.out.println(variant.getChromosomeName() + " " + variant);
+            System.out.println(variant.getStartContigName() + " " + variant);
             assertThat(variant.hasTranscriptAnnotations(), is(false));
         }
     }
@@ -146,10 +146,12 @@ public class VariantFactoryImplTest {
         VariantEvaluation variantEvaluation = variants.get(0);
         System.out.println(variantEvaluation);
 
-        assertThat(variantEvaluation.getChromosome(), equalTo(10));
-        assertThat(variantEvaluation.getChromosomeName(), equalTo("10"));
+        assertThat(variantEvaluation.getStartContigId(), equalTo(10));
+        assertThat(variantEvaluation.getStartContigName(), equalTo("10"));
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
+        assertThat(variantEvaluation.getStartCi(), equalTo(ConfidenceInterval.precise()));
         assertThat(variantEvaluation.getEnd(), equalTo(123256215));
+        assertThat(variantEvaluation.getEndCi(), equalTo(ConfidenceInterval.precise()));
         assertThat(variantEvaluation.getLength(), equalTo(0));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
@@ -171,8 +173,8 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         System.out.println(variantEvaluation);
-        assertThat(variantEvaluation.getChromosome(), equalTo(0));
-        assertThat(variantEvaluation.getChromosomeName(), equalTo("UNKNOWN"));
+        assertThat(variantEvaluation.getStartContigId(), equalTo(0));
+        assertThat(variantEvaluation.getStartContigName(), equalTo("UNKNOWN"));
         assertThat(variantEvaluation.getStart(), equalTo(12345));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
@@ -197,8 +199,8 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         System.out.println(variantEvaluation);
-        assertThat(variantEvaluation.getChromosome(), equalTo(1));
-        assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
+        assertThat(variantEvaluation.getStartContigId(), equalTo(1));
+        assertThat(variantEvaluation.getStartContigName(), equalTo("1"));
         assertThat(variantEvaluation.getStart(), equalTo(123256213));
         assertThat(variantEvaluation.getRef(), equalTo("CA"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
@@ -254,8 +256,8 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(2));
         VariantEvaluation firstAllele = variants.get(0);
         System.out.println(firstAllele);
-        assertThat(firstAllele.getChromosome(), equalTo(1));
-        assertThat(firstAllele.getChromosomeName(), equalTo("1"));
+        assertThat(firstAllele.getStartContigId(), equalTo(1));
+        assertThat(firstAllele.getStartContigName(), equalTo("1"));
         assertThat(firstAllele.getStart(), equalTo(120612040));
         assertThat(firstAllele.getEnd(), equalTo(120612040));
         assertThat(firstAllele.getLength(), equalTo(6));
@@ -275,8 +277,8 @@ public class VariantFactoryImplTest {
 
         VariantEvaluation secondAllele = variants.get(1);
         System.out.println(secondAllele);
-        assertThat(secondAllele.getChromosome(), equalTo(1));
-        assertThat(secondAllele.getChromosomeName(), equalTo("1"));
+        assertThat(secondAllele.getStartContigId(), equalTo(1));
+        assertThat(secondAllele.getStartContigName(), equalTo("1"));
         assertThat(secondAllele.getStart(), equalTo(120612040));
         assertThat(secondAllele.getEnd(), equalTo(120612040));
         assertThat(secondAllele.getLength(), equalTo(9));
@@ -305,8 +307,8 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         System.out.println(variantEvaluation);
-        assertThat(variantEvaluation.getChromosome(), equalTo(1));
-        assertThat(variantEvaluation.getChromosomeName(), equalTo("1"));
+        assertThat(variantEvaluation.getStartContigId(), equalTo(1));
+        assertThat(variantEvaluation.getStartContigName(), equalTo("1"));
         assertThat(variantEvaluation.getStart(), equalTo(120612040));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("TCCGCCG"));
@@ -359,7 +361,7 @@ public class VariantFactoryImplTest {
                 .forEach(variantEvaluation -> {
                     System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
                     assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getStartContigId(), equalTo(16));
                     assertThat(variantEvaluation.getStart(), equalTo(89935214));
                     assertThat(variantEvaluation.getRef(), equalTo("G"));
                     assertThat(variantEvaluation.getAlt(), equalTo("A"));
@@ -374,7 +376,7 @@ public class VariantFactoryImplTest {
                 .forEach(variantEvaluation -> {
                     System.out.println(variantEvaluation.getGeneSymbol() + ": " + variantEvaluation);
                     assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-                    assertThat(variantEvaluation.getChromosome(), equalTo(16));
+                    assertThat(variantEvaluation.getStartContigId(), equalTo(16));
                     assertThat(variantEvaluation.getStart(), equalTo(89935214));
                     assertThat(variantEvaluation.getRef(), equalTo("G"));
                     assertThat(variantEvaluation.getAlt(), equalTo("A"));
@@ -403,12 +405,14 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getStart(), equalTo(123256215));
         assertThat(variantEvaluation.getStartMin(), equalTo(123256215 - 56));
         assertThat(variantEvaluation.getStartMax(), equalTo(123256215 + 20));
+        assertThat(variantEvaluation.getStartCi(), equalTo(ConfidenceInterval.of(-56, 20)));
 
         assertThat(variantEvaluation.getEnd(), equalTo(123256420));
         assertThat(variantEvaluation.getEndMin(), equalTo(123256420 - 10));
         assertThat(variantEvaluation.getEndMax(), equalTo(123256420 + 62));
+        assertThat(variantEvaluation.getEndCi(), equalTo(ConfidenceInterval.of(-10, 62)));
 
-        assertThat(variantEvaluation.getLength(), equalTo(205));
+        assertThat(variantEvaluation.getLength(), equalTo(-205));
 
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("<DEL>"));
@@ -434,10 +438,12 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getStart(), equalTo(212471179));
         assertThat(variantEvaluation.getStartMin(), equalTo(212471179 - 471));
         assertThat(variantEvaluation.getStartMax(), equalTo(212471179));
+        assertThat(variantEvaluation.getStartCi(), equalTo(ConfidenceInterval.of(-471, 0)));
 
         assertThat(variantEvaluation.getEnd(), equalTo(212472619));
         assertThat(variantEvaluation.getEndMin(), equalTo(212472619));
         assertThat(variantEvaluation.getEndMax(), equalTo(212472619 + 444));
+        assertThat(variantEvaluation.getEndCi(), equalTo(ConfidenceInterval.of(0, 444)));
 
         assertThat(variantEvaluation.getLength(), equalTo(1440));
 

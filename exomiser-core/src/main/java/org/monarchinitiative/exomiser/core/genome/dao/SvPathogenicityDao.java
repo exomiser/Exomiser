@@ -175,7 +175,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            ps.setInt(1, variant.getChromosome());
+            ps.setInt(1, variant.getStartContigId());
             ps.setInt(2, variant.getStart());
             ps.setInt(3, margin);
             ps.setInt(4, variant.getStart());
@@ -266,7 +266,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
         }
 
         @Override
-        public int getChromosome() {
+        public int getStartContigId() {
             return chr;
         }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ public class ChromosomalRegionUtil {
      * @return Jaccard coefficient of x and y
      */
     public static double jaccard(ChromosomalRegion x, ChromosomalRegion y) {
-        if (x.getChromosome() != y.getChromosome()) {
+        if (x.getStartContigId() != y.getStartContigId()) {
             return 0;
         }
         // Jaccard is the intersection over the union, e.g.

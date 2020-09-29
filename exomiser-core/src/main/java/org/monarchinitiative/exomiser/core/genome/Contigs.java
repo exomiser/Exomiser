@@ -30,8 +30,9 @@ import java.util.Map;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 12.0.0
  */
-public class Contig {
+public class Contigs {
 
+    // this is a bit lke the ReferenceDictionary but could be part of GenomeAssembly
     private static final Map<String, Integer> CONTIG_MAP;
 
     static {
@@ -57,18 +58,21 @@ public class Contig {
         }
         mapBuilder.put("MT", 25);
 
-        //NC accessions for chromosomes 1-24
+        // RefSeq and GenBank NC / CM accessions for chromosomes 1-24
         for (int i = 1; i < 25; i++) {
-            mapBuilder.put(GenomeAssembly.HG19.getReferenceAccession(i), i);
-            mapBuilder.put(GenomeAssembly.HG38.getReferenceAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG19.getRefSeqAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG19.getGenBankAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG38.getRefSeqAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG38.getGenBankAccession(i), i);
         }
-        // Mitochondrial chromosome has same NC accession
-        mapBuilder.put(GenomeAssembly.HG19.getReferenceAccession(25), 25);
+        // Mitochondrial chromosome has same RefSeq and GenBank accession
+        mapBuilder.put(GenomeAssembly.HG19.getRefSeqAccession(25), 25);
+        mapBuilder.put(GenomeAssembly.HG19.getGenBankAccession(25), 25);
 
         CONTIG_MAP = mapBuilder.build();
     }
 
-    private Contig() {
+    private Contigs() {
     }
 
     /**
@@ -81,12 +85,12 @@ public class Contig {
      * Valid sex chromosomes are 23, X, chrX, 24, Y, chrY or the NC accessions. Valid mitochondrial values are M, MT,
      * chrM, 25 or NC_012920.1. Unrecognised and unplaced contigs will have the value 0 returned.
      *
-     * @param contig the string-based representation of the chromosome
+     * @param contigName the string-based representation of the chromosome
      * @return the integer value of the chromosome
      * @since 12.0.0
      */
-    public static int parseId(String contig) {
-        return CONTIG_MAP.getOrDefault(contig, 0);
+    public static int parseId(String contigName) {
+        return CONTIG_MAP.getOrDefault(contigName, 0);
     }
 
     /**

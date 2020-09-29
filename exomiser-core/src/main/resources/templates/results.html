@@ -456,7 +456,7 @@
             <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}">
                 <div class="col-sm-12">
                     <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
-                    <b th:text=" |${variantEvaluation.chromosomeName} ${variantEvaluation.start} ${variantEvaluation.ref} ${variantEvaluation.alt} [${variantEvaluation.genotypeString}]|">
+                    <b th:text=" |${variantEvaluation.startContigName} ${variantEvaluation.start} ${variantEvaluation.ref} ${variantEvaluation.alt} [${variantEvaluation.genotypeString}]|">
                         chr10:g.123256215T>G [0/1]</b>
                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
                               th:if="${#strings.startsWith(rsId,'rs')}">

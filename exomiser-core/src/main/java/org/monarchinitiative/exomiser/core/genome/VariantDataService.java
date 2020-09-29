@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,10 +39,10 @@ import java.util.Set;
  */
 public interface VariantDataService {
 
-    boolean variantIsWhiteListed(Variant variant);
+    public boolean variantIsWhiteListed(Variant variant);
 
-    FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
 
-    PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
 
 }

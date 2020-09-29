@@ -296,7 +296,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.getChromosome() == 23;
+        return ve.getStartContigId() == 23;
     }
 
     @JsonIgnore
@@ -305,7 +305,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.getChromosome() == 24;
+        return ve.getStartContigId() == 24;
     }
 
     /**

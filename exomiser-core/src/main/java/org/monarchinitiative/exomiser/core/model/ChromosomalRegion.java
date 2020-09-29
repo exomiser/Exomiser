@@ -20,24 +20,35 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Interface to represent a simple region on a chromosome. For a representation of variation over a region use the
  * {@link VariantCoordinates} or {@link Variant} for biological annotations of variation over a region.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public interface ChromosomalRegion {
 
-    int getChromosome();
+    public int getStartContigId();
 
-    int getStart();
+    public int getStart();
 
-    default int getStartMin() {
-        return getStart();
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public default ConfidenceInterval getStartCi() {
+        return ConfidenceInterval.precise();
     }
 
-    default int getStartMax() {
-        return getStart();
+    @JsonIgnore
+    public default int getStartMin() {
+        return getStartCi().getMinPos(getStart());
+    }
+
+    @JsonIgnore
+    public default int getStartMax() {
+        return getStartCi().getMaxPos(getStart());
     }
 
     /**
@@ -48,18 +59,26 @@ public interface ChromosomalRegion {
      * @return the int value of the end chromosome
      * @since 13.0.0
      */
-    default int getEndChromosome() {
-        return getChromosome();
+    public default int getEndContigId() {
+        return getStartContigId();
     }
 
-    int getEnd();
-
-    default int getEndMin() {
-        return getEnd();
+    public default int getEnd() {
+        return getStart();
     }
 
-    default int getEndMax() {
-        return getEnd();
+    public default ConfidenceInterval getEndCi() {
+        return ConfidenceInterval.precise();
+    }
+
+    @JsonIgnore
+    public default int getEndMin() {
+        return getEndCi().getMinPos(getEnd());
+    }
+
+    @JsonIgnore
+    public default int getEndMax() {
+        return getEndCi().getMaxPos(getEnd());
     }
 
     /**
@@ -69,13 +88,13 @@ public interface ChromosomalRegion {
      * @return a positive integer for an insertion, negative for a deletion or zero for a SNP or MNV
      * @since 13.0.0
      */
-    default int getLength() {
+    public default int getLength() {
         return getEnd() - getStart();
     }
 
-    static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {
-        int chr = c1.getChromosome();
-        int otherChr = c2.getChromosome();
+    public static int compare(ChromosomalRegion c1, ChromosomalRegion c2) {
+        int chr = c1.getStartContigId();
+        int otherChr = c2.getStartContigId();
         if (chr != otherChr) {
             return Integer.compare(chr, otherChr);
         }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 /**
@@ -36,7 +38,7 @@ import java.util.Objects;
  */
 public class ConfidenceInterval {
 
-    private static final ConfidenceInterval EMPTY = new ConfidenceInterval(0, 0);
+    private static final ConfidenceInterval PRECISE = new ConfidenceInterval(0, 0);
 
     private final int lowerBound;
     private final int upperBound;
@@ -51,13 +53,13 @@ public class ConfidenceInterval {
 
     public static ConfidenceInterval of(int lowerBound, int upperBound) {
         if (lowerBound == 0 && upperBound == 0) {
-            return EMPTY;
+            return PRECISE;
         }
         return new ConfidenceInterval(lowerBound, upperBound);
     }
 
-    public static ConfidenceInterval empty() {
-        return EMPTY;
+    public static ConfidenceInterval precise() {
+        return PRECISE;
     }
 
     public int getLowerBound() {
@@ -74,6 +76,11 @@ public class ConfidenceInterval {
 
     public int getMaxPos(int pos) {
         return pos + upperBound;
+    }
+
+    @JsonIgnore
+    public boolean isPrecise() {
+        return lowerBound == 0 && upperBound == 0;
     }
 
     @Override

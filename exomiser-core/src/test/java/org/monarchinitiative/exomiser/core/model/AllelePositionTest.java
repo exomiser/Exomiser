@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -48,6 +48,7 @@ public class AllelePositionTest {
         AllelePosition instance = trim(1, "", "TA");
 
         assertThat(instance.getStart(), equalTo(1));
+        assertThat(instance.getEnd(), equalTo(1));
         assertThat(instance.getRef(), equalTo(""));
         assertThat(instance.getAlt(), equalTo("TA"));
     }
@@ -57,8 +58,26 @@ public class AllelePositionTest {
         AllelePosition instance = trim(1, "TA", "");
 
         assertThat(instance.getStart(), equalTo(1));
+        assertThat(instance.getEnd(), equalTo(2));
         assertThat(instance.getRef(), equalTo("TA"));
         assertThat(instance.getAlt(), equalTo(""));
+    }
+
+    @Test
+    void ends() {
+        assertThat(endOf(1, "", ""), equalTo(1));
+        assertThat(endOf(1, "", "T"), equalTo(1));
+        assertThat(endOf(1, "", "AA"), equalTo(1));
+        assertThat(endOf(1, "A", ""), equalTo(1));
+        assertThat(endOf(1, "AA", ""), equalTo(2));
+        assertThat(endOf(1, "AA", "G"), equalTo(2));
+        assertThat(endOf(1, "AA", "GT"), equalTo(2));
+        assertThat(endOf(200, "AA", "GT"), equalTo(201));
+        assertThat(endOf(200, "AAT", "AT"), equalTo(200));
+    }
+
+    private int endOf(int start, String ref, String alt) {
+        return trim(start, ref, alt).getEnd();
     }
 
     @Test

@@ -31,6 +31,7 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.VariantAllele;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -56,10 +57,10 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactoryImpl.class);
 
-    private final VariantContextAnnotator variantContextAnnotator;
+    private final VariantAnnotator variantAnnotator;
 
     public VariantFactoryImpl(VariantAnnotator variantAnnotator) {
-        this.variantContextAnnotator = new VariantContextAnnotator(variantAnnotator);
+        this.variantAnnotator = variantAnnotator;
     }
 
     @Override
@@ -117,7 +118,8 @@ public class VariantFactoryImpl implements VariantFactory {
         // It is possible for a variant to overlap two or more genes (see issue https://github.com/exomiser/Exomiser/issues/294)
         // so we're expecting a single gene per variant annotation which might have different variant consequences and different
         // phenotypes for each gene
-        List<VariantAnnotation> variantAnnotations = variantContextAnnotator.annotateAllele(variantContext, altAllele);
+        VariantAllele variantAllele = VariantContextConverter.toVariantAllele(variantContext, altAllele);
+        List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variantAllele);
 
         // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
         // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit

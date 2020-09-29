@@ -144,7 +144,7 @@ public class GeneticIntervalTest {
 
     @Test
     public void testGetChromosome() {
-        assertThat(instance.getChromosome(), equalTo(CHR));
+        assertThat(instance.getStartContigId(), equalTo(CHR));
     }
 
     @Test

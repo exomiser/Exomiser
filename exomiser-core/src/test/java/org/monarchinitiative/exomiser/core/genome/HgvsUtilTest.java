@@ -21,9 +21,9 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -75,7 +75,7 @@ class HgvsUtilTest {
     void toHgvsSvDel() {
         Variant snv = VariantEvaluation.builder(10, 20, "T", "<DEL>")
                 .end(100)
-                .structuralType(StructuralType.DEL)
+                .variantType(VariantType.DEL)
                 .build();
         assertThat(HgvsUtil.toHgvsGenomic(snv), equalTo("NC_000010.10:g.20_100del"));
     }
@@ -84,7 +84,7 @@ class HgvsUtilTest {
     void toHgvsSvInversion() {
         Variant snv = VariantEvaluation.builder(10, 20, "T", "<INV>")
                 .end(100)
-                .structuralType(StructuralType.INV)
+                .variantType(VariantType.INV)
                 .build();
         assertThat(HgvsUtil.toHgvsGenomic(snv), equalTo("NC_000010.10:g.20_100inv"));
     }
@@ -125,7 +125,7 @@ class HgvsUtilTest {
     void toHgvsSvIns() {
         Variant snv = VariantEvaluation.builder(10, 20, "T", "<INS>")
                 .end(100)
-                .structuralType(StructuralType.INS)
+                .variantType(VariantType.INS)
                 .build();
         assertThat(HgvsUtil.toHgvsGenomic(snv), equalTo("NC_000010.10:g.20_100ins"));
     }
@@ -149,7 +149,7 @@ class HgvsUtilTest {
     void toHgvsSvDup() {
         Variant snv = VariantEvaluation.builder(10, 20, "T", "<DUP>")
                 .end(100)
-                .structuralType(StructuralType.DUP)
+                .variantType(VariantType.DUP)
                 .build();
         assertThat(HgvsUtil.toHgvsGenomic(snv), equalTo("NC_000010.10:g.20_100dup"));
     }

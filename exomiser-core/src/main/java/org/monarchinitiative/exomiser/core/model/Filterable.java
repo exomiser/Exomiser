@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,10 +35,10 @@ import org.monarchinitiative.exomiser.core.filters.FilterType;
  */
 public interface Filterable {
 
-    boolean passedFilters();
+    public boolean passedFilters();
 
-    boolean passedFilter(FilterType filterType);
+    public boolean passedFilter(FilterType filterType);
 
-    boolean addFilterResult(FilterResult filterResult);
+    public boolean addFilterResult(FilterResult filterResult);
 
 }

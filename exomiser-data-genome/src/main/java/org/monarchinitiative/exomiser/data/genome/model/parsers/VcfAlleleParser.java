@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import com.google.common.collect.ImmutableSet;
-import org.monarchinitiative.exomiser.core.genome.Contig;
+import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -71,7 +71,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
     private List<Allele> parseAlleles(String[] fields) {
 
-        int chr = Contig.parseId(fields[0]);
+        int chr = Contigs.parseId(fields[0]);
         if (chr == 0 || !unfilteredOrPassed(fields[6])) {
             return Collections.emptyList();
         }

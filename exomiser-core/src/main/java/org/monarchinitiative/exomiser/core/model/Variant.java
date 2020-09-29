@@ -27,6 +27,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 import java.util.List;
 
@@ -36,18 +37,20 @@ import java.util.List;
  */
 public interface Variant extends VariantCoordinates {
 
-    String getGeneSymbol();
+    public GenomeAssembly getGenomeAssembly();
 
-    String getGeneId();
+    public String getGeneSymbol();
 
-    VariantEffect getVariantEffect();
+    public String getGeneId();
 
-    List<TranscriptAnnotation> getTranscriptAnnotations();
+    public VariantEffect getVariantEffect();
 
-    boolean hasTranscriptAnnotations();
+    public List<TranscriptAnnotation> getTranscriptAnnotations();
+
+    public boolean hasTranscriptAnnotations();
 
     @JsonIgnore
-    default boolean isNonCodingVariant() {
+    public default boolean isNonCodingVariant() {
         return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
     }
 
@@ -56,7 +59,7 @@ public interface Variant extends VariantCoordinates {
      * @since 12.0.0
      */
     @JsonIgnore
-    default boolean isCodingVariant() {
+    public default boolean isCodingVariant() {
         return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
     }
 }

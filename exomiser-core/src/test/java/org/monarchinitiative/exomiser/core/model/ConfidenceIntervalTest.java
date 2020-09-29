@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@ class ConfidenceIntervalTest {
 
     @Test
     void empty() {
-        assertThat(ConfidenceInterval.empty(), equalTo(ConfidenceInterval.of(0, 0)));
+        assertThat(ConfidenceInterval.precise(), equalTo(ConfidenceInterval.of(0, 0)));
     }
 
     @Test
@@ -66,6 +66,11 @@ class ConfidenceIntervalTest {
         assertThat(instance.getMinPos(200), equalTo(190));
     }
 
+    @Test
+    void getMinFromPrecise() {
+        ConfidenceInterval instance = ConfidenceInterval.precise();
+        assertThat(instance.getMinPos(100), equalTo(100));
+    }
 
     @Test
     void getMax() {
@@ -74,7 +79,22 @@ class ConfidenceIntervalTest {
     }
 
     @Test
+    void getMaxFromPrecise() {
+        ConfidenceInterval instance = ConfidenceInterval.precise();
+        assertThat(instance.getMaxPos(100), equalTo(100));
+    }
+
+    @Test
+    void isPrecise() {
+        assertThat(ConfidenceInterval.precise().isPrecise(), equalTo(true));
+        assertThat(ConfidenceInterval.of(0, 0).isPrecise(), equalTo(true));
+        assertThat(ConfidenceInterval.of(-1, 0).isPrecise(), equalTo(false));
+        assertThat(ConfidenceInterval.of(-1, 2).isPrecise(), equalTo(false));
+        assertThat(ConfidenceInterval.of(0, 2).isPrecise(), equalTo(false));
+    }
+
+    @Test
     void testToString() {
-        System.out.println(ConfidenceInterval.empty());
+        System.out.println(ConfidenceInterval.precise());
     }
 }

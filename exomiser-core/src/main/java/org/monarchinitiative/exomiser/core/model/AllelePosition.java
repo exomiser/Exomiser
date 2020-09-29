@@ -45,6 +45,12 @@ public class AllelePosition {
     private final String ref;
     private final String alt;
 
+    private AllelePosition(int start, String ref, String alt) {
+        this.start = start;
+        this.ref = ref;
+        this.alt = alt;
+    }
+
     /**
      * @param start
      * @param ref
@@ -58,11 +64,35 @@ public class AllelePosition {
     }
 
     /**
-     * Trims the right, then left side of the given variant allele.
+     * Given a single allele from a multi-positional site, incoming variants might not be fully trimmed.
+     * In cases where there is repetition, depending on the program used, the final variant allele will be different.
+     * VCF:      X-118887583-TCAAAA-TCAAAACAAAA
+     * Exomiser: X-118887583-T     -TCAAAA
+     * CellBase: X-118887584--     - CAAAA
+     * Jannovar: X-118887588-      -      CAAAA
+     * Nirvana:  X-118887589-      -      CAAAA
+     * <p>
+     * Trimming first with Exomiser, then annotating with Jannovar, constrains the Jannovar annotation to the same
+     * position as Exomiser.
+     * VCF:      X-118887583-TCAAAA-TCAAAACAAAA
+     * Exomiser: X-118887583-T     -TCAAAA
+     * CellBase: X-118887584--     - CAAAA
+     * Jannovar: X-118887583-      - CAAAA      (Jannovar is zero-based)
+     * Nirvana:  X-118887584-      - CAAAA
+     * <p>
+     * Cellbase:
+     * https://github.com/opencb/biodata/blob/develop/biodata-tools/src/main/java/org/opencb/biodata/tools/variant/VariantNormalizer.java
+     * http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/genomic/variant/X:118887583:TCAAAA:TCAAAACAAAA/annotation?assembly=grch37&limit=-1&skip=-1&count=false&Output format=json&normalize=true
+     * <p>
+     * Nirvana style trimming:
+     * https://github.com/Illumina/Nirvana/blob/master/VariantAnnotation/Algorithms/BiDirectionalTrimmer.cs
+     * <p>
+     * Jannovar:
+     * https://github.com/charite/jannovar/blob/master/jannovar-core/src/main/java/de/charite/compbio/jannovar/reference/VariantDataCorrector.java
      *
-     * @param start
-     * @param ref
-     * @param alt
+     * @param start 1-based start position of the first base of the ref string
+     * @param ref   reference base(s)
+     * @param alt   alternate bases
      * @return a minimised representation of the input coordinates.
      */
     public static AllelePosition trim(int start, String ref, String alt) {
@@ -135,13 +165,19 @@ public class AllelePosition {
         return isSymbolic(alt) || isSymbolic(ref);
     }
 
-    private static boolean isSymbolic(String allele) {
+    public static boolean isSymbolic(String allele) {
         // shamelessly copied from HTSJDK Allele via Jannovar
-        if (allele.length() <= 1)
+        if (allele.length() <= 1) {
             return false;
+        }
         return (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>') || // symbolic or large insertion
                 (allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.') || // single breakend
                 (allele.contains("[") || allele.contains("]")); // mated breakend
+    }
+
+    public static int length(String ref, String alt) {
+//        MNV length 0 or ref.length()?
+        return isSymbolic(ref, alt) ? 0 : alt.length() - ref.length();
     }
 
     private static boolean cantTrim(String ref, String alt) {
@@ -158,14 +194,22 @@ public class AllelePosition {
         return ref.length() > 1 && alt.length() > 1 && ref.charAt(0) == alt.charAt(0);
     }
 
-    private AllelePosition(int start, String ref, String alt) {
-        this.start = start;
-        this.ref = ref;
-        this.alt = alt;
-    }
-
+    /**
+     * @return 1-based inclusive start position of the allele
+     */
     public int getStart() {
         return start;
+    }
+
+    /**
+     * @return 1-based closed end position of the allele
+     */
+    public int getEnd() {
+        return start + Math.max(ref.length() - 1, 0);
+    }
+
+    public int getLength() {
+        return length(ref, alt);
     }
 
     public String getRef() {

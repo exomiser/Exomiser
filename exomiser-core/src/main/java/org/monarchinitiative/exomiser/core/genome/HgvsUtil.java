@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
-import org.monarchinitiative.exomiser.core.model.StructuralType;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.VariantType;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -78,7 +78,7 @@ public class HgvsUtil {
     // Deletion (del):
     // a sequence change where, compared to a reference sequence, one or more nucleotides are not present (deleted).
     private static boolean isDeletion(Variant variant) {
-        if (variant.getStructuralType().getBaseType() == StructuralType.DEL) {
+        if (variant.getVariantType().getBaseType() == VariantType.DEL) {
             return true;
         }
         return AllelePosition.isDeletion(variant.getRef(), variant.getAlt()) && variant.getRef()
@@ -111,7 +111,7 @@ public class HgvsUtil {
     // a sequence change where, compared to a reference sequence, a copy of one or more nucleotides are inserted
     // directly 3' of the original copy of that sequence.
     private static boolean isDuplication(Variant variant) {
-        if (variant.getStructuralType().getBaseType() == StructuralType.DUP) {
+        if (variant.getVariantType().getBaseType() == VariantType.DUP) {
             return true;
         }
         // can only detect simple duplications from small variations
@@ -132,7 +132,7 @@ public class HgvsUtil {
     }
 
     private static String toDuplicationString(Variant variant) {
-        if (variant.getStructuralType().getBaseType() == StructuralType.DUP) {
+        if (variant.getVariantType().getBaseType() == VariantType.DUP) {
             return getPrefix(variant) + variant.getStart() + "_" + variant.getEnd() + "dup";
         }
 
@@ -150,7 +150,7 @@ public class HgvsUtil {
     // a sequence change where, compared to the reference sequence, one or more nucleotides are inserted and where the
     // insertion is not a copy of a sequence immediately 5'
     private static boolean isInsertion(Variant variant) {
-        if (variant.getStructuralType().getBaseType() == StructuralType.INS) {
+        if (variant.getVariantType().getBaseType() == VariantType.INS) {
             return true;
         }
         return AllelePosition.isInsertion(variant.getRef(), variant.getAlt()) && variant.getAlt()
@@ -158,7 +158,7 @@ public class HgvsUtil {
     }
 
     private static String toInsertionString(Variant variant) {
-        if (variant.getStructuralType().getBaseType() == StructuralType.INS) {
+        if (variant.getVariantType().getBaseType() == VariantType.INS) {
             return getPrefix(variant) + variant.getStart() + '_' + variant.getEnd() + "ins";
         }
         return getPrefix(variant) + variant.getStart() + '_' + (variant.getStart() + 1) + "ins" + variant.getAlt()
@@ -169,7 +169,7 @@ public class HgvsUtil {
     // a sequence change where, compared to a reference sequence, more than one nucleotide replacing the original
     // sequence are the reverse complement of the original sequence.
     private static boolean isInversion(Variant variant) {
-        return variant.getStructuralType().getBaseType() == StructuralType.INV;
+        return variant.getVariantType().getBaseType() == VariantType.INV;
     }
 
     private static String toInversionString(Variant variant) {
@@ -197,6 +197,6 @@ public class HgvsUtil {
 
     private static String getPrefix(Variant variant) {
         // this would be neater with an actual Chromosome class
-        return variant.getGenomeAssembly().getReferenceAccession(variant.getChromosome()) + ":g.";
+        return variant.getGenomeAssembly().getRefSeqAccession(variant.getStartContigId()) + ":g.";
     }
 }

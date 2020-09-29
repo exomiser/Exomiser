@@ -24,50 +24,41 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantAllele;
 import org.monarchinitiative.exomiser.core.model.VariantType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * Handles Annotation of {@link VariantContext} objects to produce {@link VariantAnnotation} objects. This
- * implementation will handle both small and structural variants.
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-public class VariantContextAnnotator {
+public class VariantContextConverter {
 
-    protected final VariantAnnotator variantAnnotator;
-
-    public VariantContextAnnotator(VariantAnnotator variantAnnotator) {
-        this.variantAnnotator = variantAnnotator;
+    private VariantContextConverter() {
     }
 
-    public List<VariantAnnotation> annotateAllele(VariantContext variantContext, Allele altAllele) {
+    public static VariantAllele toVariantAllele(VariantContext variantContext, Allele altAllele) {
         String contig = variantContext.getContig();
         int start = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
         // Structural variants are 'symbolic' in that they have no actual reported bases
         String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
 
-        VariantType variantType = detectAlleleVariantType(variantContext, altAllele);
+        VariantType variantType = parseAlleleVariantType(variantContext, altAllele);
         if (variantType.isStructural()) {
             String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
-            ConfidenceInterval startCi = getConfidenceInterval(variantContext, "CIPOS");
-            ConfidenceInterval endCi = getConfidenceInterval(variantContext, "CIEND");
-            int length = Math.abs(variantContext.getAttributeAsInt("SVLEN", end - start));
+            ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
+            ConfidenceInterval endCi = parseConfidenceInterval(variantContext, "CIEND");
+            int length = variantContext.getAttributeAsInt("SVLEN", end - start);
 //            logger.info("Annotating contig={}: start={} ref={} alt={} variantType={} length={} startCi={} endContig={} end={} endCi={}", contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
-            return variantAnnotator.annotate(contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
+            return VariantAllele.of(contig, start, end, ref, alt, length, variantType, endContig, startCi, endCi);
         }
-
-        return variantAnnotator.annotate(contig, allele.getStart(), allele.getRef(), allele.getAlt());
+        return VariantAllele.of(contig, start, ref, alt);
     }
 
-    private VariantType detectAlleleVariantType(VariantContext variantContext, Allele altAllele) {
+    private static VariantType parseAlleleVariantType(VariantContext variantContext, Allele altAllele) {
         // WARNING! variantContext.getStructuralVariantType() IS NOT SAFE! It throws the following exception:
         //  java.lang.IllegalArgumentException: No enum constant htsjdk.variant.variantcontext.StructuralVariantType.SVA
         //  for the line
@@ -88,21 +79,11 @@ public class VariantContextAnnotator {
         return VariantType.INDEL;
     }
 
-    // non-symbolc alleles should be one of these types
-    // This is defined in VCF 4.3 as:
-    // #INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
-    public int calculateLength(int length, String ref, String alt) {
-        if (length == 0 && !AllelePosition.isSymbolic(ref, alt)) {
-            return alt.length() - ref.length();
-        }
-        return length;
-    }
-
-    private ConfidenceInterval getConfidenceInterval(VariantContext variantContext, String ciKey) {
+    private static ConfidenceInterval parseConfidenceInterval(VariantContext variantContext, String ciKey) {
         //CIPOS=-56,20 or CIEND=-10,62
         List<String> ciList = variantContext.getCommonInfo().getAttributeAsStringList(ciKey, "");
         if (ciList.isEmpty()) {
-            return ConfidenceInterval.empty();
+            return ConfidenceInterval.precise();
         }
         return ConfidenceInterval.of(Integer.parseInt(ciList.get(0)), Integer.parseInt(ciList.get(1)));
     }

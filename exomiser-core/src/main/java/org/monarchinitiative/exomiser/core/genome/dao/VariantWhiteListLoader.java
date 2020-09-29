@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import com.google.common.collect.ImmutableSet;
-import org.monarchinitiative.exomiser.core.genome.Contig;
+import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ public class VariantWhiteListLoader {
                 }
                 // Exomiser - simple VCF format
                 AlleleProto.AlleleKey alleleKey = AlleleProto.AlleleKey.newBuilder()
-                        .setChr(Contig.parseId(tokens[0]))
+                        .setChr(Contigs.parseId(tokens[0]))
                         .setPosition(Integer.parseInt(tokens[1]))
                         .setRef(tokens[2])
                         .setAlt(tokens[3])

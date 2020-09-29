@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,7 +60,8 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
      * @since 11.0.0
      */
     public static <T extends ChromosomalRegion> ChromosomalRegionIndex<T> of(Collection<T> chromosomalRegions) {
-        Map<Integer, Set<T>> regionIndex = chromosomalRegions.stream().collect(groupingBy(T::getChromosome, toSet()));
+        Map<Integer, Set<T>> regionIndex = chromosomalRegions.stream()
+                .collect(groupingBy(T::getStartContigId, toSet()));
 
         Map<Integer, IntervalArray<T>> intervalTreeIndex = new HashMap<>();
         for (Map.Entry<Integer, Set<T>> entry : regionIndex.entrySet()) {
@@ -99,7 +100,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     @Nonnull
     public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
-        int chromosome = variantCoordinates.getChromosome();
+        int chromosome = variantCoordinates.getStartContigId();
         int position = variantCoordinates.getStart();
         return getRegionsOverlappingPosition(chromosome, position);
     }

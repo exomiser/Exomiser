@@ -139,7 +139,7 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
         Objects.requireNonNull(chromosomalRegions);
         FiltersProto.IntervalFilter.Builder intervalFilterBuilder = FiltersProto.IntervalFilter.newBuilder();
         chromosomalRegions.stream()
-                .map(region -> new GeneticInterval(region.getChromosome(), region.getStart(), region.getEnd()))
+                .map(region -> new GeneticInterval(region.getStartContigId(), region.getStart(), region.getEnd()))
                 .forEach(geneticInterval -> intervalFilterBuilder.addIntervals(geneticInterval.toString()));
         this.builder.addSteps(stepBuilder().setIntervalFilter(intervalFilterBuilder));
         return this;

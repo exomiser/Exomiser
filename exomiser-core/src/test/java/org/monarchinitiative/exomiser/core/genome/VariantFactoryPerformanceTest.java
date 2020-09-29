@@ -97,22 +97,22 @@ public class VariantFactoryPerformanceTest {
             countVariants(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"), stubAnnotationVariantFactory, new StubAllelePropertiesDao());
         }
 
-//        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
-        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/Pfeiffer-quartet.vcf.gz");
+        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
+//        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/Pfeiffer-quartet.vcf.gz");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19240.sniffles.PB.vcf");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/example_sv.vcf");
 
         System.out.println("Read variants with stub annotations, stub data - baseline file reading and VariantEvaluation creation");
         runPerfTest(4, vcfPath, stubAnnotationVariantFactory, new StubAllelePropertiesDao());
 
-        List<VariantContext> variantContexts = VcfFiles.readVariantContexts(vcfPath).collect(Collectors.toList());
+//        List<VariantContext> variantContexts = VcfFiles.readVariantContexts(vcfPath).collect(Collectors.toList());
 
         VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
                 .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         System.out.println("Read variants with real annotations, stub data");
-        runPerfTest(4, variantContexts, jannovarVariantFactory, new StubAllelePropertiesDao());
+        runPerfTest(4, vcfPath, jannovarVariantFactory, new StubAllelePropertiesDao());
 
         // This should take about 10-15 mins as it annotates every variant in the file from the database
 //        System.out.println("Read variants with real annotations, real data");
@@ -178,7 +178,7 @@ public class VariantFactoryPerformanceTest {
 
     private Consumer<VariantEvaluation> printVariant() {
         return variantEvaluation -> System.out.printf("%d:%d-%d %s>%s length:%d %s %s %s  %s %s score:%f freq:%f (max AF:%f) path:%f (%s)%n",
-                variantEvaluation.getChromosome(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
+                variantEvaluation.getStartContigId(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
                 variantEvaluation.getRef(), variantEvaluation.getAlt(),
                 variantEvaluation.getLength(), variantEvaluation.getVariantType(), variantEvaluation.getVariantEffect(),
                 variantEvaluation.getGeneSymbol(),
@@ -249,39 +249,18 @@ public class VariantFactoryPerformanceTest {
     private static class StubVariantAnnotator implements VariantAnnotator {
 
         public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
-            return annotate(variantCoordinates.getChromosomeName(), variantCoordinates.getStart(), variantCoordinates.getRef(), variantCoordinates
-                    .getAlt());
-        }
-
-        @Override
-        public List<VariantAnnotation> annotate(String contig, int start, String ref, String alt) {
             VariantAnnotation variantAnnotation = VariantAnnotation.builder()
-                    .chromosomeName(contig)
-                    .chromosome(Contig.parseId(contig))
-                    .start(start)
-                    .ref(ref)
-                    .alt(alt)
-                    .geneSymbol("GENE")
-                    .build();
-            return ImmutableList.of(variantAnnotation);
-        }
-
-        @Override
-        public List<VariantAnnotation> annotate(String startContig, int startPos, String ref, String alt, VariantType variantType, int length, ConfidenceInterval ciStart, String endContig, int endPos, ConfidenceInterval ciEnd) {
-            VariantAnnotation variantAnnotation = VariantAnnotation.builder()
-                    .chromosomeName(startContig)
-                    .chromosome(Contig.parseId(startContig))
-                    .start(startPos)
-                    .startMin(ciStart.getMinPos(startPos))
-                    .startMax(ciStart.getMaxPos(startPos))
-                    .ref(ref)
-                    .alt(alt)
-                    .endChromosomeName(endContig)
-                    .endChromosome(Contig.parseId(endContig))
-                    .end(endPos)
-                    .endMin(ciEnd.getMinPos(endPos))
-                    .endMax(ciEnd.getMinPos(endPos))
-                    .variantType(variantType)
+                    .contig(variantCoordinates.getStartContigName())
+                    .chromosome(Contigs.parseId(variantCoordinates.getStartContigName()))
+                    .start(variantCoordinates.getStart())
+                    .startCi(variantCoordinates.getStartCi())
+                    .ref(variantCoordinates.getRef())
+                    .alt(variantCoordinates.getAlt())
+                    .endContig(variantCoordinates.getEndContigName())
+                    .endChromosome(Contigs.parseId(variantCoordinates.getStartContigName()))
+                    .end(variantCoordinates.getEnd())
+                    .endCi(variantCoordinates.getEndCi())
+                    .variantType(variantCoordinates.getVariantType())
                     .geneSymbol("GENE")
                     .build();
             return ImmutableList.of(variantAnnotation);
