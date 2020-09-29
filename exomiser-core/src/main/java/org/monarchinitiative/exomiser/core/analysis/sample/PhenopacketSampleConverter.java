@@ -33,7 +33,6 @@ import org.phenopackets.schema.v1.core.PhenotypicFeature;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -145,7 +144,17 @@ class PhenopacketSampleConverter {
         @Nullable
         public Path getPath() {
             String uriString = htsFile.getUri();
-            return uriString.isEmpty() ? null : Paths.get(URI.create(uriString));
+            if (uriString.isEmpty()) {
+                return null;
+            }
+            // Strictly this ought to be a well-formed URI, however this breaks the examples which all use
+            // relative paths so we'll try to permit them here.
+            try {
+                return Path.of(URI.create(uriString));
+            } catch (IllegalArgumentException ex) {
+                // fall through if the naming scheme is illegal and try to create a local relative path
+            }
+            return Path.of(uriString);
         }
     }
 }

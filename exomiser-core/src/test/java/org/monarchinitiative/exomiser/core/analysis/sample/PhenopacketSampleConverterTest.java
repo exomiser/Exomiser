@@ -144,4 +144,21 @@ class PhenopacketSampleConverterTest {
                 .build();
         assertThat(PhenopacketSampleConverter.toExomiserSample(family), equalTo(expected));
     }
+
+    @Test
+    void permitsRelativePathsInHtsFileUriField() {
+        HtsFile relativePathHtsFile = HtsFile.newBuilder()
+                .setGenomeAssembly("GRCh37")
+                .setUri(vcfFile.toString())
+                .setHtsFormat(HtsFile.HtsFormat.VCF)
+                .build();
+
+        Phenopacket phenopacket = Phenopacket.newBuilder()
+                .setSubject(subject)
+                .addHtsFiles(relativePathHtsFile)
+                .build();
+
+        Sample sample = PhenopacketSampleConverter.toExomiserSample(phenopacket);
+        assertThat(sample.getVcfPath(), equalTo(vcfFile));
+    }
 }
