@@ -66,14 +66,14 @@ public class TopologicalDomainTest {
 
     @Test
     public void testVariantIsWithinDomain() {
-        VariantCoordinates variant = SimpleVariantCoordinates.of(GenomeAssembly.HG19, 1, 5, "A", "T");
+        VariantCoordinates variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1, 10, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(true));
     }
 
     @Test
     public void testVariantIsOutsideDomain() {
-        VariantCoordinates variant = SimpleVariantCoordinates.of(GenomeAssembly.HG19, 1, 5, "A", "T");
+        VariantCoordinates variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1000, 10000, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(false));
     }
