@@ -14,19 +14,14 @@ jobs:
       - run: chmod +x mvnw
       - restore_cache:
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
-      - run: ./mvnw clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      - run: ./mvnw clean install -Dmaven.javadoc.skip=true -B -V
       - save_cache:
           paths:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
-      #      - run: ./mvnw test -B
-      - run: ./mvnw -B verify sonar:sonar
+      - run: ./mvnw sonar:sonar
           -Dsonar.login=$SONAR_TOKEN \
           -Pcoverage \
-          ## these are specified in the pom
-          #-Dsonar.host.url=https://sonarcloud.io \
-          #-Dsonar.organization=exomiser \
-        #-Dsonar.projectKey=org.monarchinitiative.exomiser:Exomiser \
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
