@@ -19,9 +19,10 @@ jobs:
           paths:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
-      - run: ./mvnw test -B
-      - run: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      #      - run: ./mvnw test -B
+      - run: ./mvnw -B verify sonar:sonar
           -Dsonar.login=$SONAR_TOKEN \
+          -Pcoverage \
           ## these are specified in the pom
           #-Dsonar.host.url=https://sonarcloud.io \
           #-Dsonar.organization=exomiser \
