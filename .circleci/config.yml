@@ -21,7 +21,6 @@ jobs:
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
       - run: ./mvnw sonar:sonar
           -Dsonar.login=$SONAR_TOKEN \
-          -Pcoverage \
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
