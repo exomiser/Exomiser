@@ -20,11 +20,12 @@ jobs:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
       - run: ./mvnw test -B
-      - run: ./mvnw sonar:sonar org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      - run: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dsonar.login=$SONAR_TOKEN \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.organization=exomiser \
-          -Dsonar.projectKey=org.monarchinitiative.exomiser:Exomiser \
+          ## these are specified in the pom
+          #-Dsonar.host.url=https://sonarcloud.io \
+          #-Dsonar.organization=exomiser \
+        #-Dsonar.projectKey=org.monarchinitiative.exomiser:Exomiser \
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
