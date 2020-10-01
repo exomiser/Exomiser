@@ -93,7 +93,7 @@ class CommandLineOptionsParserTest {
     void parseWillStopAtUnknownArgumentAfter() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--analysis", resource("exome-analysis.yml"), "-wibble");
-        assertEquals(commandLine.getOptions().length, 1);
+        assertEquals(1, commandLine.getOptions().length);
         assertTrue(commandLine.hasOption("analysis"));
         assertThat(commandLine.getOptionValue("analysis"), equalTo(resource("exome-analysis.yml")));
     }

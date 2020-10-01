@@ -21,8 +21,6 @@
 package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,9 +35,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class CommandLineOptionsParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommandLineOptionsParser.class);
-
-    private final static Options options = new Options();
+    private static final Options options = new Options();
 
     static {
         options.addOption(new Option("h", "help", false, "Shows this help"));
@@ -102,7 +98,7 @@ public class CommandLineOptionsParser {
         }
     }
 
-    private static CommandLine validate(CommandLine commandLine) throws CommandLineParseError {
+    private static CommandLine validate(CommandLine commandLine) {
         if (commandLine.hasOption("help") || commandLine.getOptions().length == 0) {
             // return the commandLine here as this will allow Main to print the help message
             return commandLine;
@@ -132,7 +128,7 @@ public class CommandLineOptionsParser {
         return false;
     }
 
-    private static void checkFilesExist(CommandLine commandLine) throws CommandLineParseError {
+    private static void checkFilesExist(CommandLine commandLine) {
         for (String option : fileDependentOptions()) {
             if (commandLine.hasOption(option)) {
                 Path optionPath = Paths.get(commandLine.getOptionValue(option));

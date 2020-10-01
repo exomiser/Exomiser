@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,7 +60,6 @@ public class MainConfig {
 
     @Bean
     public Path resultsDir(Path exomiserHome) {
-        //TODO: get this from env i.e. exomiser.properties? Will help with server too
         Path defaultOutputDir = exomiserHome.resolve("results");
         try {
             if (!defaultOutputDir.toFile().exists()) {

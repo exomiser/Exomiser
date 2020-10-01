@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,19 +33,19 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class BatchFileReaderTest {
+class BatchFileReaderTest {
 
     private List<Path> readPaths(String fileName) {
         return BatchFileReader.readPathsFromBatchFile(Paths.get(fileName));
     }
 
     @Test
-    public void testReadPathsFromBatchFileFileNotFound() {
+    void testReadPathsFromBatchFileFileNotFound() {
         assertThat(readPaths("wibble.txt").isEmpty(), is(true));
     }
 
     @Test
-    public void testReadPathsFromBatchFile() {
+    void testReadPathsFromBatchFile() {
         assertThat(readPaths("src/test/resources/testBatchFiles.txt").size(), equalTo(3));
     }
 }
