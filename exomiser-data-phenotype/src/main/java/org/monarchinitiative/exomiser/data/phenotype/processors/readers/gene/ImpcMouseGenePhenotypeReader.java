@@ -58,8 +58,7 @@ public class ImpcMouseGenePhenotypeReader implements ResourceReader<List<GenePhe
 
         try (BufferedReader reader = allGenotypePhenotypeResource.newBufferedReader()){
             // skip header line
-            reader.readLine();
-            String line;
+            String line = reader.readLine();
             while ((line = reader.readLine()) != null) {
                 String[] fields = CSV.split(line, -1);
 
@@ -78,7 +77,7 @@ public class ImpcMouseGenePhenotypeReader implements ResourceReader<List<GenePhe
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to read file {}", allGenotypePhenotypeResource.getResourcePath(), e);
         }
 
         for (Map.Entry<String, Collection<String>> entry : mouse2PhenotypeMap.asMap().entrySet()) {
