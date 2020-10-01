@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -39,7 +38,7 @@ import static org.monarchinitiative.exomiser.data.phenotype.processors.readers.d
 class Product1DiseaseXmlReaderTest {
 
     private ListMultimap<String, OrphaOmimMapping> readMappings(String filePath) {
-        Path resourcePath = Paths.get(filePath);
+        Path resourcePath = Path.of(filePath);
         Resource resource = new Resource.Builder()
                 .fileDirectory(resourcePath.getParent())
                 .fileName(resourcePath.getFileName().toString())

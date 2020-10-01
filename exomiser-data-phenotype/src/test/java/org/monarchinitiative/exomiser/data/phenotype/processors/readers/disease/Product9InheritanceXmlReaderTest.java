@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,7 +42,7 @@ class Product9InheritanceXmlReaderTest {
     void getDisease2inheritanceMultimap() {
 
         Resource product9Resource = Resource.builder()
-                .fileDirectory(Paths.get("src/test/resources/data/"))
+                .fileDirectory(Path.of("src/test/resources/data/"))
                 .fileName("en_product9_ages.xml")
                 .build();
         Product9InheritanceXmlReader instance = new Product9InheritanceXmlReader(product9Resource);

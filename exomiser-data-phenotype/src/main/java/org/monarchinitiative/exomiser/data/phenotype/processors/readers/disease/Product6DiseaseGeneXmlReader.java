@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.data.phenotype.processors.readers.Resource
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -61,24 +62,24 @@ public class Product6DiseaseGeneXmlReader implements ResourceReader<ListMultimap
     public static final String EXTERNAL_REFERENCE_LIST = "ExternalReferenceList";
     public static final String EXTERNAL_REFERENCE = "ExternalReference";
 
-    boolean inDisorder = false;
-    boolean inDisorderFlag = false;
-    boolean inDisorderType = false;
-    boolean inDisorderGroup = false;
+    private boolean inDisorder = false;
+    private boolean inDisorderFlag = false;
+    private boolean inDisorderType = false;
+    private boolean inDisorderGroup = false;
 
-    boolean inDisorderGeneAssociationType = false;
-    boolean inDisorderGeneAssociationStatus = false;
-    boolean inDisorderGeneAssociationList = false;
-    boolean inDisorderGeneAssociation = false;
-    boolean inGene = false;
-    boolean inGeneType = false;
-    boolean inExternalReferenceList = false;
-    boolean inExternalReference = false;
+    private boolean inDisorderGeneAssociationType = false;
+    private boolean inDisorderGeneAssociationStatus = false;
+    private boolean inDisorderGeneAssociationList = false;
+    private boolean inDisorderGeneAssociation = false;
+    private boolean inGene = false;
+    private boolean inGeneType = false;
+    private boolean inExternalReferenceList = false;
+    private boolean inExternalReference = false;
 
-    boolean isObsolete = false;
-    String currentDiseaseName = null;
-    String currentOrphanum = null;
-    String currentExternalSource = null;
+    private boolean isObsolete = false;
+    private String currentDiseaseName = null;
+    private String currentOrphanum = null;
+    private String currentExternalSource = null;
 
     private final OmimMimToGeneReader mimToGeneReader;
     private final Resource product6XmlResource;
@@ -97,8 +98,10 @@ public class Product6DiseaseGeneXmlReader implements ResourceReader<ListMultimap
         ListMultimap<String, DiseaseGene> diseaseGeneMultimap = ArrayListMultimap.create();
 
 
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
         try (InputStream inputStream = Files.newInputStream(product6XmlResource.getResourcePath())) {
+            XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            inputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            inputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             XMLEventReader eventReader = inputFactory.createXMLEventReader(inputStream);
 
             while (eventReader.hasNext()) {
@@ -222,13 +225,10 @@ public class Product6DiseaseGeneXmlReader implements ResourceReader<ListMultimap
                         inDisorder = false;
 
                         if (!isObsolete) {
-//                            diseaseBuilder.setAssociatedGenes(associatedGenes);
                             // add the disorder to the list
-//                            orphanetDisorders.add(diseaseBuilder);
                             diseaseGeneMultimap.putAll(currentOrphanum, associatedGenes);
                         }
                         // reset to prevent spillage over to missing fields in next disorder
-//                        diseaseBuilder = OrphanetDisease.builder();
                         associatedGenes = new ArrayList<>();
                         isObsolete = false;
                     }
@@ -272,7 +272,7 @@ public class Product6DiseaseGeneXmlReader implements ResourceReader<ListMultimap
                 }
             }
         } catch (IOException | XMLStreamException e) {
-            e.printStackTrace();
+            logger.error("Unable to parse file {}", product6XmlResource.getResourcePath(), e);
         }
 
         return diseaseGeneMultimap;

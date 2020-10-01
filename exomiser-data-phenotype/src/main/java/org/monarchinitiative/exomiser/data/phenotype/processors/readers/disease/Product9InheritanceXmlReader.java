@@ -27,6 +27,7 @@ import org.monarchinitiative.exomiser.data.phenotype.processors.readers.Resource
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -62,7 +63,7 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
      * Orphanet marks some of its intheritance entries as Not applicable. We will just skip them.
      * This is the corresponding ID.
      */
-    // TODO: WARNING! These ids might change from release to release and therefore might be the wrong things to be using.
+    // WARNING! These ids might change from release to release and therefore might be the wrong things to be using.
     private static final String NOT_APPLICABLE_ID = "23494"; // Not applicable
     /**
      * similar to above. We will skip this.
@@ -83,10 +84,10 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
     private boolean inTypeOfInheritance = false;
 
     // Path to en_product9_age.xml file.
-    private final Resource product9Resource;
+    private final Resource product9XmlResource;
 
-    public Product9InheritanceXmlReader(Resource product9Resource) {
-        this.product9Resource = product9Resource;
+    public Product9InheritanceXmlReader(Resource product9XmlResource) {
+        this.product9XmlResource = product9XmlResource;
     }
 
     @Override
@@ -120,9 +121,11 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
 //      </TypeOfInheritanceList >
 //    </Disorder >
 
-        try (InputStream in = Files.newInputStream(product9Resource.getResourcePath())) {
-            XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
+        try (InputStream in = Files.newInputStream(product9XmlResource.getResourcePath())) {
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            XMLEventReader eventReader = factory.createXMLEventReader(in);
             String currentOrphanum = null;
             String currentDiseaseName = null;
             String currentInheritanceId = null;
@@ -161,7 +164,7 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
                         }
                     } else if (inTypeOfInheritanceList && localPart.equals(TYPE_OF_INHERITANCE)) {
                         inTypeOfInheritance = true;
-                        // TODO: WARNING! These ids might change from release to release and therefore might be the wrong
+                        // WARNING! These ids might change from release to release and therefore might be the wrong
                         //  things to be using.
                         Attribute idAttribute = startElement.getAttributeByName(QName.valueOf("id"));
                         currentInheritanceId = idAttribute.getValue();
@@ -217,7 +220,7 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
                 }
             }
         } catch (IOException | XMLStreamException e) {
-            e.printStackTrace();
+            logger.error("Unable to parse file {}", product9XmlResource.getResourcePath(), e);
         }
         return disease2inheritanceMultimap;
     }
@@ -241,11 +244,11 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
             return UNKNOWN; //TODO SEMIDOMINANT
         } else if (orphaInheritanceId.equals("23459") && orphaLabel.equals("Oligogenic")) {
             return POLYGENIC; //TODO OLIGOGENIC
-        } else if (orphaInheritanceId.equals("23480") && orphaLabel.equals("Unknown")) {
+        } else if (orphaInheritanceId.equals(UNKNOWN_ID) && orphaLabel.equals("Unknown")) {
             return UNKNOWN;
-        } else if (orphaInheritanceId.equals("23487") && orphaLabel.equals("No data available")) {
+        } else if (orphaInheritanceId.equals(NO_DATA_AVAILABLE) && orphaLabel.equals("No data available")) {
             return UNKNOWN;
-        } else if (orphaInheritanceId.equals("23494") && orphaLabel.equals("Not applicable")) {
+        } else if (orphaInheritanceId.equals(NOT_APPLICABLE_ID) && orphaLabel.equals("Not applicable")) {
             return null;
         } else {
             logger.warn("Could not find HPO id for Orphanet inheritence entry: {} ({})", orphaLabel, orphaInheritanceId);

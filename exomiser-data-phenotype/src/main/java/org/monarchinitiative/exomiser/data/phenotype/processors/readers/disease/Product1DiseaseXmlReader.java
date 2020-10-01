@@ -27,6 +27,7 @@ import org.monarchinitiative.exomiser.data.phenotype.processors.readers.Resource
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -85,9 +86,11 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
 
         List<OrphaOmimMapping> tempOmimMappings = new ArrayList<>();
 
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+        xmlInputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        xmlInputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         try (InputStream inputStream = Files.newInputStream(product1XmlResource.getResourcePath())) {
-            XMLEventReader eventReader = inputFactory.createXMLEventReader(inputStream);
+            XMLEventReader eventReader = xmlInputFactory.createXMLEventReader(inputStream);
 
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
@@ -101,7 +104,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                     else if (!inDisorderDisorderAssociationList && localPart.equals(ORPHA_NUMBER)) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         currentOrphanum = "ORPHA:" + event.asCharacters().getData();
-                        logger.debug("id: " + currentOrphanum);
+                        logger.debug("id: {}", currentOrphanum);
                     }
                     else if (inDisorder
                             && !inDisorderType
@@ -112,7 +115,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                             && localPart.equals(NAME)) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         currentDiseaseName = event.asCharacters().getData();
-                        logger.debug("name: " + currentDiseaseName);
+                        logger.debug("name: {}", currentDiseaseName);
                     }
                     else if (localPart.equals(DISORDER_FLAG)) {
                         inDisorderFlag = true;
@@ -132,8 +135,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                     else if (inDisorderType && localPart.equals(NAME)) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         String currentDisorderType = event.asCharacters().getData();
-//                        diseaseBuilder.setDisorderType(currentDisorderType);
-                        logger.debug("disorderType: " + currentDisorderType);
+                        logger.debug("disorderType: {}", currentDisorderType);
                     }
                     else if (localPart.equals(DISORDER_GROUP)) {
                         inDisorderGroup = true;
@@ -141,8 +143,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                     else if (inDisorderGroup && localPart.equals(NAME)) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         String currentDisorderGroup = event.asCharacters().getData();
-//                        diseaseBuilder.setDisorderGroup(currentDisorderGroup);
-                        logger.debug("disorderGroup: " + currentDisorderGroup);
+                        logger.debug("disorderGroup: {}", currentDisorderGroup);
                     }
                     else if (localPart.equals(EXTERNAL_REFERENCE)) {
                         inExternalReference = true;
@@ -158,7 +159,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                     else if (inExternalReference && "OMIM".equals(currentExternalSource) && localPart.equals("Reference")) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         currentOmimDiseaseMapping = "OMIM:" + event.asCharacters().getData();
-                        logger.debug("  - " + currentOmimDiseaseMapping);
+                        logger.debug("  - {}", currentOmimDiseaseMapping);
                     }
                     else if (localPart.equals(DISORDER_MAPPING_RELATION)) {
                         inDisorderMappingRelation = true;
@@ -166,7 +167,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                     else if (inDisorderMappingRelation && "OMIM".equals(currentExternalSource) && localPart.equals(NAME)) {
                         event = eventReader.nextEvent(); // go to the contents of the node
                         String mappingRelation = event.asCharacters().getData();
-//                        System.out.println("  - " + currentOmimDiseaseMapping + " (" + mappingRelation + ")");
+                        logger.debug("  - {} ({})", currentOmimDiseaseMapping, mappingRelation);
                         if (mappingRelation.startsWith("E")) {
                             // exact mapping (the terms and the concepts are equivalent)
                             tempOmimMappings.add(new OrphaOmimMapping(currentOmimDiseaseMapping, OrphaOmimMapping.MappingType.EXACT));
@@ -187,18 +188,14 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                 } else if (event.isEndElement()) {
                     EndElement endElement = event.asEndElement();
                     String localPart = endElement.getName().getLocalPart();
-//                    System.out.println("EndElement: " + localPart);
                     if (localPart.equals(DISORDER)) {
                         inDisorder = false;
 
                         if (!isObsolete) {
-//                            diseaseBuilder.setOmimDiseaseMappings(omimMappings);
                             // add the disorder to the list
-//                            orphanetDisorders.add(diseaseBuilder);
                             orphanetOmimMappings.putAll(currentOrphanum, tempOmimMappings);
                         }
                         // reset to prevent spillage over to missing fields in next disorder
-//                        diseaseBuilder = OrphanetDisease.builder();
                         tempOmimMappings = new ArrayList<>();
                         isObsolete = false;
                     }
@@ -231,7 +228,7 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
                 }
             }
         } catch (IOException | XMLStreamException e) {
-            e.printStackTrace();
+            logger.error("Unable to parse file {}", product1XmlResource.getResourcePath(), e);
         }
 
         return orphanetOmimMappings;
