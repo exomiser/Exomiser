@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -162,8 +163,6 @@ public class SubmitJobController {
         Analysis analysis = buildAnalysis(geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(sample, analysis);
 
-//        writeResultsToFile(analysisId, analysis, analysisResults);
-
         buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
@@ -187,7 +186,7 @@ public class SubmitJobController {
         return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
-    private Analysis buildAnalysis(String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(String geneticInterval, Float minimumQuality, boolean removeDbSnp, boolean keepOffTarget, boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
         AnalysisBuilder analysisBuilder = exomiser.getAnalysisBuilder()
                 .analysisMode(AnalysisMode.PASS_ONLY)
@@ -206,7 +205,7 @@ public class SubmitJobController {
         return analysisBuilder.build();
     }
 
-    private void addFilters(AnalysisBuilder analysisBuilder, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String frequency, Set<String> genesToKeep, String geneticInterval) {
+    private void addFilters(AnalysisBuilder analysisBuilder, Float minimumQuality, boolean removeDbSnp, boolean keepOffTarget, boolean keepNonPathogenic, String frequency, Set<String> genesToKeep, String geneticInterval) {
         //This is the original Exomiser analysis step order, as found in the SettingsParser
         //Filter for genes:
         if (!genesToKeep.isEmpty()) {
@@ -359,7 +358,11 @@ public class SubmitJobController {
         return ImmutableSortedSet.copyOf(genesToFilter);
     }
 
+    @Nullable
     private Path createVcfPathFromMultipartFile(MultipartFile multipartVcfFile) {
+        if (multipartVcfFile == null || multipartVcfFile.getOriginalFilename() == null) {
+            return null;
+        }
         if (multipartVcfFile.getOriginalFilename().endsWith(".vcf.gz")) {
             return createPathFromMultipartFile(multipartVcfFile, ".vcf.gz");
         }
