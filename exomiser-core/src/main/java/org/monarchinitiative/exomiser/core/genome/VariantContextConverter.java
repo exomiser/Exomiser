@@ -42,11 +42,11 @@ public class VariantContextConverter {
         String contig = variantContext.getContig();
         int start = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
-        // Structural variants are 'symbolic' in that they have no actual reported bases
+        // Symbolic variants are 'symbolic' in that they have no reported bases and/or contain non-base characters '<>[].'
         String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
 
-        VariantType variantType = parseAlleleVariantType(variantContext, altAllele);
-        if (variantType.isStructural()) {
+        if (altAllele.isSymbolic()) {
+            VariantType variantType = parseAlleleVariantType(variantContext, altAllele);
             String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
@@ -55,6 +55,13 @@ public class VariantContextConverter {
 //            logger.info("Annotating contig={}: start={} ref={} alt={} variantType={} length={} startCi={} endContig={} end={} endCi={}", contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
             return VariantAllele.of(contig, start, end, ref, alt, length, variantType, endContig, startCi, endCi);
         }
+        // What about 1 ATGC CGTA SVTYPE=INV or T TTTT SYVTYP=DUP ?
+        // According to HGVS, which has a much more useful and well described set of rules for determining variant type:
+        // When a description is possible according to several types, the preferred description is:
+        //   (1) deletion, (2) inversion, (3) duplication, (4) conversion, (5) insertion.
+        // - When a variant can be described as a duplication or an insertion, prioritisation determines it should be
+        //   described as a duplication.
+
         return VariantAllele.of(contig, start, ref, alt);
     }
 
@@ -70,13 +77,19 @@ public class VariantContextConverter {
             return parseValue == VariantType.SYMBOLIC ? VariantType.parseValue(svTypeString) : parseValue;
         }
 
-        if (variantContext.getReference().length() == altAllele.length()) {
-            if (altAllele.length() == 1) {
+        return nonSymbolicVariantType(variantContext.getReference(), altAllele);
+    }
+
+    private static VariantType nonSymbolicVariantType(Allele refAllele, Allele altAllele) {
+        int refLength = refAllele.length();
+        int altLength = altAllele.length();
+        if (refLength == altLength) {
+            if (altLength == 1) {
                 return VariantType.SNV;
             }
             return VariantType.MNV;
         }
-        return VariantType.INDEL;
+        return refLength > altLength ? VariantType.DEL : VariantType.INS;
     }
 
     private static ConfidenceInterval parseConfidenceInterval(VariantContext variantContext, String ciKey) {

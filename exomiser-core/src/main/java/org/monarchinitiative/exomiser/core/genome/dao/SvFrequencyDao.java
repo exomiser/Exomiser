@@ -61,7 +61,7 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        if (variant.isStructuralVariant()) {
+        if (variant.isSymbolic()) {
             int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
             List<SvResult> results = runQuery(variant, margin);

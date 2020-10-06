@@ -51,6 +51,7 @@ public class AllelePositionTest {
         assertThat(instance.getEnd(), equalTo(1));
         assertThat(instance.getRef(), equalTo(""));
         assertThat(instance.getAlt(), equalTo("TA"));
+        assertThat(instance.getLength(), equalTo(2));
     }
 
     @Test
@@ -61,6 +62,7 @@ public class AllelePositionTest {
         assertThat(instance.getEnd(), equalTo(2));
         assertThat(instance.getRef(), equalTo("TA"));
         assertThat(instance.getAlt(), equalTo(""));
+        assertThat(instance.getLength(), equalTo(-2));
     }
 
     @Test
@@ -105,12 +107,23 @@ public class AllelePositionTest {
     }
 
     @Test
+    void testLength() {
+        assertThat(length("A", "T"), equalTo(1));
+        assertThat(length("AA", "GT"), equalTo(2));
+        assertThat(length("ATT", "A"), equalTo(-2));
+        assertThat(length("T", "TTA"), equalTo(2));
+    }
+
+    @Test
     public void testEvaOne() {
         AllelePosition instance = trim(1000, "AGTTC", "AGCC");
 
         assertThat(instance.getStart(), equalTo(1002));
+        assertThat(instance.getEnd(), equalTo(1003));
         assertThat(instance.getRef(), equalTo("TT"));
         assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.getLength(), equalTo(-1));
+        assertThat(instance.isSymbolic(), is(false));
     }
 
     /*

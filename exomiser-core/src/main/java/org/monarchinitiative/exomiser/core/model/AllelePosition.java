@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -176,8 +176,19 @@ public class AllelePosition {
     }
 
     public static int length(String ref, String alt) {
-//        MNV length 0 or ref.length()?
-        return isSymbolic(ref, alt) ? 0 : alt.length() - ref.length();
+        // Quote VCF 4.3 SV info
+        // "LEN - For precise variants, LEN is length of REF allele, and the for imprecise variants the corresponding best estimate."
+        // "SVLEN - Difference in length between REF and ALT alleles. Longer ALT alleles (e.g. insertions) have positive values,
+        // shorter ALT alleles (e.g. deletions) have negative values."
+        if (isSymbolic(ref, alt)) {
+            return ref.length();
+        }
+        // SNV/MNV substitution case e.g. ATGC -> CGAT length = 4
+        if (alt.length() == ref.length()) {
+            return ref.length();
+        }
+        // indel case
+        return alt.length() - ref.length();
     }
 
     private static boolean cantTrim(String ref, String alt) {

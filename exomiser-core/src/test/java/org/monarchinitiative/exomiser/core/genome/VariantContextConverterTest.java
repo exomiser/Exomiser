@@ -56,7 +56,7 @@ class VariantContextConverterTest {
         assertThat(variantAllele.getStartMin(), equalTo(123256215));
         assertThat(variantAllele.getStartMax(), equalTo(123256215));
 
-        assertThat(variantAllele.getLength(), equalTo(0));
+        assertThat(variantAllele.getLength(), equalTo(1));
 
         assertThat(variantAllele.getEnd(), equalTo(123256215));
         assertThat(variantAllele.getEndContigId(), equalTo(10));
@@ -74,7 +74,7 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.getRef(), equalTo("T"));
         assertThat(variantAllele.getAlt(), equalTo("GA"));
-        assertThat(variantAllele.getVariantType(), equalTo(VariantType.INDEL));
+        assertThat(variantAllele.getVariantType(), equalTo(VariantType.INS));
 
         assertThat(variantAllele.getStartContigId(), equalTo(10));
         assertThat(variantAllele.getStartContigName(), equalTo("10"));
@@ -101,7 +101,7 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.getRef(), equalTo("TA"));
         assertThat(variantAllele.getAlt(), equalTo("G"));
-        assertThat(variantAllele.getVariantType(), equalTo(VariantType.INDEL));
+        assertThat(variantAllele.getVariantType(), equalTo(VariantType.DEL));
 
         assertThat(variantAllele.getStartContigId(), equalTo(10));
         assertThat(variantAllele.getStartContigName(), equalTo("10"));
@@ -137,7 +137,7 @@ class VariantContextConverterTest {
         assertThat(variantAllele.getStartMin(), equalTo(123256215));
         assertThat(variantAllele.getStartMax(), equalTo(123256215));
 
-        assertThat(variantAllele.getLength(), equalTo(0));
+        assertThat(variantAllele.getLength(), equalTo(2));
 
         assertThat(variantAllele.getEnd(), equalTo(123256216));
         assertThat(variantAllele.getEndContigId(), equalTo(10));
@@ -159,7 +159,7 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.getRef(), equalTo("CGTGGATGCGGGGAC"));
         assertThat(variantAllele.getAlt(), equalTo("C"));
-        assertThat(variantAllele.getVariantType(), equalTo(VariantType.INDEL));
+        assertThat(variantAllele.getVariantType(), equalTo(VariantType.DEL));
 
         assertThat(variantAllele.getStartContigId(), equalTo(1));
         assertThat(variantAllele.getStartContigName(), equalTo("1"));

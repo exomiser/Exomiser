@@ -38,10 +38,8 @@ public enum VariantType {
     // >150 (HTSJDK VariantContext.MAX_ALLELE_SIZE_FOR_NON_SV)
     // >=1000 (Jannovar VariantAnnotator)
     SNV,
-    MNV,    // a multi-nucleotide variation
-    INDEL, // non-symbolic and < 999 bases TODO: what cutoff? or remove in favour of INS or DEL
-    // start, end, length
-    // pos
+    // a multi-nucleotide variation. Not very informative.
+    MNV,
 
     SYMBOLIC,
     // VCF standard reserved values for structural variants
@@ -119,8 +117,6 @@ public enum VariantType {
             case "MNP":
             case "MNV":
                 return MNV;
-            case "INDEL":
-                return INDEL;
             case "DEL":
                 return DEL;
             case "INS":
@@ -210,8 +206,7 @@ public enum VariantType {
             }
             return VariantType.MNV;
         }
-//        return AllelePosition.isInsertion(ref, alt) ? VariantType.INS : VariantType.DEL;
-        return VariantType.INDEL;
+        return AllelePosition.isInsertion(ref, alt) ? VariantType.INS : VariantType.DEL;
     }
 
     private static boolean isSymbolic(String value) {
@@ -233,7 +228,36 @@ public enum VariantType {
         return subType;
     }
 
-    public boolean isStructural() {
-        return this != SNV && this != INDEL && this != MNV;
+    public boolean isSnv() {
+        return this == SNV;
     }
+
+    public boolean isMnv() {
+        return this == MNV;
+    }
+
+    public boolean isDeletion() {
+        return this.baseType == DEL;
+    }
+
+    public boolean isInsertion() {
+        return this.baseType == INS;
+    }
+
+    public boolean isDuplication() {
+        return this.baseType == DUP;
+    }
+
+    public boolean isInversion() {
+        return this.baseType == INV;
+    }
+
+    public boolean isCnv() {
+        return this.baseType == CNV;
+    }
+
+    public boolean isBreakend() {
+        return this.baseType == BND;
+    }
+
 }

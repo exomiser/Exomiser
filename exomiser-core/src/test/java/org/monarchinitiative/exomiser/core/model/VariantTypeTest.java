@@ -23,9 +23,8 @@ package org.monarchinitiative.exomiser.core.model;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -98,16 +97,6 @@ class VariantTypeTest {
     }
 
     @Test
-    void testIsStructural() {
-        assertThat(VariantType.UNKNOWN.isStructural(), is(true));
-        assertThat(VariantType.DEL.isStructural(), is(true));
-
-        assertThat(VariantType.SNV.isStructural(), is(false));
-        assertThat(VariantType.MNV.isStructural(), is(false));
-        assertThat(VariantType.INDEL.isStructural(), is(false));
-    }
-
-    @Test
     void testBaseTypeForCanvasTypes() {
         assertThat(VariantType.CNV_GAIN.getBaseType(), equalTo(VariantType.CNV));
         assertThat(VariantType.CNV_LOSS.getBaseType(), equalTo(VariantType.CNV));
@@ -132,11 +121,61 @@ class VariantTypeTest {
 
     @Test
     void parseAlleleInsertion() {
-        assertThat(VariantType.parseAllele("A", "TC"), equalTo(VariantType.INDEL));
+        assertThat(VariantType.parseAllele("A", "TC"), equalTo(VariantType.INS));
     }
 
     @Test
     void parseAlleleDeletion() {
-        assertThat(VariantType.parseAllele("AT", "C"), equalTo(VariantType.INDEL));
+        assertThat(VariantType.parseAllele("AT", "C"), equalTo(VariantType.DEL));
+    }
+
+    @Test
+    void isSnv() {
+        assertTrue(VariantType.SNV.isSnv());
+        assertFalse(VariantType.CNV.isSnv());
+    }
+
+    @Test
+    void isMnv() {
+        assertTrue(VariantType.MNV.isMnv());
+        assertFalse(VariantType.CNV.isMnv());
+    }
+
+    @Test
+    void isInsertion() {
+        assertTrue(VariantType.INS.isInsertion());
+        assertTrue(VariantType.INS_ME.isInsertion());
+        assertFalse(VariantType.CNV.isInsertion());
+    }
+
+    @Test
+    void isDeletion() {
+        assertTrue(VariantType.DEL.isDeletion());
+        assertTrue(VariantType.DEL_ME.isDeletion());
+        assertFalse(VariantType.CNV.isDeletion());
+    }
+
+    @Test
+    void isInversion() {
+        assertTrue(VariantType.INV.isInversion());
+        assertFalse(VariantType.CNV.isInversion());
+    }
+
+    @Test
+    void isCnv() {
+        assertTrue(VariantType.CNV.isCnv());
+        assertTrue(VariantType.CNV_COMPLEX.isCnv());
+        assertFalse(VariantType.SNV.isCnv());
+
+        // although these could be true
+        assertFalse(VariantType.DUP.isCnv());
+        assertFalse(VariantType.INS.isCnv());
+        assertFalse(VariantType.DEL.isCnv());
+    }
+
+    @Test
+    void isBreakend() {
+        assertTrue(VariantType.BND.isBreakend());
+        assertFalse(VariantType.SNV.isBreakend());
     }
 }

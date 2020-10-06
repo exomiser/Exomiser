@@ -60,18 +60,22 @@ public class VariantAllele implements VariantCoordinates {
         if (AllelePosition.isSymbolic(ref, alt)) {
             throw new IllegalArgumentException("Incompatible allele - symbolic allele " + contig + " " + start + " " + ref + " " + alt + " should have type, end and length specified");
         }
+        return trimAndParseType(contig, start, ref, alt);
+    }
+
+    public static VariantAllele of(String contig, int start, int end, String ref, String alt, int length, VariantType variantType, String endContig, ConfidenceInterval startCi, ConfidenceInterval endCi) {
+        if (!AllelePosition.isSymbolic(ref, alt)) {
+            return trimAndParseType(contig, start, ref, alt);
+        }
+        return new VariantAllele(contig, start, end, ref, alt, length, variantType, endContig, startCi, endCi);
+    }
+
+    private static VariantAllele trimAndParseType(String contig, int start, String ref, String alt) {
         AllelePosition allelePosition = AllelePosition.trim(start, ref, alt);
         VariantType variantType = VariantType.parseAllele(allelePosition.getRef(), allelePosition.getAlt());
         return new VariantAllele(contig, allelePosition.getStart(), allelePosition.getEnd(), allelePosition.getRef(), allelePosition
                 .getAlt(), allelePosition.getLength(), variantType, contig, ConfidenceInterval.precise(), ConfidenceInterval
                 .precise());
-    }
-
-    public static VariantAllele of(String contig, int start, int end, String ref, String alt, int length, VariantType variantType, String endContig, ConfidenceInterval startCi, ConfidenceInterval endCi) {
-        if (!AllelePosition.isSymbolic(ref, alt) && variantType.isStructural()) {
-            throw new IllegalArgumentException("Incompatible allele - non-symbolic allele: " + contig + " " + start + " " + ref + " " + alt);
-        }
-        return new VariantAllele(contig, start, end, ref, alt, length, variantType, endContig, startCi, endCi);
     }
 
     @Override
@@ -142,7 +146,6 @@ public class VariantAllele implements VariantCoordinates {
         return start == that.start &&
                 end == that.end &&
                 length == that.length &&
-//                genomeAssembly == that.genomeAssembly &&
                 startContig.equals(that.startContig) &&
                 ref.equals(that.ref) &&
                 alt.equals(that.alt) &&
@@ -160,7 +163,6 @@ public class VariantAllele implements VariantCoordinates {
     @Override
     public String toString() {
         return "VariantAllele{" +
-//                "genomeAssembly=" + genomeAssembly +
                 "contig='" + startContig + '\'' +
                 ", start=" + start +
                 ", end=" + end +

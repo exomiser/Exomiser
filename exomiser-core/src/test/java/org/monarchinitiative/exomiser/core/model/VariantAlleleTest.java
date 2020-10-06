@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,16 +38,16 @@ class VariantAlleleTest {
     }
 
     @Test
-    void throwsExceptionWhenNonSymbolicInSymbolicConstructor() {
-        assertThrows(IllegalArgumentException.class, () ->
-                VariantAllele.of("1", 1, 1, "A", "T", 0, VariantType.INS, "1", ConfidenceInterval.precise(), ConfidenceInterval
-                        .precise()));
-    }
-
-    @Test
-    void buildNonSymbolicNoGenomeAssembly() {
-        VariantAllele result = VariantAllele.of("1", 1, "A", "T");
-//        assertThat(result.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+    void trimsAndAssignsVariantTypeWhenNonSymbolicSuppliedInFullConstructor() {
+        VariantAllele result = VariantAllele.of("1", 1, 1, "AA", "AT", 0, VariantType.MNV, "1", ConfidenceInterval.precise(), ConfidenceInterval
+                .precise());
+        assertThat(result.getStart(), equalTo(2));
+        assertThat(result.getRef(), equalTo("A"));
+        assertThat(result.getAlt(), equalTo("T"));
+        assertThat(result.getStart(), equalTo(2));
+        assertThat(result.getEnd(), equalTo(2));
+        assertThat(result.getLength(), equalTo(0));
+        assertThat(result.getVariantType(), equalTo(VariantType.SNV));
     }
 
     @Test
@@ -54,6 +55,10 @@ class VariantAlleleTest {
         VariantAllele result = VariantAllele.of("1", 1, "AA", "AT");
         System.out.println(result);
         assertThat(result.getStart(), equalTo(2));
+        assertThat(result.getRef(), equalTo("A"));
+        assertThat(result.getAlt(), equalTo("T"));
+        assertThat(result.getStart(), equalTo(2));
+        assertThat(result.getEnd(), equalTo(2));
         assertThat(result.getLength(), equalTo(0));
         assertThat(result.getVariantType(), equalTo(VariantType.SNV));
     }
@@ -77,4 +82,45 @@ class VariantAlleleTest {
         assertThat(instance.isSymbolic(), equalTo(false));
     }
 
+    @Test
+    void canFullySpecifyNonSymbolicDel() {
+        VariantAllele instance = VariantAllele.of("1", 1, 1, "CGTGGATGCGGGGAC", "C", -14, VariantType.DEL, "1", ConfidenceInterval
+                .precise(), ConfidenceInterval
+                .precise());
+        assertThat(instance.getStartContigName(), equalTo("1"));
+        assertThat(instance.getStartContigId(), equalTo(1));
+        assertThat(instance.getStart(), equalTo(1));
+        assertThat(instance.getStartCi(), equalTo(ConfidenceInterval.precise()));
+        assertThat(instance.getEndContigId(), equalTo(1));
+        assertThat(instance.getEndContigName(), equalTo("1"));
+        assertThat(instance.getEnd(), equalTo(15));
+        assertThat(instance.getEndCi(), equalTo(ConfidenceInterval.precise()));
+        assertThat(instance.getLength(), equalTo(-14));
+        assertThat(instance.getRef(), equalTo("CGTGGATGCGGGGAC"));
+        assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.getVariantType(), equalTo(VariantType.DEL));
+        assertThat(instance.isSymbolic(), equalTo(false));
+    }
+
+
+    @Disabled
+    @Test
+    void canFullySpecifyNonSymbolicInv() {
+        VariantAllele instance = VariantAllele.of("1", 1, 1, "ATGC", "GCAT", 4, VariantType.INV, "1", ConfidenceInterval
+                .precise(), ConfidenceInterval
+                .precise());
+        assertThat(instance.getStartContigName(), equalTo("1"));
+        assertThat(instance.getStartContigId(), equalTo(1));
+        assertThat(instance.getStart(), equalTo(1));
+        assertThat(instance.getStartCi(), equalTo(ConfidenceInterval.precise()));
+        assertThat(instance.getEndContigId(), equalTo(1));
+        assertThat(instance.getEndContigName(), equalTo("1"));
+        assertThat(instance.getEnd(), equalTo(4));
+        assertThat(instance.getEndCi(), equalTo(ConfidenceInterval.precise()));
+        assertThat(instance.getLength(), equalTo(4));
+        assertThat(instance.getRef(), equalTo("ATGC"));
+        assertThat(instance.getAlt(), equalTo("GCAT"));
+        assertThat(instance.getVariantType(), equalTo(VariantType.INV));
+        assertThat(instance.isSymbolic(), equalTo(false));
+    }
 }

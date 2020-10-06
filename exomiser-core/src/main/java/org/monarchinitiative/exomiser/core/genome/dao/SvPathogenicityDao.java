@@ -64,7 +64,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        if (variant.isStructuralVariant()) {
+        if (variant.isSymbolic()) {
             int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
             List<SvResult> results = runQuery(variant, margin);
