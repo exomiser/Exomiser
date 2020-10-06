@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -75,7 +75,7 @@ public class GeneReassigner {
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
             return assignVariantToGeneWithHighestPhenotypeScoreInTad(variantEvaluation);
         }
-        if (variantEvaluation.isStructuralVariant() || variantEvaluation.isCodingVariant() || isInUnknownGene(variantEvaluation)) {
+        if (variantEvaluation.isSymbolic() || variantEvaluation.isCodingVariant() || isInUnknownGene(variantEvaluation)) {
             // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
             // we don't want to move structural or coding variants.
             return variantEvaluation;

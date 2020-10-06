@@ -90,7 +90,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
 
-        if (variant.isStructuralVariant()) {
+        if (variant.isSymbolic()) {
             return svFrequencyDao.getFrequencyData(variant);
         }
         // This could be run alongside the pathogenicities as they are all stored in the same datastore
@@ -114,7 +114,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
 
-        if (variant.isStructuralVariant()) {
+        if (variant.isSymbolic()) {
             return svPathogenicityDao.getPathogenicityData(variant);
         }
 

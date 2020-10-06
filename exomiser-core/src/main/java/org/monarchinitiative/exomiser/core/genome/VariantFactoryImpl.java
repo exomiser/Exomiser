@@ -170,7 +170,7 @@ public class VariantFactoryImpl implements VariantFactory {
         Consumer<VariantEvaluation> countAnnotatedVariant() {
             return variantEvaluation -> {
                 // This does add a few seconds overhead over 4 mill variants
-                if (variantEvaluation.isStructuralVariant()) {
+                if (variantEvaluation.isSymbolic()) {
                     structuralVariants.incrementAndGet();
                 }
                 if (variantEvaluation.hasTranscriptAnnotations()) {

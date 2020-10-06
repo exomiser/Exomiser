@@ -77,7 +77,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      */
     @Override
     public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
-        if (variantCoordinates.isStructuralVariant()) {
+        if (variantCoordinates.isSymbolic()) {
             return structuralVariantAnnotator.annotate(variantCoordinates);
         }
         return smallVariantAnnotator.annotate(variantCoordinates);

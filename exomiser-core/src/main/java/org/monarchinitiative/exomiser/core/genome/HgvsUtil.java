@@ -91,7 +91,7 @@ public class HgvsUtil {
 //        “prefix” = reference sequence used = g.
 //        “position(s)_deleted” = position nucleotide or range of nucleotides deleted = 123_127
 //        “del” = type of change is a deletion = del 1
-        if (variant.isStructuralVariant()) {
+        if (variant.isSymbolic()) {
             return getPrefix(variant) + variant.getStart() + "_" + variant.getEnd() + "del";
         }
 

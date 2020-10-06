@@ -140,7 +140,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         String geneId = buildGeneId(highestImpactAnnotation);
 
         //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
-        VariantEffect highestImpactEffect = variantCoordinates.isStructuralVariant() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
+        VariantEffect highestImpactEffect = variantCoordinates.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
                 .getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 

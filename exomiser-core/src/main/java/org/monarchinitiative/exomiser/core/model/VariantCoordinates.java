@@ -54,8 +54,8 @@ public interface VariantCoordinates extends ChromosomalRegion {
      */
     public String getAlt();
 
-    public default boolean isStructuralVariant() {
-        return getVariantType().isStructural();
+    public default boolean isSymbolic() {
+        return AllelePosition.isSymbolic(getRef(), getAlt());
     }
 
     public VariantType getVariantType();

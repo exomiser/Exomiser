@@ -183,7 +183,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @JsonIgnore
     public String toGnomad() {
-        if (isStructuralVariant()) {
+        if (isSymbolic()) {
             // can be searched for in gnomad like so:
             // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2_1
             return Contigs.toString(chromosome) + '-' + start + '-' + end + '-' + ref + '-' + alt + ' ' + unitLength();

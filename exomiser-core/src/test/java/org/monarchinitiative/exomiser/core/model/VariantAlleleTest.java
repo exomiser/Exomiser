@@ -74,7 +74,7 @@ class VariantAlleleTest {
         assertThat(instance.getRef(), equalTo("A"));
         assertThat(instance.getAlt(), equalTo("T"));
         assertThat(instance.getVariantType(), equalTo(VariantType.SNV));
-        assertThat(instance.isStructuralVariant(), equalTo(false));
+        assertThat(instance.isSymbolic(), equalTo(false));
     }
 
 }
