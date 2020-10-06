@@ -28,6 +28,7 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
+import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
 import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.slf4j.Logger;
@@ -108,14 +109,28 @@ public class JannovarAnnotationService {
         return VariantAnnotations.buildEmptyList(genomeVariant);
     }
 
-    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String startContig, int startPos, ConfidenceInterval startCiIntervals, String endContig, int endPos, ConfidenceInterval endCiIntervals) {
+    /**
+     * @param variantType of the variant
+     * @param alt         alternate allele representation. This should be a symbolic type such as '<INS>'
+     * @param startContig Starting contig the variant is located on. Corresponds to the VCF 'CHROM' field.
+     * @param startPos    Starting position on the reference sequence variant is located at. Corresponds to the VCF 'POS' field.
+     * @param startCi     Confidence interval surrounding the startPos field. Corresponds to VCF 'CIPOS' field.
+     * @param endContig
+     * @param endPos      End position on the reference sequence variant is located at. Corresponds to the VCF 'END' field.
+     * @param endCi       Confidence interval surrounding the endPos field. Corresponds to VCF 'CIEND' field.
+     * @return a set of {@link VariantAnnotations} for the given variant coordinates. CAUTION! THE RETURNED ANNOTATIONS
+     * WILL USE ZERO-BASED COORDINATES AND WILL BE TRIMMED LEFT SIDE FIRST, ie. RIGHT SHIFTED. This is counter to VCF
+     * conventions.
+     * @since 13.0.0
+     */
+    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String startContig, int startPos, ConfidenceInterval startCi, String endContig, int endPos, ConfidenceInterval endCi) {
         GenomePosition start = buildGenomePosition(startContig, startPos);
         GenomePosition end = buildGenomePosition(endContig, endPos);
 
-        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startCiIntervals, end, endCiIntervals);
+        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startCi, end, endCi);
         // Unsupported types
-        if (!variantType.isStructural()) {
-            logger.info("{} is not a supported structural type", variantType);
+        if (!AllelePosition.isSymbolic(alt)) {
+            logger.warn("{}-{}-?-{} {} is not a symbolic allele - returning empty annotations", startContig, startPos, alt, variantType);
             return SVAnnotations.buildEmptyList(svGenomeVariant);
         }
 
@@ -131,13 +146,13 @@ public class JannovarAnnotationService {
         return SVAnnotations.buildEmptyList(svGenomeVariant);
     }
 
-    private SVGenomeVariant buildSvGenomeVariant(VariantType variantType, String alt, GenomePosition start, ConfidenceInterval startCiIntervals, GenomePosition end, ConfidenceInterval endCiIntervals) {
+    private SVGenomeVariant buildSvGenomeVariant(VariantType variantType, String alt, GenomePosition start, ConfidenceInterval startCi, GenomePosition end, ConfidenceInterval endCi) {
 
-        int startCiLower = startCiIntervals.getLowerBound();
-        int startCiUpper = startCiIntervals.getUpperBound();
+        int startCiLower = startCi.getLowerBound();
+        int startCiUpper = startCi.getUpperBound();
 
-        int endCiLower = endCiIntervals.getLowerBound();
-        int endCiUpper = endCiIntervals.getUpperBound();
+        int endCiLower = endCi.getLowerBound();
+        int endCiUpper = endCi.getUpperBound();
 
         VariantType svSubType = variantType.getSubType();
         switch (svSubType) {
