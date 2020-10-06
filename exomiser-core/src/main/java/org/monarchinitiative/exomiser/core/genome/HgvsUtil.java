@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantType;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -78,11 +77,8 @@ public class HgvsUtil {
     // Deletion (del):
     // a sequence change where, compared to a reference sequence, one or more nucleotides are not present (deleted).
     private static boolean isDeletion(Variant variant) {
-        if (variant.getVariantType().getBaseType() == VariantType.DEL) {
-            return true;
-        }
-        return AllelePosition.isDeletion(variant.getRef(), variant.getAlt()) && variant.getRef()
-                .startsWith(variant.getAlt());
+        return variant.getVariantType().isDeletion() && (variant.isSymbolic() || variant.getRef()
+                .startsWith(variant.getAlt()));
     }
 
     private static String toDeletionString(Variant variant) {
@@ -111,7 +107,7 @@ public class HgvsUtil {
     // a sequence change where, compared to a reference sequence, a copy of one or more nucleotides are inserted
     // directly 3' of the original copy of that sequence.
     private static boolean isDuplication(Variant variant) {
-        if (variant.getVariantType().getBaseType() == VariantType.DUP) {
+        if (variant.getVariantType().isDuplication() && variant.isSymbolic()) {
             return true;
         }
         // can only detect simple duplications from small variations
@@ -132,7 +128,7 @@ public class HgvsUtil {
     }
 
     private static String toDuplicationString(Variant variant) {
-        if (variant.getVariantType().getBaseType() == VariantType.DUP) {
+        if (variant.isSymbolic()) {
             return getPrefix(variant) + variant.getStart() + "_" + variant.getEnd() + "dup";
         }
 
@@ -150,15 +146,12 @@ public class HgvsUtil {
     // a sequence change where, compared to the reference sequence, one or more nucleotides are inserted and where the
     // insertion is not a copy of a sequence immediately 5'
     private static boolean isInsertion(Variant variant) {
-        if (variant.getVariantType().getBaseType() == VariantType.INS) {
-            return true;
-        }
-        return AllelePosition.isInsertion(variant.getRef(), variant.getAlt()) && variant.getAlt()
-                .startsWith(variant.getRef());
+        return variant.getVariantType().isInsertion() && (variant.isSymbolic() || variant.getAlt()
+                .startsWith(variant.getRef()));
     }
 
     private static String toInsertionString(Variant variant) {
-        if (variant.getVariantType().getBaseType() == VariantType.INS) {
+        if (variant.isSymbolic()) {
             return getPrefix(variant) + variant.getStart() + '_' + variant.getEnd() + "ins";
         }
         return getPrefix(variant) + variant.getStart() + '_' + (variant.getStart() + 1) + "ins" + variant.getAlt()
@@ -169,7 +162,7 @@ public class HgvsUtil {
     // a sequence change where, compared to a reference sequence, more than one nucleotide replacing the original
     // sequence are the reverse complement of the original sequence.
     private static boolean isInversion(Variant variant) {
-        return variant.getVariantType().getBaseType() == VariantType.INV;
+        return variant.getVariantType().isInversion();
     }
 
     private static String toInversionString(Variant variant) {
@@ -182,7 +175,7 @@ public class HgvsUtil {
     private static boolean isDelIns(Variant variant) {
         String ref = variant.getRef();
         String alt = variant.getAlt();
-        return !AllelePosition.isSnv(ref, alt) && ref.length() != alt.length() && !variant.getAlt()
+        return !variant.getVariantType().isSnv() && ref.length() != alt.length() && !variant.getAlt()
                 .startsWith(variant.getRef());
     }
 
