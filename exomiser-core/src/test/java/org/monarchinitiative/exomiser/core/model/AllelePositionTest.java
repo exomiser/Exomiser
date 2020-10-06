@@ -44,6 +44,15 @@ public class AllelePositionTest {
     }
 
     @Test
+    void nonVariant() {
+        AllelePosition instance = trim(1, "AAT", ".");
+        System.out.println(instance);
+        System.out.println(instance.getEnd());
+        System.out.println(instance.getLength());
+        System.out.println(instance.isSymbolic());
+    }
+
+    @Test
     public void testEmptyRef() {
         AllelePosition instance = trim(1, "", "TA");
 

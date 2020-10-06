@@ -46,7 +46,7 @@ class VariantAlleleTest {
         assertThat(result.getAlt(), equalTo("T"));
         assertThat(result.getStart(), equalTo(2));
         assertThat(result.getEnd(), equalTo(2));
-        assertThat(result.getLength(), equalTo(0));
+        assertThat(result.getLength(), equalTo(1));
         assertThat(result.getVariantType(), equalTo(VariantType.SNV));
     }
 
@@ -59,7 +59,7 @@ class VariantAlleleTest {
         assertThat(result.getAlt(), equalTo("T"));
         assertThat(result.getStart(), equalTo(2));
         assertThat(result.getEnd(), equalTo(2));
-        assertThat(result.getLength(), equalTo(0));
+        assertThat(result.getLength(), equalTo(1));
         assertThat(result.getVariantType(), equalTo(VariantType.SNV));
     }
 
@@ -75,7 +75,7 @@ class VariantAlleleTest {
         assertThat(instance.getEndContigName(), equalTo("1"));
         assertThat(instance.getEnd(), equalTo(1));
         assertThat(instance.getEndCi(), equalTo(ConfidenceInterval.precise()));
-        assertThat(instance.getLength(), equalTo(0));
+        assertThat(instance.getLength(), equalTo(1));
         assertThat(instance.getRef(), equalTo("A"));
         assertThat(instance.getAlt(), equalTo("T"));
         assertThat(instance.getVariantType(), equalTo(VariantType.SNV));

@@ -152,7 +152,7 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getStartCi(), equalTo(ConfidenceInterval.precise()));
         assertThat(variantEvaluation.getEnd(), equalTo(123256215));
         assertThat(variantEvaluation.getEndCi(), equalTo(ConfidenceInterval.precise()));
-        assertThat(variantEvaluation.getLength(), equalTo(0));
+        assertThat(variantEvaluation.getLength(), equalTo(1));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
         assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
