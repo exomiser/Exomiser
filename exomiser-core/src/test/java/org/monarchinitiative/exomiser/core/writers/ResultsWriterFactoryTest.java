@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,43 +33,41 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ResultsWriterFactoryTest {
-
-    private final ResultsWriterFactory instance = new ResultsWriterFactory();
+class ResultsWriterFactoryTest {
 
     @Test
-    public void testGetHtmlResultsWriter() {
+    void testGetHtmlResultsWriter() {
         OutputFormat outputFormat = OutputFormat.HTML;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(HtmlResultsWriter.class));
 
     }
 
     @Test
-    public void testGetTsvGeneResults() {
+    void testGetTsvGeneResults() {
         OutputFormat outputFormat = OutputFormat.TSV_GENE;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(TsvGeneResultsWriter.class));
     }
 
     @Test
-    public void testGetTsvVariantResultsWriter() {
+    void testGetTsvVariantResultsWriter() {
         OutputFormat outputFormat = OutputFormat.TSV_VARIANT;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(TsvVariantResultsWriter.class));
     }
 
     @Test
-    public void testGetVcfResultsWriter() {
+    void testGetVcfResultsWriter() {
         OutputFormat outputFormat = OutputFormat.VCF;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(VcfResultsWriter.class));
     }
 
     @Test
-    public void testGetJsonResultsWriter() {
+    void testGetJsonResultsWriter() {
         OutputFormat outputFormat = OutputFormat.JSON;
-        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(JsonResultsWriter.class));
     }
 

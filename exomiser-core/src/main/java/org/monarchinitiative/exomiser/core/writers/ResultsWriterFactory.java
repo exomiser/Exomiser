@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,21 +28,24 @@ package org.monarchinitiative.exomiser.core.writers;
 
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public class ResultsWriterFactory {
 
+    private ResultsWriterFactory() {
+    }
+
     /**
      * Build {@link ResultsWriter} for the given {@link OutputFormat}.
-     * 
+     *
      * @param outputFormat
      *            the format to use for the output
      * @return the constructed {@link ResultsWriter} implementation
      */
-    public ResultsWriter getResultsWriter(OutputFormat outputFormat) {
-        switch (outputFormat){
+    public static ResultsWriter getResultsWriter(OutputFormat outputFormat) {
+        switch (outputFormat) {
             case TSV_GENE:
                 return new TsvGeneResultsWriter();
             case TSV_VARIANT:

@@ -46,7 +46,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AnalysisResultsWriterTest {
+class AnalysisResultsWriterTest {
 
     private Path tempFile;
 
@@ -71,7 +71,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileOutputsAllModesOfinheritanceForEachFormat() throws Exception {
+    void testWriteToFileOutputsAllModesOfinheritanceForEachFormat() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -104,7 +104,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileOutputsAllModesOfinheritanceForEachFormatWhenInheritanceModeIsUndefined() throws Exception {
+    void testWriteToFileOutputsAllModesOfinheritanceForEachFormatWhenInheritanceModeIsUndefined() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -129,7 +129,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileOutputsSingleHtmlFileIfPresentInSettings() throws Exception {
+    void testWriteToFileOutputsSingleHtmlFileIfPresentInSettings() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -147,7 +147,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileOutputsSingleJsonFileIfPresentInSettings() throws Exception {
+    void testWriteToFileOutputsSingleJsonFileIfPresentInSettings() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -165,7 +165,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileOutputsSingleJsonOrHtmlFileIfPresentInSettings() throws Exception {
+    void testWriteToFileOutputsSingleJsonOrHtmlFileIfPresentInSettings() throws Exception {
         String outputPrefix = tempFile.toString();
 
         Set<OutputFormat> singleFileFormats = EnumSet.of(OutputFormat.JSON, OutputFormat.HTML);
@@ -186,7 +186,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileDoesNotOutputSingleHtmlFileIfAbsentFromSettings() throws Exception {
+    void testWriteToFileDoesNotOutputSingleHtmlFileIfAbsentFromSettings() throws Exception {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -203,7 +203,7 @@ public class AnalysisResultsWriterTest {
     }
 
     @Test
-    public void testWriteToFileWithOutputOptions() {
+    void testWriteToFileWithOutputOptions() {
         String outputPrefix = tempFile.toString();
 
         OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
