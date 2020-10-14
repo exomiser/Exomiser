@@ -64,8 +64,7 @@ public class MgiMouseGenePhenotypeReader implements ResourceReader<List<GenePhen
         SetMultimap<String, String> mouse2PhenotypeMap = TreeMultimap.create();
 
         try (BufferedReader reader = mgiGenePhenoResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\\t");
                 String mpId = fields[4];
                 String modelId = fields[7];

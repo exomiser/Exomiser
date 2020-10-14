@@ -40,7 +40,7 @@ public class ImpcMouseGenePhenotypeReader implements ResourceReader<List<GenePhe
 
     private static final Logger logger = LoggerFactory.getLogger(ImpcMouseGenePhenotypeReader.class);
 
-    private static final Pattern CSV = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static final Pattern CSV = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*+[^\"]*$)");
 
     private final Resource allGenotypePhenotypeResource;
 

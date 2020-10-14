@@ -65,8 +65,7 @@ public class OwlSimPhenodigmProcessor {
 
         try (BufferedReader reader = hpMappingsResource.newBufferedReader();
              BufferedWriter writer = Files.newBufferedWriter(hpMappingsOutFile, Charset.defaultCharset())) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String outLine = cacheLineProcessor.processLine(line);
                 writer.write(outLine);
                 writer.newLine();

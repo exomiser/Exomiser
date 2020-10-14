@@ -57,8 +57,7 @@ public class OmimMimToGeneReader implements ResourceReader<Map<String, Integer>>
         Map<String, Integer> mim2geneMap = new HashMap<>();
 
         try (BufferedReader reader = mimToGeneResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 //ignore comment lines
                 if (!line.startsWith("#")) {
                     parseLine(mim2geneMap, line);

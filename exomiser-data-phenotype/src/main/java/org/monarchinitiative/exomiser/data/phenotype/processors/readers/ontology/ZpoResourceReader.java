@@ -49,8 +49,7 @@ public class ZpoResourceReader implements ResourceReader<List<OboOntologyTerm>> 
         logger.info("Reading ZP from {}", zpResource);
         List<OboOntologyTerm> zpTerms = new ArrayList<>();
         try (BufferedReader reader = zpResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\\t");
                 if (fields[0].startsWith("ZP:")) {
                     zpTerms.add(OboOntologyTerm.builder().id(fields[0]).label(fields[1]).build());

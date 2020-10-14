@@ -87,8 +87,7 @@ public class DiseaseInheritanceCacheReader implements ResourceReader<Map<String,
             // from the HPO annotations in the file and store them in this intermediate map
             ListMultimap<String, InheritanceMode> intermediateInheritanceMap = ArrayListMultimap.create();
             //so let's parse...
-            String line;
-            while ((line = br.readLine()) != null) {
+            for (String line; (line = br.readLine()) != null; ) {
                 // #disease-db	disease-identifier	disease-name	negation	HPO-ID	reference	evidence-code	onset	frequencyHPO	modifier	sub-ontology	alt-names	curators	frequencyRaw	sex
                 if (line.startsWith("#")) {
                     // comment line

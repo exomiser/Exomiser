@@ -48,8 +48,7 @@ public class MonarchFishGeneLabelReader implements ResourceReader<Map<String, St
     public Map<String, String> read() {
         Map<String, String> geneLabels = new LinkedHashMap<>();
         try (BufferedReader reader = drGeneLabelResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null ) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\t");
                 // ZFIN:ZDB-GENE-000125-4	dlc
                 geneLabels.put(fields[0], fields[1]);

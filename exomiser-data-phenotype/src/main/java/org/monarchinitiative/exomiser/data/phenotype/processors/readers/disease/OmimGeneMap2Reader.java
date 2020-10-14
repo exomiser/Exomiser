@@ -77,8 +77,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
     private List<DiseaseGene> readDiseaseGenes(Map<String, InheritanceMode> diseaseInheritanceCache) {
         Set<DiseaseGene> diseases = new LinkedHashSet<>();
         try (BufferedReader bufferedReader = geneMap2Resource.newBufferedReader()) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
+            for (String line; (line = bufferedReader.readLine()) != null; ) {
                 diseases.addAll(parseLine(diseaseInheritanceCache, line));
             }
         } catch (IOException e) {

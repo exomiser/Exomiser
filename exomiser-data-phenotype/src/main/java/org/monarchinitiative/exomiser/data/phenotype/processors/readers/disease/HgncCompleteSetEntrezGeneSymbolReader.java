@@ -49,8 +49,7 @@ public class HgncCompleteSetEntrezGeneSymbolReader implements ResourceReader<Lis
     public List<EntrezIdGeneSymbol> read() {
         List<EntrezIdGeneSymbol> entrezGeneIds = new ArrayList<>(20000);
         try (BufferedReader reader = hgncCompleteSetResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 EntrezIdGeneSymbol entrezIdGeneSymbol = parseLine(line);
                 if (entrezIdGeneSymbol != null) {
                     entrezGeneIds.add(entrezIdGeneSymbol);

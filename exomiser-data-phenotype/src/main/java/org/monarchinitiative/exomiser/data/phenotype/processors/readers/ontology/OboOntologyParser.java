@@ -57,9 +57,8 @@ public class OboOntologyParser {
 
     private static String parseDataVersion(Path oboFile) {
         try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile)) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                if (line.startsWith("data-version:")){
+            for (String line; (line = bufferedReader.readLine()) != null; ) {
+                if (line.startsWith("data-version:")) {
                     return line.substring(13).trim();
                 }
                 if (line.startsWith("[Term]")) {

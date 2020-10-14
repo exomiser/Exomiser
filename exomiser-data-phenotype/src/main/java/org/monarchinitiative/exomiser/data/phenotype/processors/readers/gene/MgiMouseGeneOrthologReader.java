@@ -55,8 +55,7 @@ public class MgiMouseGeneOrthologReader implements ResourceReader<List<GeneOrtho
         Map<String, Set<String>> humanIds = new LinkedHashMap<>();
 
         try (BufferedReader reader = homMouseHumanSequenceResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\\t");
                 String homoloGeneId = fields[0];
                 if (fields[1].equals("human")) {

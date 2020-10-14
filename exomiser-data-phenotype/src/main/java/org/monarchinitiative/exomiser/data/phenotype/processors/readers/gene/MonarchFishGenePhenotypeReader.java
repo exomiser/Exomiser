@@ -48,8 +48,7 @@ public class MonarchFishGenePhenotypeReader implements ResourceReader<SetMultima
     public SetMultimap<String, String> read() {
         SetMultimap<String, String> genePhenotypes = LinkedHashMultimap.create();
         try (BufferedReader reader = drGenePhenotypeResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null ) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\t");
                 // ZFIN:ZDB-MIRNAG-090929-37	GO:0030218PHENOTYPE
                 // ZFIN:ZDB-MIRNAG-090929-37	ZP:0000516

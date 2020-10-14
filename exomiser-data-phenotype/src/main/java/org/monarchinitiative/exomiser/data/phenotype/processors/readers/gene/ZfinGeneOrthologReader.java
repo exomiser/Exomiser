@@ -52,8 +52,7 @@ public class ZfinGeneOrthologReader implements ResourceReader<List<GeneOrtholog>
         Set<GeneOrtholog> fishOrthologs = new LinkedHashSet<>();
 
         try (BufferedReader reader = zfinHumanOrthosResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\\t");
                 String fishId = "ZFIN:" + fields[0];
                 String fishSymbol = fields[1];

@@ -49,8 +49,7 @@ public class EnsemblMouseGeneOrthologReader implements ResourceReader<List<GeneO
         List<GeneOrtholog> mouseHumanOrthologs = new ArrayList<>();
 
         try (BufferedReader reader = homMouseHumanSequenceResource.newBufferedReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line; (line = reader.readLine()) != null; ) {
                 String[] fields = line.split("\\t");
                 String humanId = fields[0];
                 String humanSymbol = fields[1];
