@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -61,35 +62,37 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        if (variant.isSymbolic()) {
-            int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
+        int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
-            List<SvResult> results = runQuery(variant, margin);
-//            logger.info("{}", variant);
-//            logger.info("Searching for {}:{}-{}", variant.getChromosome(), variant.getStart() - margin, variant.getEnd() + margin);
-//            results.forEach(svResult -> logger.info("{}", svResult));
+        logger.debug("{}", variant);
+        logger.debug("Searching for {}:{}-{}", variant.getStartContigId(), variant.getStart() - margin, variant.getEnd() + margin);
+        List<SvResult> results = runQuery(variant, margin);
+        results.forEach(svResult -> logger.debug("{}", svResult));
 
-            Map<Double, List<SvResult>> resultsByScore = results.stream()
-                    .collect(Collectors.groupingBy(SvResult::getScore));
-            List<SvResult> topMatches = resultsByScore.entrySet()
-                    .stream()
-                    .max(Map.Entry.comparingByKey())
-                    .map(Map.Entry::getValue)
-                    .orElse(List.of());
+        Map<Double, List<SvResult>> resultsByScore = results.stream()
+                .collect(Collectors.groupingBy(score(variant)));
 
-//            logger.info("Top match(es)");
-//            topMatches.forEach(svResult -> logger.info("{}", svResult));
+        List<SvResult> topMatches = resultsByScore.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .orElse(List.of());
 
-            if (topMatches.isEmpty()) {
-                return FrequencyData.empty();
-            }
-            return mapToFrequencyData(topMatches);
+        logger.debug("Top match(es)");
+        topMatches.forEach(svResult -> logger.debug("{}", svResult));
 
-        }
-        return FrequencyData.empty();
+        return mapToFrequencyData(topMatches);
+    }
+
+    private Function<SvResult, Double> score(Variant variant) {
+        // geometric mean of num alleles and similarity - try and get the best represented and most similar allele
+        return svResult -> Math.sqrt(svResult.ac * ChromosomalRegionUtil.jaccard(variant, svResult));
     }
 
     private FrequencyData mapToFrequencyData(List<SvResult> topMatches) {
+        if (topMatches.isEmpty()) {
+            return FrequencyData.empty();
+        }
         SvResult first = topMatches.get(0);
         Frequency frequency = toFrequency(first);
         if (frequency.getFrequency() == 0) {
@@ -144,7 +147,7 @@ public class SvFrequencyDao implements FrequencyDao {
                 "                DBVAR_ACC        as ID,\n" +
                 "                ALLELE_COUNT     as AC,\n" +
                 "                ALLELE_FREQUENCY as AF\n" +
-                "         FROM DBVAR\n" +
+                "         FROM DBVAR_VARIANTS\n" +
                 "         UNION ALL\n" +
                 "         SELECT 'GONL' as SOURCE,\n" +
                 "                CHR_ONE,\n" +
@@ -236,8 +239,6 @@ public class SvFrequencyDao implements FrequencyDao {
             // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
             if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, variantType, source, id, ac, af);
-                svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
-//                System.out.println(svResult);
                 results.add(svResult);
             }
         }
@@ -255,8 +256,6 @@ public class SvFrequencyDao implements FrequencyDao {
         private final String id;
         private final int ac;
         private final float af;
-
-        private double jaccard;
 
         SvResult(int chr, int start, int end, int length, VariantType svType, String source, String id, int ac, float af) {
             this.chr = chr;
@@ -290,11 +289,6 @@ public class SvFrequencyDao implements FrequencyDao {
             return length;
         }
 
-        public double getScore() {
-            // geometric mean of num alleles and similarity - try and get the best represented and most similar allele
-            return Math.sqrt(ac * jaccard);
-        }
-
         @Override
         public String toString() {
             return "SvResult{" +
@@ -307,8 +301,6 @@ public class SvFrequencyDao implements FrequencyDao {
                     ", id='" + id + '\'' +
                     ", ac=" + ac +
                     ", af=" + af +
-                    ", jaccard=" + jaccard +
-                    ", score=" + getScore() +
                     '}';
         }
     }

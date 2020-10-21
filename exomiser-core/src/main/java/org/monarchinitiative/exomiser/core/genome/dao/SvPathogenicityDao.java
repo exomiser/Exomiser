@@ -64,34 +64,31 @@ public class SvPathogenicityDao implements PathogenicityDao {
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        if (variant.isSymbolic()) {
-            int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
+        int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
 
-            List<SvResult> results = runQuery(variant, margin);
-            logger.debug("{}", variant);
-            results.forEach(svResult -> logger.debug("{}", svResult));
+        logger.debug("{}", variant);
+        List<SvResult> results = runQuery(variant, margin);
+        results.forEach(svResult -> logger.debug("{}", svResult));
 
-            Map<Double, List<SvResult>> resultsByScore = results.stream()
-                    .collect(Collectors.groupingBy(SvResult::getJaccard));
-            List<SvResult> topMatches = resultsByScore.entrySet()
-                    .stream()
-                    .max(Map.Entry.comparingByKey())
-                    .map(Map.Entry::getValue)
-                    .orElse(List.of());
+        Map<Double, List<SvResult>> resultsByScore = results.stream()
+                .collect(Collectors.groupingBy(svResult -> ChromosomalRegionUtil.jaccard(variant, svResult)));
 
-            logger.debug("Top match(es)");
-            topMatches.forEach(svResult -> logger.debug("{}", svResult));
+        List<SvResult> topMatches = resultsByScore.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .orElse(List.of());
 
-            if (topMatches.isEmpty()) {
-                return PathogenicityData.empty();
-            }
-            return mapToPathogenicityData(topMatches);
+        logger.debug("Top match(es)");
+        topMatches.forEach(svResult -> logger.debug("{}", svResult));
 
-        }
-        return PathogenicityData.empty();
+        return mapToPathogenicityData(topMatches);
     }
 
     private PathogenicityData mapToPathogenicityData(List<SvResult> topMatches) {
+        if (topMatches.isEmpty()) {
+            return PathogenicityData.empty();
+        }
         SvResult first = topMatches.get(0);
         ClinVarData clinVarData = ClinVarData.builder()
                 .alleleId(first.clinVarAccession)
@@ -150,7 +147,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 "                CLNSIG,\n" +
                 "                CLNSIG_SOURCE,\n" +
                 "                CLINVAR_ACCESSIONS\n" +
-                "         FROM DBVAR\n" +
+                "         FROM DBVAR_VARIANTS\n" +
                 "         UNION ALL\n" +
                 "         SELECT 'ISCA' as SOURCE,\n" +
                 "                CONTIG as CHR_ONE,\n" +
@@ -232,7 +229,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
             // there are cases such as INS_ME which won't match the database so we have to filter these here
             if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
                 SvResult svResult = new SvResult(chr, start, end, length, svType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
-                svResult.jaccard = ChromosomalRegionUtil.jaccard(variant, svResult);
                 results.add(svResult);
             }
         }
@@ -250,8 +246,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
         private final String id;
         private final ClinVarData.ClinSig clinSig;
         private final String clinVarAccession;
-
-        private double jaccard;
 
         private SvResult(int chr, int start, int end, int length, String svType, String source, String id, ClinVarData.ClinSig clinSig, String clinVarAccession) {
             this.chr = chr;
@@ -285,10 +279,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
             return length;
         }
 
-        public double getJaccard() {
-            return jaccard;
-        }
-
         @Override
         public String toString() {
             return "SvResult{" +
@@ -301,7 +291,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
                     ", id='" + id + '\'' +
                     ", clinsig=" + clinSig +
                     ", clinVarAccession=" + clinVarAccession +
-                    ", jaccard=" + jaccard +
                     '}';
         }
     }
