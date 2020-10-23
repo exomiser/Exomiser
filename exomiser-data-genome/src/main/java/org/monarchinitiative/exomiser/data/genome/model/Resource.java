@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model;
 
-import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.archive.Archive;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
+
+import java.net.URL;
+import java.util.stream.Stream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface AlleleIndexer {
+public interface Resource<T> {
 
-    void index(AlleleResource alleleResource);
+    String getName();
 
+    URL getResourceUrl();
+
+    Archive getArchive();
+
+    Parser<T> getParser();
+
+    default Stream<T> parseResource() {
+        // wrap this in a try-with-resources to close the underlying file resources when the stream closes
+        try (Stream<String> lines = getArchive().lines()) {
+            return lines
+//                       .peek(line -> logger.info("{}", line))
+                    .flatMap(line -> getParser().parseLine(line).stream());
+        }
+    }
 }
