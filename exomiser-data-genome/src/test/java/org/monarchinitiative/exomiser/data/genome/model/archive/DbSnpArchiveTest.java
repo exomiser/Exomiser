@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,27 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.archive;
 
-import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Paths;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbNsfp3AlleleArchive extends AbstractAlleleArchive {
+class DbSnpArchiveTest {
 
-    public DbNsfp3AlleleArchive(Path archivePath) {
-        super(archivePath, "zip", "chr");
+    private final DbSnpArchive dbSnpArchive = new DbSnpArchive(Paths.get("GCF_000001405.25.gz"));
+
+    @Test
+    public void archiveFileFormat() throws Exception {
+        assertThat(dbSnpArchive.getArchiveFileFormat(), equalTo("gz"));
+    }
+
+    @Test
+    public void dataFileFormat() throws Exception {
+        assertThat(dbSnpArchive.getDataFileFormat(), equalTo(""));
     }
 }

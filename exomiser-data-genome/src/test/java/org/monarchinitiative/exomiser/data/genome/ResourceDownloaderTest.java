@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ import static org.junitpioneer.jupiter.TempDirectory.TempDir;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class AlleleResourceDownloaderTest {
+class ResourceDownloaderTest {
 
     @Test
     @ExtendWith(TempDirectory.class)
@@ -46,7 +46,7 @@ class AlleleResourceDownloaderTest {
         URL url = Paths.get("src/test/resources/test_empty.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("test_empty.vcf.gz");
         AlleleResource testResource = new TabixAlleleResource("test", url, alleleGzipFile, line -> null);
-        AlleleResourceDownloader.download(testResource);
+        ResourceDownloader.download(testResource);
         assertThat(alleleGzipFile.toFile().exists(), is(true));
         assertThat(tempDir.resolve("test_empty.vcf.gz.tbi").toFile().exists(), is(true));
     }
@@ -57,7 +57,7 @@ class AlleleResourceDownloaderTest {
         URL url = Paths.get("src/test/resources/no_file_here.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("no_file_here.vcf.gz");
         AlleleResource testResource = new TabixAlleleResource("test", url, alleleGzipFile, line -> null);
-        assertThrows(ResourceDownloadException.class, () -> AlleleResourceDownloader.download(testResource));
+        assertThrows(ResourceDownloadException.class, () -> ResourceDownloader.download(testResource));
     }
 
     @Test
@@ -66,7 +66,7 @@ class AlleleResourceDownloaderTest {
         URL url = Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("test_first_ten_dbsnp.vcf.gz");
         AlleleResource testResource = new TabixAlleleResource("test", url, alleleGzipFile, line -> null);
-        AlleleResourceDownloader.download(testResource);
+        ResourceDownloader.download(testResource);
         assertThat(alleleGzipFile.toFile().exists(), is(true));
         assertThat(tempDir.resolve("test_first_ten_dbsnp.vcf.gz.tbi").toFile().exists(), is(false));
     }

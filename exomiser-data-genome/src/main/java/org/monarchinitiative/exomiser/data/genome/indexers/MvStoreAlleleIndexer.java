@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,11 +28,11 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 /**
- * {@link MVStore} backed {@link AlleleIndexer} implementation.
+ * {@link MVStore} backed {@link Indexer} implementation.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
+public class MvStoreAlleleIndexer extends AbstractIndexer<Allele> {
 
     private final MVStore mvStore;
     private final MVMap<AlleleKey, AlleleProperties> map;
@@ -43,7 +43,7 @@ public class MvStoreAlleleIndexer extends AbstractAlleleIndexer {
     }
 
     @Override
-    public void writeAllele(Allele allele) {
+    public void write(Allele allele) {
         AlleleKey key = AlleleConverter.toAlleleKey(allele);
         AlleleProperties properties = AlleleConverter.toAlleleProperties(allele);
         map.merge(key, properties, AlleleConverter::mergeProperties);

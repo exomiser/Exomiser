@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model.archive;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -34,16 +34,22 @@ public class ArchiveFileReaderTest {
 
     @Test
     void readEmptyLines() {
-        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixAlleleArchive(Paths.get("src/test/resources/test_empty.vcf.gz")));
+        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(Path.of("src/test/resources/test_empty.vcf.gz")));
         long lineCount = instance.lines().count();
         assertThat(lineCount, equalTo(0L));
     }
 
     @Test
     void readLines() {
-        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixAlleleArchive(Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz")));
+        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(Path.of("src/test/resources/test_first_ten_dbsnp.vcf.gz")));
         long lineCount = instance.lines().count();
         // 57 header + 10 allele = 67 lines total in the file
         assertThat(lineCount, equalTo(67L));
+    }
+
+    @Test
+    void readNonFolderArchive() {
+        ArchiveFileReader instance = new SimpleArchiveFileReader(new FileArchive(Path.of("src/test/resources/genome/ensembl_enhancers.tsv")));
+        assertThat(instance.lines().count(), equalTo(7L));
     }
 }

@@ -21,19 +21,18 @@
 package org.monarchinitiative.exomiser.data.genome.model.archive;
 
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 /**
- * AlleleArchive for dbSNP build 152+. These are named using the RefSeq accession for each assembly e.g.
- * GCF_000001405.25.gz (GRCh37.p12) or GCF_000001405.38.gz (GRCh38.p13). Annoyingly the broke the tradition of 20 years
- * and removed the .vcf part of the file extension so this new and special class was needed to replace the {@link TabixAlleleArchive}
- * <p>
- * https://www.ncbi.nlm.nih.gov/variation/docs/snp2_human_variation_vcf/
- *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbSnpAlleleArchive extends AbstractAlleleArchive {
+public interface Archive {
 
-    public DbSnpAlleleArchive(Path archivePath) {
-        super(archivePath, "gz", "");
-    }
+    public Path getPath();
+
+    public String getArchiveFileFormat();
+
+    public String getDataFileFormat();
+
+    public Stream<String> lines();
 }

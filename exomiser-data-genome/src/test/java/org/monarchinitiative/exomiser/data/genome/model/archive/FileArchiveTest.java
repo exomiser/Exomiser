@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,26 +22,25 @@ package org.monarchinitiative.exomiser.data.genome.model.archive;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TabixAlleleArchiveTest {
-
-    private final TabixAlleleArchive tabixArchive = new TabixAlleleArchive(Paths.get("tabixArchive"));
+class FileArchiveTest {
 
     @Test
-    public void archiveFileFormat() throws Exception {
-        assertThat(tabixArchive.getArchiveFileFormat(), equalTo("gz"));
+    void archiveFileFormat() {
+        Archive instance = new FileArchive(Path.of("test.txt"));
+        assertThat(instance.getArchiveFileFormat(), equalTo(""));
     }
 
     @Test
-    public void dataFileFormat() throws Exception {
-        assertThat(tabixArchive.getDataFileFormat(), equalTo("vcf"));
+    void dataFileFormat() {
+        Archive instance = new FileArchive(Path.of("test.txt"));
+        assertThat(instance.getDataFileFormat(), equalTo(""));
     }
 }

@@ -18,11 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.model;
+package org.monarchinitiative.exomiser.data.genome.model.archive;
+
+import java.nio.file.Path;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface AlleleResource extends Resource<Allele> {
+public class EspArchive extends AbstractArchive {
 
+    public EspArchive(Path archivePath) {
+        super(archivePath, "tgz", "vcf");
+    }
 }

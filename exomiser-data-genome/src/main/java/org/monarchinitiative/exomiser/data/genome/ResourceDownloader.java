@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,8 @@ package org.monarchinitiative.exomiser.data.genome;
 
 import org.apache.commons.io.FileUtils;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.Resource;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,29 +38,31 @@ import java.nio.file.Paths;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AlleleResourceDownloader {
+public class ResourceDownloader {
 
-    private static final Logger logger = LoggerFactory.getLogger(AlleleResourceDownloader.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceDownloader.class);
 
-    private AlleleResourceDownloader() {
+    private ResourceDownloader() {
         // Static utility class
     }
 
-    public static void download(AlleleResource alleleResource) {
-        Path resourceFile = alleleResource.getAlleleArchive().getPath();
+    public static void download(Resource<?> resource) {
+        Path resourceFile = resource.getArchive().getPath();
 
         if (!resourceFile.toFile().exists()) {
-            downloadTabixFile(alleleResource);
-            downloadResourceFile(alleleResource);
+            if (resource.getArchive() instanceof TabixArchive) {
+                downloadTabixIndexFile(resource);
+            }
+            downloadResourceFile(resource);
         } else {
-            logger.info("{} resource file already present. Skipping download.", alleleResource.getName());
+            logger.info("{} resource file already present. Skipping download.", resource.getName());
         }
     }
 
-    private static void downloadTabixFile(AlleleResource alleleResource) {
-        Path destination = alleleResource.getAlleleArchive().getPath();
+    private static void downloadTabixIndexFile(Resource<?> alleleResource) {
+        Path destination = alleleResource.getArchive().getPath();
 
-        URL tabixUrl = createTabixFileUrl(alleleResource);
+        URL tabixUrl = createTabixIndexUrl(alleleResource);
         Path tabixDestination = Paths.get(destination.toString() + ".tbi");
         String name = alleleResource.getName() + " tabix";
         try {
@@ -72,7 +76,7 @@ public class AlleleResourceDownloader {
         }
     }
 
-    private static URL createTabixFileUrl(AlleleResource alleleResource) {
+    private static URL createTabixIndexUrl(Resource<?> alleleResource) {
         try {
             return new URL(alleleResource.getResourceUrl().toString() + ".tbi");
         } catch (MalformedURLException e) {
@@ -81,9 +85,9 @@ public class AlleleResourceDownloader {
         return null;
     }
 
-    private static void downloadResourceFile(AlleleResource alleleResource) {
+    private static void downloadResourceFile(Resource<?> alleleResource) {
         URL resourceUrl = alleleResource.getResourceUrl();
-        Path destination = alleleResource.getAlleleArchive().getPath();
+        Path destination = alleleResource.getArchive().getPath();
         downloadResource(alleleResource.getName(), resourceUrl, destination);
     }
 

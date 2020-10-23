@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,14 +22,12 @@ package org.monarchinitiative.exomiser.data.genome.model.resource;
 
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
-import org.monarchinitiative.exomiser.data.genome.model.archive.AlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.Archive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.AlleleParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 
 import java.net.URL;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
  * Class for defining the resources required for processing an allele data set in the application.
@@ -38,17 +36,15 @@ import java.util.stream.Stream;
  */
 abstract class AbstractAlleleResource implements AlleleResource {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractAlleleResource.class);
-
     private final String name;
     private final URL resourceUrl;
-    private final AlleleArchive alleleArchive;
+    private final Archive archive;
     private final AlleleParser alleleParser;
 
-    AbstractAlleleResource(String name, URL resourceUrl, AlleleArchive alleleArchive, AlleleParser alleleParser) {
+    AbstractAlleleResource(String name, URL resourceUrl, Archive archive, AlleleParser alleleParser) {
         this.name = name;
         this.resourceUrl = resourceUrl;
-        this.alleleArchive = alleleArchive;
+        this.archive = archive;
         this.alleleParser = alleleParser;
     }
 
@@ -62,24 +58,13 @@ abstract class AbstractAlleleResource implements AlleleResource {
         return resourceUrl;
     }
 
-    @Override
-    public AlleleArchive getAlleleArchive() {
-        return alleleArchive;
+    public Archive getArchive() {
+        return archive;
     }
 
     @Override
-    public AlleleParser getAlleleParser() {
+    public Parser<Allele> getParser() {
         return alleleParser;
-    }
-
-    @Override
-    public Stream<Allele> alleles() {
-        // wrap this in a try-with-resources to close the underlying file resources when the stream closes
-        try (Stream<String> lines = alleleArchive.lines()) {
-               return lines
-//                       .peek(line -> logger.info("{}", line))
-                       .flatMap(line -> alleleParser.parseLine(line).stream());
-        }
     }
 
     @Override
@@ -89,13 +74,13 @@ abstract class AbstractAlleleResource implements AlleleResource {
         AbstractAlleleResource that = (AbstractAlleleResource) o;
         return Objects.equals(name, that.name) &&
                 Objects.equals(resourceUrl, that.resourceUrl) &&
-                Objects.equals(alleleArchive, that.alleleArchive) &&
+                Objects.equals(archive, that.archive) &&
                 Objects.equals(alleleParser, that.alleleParser);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, resourceUrl, alleleArchive, alleleParser);
+        return Objects.hash(name, resourceUrl, archive, alleleParser);
     }
 
     @Override
@@ -103,7 +88,7 @@ abstract class AbstractAlleleResource implements AlleleResource {
         return "AlleleResource{" +
                 "name='" + name + '\'' +
                 ", resourceUrl=" + resourceUrl +
-                ", alleleArchive=" + alleleArchive +
+                ", alleleArchive=" + archive +
                 ", alleleParser=" + alleleParser +
                 '}';
     }

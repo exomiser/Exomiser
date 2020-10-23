@@ -18,11 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.model;
+package org.monarchinitiative.exomiser.data.genome.model.archive;
+
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Paths;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface AlleleResource extends Resource<Allele> {
+public class EspArchiveTest {
 
+    private final EspArchive espArchive = new EspArchive(Paths.get("file"));
+
+    @Test
+    public void archiveFileFormat() throws Exception {
+        assertThat(espArchive.getArchiveFileFormat(), equalTo("tgz"));
+    }
+
+    @Test
+    public void dataFileFormat() throws Exception {
+        assertThat(espArchive.getDataFileFormat(), equalTo("vcf"));
+    }
 }

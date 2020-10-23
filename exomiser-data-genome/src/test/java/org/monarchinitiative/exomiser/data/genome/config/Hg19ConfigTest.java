@@ -68,8 +68,8 @@ public class Hg19ConfigTest {
             AlleleResource actual = actualResources.get(key);
             AlleleResource expected = expectedResources.get(key);
             assertThat(actual.getName(), equalTo(expected.getName()));
-            assertThat(actual.getAlleleParser(), instanceOf(expected.getAlleleParser().getClass()));
-            assertThat(actual.getAlleleArchive(), equalTo(expected.getAlleleArchive()));
+            assertThat(actual.getParser(), instanceOf(expected.getParser().getClass()));
+            assertThat(actual.getArchive(), equalTo(expected.getArchive()));
         }
     }
 
@@ -77,78 +77,78 @@ public class Hg19ConfigTest {
     public void dbSnpAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.dbSnpAlleleResource();
 
-        AlleleArchive expectedArchive = new DbSnpAlleleArchive(Paths.get("src/test/resources/hg19/variants/00-All.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(DbSnpAlleleParser.class));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        Archive expectedArchive = new DbSnpArchive(Paths.get("src/test/resources/hg19/variants/00-All.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(DbSnpAlleleParser.class));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void testEspAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.espAlleleResource();
 
-        AlleleArchive expectedArchive = new EspAlleleArchive(Paths.get("src/test/resources/hg19/variants/ESP6500SI-V2-SSA137.GRCh38-liftover.snps_indels.vcf.tar.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(EspHg19AlleleParser.class));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        Archive expectedArchive = new EspArchive(Paths.get("src/test/resources/hg19/variants/ESP6500SI-V2-SSA137.GRCh38-liftover.snps_indels.vcf.tar.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(EspHg19AlleleParser.class));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void testDbNsfpAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.dbnsfpAlleleResource();
 
-        AlleleArchive expectedArchive = new DbNsfp3AlleleArchive(Paths.get("src/test/resources/hg19/variants/dbNSFPv3.4a.zip"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(DbNsfpAlleleParser.class));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        Archive expectedArchive = new DbNsfp3Archive(Paths.get("src/test/resources/hg19/variants/dbNSFPv3.4a.zip"));
+        assertThat(alleleResource.getParser(), instanceOf(DbNsfpAlleleParser.class));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void exacAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.exacAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/ExAC.r0.3.1.sites.vep.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        ExacExomeAlleleParser exacAlleleParser = (ExacExomeAlleleParser) alleleResource.getAlleleParser();
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/ExAC.r0.3.1.sites.vep.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
+        ExacExomeAlleleParser exacAlleleParser = (ExacExomeAlleleParser) alleleResource.getParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.EXAC_EXOMES));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void gnomadGenomeAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.gnomadGenomeAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/gnomad.genomes.r2.0.1.sites.noVEP.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        GnomadGenomeAlleleParser exacAlleleParser = (GnomadGenomeAlleleParser) alleleResource.getAlleleParser();
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/gnomad.genomes.r2.0.1.sites.noVEP.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
+        GnomadGenomeAlleleParser exacAlleleParser = (GnomadGenomeAlleleParser) alleleResource.getParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_GENOMES));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void gnomadExomeAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.gnomadExomeAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/gnomad.exomes.r2.0.1.sites.noVEP.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(ExacAlleleParser.class));
-        GnomadExomeAlleleParser exacAlleleParser = (GnomadExomeAlleleParser) alleleResource.getAlleleParser();
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/gnomad.exomes.r2.0.1.sites.noVEP.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
+        GnomadExomeAlleleParser exacAlleleParser = (GnomadExomeAlleleParser) alleleResource.getParser();
         assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_EXOMES));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void testTopmedAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.topmedAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/TOPMED_GRCh37.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(TopMedAlleleParser.class));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/TOPMED_GRCh37.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(TopMedAlleleParser.class));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
     @Test
     public void testU10kAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.uk10kAlleleResource();
 
-        AlleleArchive expectedArchive = new TabixAlleleArchive(Paths.get("src/test/resources/hg19/variants/UK10K_COHORT.20160215.sites.vcf.gz"));
-        assertThat(alleleResource.getAlleleParser(), instanceOf(Uk10kAlleleParser.class));
-        assertThat(alleleResource.getAlleleArchive(), equalTo(expectedArchive));
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/UK10K_COHORT.20160215.sites.vcf.gz"));
+        assertThat(alleleResource.getParser(), instanceOf(Uk10kAlleleParser.class));
+        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,9 @@ import java.util.stream.Stream;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbNsfp4AlleleArchive extends AbstractAlleleArchive {
+public class DbNsfp4Archive extends AbstractArchive {
 
-    public DbNsfp4AlleleArchive(Path archivePath) {
+    public DbNsfp4Archive(Path archivePath) {
         super(archivePath, "zip", "gz");
     }
 
@@ -43,8 +43,8 @@ public class DbNsfp4AlleleArchive extends AbstractAlleleArchive {
 
     private class DbNsfp4ArchiveFileReader extends ArchiveFileReader {
 
-        public DbNsfp4ArchiveFileReader(AlleleArchive alleleArchive) {
-            super(alleleArchive);
+        public DbNsfp4ArchiveFileReader(Archive archive) {
+            super(archive);
         }
 
         @Override

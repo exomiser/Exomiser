@@ -20,27 +20,16 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.archive;
 
-import org.junit.jupiter.api.Test;
-
-import java.nio.file.Paths;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import java.nio.file.Path;
 
 /**
+ * Just a wrapper around a simple uncompressed file.
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class DbSnpAlleleArchiveTest {
+public class FileArchive extends AbstractArchive {
 
-    private final DbSnpAlleleArchive dbSnpArchive = new DbSnpAlleleArchive(Paths.get("GCF_000001405.25.gz"));
-
-    @Test
-    public void archiveFileFormat() throws Exception {
-        assertThat(dbSnpArchive.getArchiveFileFormat(), equalTo("gz"));
-    }
-
-    @Test
-    public void dataFileFormat() throws Exception {
-        assertThat(dbSnpArchive.getDataFileFormat(), equalTo(""));
+    public FileArchive(Path archivePath) {
+        super(archivePath, "", "");
     }
 }

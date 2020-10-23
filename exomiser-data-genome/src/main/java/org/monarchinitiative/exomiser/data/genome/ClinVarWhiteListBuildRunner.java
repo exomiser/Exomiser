@@ -28,8 +28,8 @@ import htsjdk.tribble.index.tabix.TabixFormat;
 import htsjdk.tribble.index.tabix.TabixIndex;
 import htsjdk.tribble.readers.LineIterator;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.data.genome.indexers.AlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.ClinVarWhiteListFileAlleleIndexer;
+import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
@@ -82,7 +82,7 @@ public class ClinVarWhiteListBuildRunner {
 
         try (BufferedWriter bgZipWriter = new BufferedWriter(outputStreamWriter)) {
             Set<Allele> blacklist = buildInfo.getAssembly() == GenomeAssembly.HG19 ? HG19_BLACKLIST : HG38_BLACKLIST;
-            AlleleIndexer alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter, blacklist);
+            Indexer<Allele> alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter, blacklist);
             alleleIndexer.index(clinVarAlleleResource);
         } catch (IOException e) {
             logger.error("Unable to write whitelist to bgzip.", e);

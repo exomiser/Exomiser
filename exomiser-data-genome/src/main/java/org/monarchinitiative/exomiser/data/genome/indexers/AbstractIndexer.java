@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,54 +20,51 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
-import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class AbstractAlleleIndexer implements AlleleIndexer {
+public abstract class AbstractIndexer<T> implements Indexer<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractAlleleIndexer.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
 
     @Override
-    public void index(AlleleResource alleleResource) {
-        logger.info("Processing '{}' resource", alleleResource.getName());
+    public void index(Resource<T> resource) {
+        logger.info("Processing '{}' resource", resource.getName());
         Instant startTime = Instant.now();
-        AlleleLogger alleleLogger = new AlleleLogger(startTime);
+        ProgressLogger<T> progressLogger = new ProgressLogger<>(startTime);
 
-        alleleResource.alleles()
-                .peek(alleleLogger.logCount())
-                .forEach(this::writeAllele);
+        resource.parseResource()
+                .map(progressLogger.logCount())
+                .forEach(this::write);
 
         long seconds = Duration.between(startTime, Instant.now()).getSeconds();
-        logger.info("Finished '{}' resource - processed {} alleles in {} sec. Total {} alleles written.",
-                alleleResource.getName(),
-                alleleLogger.count(),
+        logger.info("Finished '{}' resource - processed {} objects in {} sec. Total {} objects written.",
+                resource.getName(),
+                progressLogger.count(),
                 seconds,
                 this.count());
     }
-
-    protected abstract void writeAllele(Allele allele);
 
     public abstract long count();
 
     public abstract void close();
 
-    private static class AlleleLogger {
+    private static class ProgressLogger<T> {
 
         private final AtomicLong counter;
         private final Instant startTime;
         private Instant lastInstant;
 
-        public AlleleLogger(Instant startTime) {
+        public ProgressLogger(Instant startTime) {
             this.counter = new AtomicLong();
             this.startTime = startTime;
             this.lastInstant = startTime;
@@ -77,8 +74,8 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
             return counter.get();
         }
 
-        public Consumer<Allele> logCount() {
-            return allele -> {
+        public UnaryOperator<T> logCount() {
+            return object -> {
                 counter.incrementAndGet();
                 int logInterval = 1000000;
                 if (counter.get() % logInterval == 0) {
@@ -86,10 +83,11 @@ public abstract class AbstractAlleleIndexer implements AlleleIndexer {
                     long totalSeconds = Duration.between(startTime, now).getSeconds();
                     long sinceLastCount = Duration.between(lastInstant, now).getSeconds();
                     long totalVar = counter.get();
-                    logger.info("Processed {} variants total in {} sec - {} vps (last {} took {} sec - {} vps)", totalVar, totalSeconds, totalVar / totalSeconds, logInterval, sinceLastCount, logInterval / sinceLastCount);
-                    logger.info("{}", allele);
+                    logger.info("Indexed {} objects total in {} sec - {} ops (last {} took {} sec - {} ops)", totalVar, totalSeconds, totalVar / totalSeconds, logInterval, sinceLastCount, logInterval / sinceLastCount);
+                    logger.info("{}", object);
                     lastInstant = now;
                 }
+                return object;
             };
         }
     }

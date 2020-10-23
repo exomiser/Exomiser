@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,17 @@ package org.monarchinitiative.exomiser.data.genome.indexers;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 /**
- * Test no-op {@link AlleleIndexer} which does nothing other than count the number of alleles it was asked to write.
- * Useful for integration testing and starting to write new {@link AlleleIndexer} classes.
+ * Test no-op {@link Indexer} which does nothing other than count the number of alleles it was asked to write.
+ * Useful for integration testing and starting to write new {@link Indexer} classes.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TestNoOpAlleleIndexer extends AbstractAlleleIndexer {
+public class TestNoOpAlleleIndexer extends AbstractIndexer<Allele> {
 
     private long count;
 
     @Override
-    protected void writeAllele(Allele allele) {
+    public void write(Allele allele) {
         count++;
     }
 

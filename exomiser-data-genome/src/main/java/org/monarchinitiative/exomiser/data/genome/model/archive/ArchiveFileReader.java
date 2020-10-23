@@ -42,19 +42,18 @@ abstract class ArchiveFileReader {
 
     private static final Logger logger = LoggerFactory.getLogger(ArchiveFileReader.class);
 
-    private final Path archiveFileName;
+    private final Path archivePath;
     private final String archiveFormat;
     protected final String dataFileFormat;
 
-    public ArchiveFileReader(AlleleArchive alleleArchive) {
-        this.archiveFileName = alleleArchive.getPath();
-        this.archiveFormat = alleleArchive.getArchiveFileFormat();
-        this.dataFileFormat = alleleArchive.getDataFileFormat();
+    public ArchiveFileReader(Archive archive) {
+        this.archivePath = archive.getPath();
+        this.archiveFormat = archive.getArchiveFileFormat();
+        this.dataFileFormat = archive.getDataFileFormat();
     }
 
     /**
-     * Reads the the underlying {@link AlleleArchive} file and transforms the contents into a stream of lines to parse.
-     *
+     * Reads the the underlying {@link Archive} file and transforms the contents into a stream of lines to parse.
      */
     public Stream<String> lines() {
         return getArchiveFileObjects()
@@ -64,26 +63,37 @@ abstract class ArchiveFileReader {
     }
 
     /**
-     * There could be several {@link FileObject} within an archive. Usually a {@link TabixAlleleArchive} contains a
+     * There could be several {@link FileObject} within an archive. Usually a {@link TabixArchive} contains a
      * single plaintext file inside the gz file. dbNSFP on the other hand is a zip file containing either plaintext (v3.x)
      * or gz (v4.x) files for each chromosome along with a bunch of other files.
      */
     private List<FileObject> getArchiveFileObjects() {
         List<FileObject> archiveFileObjects = new ArrayList<>();
         try {
-            FileSystemManager fileSystemManager = VFS.getManager();
-            FileObject archive = fileSystemManager.resolveFile(archiveFormat + ":file://" + archiveFileName.toAbsolutePath());
-            for (FileObject fileObject : archive.getChildren()) {
-                FileName fileObjectName = fileObject.getName();
-                if (isWanted(fileObjectName)) {
-                    logger.info("Including {} in archive file objects", fileObjectName.getBaseName());
+            FileObject archive = getFileObject(archiveFormat, archivePath);
+            for (FileObject fileObject : getArchiveFiles(archive)) {
+                FileName fileName = fileObject.getName();
+                if (isWanted(fileName)) {
+                    logger.info("Including {} in archive file objects", fileName.getBaseName());
                     archiveFileObjects.add(fileObject);
                 }
             }
         } catch (FileSystemException e) {
-            logger.error("Unable to open {} archive file {}", archiveFormat, archiveFileName, e);
+            logger.error("Unable to open {} archive file {}", archiveFormat, archivePath, e);
         }
         return archiveFileObjects;
+    }
+
+    private FileObject getFileObject(String archiveFormat, Path archiveFileName) throws FileSystemException {
+        FileSystemManager fileSystemManager = VFS.getManager();
+        if (archiveFormat.isEmpty()) {
+            return fileSystemManager.resolveFile(archiveFileName.toAbsolutePath().toString());
+        }
+        return fileSystemManager.resolveFile(archiveFormat + ":file://" + archiveFileName.toAbsolutePath());
+    }
+
+    private Iterable<FileObject> getArchiveFiles(FileObject archive) throws FileSystemException {
+        return archive.getType().hasChildren() ? List.of(archive.getChildren()) : List.of(archive);
     }
 
     abstract boolean isWanted(FileName fileObjectName);

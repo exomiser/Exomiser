@@ -155,7 +155,7 @@ public class BuildRunner implements ApplicationRunner {
 
     private void buildClinVarData(BuildInfo buildInfo, Path outPath, AlleleResource clinVarResource) {
         logger.info("Creating ClinVar variant whitelist");
-        AlleleResourceDownloader.download(clinVarResource);
+        ResourceDownloader.download(clinVarResource);
         ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
         clinVarWhiteListBuildRunner.run();
     }
@@ -164,7 +164,7 @@ public class BuildRunner implements ApplicationRunner {
         logger.info("Downloading variant resources - {}", userDefinedAlleleResources.stream()
                 .map(AlleleResource::getName)
                 .collect(toList()));
-        userDefinedAlleleResources.parallelStream().forEach(AlleleResourceDownloader::download);
+        userDefinedAlleleResources.parallelStream().forEach(ResourceDownloader::download);
         logger.info("Building variant database...");
         VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);
         variantDatabaseBuildRunner.run();

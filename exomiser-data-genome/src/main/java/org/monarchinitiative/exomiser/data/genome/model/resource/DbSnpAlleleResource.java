@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.resource;
 
-import org.monarchinitiative.exomiser.data.genome.model.archive.DbSnpAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.DbSnpArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbSnpAlleleParser;
 
 import java.net.URL;
@@ -32,6 +32,6 @@ import java.nio.file.Path;
 public class DbSnpAlleleResource extends AbstractAlleleResource {
 
     public DbSnpAlleleResource(String name, URL resourceUrl, Path resourcePath) {
-        super(name, resourceUrl, new DbSnpAlleleArchive(resourcePath), new DbSnpAlleleParser());
+        super(name, resourceUrl, new DbSnpArchive(resourcePath), new DbSnpAlleleParser());
     }
 }

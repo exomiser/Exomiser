@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,17 @@ package org.monarchinitiative.exomiser.data.genome.model.archive;
 import java.nio.file.Path;
 
 /**
+ * AlleleArchive for dbSNP build 152+. These are named using the RefSeq accession for each assembly e.g.
+ * GCF_000001405.25.gz (GRCh37.p12) or GCF_000001405.38.gz (GRCh38.p13). Annoyingly the broke the tradition of 20 years
+ * and removed the .vcf part of the file extension so this new and special class was needed to replace the {@link TabixArchive}
+ * <p>
+ * https://www.ncbi.nlm.nih.gov/variation/docs/snp2_human_variation_vcf/
+ *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TabixAlleleArchive extends AbstractAlleleArchive {
+public class DbSnpArchive extends AbstractArchive {
 
-    public TabixAlleleArchive(Path archivePath) {
-        super(archivePath, "gz", "vcf");
+    public DbSnpArchive(Path archivePath) {
+        super(archivePath, "gz", "");
     }
 }

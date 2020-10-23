@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.resource;
 
 
-import org.monarchinitiative.exomiser.data.genome.model.archive.EspAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.EspArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.EspHg38AlleleParser;
 
 import java.net.URL;
@@ -33,6 +33,6 @@ import java.nio.file.Path;
 public class EspHg38AlleleResource extends AbstractAlleleResource {
 
     public EspHg38AlleleResource(String name, URL resourceUrl, Path resourcePath) {
-        super(name, resourceUrl, new EspAlleleArchive(resourcePath), new EspHg38AlleleParser());
+        super(name, resourceUrl, new EspArchive(resourcePath), new EspHg38AlleleParser());
     }
 }

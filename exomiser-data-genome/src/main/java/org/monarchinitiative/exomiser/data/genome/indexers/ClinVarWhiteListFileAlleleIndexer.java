@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
+public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListFileAlleleIndexer.class);
 
@@ -51,7 +51,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractAlleleIndexer {
     }
 
     @Override
-    public void writeAllele(Allele allele) {
+    public void write(Allele allele) {
         ClinVarData clinVarData = allele.getClinVarData();
         if (isPathOrLikelyPath(clinVarData) && hasAssertionCriteria(clinVarData) && notOnBlackList(allele)) {
             StringJoiner stringJoiner = new StringJoiner("\t");

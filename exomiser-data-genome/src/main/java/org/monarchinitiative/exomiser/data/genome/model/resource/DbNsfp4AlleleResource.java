@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.resource;
 
-import org.monarchinitiative.exomiser.data.genome.model.archive.DbNsfp4AlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.DbNsfp4Archive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpAlleleParser;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
 
@@ -33,6 +33,6 @@ import java.nio.file.Path;
 public class DbNsfp4AlleleResource extends AbstractAlleleResource {
 
     public DbNsfp4AlleleResource(String name, URL resourceUrl, Path resourcePath, DbNsfpColumnIndex columnIndex) {
-        super(name, resourceUrl, new DbNsfp4AlleleArchive(resourcePath), new DbNsfpAlleleParser(columnIndex));
+        super(name, resourceUrl, new DbNsfp4Archive(resourcePath), new DbNsfpAlleleParser(columnIndex));
     }
 }

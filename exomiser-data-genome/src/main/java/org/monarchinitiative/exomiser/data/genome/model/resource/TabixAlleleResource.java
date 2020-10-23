@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.resource;
 
-import org.monarchinitiative.exomiser.data.genome.model.archive.TabixAlleleArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.AlleleParser;
 
 import java.net.URL;
@@ -32,6 +32,6 @@ import java.nio.file.Path;
 public class TabixAlleleResource extends AbstractAlleleResource {
 
     public TabixAlleleResource(String name, URL resourceUrl, Path resourcePath, AlleleParser alleleParser) {
-        super(name, resourceUrl, new TabixAlleleArchive(resourcePath), alleleParser);
+        super(name, resourceUrl, new TabixArchive(resourcePath), alleleParser);
     }
 }

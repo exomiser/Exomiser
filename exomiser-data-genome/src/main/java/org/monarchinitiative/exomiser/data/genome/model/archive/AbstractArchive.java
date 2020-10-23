@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class AbstractAlleleArchive implements AlleleArchive {
+public abstract class AbstractArchive implements Archive {
 
     private final Path archivePath;
     private final String archiveFormat;
@@ -38,7 +38,7 @@ public abstract class AbstractAlleleArchive implements AlleleArchive {
      * @param archiveFormat  format of the original compressed archive file - tgz, gz or zip
      * @param dataFileFormat extension of the uncompressed data file inside the archive file - usually vcf, but dbNSFP uses .chr[1-22,X,Y,M]
      */
-    public AbstractAlleleArchive(Path archivePath, String archiveFormat, String dataFileFormat) {
+    public AbstractArchive(Path archivePath, String archiveFormat, String dataFileFormat) {
         this.archivePath = archivePath;
         this.archiveFormat = archiveFormat;
         this.dataFileFormat = dataFileFormat;
@@ -68,7 +68,7 @@ public abstract class AbstractAlleleArchive implements AlleleArchive {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AbstractAlleleArchive that = (AbstractAlleleArchive) o;
+        AbstractArchive that = (AbstractArchive) o;
         return Objects.equals(archivePath, that.archivePath) &&
                 Objects.equals(archiveFormat, that.archiveFormat) &&
                 Objects.equals(dataFileFormat, that.dataFileFormat);
@@ -81,7 +81,7 @@ public abstract class AbstractAlleleArchive implements AlleleArchive {
 
     @Override
     public String toString() {
-        return "AbstractArchiveFile{" +
+        return "Archive{" +
                 "archivePath=" + archivePath +
                 ", archiveFormat='" + archiveFormat + '\'' +
                 ", dataFileFormat='" + dataFileFormat + '\'' +

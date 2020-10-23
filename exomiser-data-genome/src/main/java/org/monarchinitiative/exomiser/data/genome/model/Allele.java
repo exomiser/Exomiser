@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ public class Allele implements Comparable<Allele> {
 
     private String rsId = "";
     private ClinVarData clinVarData = null;
-    private Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
+    private final Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
 
     public Allele(int chr, int pos, String ref, String alt) {
         this.chr = chr;
