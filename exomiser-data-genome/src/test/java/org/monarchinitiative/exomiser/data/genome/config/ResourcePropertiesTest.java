@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,17 +32,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class AlleleResourcePropertiesTest {
+class ResourcePropertiesTest {
 
     @Test
     void testAllTheThings() throws Exception {
         String name = "all_the_alleles.vcf.gz";
         Path filePath = Paths.get("build-dir/hg19/variants");
         String fileUrl = "ftp://alleles.org/get/your/alleles/here/";
-        AlleleResourceProperties instance = new AlleleResourceProperties(name, filePath, fileUrl);
+        ResourceProperties instance = new ResourceProperties(name, filePath, fileUrl);
 
-        assertThat(instance.getAlleleResourceUrl(), equalTo(new URL("ftp://alleles.org/get/your/alleles/here/all_the_alleles.vcf.gz")));
-        assertThat(instance.getAlleleResourcePath(), equalTo(Paths.get("build-dir/hg19/variants/all_the_alleles.vcf.gz")));
+        assertThat(instance.getResourceUrl(), equalTo(new URL("ftp://alleles.org/get/your/alleles/here/all_the_alleles.vcf.gz")));
+        assertThat(instance.getResourcePath(), equalTo(Paths.get("build-dir/hg19/variants/all_the_alleles.vcf.gz")));
     }
 
     @Test
@@ -51,9 +51,9 @@ class AlleleResourcePropertiesTest {
         Path filePath = Paths.get("build-dir/hg19/variants");
         //this one has no path separator ending
         String fileUrl = "ftp://alleles.org/get/your/alleles/here";
-        AlleleResourceProperties instance = new AlleleResourceProperties(name, filePath, fileUrl);
+        ResourceProperties instance = new ResourceProperties(name, filePath, fileUrl);
 
-        assertThat(instance.getAlleleResourceUrl(), equalTo(new URL("ftp://alleles.org/get/your/alleles/here/all_the_alleles.vcf.gz")));
-        assertThat(instance.getAlleleResourcePath(), equalTo(Paths.get("build-dir/hg19/variants/all_the_alleles.vcf.gz")));
+        assertThat(instance.getResourceUrl(), equalTo(new URL("ftp://alleles.org/get/your/alleles/here/all_the_alleles.vcf.gz")));
+        assertThat(instance.getResourcePath(), equalTo(Paths.get("build-dir/hg19/variants/all_the_alleles.vcf.gz")));
     }
 }

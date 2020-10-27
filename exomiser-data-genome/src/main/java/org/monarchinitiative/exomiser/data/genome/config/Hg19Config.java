@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
 import org.monarchinitiative.exomiser.data.genome.model.resource.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -38,10 +37,14 @@ import java.util.Map;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @Configuration
-public class Hg19Config {
+public class Hg19Config extends ResourceConfig {
 
-    @Autowired
-    public Environment environment;
+    private final Environment environment;
+
+    public Hg19Config(Environment environment) {
+        super(environment);
+        this.environment = environment;
+    }
 
     @Bean
     public Path buildDir() {
@@ -54,12 +57,12 @@ public class Hg19Config {
     }
 
     private Path getPathForProperty(String propertyKey) {
-        String genomeDir = environment.getProperty(propertyKey, "");
+        String property = environment.getProperty(propertyKey, "");
 
-        if (genomeDir.isEmpty()) {
+        if (property.isEmpty()) {
             throw new IllegalArgumentException(propertyKey + " has not been specified!");
         }
-        return Paths.get(genomeDir);
+        return Paths.get(property);
     }
 
     @Bean
@@ -79,85 +82,47 @@ public class Hg19Config {
         return alleleResources.build();
     }
 
-    public AlleleResource dbSnpAlleleResource() {
-        String namespacePrefix = "hg19.dbsnp";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new DbSnpAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public DbSnpAlleleResource dbSnpAlleleResource() {
+        return alleleResource(DbSnpAlleleResource.class, "hg19.dbsnp");
     }
 
-    public AlleleResource clinVarAlleleResource() {
-        String namespacePrefix = "hg19.clinvar";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new ClinVarAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public ClinVarAlleleResource clinVarAlleleResource() {
+        return alleleResource(ClinVarAlleleResource.class, "hg19.clinvar");
     }
 
-    public AlleleResource espAlleleResource() {
-        String namespacePrefix = "hg19.esp";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new EspHg19AlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public EspHg19AlleleResource espAlleleResource() {
+        return alleleResource(EspHg19AlleleResource.class, "hg19.esp");
     }
 
-    public AlleleResource exacAlleleResource() {
-        String namespacePrefix = "hg19.exac";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new ExacExomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public ExacExomeAlleleResource exacAlleleResource() {
+        return alleleResource(ExacExomeAlleleResource.class, "hg19.exac");
     }
 
     public AlleleResource dbnsfpAlleleResource() {
         String namespacePrefix = "hg19.dbnsfp";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
+        ResourceProperties resourceProperties = getResourceProperties(namespacePrefix);
+        Path resourcePath = resourceProperties.getResourcePath();
+        URL resourceUrl = resourceProperties.getResourceUrl();
         if (resourcePath.toString().contains("dbNSFP4.")) {
             return new DbNsfp4AlleleResource(namespacePrefix, resourceUrl, resourcePath, DbNsfpColumnIndex.HG19);
         }
         return new DbNsfp3AlleleResource(namespacePrefix, resourceUrl, resourcePath, DbNsfpColumnIndex.HG19);
     }
 
-    public AlleleResource topmedAlleleResource() {
-        String namespacePrefix = "hg19.topmed";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new TopMedAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public TopMedAlleleResource topmedAlleleResource() {
+        return alleleResource(TopMedAlleleResource.class, "hg19.topmed");
     }
 
-    public AlleleResource uk10kAlleleResource() {
-        String namespacePrefix = "hg19.uk10k";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new Uk10kAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public Uk10kAlleleResource uk10kAlleleResource() {
+        return alleleResource(Uk10kAlleleResource.class, "hg19.uk10k");
     }
 
-    public AlleleResource gnomadGenomeAlleleResource() {
-        String namespacePrefix = "hg19.gnomad-genome";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new GnomadGenomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public GnomadGenomeAlleleResource gnomadGenomeAlleleResource() {
+        return alleleResource(GnomadGenomeAlleleResource.class, "hg19.gnomad-genome");
     }
 
-    public AlleleResource gnomadExomeAlleleResource() {
-        String namespacePrefix = "hg19.gnomad-exome";
-        AlleleResourceProperties resourceProperties = getAlleleResourceProperties(namespacePrefix);
-        Path resourcePath = resourceProperties.getAlleleResourcePath();
-        URL resourceUrl = resourceProperties.getAlleleResourceUrl();
-        return new GnomadExomeAlleleResource(namespacePrefix, resourceUrl, resourcePath);
+    public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
+        return alleleResource(GnomadExomeAlleleResource.class, "hg19.gnomad-exome");
     }
 
-    private AlleleResourceProperties getAlleleResourceProperties(String namespacePrefix) {
-        String fileName = environment.getProperty(namespacePrefix + ".file-name");
-        Path fileDir = Paths.get(environment.getProperty(namespacePrefix + ".file-dir"));
-        String fileUrl = environment.getProperty(namespacePrefix + ".file-url");
-        return new AlleleResourceProperties(fileName, fileDir, fileUrl);
-    }
 }

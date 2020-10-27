@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,19 +23,21 @@ package org.monarchinitiative.exomiser.data.genome.config;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class AlleleResourceProperties {
+class ResourceProperties {
 
     private final String fileName;
     private final Path fileDirectory;
     private final String fileUrl;
 
-    public AlleleResourceProperties(String fileName, Path fileDirectory, String fileUrl) {
-        this.fileName = fileName;
-        this.fileDirectory = fileDirectory;
+    public ResourceProperties(String fileName, Path fileDirectory, String fileUrl) {
+        this.fileName = Objects.requireNonNull(fileName);
+        this.fileDirectory = Objects.requireNonNull(fileDirectory);
+        Objects.requireNonNull(fileUrl);
         if (!fileUrl.endsWith("/")) {
             this.fileUrl = fileUrl + "/";
         } else {
@@ -55,21 +57,21 @@ class AlleleResourceProperties {
         return fileUrl;
     }
 
-    public Path getAlleleResourcePath() {
+    public Path getResourcePath() {
         return fileDirectory.resolve(fileName);
     }
 
-    public URL getAlleleResourceUrl() {
+    public URL getResourceUrl() {
         try {
             return new URL(fileUrl + fileName);
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Incorrectly formatted allele resource URL", e);
+            throw new IllegalStateException("Incorrectly formatted allele resource URL", e);
         }
     }
 
     @Override
     public String toString() {
-        return "AlleleResourceProperties{" +
+        return "ResourceProperties{" +
                 "fileName='" + fileName + '\'' +
                 ", fileDirectory=" + fileDirectory +
                 ", fileUrl='" + fileUrl + '\'' +
