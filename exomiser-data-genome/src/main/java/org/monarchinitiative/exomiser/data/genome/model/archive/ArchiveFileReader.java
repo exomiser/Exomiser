@@ -46,7 +46,7 @@ abstract class ArchiveFileReader {
     private final String archiveFormat;
     protected final String dataFileFormat;
 
-    public ArchiveFileReader(Archive archive) {
+    protected ArchiveFileReader(Archive archive) {
         this.archivePath = archive.getPath();
         this.archiveFormat = archive.getArchiveFileFormat();
         this.dataFileFormat = archive.getDataFileFormat();

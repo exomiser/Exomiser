@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class AbstractArchive implements Archive {
+abstract class AbstractArchive implements Archive {
 
     private final Path archivePath;
     private final String archiveFormat;
@@ -38,7 +38,7 @@ public abstract class AbstractArchive implements Archive {
      * @param archiveFormat  format of the original compressed archive file - tgz, gz or zip
      * @param dataFileFormat extension of the uncompressed data file inside the archive file - usually vcf, but dbNSFP uses .chr[1-22,X,Y,M]
      */
-    public AbstractArchive(Path archivePath, String archiveFormat, String dataFileFormat) {
+    protected AbstractArchive(Path archivePath, String archiveFormat, String dataFileFormat) {
         this.archivePath = archivePath;
         this.archiveFormat = archiveFormat;
         this.dataFileFormat = dataFileFormat;
