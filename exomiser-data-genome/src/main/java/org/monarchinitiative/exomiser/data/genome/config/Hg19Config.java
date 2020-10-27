@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
 import org.monarchinitiative.exomiser.data.genome.model.resource.*;
@@ -52,6 +53,12 @@ public class Hg19Config extends ResourceConfig {
     }
 
     @Bean
+    public AssemblyResources hg19AssemblyResources() {
+        Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
+        Path hg19GenomePath = hg19GenomePath();
+        return new AssemblyResources(GenomeAssembly.HG19, hg19AlleleResources, hg19GenomePath);
+    }
+
     public Path hg19GenomePath() {
         return getPathForProperty("hg19.genome-dir");
     }
@@ -65,7 +72,6 @@ public class Hg19Config extends ResourceConfig {
         return Paths.get(property);
     }
 
-    @Bean
     public Map<String, AlleleResource> hg19AlleleResources() {
         ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
 

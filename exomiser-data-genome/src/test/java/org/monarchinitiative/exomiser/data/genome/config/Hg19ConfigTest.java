@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.archive.*;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.*;
@@ -35,6 +36,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -45,6 +47,14 @@ public class Hg19ConfigTest {
 
     @Autowired
     Hg19Config instance;
+
+    @Test
+    void assemblyResources() {
+        AssemblyResources assemblyResources = instance.hg19AssemblyResources();
+        assertThat(assemblyResources.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+        assertFalse(assemblyResources.getAlleleResources().isEmpty());
+        assertThat(assemblyResources.getGenomeDataPath(), equalTo(instance.hg19GenomePath()));
+    }
 
     @Test
     public void testResources() {

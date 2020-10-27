@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.genome;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataFactory;
 import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
+import org.monarchinitiative.exomiser.data.genome.config.AssemblyResources;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
@@ -54,20 +55,15 @@ public class BuildRunner implements ApplicationRunner {
     public static final String BUILD_GENOME_DB = "genome";
 
     private final Path buildDir;
-    private final Path hg19GenomePath;
-    private final Map<String, AlleleResource> hg19AlleleResources;
-    private final Path hg38GenomePath;
-    private final Map<String, AlleleResource> hg38AlleleResources;
+    private final AssemblyResources hg19Resources;
+    private final AssemblyResources hg38Resources;
     private final JannovarDataFactory jannovarDataFactory;
 
-    public BuildRunner(Path buildDir, Path hg19GenomePath, Map<String, AlleleResource> hg19AlleleResources, Path hg38GenomePath, Map<String, AlleleResource> hg38AlleleResources, JannovarDataFactory jannovarDataFactory) {
+    public BuildRunner(Path buildDir, AssemblyResources hg19AssemblyResources, AssemblyResources hg38AssemblyResources, JannovarDataFactory jannovarDataFactory) {
         this.buildDir = buildDir;
 
-        this.hg19GenomePath = hg19GenomePath;
-        this.hg19AlleleResources = hg19AlleleResources;
-
-        this.hg38GenomePath = hg38GenomePath;
-        this.hg38AlleleResources = hg38AlleleResources;
+        this.hg19Resources = hg19AssemblyResources;
+        this.hg38Resources = hg38AssemblyResources;
 
         this.jannovarDataFactory = jannovarDataFactory;
     }
@@ -103,7 +99,8 @@ public class BuildRunner implements ApplicationRunner {
             Files.createDirectory(outPath);
         }
 
-        Map<String, AlleleResource> alleleResources = getAlleleResourcesForAssembly(assembly);
+        AssemblyResources assemblyResources = getAssemblyResourcesForAssembly(assembly);
+        Map<String, AlleleResource> alleleResources = assemblyResources.getAlleleResources();
 
         Set<String> optionalArgs = Set.of(BUILD_TRANSCRIPT, BUILD_CLINVAR, BUILD_VARIANT_DB, BUILD_GENOME_DB);
         if (shouldBuildAllData(args, optionalArgs)) {
@@ -111,7 +108,7 @@ public class BuildRunner implements ApplicationRunner {
             buildTranscriptData(buildInfo, outPath, List.of(TranscriptSource.values()));
             buildClinVarData(buildInfo, outPath, alleleResources.get("clinvar"));
             buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()));
-            buildGenomeData(buildInfo, outPath);
+            buildGenomeData(buildInfo, outPath, assemblyResources);
         }
 
         if (args.containsOption(BUILD_TRANSCRIPT)) {
@@ -127,12 +124,12 @@ public class BuildRunner implements ApplicationRunner {
 
         if (args.containsOption(BUILD_VARIANT_DB)) {
             List<String> optionValues = parseOptionValues(args.getOptionValues(BUILD_VARIANT_DB));
-            List<AlleleResource> userDefinedAlleleResources = getUserDefinedResources(optionValues, alleleResources);
+            List<AlleleResource> userDefinedAlleleResources = assemblyResources.getUserDefinedResources(optionValues);
             buildVariantData(buildInfo, outPath, userDefinedAlleleResources);
         }
 
         if (args.containsOption(BUILD_GENOME_DB)) {
-            buildGenomeData(buildInfo, outPath);
+            buildGenomeData(buildInfo, outPath, assemblyResources);
         }
 
         logger.info("Finished build {}", buildInfo.getBuildString());
@@ -170,9 +167,9 @@ public class BuildRunner implements ApplicationRunner {
         variantDatabaseBuildRunner.run();
     }
 
-    private void buildGenomeData(BuildInfo buildInfo, Path outPath) {
+    private void buildGenomeData(BuildInfo buildInfo, Path outPath, AssemblyResources assemblyResources) {
         logger.info("Building genome database...");
-        Path genomePath = getGenomePathForAssembly(buildInfo.getAssembly());
+        Path genomePath = assemblyResources.getGenomeDataPath();
         logger.info("Genome Path: {}", genomePath);
         GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
         genomeDatabaseBuildRunner.run();
@@ -193,12 +190,8 @@ public class BuildRunner implements ApplicationRunner {
         return new ArrayList<>(cleanedOptions);
     }
 
-    private Path getGenomePathForAssembly(GenomeAssembly genomeAssembly) {
-        return genomeAssembly == GenomeAssembly.HG19 ? this.hg19GenomePath : this.hg38GenomePath;
-    }
-
-    private Map<String, AlleleResource> getAlleleResourcesForAssembly(GenomeAssembly genomeAssembly) {
-        return genomeAssembly == GenomeAssembly.HG19 ? this.hg19AlleleResources : this.hg38AlleleResources;
+    private AssemblyResources getAssemblyResourcesForAssembly(GenomeAssembly genomeAssembly) {
+        return genomeAssembly == GenomeAssembly.HG19 ? this.hg19Resources : this.hg38Resources;
     }
 
     private List<TranscriptSource> getTranscriptSources(List<String> optionValues) {
@@ -207,17 +200,6 @@ public class BuildRunner implements ApplicationRunner {
         }
         return optionValues.stream()
                 .map(TranscriptSource::parseValue)
-                .collect(toList());
-    }
-
-    private List<AlleleResource> getUserDefinedResources(List<String> optionValues, Map<String, AlleleResource> alleleResources) {
-        if (optionValues.isEmpty()) {
-            return new ArrayList<>(alleleResources.values());
-        }
-        logger.info("Creating resources: {}", optionValues);
-        return optionValues.stream()
-                .filter(alleleResources::containsKey)
-                .map(alleleResources::get)
                 .collect(toList());
     }
 }
