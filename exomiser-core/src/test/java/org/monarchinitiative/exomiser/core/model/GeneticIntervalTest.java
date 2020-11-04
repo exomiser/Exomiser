@@ -95,9 +95,15 @@ public class GeneticIntervalTest {
     }
 
     @Test
-    public void testParseStringThrowsErrorOnMissingChromosomePrefix() {
+    public void testParseStringMtPrefix() {
+        String interval = "MT:123-456";
+        assertThat(GeneticInterval.parseString(interval), equalTo(new GeneticInterval(25, 123, 456)));
+    }
+
+    @Test
+    public void testParseStringNoChrPrefix() {
         String interval = "3:123-456";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThat(GeneticInterval.parseString(interval), equalTo(new GeneticInterval(3, 123, 456)));
     }
 
     @Test
