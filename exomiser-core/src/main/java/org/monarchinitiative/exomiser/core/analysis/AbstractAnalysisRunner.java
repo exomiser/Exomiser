@@ -200,6 +200,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return filteredVariants;
     }
 
+    // TODO: might be worth pulling out into an AnalysisSupport class or adding to the GenomeAnalysisService?
     private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
         ChromosomalRegionIndex<TopologicalDomain> tadIndex = genomeAnalysisService.getTopologicallyAssociatedDomainIndex();
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
