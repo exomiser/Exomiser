@@ -47,6 +47,21 @@ class AgeTest {
     }
 
     @Test
+    void canUseNegativeValues() {
+        Age age = Age.parse("-P12W");
+        // TODO: CAUTION! Using negatives to denote prenatal ages can be error-prone as P1Y-52W returns a period of -364 days
+        // TODO: probably should not allow this and add a isPrenatal flag
+        assertThat(age.getDays(), equalTo(Math.negateExact(12 * 7)));
+    }
+
+    @Test
+    void gestationalAge() {
+        Age instance = Age.gestational(5, 2);
+        assertThat(instance.getYears(), equalTo(0));
+        assertThat(instance.getDays(), equalTo(37));
+    }
+
+    @Test
     void parseWeeks() {
         Age age = Age.parse("P3W");
         assertThat(age.getYears(), equalTo(0));
@@ -76,5 +91,15 @@ class AgeTest {
     void toPeriod() {
         Age age = Age.of(1, 2, 3);
         assertThat(age.toPeriod(), equalTo(Period.of(1, 2, 3)));
+    }
+
+    @Test
+    void unknown() {
+        assertThat(Age.unknown().isUnknown(), is(true));
+    }
+
+    @Test
+    void cachesUnknownObject() {
+        assertThat(Age.of(0, 0, 0).isUnknown(), is(true));
     }
 }

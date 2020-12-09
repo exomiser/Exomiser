@@ -64,6 +64,16 @@ public class Age {
         return Age.of(period);
     }
 
+    // TODO - how to define Ante/Post-natal ages? Need a pre/post natal flag or use a negative value?
+    //  e.g. P-8W equals 8 week-old foetus i.e. prior to birth but after 8 weeks of gestation with P-40W being full
+    //  term and P0D being a newborn.
+    // usually written on referrals as gestation in the format eg. 22+5  (22 weeks + 5days)
+    public static Age gestational(int weeks, int days) {
+        int totalDays = weeks * 7 + days;
+        Period period = Period.of(0, 0, totalDays);
+        return Age.of(period);
+    }
+
     /**
      * The age of an individual represented as a {@link Period}. The returned {@linkplain Age} instance will have been
      * normalised so that an input of 1 year 15 months will be returned as an age of 2 years 3 months.
@@ -73,6 +83,9 @@ public class Age {
      */
     public static Age of(Period period) {
         Period normalised = Objects.requireNonNull(period.normalized());
+        if (normalised.isZero()) {
+            return UNKNOWN;
+        }
         return new Age(normalised.getYears(), normalised.getMonths(), normalised.getDays());
     }
 
