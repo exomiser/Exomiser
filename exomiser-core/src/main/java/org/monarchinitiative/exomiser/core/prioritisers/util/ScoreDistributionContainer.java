@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,21 +37,21 @@ import java.util.Map;
  */
 public class ScoreDistributionContainer {
 
-    private final Logger logger = LoggerFactory.getLogger(ScoreDistributionContainer.class);
-    
+	private final Logger logger = LoggerFactory.getLogger(ScoreDistributionContainer.class);
+
 	private boolean verboseParsing = false;
 	private final String distributionsFolder;
-    private final boolean symmetric;
-    private final int numQueryTerms;
+	private final boolean symmetric;
+	private final int numQueryTerms;
 	private static final int MAX_NUMBER_QUERY_TERMS = 20;
-	private Map<String, Map<String, ScoreDistribution>> key2scoreDistribution;
+	private final Map<String, Map<String, ScoreDistribution>> key2scoreDistribution;
 
 	public ScoreDistributionContainer(String distributionsFolder, boolean symmetric, int numQueryTerms) {
 		this.distributionsFolder = distributionsFolder;
-        this.symmetric = symmetric;
-        this.numQueryTerms = limitNumQueryTerms(numQueryTerms);
+		this.symmetric = symmetric;
+		this.numQueryTerms = limitNumQueryTerms(numQueryTerms);
 		this.key2scoreDistribution = new HashMap<>();
-        parseDistributions(this.numQueryTerms);
+		parseDistributions(this.numQueryTerms);
 	}
 
 	public void useVerboseParsing() {
@@ -65,7 +65,7 @@ public class ScoreDistributionContainer {
     }
 
     private static String getKey(boolean symmetric, int numberQueryTerms) {
-        return symmetric ? Integer.toString(numberQueryTerms) + "_symmetric" : Integer.toString(numberQueryTerms);
+		return symmetric ? numberQueryTerms + "_symmetric" : Integer.toString(numberQueryTerms);
 	}
 
 	public ScoreDistribution getDistribution(String entrezGeneId) {
