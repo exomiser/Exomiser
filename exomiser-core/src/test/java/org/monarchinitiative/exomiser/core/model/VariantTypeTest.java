@@ -130,6 +130,11 @@ class VariantTypeTest {
     }
 
     @Test
+    void parseAlleleRearrangement() {
+        assertThat(VariantType.parseAllele("A", "C[2:12345"), equalTo(VariantType.BND));
+    }
+
+    @Test
     void isSnv() {
         assertTrue(VariantType.SNV.isSnv());
         assertFalse(VariantType.CNV.isSnv());

@@ -105,11 +105,10 @@ public enum VariantType {
     }
 
     public static VariantType parseValue(@Nonnull String value) {
-        String stripped = trimAngleBrackets(Objects.requireNonNull(value));
-        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
-        if (stripped.startsWith("STR")) {
-            return STR;
+        if (value.isEmpty()) {
+            return UNKNOWN;
         }
+        String stripped = trimAngleBrackets(Objects.requireNonNull(value));
         switch (stripped) {
             case "SNP":
             case "SNV":
@@ -166,6 +165,14 @@ public enum VariantType {
                 return DUP_INV_BEFORE;
             case "DUP:INV-AFTER":
                 return DUP_INV_AFTER;
+            default:
+                // fall through to
+        }
+        if (stripped.startsWith("BND")) {
+            return BND;
+        }
+        if (AllelePosition.isBreakend(value)) {
+            return BND;
         }
         // in other cases where we don't recognise the exact type, use the closest type or sub-type
         // given VCF doesn't precisely define these, these are a safer bet that just UNKNOWN
@@ -187,8 +194,9 @@ public enum VariantType {
         if (stripped.startsWith("CNV")) {
             return CNV;
         }
-        if (stripped.startsWith("BND")) {
-            return BND;
+        // ExpansionHunter formats ShortTandemRepeats with the number of repeats like this: <STR56>
+        if (stripped.startsWith("STR")) {
+            return STR;
         }
         if (isSymbolic(value)) {
             return SYMBOLIC;
