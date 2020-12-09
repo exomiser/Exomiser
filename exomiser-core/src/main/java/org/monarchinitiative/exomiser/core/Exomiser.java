@@ -53,6 +53,7 @@ public class Exomiser {
         this.analysisFactory = analysisFactory;
     }
 
+    // TODO - need to add AnalysisProtoBuilder methods to this.
     public AnalysisBuilder getAnalysisBuilder() {
         return analysisFactory.getAnalysisBuilder();
     }
