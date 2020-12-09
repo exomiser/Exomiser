@@ -66,7 +66,7 @@ public class PrioritiserController {
         try {
             bytes = new ClassPathResource("about.html").getInputStream().readAllBytes();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
         return new String(bytes);
     }
