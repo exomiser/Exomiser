@@ -58,7 +58,7 @@ class JobParserTest {
             .buildDefaultHg19GenomeAnalysisService());
     private final PriorityService priorityService = TestPriorityServiceFactory.stubPriorityService();
 
-    private JobParser instance = new JobParser(genomeAnalysisServiceProvider, new NoneTypePriorityFactoryStub(), TestOntologyService
+    private final JobParser instance = new JobParser(genomeAnalysisServiceProvider, new NoneTypePriorityFactoryStub(), TestOntologyService
             .builder()
             .build());
 

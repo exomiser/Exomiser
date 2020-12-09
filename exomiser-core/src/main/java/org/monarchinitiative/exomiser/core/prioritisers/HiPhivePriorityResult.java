@@ -21,16 +21,19 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
@@ -51,6 +54,11 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
     private final List<PhenotypeTerm> queryPhenotypeTerms;
     private final List<GeneModelPhenotypeMatch> phenotypeEvidence;
+
+    private final List<GeneModelPhenotypeMatch> diseaseMatches;
+    private final Map<ModeOfInheritance, List<ModelPhenotypeMatch<Disease>>> diseaseMatchesByMoi;
+
+    //TODO - split phenotypeEvidence into organism-specific lists ordered by score, or just do it dynamically getDiseaseModelMatches(), getMouseModelMatches(), getFishModelMatches()?
     private final List<GeneModelPhenotypeMatch> ppiEvidence;
 
 
@@ -59,11 +67,39 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
      */
     public HiPhivePriorityResult(int geneId, String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<GeneModelPhenotypeMatch> phenotypeEvidence, List<GeneModelPhenotypeMatch> ppiEvidence, double ppiScore, boolean candidateGeneMatch) {
         super(PriorityType.HIPHIVE_PRIORITY, geneId, geneSymbol, score);
-        this.queryPhenotypeTerms = queryPhenotypeTerms;
-        setPhenotypeEvidenceScores(phenotypeEvidence);
+        this.queryPhenotypeTerms = Objects.requireNonNullElse(queryPhenotypeTerms, ImmutableList.of());
+        Objects.requireNonNull(phenotypeEvidence);
 
-        this.phenotypeEvidence = phenotypeEvidence;
-        this.phenotypeEvidence.sort(Comparator.comparing(GeneModelPhenotypeMatch::getScore).reversed());
+        // TODO convert these to ModelPhenotypeMatch<GeneModel> and remove GeneModelPhenotypeMatch?
+        GeneModelPhenotypeMatch bestDiseaseMatch = getBestMatchForOrganism(phenotypeEvidence, Organism.HUMAN);
+        GeneModelPhenotypeMatch bestMouseMatch = getBestMatchForOrganism(phenotypeEvidence, Organism.MOUSE);
+        GeneModelPhenotypeMatch bestFishMatch = getBestMatchForOrganism(phenotypeEvidence, Organism.FISH);
+
+        // maybe get best object here as we need these later
+        humanScore = bestDiseaseMatch == null ? 0 : bestDiseaseMatch.getScore();
+        mouseScore = bestMouseMatch == null ? 0 : bestMouseMatch.getScore();
+        fishScore = bestFishMatch == null ? 0 : bestFishMatch.getScore();
+
+        List<GeneModelPhenotypeMatch> topScoringModels = new ArrayList<>();
+        if (bestDiseaseMatch != null) topScoringModels.add(bestDiseaseMatch);
+        if (bestMouseMatch != null) topScoringModels.add(bestMouseMatch);
+        if (bestFishMatch != null) topScoringModels.add(bestFishMatch);
+//        topScoringModels.sort(Comparator.comparing(GeneModelPhenotypeMatch::getScore).reversed());
+
+        this.phenotypeEvidence = ImmutableList.copyOf(topScoringModels);
+
+        ImmutableList.Builder<GeneModelPhenotypeMatch> diseaseModelsBuilder = new ImmutableList.Builder<>();
+        phenotypeEvidence.stream()
+                .filter(geneModelPhenotypeMatch -> geneModelPhenotypeMatch.getOrganism() == Organism.HUMAN)
+                .sorted(Comparator.comparing(GeneModelPhenotypeMatch::getScore).reversed())
+                .forEachOrdered(diseaseModelsBuilder::add);
+        this.diseaseMatches = diseaseModelsBuilder.build();
+//        interface ModelMatch<T extends Model> extends Comparable<ModelPhenotypeMatch<?>>
+//        final class ModelPhenotypeMatch<T extends Model> implements ModelMatch<Model>
+//        abstract class GeneModelPhenotypeMatch<T extends GeneModel> implements ModelMatch<T>
+//        class OrthologModelPhenotypeMatch extends GeneModelPhenotypeMatch<GeneModel>
+//        class DiseaseModelPhenotypeMatch extends GeneModelPhenotypeMatch<Disease>
+        this.diseaseMatchesByMoi = mapDiseaseModelsByMoi(this.diseaseMatches);
 
         this.ppiEvidence = ppiEvidence;
         this.ppiScore = ppiScore;
@@ -71,12 +107,42 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         this.candidateGeneMatch = candidateGeneMatch;
     }
 
-    private void setPhenotypeEvidenceScores(List<GeneModelPhenotypeMatch> phenotypeEvidence) {
-        if (phenotypeEvidence != null) {
-            humanScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.HUMAN);
-            mouseScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.MOUSE);
-            fishScore = getMaxScoreForOrganism(phenotypeEvidence, Organism.FISH);
+    private Map<ModeOfInheritance, List<ModelPhenotypeMatch<Disease>>> mapDiseaseModelsByMoi(List<GeneModelPhenotypeMatch> diseaseMatches) {
+        Map<ModeOfInheritance, List<ModelPhenotypeMatch<Disease>>> diseaseModelsMoi = new EnumMap<>(ModeOfInheritance.class);
+        for (GeneModelPhenotypeMatch diseasePhenotypeMatch : diseaseMatches) {
+            GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) diseasePhenotypeMatch.getModel();
+            Disease disease = geneDiseaseModel.getDisease();
+            // permissive - will add any disease with unknown or compatible MOI
+//            InheritanceMode inheritanceMode = disease.getInheritanceMode();
+//            for (ModeOfInheritance moi : ModeOfInheritance.values()) {
+//                if (inheritanceMode.isCompatibleWith(moi) || inheritanceMode == InheritanceMode.UNKNOWN) {
+//                    if (diseaseModelsMoi.containsKey(moi)) {
+//                        diseaseModelsMoi.get(moi).add(toModelPhenotypeMatch(diseasePhenotypeMatch));
+//                    } else {
+//                        ArrayList<ModelPhenotypeMatch<Disease>> matches = new ArrayList<>();
+//                        matches.add(toModelPhenotypeMatch(diseasePhenotypeMatch));
+//                        diseaseModelsMoi.put(moi, matches);
+//                    }
+//                }
+//            }
+            // strict - will only add disease with known and compatible MOI
+            Set<ModeOfInheritance> modesOfInheritance = disease.getInheritanceMode().toModeOfInheritance();
+            for (ModeOfInheritance moi : modesOfInheritance) {
+                if (diseaseModelsMoi.containsKey(moi)) {
+                    diseaseModelsMoi.get(moi).add(toModelPhenotypeMatch(diseasePhenotypeMatch));
+                } else {
+                    ArrayList<ModelPhenotypeMatch<Disease>> matches = new ArrayList<>();
+                    matches.add(toModelPhenotypeMatch(diseasePhenotypeMatch));
+                    diseaseModelsMoi.put(moi, matches);
+                }
+            }
         }
+        return Maps.immutableEnumMap(diseaseModelsMoi);
+    }
+
+    private ModelPhenotypeMatch<Disease> toModelPhenotypeMatch(GeneModelPhenotypeMatch diseasePhenotypeMatch) {
+        GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) diseasePhenotypeMatch.getModel();
+        return ModelPhenotypeMatch.of(diseasePhenotypeMatch.getScore(), geneDiseaseModel.getDisease(), diseasePhenotypeMatch.getBestModelPhenotypeMatches());
     }
 
     private double getMaxScoreForOrganism(List<GeneModelPhenotypeMatch> phenotypeEvidence, Organism organism) {
@@ -88,6 +154,24 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             }
         }
         return best;
+    }
+
+    @Nullable
+    private GeneModelPhenotypeMatch getBestMatchForOrganism(List<GeneModelPhenotypeMatch> phenotypeEvidence, Organism organism) {
+        double bestScore = 0;
+//        ModelPhenotypeMatch<GeneModel> bestMatch = null;
+        GeneModelPhenotypeMatch bestMatch = null;
+        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence) {
+            if (geneModelPhenotypeMatch.getOrganism() == organism) {
+                double matchScore = geneModelPhenotypeMatch.getScore();
+                if (Double.compare(matchScore, bestScore) > 0) {
+                    bestScore = matchScore;
+                    bestMatch = geneModelPhenotypeMatch;
+//                bestMatch = ModelPhenotypeMatch.of(geneModelPhenotypeMatch.getScore(),geneModelPhenotypeMatch.getModel(), geneModelPhenotypeMatch.getBestModelPhenotypeMatches());
+                }
+            }
+        }
+        return bestMatch;
     }
 
     @Override
@@ -106,6 +190,14 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
     public List<GeneModelPhenotypeMatch> getPhenotypeEvidence() {
         return phenotypeEvidence;
+    }
+
+    public List<GeneModelPhenotypeMatch> getDiseaseMatches() {
+        return diseaseMatches;
+    }
+
+    public List<ModelPhenotypeMatch<Disease>> getCompatibleDiseaseMatches(ModeOfInheritance modeOfInheritance) {
+        return diseaseMatchesByMoi.getOrDefault(modeOfInheritance, ImmutableList.of());
     }
 
     public List<GeneModelPhenotypeMatch> getPpiEvidence() {

@@ -29,8 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +65,14 @@ public class HiPhivePriorityResultTest {
     }
 
     private GeneModelPhenotypeMatch stubGeneModelPhenotypeMatch(Organism organism, double score) {
-        GeneOrthologModel model = new GeneOrthologModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", Collections.emptyList());
+        GeneModel model;
+        // yuk! Broken generics :(
+        if (organism == Organism.HUMAN) {
+            Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("disease1").associatedGeneId(12345).associatedGeneSymbol(geneSymbol).build();
+            model = new GeneDiseaseModel("gene1_disease1", organism, disease);
+        } else {
+            model = new GeneOrthologModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", Collections.emptyList());
+        }
         return new GeneModelPhenotypeMatch(score, model, Collections.emptyList());
     }
         
@@ -133,7 +139,8 @@ public class HiPhivePriorityResultTest {
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
         assertThat(instance.getHumanScore(), equalTo(modelScore));
-        assertThat(instance.getPhenotypeEvidence(), equalTo(List.of(geneModel, poorMatchModel)));
+        assertThat(instance.getPhenotypeEvidence(), equalTo(List.of(geneModel)));
+        assertThat(instance.getDiseaseMatches(), equalTo(List.of(geneModel, poorMatchModel)));
     }
 
     @Test

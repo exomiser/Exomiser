@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,35 +31,56 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneDiseaseModel implements GeneModel {
-    
+
     private final String modelId;
     private final Organism organism;
-    
+
+    private Disease disease;
+
     private final int entrezGeneId;
     private final String humanGeneSymbol;
-    
+
     private final String diseaseId;
     private final String diseaseTerm;
-    
+
     private final List<String> phenotypeIds;
 
+    public GeneDiseaseModel(String modelId, Organism organism, Disease disease) {
+        this.modelId = modelId;
+        this.organism = organism;
+
+        this.disease = disease;
+
+        this.entrezGeneId = disease.getAssociatedGeneId();
+        this.humanGeneSymbol = disease.getAssociatedGeneSymbol();
+
+        this.diseaseId = disease.getDiseaseId();
+        this.diseaseTerm = disease.getDiseaseName();
+
+        this.phenotypeIds = disease.getPhenotypeIds();
+    }
+
+    // TODO - only used in test migrate code to remove this and delegate to Disease class for Model/GeneModel methods
     public GeneDiseaseModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String diseaseId, String diseaseTerm, List<String> phenotypeIds) {
         this.modelId = modelId;
         this.organism = organism;
-        
+
         this.entrezGeneId = entrezGeneId;
         this.humanGeneSymbol = humanGeneSymbol;
-        
+
         this.diseaseId = diseaseId;
         this.diseaseTerm = diseaseTerm;
-    
+
         this.phenotypeIds = phenotypeIds;
     }
-    
+
+    public Disease getDisease() {
+        return this.disease;
+    }
+
     public String getDiseaseId() {
         return diseaseId;
     }
@@ -114,6 +135,14 @@ public class GeneDiseaseModel implements GeneModel {
 
     @Override
     public String toString() {
+        if (disease != null) {
+            return "GeneDiseaseModel{" +
+                    "modelId='" + modelId + '\'' +
+                    ", organism=" + organism +
+                    ", disease=" + disease + '\'' +
+                    '}';
+        }
+
         return "GeneDiseaseModel{" +
                 "modelId='" + modelId + '\'' +
                 ", organism=" + organism +

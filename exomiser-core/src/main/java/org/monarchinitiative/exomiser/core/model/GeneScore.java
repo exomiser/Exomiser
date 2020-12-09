@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,9 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,6 +45,7 @@ public final class GeneScore implements Comparable<GeneScore> {
     private final float phenotypeScore;
     private final float variantScore;
     private final List<VariantEvaluation> contributingVariants;
+    private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
 
     private GeneScore(Builder builder) {
         this.geneIdentifier = builder.geneIdentifier;
@@ -52,6 +54,7 @@ public final class GeneScore implements Comparable<GeneScore> {
         this.phenotypeScore = builder.phenotypeScore;
         this.variantScore = builder.variantScore;
         this.contributingVariants = ImmutableList.copyOf(builder.contributingVariants);
+        this.compatibleDiseaseMatches = ImmutableList.copyOf(builder.compatibleDiseaseMatches);
     }
 
     public GeneIdentifier getGeneIdentifier() {
@@ -84,8 +87,16 @@ public final class GeneScore implements Comparable<GeneScore> {
      * @return whether or not the {@code GeneScore} has any contributing variants.
      * @since 10.1.0
      */
-    public boolean hasContributingVariants(){
+    public boolean hasContributingVariants() {
         return !contributingVariants.isEmpty();
+    }
+
+    public List<ModelPhenotypeMatch<Disease>> getCompatibleDiseaseMatches() {
+        return compatibleDiseaseMatches;
+    }
+
+    public boolean hasCompatibleDiseaseMatches() {
+        return !compatibleDiseaseMatches.isEmpty();
     }
 
     /**
@@ -184,7 +195,8 @@ public final class GeneScore implements Comparable<GeneScore> {
         private float combinedScore;
         private float phenotypeScore;
         private float variantScore;
-        private List<VariantEvaluation> contributingVariants = new ArrayList<>();
+        private List<VariantEvaluation> contributingVariants = ImmutableList.of();
+        private List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = ImmutableList.of();
 
         public Builder geneIdentifier(GeneIdentifier geneIdentifier) {
             this.geneIdentifier = geneIdentifier;
@@ -213,6 +225,11 @@ public final class GeneScore implements Comparable<GeneScore> {
 
         public Builder contributingVariants(List<VariantEvaluation> contributingVariants) {
             this.contributingVariants = contributingVariants;
+            return this;
+        }
+
+        public Builder compatibleDiseaseMatches(List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
+            this.compatibleDiseaseMatches = compatibleDiseaseMatches;
             return this;
         }
 

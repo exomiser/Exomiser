@@ -104,25 +104,28 @@ public class RawScoreGeneScorer implements GeneScorer {
         //It is critical only the PASS variants are used in the scoring
         List<VariantEvaluation> contributingVariants = contributingAlleleCalculator.findContributingVariantsForInheritanceMode(modeOfInheritance, gene.getPassedVariantEvaluations());
 
-        float priorityScore = (float) genePriorityScoreCalculator.calculateGenePriorityScoreForMode(gene, modeOfInheritance);
+        GenePriorityScoreCalculator.GenePriorityScore priorityScore = genePriorityScoreCalculator.calculateGenePriorityScore(gene, modeOfInheritance);
 
         float variantScore = (float) contributingVariants.stream()
                 .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
                 .orElse(0);
 
-        float combinedScore = (float) calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults()
+        float combinedScore = (float) calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults()
                 .keySet());
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
                 .variantScore(variantScore)
-                .phenotypeScore(priorityScore)
+                .phenotypeScore((float) priorityScore.getScore())
                 .combinedScore(combinedScore)
                 .contributingVariants(contributingVariants)
                 // TODO this would be a good place to put a contributingModel
                 //  i.e. from HiPhivePrioritiserResult see issue #363
+                // TODO add in/ use pLOF Haploinsufficieny/Triplosensitivity scores here too?
+//                .contributingModel()
+                .compatibleDiseaseMatches(priorityScore.getCompatibleDiseaseMatches())
                 .build();
     }
 

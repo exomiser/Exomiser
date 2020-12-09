@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
@@ -61,7 +63,19 @@ public class ModelServiceImpl implements ModelService {
 
     @Override
     public List<GeneModel> getHumanGeneDiseaseModels() {
-        String modelQuery = "SELECT distinct 'HUMAN' as organism, gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM entrez2sym e, disease_hp M, disease d WHERE e.entrezid=d.gene_id and M.disease_id=d.disease_id AND d.TYPE in ('D', 'C', 'S', '?')";
+        // TODO: this should use a diseaseDao.getDiseases()
+        String modelQuery = "SELECT distinct 'HUMAN' as organism, " +
+                "gene_id as entrez_id, " +
+                "symbol as human_gene_symbol, " +
+                "d.disease_id as disease_id, " +
+                "d.diseasename as disease_term, " +
+                "d.type as disease_type, " +
+                "d.inheritance as inheritance_code, " +
+                "hp_id as pheno_ids " +
+                "from entrez2sym e, disease_hp M, disease d " +
+                "where e.entrezid=d.gene_id " +
+                "and M.disease_id=d.disease_id " +
+                "and d.TYPE in ('D', 'C', 'S', '?')";
         return runGeneDiseaseModelQuery(modelQuery);
     }
 
@@ -87,20 +101,20 @@ public class ModelServiceImpl implements ModelService {
             //HUMAN     2263        FGFR2               OMIM:101600 Apert syndrome  HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
             //HUMAN     2260        FGFR1               OMIM:101600 Another syn...  HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
             while (rs.next()) {
-                Organism organism = Organism.HUMAN;
-                int entrezId = rs.getInt("entrez_id");
-                String humanGeneSymbol = rs.getString("human_gene_symbol");
-                
-                String diseaseId = rs.getString("disease_id");
-                String diseaseTerm = rs.getString("disease_term");
-                
-                String modelId = diseaseId + "_" + entrezId;
-                
-                String phenotypeIdString = rs.getString("pheno_ids");
-                String[] mpInitial = phenotypeIdString.split(",");
-                List<String> phenotypeIds = Arrays.asList(mpInitial);
-                
-                GeneDiseaseModel model = new GeneDiseaseModel(modelId, organism, entrezId, humanGeneSymbol, diseaseId, diseaseTerm, phenotypeIds);
+                List<String> phenotypes = ImmutableList.copyOf(rs.getString("pheno_ids").split(","));
+                Disease disease = Disease.builder()
+                        .diseaseId(rs.getString("disease_id"))
+                        .diseaseName(rs.getString("disease_term"))
+                        .associatedGeneId(rs.getInt("entrez_id"))
+                        .associatedGeneSymbol(rs.getString("human_gene_symbol"))
+                        .inheritanceModeCode(rs.getString("inheritance_code"))
+                        .diseaseTypeCode(rs.getString("disease_type"))
+                        .phenotypeIds(phenotypes)
+                        .build();
+
+                String modelId = disease.getDiseaseId() + "_" + disease.getAssociatedGeneId();
+
+                GeneDiseaseModel model = new GeneDiseaseModel(modelId, Organism.HUMAN, disease);
                 models.add(model);
             }
         } catch (SQLException e) {

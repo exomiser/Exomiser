@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -138,24 +138,26 @@ public class OmimPriorityResult extends AbstractPriorityResult {
         //OMIM:101600 Pfeiffer syndrome - autosomal dominant
         //OMIM:10111 Other thing (non-disease)
         //OMIM:10111 Other thing, X chromosomal (susceptibility)
-        String[] phenParts = disease.getDiseaseId().split(":");
-        String mimPhenUrl = String.join("", "http://www.omim.org/entry/", phenParts[1]);
-        String href = href(mimPhenUrl, disease.getDiseaseId());
+        String[] idParts = disease.getDiseaseId().split(":");
+        String url = String.join("", "http://www.omim.org/entry/", idParts[1]);
+        String href = href(url, disease.getDiseaseId());
+        return diseaseLinkAndDisplayName(disease, href);
+    }
 
+    private String makeOrphanetDisplayString(Disease disease) {
+        String[] idParts = disease.getDiseaseId().split(":");
+        String url = String.join("", "http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=", idParts[1]);
+        String href = href(url, disease.getDiseaseId());
+        return diseaseLinkAndDisplayName(disease, href);
+    }
+
+    private String diseaseLinkAndDisplayName(Disease disease, String href) {
         InheritanceMode inheritanceMode = disease.getInheritanceMode();
         Disease.DiseaseType diseaseType = disease.getDiseaseType();
         if (diseaseType == Disease.DiseaseType.DISEASE) {
             return String.format("%s %s - %s", href, disease.getDiseaseName(), inheritanceMode.getTerm());
         }
         return String.format("%s %s (%s)", href, disease.getDiseaseName(), diseaseType.getValue());
-
-    }
-
-    private String makeOrphanetDisplayString(Disease disease) {
-        String[] orphaParts = disease.getDiseaseId().split(":");
-        String url = String.join("", "http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=", orphaParts[1]);
-        String href = href(url, disease.getDiseaseId());
-        return String.join(" ", href, disease.getDiseaseName());
     }
 
     private String href(String url, String displayText) {

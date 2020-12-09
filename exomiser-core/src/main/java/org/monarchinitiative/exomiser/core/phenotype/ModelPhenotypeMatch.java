@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public final class ModelPhenotypeMatch<T extends Model> implements Comparable<ModelPhenotypeMatch> {
+public final class ModelPhenotypeMatch<T extends Model> implements Comparable<ModelPhenotypeMatch<T>> {
 
     private final double score;
     private final T model;
@@ -39,8 +39,8 @@ public final class ModelPhenotypeMatch<T extends Model> implements Comparable<Mo
 
     private ModelPhenotypeMatch(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.score = score;
-        this.model = model;
-        this.bestPhenotypeMatches = bestPhenotypeMatches;
+        this.model = Objects.requireNonNull(model);
+        this.bestPhenotypeMatches = Objects.requireNonNull(bestPhenotypeMatches);
     }
 
     public static <T extends Model> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
@@ -73,11 +73,11 @@ public final class ModelPhenotypeMatch<T extends Model> implements Comparable<Mo
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ModelPhenotypeMatch that = (ModelPhenotypeMatch) o;
+        if (!(o instanceof ModelPhenotypeMatch)) return false;
+        ModelPhenotypeMatch<?> that = (ModelPhenotypeMatch<?>) o;
         return Double.compare(that.score, score) == 0 &&
-                Objects.equals(model, that.model) &&
-                Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
+                model.equals(that.model) &&
+                bestPhenotypeMatches.equals(that.bestPhenotypeMatches);
     }
 
     @Override
