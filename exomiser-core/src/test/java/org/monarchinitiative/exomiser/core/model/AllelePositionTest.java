@@ -446,7 +446,15 @@ public class AllelePositionTest {
         assertThat(AllelePosition.of(0, "C", "C.").isSymbolic(), is(true));
         // Having a symbolic ref allele isn't mention in the VCF 4.2 spec, but we'll make sure though
         assertThat(AllelePosition.of(4477084, "<INS>", "A").isSymbolic(), is(true));
+    }
 
+    @Test
+    void testBreakends() {
+        assertThat(AllelePosition.of(321681, "G", "G]17:198982]").isBreakend(), is(true));
+        assertThat(AllelePosition.of(0, "N", ".[13 : 123457[").isBreakend(), is(true));
+        assertThat(AllelePosition.of(0, "C", "C.").isBreakend(), is(true));
+        assertThat(AllelePosition.of(4477084, "<INS>", "A").isBreakend(), is(false));
+        assertThat(AllelePosition.of(1, "A", "C").isBreakend(), is(false));
     }
 
     /**

@@ -99,6 +99,7 @@ public class AllelePosition {
         Objects.requireNonNull(ref, "REF string cannot be null");
         Objects.requireNonNull(alt, "ALT string cannot be null");
 
+//        if (cantTrim(ref, alt) || isSymbolic(ref, alt)) {
         if (cantTrim(ref, alt)) {
             return new AllelePosition(start, ref, alt);
         }
@@ -140,6 +141,20 @@ public class AllelePosition {
         return new AllelePosition(trimStart, trimRef, trimAlt);
     }
 
+    private static boolean cantTrim(String ref, String alt) {
+        return ref.length() == 1 || alt.length() == 1;
+    }
+
+    private static boolean canRightTrim(String ref, String alt) {
+        int refLength = ref.length();
+        int altLength = alt.length();
+        return refLength > 1 && altLength > 1 && ref.charAt(refLength - 1) == alt.charAt(altLength - 1);
+    }
+
+    private static boolean canLeftTrim(String ref, String alt) {
+        return ref.length() > 1 && alt.length() > 1 && ref.charAt(0) == alt.charAt(0);
+    }
+
     public static boolean isSnv(String ref, String alt) {
         return ref.length() == 1 && alt.length() == 1;
     }
@@ -166,13 +181,26 @@ public class AllelePosition {
     }
 
     public static boolean isSymbolic(String allele) {
-        // shamelessly copied from HTSJDK Allele via Jannovar
-        if (allele.length() <= 1) {
+        if (allele.isEmpty()) {
             return false;
         }
-        return (allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>') || // symbolic or large insertion
-                (allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.') || // single breakend
-                (allele.contains("[") || allele.contains("]")); // mated breakend
+        return isLargeSymbolic(allele) || isSingleBreakend(allele) || isMatedBreakend(allele);
+    }
+
+    public static boolean isBreakend(String allele) {
+        return isSingleBreakend(allele) || isMatedBreakend(allele);
+    }
+
+    private static boolean isLargeSymbolic(String allele) {
+        return allele.length() > 1 && allele.charAt(0) == '<' || allele.charAt(allele.length() - 1) == '>';
+    }
+
+    public static boolean isSingleBreakend(String allele) {
+        return allele.length() > 1 && allele.charAt(0) == '.' || allele.charAt(allele.length() - 1) == '.';
+    }
+
+    public static boolean isMatedBreakend(String allele) {
+        return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
     public static int length(String ref, String alt) {
@@ -180,6 +208,16 @@ public class AllelePosition {
         // "LEN - For precise variants, LEN is length of REF allele, and the for imprecise variants the corresponding best estimate."
         // "SVLEN - Difference in length between REF and ALT alleles. Longer ALT alleles (e.g. insertions) have positive values,
         // shorter ALT alleles (e.g. deletions) have negative values."
+        // ##INFO=<ID=LEN,Number=1,Type=Integer,Description="Length of the variant described in this record">
+        // ##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+        // #CHROM POS     ID        REF              ALT          QUAL FILTER INFO                                                               FORMAT       NA00001
+        // 1      2827694 rs2376870 CGTGGATGCGGGGAC  C            .    PASS   SVTYPE=DEL;LEN=15;HOMLEN=1;HOMSEQ=G;SVLEN=-14                 GT:GQ        1/1:14
+        // 2       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;LEN=206;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62         GT:GQ        0/1:12
+        // 2     14477084 .         C                <DEL:ME:ALU> 12   PASS   SVTYPE=DEL;LEN=298;SVLEN=-297;CIPOS=-22,18;CIEND=-12,32       GT:GQ        0/1:12
+        // 3      9425916 .         C                <INS:ME:L1>  23   PASS   SVTYPE=INS;LEN=1;SVLEN=6027;CIPOS=-16,22                     GT:GQ        1/1:15
+        // 3     12665100 .         A                <DUP>        14   PASS   SVTYPE=DUP;LEN=21101;SVLEN=21100;CIPOS=-500,500;CIEND=-500,500  GT:GQ:CN:CNQ ./.:0:3:16.2
+        // 4     18665128 .         T                <DUP:TANDEM> 11   PASS   SVTYPE=DUP;LEN=77;SVLEN=76;CIPOS=-10,10;CIEND=-10,10         GT:GQ:CN:CNQ ./.:0:5:8.3
+        // TODO: should this be reflected in a refLength and varLength ?
         if (isSymbolic(ref, alt)) {
             return ref.length();
         }
@@ -191,20 +229,6 @@ public class AllelePosition {
         return alt.length() - ref.length();
     }
 
-    private static boolean cantTrim(String ref, String alt) {
-        return ref.length() == 1 || alt.length() == 1;
-    }
-
-    private static boolean canRightTrim(String ref, String alt) {
-        int refLength = ref.length();
-        int altLength = alt.length();
-        return refLength > 1 && altLength > 1 && ref.charAt(refLength - 1) == alt.charAt(altLength - 1);
-    }
-
-    private static boolean canLeftTrim(String ref, String alt) {
-        return ref.length() > 1 && alt.length() > 1 && ref.charAt(0) == alt.charAt(0);
-    }
-
     /**
      * @return 1-based inclusive start position of the allele
      */
@@ -213,6 +237,9 @@ public class AllelePosition {
     }
 
     /**
+     * VCF 4.3 spec defines 'For precise variants, END is POS + length of REF allele−1, and for imprecise variants
+     * the corresponding best estimate.'
+     *
      * @return 1-based closed end position of the allele
      */
     public int getEnd() {
@@ -233,6 +260,10 @@ public class AllelePosition {
 
     public boolean isSymbolic() {
         return isSymbolic(ref, alt);
+    }
+
+    public boolean isBreakend() {
+        return isBreakend(alt);
     }
 
     @Override
