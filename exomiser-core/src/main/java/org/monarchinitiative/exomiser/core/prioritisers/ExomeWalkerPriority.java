@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2020 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -141,7 +141,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
      */
     @Override
     public PriorityType getPriorityType() {
-        return priorityType;
+        return PRIORITY_TYPE;
     }
 
     /**
@@ -242,7 +242,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + Objects.hashCode(this.priorityType);
+        hash = 37 * hash + Objects.hashCode(this.PRIORITY_TYPE);
         hash = 37 * hash + Objects.hashCode(this.seedGenes);
         return hash;
     }
@@ -256,7 +256,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
             return false;
         }
         final ExomeWalkerPriority other = (ExomeWalkerPriority) obj;
-        if (this.priorityType != other.priorityType) {
+        if (this.PRIORITY_TYPE != other.PRIORITY_TYPE) {
             return false;
         }
         return Objects.equals(this.seedGenes, other.seedGenes);
