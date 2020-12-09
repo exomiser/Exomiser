@@ -55,13 +55,13 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
-    private final PriorityType priorityType = PriorityType.EXOMEWALKER_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.EXOMEWALKER_PRIORITY;
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = new ArrayList<>();
+    private final List<String> messages = new ArrayList<>();
 
     /**
      * The random walk matrix object
