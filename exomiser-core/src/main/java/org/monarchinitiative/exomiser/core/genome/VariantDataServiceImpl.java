@@ -37,10 +37,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static java.util.stream.Collectors.toList;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
  * Default implementation of the VariantDataService.
@@ -50,6 +54,10 @@ import static java.util.stream.Collectors.toList;
 public class VariantDataServiceImpl implements VariantDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
+
+    private static final Set<PathogenicitySource> TABIX_SOURCES = EnumSet.of(CADD, REMM, TEST);
+
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private final VariantWhiteList whiteList;
     // Default data sources
@@ -125,25 +133,55 @@ public class VariantDataServiceImpl implements VariantDataService {
         }
 
         // This could be run alongside the frequencies as they are all stored in the same datastore
-        PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
         if (pathogenicitySources.isEmpty()) {
+            PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
             // Fast-path for the unlikely case when no sources are defined - we'll just return the ClinVar data
             return PathogenicityData.of(defaultPathogenicityData.getClinVarData());
         }
 
+        PathogenicityData defaultPathogenicityData;
         List<PathogenicityScore> allPathScores = new ArrayList<>();
+        if (containsTabixSource(pathogenicitySources)) {
+            CompletableFuture<PathogenicityData> futureDefaultData = CompletableFuture.supplyAsync(() -> defaultPathogenicityDao
+                    .getPathogenicityData(variant), executorService);
+            // run async - tabix sources are slow compared to MVStore
+            List<CompletableFuture<PathogenicityData>> futurePathData = new ArrayList<>();
+            // REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
+            if (pathogenicitySources.contains(REMM) && variant.isNonCodingVariant()) {
+                futurePathData.add(CompletableFuture.supplyAsync(() -> remmDao.getPathogenicityData(variant), executorService));
+            }
+            // CADD does all of it although is not as good as REMM for the non-coding regions.
+            if (pathogenicitySources.contains(CADD)) {
+                futurePathData.add(CompletableFuture.supplyAsync(() -> caddDao.getPathogenicityData(variant), executorService));
+            }
+            if (pathogenicitySources.contains(TEST)) {
+                futurePathData.add(CompletableFuture.supplyAsync(() -> testPathScoreDao.getPathogenicityData(variant), executorService));
+            }
+            for (CompletableFuture<PathogenicityData> pathogenicityDataCompletableFuture : futurePathData) {
+                PathogenicityData pathogenicityData = pathogenicityDataCompletableFuture.join();
+                allPathScores.addAll(pathogenicityData.getPredictedPathogenicityScores());
+            }
+            defaultPathogenicityData = futureDefaultData.join();
+        } else {
+            defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
+        }
+
         // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
         // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
         if (variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT) {
             addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
         }
 
-        List<PathogenicityData> optionalPathData = getOptionalPathogenicityData(variant, pathogenicitySources);
-        for (PathogenicityData pathogenicityData : optionalPathData) {
-            allPathScores.addAll(pathogenicityData.getPredictedPathogenicityScores());
-        }
-
         return PathogenicityData.of(defaultPathogenicityData.getClinVarData(), allPathScores);
+    }
+
+    private boolean containsTabixSource(Set<PathogenicitySource> pathogenicitySources) {
+        for (PathogenicitySource source : TABIX_SOURCES) {
+            if (pathogenicitySources.contains(source)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void addAllWantedScores(Set<PathogenicitySource> pathogenicitySources, PathogenicityData defaultPathogenicityData, List<PathogenicityScore> allPathScores) {
@@ -152,27 +190,6 @@ public class VariantDataServiceImpl implements VariantDataService {
                 allPathScores.add(score);
             }
         }
-    }
-
-    private List<PathogenicityData> getOptionalPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        List<PathogenicityDao> daosToQuery = new ArrayList<>();
-        // REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
-        if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
-            daosToQuery.add(remmDao);
-        }
-
-        // CADD does all of it although is not as good as REMM for the non-coding regions.
-        if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
-            daosToQuery.add(caddDao);
-        }
-
-        if (pathogenicitySources.contains(PathogenicitySource.TEST)) {
-            daosToQuery.add(testPathScoreDao);
-        }
-
-        return daosToQuery.parallelStream()
-                .map(pathDao -> pathDao.getPathogenicityData(variant))
-                .collect(toList());
     }
 
     public static Builder builder() {
