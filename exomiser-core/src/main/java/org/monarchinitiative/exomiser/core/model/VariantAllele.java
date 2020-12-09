@@ -33,8 +33,8 @@ public class VariantAllele implements VariantCoordinates {
     private final int start;
     private final ConfidenceInterval startCi;
 
-    private final int end;
     private final String endContig;
+    private final int end;
     private final ConfidenceInterval endCi;
 
     private final int length;
