@@ -35,9 +35,9 @@ The following shell script should work-
     #download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/11802_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/data/1802_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/data/1802_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/data/1802_phenotype.zip
 
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
