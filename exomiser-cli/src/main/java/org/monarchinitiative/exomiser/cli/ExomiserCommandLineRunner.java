@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -54,11 +54,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         CommandLineJobReader jobReader = new CommandLineJobReader();
         List<JobProto.Job> jobs = jobReader.readJobs(commandLine);
         logger.info("Exomiser running...");
-        try {
-            runJobs(jobs);
-        } catch (Exception e) {
-            logger.error("", e);
-        }
+        runJobs(jobs);
     }
 
     private void runJobs(List<JobProto.Job> jobs) {
@@ -81,6 +77,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     private void runJob(JobProto.Job job) {
         AnalysisResults analysisResults = exomiser.run(job);
+        logger.info("Writing results...");
         AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
     }
 }
