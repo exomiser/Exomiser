@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants 
  *                           
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *                           
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ class AlleleResourceTest {
         AlleleResource instance = new DbNsfp3AlleleResource("dbNSFP3test", null, alleleArchivePath, DbNsfpColumnIndex.HG19);
 
         long alleles = instance.parseResource()
-                .peek(System.out::println)
+//                .peek(System.out::println)
                 .count();
         //there are 40 lines in total, but only 22  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
         assertThat(alleles, equalTo(22L));
@@ -57,7 +57,7 @@ class AlleleResourceTest {
         AlleleResource instance = new DbNsfp4AlleleResource("dbNSFP4test", null, alleleArchivePath, DbNsfpColumnIndex.HG19);
 
         long alleles = instance.parseResource()
-                .peek(System.out::println)
+//                .peek(System.out::println)
                 .count();
         //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
         assertThat(alleles, equalTo(6L));
@@ -70,7 +70,7 @@ class AlleleResourceTest {
         AlleleResource instance = new DbNsfp4AlleleResource("dbNSFP4test", null, alleleArchivePath, DbNsfpColumnIndex.HG38);
 
         long alleles = instance.parseResource()
-                .peek(System.out::println)
+//                .peek(System.out::println)
                 .count();
         //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
         assertThat(alleles, equalTo(6L));
@@ -83,7 +83,7 @@ class AlleleResourceTest {
         AlleleResource instance = new DbSnpAlleleResource("dbSNP", null, alleleArchivePath);
 
         long alleles = instance.parseResource()
-                .peek(System.out::println)
+//                .peek(System.out::println)
                 .count();
         //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
         assertThat(alleles,equalTo(10L));

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -443,7 +443,7 @@ public class MvStoreAlleleIndexerTest {
     private AlleleProperties getAlleleProperties(MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap, int chr, int pos, String ref, String alt) {
         AlleleKey last = alleleKey(chr, pos, ref, alt);
         AlleleProperties lastProperties = reOpenedAlleleMap.get(last);
-        logger.info("{}-{}-{}-{} {{} {}}", chr, pos, ref, alt, lastProperties.getRsId(), lastProperties.getPropertiesMap());
+        logger.debug("{}-{}-{}-{} {{} {}}", chr, pos, ref, alt, lastProperties.getRsId(), lastProperties.getPropertiesMap());
         return lastProperties;
     }
 

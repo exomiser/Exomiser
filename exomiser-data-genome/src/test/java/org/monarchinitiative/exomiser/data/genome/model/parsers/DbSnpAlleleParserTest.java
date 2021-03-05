@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -191,7 +191,6 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         assertThat(alleles.size(), equalTo(4));
         Allele allele1 = alleles.get(0);
 
-        System.out.println(allele1);
         assertThat(allele1.getChr(), equalTo(3));
         assertThat(allele1.getPos(), equalTo(134153617));
         assertThat(allele1.getRsId(), equalTo("rs56011117"));
@@ -200,7 +199,6 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         assertThat(allele1.getValue(AlleleProperty.KG), equalTo(0.4992f));
 
         Allele allele2 = alleles.get(1);
-        System.out.println(allele2);
         assertThat(allele2.getChr(), equalTo(3));
         assertThat(allele2.getPos(), equalTo(134153617));
         assertThat(allele2.getRsId(), equalTo("rs56011117"));
@@ -210,7 +208,6 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
 
         Allele allele3 = alleles.get(2);
 
-        System.out.println(allele3);
         assertThat(allele3.getChr(), equalTo(3));
         assertThat(allele3.getPos(), equalTo(134153617));
         assertThat(allele3.getRsId(), equalTo("rs56011117"));
@@ -219,7 +216,6 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         assertThat(allele3.getValues().isEmpty(), is(true));
 
         Allele allele4 = alleles.get(3);
-        System.out.println(allele4);
         assertThat(allele4.getChr(), equalTo(3));
         assertThat(allele4.getPos(), equalTo(134153617));
         assertThat(allele4.getRsId(), equalTo("rs56011117"));
@@ -301,7 +297,6 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         assertThat(alleles.size(), equalTo(1));
         Allele allele = alleles.get(0);
 
-        System.out.println(allele);
         assertThat(allele.getChr(), equalTo(25));
         assertThat(allele.getPos(), equalTo(15061));
         assertThat(allele.getRsId(), equalTo("rs527236205"));

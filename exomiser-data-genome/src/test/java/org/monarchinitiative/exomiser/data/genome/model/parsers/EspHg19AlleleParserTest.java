@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,7 +74,6 @@ public class EspHg19AlleleParserTest extends AbstractAlleleParserTester<EspHg19A
         assertThat(alleles.size(), equalTo(5));
         Allele allele = alleles.get(0);
 
-        System.out.println(allele);
         assertThat(allele.getChr(), equalTo(7));
         assertThat(allele.getPos(), equalTo(107167661));
         assertThat(allele.getRsId(), equalTo(""));
@@ -97,7 +96,6 @@ public class EspHg19AlleleParserTest extends AbstractAlleleParserTester<EspHg19A
         assertThat(alleles.size(), equalTo(3));
         Allele allele = alleles.get(0);
 
-        System.out.println(allele);
         assertThat(allele.getChr(), equalTo(1));
         assertThat(allele.getPos(), equalTo(116234024));
         assertThat(allele.getRsId(), equalTo("rs151052987"));
