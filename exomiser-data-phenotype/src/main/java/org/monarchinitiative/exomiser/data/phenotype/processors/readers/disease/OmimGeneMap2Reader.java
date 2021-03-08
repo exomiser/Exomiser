@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,7 +47,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
 
     // Deafness, digenic, GJB2/GJB3, 220290 (3), Digenic dominant, Autosomal recessive
     // {Diabetes mellitus, insulin-dependent, 11}, 601208 (2)
-    private final Pattern phenotypePattern = Pattern.compile("(?<name>.*?), (?<diseaseId>[0-9]{6}) (?<type>\\([]1-4]\\))*(?<moi>(, [\\w\\W ]+))*");
+    private final Pattern phenotypePattern = Pattern.compile("(?<name>.*?), (?<diseaseId>[0-9]{6}) (?<type>\\([]1-4]\\))*(?<moi>(, [\\w\\W]+))*+");
 
     private final DiseaseInheritanceCacheReader diseaseInheritanceCacheReader;
     private final Resource geneMap2Resource;
