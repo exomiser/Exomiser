@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
@@ -83,14 +82,14 @@ public class VcfFiles {
      */
     public static List<String> readSampleIdentifiers(@Nullable Path vcfPath) {
         if (vcfPath == null) {
-            return ImmutableList.of();
+            return List.of();
         }
         try {
             VCFHeader vcfHeader = readVcfHeader(vcfPath);
-            return ImmutableList.copyOf(vcfHeader.getGenotypeSamples());
+            return List.copyOf(vcfHeader.getGenotypeSamples());
         } catch (Exception ex) {
             logger.error("Unable to read VCF sample identifiers from file {}", vcfPath);
         }
-        return ImmutableList.of();
+        return List.of();
     }
 }
