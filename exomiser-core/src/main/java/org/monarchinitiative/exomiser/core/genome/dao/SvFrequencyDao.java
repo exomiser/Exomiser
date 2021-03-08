@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,13 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -62,10 +60,10 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
+        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.85);
 
         logger.debug("{}", variant);
-        logger.debug("Searching for {}:{}-{}", variant.getStartContigId(), variant.getStart() - margin, variant.getEnd() + margin);
+        logger.debug("Searching for {}:{}-{}", variant.contigId(), variant.start() - margin, variant.end() + margin);
         List<SvResult> results = runQuery(variant, margin);
         results.forEach(svResult -> logger.debug("{}", svResult));
 
@@ -86,7 +84,7 @@ public class SvFrequencyDao implements FrequencyDao {
 
     private Function<SvResult, Double> score(Variant variant) {
         // geometric mean of num alleles and similarity - try and get the best represented and most similar allele
-        return svResult -> Math.sqrt(svResult.ac * ChromosomalRegionUtil.jaccard(variant, svResult));
+        return svResult -> Math.sqrt(svResult.ac * SvDaoUtil.jaccard(variant, svResult));
     }
 
     private FrequencyData mapToFrequencyData(List<SvResult> topMatches) {
@@ -97,9 +95,9 @@ public class SvFrequencyDao implements FrequencyDao {
         Frequency frequency = toFrequency(first);
         if (frequency.getFrequency() == 0) {
             // DGV has no frequency information, but does have an id
-            return FrequencyData.of(first.id);
+            return FrequencyData.of(first.id());
         }
-        return FrequencyData.of(first.id, frequency);
+        return FrequencyData.of(first.id(), frequency);
     }
 
     private Frequency toFrequency(SvResult first) {
@@ -183,25 +181,21 @@ public class SvFrequencyDao implements FrequencyDao {
                 "         FROM DECIPHER_CNV\n" +
                 "     ) all_tables\n" +
                 "WHERE CHR_ONE = ?\n" +
-                "  and POS_ONE >= ? - ?\n" +
-                "  and POS_ONE <= ? + ?\n" +
-                "  and POS_TWO >= ? - ?\n" +
-                "  and POS_TWO <= ? + ?\n" +
+                "  and POS_ONE >= ?\n" +
+                "  and POS_ONE <= ?\n" +
+                "  and POS_TWO >= ?\n" +
+                "  and POS_TWO <= ?\n" +
                 "  and AC != -1;";
 
         try (
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            ps.setInt(1, variant.getStartContigId());
-            ps.setInt(2, variant.getStart());
-            ps.setInt(3, margin);
-            ps.setInt(4, variant.getStart());
-            ps.setInt(5, margin);
-            ps.setInt(6, variant.getEnd());
-            ps.setInt(7, margin);
-            ps.setInt(8, variant.getEnd());
-            ps.setInt(9, margin);
+            ps.setInt(1, variant.contigId());
+            ps.setInt(2, variant.start() - margin);
+            ps.setInt(3, variant.start() + margin);
+            ps.setInt(4, variant.end() - margin);
+            ps.setInt(5, variant.end() + margin);
 
             ResultSet rs = ps.executeQuery();
 
@@ -237,68 +231,60 @@ public class SvFrequencyDao implements FrequencyDao {
             VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
             // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
-            if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
-                SvResult svResult = new SvResult(chr, start, end, length, variantType, source, id, ac, af);
+            if (variantType.baseType() == variant.variantType().baseType()) {
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, id, source, ac, af);
                 results.add(svResult);
             }
         }
         return results;
     }
 
-    static class SvResult implements ChromosomalRegion {
+    static class SvResult extends BaseVariant<SvResult> {
 
-        private final int chr;
-        private final int start;
-        private final int end;
-        private final int length;
-        private final VariantType svType;
         private final String source;
-        private final String id;
         private final int ac;
         private final float af;
 
-        SvResult(int chr, int start, int end, int length, VariantType svType, String source, String id, int ac, float af) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-            this.length = length;
-            this.svType = svType;
+        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, int ac, float af) {
+            super(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength);
             this.source = source;
-            this.id = ".".equals(id) ? "" : id;
             this.ac = ac;
             this.af = af;
         }
 
-        @Override
-        public int getStartContigId() {
-            return chr;
+        static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, float af) {
+            String alt = '<' + variantType.baseType().toString() + '>';
+            int correctedChangeLength = checkChangeLength(variantType, start, end, changeLength);
+//            System.out.printf("contig=%s, id=%s, start=%d, end=%d, changeLength=%d, %s, %s, ac=%d, af=%f%n", contig.name(), id, start, end, changeLength, variantType, source, ac, af);
+            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, correctedChangeLength, source, ac, af);
+        }
+
+        private static int checkChangeLength(VariantType variantType, int start, int end, int changeLength) {
+            if (variantType.baseType() == VariantType.DEL && changeLength >= 0) {
+                return start - end;
+            }
+            if (variantType.baseType() == VariantType.INS && changeLength <= 0) {
+                // hack for DGV where INS variants don't have a length
+                return +changeLength + changeLength == 0 ? 1 : changeLength;
+            }
+            return changeLength;
         }
 
         @Override
-        public int getStart() {
-            return start;
-        }
-
-        @Override
-        public int getEnd() {
-            return end;
-        }
-
-        @Override
-        public int getLength() {
-            return length;
+        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
+            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, source, ac, af);
         }
 
         @Override
         public String toString() {
             return "SvResult{" +
-                    "chr=" + chr +
-                    ", start=" + start +
-                    ", end=" + end +
-                    ", length=" + length +
-                    ", svType='" + svType + '\'' +
+                    "chr=" + contigName() +
+                    ", start=" + start() +
+                    ", end=" + end() +
+                    ", length=" + length() +
+                    ", svType='" + variantType() + '\'' +
                     ", source='" + source + '\'' +
-                    ", id='" + id + '\'' +
+                    ", id='" + id() + '\'' +
                     ", ac=" + ac +
                     ", af=" + af +
                     '}';

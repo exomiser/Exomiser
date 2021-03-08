@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.Chromosome;
+import org.monarchinitiative.svart.Contig;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -84,8 +84,8 @@ public class GenomeAssemblyTest {
         assertThat(GenomeAssembly.HG19.getRefSeqAccession(-1), equalTo(""));
         assertThat(GenomeAssembly.HG38.getRefSeqAccession(-1), equalTo(""));
 
-        assertThat(GenomeAssembly.HG19.getRefSeqAccession(26), equalTo(""));
-        assertThat(GenomeAssembly.HG38.getRefSeqAccession(26), equalTo(""));
+        assertThat(GenomeAssembly.HG19.getRefSeqAccession(999), equalTo(""));
+        assertThat(GenomeAssembly.HG38.getRefSeqAccession(999), equalTo(""));
     }
 
     @Test
@@ -114,89 +114,88 @@ public class GenomeAssemblyTest {
 
     @Test
     void testGetChromosomeId() {
-        assertThat(GenomeAssembly.HG19.getContigById(1).getId(), equalTo(1));
-        assertThat(GenomeAssembly.HG38.getContigById(1).getId(), equalTo(1));
+        assertThat(GenomeAssembly.HG19.getContigById(1).id(), equalTo(1));
+        assertThat(GenomeAssembly.HG38.getContigById(1).id(), equalTo(1));
 
-        assertThat(GenomeAssembly.HG19.getContigById(24).getId(), equalTo(24));
-        assertThat(GenomeAssembly.HG38.getContigById(24).getId(), equalTo(24));
+        assertThat(GenomeAssembly.HG19.getContigById(24).id(), equalTo(24));
+        assertThat(GenomeAssembly.HG38.getContigById(24).id(), equalTo(24));
     }
 
     @Test
     void testGetChromosomeName() {
-        assertThat(GenomeAssembly.HG19.getContigById(1).getName(), equalTo("1"));
-        assertThat(GenomeAssembly.HG38.getContigById(1).getName(), equalTo("1"));
+        assertThat(GenomeAssembly.HG19.getContigById(1).name(), equalTo("1"));
+        assertThat(GenomeAssembly.HG38.getContigById(1).name(), equalTo("1"));
 
-        assertThat(GenomeAssembly.HG19.getContigById(24).getName(), equalTo("Y"));
-        assertThat(GenomeAssembly.HG38.getContigById(24).getName(), equalTo("Y"));
+        assertThat(GenomeAssembly.HG19.getContigById(24).name(), equalTo("Y"));
+        assertThat(GenomeAssembly.HG38.getContigById(24).name(), equalTo("Y"));
     }
 
     @Test
     void testGetChromosomeAccession() {
-        assertThat(GenomeAssembly.HG19.getContigById(1).getRefSeqAccession(), equalTo("NC_000001.10"));
-        assertThat(GenomeAssembly.HG38.getContigById(1).getRefSeqAccession(), equalTo("NC_000001.11"));
+        assertThat(GenomeAssembly.HG19.getContigById(1).refSeqAccession(), equalTo("NC_000001.10"));
+        assertThat(GenomeAssembly.HG38.getContigById(1).refSeqAccession(), equalTo("NC_000001.11"));
 
-        assertThat(GenomeAssembly.HG19.getContigById(24).getRefSeqAccession(), equalTo("NC_000024.9"));
-        assertThat(GenomeAssembly.HG38.getContigById(24).getRefSeqAccession(), equalTo("NC_000024.10"));
+        assertThat(GenomeAssembly.HG19.getContigById(24).refSeqAccession(), equalTo("NC_000024.9"));
+        assertThat(GenomeAssembly.HG38.getContigById(24).refSeqAccession(), equalTo("NC_000024.10"));
     }
 
     @Test
     void getContigByNameUnrecognisedReturnsUnknown() {
-        Chromosome wibble = GenomeAssembly.HG19.getContigByName("Wibble!");
-        assertThat(wibble, equalTo(Chromosome.unknown()));
+        Contig wibble = GenomeAssembly.HG19.getContigByName("Wibble!");
+        assertThat(wibble, equalTo(Contig.unknown()));
     }
 
     @Test
     void getContigByName() {
-        Chromosome hg19Chr1 = GenomeAssembly.HG19.getContigByName("1");
-        assertThat(hg19Chr1.getId(), equalTo(1));
-        assertThat(hg19Chr1.getName(), equalTo("1"));
-        assertThat(hg19Chr1.getLength(), equalTo(249250621));
-        assertThat(hg19Chr1.getRefSeqAccession(), equalTo("NC_000001.10"));
+        Contig hg19Chr1 = GenomeAssembly.HG19.getContigByName("1");
+        assertThat(hg19Chr1.id(), equalTo(1));
+        assertThat(hg19Chr1.name(), equalTo("1"));
+        assertThat(hg19Chr1.length(), equalTo(249250621));
+        assertThat(hg19Chr1.refSeqAccession(), equalTo("NC_000001.10"));
 
-        Chromosome hg19chrM = GenomeAssembly.HG19.getContigByName("MT");
-        assertThat(hg19chrM.getId(), equalTo(25));
-        assertThat(hg19chrM.getName(), equalTo("MT"));
-        assertThat(hg19chrM.getLength(), equalTo(16569));
-        assertThat(hg19chrM.getRefSeqAccession(), equalTo("NC_012920.1"));
+        Contig hg19chrM = GenomeAssembly.HG19.getContigByName("MT");
+        assertThat(hg19chrM.id(), equalTo(25));
+        assertThat(hg19chrM.name(), equalTo("MT"));
+        assertThat(hg19chrM.length(), equalTo(16569));
+        assertThat(hg19chrM.refSeqAccession(), equalTo("NC_012920.1"));
 
-        Chromosome hg38Chr1 = GenomeAssembly.HG38.getContigByName("1");
-        assertThat(hg38Chr1.getId(), equalTo(1));
-        assertThat(hg38Chr1.getName(), equalTo("1"));
-        assertThat(hg38Chr1.getLength(), equalTo(248956422));
-        assertThat(hg38Chr1.getRefSeqAccession(), equalTo("NC_000001.11"));
+        Contig hg38Chr1 = GenomeAssembly.HG38.getContigByName("1");
+        assertThat(hg38Chr1.id(), equalTo(1));
+        assertThat(hg38Chr1.name(), equalTo("1"));
+        assertThat(hg38Chr1.length(), equalTo(248956422));
+        assertThat(hg38Chr1.refSeqAccession(), equalTo("NC_000001.11"));
 
-        Chromosome hg38chrM = GenomeAssembly.HG19.getContigByName("MT");
-        assertThat(hg38chrM.getId(), equalTo(25));
-        assertThat(hg38chrM.getName(), equalTo("MT"));
-        assertThat(hg38chrM.getLength(), equalTo(16569));
-        assertThat(hg38chrM.getRefSeqAccession(), equalTo("NC_012920.1"));
+        Contig hg38chrM = GenomeAssembly.HG19.getContigByName("MT");
+        assertThat(hg38chrM.id(), equalTo(25));
+        assertThat(hg38chrM.name(), equalTo("MT"));
+        assertThat(hg38chrM.length(), equalTo(16569));
+        assertThat(hg38chrM.refSeqAccession(), equalTo("NC_012920.1"));
     }
 
     @Test
     void getContigById() {
-        Chromosome hg19Chr1 = GenomeAssembly.HG19.getContigById(1);
-        assertThat(hg19Chr1.getId(), equalTo(1));
-        assertThat(hg19Chr1.getName(), equalTo("1"));
-        assertThat(hg19Chr1.getLength(), equalTo(249250621));
-        assertThat(hg19Chr1.getRefSeqAccession(), equalTo("NC_000001.10"));
+        Contig hg19Chr1 = GenomeAssembly.HG19.getContigById(1);
+        assertThat(hg19Chr1.id(), equalTo(1));
+        assertThat(hg19Chr1.name(), equalTo("1"));
+        assertThat(hg19Chr1.length(), equalTo(249250621));
+        assertThat(hg19Chr1.refSeqAccession(), equalTo("NC_000001.10"));
 
-        Chromosome hg19chrM = GenomeAssembly.HG19.getContigById(25);
-        assertThat(hg19chrM.getId(), equalTo(25));
-        assertThat(hg19chrM.getName(), equalTo("MT"));
-        assertThat(hg19chrM.getLength(), equalTo(16569));
-        assertThat(hg19chrM.getRefSeqAccession(), equalTo("NC_012920.1"));
+        Contig hg19chrM = GenomeAssembly.HG19.getContigById(25);
+        assertThat(hg19chrM.id(), equalTo(25));
+        assertThat(hg19chrM.name(), equalTo("MT"));
+        assertThat(hg19chrM.length(), equalTo(16569));
+        assertThat(hg19chrM.refSeqAccession(), equalTo("NC_012920.1"));
 
-        Chromosome hg38Chr1 = GenomeAssembly.HG38.getContigById(1);
-        assertThat(hg38Chr1.getId(), equalTo(1));
-        assertThat(hg38Chr1.getName(), equalTo("1"));
-        assertThat(hg38Chr1.getLength(), equalTo(248956422));
-        assertThat(hg38Chr1.getRefSeqAccession(), equalTo("NC_000001.11"));
+        Contig hg38Chr1 = GenomeAssembly.HG38.getContigById(1);
+        assertThat(hg38Chr1.id(), equalTo(1));
+        assertThat(hg38Chr1.name(), equalTo("1"));
+        assertThat(hg38Chr1.length(), equalTo(248956422));
+        assertThat(hg38Chr1.refSeqAccession(), equalTo("NC_000001.11"));
 
-        Chromosome hg38chrM = GenomeAssembly.HG19.getContigById(25);
-        assertThat(hg38chrM.getId(), equalTo(25));
-        assertThat(hg38chrM.getName(), equalTo("MT"));
-        assertThat(hg38chrM.getLength(), equalTo(16569));
-        assertThat(hg38chrM.getRefSeqAccession(), equalTo("NC_012920.1"));
+        Contig hg38chrM = GenomeAssembly.HG19.getContigById(25);
+        assertThat(hg38chrM.id(), equalTo(25));
+        assertThat(hg38chrM.name(), equalTo("MT"));
+        assertThat(hg38chrM.length(), equalTo(16569));
+        assertThat(hg38chrM.refSeqAccession(), equalTo("NC_012920.1"));
     }
-
 }

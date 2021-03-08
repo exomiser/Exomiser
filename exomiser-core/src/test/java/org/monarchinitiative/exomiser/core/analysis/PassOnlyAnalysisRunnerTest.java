@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -130,10 +130,10 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation passedVariant = passedGene.getPassedVariantEvaluations().get(0);
         //1	145508800	rs12345678	T	C	123.15	PASS	GENE=RBM8A	GT:DP	1/1:33
-        assertThat(passedVariant.getStartContigId(), equalTo(1));
-        assertThat(passedVariant.getStart(), equalTo(145508800));
-        assertThat(passedVariant.getRef(), equalTo("T"));
-        assertThat(passedVariant.getAlt(), equalTo("C"));
+        assertThat(passedVariant.contigId(), equalTo(1));
+        assertThat(passedVariant.start(), equalTo(145508800));
+        assertThat(passedVariant.ref(), equalTo("T"));
+        assertThat(passedVariant.alt(), equalTo("C"));
     }
 
     @Test
@@ -249,7 +249,6 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
-        System.out.println(rbm8Variant2.getFrequencyData());
     }
 
     @Test
@@ -309,8 +308,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
-        assertThat(rbm8Variant2.getStart(), equalTo(145508800));
+        assertThat(rbm8Variant2.contigId(), equalTo(1));
+        assertThat(rbm8Variant2.start(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
     }
     
@@ -354,8 +353,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getStartContigId(), equalTo(1));
-        assertThat(rbm8Variant2.getStart(), equalTo(145508800));
+        assertThat(rbm8Variant2.contigId(), equalTo(1));
+        assertThat(rbm8Variant2.start(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -391,7 +390,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(114814));
         assertThat(passedGene.getGeneSymbol(), equalTo("GNRHR2"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).getStart(), equalTo(145510000));
+        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(145510000));
         
     }
 
@@ -424,7 +423,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).getStart(), equalTo(123256214));
+        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123256214));
     	
     }
 
@@ -459,8 +458,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(2));
-        assertThat(passedGene.getVariantEvaluations().get(0).getStart(), equalTo(123256214));
-        assertThat(passedGene.getVariantEvaluations().get(1).getStart(), equalTo(145508800));
+        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123256214));
+        assertThat(passedGene.getVariantEvaluations().get(1).start(), equalTo(145508800));
 
         //Homozygous
         passedGene = results.get("FGFR2");
@@ -470,7 +469,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(2263));
         assertThat(passedGene.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).getStart(), equalTo(123239370));
+        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123239370));
     }
 
 }

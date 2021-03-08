@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,11 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -73,19 +75,17 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSvDel() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "<DEL>")
-                .end(100)
-                .variantType(VariantType.DEL)
-                .build();
+        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<DEL>", -80).build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100del"));
     }
 
     @Test
     void toHgvsSvInversion() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "<INV>")
-                .end(100)
-                .variantType(VariantType.INV)
-                .build();
+        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<INV>", 0).build();
+//        Variant variant = VariantEvaluation.builder(10, 20, "T", "<INV>")
+//                .end(100)
+//                .variantType(VariantType.INV)
+//                .build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100inv"));
     }
 
@@ -123,10 +123,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSvIns() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "<INS>")
-                .end(100)
-                .variantType(VariantType.INS)
-                .build();
+        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<INS>", 80).build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100ins"));
     }
 
@@ -141,16 +138,13 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDupMultiple() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "TTT").build();
+        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED,Position.of(20), "T", "TTT");
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_21dupTT"));
     }
 
     @Test
     void toHgvsSvDup() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "<DUP>")
-                .end(100)
-                .variantType(VariantType.DUP)
-                .build();
+        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(20), Position.of(100), "T", "<DUP>", 80);
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100dup"));
     }
 

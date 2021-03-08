@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,8 +94,8 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     public void testToString() {
-        System.out.println(CrossSpeciesPhenotypeMatcher.of(Organism.HUMAN, Collections.emptyMap()));
-        System.out.println(instance);
+//        System.out.println(CrossSpeciesPhenotypeMatcher.of(Organism.HUMAN, Collections.emptyMap()));
+//        System.out.println(instance);
     }
 
     @Test
@@ -107,8 +107,8 @@ public class CrossSpeciesPhenotypeMatcherTest {
     public void testGetBestForwardAndReciprocalMatches() throws Exception {
         List<String> modelPhenotypes = ImmutableList.of(littleNose.getId(), longToe.getId());
         List<PhenotypeMatch> expected = ImmutableList.of(noseMatch, bigToeLogToeMatch, noseMatch, bigToeLogToeMatch);
-        expected.forEach(match -> System.out.printf("%s-%s=%f%n", match.getQueryPhenotypeId(), match.getMatchPhenotypeId(), match
-                .getScore()));
+//        expected.forEach(match -> System.out.printf("%s-%s=%f%n", match.getQueryPhenotypeId(), match.getMatchPhenotypeId(), match
+//                .getScore()));
         assertThat(instance.findBestForwardAndReverseMatches(modelPhenotypes), equalTo(expected));
     }
 
@@ -125,7 +125,6 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
         List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(noseMatch, bigToeLogToeMatch);
         PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(2.0, 6.0, modelPhenotypes, bestPhenotypeMatches);
-        System.out.println(result);
         assertThat(result, equalTo(expected));
     }
 
@@ -137,7 +136,6 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
         List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(bigNoseSelfMatch, bigToeSelfMatch);
         PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 16.0, modelPhenotypes, bestPhenotypeMatches);
-        System.out.println(result);
         assertThat(result, equalTo(expected));
     }
 
@@ -149,7 +147,6 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
         List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(bigNoseSelfMatch);
         PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 8.0, ImmutableList.of(bigNose.getId()), bestPhenotypeMatches);
-        System.out.println(result);
         assertThat(result, equalTo(expected));
     }
 }

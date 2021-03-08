@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,10 +26,10 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
-import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -64,11 +64,11 @@ public class CaddDao implements PathogenicityDao {
     }
 
     private PathogenicityData processResults(Variant variant) {
-        String chromosome = variant.getStartContigName();
-        String ref = variant.getRef();
-        String alt = variant.getAlt();
-        int start = variant.getStart();
-        if (AllelePosition.isSnv(ref, alt)) {
+        String chromosome = variant.contigName();
+        String ref = variant.ref();
+        String alt = variant.alt();
+        int start = variant.start();
+        if (variant.variantType() == VariantType.SNV) {
             return getCaddPathogenicityData(caddSnvTabixDataSource, chromosome, start, ref, alt);
         }
         return getCaddPathogenicityData(caddInDelTabixDataSource, chromosome, start, ref, alt);

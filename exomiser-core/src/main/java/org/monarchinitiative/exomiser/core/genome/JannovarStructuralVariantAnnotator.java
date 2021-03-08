@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,12 @@ import de.charite.compbio.jannovar.annotation.SVAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.SVGenomeVariant;
-import org.monarchinitiative.exomiser.core.model.*;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +38,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -56,17 +62,20 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
-        SVAnnotations svAnnotations = jannovarAnnotationService
-                .annotateStructuralVariant(variantCoordinates.getVariantType(), variantCoordinates.getAlt(), variantCoordinates
-                        .getStartContigName(), variantCoordinates.getStart(), variantCoordinates.getStartCi(), variantCoordinates
-                        .getEndContigName(), variantCoordinates.getEnd(), variantCoordinates.getEndCi());
-        return buildVariantAnnotations(svAnnotations, variantCoordinates);
+    public GenomeAssembly genomeAssembly() {
+        return genomeAssembly;
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, VariantCoordinates varCoords) {
+    @Override
+    public List<VariantAnnotation> annotate(Variant variant) {
+        SVAnnotations svAnnotations = jannovarAnnotationService
+                .annotateStructuralVariant(variant.variantType(), variant.alt(), variant.contigName(), variant.startPosition(), variant.endPosition());
+        return buildVariantAnnotations(svAnnotations, variant);
+    }
+
+    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, Variant variant) {
         if (!svAnnotations.hasAnnotation()) {
-            return List.of(toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), new ArrayList<>(), varCoords));
+            return List.of(toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), new ArrayList<>(), variant));
         }
 
         // This is a map of gene symbol to SVAnnotation
@@ -77,7 +86,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
         return annotationsByGeneSymbol.values()
                 .stream()
-                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, varCoords))
+                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, variant))
                 .collect(toList());
     }
 
@@ -85,7 +94,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         return svAnnotation == null ? "." : TranscriptModelUtil.getTranscriptGeneSymbol(svAnnotation.getTranscript());
     }
 
-    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, VariantCoordinates varCoords) {
+    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, Variant variant) {
         svAnnotations.sort(SVAnnotation::compareTo);
 //        svAnnotations.forEach(svAnnotation -> logger.info("{}", svAnnotation));
         SVAnnotation highestImpactAnnotation = svAnnotations.isEmpty() ? null : svAnnotations.get(0);
@@ -99,27 +108,15 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         int endChr = genomeVariant.getChr2();
         // The genomeVariant.getStart() seems to be 0-based despite being constructed using 1-based coordinates
         //  so ensure we use the original startPos from the VCF to avoid confusion.
-        //TODO: enable this to do regulatory gubbins with SVs
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, varCoords.getStart());
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, variant);
 
         return VariantAnnotation.builder()
+                .with(variant)
+                .genomeAssembly(genomeAssembly)
                 .geneId(geneId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)
                 .annotations(annotations)
-                .genomeAssembly(genomeAssembly)
-                .chromosome(chr)
-                .contig(getChromosomeNameOrDefault(genomeVariant.getChrName(), varCoords.getStartContigName()))
-                .start(varCoords.getStart())
-                .startCi(varCoords.getStartCi())
-                .endChromosome(endChr)
-                .endContig(varCoords.getEndContigName())
-                .end(varCoords.getEnd())
-                .endCi(varCoords.getEndCi())
-                .length(varCoords.getLength())
-                .variantType(varCoords.getVariantType())
-                .ref(varCoords.getRef())
-                .alt(varCoords.getAlt())
                 .build();
     }
 
@@ -145,6 +142,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
                 .variantEffect(getVariantEffectOrDefault(svAnnotation.getMostPathogenicVariantEffect(), VariantEffect.STRUCTURAL_VARIANT))
                 .accession(TranscriptModelUtil.getTranscriptAccession(svAnnotation.getTranscript()))
                 .geneSymbol(buildGeneSymbol(svAnnotation))
+                .distanceFromNearestGene(getDistFromNearestGene(svAnnotation))
                 .build();
     }
 
@@ -157,10 +155,10 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
-    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, int chr, int pos) {
+    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, Variant variant) {
         //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
-        // TODO do we need a regulatoryRegionIndex.hasRegionOverlapping(startChr, startPos, endChr, endPos)
-        if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionContainingPosition(chr, pos)) {
+        // TODO do we need a regulatoryRegionIndex.hasRegionOverlapping(chr, start, end)
+        if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionOverlappingVariant(variant)) {
             //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
             return VariantEffect.REGULATORY_REGION_VARIANT;
         }
@@ -169,5 +167,24 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
         return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
+    }
+
+    private int getDistFromNearestGene(SVAnnotation annotation) {
+
+        TranscriptModel tm = annotation.getTranscript();
+        if (tm == null) {
+            return Integer.MIN_VALUE;
+        }
+        SVGenomeVariant change = annotation.getVariant();
+        Set<VariantEffect> effects = annotation.getEffects();
+        if (effects.contains(VariantEffect.INTERGENIC_VARIANT) || effects.contains(VariantEffect.UPSTREAM_GENE_VARIANT) || effects
+                .contains(VariantEffect.DOWNSTREAM_GENE_VARIANT)) {
+            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos()))
+                return tm.getTXRegion().getGenomeBeginPos().differenceTo(change.getGenomeInterval().getGenomeEndPos());
+            else
+                return change.getGenomeInterval().getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+        }
+        // we're in a gene region so there is no distance
+        return 0;
     }
 }

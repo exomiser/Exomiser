@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -72,6 +72,6 @@ public class GeneMatchTest {
 
     @Test
     public void testToString() {
-        System.out.println(GeneMatch.NO_HIT);
+        assertThat(GeneMatch.NO_HIT.toString(), equalTo("GeneMatch{queryGeneId=0, matchGeneId=0, score=0.0, bestMatchModels=[]}"));
     }
 }

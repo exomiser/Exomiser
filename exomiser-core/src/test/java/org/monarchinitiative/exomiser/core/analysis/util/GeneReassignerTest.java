@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,19 +94,19 @@ public class GeneReassignerTest {
     }
 
     private VariantEvaluation regulatoryVariantInTad(TopologicalDomain tad, Gene associatedGene) {
-        return variant(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
+        return variant(tad.contigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
     }
 
     private VariantEvaluation.Builder regulatoryVariantBuilderInTad(TopologicalDomain tad, Gene associatedGene) {
-        return variantBuilder(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
+        return variantBuilder(tad.contigId(), getMiddlePosition(tad), "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, associatedGene);
     }
 
     private VariantEvaluation.Builder variantBuilderInTadWithEffect(TopologicalDomain tad, VariantEffect variantEffect, Gene associatedGene) {
-        return variantBuilder(tad.getStartContigId(), getMiddlePosition(tad), "A", "T", variantEffect, associatedGene);
+        return variantBuilder(tad.contigId(), getMiddlePosition(tad), "A", "T", variantEffect, associatedGene);
     }
 
     private int getMiddlePosition(TopologicalDomain tad) {
-        return (tad.getStart() + tad.getEnd()) / 2;
+        return (tad.start() + tad.end()) / 2;
     }
 
     private VariantEvaluation variant(int chr, int pos, String ref, String alt, VariantEffect variantEffect, Gene gene) {
@@ -251,7 +251,7 @@ public class GeneReassignerTest {
 
         Gene noKnownGene = new Gene(".", -1);
 
-        VariantEvaluation variant = variant(1, tad.getEnd() + 1000, "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, noKnownGene);
+        VariantEvaluation variant = variant(1, tad.end() + 1000, "A", "T", VariantEffect.REGULATORY_REGION_VARIANT, noKnownGene);
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(variant);
 
         assertThat(reassigned, isAssignedTo(noKnownGene));
@@ -358,7 +358,7 @@ public class GeneReassignerTest {
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, noKnownGene);
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(variant);
-        System.out.println(reassigned.getVariantContext());
+
         assertThat(reassigned, isAssignedTo(gene1));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
         assertThat(reassigned.getTranscriptAnnotations(), equalTo(Collections.emptyList()));
@@ -415,11 +415,11 @@ public class GeneReassignerTest {
                 .annotations(ImmutableList.of(upstream, downstream, fusionProteinAnnotation))
                 .build();
 
-        logVariantInfo(variant);
+//        logVariantInfo(variant);
 
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(variant);
 
-        logVariantInfo(reassigned);
+//        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene1));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
         assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream)));
@@ -446,7 +446,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, unimportantForThisTestTad);
 
         variants.forEach(variantEvaluation -> {
-            logVariantInfo(variantEvaluation);
+//            logVariantInfo(variantEvaluation);
             VariantEffect originalVariantEffect = VariantEffect.MISSENSE_VARIANT;
             List<TranscriptAnnotation> originalAnnotations = new ArrayList<>(variantEvaluation.getTranscriptAnnotations());
 
@@ -493,8 +493,8 @@ public class GeneReassignerTest {
                 .build();
 
 
-        logger.info("Before re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
-        logVariantInfo(intergenicAndUpstreamVar);
+//        logger.info("Before re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
+//        logVariantInfo(intergenicAndUpstreamVar);
 
         assertThat(intergenicAndUpstreamVar, isAssignedTo(GNRHR2));
         assertThat(intergenicAndUpstreamVar.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -506,8 +506,8 @@ public class GeneReassignerTest {
 
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(intergenicAndUpstreamVar);
 
-        logger.info("After re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
-        logVariantInfo(reassigned);
+//        logger.info("After re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
+//        logVariantInfo(reassigned);
 
         assertThat(reassigned, isAssignedTo(topPhenotypeMatchGene));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
@@ -531,11 +531,11 @@ public class GeneReassignerTest {
                 .annotations(ImmutableList.of(upstream))
                 .build();
 
-        logVariantInfo(variant);
+//        logVariantInfo(variant);
 
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(variant);
 
-        logVariantInfo(reassigned);
+//        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene2));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
         assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream)));
@@ -568,22 +568,22 @@ public class GeneReassignerTest {
                 .annotations(ImmutableList.of(upstream, downstream, intergenic))
                 .build();
 
-        logVariantInfo(variant);
+//        logVariantInfo(variant);
 
         VariantEvaluation reassigned = instance.reassignRegulatoryAndNonCodingVariantAnnotations(variant);
 
-        logVariantInfo(reassigned);
+//        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene1));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
         assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream, downstream, intergenic)));
     }
 
     private void logVariantInfo(VariantEvaluation variant) {
-        logger.info("{} {}:{} {} {} {}", variant.getGeneSymbol(), variant.getStartContigId(), variant.getStart(),
-                variant.getRef(), variant.getAlt(), variant.getVariantEffect());
+        logger.info("{} {}:{} {} {} {}", variant.getGeneSymbol(), variant.contigId(), variant.start(),
+                variant.ref(), variant.alt(), variant.getVariantEffect());
         variant.getTranscriptAnnotations()
-                .forEach(transcriptAnnotation -> logger.info("{} {}:{} {}", variant.getGeneSymbol(), variant.getStartContigId(),
-                        variant.getStart(), transcriptAnnotation));
+                .forEach(transcriptAnnotation -> logger.info("{} {}:{} {}", variant.getGeneSymbol(), variant.contigId(),
+                        variant.start(), transcriptAnnotation));
     }
 
     @Test
@@ -622,9 +622,9 @@ public class GeneReassignerTest {
                         gene1VarMissense1Exon2,
                         gene1VarUtr3);
 
-        variantFactory.createVariantEvaluations(variantContexts)
-                .peek(variantContext -> logger.info("{}", variantContext))
-                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getTranscriptAnnotations()));
+//        variantFactory.createVariantEvaluations(variantContexts)
+//                .peek(variantContext -> logger.info("{}", variantContext))
+//                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getTranscriptAnnotations()));
 
     }
 //    gene lies within two overlapping TADs

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,17 +46,17 @@ public class RegulatoryFeatureTest {
 
     @Test
     public void getChromosome() {
-        assertThat(instance.getStartContigId(), equalTo(1));
+        assertThat(instance.contigId(), equalTo(1));
     }
 
     @Test
     public void getStart() {
-        assertThat(instance.getStart(), equalTo(10));
+        assertThat(instance.start(), equalTo(10));
     }
 
     @Test
     public void getEnd() {
-        assertThat(instance.getEnd(), equalTo(100));
+        assertThat(instance.end(), equalTo(100));
     }
 
     @Test
@@ -67,11 +67,6 @@ public class RegulatoryFeatureTest {
     @Test
     public void testGetVariantEffect() {
         assertThat(instance.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
-    }
-
-    @Test
-    public void testToString() {
-        System.out.println(instance);
     }
 
 }

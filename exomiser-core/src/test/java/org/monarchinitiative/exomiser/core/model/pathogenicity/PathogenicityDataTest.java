@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,7 +64,6 @@ public class PathogenicityDataTest {
         assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
         assertThat(instance.getMostPathogenicScore(), nullValue());
         assertThat(instance.getScore(), equalTo(0f));
-        System.out.println(instance);
     }
 
     @Test
@@ -282,9 +281,4 @@ public class PathogenicityDataTest {
         assertThat(instance.equals(otherInstance), is(true));
     }
 
-    @Test
-    public void testToString() {
-        PathogenicityData instance = PathogenicityData.of(MTASTER_FAIL, POLYPHEN_PASS, SIFT_PASS);
-        System.out.println(instance);
-    }
 }

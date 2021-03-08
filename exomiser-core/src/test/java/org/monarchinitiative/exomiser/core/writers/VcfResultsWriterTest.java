@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -127,8 +127,6 @@ public class VcfResultsWriterTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-//        outPath = Files.createTempFile("exomiser_test", "");
-//        outPath.toFile().deleteOnExit();
         settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPrefix("testWrite")
@@ -358,7 +356,6 @@ public class VcfResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
 
         String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
-        System.out.println(output);
         String expected = EXPECTED_HEADER
                 + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
@@ -370,7 +367,6 @@ public class VcfResultsWriterTest {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
         List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath).collect(toList());
-        variants.forEach(System.out::println);
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
         VariantEvaluation altAlleleOne = variants.get(3).toBuilder()
                 //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
@@ -393,7 +389,6 @@ public class VcfResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
 
         String output = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
-        System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER
                 + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarScore=1.0,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,9 +31,10 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.VariantAllele;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +58,14 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactoryImpl.class);
 
+    private final GenomeAssembly genomeAssembly;
     private final VariantAnnotator variantAnnotator;
+    private final VariantContextConverter variantContextConverter;
 
     public VariantFactoryImpl(VariantAnnotator variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
+        this.genomeAssembly = variantAnnotator.genomeAssembly();
+        this.variantContextConverter = VariantContextConverter.of(genomeAssembly.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
     }
 
     @Override
@@ -118,8 +123,10 @@ public class VariantFactoryImpl implements VariantFactory {
         // It is possible for a variant to overlap two or more genes (see issue https://github.com/exomiser/Exomiser/issues/294)
         // so we're expecting a single gene per variant annotation which might have different variant consequences and different
         // phenotypes for each gene
-        VariantAllele variantAllele = VariantContextConverter.toVariantAllele(variantContext, altAllele);
-        List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variantAllele);
+        // should this return some VariantCoordinates or a VariantPosition? Could also use a Variant.Builder to collect the annotations into
+        Variant variant = variantContextConverter.convertToVariant(variantContext, altAllele);
+//        VariantContext -> Variant -> VariantAnnotation -> VariantEvaluation
+        List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variant);
 
         // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
         // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
@@ -137,7 +144,7 @@ public class VariantFactoryImpl implements VariantFactory {
         // See also notes in InheritanceModeAnnotator.
         Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
         // all the variantAnnotation methods are present on the Variant interface so this should be a VariantEvaluation.copy(Variant)
-        return VariantEvaluation.copy(variantAnnotation)
+        return VariantEvaluation.with(variantAnnotation)
                 //HTSJDK derived data are used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
                 //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext

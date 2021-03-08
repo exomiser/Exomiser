@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -61,8 +61,8 @@ public class AllelePropertiesDaoMvStore implements AllelePropertiesDao {
     }
 
     @Caching(cacheable = {
-            @Cacheable(cacheNames = "hg19.allele", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
-            @Cacheable(cacheNames = "hg38.allele", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+            @Cacheable(cacheNames = "hg19.allele", keyGenerator = "variantKeyGenerator", condition = "T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19.containsContig(#variant.contig())"),
+            @Cacheable(cacheNames = "hg38.allele", keyGenerator = "variantKeyGenerator", condition = "T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38.containsContig(#variant.contig())"),
     })
     @Override
     public AlleleProto.AlleleProperties getAlleleProperties(Variant variant) {

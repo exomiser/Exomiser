@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,7 +103,6 @@ public class IntervalFilterTest {
         FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(VariantEvaluation.builder(2, 233, "A", "T").build()));
 
         assertThat(multiIntervalFilter.getChromosomalRegions(), equalTo(ImmutableList.of(interval1, interval2, interval3, interval4)));
-        System.out.println(multiIntervalFilter);
     }
 
     @Test
@@ -139,10 +138,4 @@ public class IntervalFilterTest {
         IntervalFilter otherFilter = new IntervalFilter(SEARCH_INTERVAL);
         assertThat(instance.equals(otherFilter), is(true));
     }
-    
-    @Test
-    public void testToString() {
-        System.out.println(instance.toString());
-    }
-    
 }

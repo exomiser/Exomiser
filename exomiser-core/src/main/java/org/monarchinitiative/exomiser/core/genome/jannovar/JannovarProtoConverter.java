@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -92,6 +92,9 @@ public class JannovarProtoConverter {
                 .setCdsRegion(toProtoGenomeInterval(transcriptModel.getCDSRegion()))
                 .setTxRegion(toProtoGenomeInterval(transcriptModel.getTXRegion()))
                 .addAllExonRegions(toProtoExonRegions(transcriptModel.getExonRegions()))
+//                .setHasIndels(transcriptModel.isHasIndels())
+//                .setHasSubstitutions(transcriptModel.isHasSubstitutions())
+//                .setAlignment(toProtoSeqAlignment(transcriptModel.getSeqAlignment()))
                 .build();
     }
 
@@ -134,6 +137,22 @@ public class JannovarProtoConverter {
         return intervals;
     }
 
+//    private static JannovarProto.Alignment toProtoSeqAlignment(Alignment alignment) {
+//        return JannovarProto.Alignment.newBuilder()
+//                .addAllRefAnchors(toProtoAnchors(alignment.getRefAnchors()))
+//                .addAllQryAnchors(toProtoAnchors(alignment.getQryAnchors()))
+//                .build();
+//    }
+//
+//    private static List<JannovarProto.Anchor> toProtoAnchors(List<Anchor> anchors) {
+//        List<JannovarProto.Anchor> protoAnchors = new ArrayList<>();
+//        anchors.forEach(anchor -> protoAnchors.add(JannovarProto.Anchor.newBuilder()
+//                .setGapPos(anchor.getGapPos())
+//                .setSeqPos(anchor.getSeqPos())
+//                .build()));
+//        return protoAnchors;
+//    }
+
     public static JannovarData toJannovarData(JannovarProto.JannovarData protoJannovarData) {
         logger.debug("Converting to jannovar data...");
         ReferenceDictionary referenceDictionary = toReferenceDictionary(protoJannovarData.getReferenceDictionary());
@@ -153,8 +172,9 @@ public class JannovarProtoConverter {
         return referenceDictionaryBuilder.build();
     }
 
-    private static Function<JannovarProto.TranscriptModel, TranscriptModel> toTranscriptModel(ReferenceDictionary referenceDictionary) {
-        return protoTranscriptModel -> new TranscriptModel(
+    public static Function<JannovarProto.TranscriptModel, TranscriptModel> toTranscriptModel(ReferenceDictionary referenceDictionary) {
+        return protoTranscriptModel ->
+                new TranscriptModel(
                 protoTranscriptModel.getAccession(),
                 protoTranscriptModel.getGeneSymbol(),
                 toGenomeInterval(referenceDictionary, protoTranscriptModel.getTxRegion()),
@@ -164,9 +184,21 @@ public class JannovarProtoConverter {
                 protoTranscriptModel.getGeneID(),
                 protoTranscriptModel.getTranscriptSupportLevel(),
                 protoTranscriptModel.getAltGeneIdsMap()
-                // TODO - add new Alignment and Anchor messages to jannovar.proto
-//                toAlignment(protoTranscriptModel.getAlignment());
         );
+//                new TranscriptModel(
+//                        protoTranscriptModel.getAccession(),
+//                        protoTranscriptModel.getGeneSymbol(),
+//                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getTxRegion()),
+//                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getCdsRegion()),
+//                        toExonRegions(referenceDictionary, protoTranscriptModel.getExonRegionsList()),
+//                        protoTranscriptModel.getSequence(),
+//                        protoTranscriptModel.getGeneID(),
+//                        protoTranscriptModel.getTranscriptSupportLevel(),
+//                        protoTranscriptModel.getHasSubstitutions(),
+//                        protoTranscriptModel.getHasIndels(),
+//                        protoTranscriptModel.getAltGeneIdsMap(),
+//                        toAlignment(protoTranscriptModel.getAlignment())
+//                );
     }
 
     private static GenomeInterval toGenomeInterval(ReferenceDictionary refDict, JannovarProto.GenomeInterval protoGenomeInterval) {
@@ -184,4 +216,16 @@ public class JannovarProtoConverter {
         genomeIntervals.forEach(interval -> intervals.add(toGenomeInterval(refDict, interval)));
         return intervals.build();
     }
+
+//    private static Alignment toAlignment(JannovarProto.Alignment protoAlignment) {
+//        ImmutableList<Anchor> refAnchors = toAnchors(protoAlignment.getRefAnchorsList());
+//        ImmutableList<Anchor> qryAnchors = toAnchors(protoAlignment.getQryAnchorsList());
+//        return new Alignment(refAnchors, qryAnchors);
+//    }
+//
+//    private static ImmutableList<Anchor> toAnchors(List<JannovarProto.Anchor> protoAnchors) {
+//        ImmutableList.Builder<Anchor> anchors = ImmutableList.builder();
+//        protoAnchors.forEach(anchor -> anchors.add(new Anchor(anchor.getGapPos(), anchor.getSeqPos())));
+//        return anchors.build();
+//    }
 }

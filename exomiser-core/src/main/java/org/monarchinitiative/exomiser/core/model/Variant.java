@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,41 +25,18 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-
-import java.util.List;
 
 /**
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface Variant extends VariantCoordinates {
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+public interface Variant extends org.monarchinitiative.svart.Variant, VariantAnnotations {
 
-    public GenomeAssembly getGenomeAssembly();
-
-    public String getGeneSymbol();
-
-    public String getGeneId();
-
-    public VariantEffect getVariantEffect();
-
-    public List<TranscriptAnnotation> getTranscriptAnnotations();
-
-    public boolean hasTranscriptAnnotations();
-
-    @JsonIgnore
-    public default boolean isNonCodingVariant() {
-        return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
+    default GenomeAssembly getGenomeAssembly() {
+        return GenomeAssembly.assemblyOfContig(contig());
     }
 
-    /**
-     * @return true if the Variant is in a coding region, otherwise false
-     * @since 12.0.0
-     */
-    @JsonIgnore
-    public default boolean isCodingVariant() {
-        return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
-    }
 }

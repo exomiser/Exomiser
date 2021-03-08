@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -139,7 +139,7 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
         Objects.requireNonNull(chromosomalRegions);
         FiltersProto.IntervalFilter.Builder intervalFilterBuilder = FiltersProto.IntervalFilter.newBuilder();
         chromosomalRegions.stream()
-                .map(region -> new GeneticInterval(region.getStartContigId(), region.getStart(), region.getEnd()))
+                .map(region -> new GeneticInterval(region.contigId(), region.start(), region.end()))
                 .forEach(geneticInterval -> intervalFilterBuilder.addIntervals(geneticInterval.toString()));
         this.builder.addSteps(stepBuilder().setIntervalFilter(intervalFilterBuilder));
         return this;

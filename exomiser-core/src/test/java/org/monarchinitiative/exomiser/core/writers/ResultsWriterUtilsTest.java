@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
+import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -198,7 +199,7 @@ public class ResultsWriterUtilsTest {
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
 
         for (FilterReport result : results) {
-            System.out.println(result);
+            assertThat(result, equalTo(new FilterReport(FilterType.VARIANT_EFFECT_FILTER, 0, 0, List.of("Removed variants with effects of type: []"))));
         }
 
         assertThat(results.isEmpty(), is(false));

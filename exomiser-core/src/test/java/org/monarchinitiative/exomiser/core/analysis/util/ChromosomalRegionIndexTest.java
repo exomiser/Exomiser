@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,11 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
+import org.monarchinitiative.exomiser.core.model.SimpleVariantCoordinates;
+import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Collections;
 
@@ -37,7 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ChromosomalRegionIndexTest {
 
-    private final VariantCoordinates variant = SimpleVariantCoordinates.of(1, 50, "A", "T");
+    private final Variant variant = SimpleVariantCoordinates.of(1, 50, "A", "T");
 
     @Test
     public void empty() {
@@ -58,15 +61,15 @@ public class ChromosomalRegionIndexTest {
 
     @Test
     public void multipleRegionsInChromosomes() {
-        ChromosomalRegion region1 = new TopologicalDomain(1, 1, 100, ImmutableMap.of());
-        ChromosomalRegion region2 = new TopologicalDomain(1, 150, 300, ImmutableMap.of());
-        ChromosomalRegion region3 = new TopologicalDomain(1, 250, 350, ImmutableMap.of());
-        ChromosomalRegion region4 = new TopologicalDomain(1, 400, 500, ImmutableMap.of());
-        ChromosomalRegion region5 = new TopologicalDomain(2, 600, 800, ImmutableMap.of());
+        TopologicalDomain region1 = new TopologicalDomain(1, 1, 100, ImmutableMap.of());
+        TopologicalDomain region2 = new TopologicalDomain(1, 150, 300, ImmutableMap.of());
+        TopologicalDomain region3 = new TopologicalDomain(1, 250, 350, ImmutableMap.of());
+        TopologicalDomain region4 = new TopologicalDomain(1, 400, 500, ImmutableMap.of());
+        TopologicalDomain region5 = new TopologicalDomain(2, 600, 800, ImmutableMap.of());
 
-        ImmutableList<ChromosomalRegion> chromosomalRegions = ImmutableList.of(region1, region2, region3, region4, region5);
+        ImmutableList<TopologicalDomain> chromosomalRegions = ImmutableList.of(region1, region2, region3, region4, region5);
 
-        ChromosomalRegionIndex<ChromosomalRegion> instance = ChromosomalRegionIndex.of(chromosomalRegions);
+        ChromosomalRegionIndex<TopologicalDomain> instance = ChromosomalRegionIndex.of(chromosomalRegions);
 
         assertThat(instance.size(), equalTo(chromosomalRegions.size()));
     }
@@ -87,7 +90,7 @@ public class ChromosomalRegionIndexTest {
 
         assertThat(instance.getRegionsContainingVariant(variant), equalTo(ImmutableList.of()));
         assertThat(instance.hasRegionContainingVariant(variant), is(false));
-        assertThat(instance.hasRegionContainingPosition(variant.getStartContigId(), variant.getStart()), is(false));
+        assertThat(instance.hasRegionContainingPosition(variant.contigId(), variant.start()), is(false));
     }
 
     @Test

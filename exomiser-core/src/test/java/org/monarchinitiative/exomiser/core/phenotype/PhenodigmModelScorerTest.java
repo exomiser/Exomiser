@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,9 +74,8 @@ public class PhenodigmModelScorerTest {
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", Collections.emptyList());
 
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
-        System.out.println(result);
         assertThat(result.getScore(), equalTo(0.0));
     }
 
@@ -91,9 +90,8 @@ public class PhenodigmModelScorerTest {
         //The model should have no phenotypes in common with the query set.
         assertThat(queryTerms.contains(noMatchTerm), is(false));
         Model model = new GeneDiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.getId()));
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
-        System.out.println(result);
         assertThat(result.getScore(), equalTo(0.0));
         assertThat(result.getBestPhenotypeMatches().isEmpty(), is(true));
     }
@@ -106,10 +104,10 @@ public class PhenodigmModelScorerTest {
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
-        System.out.println(result);
         assertThat(result.getScore(), equalTo(1.0));
+        assertThat(result.getModel(), equalTo(model));
     }
 
     @Test
@@ -123,10 +121,10 @@ public class PhenodigmModelScorerTest {
         List<String> twoExactPhenotypeMatches = ImmutableList.of("HP:0001156", "HP:0001363");
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
-        System.out.println(result);
         assertThat(result.getScore(), equalTo(0.732228059966757));
+        assertThat(result.getModel(), equalTo(model));
     }
 
     @Test
@@ -138,10 +136,10 @@ public class PhenodigmModelScorerTest {
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
-        System.out.println(result);
         assertThat(result.getScore(), equalTo(1.0));
+        assertThat(result.getModel(), equalTo(model));
     }
 
     @Test
@@ -154,41 +152,38 @@ public class PhenodigmModelScorerTest {
 
         Model model = makeBestMouseModel(mouseOrganismPhenotypeMatcher);
 
-        ModelPhenotypeMatch result = mousePhiveModelScorer.scoreModel(model);
-        System.out.println(result);
+        ModelPhenotypeMatch<Model> result = mousePhiveModelScorer.scoreModel(model);
+
         assertThat(result.getScore(), equalTo(1.0));
+        assertThat(result.getModel(), equalTo(model));
     }
 
     @Test
     public void testScoreMultiCrossSpecies() {
 
         List<PhenotypeTerm> queryTerms = TestPriorityServiceFactory.pfeifferSyndromePhenotypes();
-        queryTerms.forEach(System.out::println);
 
         PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getHumanPhenotypeMatcherForTerms(queryTerms);
         QueryPhenotypeMatch bestQueryPhenotypeMatch = referenceOrganismPhenotypeMatcher.getQueryPhenotypeMatch();
 
 
-        ModelScorer<Model> diseaseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, referenceOrganismPhenotypeMatcher);
-        Model disease = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
-        ModelPhenotypeMatch diseaseResult = diseaseModelScorer.scoreModel(disease);
-        System.out.println(diseaseResult);
+        ModelScorer<GeneDiseaseModel> diseaseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, referenceOrganismPhenotypeMatcher);
+        GeneDiseaseModel disease = makeBestHumanModel(referenceOrganismPhenotypeMatcher);
+        ModelPhenotypeMatch<GeneDiseaseModel> diseaseResult = diseaseModelScorer.scoreModel(disease);
         assertThat(diseaseResult.getScore(), equalTo(1.0));
 
 
         PhenotypeMatcher mouseOrganismPhenotypeMatcher = priorityService.getMousePhenotypeMatcherForTerms(queryTerms);
         ModelScorer<GeneOrthologModel> mouseModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, mouseOrganismPhenotypeMatcher);
         GeneOrthologModel mouse = makeBestMouseModel(mouseOrganismPhenotypeMatcher);
-        ModelPhenotypeMatch mouseResult = mouseModelScorer.scoreModel(mouse);
-        System.out.println(mouseResult);
+        ModelPhenotypeMatch<GeneOrthologModel> mouseResult = mouseModelScorer.scoreModel(mouse);
         assertThat(mouseResult.getScore(), equalTo(0.9718528996668048));
 
 
         PhenotypeMatcher fishOrganismPhenotypeMatcher = priorityService.getFishPhenotypeMatcherForTerms(queryTerms);
         ModelScorer<GeneOrthologModel> fishModelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, fishOrganismPhenotypeMatcher);
         GeneOrthologModel fish = makeBestFishModel(fishOrganismPhenotypeMatcher);
-        ModelPhenotypeMatch fishResult = fishModelScorer.scoreModel(fish);
-        System.out.println(fishResult);
+        ModelPhenotypeMatch<GeneOrthologModel> fishResult = fishModelScorer.scoreModel(fish);
         assertThat(fishResult.getScore(), equalTo(0.628922135363762));
     }
 }

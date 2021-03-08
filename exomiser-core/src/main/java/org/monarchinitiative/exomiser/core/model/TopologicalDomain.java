@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@
  */
 
 package org.monarchinitiative.exomiser.core.model;
+
+import org.monarchinitiative.svart.Variant;
 
 import java.util.Map;
 
@@ -42,17 +44,17 @@ public class TopologicalDomain implements ChromosomalRegion {
     }
 
     @Override
-    public int getStartContigId() {
+    public int contigId() {
         return chromosome;
     }
 
     @Override
-    public int getStart() {
+    public int start() {
         return start;
     }
 
     @Override
-    public int getEnd() {
+    public int end() {
         return end;
     }
 
@@ -60,9 +62,9 @@ public class TopologicalDomain implements ChromosomalRegion {
         return genes;
     }
 
-    public boolean containsPosition(VariantCoordinates variantCoordinates) {
-        if (variantCoordinates.getStartContigId() == chromosome) {
-            int variantPosition = variantCoordinates.getStart();
+    public boolean containsPosition(Variant variant) {
+        if (variant.contigId() == chromosome) {
+            int variantPosition = variant.start();
             return start <= variantPosition && end >= variantPosition;
         }
         return false;
@@ -79,7 +81,6 @@ public class TopologicalDomain implements ChromosomalRegion {
         if (start != that.start) return false;
         if (end != that.end) return false;
         return genes.equals(that.genes);
-
     }
 
     @Override

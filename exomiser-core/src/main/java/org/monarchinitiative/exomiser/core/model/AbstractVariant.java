@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.model;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.svart.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class AbstractVariant extends AbstractVariantCoordinates implements Variant {
+public abstract class AbstractVariant extends BaseVariant<AbstractVariant> implements Variant {
 
     final GenomeAssembly genomeAssembly;
 
@@ -46,6 +47,15 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
         this.geneId = builder.geneId;
         this.variantEffect = builder.variantEffect;
         this.annotations = ImmutableList.copyOf(builder.annotations);
+    }
+
+    AbstractVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
+        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength);
+        this.genomeAssembly = genomeAssembly;
+        this.geneSymbol = geneSymbol;
+        this.geneId = geneId;
+        this.variantEffect = variantEffect;
+        this.annotations = ImmutableList.copyOf(annotations);
     }
 
     @Override
@@ -92,7 +102,7 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
         return Objects.hash(super.hashCode(), genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
     }
 
-    abstract static class Builder<T extends Builder<T>> extends AbstractVariantCoordinates.Builder<T> {
+    abstract static class Builder<T extends Builder<T>> extends BaseVariant.Builder<T> {
 
         private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
 
@@ -100,6 +110,16 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
         private String geneId = "";
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
         private List<TranscriptAnnotation> annotations = ImmutableList.of();
+
+        public T with(Variant variant) {
+            super.with(variant);
+            genomeAssembly = variant.getGenomeAssembly();
+            geneSymbol = variant.getGeneSymbol();
+            geneId = variant.getGeneId();
+            variantEffect = variant.getVariantEffect();
+            annotations = variant.getTranscriptAnnotations();
+            return self();
+        }
 
         public T genomeAssembly(GenomeAssembly genomeAssembly) {
             this.genomeAssembly = Objects.requireNonNull(genomeAssembly);
@@ -126,7 +146,7 @@ public abstract class AbstractVariant extends AbstractVariantCoordinates impleme
             return self();
         }
 
-        protected abstract Variant build();
+        protected abstract AbstractVariant build();
 
     }
 }

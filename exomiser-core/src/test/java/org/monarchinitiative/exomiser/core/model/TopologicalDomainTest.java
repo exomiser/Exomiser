@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,19 +40,19 @@ public class TopologicalDomainTest {
     @Test
     public void testGetChromosome() {
         instance = new TopologicalDomain(1, 0, 0, new HashMap<>());
-        assertThat(instance.getStartContigId(), equalTo(1));
+        assertThat(instance.contigId(), equalTo(1));
     }
 
     @Test
     public void testGetStart() {
         instance = new TopologicalDomain(0, 1, 0, new HashMap<>());
-        assertThat(instance.getStart(), equalTo(1));
+        assertThat(instance.start(), equalTo(1));
     }
 
     @Test
     public void testGetEnd() {
         instance = new TopologicalDomain(0, 0, 1, new HashMap<>());
-        assertThat(instance.getEnd(), equalTo(1));
+        assertThat(instance.end(), equalTo(1));
     }
 
     @Test
@@ -66,25 +66,16 @@ public class TopologicalDomainTest {
 
     @Test
     public void testVariantIsWithinDomain() {
-        VariantCoordinates variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
+        Variant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1, 10, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(true));
     }
 
     @Test
     public void testVariantIsOutsideDomain() {
-        VariantCoordinates variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
+        Variant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1000, 10000, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(false));
-    }
-
-    @Test
-    public void testToString() {
-        Map<String, Integer> genes = new HashMap<>();
-        genes.put("GENE1", 12345);
-        genes.put("GENE2", 23456);
-        instance = new TopologicalDomain(1, 987, 123456, genes);
-        System.out.println(instance);
     }
 
 }

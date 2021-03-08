@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,12 +21,14 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.svart.Contig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -42,45 +44,47 @@ class SvPathogenicityDaoTest {
     @Autowired
     private SvPathogenicityDao instance;
 
-    @Test
-    void getDupExactMatch() {
-        Variant variant = VariantAnnotation.builder()
-                .chromosome(17)
-                .start(526)
-                .end(81_041_938)
-                .variantType(VariantType.DUP)
-                .build();
-
-        PathogenicityData result = instance.getPathogenicityData(variant);
-
-        System.out.println(result);
+    private Contig contig(int id) {
+        return GenomeAssembly.HG19.getContigById(id);
     }
 
-    @Test
-    void getDupInexactMatch() {
-        Variant variant = VariantAnnotation.builder()
-                .chromosome(17)
-                .start(500)
-                .end(82_041_938)
-                .variantType(VariantType.DUP)
-                .build();
-
+    @ParameterizedTest
+    @CsvSource({
+            "1,  19225,  4401691, <DUP>,     319",
+            "1,    141475, 155000, <DUP>,   13525",
+            "10,  105817214,   105817214, <INS>,   400",
+    })
+    void getPathogenicityData(int chr, int start, int end, String alt, int changeLength) {
+        Variant variant = VariantEvaluation.builder(chr, start, end, "", alt, changeLength).build();
         PathogenicityData result = instance.getPathogenicityData(variant);
-
         System.out.println(result);
     }
-
-    @Test
-    void getInsExactMatch() {
-        Variant variant = VariantAnnotation.builder()
-                .chromosome(10)
-                .start(105_817_214)
-                .end(105_817_214)
-                .variantType(VariantType.DUP)
-                .build();
-
-        PathogenicityData result = instance.getPathogenicityData(variant);
-
-        System.out.println(result);
-    }
+//
+//    @Test
+//    void getDupInexactMatch() {
+//        Variant variant = VariantAnnotation.builder()
+//                .contig(contig(17))
+//                .start(500)
+//                .end(82_041_938)
+//                .variantType(VariantType.DUP)
+//                .build();
+//
+//        PathogenicityData result = instance.getPathogenicityData(variant);
+//
+//        System.out.println(result);
+//    }
+//
+//    @Test
+//    void getInsExactMatch() {
+//        Variant variant = VariantAnnotation.builder()
+//                .contig(contig(10))
+//                .start(105_817_214)
+//                .end(105_817_214)
+//                .variantType(VariantType.DUP)
+//                .build();
+//
+//        PathogenicityData result = instance.getPathogenicityData(variant);
+//
+//        System.out.println(result);
+//    }
 }

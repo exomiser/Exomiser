@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -130,16 +130,29 @@ public class PhenotypeMatchTest {
     }
     
     @Test
-    public void testJsonOutput() {
+    public void testJsonOutput() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        try {
-            String jsonString = mapper.writeValueAsString(instance);
-            System.out.println(jsonString);
-        } catch (JsonProcessingException ex) {
-            System.out.println(ex);
-        }
+        String jsonString = mapper.writeValueAsString(instance);
+        String expected = "{\n" +
+                "  \"query\" : {\n" +
+                "    \"id\" : \"ID:12344\",\n" +
+                "    \"label\" : \"big nose\"\n" +
+                "  },\n" +
+                "  \"match\" : {\n" +
+                "    \"id\" : \"ID:12355\",\n" +
+                "    \"label\" : \"little nose\"\n" +
+                "  },\n" +
+                "  \"lcs\" : {\n" +
+                "    \"id\" : \"ID:12345\",\n" +
+                "    \"label\" : \"nose\"\n" +
+                "  },\n" +
+                "  \"ic\" : 1.0,\n" +
+                "  \"simj\" : 0.8,\n" +
+                "  \"score\" : 1.26\n" +
+                "}";
+        assertThat(jsonString, equalTo(expected));
     }
 
 }

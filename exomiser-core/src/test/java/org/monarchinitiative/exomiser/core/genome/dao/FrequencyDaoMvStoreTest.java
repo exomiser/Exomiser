@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -40,12 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     private Variant buildVariant(int chr, int pos, String ref, String alt) {
-        return VariantAnnotation.builder()
-                .chromosome(chr)
-                .start(pos)
-                .ref(ref)
-                .alt(alt)
-                .build();
+        return VariantEvaluation.builder(chr, pos, ref, alt).build();
     }
 
     @Test
@@ -64,7 +59,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     @Test
     public void getFrequencyDataKeyMismatchReturnsNoData() throws Exception {
-        Variant variant = VariantAnnotation.builder().chromosome(1).start(54321).ref("C").alt("G").build();
+        Variant variant = buildVariant(1, 54321, "C", "G");
         AlleleKey key = AlleleKey.newBuilder().setChr(1).setPosition(12345).setRef("A").setAlt("T").build();
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
                 .putProperties("KG", 0.04f)

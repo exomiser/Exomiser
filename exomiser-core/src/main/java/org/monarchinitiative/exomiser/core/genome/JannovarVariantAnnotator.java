@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,10 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +39,21 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarVariantAnnotator.class);
 
+    private final GenomeAssembly genomeAssembly;
     private final JannovarSmallVariantAnnotator smallVariantAnnotator;
     private final JannovarStructuralVariantAnnotator structuralVariantAnnotator;
 
     public JannovarVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData, ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
+        this.genomeAssembly = genomeAssembly;
         this.smallVariantAnnotator = new JannovarSmallVariantAnnotator(genomeAssembly, jannovarData, regulatoryRegionIndex);
         this.structuralVariantAnnotator = new JannovarStructuralVariantAnnotator(genomeAssembly, jannovarData, regulatoryRegionIndex);
     }
 
+    @Override
+    public GenomeAssembly genomeAssembly() {
+        return genomeAssembly;
+    }
+    
     /**
      * Given a single allele from a multi-positional site, incoming variants might not be fully trimmed.
      * In cases where there is repetition, depending on the program used, the final variant allele will be different.
@@ -71,15 +81,15 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      * Jannovar:
      * https://github.com/charite/jannovar/blob/master/jannovar-core/src/main/java/de/charite/compbio/jannovar/reference/VariantDataCorrector.java
      *
-     * @param variantCoordinates
-     * @return {@link VariantAnnotation} objects trimmed according to {@link AllelePosition#trim(int, String, String)} and annotated using Jannovar.
+     * @param variant
+     * @return {@link VariantAnnotation} objects annotated using Jannovar.
      * @since 13.0.0
      */
     @Override
-    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
-        if (variantCoordinates.isSymbolic()) {
-            return structuralVariantAnnotator.annotate(variantCoordinates);
+    public List<VariantAnnotation> annotate(Variant variant) {
+        if (variant == null) {
+            return List.of();
         }
-        return smallVariantAnnotator.annotate(variantCoordinates);
+        return variant.isSymbolic() ? structuralVariantAnnotator.annotate(variant) : smallVariantAnnotator.annotate(variant);
     }
 }

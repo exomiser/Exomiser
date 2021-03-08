@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -85,7 +85,6 @@ public class PhivePriorityTest {
                 .sorted()
                 .collect(toList());
 
-        results.forEach(System.out::println);
         assertThat(results.size(), equalTo(genes.size()));
 
         Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
@@ -103,7 +102,6 @@ public class PhivePriorityTest {
                 .sorted()
                 .collect(toList());
 
-        results.forEach(System.out::println);
         assertThat(results.size(), equalTo(genes.size()));
 
         Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
@@ -114,8 +112,6 @@ public class PhivePriorityTest {
     public void testHashCode() {
         PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
         PhivePriority other = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
-        System.out.println(phivePriority.hashCode());
-        System.out.println(other.hashCode());
         assertThat(phivePriority, equalTo(other));
     }
 }

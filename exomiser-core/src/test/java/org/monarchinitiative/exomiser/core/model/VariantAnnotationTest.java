@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.model;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.svart.Contig;
 
 import java.util.Collections;
 
@@ -34,154 +35,73 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class VariantAnnotationTest {
 
+    Contig chr1 = GenomeAssembly.HG19.getContigByName("1");
+
     @Test
     public void empty() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .genomeAssembly(GenomeAssembly.HG19)
-                .chromosome(0)
-                .contig("")
-                .start(0)
-                .end(0)
-                .ref("")
-                .alt("")
-                .geneId("")
-                .geneSymbol("")
-                .variantEffect(VariantEffect.SEQUENCE_VARIANT)
-                .annotations(Collections.emptyList())
-                .build();
+        VariantAnnotation instance = VariantAnnotation.builder(GenomeAssembly.HG19, 0, 1, 0, "", "", 0).build();
         assertThat(VariantAnnotation.empty(), equalTo(instance));
     }
 
     @Test
     public void assembly() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .genomeAssembly(GenomeAssembly.HG38)
-                .build();
+        VariantAnnotation instance = VariantAnnotation.builder(GenomeAssembly.HG38, 1, 1, "A", "T").build();
         assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
-    public void getChromosome() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .chromosome(23)
-                .build();
-        assertThat(instance.getStartContigId(), equalTo(23));
-    }
-
-    @Test
     public void getContig() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .contig("MT")
-                .build();
-        assertThat(instance.getStartContigName(), equalTo("MT"));
+        VariantAnnotation instance = VariantAnnotation.builder(GenomeAssembly.HG19, 23, 1, "A", "T").build();
+        assertThat(instance.contigId(), equalTo(23));
     }
 
     @Test
-    public void start() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .start(123456)
-                .build();
-        assertThat(instance.getStart(), equalTo(123456));
+    public void getContigName() {
+        VariantAnnotation instance = VariantAnnotation.builder(GenomeAssembly.HG19, 25, 1, "A", "T").build();
+        assertThat(instance.contigName(), equalTo("MT"));
     }
 
     @Test
-    public void end() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .start(123456)
-                .build();
-        assertThat(instance.getStart(), equalTo(123456));
-        assertThat(instance.getEnd(), equalTo(123456));
-    }
-
-    @Test
-    public void ref() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .ref("A")
-                .build();
-        assertThat(instance.getRef(), equalTo("A"));
-    }
-
-    @Test
-    public void alt() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .alt("T")
-                .build();
-        assertThat(instance.getAlt(), equalTo("T"));
-    }
-
-    @Test
-    public void length() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .length(2)
-                .build();
-        assertThat(instance.getLength(), equalTo(2));
-    }
-
-    @Test
-    public void doesNotSetlengthFromAlleleLength() {
-        VariantAnnotation snp = VariantAnnotation.builder()
-                .ref("A")
-                .alt("G")
-                .build();
-        assertThat(snp.getLength(), equalTo(0));
+    public void setsLengthFromAlleleLength() {
+        VariantAnnotation snp = VariantAnnotation.builder(GenomeAssembly.HG19, 1, 1, "A", "G").build();
+        assertThat(snp.length(), equalTo(1));
+        assertThat(snp.changeLength(), equalTo(0));
 
 
-        VariantAnnotation insertion = VariantAnnotation.builder()
-                .ref("AT")
-                .alt("GTT")
-                .build();
-        assertThat(insertion.getLength(), equalTo(0));
+        VariantAnnotation insertion = VariantAnnotation.builder(GenomeAssembly.HG19, 1, 1, "AT", "GTT").build();
+        assertThat(insertion.length(), equalTo(2));
+        assertThat(insertion.changeLength(), equalTo(1));
 
-        VariantAnnotation deletion = VariantAnnotation.builder()
-                .ref("ACT")
-                .alt("G")
-                .build();
-        assertThat(deletion.getLength(), equalTo(0));
+        VariantAnnotation deletion = VariantAnnotation.builder(GenomeAssembly.HG19, 1, 1, "ACT", "G").build();
+        assertThat(deletion.length(), equalTo(3));
+        assertThat(deletion.changeLength(), equalTo(-2));
 
-
-        VariantAnnotation mnv = VariantAnnotation.builder()
-                .ref("ATC")
-                .alt("GTT")
-                .build();
-        assertThat(mnv.getLength(), equalTo(0));
-    }
-
-    @Test
-    public void getGeneId() {
-        VariantAnnotation instance = VariantAnnotation.builder()
-                .geneId("ENSG:12233455")
-                .build();
-        assertThat(instance.getGeneId(), equalTo("ENSG:12233455"));
+        VariantAnnotation mnv = VariantAnnotation.builder(GenomeAssembly.HG19, 1, 1, "ATC", "GTT").build();
+        assertThat(mnv.length(), equalTo(3));
+        assertThat(mnv.changeLength(), equalTo(0));
     }
 
     @Test
     public void getGeneSymbol() {
-        VariantAnnotation instance = VariantAnnotation.builder()
+        VariantAnnotation instance = VariantAnnotation.builder(GenomeAssembly.HG19, 1, 1, "A", "T")
+                .geneId("ENSG:12233455")
                 .geneSymbol("GENE1")
-                .build();
-        assertThat(instance.getGeneSymbol(), equalTo("GENE1"));
-    }
-
-    @Test
-    public void getVariantEffect() {
-        VariantAnnotation instance = VariantAnnotation.builder()
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .build();
-        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
-    }
-
-    @Test
-    public void getAnnotations() {
-        VariantAnnotation instance = VariantAnnotation.builder()
                 .annotations(Collections.singletonList(TranscriptAnnotation.empty()))
                 .build();
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.end(), equalTo(1));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo("T"));
+        assertThat(instance.getGeneId(), equalTo("ENSG:12233455"));
+        assertThat(instance.getGeneSymbol(), equalTo("GENE1"));
+        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
         assertThat(instance.getTranscriptAnnotations(), equalTo(Collections.singletonList(TranscriptAnnotation.empty())));
     }
 
     @Test
     public void testToString() {
-        System.out.println(VariantAnnotation.empty());
         assertThat(VariantAnnotation.empty()
-                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, contig='', start=0, end=0, length=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
+                .toString(), equalTo("VariantAnnotation{genomeAssembly=hg19, chromosome=0, contig='na', strand=+, start=1, end=0, length=0, ref='', alt='', geneSymbol='', geneId='', variantEffect=SEQUENCE_VARIANT, annotations=[]}"));
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -93,7 +93,7 @@ public class GeneTranscriptModelBuilder {
         final int txEnd = builder.getTXRegion().getEndPos();
         final int cdsStart = builder.getCDSRegion().getBeginPos();
         final int cdsEnd = builder.getCDSRegion().getEndPos();
-        logger.info("Built TranscriptModel Gene={} accession={} Chr{} Strand={} seqLen={} txRegion={}-{}({} bases) CDS={}-{}({} bases) {} exons={}", builder.getGeneSymbol(), builder.getAccession(), builder.getCDSRegion().getChr(),
+        logger.debug("Built TranscriptModel Gene={} accession={} Chr{} Strand={} seqLen={} txRegion={}-{}({} bases) CDS={}-{}({} bases) {} exons={}", builder.getGeneSymbol(), builder.getAccession(), builder.getCDSRegion().getChr(),
                 builder.getStrand(), builder.getSequence().length(), txStart, txEnd, txEnd - txStart,
                 cdsStart, cdsEnd, cdsEnd - cdsStart,
                 builder.getExonRegions().size(), builder.getExonRegions().stream().map(exon -> String.format("[%d-%d] ", exon.getBeginPos(), exon.getEndPos())).reduce("", (a, b) -> a + b));

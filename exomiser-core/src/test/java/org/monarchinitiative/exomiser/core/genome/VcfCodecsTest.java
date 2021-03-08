@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,11 +44,9 @@ class VcfCodecsTest {
 
         VCFEncoder encoder = VcfCodecs.encoder(sampleGenotypes);
         String encoded = encoder.encode(variantContext);
-        System.out.println(encoded);
 
         VCFCodec decoder = VcfCodecs.decoder(sampleGenotypes);
         VariantContext decoded = decoder.decode(encoded);
-        System.out.println(decoded.toStringDecodeGenotypes());
 
         assertThat(variantContext.toStringDecodeGenotypes(), equalTo(decoded.toStringDecodeGenotypes()));
     }

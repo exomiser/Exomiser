@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,49 +20,22 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
+
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleVariantCoordinates extends AbstractVariantCoordinates {
+public class SimpleVariantCoordinates {
 
-    private SimpleVariantCoordinates(Builder builder) {
-        super(builder);
+    private SimpleVariantCoordinates() {
     }
 
-    public static SimpleVariantCoordinates of(int chr, int start, String alt, String ref) {
-        return new Builder()
-                .chromosome(chr)
-                .start(start)
-                .ref(ref)
-                .alt(alt)
-                .build();
-    }
-
-    @Override
-    public String toString() {
-        return "SimpleVariantCoordinates{" +
-                "chr=" + chromosome +
-                ", start=" + start +
-                ", ref='" + ref + '\'' +
-                ", alt='" + alt + '\'' +
-                '}';
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder extends AbstractVariantCoordinates.Builder<Builder> {
-
-        @Override
-        public SimpleVariantCoordinates build() {
-            return new SimpleVariantCoordinates(this);
-        }
-
-        @Override
-        protected Builder self() {
-            return this;
-        }
+    public static Variant of(int chr, int start, String alt, String ref) {
+        return Variant.of(GenomeAssembly.HG19.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), ref, alt);
     }
 
 }

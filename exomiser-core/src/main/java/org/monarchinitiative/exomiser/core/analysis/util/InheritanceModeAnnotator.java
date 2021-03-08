@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -168,13 +168,13 @@ public class InheritanceModeAnnotator {
 
             genotypeCallsBuilder.setPayload(variantEvaluation);
 
-            ChromosomeType chromosomeType = toChromosomeType(variantEvaluation.getStartContigId());
+            ChromosomeType chromosomeType = toChromosomeType(variantEvaluation.contigId());
             genotypeCallsBuilder.setChromType(chromosomeType);
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation
             //then we can mostly discard the VariantContext, apart from writing out again...
             Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
-            logger.debug("Converting {} {} {}", variantEvaluation.getRef(), variantEvaluation.getAlt(), sampleGenotypes);
+            logger.debug("Converting {} {} {}", variantEvaluation.ref(), variantEvaluation.alt(), sampleGenotypes);
             for (Map.Entry<String, SampleGenotype> entry : sampleGenotypes.entrySet()) {
                 String sampleName = entry.getKey();
                 SampleGenotype sampleGenotype = entry.getValue();

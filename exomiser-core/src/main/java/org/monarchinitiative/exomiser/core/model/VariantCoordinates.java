@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,37 +26,14 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.monarchinitiative.svart.Variant;
 
 /**
- *
+ * @deprecated Use {@link org.monarchinitiative.svart.Variant} instead.
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public interface VariantCoordinates extends ChromosomalRegion {
+@Deprecated(forRemoval = true)
+public interface VariantCoordinates extends Variant {
 
-    /**
-     * @return String representation of the chromosome. Chromosomes 1-22 will return
-     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=MT.
-     */
-    public String getStartContigName();
-
-    public String getEndContigName();
-
-    /**
-     * @return String with the reference allele in the variant, without common
-     * suffix or prefix to reference allele.
-     */
-    public String getRef();
-
-    /**
-     * @return String with the alternative allele in the variant, without common
-     * suffix or prefix to reference allele.
-     */
-    public String getAlt();
-
-    public default boolean isSymbolic() {
-        return AllelePosition.isSymbolic(getRef(), getAlt());
-    }
-
-    public VariantType getVariantType();
 }

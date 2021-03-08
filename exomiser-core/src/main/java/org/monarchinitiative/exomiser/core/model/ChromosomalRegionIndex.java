@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,10 @@ package org.monarchinitiative.exomiser.core.model;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
 import de.charite.compbio.jannovar.impl.intervals.IntervalEndExtractor;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Coordinates;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +44,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
-    private static final ChromosomalRegionIndex EMPTY = new ChromosomalRegionIndex<>(ImmutableMap.of());
+    private static final ChromosomalRegionIndex<?> EMPTY = new ChromosomalRegionIndex<>(ImmutableMap.of());
 
     private static final Logger logger = LoggerFactory.getLogger(ChromosomalRegionIndex.class);
 
@@ -61,7 +65,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
      */
     public static <T extends ChromosomalRegion> ChromosomalRegionIndex<T> of(Collection<T> chromosomalRegions) {
         Map<Integer, Set<T>> regionIndex = chromosomalRegions.stream()
-                .collect(groupingBy(T::getStartContigId, toSet()));
+                .collect(groupingBy(T::contigId, toSet()));
 
         Map<Integer, IntervalArray<T>> intervalTreeIndex = new HashMap<>();
         for (Map.Entry<Integer, Set<T>> entry : regionIndex.entrySet()) {
@@ -83,8 +87,12 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return (ChromosomalRegionIndex<T>) EMPTY;
     }
 
-    public boolean hasRegionContainingVariant(VariantCoordinates variant) {
+    public boolean hasRegionContainingVariant(Variant variant) {
         return !getRegionsContainingVariant(variant).isEmpty();
+    }
+
+    public boolean hasRegionOverlappingVariant(Variant variant) {
+        return !getRegionsOverlappingVariant(variant).isEmpty();
     }
 
     /**
@@ -99,10 +107,29 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     }
 
     @Nonnull
-    public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
-        int chromosome = variantCoordinates.getStartContigId();
-        int position = variantCoordinates.getStart();
-        return getRegionsOverlappingPosition(chromosome, position);
+    public List<T> getRegionsContainingVariant(Variant variant) {
+        int chromosome = variant.contigId();
+        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        List<T> overlappingRegions = getRegionsOverlappingRegion(chromosome, start, end);
+        List<T> containingRegions = new ArrayList<>();
+        for (T overlapping : overlappingRegions) {
+            if (regionContainsVariant(overlapping, variant)) {
+                containingRegions.add(overlapping);
+            }
+        }
+        return containingRegions;
+    }
+
+    private boolean regionContainsVariant(T region, Variant variant) {
+      return Coordinates.aContainsB(CoordinateSystem.FULLY_CLOSED, region.start(), region.end(), variant.coordinateSystem(), variant.start(), variant.end());
+    }
+
+    public List<T> getRegionsOverlappingVariant(Variant variant) {
+        int chromosome = variant.contigId();
+        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        return getRegionsOverlappingRegion(chromosome, start, end);
     }
 
     /**
@@ -119,6 +146,25 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
             return Collections.emptyList();
         }
         IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
+        List<T> entries = queryResult.getEntries();
+        return (entries == null) ? Collections.emptyList() : entries;
+    }
+
+    /**
+     * Use one-based co-ordinates for this method.
+     *
+     * @param chromosome
+     * @param start - One-based start position
+     * @param end - One-based end position
+     * @return A list of regions overlapping the given start and end positions.
+     */
+    @Nonnull
+    public List<T> getRegionsOverlappingRegion(int chromosome, int start, int end) {
+        IntervalArray<T> intervalTree = index.get(chromosome);
+        if (intervalTree == null) {
+            return Collections.emptyList();
+        }
+        IntervalArray<T>.QueryResult queryResult = intervalTree.findOverlappingWithInterval(start - 1, end);
         List<T> entries = queryResult.getEntries();
         return (entries == null) ? Collections.emptyList() : entries;
     }
@@ -149,12 +195,12 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
         @Override
         public int getBegin(T region) {
-            return region.getStart() - 1;
+            return region.start() - 1;
         }
 
         @Override
         public int getEnd(T region) {
-            return region.getEnd();
+            return region.end();
         }
     }
 

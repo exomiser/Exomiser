@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -296,7 +296,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.getStartContigId() == 23;
+        return ve.contigId() == 23;
     }
 
     @JsonIgnore
@@ -305,7 +305,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
             return false;
         }
         Variant ve = variantEvaluations.get(0);
-        return ve.getStartContigId() == 24;
+        return ve.contigId() == 24;
     }
 
     /**
@@ -557,10 +557,19 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return GeneScore.compare(topGeneScore, otherGene.topGeneScore);
     }
 
-
     @Override
     public String toString() {
-        return String.format("%s entrezId=%d compatibleWith=%s geneScores=%s variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, geneScoreMap.values(), variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
+        return "Gene{" +
+                "geneSymbol='" + geneSymbol + '\'' +
+                ", entrezGeneId=" + entrezGeneId +
+                ", compatibleWith=" + inheritanceModes +
+                ", filterStatus=" + getFilterStatus() +
+                ", failedFilterTypes=" + failedFilterTypes +
+                ", passedFilterTypes=" + passedFilterTypes +
+                ", combinedScore=" + getCombinedScore() +
+                ", phenotypeScore=" + getPriorityScore() +
+                ", variantScore=" + getVariantScore() +
+                ", variants=" + variantEvaluations.size() +
+                '}';
     }
-
 }

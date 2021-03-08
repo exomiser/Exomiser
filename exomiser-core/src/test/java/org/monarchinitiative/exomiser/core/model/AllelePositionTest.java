@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,32 +46,31 @@ public class AllelePositionTest {
     @Test
     void nonVariant() {
         AllelePosition instance = trim(1, "AAT", ".");
-        System.out.println(instance);
-        System.out.println(instance.getEnd());
-        System.out.println(instance.getLength());
-        System.out.println(instance.isSymbolic());
+        assertThat(instance, equalTo(AllelePosition.of(1, "AAT", ".")));
     }
 
     @Test
     public void testEmptyRef() {
         AllelePosition instance = trim(1, "", "TA");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getEnd(), equalTo(1));
-        assertThat(instance.getRef(), equalTo(""));
-        assertThat(instance.getAlt(), equalTo("TA"));
-        assertThat(instance.getLength(), equalTo(2));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.end(), equalTo(1));
+        assertThat(instance.ref(), equalTo(""));
+        assertThat(instance.alt(), equalTo("TA"));
+        assertThat(instance.length(), equalTo(0));
+        assertThat(instance.changeLength(), equalTo(2));
     }
 
     @Test
     public void testEmptyAlt() {
         AllelePosition instance = trim(1, "TA", "");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getEnd(), equalTo(2));
-        assertThat(instance.getRef(), equalTo("TA"));
-        assertThat(instance.getAlt(), equalTo(""));
-        assertThat(instance.getLength(), equalTo(-2));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.end(), equalTo(2));
+        assertThat(instance.ref(), equalTo("TA"));
+        assertThat(instance.alt(), equalTo(""));
+        assertThat(instance.length(), equalTo(2));
+        assertThat(instance.changeLength(), equalTo(-2));
     }
 
     @Test
@@ -84,11 +83,12 @@ public class AllelePositionTest {
         assertThat(endOf(1, "AA", "G"), equalTo(2));
         assertThat(endOf(1, "AA", "GT"), equalTo(2));
         assertThat(endOf(200, "AA", "GT"), equalTo(201));
-        assertThat(endOf(200, "AAT", "AT"), equalTo(200));
+        assertThat(endOf(200, "AAT", "AT"), equalTo(201));
     }
 
     private int endOf(int start, String ref, String alt) {
-        return trim(start, ref, alt).getEnd();
+        AllelePosition trimmed = trim(start, ref, alt);
+        return trimmed.end();
     }
 
     @Test
@@ -119,19 +119,28 @@ public class AllelePositionTest {
     void testLength() {
         assertThat(length("A", "T"), equalTo(1));
         assertThat(length("AA", "GT"), equalTo(2));
-        assertThat(length("ATT", "A"), equalTo(-2));
-        assertThat(length("T", "TTA"), equalTo(2));
+        assertThat(length("ATT", "A"), equalTo(3));
+        assertThat(length("T", "TTA"), equalTo(1));
+    }
+
+    @Test
+    void testChangeLength() {
+        assertThat(AllelePosition.of(1, "A", "T").changeLength(), equalTo(0));
+        assertThat(AllelePosition.of(1, "AA", "GT").changeLength(), equalTo(0));
+        assertThat(AllelePosition.of(1, "ATT", "A").changeLength(), equalTo(-2));
+        assertThat(AllelePosition.of(1, "T", "TTA").changeLength(), equalTo(2));
     }
 
     @Test
     public void testEvaOne() {
         AllelePosition instance = trim(1000, "AGTTC", "AGCC");
 
-        assertThat(instance.getStart(), equalTo(1002));
-        assertThat(instance.getEnd(), equalTo(1003));
-        assertThat(instance.getRef(), equalTo("TT"));
-        assertThat(instance.getAlt(), equalTo("C"));
-        assertThat(instance.getLength(), equalTo(-1));
+        assertThat(instance.start(), equalTo(1002));
+        assertThat(instance.end(), equalTo(1003));
+        assertThat(instance.ref(), equalTo("TT"));
+        assertThat(instance.alt(), equalTo("C"));
+        assertThat(instance.length(), equalTo(2));
+        assertThat(instance.changeLength(), equalTo(-1));
         assertThat(instance.isSymbolic(), is(false));
     }
 
@@ -144,27 +153,27 @@ public class AllelePositionTest {
     public void testMcArthurCoLocatedOne() {
         AllelePosition instance = trim(1001, "CTCC", "CCC");
 
-        assertThat(instance.getStart(), equalTo(1001));
-        assertThat(instance.getRef(), equalTo("CT"));
-        assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.start(), equalTo(1001));
+        assertThat(instance.ref(), equalTo("CT"));
+        assertThat(instance.alt(), equalTo("C"));
     }
 
     @Test
     public void testMcArthurCoLocatedTwo() {
         AllelePosition instance = trim(1001, "CTCC", "C");
 
-        assertThat(instance.getStart(), equalTo(1001));
-        assertThat(instance.getRef(), equalTo("CTCC"));
-        assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.start(), equalTo(1001));
+        assertThat(instance.ref(), equalTo("CTCC"));
+        assertThat(instance.alt(), equalTo("C"));
     }
 
     @Test
     public void testMcArthurCoLocatedThree() {
         AllelePosition instance = trim(1001, "CTCC", "CCCC");
 
-        assertThat(instance.getStart(), equalTo(1002));
-        assertThat(instance.getRef(), equalTo("T"));
-        assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.start(), equalTo(1002));
+        assertThat(instance.ref(), equalTo("T"));
+        assertThat(instance.alt(), equalTo("C"));
     }
 
     /**
@@ -192,27 +201,27 @@ public class AllelePositionTest {
     public void testEvaCoLocatedOne() {
         AllelePosition instance = trim(1000, "TGACGTAACGATT", "T");
 
-        assertThat(instance.getStart(), equalTo(1000));
-        assertThat(instance.getRef(), equalTo("TGACGTAACGATT"));
-        assertThat(instance.getAlt(), equalTo("T"));
+        assertThat(instance.start(), equalTo(1000));
+        assertThat(instance.ref(), equalTo("TGACGTAACGATT"));
+        assertThat(instance.alt(), equalTo("T"));
     }
 
     @Test
     public void testEvaCoLocatedTwo() {
         AllelePosition instance = trim(1000, "TGACGTAACGATT", "TGACGTAACGGTT");
 
-        assertThat(instance.getStart(), equalTo(1010));
-        assertThat(instance.getRef(), equalTo("A"));
-        assertThat(instance.getAlt(), equalTo("G"));
+        assertThat(instance.start(), equalTo(1010));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo("G"));
     }
 
     @Test
     public void testEvaCoLocatedThree() {
         AllelePosition instance = trim(1000, "TGACGTAACGATT", "TGACGTAATAC");
 
-        assertThat(instance.getStart(), equalTo(1008));
-        assertThat(instance.getRef(), equalTo("CGATT"));
-        assertThat(instance.getAlt(), equalTo("TAC"));
+        assertThat(instance.start(), equalTo(1008));
+        assertThat(instance.ref(), equalTo("CGATT"));
+        assertThat(instance.alt(), equalTo("TAC"));
     }
 
     @Test
@@ -222,10 +231,9 @@ public class AllelePositionTest {
         String alt = "GG";
 
         AllelePosition instance = trim(pos, ref, alt);
-        System.out.println(instance);
-        assertThat(instance.getStart(), equalTo(3));
-        assertThat(instance.getRef(), equalTo("GCA"));
-        assertThat(instance.getAlt(), equalTo("G"));
+        assertThat(instance.start(), equalTo(3));
+        assertThat(instance.ref(), equalTo("GCA"));
+        assertThat(instance.alt(), equalTo("G"));
 
         assertThat(pos, equalTo(2));
         assertThat(ref, equalTo("GGCA"));
@@ -236,108 +244,108 @@ public class AllelePositionTest {
     public void testSnv() {
         AllelePosition instance = trim(1, "A", "T");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("A"));
-        assertThat(instance.getAlt(), equalTo("T"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo("T"));
     }
 
     @Test
     public void testTrimLeftRef() {
         AllelePosition instance = trim(1, "AT", "AA");
 
-        assertThat(instance.getStart(), equalTo(2));
-        assertThat(instance.getRef(), equalTo("T"));
-        assertThat(instance.getAlt(), equalTo("A"));
+        assertThat(instance.start(), equalTo(2));
+        assertThat(instance.ref(), equalTo("T"));
+        assertThat(instance.alt(), equalTo("A"));
     }
 
     @Test
     public void testTrimLeftAlt() {
         AllelePosition instance = trim(1, "AA", "AT");
 
-        assertThat(instance.getStart(), equalTo(2));
-        assertThat(instance.getRef(), equalTo("A"));
-        assertThat(instance.getAlt(), equalTo("T"));
+        assertThat(instance.start(), equalTo(2));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo("T"));
     }
 
     @Test
     public void testTrimRightRef() {
         AllelePosition instance = trim(1, "TA", "AA");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("T"));
-        assertThat(instance.getAlt(), equalTo("A"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("T"));
+        assertThat(instance.alt(), equalTo("A"));
     }
 
     @Test
     public void testTrimRightAlt() {
         AllelePosition instance = trim(1, "AA", "TA");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("A"));
-        assertThat(instance.getAlt(), equalTo("T"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("A"));
+        assertThat(instance.alt(), equalTo("T"));
     }
 
     @Test
     public void testMnpTrimLeft() {
         AllelePosition instance = trim(4, "GCAT", "GTGC");
-        System.out.println(instance);
-        assertThat(instance.getStart(), equalTo(5));
-        assertThat(instance.getRef(), equalTo("CAT"));
-        assertThat(instance.getAlt(), equalTo("TGC"));
+
+        assertThat(instance.start(), equalTo(5));
+        assertThat(instance.ref(), equalTo("CAT"));
+        assertThat(instance.alt(), equalTo("TGC"));
     }
 
     @Test
     public void testMnpTrimRight() {
         AllelePosition instance = trim(5, "CATG", "TGCG");
-        System.out.println(instance);
-        assertThat(instance.getStart(), equalTo(5));
-        assertThat(instance.getRef(), equalTo("CAT"));
-        assertThat(instance.getAlt(), equalTo("TGC"));
+
+        assertThat(instance.start(), equalTo(5));
+        assertThat(instance.ref(), equalTo("CAT"));
+        assertThat(instance.alt(), equalTo("TGC"));
     }
 
     @Test
     public void testMnpTrimLeftAndRight() {
         AllelePosition instance = trim(4, "GCATG", "GTGCG");
-        System.out.println(instance);
-        assertThat(instance.getStart(), equalTo(5));
-        assertThat(instance.getRef(), equalTo("CAT"));
-        assertThat(instance.getAlt(), equalTo("TGC"));
+
+        assertThat(instance.start(), equalTo(5));
+        assertThat(instance.ref(), equalTo("CAT"));
+        assertThat(instance.alt(), equalTo("TGC"));
     }
 
     @Test
     public void testInsertionLeftBaseDifferent() {
         AllelePosition instance = trim(1, "T", "ATG");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("T"));
-        assertThat(instance.getAlt(), equalTo("ATG"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("T"));
+        assertThat(instance.alt(), equalTo("ATG"));
     }
 
     @Test
     public void testInsertionLeftBaseEqual() {
         AllelePosition instance = trim(1, "T", "TATG");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("T"));
-        assertThat(instance.getAlt(), equalTo("TATG"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("T"));
+        assertThat(instance.alt(), equalTo("TATG"));
     }
 
     @Test
     public void testInsertionRightBaseEqual() {
         AllelePosition instance = trim(1, "G", "TATG");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("G"));
-        assertThat(instance.getAlt(), equalTo("TATG"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("G"));
+        assertThat(instance.alt(), equalTo("TATG"));
     }
 
     @Test
     public void testInsertionRightBaseEqualDuplicated() {
         AllelePosition instance = trim(1, "GG", "TATGG");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("G"));
-        assertThat(instance.getAlt(), equalTo("TATG"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("G"));
+        assertThat(instance.alt(), equalTo("TATG"));
     }
 
 //    a variant is normalized, we simply need to manipulate the variant till the rightmost ends of the alleles are not the same,
@@ -351,18 +359,18 @@ public class AllelePositionTest {
     public void testTrimRightDeletion() {
         AllelePosition instance = trim(3, "GCACA", "GCA");
 
-        assertThat(instance.getStart(), equalTo(3));
-        assertThat(instance.getRef(), equalTo("GCA"));
-        assertThat(instance.getAlt(), equalTo("G"));
+        assertThat(instance.start(), equalTo(3));
+        assertThat(instance.ref(), equalTo("GCA"));
+        assertThat(instance.alt(), equalTo("G"));
     }
 
     @Test
     public void testTrimLeftDeletion() {
         AllelePosition instance = trim(2, "GGCA", "GG");
-        System.out.println(instance);
-        assertThat(instance.getStart(), equalTo(3));
-        assertThat(instance.getRef(), equalTo("GCA"));
-        assertThat(instance.getAlt(), equalTo("G"));
+
+        assertThat(instance.start(), equalTo(3));
+        assertThat(instance.ref(), equalTo("GCA"));
+        assertThat(instance.alt(), equalTo("G"));
     }
 
     @Test
@@ -371,9 +379,9 @@ public class AllelePositionTest {
         //this should really be left aligned, but we can't do that as we have nothing to align against
         AllelePosition instance = trim(1, "C", "CAC");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("C"));
-        assertThat(instance.getAlt(), equalTo("CAC"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("C"));
+        assertThat(instance.alt(), equalTo("CAC"));
     }
 
     @Test
@@ -382,9 +390,9 @@ public class AllelePositionTest {
         //this should really be left aligned, but we can't do that as we have nothing to align against
         AllelePosition instance = trim(1, "CAC", "C");
 
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("CAC"));
-        assertThat(instance.getAlt(), equalTo("C"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("CAC"));
+        assertThat(instance.alt(), equalTo("C"));
     }
 
     @Test
@@ -393,9 +401,9 @@ public class AllelePositionTest {
         //note - this can be expressed as two alleles:
         //1 T C
         //3 T C
-        assertThat(instance.getStart(), equalTo(1));
-        assertThat(instance.getRef(), equalTo("TCT"));
-        assertThat(instance.getAlt(), equalTo("CCC"));
+        assertThat(instance.start(), equalTo(1));
+        assertThat(instance.ref(), equalTo("TCT"));
+        assertThat(instance.alt(), equalTo("CCC"));
     }
 
     @Test
@@ -404,9 +412,9 @@ public class AllelePositionTest {
         //note - this can be expressed as two alleles:
         //1 T C
         //3 T C
-        assertThat(instance.getStart(), equalTo(18));
-        assertThat(instance.getRef(), equalTo("TCT"));
-        assertThat(instance.getAlt(), equalTo("CCC"));
+        assertThat(instance.start(), equalTo(18));
+        assertThat(instance.ref(), equalTo("TCT"));
+        assertThat(instance.alt(), equalTo("CCC"));
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -104,10 +104,10 @@ public class AlleleProtoAdaptor {
         // ARGH! I didn't put the frikking genome assembly in the alleleKey!
         // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
         return AlleleKey.newBuilder()
-                .setChr(variant.getStartContigId())
-                .setPosition(variant.getStart())
-                .setRef(variant.getRef())
-                .setAlt(variant.getAlt())
+                .setChr(variant.contigId())
+                .setPosition(variant.start())
+                .setRef(variant.ref())
+                .setAlt(variant.alt())
                 .build();
     }
 

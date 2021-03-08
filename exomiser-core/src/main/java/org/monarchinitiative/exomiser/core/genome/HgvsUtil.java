@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.AllelePosition;
-import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.VariantType;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -67,18 +68,18 @@ public class HgvsUtil {
     // Substitution
     // a sequence change where, compared to a reference sequence, one nucleotide is replaced by one other nucleotide.
     private static boolean isSubstitution(Variant variant) {
-        return AllelePosition.isSnv(variant.getRef(), variant.getAlt());
+        return variant.variantType() == VariantType.SNV;
     }
 
     private static String toSubstitutionString(Variant variant) {
-        return getPrefix(variant) + variant.getStart() + variant.getRef() + ">" + variant.getAlt();
+        return getPrefix(variant) + variant.start() + variant.ref() + ">" + variant.alt();
     }
 
     // Deletion (del):
     // a sequence change where, compared to a reference sequence, one or more nucleotides are not present (deleted).
     private static boolean isDeletion(Variant variant) {
-        return variant.getVariantType().isDeletion() && (variant.isSymbolic() || variant.getRef()
-                .startsWith(variant.getAlt()));
+        return variant.variantType().baseType() == VariantType.DEL && (variant.isSymbolic() || variant.ref()
+                .startsWith(variant.alt()));
     }
 
     private static String toDeletionString(Variant variant) {
@@ -88,30 +89,30 @@ public class HgvsUtil {
 //        “position(s)_deleted” = position nucleotide or range of nucleotides deleted = 123_127
 //        “del” = type of change is a deletion = del 1
         if (variant.isSymbolic()) {
-            return getPrefix(variant) + variant.getStart() + "_" + variant.getEnd() + "del";
+            return getPrefix(variant) + variant.start() + "_" + variant.end() + "del";
         }
 
-        int length = Math.abs(variant.getLength());
+        int length = Math.abs(variant.changeLength());
         if (length == 1) {
-            return getPrefix(variant) + (variant.getStart() + 1) + "del" + variant.getRef()
-                    .substring(variant.getAlt().length());
+            return getPrefix(variant) + (variant.start() + 1) + "del" + variant.ref()
+                    .substring(variant.alt().length());
         }
-        int start = variant.getStart() - 1 + (variant.getRef().length() - variant.getAlt().length());
+        int start = variant.startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN) + length;
         int end = start + length - 1;
         // Need to adjust the start and end to report the DELETED section
-        return getPrefix(variant) + start + "_" + end + "del" + variant.getRef()
-                .substring(variant.getAlt().length());
+        return getPrefix(variant) + start + "_" + end + "del" + variant.ref()
+                .substring(variant.alt().length());
     }
 
     // Duplication (dup):
     // a sequence change where, compared to a reference sequence, a copy of one or more nucleotides are inserted
     // directly 3' of the original copy of that sequence.
     private static boolean isDuplication(Variant variant) {
-        if (variant.getVariantType().isDuplication() && variant.isSymbolic()) {
+        if (variant.variantType().baseType() == VariantType.DUP && variant.isSymbolic()) {
             return true;
         }
         // can only detect simple duplications from small variations
-        return variant.getRef().length() == 1 && altIsDupOfRef(variant.getRef(), variant.getAlt());
+        return variant.ref().length() == 1 && altIsDupOfRef(variant.ref(), variant.alt());
     }
 
     private static boolean altIsDupOfRef(String ref, String alt) {
@@ -129,67 +130,66 @@ public class HgvsUtil {
 
     private static String toDuplicationString(Variant variant) {
         if (variant.isSymbolic()) {
-            return getPrefix(variant) + variant.getStart() + "_" + variant.getEnd() + "dup";
+            return getPrefix(variant) + variant.start() + "_" + variant.end() + "dup";
         }
 
-        int length = Math.abs(variant.getLength());
+        int length = Math.abs(variant.changeLength());
         if (length == 1) {
-            return getPrefix(variant) + variant.getStart() + "dup" + variant.getAlt()
-                    .substring(variant.getRef().length());
+            return getPrefix(variant) + variant.start() + "dup" + variant.alt()
+                    .substring(variant.ref().length());
         }
-        int end = variant.getStart() + length - 1;
-        return getPrefix(variant) + variant.getStart() + '_' + end + "dup" + variant.getAlt()
-                .substring(variant.getRef().length());
+        int end = variant.start() + length - 1;
+        return getPrefix(variant) + variant.start() + '_' + end + "dup" + variant.alt()
+                .substring(variant.ref().length());
     }
 
     // Insertion (ins)
     // a sequence change where, compared to the reference sequence, one or more nucleotides are inserted and where the
     // insertion is not a copy of a sequence immediately 5'
     private static boolean isInsertion(Variant variant) {
-        return variant.getVariantType().isInsertion() && (variant.isSymbolic() || variant.getAlt()
-                .startsWith(variant.getRef()));
+        return variant.variantType().baseType() == VariantType.INS && (variant.isSymbolic() || variant.alt()
+                .startsWith(variant.ref()));
     }
 
     private static String toInsertionString(Variant variant) {
         if (variant.isSymbolic()) {
-            return getPrefix(variant) + variant.getStart() + '_' + variant.getEnd() + "ins";
+            return getPrefix(variant) + variant.start() + '_' + variant.end() + "ins";
         }
-        return getPrefix(variant) + variant.getStart() + '_' + (variant.getStart() + 1) + "ins" + variant.getAlt()
-                .substring(variant.getRef().length());
+        return getPrefix(variant) + variant.start() + '_' + (variant.start() + 1) + "ins" + variant.alt()
+                .substring(variant.ref().length());
     }
 
     // Inversion
     // a sequence change where, compared to a reference sequence, more than one nucleotide replacing the original
     // sequence are the reverse complement of the original sequence.
     private static boolean isInversion(Variant variant) {
-        return variant.getVariantType().isInversion();
+        return variant.variantType().baseType() == VariantType.INV;
     }
 
     private static String toInversionString(Variant variant) {
-        return getPrefix(variant) + variant.getStart() + '_' + variant.getEnd() + "inv";
+        return getPrefix(variant) + variant.start() + '_' + variant.end() + "inv";
     }
 
     // Deletion-insertion (delins):
     // a sequence change where, compared to a reference sequence, one or more nucleotides are replaced by one or more
     // other nucleotides and which is not a substitution, inversion or conversion.
     private static boolean isDelIns(Variant variant) {
-        String ref = variant.getRef();
-        String alt = variant.getAlt();
-        return !variant.getVariantType().isSnv() && ref.length() != alt.length() && !variant.getAlt()
-                .startsWith(variant.getRef());
+        String ref = variant.ref();
+        String alt = variant.alt();
+        return !(variant.variantType() == VariantType.SNV) && ref.length() != alt.length() && !variant.alt()
+                .startsWith(variant.ref());
     }
 
     private static String toDelIns(Variant variant) {
-        int length = Math.abs(variant.getLength());
+        int length = Math.abs(variant.changeLength());
         if (length == 1) {
-            return getPrefix(variant) + variant.getStart() + "delins" + variant.getAlt();
+            return getPrefix(variant) + variant.start() + "delins" + variant.alt();
         }
-        int end = variant.getStart() + length;
-        return getPrefix(variant) + variant.getStart() + '_' + end + "delins" + variant.getAlt();
+        int end = variant.start() + length;
+        return getPrefix(variant) + variant.start() + '_' + end + "delins" + variant.alt();
     }
 
     private static String getPrefix(Variant variant) {
-        // this would be neater with an actual Chromosome class
-        return variant.getGenomeAssembly().getRefSeqAccession(variant.getStartContigId()) + ":g.";
+        return variant.contig().refSeqAccession() + ":g.";
     }
 }

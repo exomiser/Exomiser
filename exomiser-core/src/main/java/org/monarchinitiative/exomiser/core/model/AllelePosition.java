@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,8 +37,10 @@ import java.util.Objects;
  * 1. it has no common nucleotides on the left or right side
  * 2. each allele does not end with the same type of nucleotide, or the shortest allele has length 1
  *
+ * @deprecated To be replaced by {@link org.monarchinitiative.svart.util.VariantTrimmer.VariantPosition}
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated(forRemoval = true)
 public class AllelePosition {
 
     private final int start;
@@ -115,7 +117,7 @@ public class AllelePosition {
             int rightIdx = trimRef.length();
             int diff = trimRef.length() - trimAlt.length();
             // scan from right to left, ensure right index > 1 so as not to fall off the left end
-            while (rightIdx > 1 && rightIdx - diff > 0 && trimRef.charAt(rightIdx - 1) == trimAlt.charAt(rightIdx - 1 - diff)) {
+            while (rightIdx > 1 && rightIdx - diff > 1 && trimRef.charAt(rightIdx - 1) == trimAlt.charAt(rightIdx - 1 - diff)) {
                 rightIdx--;
             }
 
@@ -203,7 +205,15 @@ public class AllelePosition {
         return allele.length() > 1 && (allele.contains("[") || allele.contains("]"));
     }
 
+    /**
+     * Re
+     * @param ref
+     * @param alt
+     * @return
+     */
     public static int length(String ref, String alt) {
+        return ref.length();
+
         // Quote VCF 4.3 SV info
         // "LEN - For precise variants, LEN is length of REF allele, and the for imprecise variants the corresponding best estimate."
         // "SVLEN - Difference in length between REF and ALT alleles. Longer ALT alleles (e.g. insertions) have positive values,
@@ -218,21 +228,21 @@ public class AllelePosition {
         // 3     12665100 .         A                <DUP>        14   PASS   SVTYPE=DUP;LEN=21101;SVLEN=21100;CIPOS=-500,500;CIEND=-500,500  GT:GQ:CN:CNQ ./.:0:3:16.2
         // 4     18665128 .         T                <DUP:TANDEM> 11   PASS   SVTYPE=DUP;LEN=77;SVLEN=76;CIPOS=-10,10;CIEND=-10,10         GT:GQ:CN:CNQ ./.:0:5:8.3
         // TODO: should this be reflected in a refLength and varLength ?
-        if (isSymbolic(ref, alt)) {
-            return ref.length();
-        }
-        // SNV/MNV substitution case e.g. ATGC -> CGAT length = 4
-        if (alt.length() == ref.length()) {
-            return ref.length();
-        }
-        // indel case
-        return alt.length() - ref.length();
+//        if (isSymbolic(ref, alt)) {
+//            return ref.length();
+//        }
+//        // SNV/MNV substitution case e.g. ATGC -> CGAT length = 4
+//        if (alt.length() == ref.length()) {
+//            return ref.length();
+//        }
+//        // indel case
+//        return alt.length() - ref.length();
     }
 
     /**
      * @return 1-based inclusive start position of the allele
      */
-    public int getStart() {
+    public int start() {
         return start;
     }
 
@@ -242,19 +252,23 @@ public class AllelePosition {
      *
      * @return 1-based closed end position of the allele
      */
-    public int getEnd() {
+    public int end() {
         return start + Math.max(ref.length() - 1, 0);
     }
 
-    public int getLength() {
-        return length(ref, alt);
+    public int length() {
+        return ref.length();
     }
 
-    public String getRef() {
+    public int changeLength() {
+        return alt.length() - ref.length();
+    }
+
+    public String ref() {
         return ref;
     }
 
-    public String getAlt() {
+    public String alt() {
         return alt;
     }
 
@@ -285,8 +299,10 @@ public class AllelePosition {
     public String toString() {
         return "AllelePosition{" +
                 "start=" + start +
+                ", end=" + end() +
                 ", ref='" + ref + '\'' +
                 ", alt='" + alt + '\'' +
+                ", changeLength=" + changeLength() +
                 '}';
     }
 

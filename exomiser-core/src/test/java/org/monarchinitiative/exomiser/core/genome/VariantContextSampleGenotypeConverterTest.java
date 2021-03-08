@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,7 +60,6 @@ public class VariantContextSampleGenotypeConverterTest {
         Map<String, SampleGenotype> result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
         Map<String, SampleGenotype> expected = ImmutableMap.of("Adam", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT));
-        System.out.println(result);
 
         assertThat(result, equalTo(expected));
     }
@@ -75,7 +74,6 @@ public class VariantContextSampleGenotypeConverterTest {
         Map<String, SampleGenotype> result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
         Map<String, SampleGenotype> expected = ImmutableMap.of("Adam", SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT));
-        System.out.println(result);
 
         assertThat(result, equalTo(expected));
     }
@@ -91,7 +89,6 @@ public class VariantContextSampleGenotypeConverterTest {
         Map<String, SampleGenotype> result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
         Map<String, SampleGenotype> expected = ImmutableMap.of("Adam", SampleGenotype.of(AlleleCall.REF, AlleleCall.REF));
-        System.out.println(result);
 
         assertThat(result, equalTo(expected));
     }
@@ -106,7 +103,6 @@ public class VariantContextSampleGenotypeConverterTest {
         Map<String, SampleGenotype> result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
         Map<String, SampleGenotype> expected = ImmutableMap.of("Adam", SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT));
-        System.out.println(result);
 
         assertThat(result, equalTo(expected));
     }
@@ -119,12 +115,10 @@ public class VariantContextSampleGenotypeConverterTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
 
         Map<String, SampleGenotype> allele1Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
-        System.out.println(allele1Result);
         Map<String, SampleGenotype> expected1 = ImmutableMap.of("Adam", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT));
         assertThat(allele1Result, equalTo(expected1));
 
         Map<String, SampleGenotype> allele2Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 1);
-        System.out.println(allele2Result);
         Map<String, SampleGenotype> expected2 = ImmutableMap.of("Adam", SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.ALT));
         assertThat(allele2Result, equalTo(expected2));
     }
@@ -139,7 +133,6 @@ public class VariantContextSampleGenotypeConverterTest {
 
         //Test A T allele
         Map<String, SampleGenotype> allele1Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
-        System.out.println(allele1Result);
         Map<String, SampleGenotype> expected = ImmutableMap.of(
                 "Cain", SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.ALT)
         );
@@ -159,7 +152,6 @@ public class VariantContextSampleGenotypeConverterTest {
 
         //Test A T allele
         Map<String, SampleGenotype> allele1Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
-        System.out.println(allele1Result);
         Map<String, SampleGenotype> expected1 = ImmutableMap.of(
                 "Cain", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT),
                 "Abel", SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT),
@@ -170,7 +162,6 @@ public class VariantContextSampleGenotypeConverterTest {
 
         //Test A C allele
         Map<String, SampleGenotype> allele2Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 1);
-        System.out.println(allele2Result);
         Map<String, SampleGenotype> expected2 = ImmutableMap.of(
                 "Cain", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT),
                 "Abel", SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT),
@@ -193,7 +184,6 @@ public class VariantContextSampleGenotypeConverterTest {
 
         //Test A T allele
         Map<String, SampleGenotype> allele1Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
-        System.out.println(allele1Result);
         Map<String, SampleGenotype> expected1 = ImmutableMap.of(
                 "Cain", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT),
                 "Abel", SampleGenotype.of(AlleleCall.REF, AlleleCall.OTHER_ALT),
@@ -204,7 +194,6 @@ public class VariantContextSampleGenotypeConverterTest {
 
         //Test A C allele
         Map<String, SampleGenotype> allele2Result = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 1);
-        System.out.println(allele2Result);
         Map<String, SampleGenotype> expected2 = ImmutableMap.of(
                 "Cain", SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT),
                 "Abel", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT),

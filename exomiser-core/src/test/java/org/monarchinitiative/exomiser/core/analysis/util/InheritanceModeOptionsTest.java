@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -274,6 +274,6 @@ public class InheritanceModeOptionsTest {
 
     @Test
     public void testToString() {
-        System.out.println(InheritanceModeOptions.defaults());
+        assertThat(InheritanceModeOptions.defaults().toString(), equalTo("InheritanceModeMaxFrequencies{AUTOSOMAL_DOMINANT=0.1, AUTOSOMAL_RECESSIVE_COMP_HET=2.0, AUTOSOMAL_RECESSIVE_HOM_ALT=0.1, X_RECESSIVE_COMP_HET=2.0, X_RECESSIVE_HOM_ALT=0.1, X_DOMINANT=0.1, MITOCHONDRIAL=0.2}"));
     }
 }

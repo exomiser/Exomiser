@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,17 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.data.JannovarData;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.util.VariantTrimmer;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,49 +46,51 @@ class JannovarStructuralVariantAnnotatorTest {
     private final JannovarStructuralVariantAnnotator instance = new JannovarStructuralVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
             .buildDefaultJannovarData(), ChromosomalRegionIndex.empty());
 
+    private final Contig chr10 = GenomeAssembly.HG19.getContigById(10);
+
     @Test
     void testAnnotateStructuralVariant() {
         // TranscriptModel Gene=FGFR2 accession=uc021pzz.1 Chr10 Strand=- seqLen=4654
         // txRegion=123237843-123357972(120129 bases) CDS=123239370-123353331(113961 bases)
-        VariantCoordinates variantCoordinates = VariantAllele.of("10", 123237843, 123357972, "T", "<DEL>", 120129, VariantType.DEL, "10", ConfidenceInterval
-                .precise(), ConfidenceInterval.precise());
+        Variant variantCoordinates = variant(chr10, 123237843, 123357972, "T", "<DEL>", -120129);
         List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
         assertThat(annotations.size(), equalTo(1));
-
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
-        assertThat(variantAnnotation.getStartContigId(), equalTo(10));
-        assertThat(variantAnnotation.getStart(), equalTo(123237843));
-        assertThat(variantAnnotation.getEnd(), equalTo(123357972));
-        assertThat(variantAnnotation.getLength(), equalTo(120129));
-        assertThat(variantAnnotation.getRef(), equalTo("T"));
-        assertThat(variantAnnotation.getAlt(), equalTo("<DEL>"));
-        assertThat(variantAnnotation.getVariantType(), equalTo(VariantType.DEL));
+        assertThat(variantAnnotation.contigId(), equalTo(10));
+        assertThat(variantAnnotation.start(), equalTo(123237843));
+        assertThat(variantAnnotation.end(), equalTo(123357972));
+        assertThat(variantAnnotation.changeLength(), equalTo(-120129));
+        assertThat(variantAnnotation.ref(), equalTo("T"));
+        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
+        assertThat(variantAnnotation.variantType(), equalTo(VariantType.DEL));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
     }
 
+    private Variant variant(Contig contig, int start, int end, String ref, String alt, int changeLength) {
+        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength);
+    }
+
     @Test
     public void exonicInsertion() {
-        VariantCoordinates variantCoordinates = VariantAllele.of("10", 123237843, 123237843, "T", "<INS>", 200, VariantType.INS, "10", ConfidenceInterval
-                .precise(), ConfidenceInterval.precise());
+        Variant variantCoordinates = variant(chr10, 123237843, 123237843, "T", "<INS>", 200);
         List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
 
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
-        System.out.println(variantAnnotation);
 
-        assertThat(variantAnnotation.getStartContigId(), equalTo(10));
-        assertThat(variantAnnotation.getStartContigName(), equalTo("10"));
-        assertThat(variantAnnotation.getStart(), equalTo(123237843));
-        assertThat(variantAnnotation.getEnd(), equalTo(123237843));
-        assertThat(variantAnnotation.getLength(), equalTo(200));
-        assertThat(variantAnnotation.getRef(), equalTo("T"));
-        assertThat(variantAnnotation.getAlt(), equalTo("<INS>"));
+        assertThat(variantAnnotation.contigId(), equalTo(10));
+        assertThat(variantAnnotation.contigName(), equalTo("10"));
+        assertThat(variantAnnotation.start(), equalTo(123237843));
+        assertThat(variantAnnotation.end(), equalTo(123237843));
+        assertThat(variantAnnotation.changeLength(), equalTo(200));
+        assertThat(variantAnnotation.ref(), equalTo("T"));
+        assertThat(variantAnnotation.alt(), equalTo("<INS>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        System.out.println(variantAnnotation.getTranscriptAnnotations());
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INSERTION));
@@ -89,27 +99,55 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void exonicDeletion() {
         // Exon 2 loss
-        VariantCoordinates variantCoordinates = VariantAllele.of("10", 123353221, 123353480, "T", "<DEL>", 259, VariantType.DEL, "10", ConfidenceInterval
-                .precise(), ConfidenceInterval.precise());
+        Variant variantCoordinates = variant(chr10, 123353221, 123353480, "T", "<DEL>", -259);
         List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
 
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
-        System.out.println(variantAnnotation);
 
-        assertThat(variantAnnotation.getStartContigId(), equalTo(10));
-        assertThat(variantAnnotation.getStartContigName(), equalTo("10"));
-        assertThat(variantAnnotation.getStart(), equalTo(123353221));
-        assertThat(variantAnnotation.getEnd(), equalTo(123353480));
-        assertThat(variantAnnotation.getLength(), equalTo(259));
-        assertThat(variantAnnotation.getRef(), equalTo("T"));
-        assertThat(variantAnnotation.getAlt(), equalTo("<DEL>"));
+        assertThat(variantAnnotation.contigId(), equalTo(10));
+        assertThat(variantAnnotation.contigName(), equalTo("10"));
+        assertThat(variantAnnotation.start(), equalTo(123353221));
+        assertThat(variantAnnotation.end(), equalTo(123353480));
+        assertThat(variantAnnotation.changeLength(), equalTo(-259));
+        assertThat(variantAnnotation.ref(), equalTo("T"));
+        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        System.out.println(variantAnnotation.getTranscriptAnnotations());
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         // this is an EXON_LOSS
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.START_LOST));
     }
 
+    @Disabled
+    @Test
+    public void preciseStructuralVariant() {
+
+        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("CM000663.2      30912   pbsv.DEL.0      CTCTCTCTCTCGCTATCTCATTTT        C       .       PASS    SVTYPE=DEL;END=30935;SVLEN=-23  GT:AD:DP:SAC    0/1:45,15:60:28,17,9,6");
+        System.out.println(variantContext);
+
+        GenomeAssembly hg38 = GenomeAssembly.HG38;
+        VariantContextConverter variantContextConverter = VariantContextConverter.of(hg38.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+
+        Variant variant = variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        System.out.println(variant);
+
+        System.out.println("RefSeq SmallAnnotator");
+        JannovarData refseqHg38JannovatrData = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/exomiser-data/2007_hg38_transcripts_refseq.ser"));
+        VariantAnnotator refseqHg38Smallannotator = new JannovarSmallVariantAnnotator(hg38, refseqHg38JannovatrData, ChromosomalRegionIndex.empty());
+        refseqHg38Smallannotator.annotate(variant).forEach(System.out::println);
+
+        System.out.println("RefSeq SVannotator");
+        VariantAnnotator refseqHg38SvAnnotator = new JannovarStructuralVariantAnnotator(hg38, refseqHg38JannovatrData, ChromosomalRegionIndex.empty());
+        refseqHg38SvAnnotator.annotate(variant).forEach(System.out::println);
+
+        System.out.println("Ensembl SmallAnnotator");
+        JannovarData ensemblJannovarData = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/exomiser-data/2007_hg38_transcripts_ensembl.ser"));
+        VariantAnnotator ensemblannotator = new JannovarSmallVariantAnnotator(hg38, ensemblJannovarData, ChromosomalRegionIndex.empty());
+        ensemblannotator.annotate(variant).forEach(System.out::println);
+
+        System.out.println("Ensembl SVAnnotator");
+        VariantAnnotator ensemblSvAnnotator = new JannovarStructuralVariantAnnotator(hg38, ensemblJannovarData, ChromosomalRegionIndex.empty());
+        ensemblSvAnnotator.annotate(variant).forEach(System.out::println);
+    }
 }

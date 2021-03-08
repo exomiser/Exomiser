@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -150,17 +150,17 @@ public class GeneticIntervalTest {
 
     @Test
     public void testGetChromosome() {
-        assertThat(instance.getStartContigId(), equalTo(CHR));
+        assertThat(instance.contigId(), equalTo(CHR));
     }
 
     @Test
     public void testGetStart() {
-        assertThat(instance.getStart(), equalTo(START));
+        assertThat(instance.start(), equalTo(START));
     }
 
     @Test
     public void testGetEnd() {
-        assertThat(instance.getEnd(), equalTo(END));
+        assertThat(instance.end(), equalTo(END));
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,19 +18,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.genome;
+package org.monarchinitiative.exomiser.core.genome.dao;
 
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
+import org.monarchinitiative.svart.GenomicRegion;
 
 /**
- * Utility class for helping with calculations involving {@link ChromosomalRegion} objects.
+ * Utility class for helping with calculations involving {@link GenomicRegion} objects.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-public class ChromosomalRegionUtil {
+class SvDaoUtil {
 
-    private ChromosomalRegionUtil() {
+    private SvDaoUtil() {
         // static utility class.
     }
 
@@ -41,30 +41,27 @@ public class ChromosomalRegionUtil {
      * the start and end - i.e. anywhere between 10+/-1 and 20+/-1 will satisfy the 85% overlap requirement. Return values
      * are rounded to the nearest integer.
      *
-     * @param region      The {@link ChromosomalRegion} for which the boundaries are to be calculated
+     * @param region      The {@link GenomicRegion} for which the boundaries are to be calculated
      * @param minCoverage The minimum required overlap for other regions
      * @return The modifier, to the nearest whole number, to be added and subtracted from the start and end of the input
      * region
      */
-    public static int getBoundaryMargin(ChromosomalRegion region, double minCoverage) {
+    public static int getBoundaryMargin(GenomicRegion region, double minCoverage) {
         if (minCoverage < -0 || minCoverage > 1) {
             throw new IllegalArgumentException("minCoverage must be in range 0.0 - 1.0");
         }
-        return (int) Math.round(length(region) * (1 - minCoverage) / 2d);
+        return (int) Math.abs(region.length() * (1 - minCoverage) / 2d);
     }
 
     /**
-     * Determines the Jaccard coefficient of two {@link ChromosomalRegion} based on their positions on a chromosome. A
+     * Determines the Jaccard coefficient of two {@link GenomicRegion} based on their positions on a chromosome. A
      * return value of 1.0 indicates an identical region and 0 a completely non-overlapping region.
      *
-     * @param x the first {@link ChromosomalRegion}
-     * @param y the second {@link ChromosomalRegion}
+     * @param x the first {@link GenomicRegion}
+     * @param y the second {@link GenomicRegion}
      * @return Jaccard coefficient of x and y
      */
-    public static double jaccard(ChromosomalRegion x, ChromosomalRegion y) {
-        if (x.getStartContigId() != y.getStartContigId()) {
-            return 0;
-        }
+    public static double jaccard(GenomicRegion x, GenomicRegion y) {
         // Jaccard is the intersection over the union, e.g.
         //    |-----------------|               = x
         //              |------------------|    = y
@@ -72,19 +69,7 @@ public class ChromosomalRegionUtil {
         //              |-------|               = intersection(x, y)
         //    |-----------------------------|   = union(x, y)
         // J(x, y) = intersection(x, y) / (length(x) + length(y) - intersection(x, y))
-        int intersection = intersection(x, y);
-        return (double) intersection / (length(x) + length(y) - intersection);
-    }
-
-    private static int intersection(ChromosomalRegion x, ChromosomalRegion y) {
-        if (x.getEnd() < y.getStart() || y.getEnd() < x.getStart()) {
-            return 0;
-        }
-        return Math.max(Math.min(x.getEnd(), y.getEnd()) - Math.max(x.getStart(), y.getStart()), 1);
-    }
-
-    // returns zero-based length
-    private static int length(ChromosomalRegion region) {
-        return Math.max(region.getEnd() - region.getStart(), 1);
+        int intersection = x.overlapLength(y);
+        return (double) intersection / (x.length() + y.length() - intersection);
     }
 }

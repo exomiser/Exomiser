@@ -18,23 +18,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.genome;
+package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.Variant;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ *
+ * @since 13.0.0
  */
-public interface VariantAnnotator {
+public interface VariantAnnotations {
+
+    public String getGeneSymbol();
+
+    public String getGeneId();
+
+    public VariantEffect getVariantEffect();
+
+    public List<TranscriptAnnotation> getTranscriptAnnotations();
+
+    public boolean hasTranscriptAnnotations();
+
+    @JsonIgnore
+    public default boolean isNonCodingVariant() {
+        return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
+    }
 
     /**
-     * The genome assembly against which this {@link VariantAnnotator} will annotate variants.
+     * @return true if the Variant is in a coding region, otherwise false
+     * @since 12.0.0
      */
-    GenomeAssembly genomeAssembly();
+    @JsonIgnore
+    public default boolean isCodingVariant() {
+        return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
+    }
 
-    List<VariantAnnotation> annotate(@Nullable Variant variant);
 }

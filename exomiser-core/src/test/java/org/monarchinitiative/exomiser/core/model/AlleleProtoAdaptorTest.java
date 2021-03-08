@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -47,12 +47,8 @@ public class AlleleProtoAdaptorTest {
 
     @Test
     public void generateAlleleKey() {
-        Variant variant = VariantAnnotation.builder()
+        Variant variant = VariantEvaluation.builder(1, 12345, "A", "T")
                 .genomeAssembly(GenomeAssembly.HG19)
-                .chromosome(1)
-                .start(12345)
-                .ref("A")
-                .alt("T")
                 .build();
 
         AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()

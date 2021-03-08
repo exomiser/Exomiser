@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -74,21 +74,21 @@ public class OmimPriorityResultTest {
     public void testToHtmlIncompatibleOmimDiseases() {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Incompatible OMIM disease name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
-        System.out.println(instance.getHTMLCode());
+//        System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtmlIncompatibleOrphanetDiseases() {
         Disease disease = Disease.builder().diseaseId("ORPHANET:12345").diseaseName("Incompatible Orphanet disease name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease), Collections.emptyMap());
-        System.out.println(instance.getHTMLCode());
+//        System.out.println(instance.getHTMLCode());
     }
 
     @Test
     public void testToHtmlUnknownDiseaseId() {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease), Collections.emptyMap());
-        System.out.println(instance.getHTMLCode());
+//        System.out.println(instance.getHTMLCode());
     }
 
     @Test

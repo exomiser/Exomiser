@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,11 +23,13 @@ package org.monarchinitiative.exomiser.core.genome;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
-import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.VariantAllele;
-import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.util.VcfConverter;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -35,34 +37,54 @@ import java.util.List;
  */
 public class VariantContextConverter {
 
-    private VariantContextConverter() {
+    private final VcfConverter vcfConverter;
+
+    private VariantContextConverter(GenomicAssembly genomicAssembly, VariantTrimmer variantTrimmer) {
+        vcfConverter = new VcfConverter(genomicAssembly, variantTrimmer);
     }
 
-    public static VariantAllele toVariantAllele(VariantContext variantContext, Allele altAllele) {
-        String contig = variantContext.getContig();
+    public static VariantContextConverter of(GenomicAssembly genomicAssembly, VariantTrimmer variantTrimmer) {
+        Objects.requireNonNull(genomicAssembly);
+        Objects.requireNonNull(variantTrimmer);
+        return new VariantContextConverter(genomicAssembly, variantTrimmer);
+    }
+
+    @Nullable
+    public Variant convertToVariant(VariantContext variantContext, Allele altAllele) {
+        Contig contig = vcfConverter.parseContig(variantContext.getContig());
+        if (contig.isUnknown()) {
+            return null;
+        }
+        String id = variantContext.getID();
         int start = variantContext.getStart();
         String ref = variantContext.getReference().getBaseString();
         // Symbolic variants are 'symbolic' in that they have no reported bases and/or contain non-base characters '<>[].'
-        String alt = (altAllele.isSymbolic()) ? altAllele.getDisplayString() : altAllele.getBaseString();
+        String alt = altAllele.isSymbolic() ? altAllele.getDisplayString() : altAllele.getBaseString();
 
-        if (altAllele.isSymbolic()) {
-            VariantType variantType = parseAlleleVariantType(variantContext, altAllele);
-            String endContig = variantContext.getCommonInfo().getAttributeAsString("CHR2", contig);
-            int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
+        VariantType variantType = VariantType.parseType(ref, alt);
+
+        if (VariantType.isBreakend(alt) || variantType == VariantType.BND || variantType == VariantType.TRA) {
+
             ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
             ConfidenceInterval endCi = parseConfidenceInterval(variantContext, "CIEND");
-            int length = variantContext.getAttributeAsInt("SVLEN", end - start);
-//            logger.info("Annotating contig={}: start={} ref={} alt={} variantType={} length={} startCi={} endContig={} end={} endCi={}", contig, start, ref, alt, variantType, length, startCi, endContig, end, endCi);
-            return VariantAllele.of(contig, start, end, ref, alt, length, variantType, endContig, startCi, endCi);
-        }
-        // What about 1 ATGC CGTA SVTYPE=INV or T TTTT SYVTYP=DUP ?
-        // According to HGVS, which has a much more useful and well described set of rules for determining variant type:
-        // When a description is possible according to several types, the preferred description is:
-        //   (1) deletion, (2) inversion, (3) duplication, (4) conversion, (5) insertion.
-        // - When a variant can be described as a duplication or an insertion, prioritisation determines it should be
-        //   described as a duplication.
 
-        return VariantAllele.of(contig, start, ref, alt);
+            String mateId = variantContext.getAttributeAsString("MATEID", "");
+            String eventId = variantContext.getAttributeAsString("EVENTID", "");
+
+            return vcfConverter.convertBreakend(contig, id, Position.of(start, startCi), ref, alt, endCi, mateId, eventId);
+        } else if (VariantType.isLargeSymbolic(alt)) {
+            int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
+            int changeLength = variantContext.getAttributeAsInt("SVLEN", start - end);
+            if (changeLength == 0 && variantType.baseType() == VariantType.INS) {
+                changeLength = 1;
+            }
+
+            Position startPos = Position.of(start, parseConfidenceInterval(variantContext, "CIPOS"));
+            Position endPos = Position.of(end, parseConfidenceInterval(variantContext, "CIEND"));
+
+            return vcfConverter.convertSymbolic(contig, id, startPos, endPos, ref, alt, changeLength);
+        }
+        return vcfConverter.convert(contig, id, start, ref, alt);
     }
 
     private static VariantType parseAlleleVariantType(VariantContext variantContext, Allele altAllele) {
@@ -73,8 +95,8 @@ public class VariantContextConverter {
         if (altAllele.isSymbolic()) {
             String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, "");
             // SV types should not be SMALL so try parsing the alt allele if the SVTYPE field isn't recognised (as in the case of ALU, LINE, SVA from 1000 genomes)
-            VariantType parseValue = VariantType.parseValue(altAllele.getDisplayString());
-            return parseValue == VariantType.SYMBOLIC ? VariantType.parseValue(svTypeString) : parseValue;
+            VariantType parseValue = VariantType.parseType(altAllele.getDisplayString());
+            return parseValue == VariantType.SYMBOLIC ? VariantType.parseType(svTypeString) : parseValue;
         }
 
         return nonSymbolicVariantType(variantContext.getReference(), altAllele);

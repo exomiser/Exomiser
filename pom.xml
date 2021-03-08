@@ -123,6 +123,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.monarchinitiative.svart</groupId>
+            <artifactId>svart</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!--DI framework -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

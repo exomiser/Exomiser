@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -61,8 +61,6 @@ public class JannovarAnnotationServiceTest {
     @Test
     public void testGetAnnotationsForUnknownContigVariant() {
         VariantAnnotations variantAnnotations = instance.annotateVariant("UNKNOWN", 1, "A", "T");
-
-        System.out.println(variantAnnotations);
         assertThat(variantAnnotations, not(nullValue()));
         assertThat(variantAnnotations.getChr(), equalTo(0));
         assertThat(variantAnnotations.getPos(), equalTo(0)); //Jannovar uses and returns 0-based coordinates.

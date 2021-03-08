@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -152,20 +152,20 @@ public class SimpleVariantFilterRunnerTest {
 
         filters.forEach(filter -> instance.run(filter, variantEvaluations));
 
-        printVariantFilterStatus("passesAllFilters", passesAllFilters);
+//        printVariantFilterStatus("passesAllFilters", passesAllFilters);
         assertThat(passesAllFilters.passedFilters(), is(true));
         assertPassedFilters(passesAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 
-        printVariantFilterStatus("failsAllFilters", failsAllFilters);
+//        printVariantFilterStatus("failsAllFilters", failsAllFilters);
         assertThat(failsAllFilters.passedFilters(), is(false));
         assertFailedFilters(failsAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 
-        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
+//        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
         assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
         assertPassedFilters(passesQualityFrequencyFilter, QUALITY_FILTER, FREQUENCY_FILTER);
         assertFailedFilters(passesQualityFrequencyFilter, VARIANT_EFFECT_FILTER);
 
-        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
+//        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
         assertThat(passesTargetQualityFilter.passedFilters(), is(false));
         assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, VARIANT_EFFECT_FILTER);
         assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
@@ -221,17 +221,13 @@ public class SimpleVariantFilterRunnerTest {
         
         assertThat(secondResults, equalTo(variantEvaluations));     
         assertPassedFilters(passesAllFilters, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
-        System.out.println(passesAllFilters);
 
         assertPassedFilters(passesQualityFrequencyFilter, firstFilterToPass.getFilterType());    
         assertFailedFilters(passesQualityFrequencyFilter, secondFilterToPass.getFilterType());
-        System.out.println(passesQualityFrequencyFilter);
 
         assertPassedFilters(passesTargetQualityFilter, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
-        System.out.println(passesTargetQualityFilter);
 
         assertFailsEverything(failsAllFilters);     
-        System.out.println(failsAllFilters);
     }
 
 }

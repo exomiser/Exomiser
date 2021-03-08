@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
@@ -54,8 +53,6 @@ class AnalysisProtoBuilderTest {
                 .frequencySources(FrequencySource.ALL_ESP_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.REVEL, PathogenicitySource.MVP))
                 .build();
-
-        System.out.println(JsonFormat.printer().print(protoAnalysis));
     }
 
     @Test

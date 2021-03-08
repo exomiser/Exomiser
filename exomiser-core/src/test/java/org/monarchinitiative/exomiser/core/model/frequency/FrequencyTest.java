@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,6 @@ public class FrequencyTest {
         Frequency instance = Frequency.of(UNKNOWN, frequency);
         assertThat(instance.getFrequency(), equalTo(frequency));
         assertThat(instance.getSource(), equalTo(FrequencySource.UNKNOWN));
-        System.out.println(instance);
     }
     
     @Test
@@ -56,7 +55,6 @@ public class FrequencyTest {
         Frequency instance = Frequency.of(source, frequency);
         assertThat(instance.getFrequency(), equalTo(frequency));
         assertThat(instance.getSource(), equalTo(source));
-        System.out.println(instance);
     }
     
     @Test

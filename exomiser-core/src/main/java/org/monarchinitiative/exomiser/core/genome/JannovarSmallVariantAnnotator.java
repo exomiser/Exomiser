@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,12 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.hgvs.AminoAcidCode;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,24 +63,28 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
-        VariantAnnotations variantAnnotations = jannovarAnnotationService
-                .annotateVariant(variantCoordinates.getStartContigName(), variantCoordinates.getStart(), variantCoordinates
-                        .getRef(), variantCoordinates.getAlt());
-        return buildVariantAnnotations(variantCoordinates, variantAnnotations);
+    public GenomeAssembly genomeAssembly() {
+        return genomeAssembly;
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(VariantCoordinates variantCoordinates, VariantAnnotations variantAnnotations) {
+    @Override
+    public List<VariantAnnotation> annotate(Variant variant) {
+        VariantAnnotations variantAnnotations = jannovarAnnotationService
+                .annotateVariant(variant.contigName(), variant.start(), variant.ref(), variant.alt());
+        return buildVariantAnnotations(variant, variantAnnotations);
+    }
+
+    private List<VariantAnnotation> buildVariantAnnotations(Variant variant, VariantAnnotations variantAnnotations) {
         // Group annotations by geneSymbol then create new Jannovar.VariantAnnotations from these then return List<VariantAnnotation>
         // see issue https://github.com/exomiser/Exomiser/issues/294. However it creates approximately 2x as many variants
         // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the amount of new
         // VariantAnnotations returned by only splitting those with a MODERATE or greater putative impact.
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
-                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, variantCoordinates, variantGeneAnnotations))
+                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, variant, variantGeneAnnotations))
                     .collect(toList());
         }
-        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, variantCoordinates, variantAnnotations));
+        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, variant, variantAnnotations));
     }
 
     private boolean effectsMoreThanOneGeneWithMinimumImpact(VariantAnnotations variantAnnotations, PutativeImpact minimumImpact) {
@@ -131,31 +140,23 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         return chrName == null ? startContig : chrName;
     }
 
-    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, VariantCoordinates variantCoordinates, VariantAnnotations variantAnnotations) {
+    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, Variant variant, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
-        GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
         String geneId = buildGeneId(highestImpactAnnotation);
 
         //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
-        VariantEffect highestImpactEffect = variantCoordinates.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
+        VariantEffect highestImpactEffect = variant.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
                 .getHighestImpactEffect();
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
-        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, chr, variantCoordinates.getStart());
+        VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, variant);
         //TODO: Add method to return highest impact annotation?
         return VariantAnnotation.builder()
                 .genomeAssembly(genomeAssembly)
-                .chromosome(chr)
-                .contig(getChromosomeNameOrDefault(genomeVariant.getChrName(), variantCoordinates.getStartContigName()))
-                .start(variantCoordinates.getStart())
-                .end(variantCoordinates.getEnd())
-                .length(variantCoordinates.getLength())
-                .ref(variantCoordinates.getRef())
-                .alt(variantCoordinates.getAlt())
-                .variantType(variantCoordinates.getVariantType())
+                .with(variant)
                 .geneId(geneId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)
@@ -215,10 +216,9 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
-    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, int chr, int pos) {
+    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, Variant variant) {
         //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
-        // TODO do we need a regulatoryRegionIndex.hasRegionOverlapping(startChr, startPos, endChr, endPos)
-        if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionContainingPosition(chr, pos)) {
+        if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionOverlappingVariant(variant)) {
             //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
             return VariantEffect.REGULATORY_REGION_VARIANT;
         }

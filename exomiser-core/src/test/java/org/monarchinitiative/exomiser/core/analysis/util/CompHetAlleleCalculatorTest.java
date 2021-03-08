@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -65,7 +65,6 @@ public class CompHetAlleleCalculatorTest {
 
         VariantContext vc98518687 = buildVariantContext(1, 98518687, alleles, proband, brother, mother);
         VariantEvaluation var98518687 = filteredVariant(1, 98518687, "T", "A", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc98518687);
-        System.out.println("Built allele " + var98518687);
         gene.addVariant(var98518687);
 
         //1 98518683 . T A 733 . GT 1|0 1|0 1|0
@@ -82,7 +81,6 @@ public class CompHetAlleleCalculatorTest {
 
         VariantContext vc98518683 = buildVariantContext(1, 98518683, alleles98518683, proband98518683, brother98518683, mother98518683);
         VariantEvaluation var98518683 = filteredVariant(1, 98518683, "T", "A", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc98518683);
-        System.out.println("Built allele " + var98518683);
         gene.addVariant(var98518683);
 
         //1 97723020 . A G 1141 . GT 1/0 0/0 1/0
@@ -99,7 +97,6 @@ public class CompHetAlleleCalculatorTest {
 
         VariantContext vc97723020 = buildVariantContext(1, 97723020, alleles97723020, proband97723020, brother97723020, mother97723020);
         VariantEvaluation var97723020 = filteredVariant(1, 97723020, "A", "G", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc97723020);
-        System.out.println("Built allele " + var97723020);
         gene.addVariant(var97723020);
 
         Individual probandIndividual = Individual.builder().id("Cain").motherId("Eve").sex(Sex.MALE).status(Status.AFFECTED).build();

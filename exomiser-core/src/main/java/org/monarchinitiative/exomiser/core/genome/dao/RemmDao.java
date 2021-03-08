@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,18 +66,18 @@ public class RemmDao implements PathogenicityDao {
     }
 
     private PathogenicityData processResults(Variant variant) {
-        String chromosome = variant.getStartContigName();
-        int start = variant.getStart();
+        String chromosome = variant.contigName();
+        int start = variant.start();
         int end = calculateEndPosition(variant);
         return getRemmData(chromosome, start, end);
     }
 
     private int calculateEndPosition(Variant variant) {
-        int pos = variant.getStart();
+        int pos = variant.start();
 
         //we're doing this here in order not to have to count all this each time we need the value
-        int refLength = variant.getRef().length();
-        int altLength = variant.getAlt().length();
+        int refLength = variant.ref().length();
+        int altLength = variant.alt().length();
         //What about MNV?
         if (refLength == altLength) {
             return pos;

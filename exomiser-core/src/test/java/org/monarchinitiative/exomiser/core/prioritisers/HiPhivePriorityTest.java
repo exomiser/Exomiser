@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -112,7 +112,6 @@ public class HiPhivePriorityTest {
 
     private Consumer<HiPhivePriorityResult> checkScores(Map<String, List<Double>> geneScores) {
         return result -> {
-            System.out.println(result);
             List<Double> scores = geneScores.get(result.getGeneSymbol());
             checkResultScores(result, scores);
         };
@@ -139,7 +138,7 @@ public class HiPhivePriorityTest {
     private static final BigDecimal ERROR = new BigDecimal("1e-15");
 
     private void checkResultScores(HiPhivePriorityResult result, List<Double> scores) {
-        System.out.printf("geneId=%s, geneSymbol='%s', score=%.25f, humanScore=%.25f, mouseScore=%.25f, fishScore=%.25f, ppiScore=%.25f%n", result.geneId, result.getGeneSymbol(), result.getScore(), new BigDecimal(result.getHumanScore()), new BigDecimal(result.getMouseScore()), result.getFishScore(), result.getPpiScore());
+//        System.out.printf("geneId=%s, geneSymbol='%s', score=%.25f, humanScore=%.25f, mouseScore=%.25f, fishScore=%.25f, ppiScore=%.25f%n", result.geneId, result.getGeneSymbol(), result.getScore(), new BigDecimal(result.getHumanScore()), new BigDecimal(result.getMouseScore()), result.getFishScore(), result.getPpiScore());
         assertThat(result.getGeneSymbol() + " Top score", result.getScore(), equalTo(scores.subList(0, 3).stream().sorted(Comparator.reverseOrder()).findFirst().get()));
         assertThat(result.getGeneSymbol() + " Human score", new BigDecimal(result.getHumanScore()), closeTo(new BigDecimal(scores.get(0)), ERROR));
 //        assertThat(result.getGeneSymbol() + " Mouse score", new BigDecimal(result.getMouseScore()), equalTo(new BigDecimal(scores.get(1))));
@@ -230,7 +229,6 @@ public class HiPhivePriorityTest {
                 .runParams("human,mouse,fish")
                 .build(), DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
-//        List<PriorityResult> results = instance.prioritizeGenes(genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));
@@ -250,7 +248,6 @@ public class HiPhivePriorityTest {
                 .runParams("mouse")
                 .build(), DataMatrix.empty(), priorityService);
         instance.prioritizeGenes(hpoIds, genes);
-//        List<PriorityResult> results = instance.prioritizeGenes(genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));
@@ -302,7 +299,7 @@ public class HiPhivePriorityTest {
     @Test
     public void testToString() {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), priorityService);
-        System.out.println(instance);
+        assertThat(instance.toString(), equalTo("HiPhivePriority{options=HiPhiveOptions{diseaseId='', candidateGeneSymbol='', benchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}}"));
     }
     
 }

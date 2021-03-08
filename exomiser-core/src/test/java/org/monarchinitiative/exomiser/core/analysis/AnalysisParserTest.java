@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -548,7 +548,6 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisFileFromPath() {
         Sample sample = instance.parseSample(Paths.get("src/test/resources/analysisExample.yml"));
-        System.out.println(sample);
         assertThat(sample.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(sample.getPedigree(), equalTo(Pedigree.empty()));
         assertThat(sample.getHpoIds(), equalTo(hpoIds));

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
+import org.phenopackets.schema.v1.core.HtsFile;
+import org.phenopackets.schema.v1.core.Individual;
+import org.phenopackets.schema.v1.core.OntologyClass;
+import org.phenopackets.schema.v1.core.PhenotypicFeature;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +41,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class ProtoParserTest {
+
+    private final Phenopacket minimalPhenopacket = Phenopacket.newBuilder()
+            .setSubject(Individual.newBuilder().setId("manuel"))
+            .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder().setId("HP:0001156").setLabel("Brachydactyly")))
+            .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder().setId("HP:0001363").setLabel("Craniosynostosis")))
+            .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder().setId("HP:0011304").setLabel("Broad thumb")))
+            .addPhenotypicFeatures(PhenotypicFeature.newBuilder().setType(OntologyClass.newBuilder().setId("HP:0010055").setLabel("Broad hallux")))
+            .addHtsFiles(HtsFile.newBuilder()
+                    .setUri("file://Pfeiffer.vcf")
+                    .setGenomeAssembly("GRCh37")
+                    .setHtsFormat(HtsFile.HtsFormat.VCF))
+            .build();
 
     private SampleProto.Sample parseSample(Path path) {
         SampleProto.Sample.Builder builder = ProtoParser.parseFromJsonOrYaml(SampleProto.Sample.newBuilder(), path);
@@ -91,26 +107,29 @@ class ProtoParserTest {
     @Test
     void readPhenopacketJson() {
         Phenopacket phenopacket = parsePhenopacket(Paths.get("src/test/resources/sample/minimal_phenopacket.json"));
-        System.out.println(phenopacket);
+        assertThat(phenopacket, equalTo(minimalPhenopacket));
     }
 
     @Test
     void readPhenopacketYaml() {
         Phenopacket phenopacket = parsePhenopacket(Paths.get("src/test/resources/sample/minimal_phenopacket.yaml"));
-        System.out.println(phenopacket);
+        assertThat(phenopacket, equalTo(minimalPhenopacket));
     }
 
     @Test
     void readFamilyJson() {
         Family family = parseFamily(Paths.get("src/test/resources/sample/minimal_family.json"));
-        System.out.println(family);
+        assertThat(family.getProband(), equalTo(minimalPhenopacket));
+        assertThat(family.getPedigree().getPersonsCount(), equalTo(1));
+        assertThat(family.getPedigree().getPersons(0).getIndividualId(), equalTo(minimalPhenopacket.getSubject().getId()));
     }
 
     @Test
     void readFamilyYaml() {
         Family family = parseFamily(Paths.get("src/test/resources/sample/minimal_family.yaml"));
-        System.out.println(family);
-    }
+        assertThat(family.getProband(), equalTo(minimalPhenopacket));
+        assertThat(family.getPedigree().getPersonsCount(), equalTo(1));
+        assertThat(family.getPedigree().getPersons(0).getIndividualId(), equalTo(minimalPhenopacket.getSubject().getId()));    }
 
     @Test
     void testParseYaml() {
@@ -134,8 +153,12 @@ class ProtoParserTest {
                 "  - uri: \"file://Pfeiffer.vcf\"\n" +
                 "    htsFormat: \"VCF\"\n" +
                 "    genomeAssembly: \"GRCh37\"";
-        Phenopacket.Builder ppBuilder = ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), phenopacketYaml);
-        System.out.println(ppBuilder.build());
+
+        Phenopacket phenopacket = ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), phenopacketYaml).build();
+        assertThat(phenopacket.getSubject().getId(), equalTo("manuel"));
+        assertThat(phenopacket.getPhenotypicFeaturesCount(), equalTo(4));
+        assertThat(phenopacket.getHtsFiles(0).getGenomeAssembly(), equalTo("GRCh37"));
+        assertThat(phenopacket.getHtsFiles(0).getHtsFormat(), equalTo(HtsFile.HtsFormat.VCF));
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -82,7 +82,7 @@ public class OmimPriorityTest {
 
         genes.forEach(gene -> {
             OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
+//            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
             OmimPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
             assertThat(result, equalTo(expected));
         });
@@ -94,7 +94,7 @@ public class OmimPriorityTest {
         instance.prioritizeGenes(Collections.emptyList(), genes);
         genes.forEach(gene -> {
             OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
+//            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
             OmimPriorityResult expected = omimResultForGene(gene, 1.0, allModesScoreOne());
             assertThat(result, equalTo(expected));
         });

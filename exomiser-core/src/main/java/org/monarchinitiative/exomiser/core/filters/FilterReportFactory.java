@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -212,7 +212,7 @@ public class FilterReportFactory {
     }
 
     private String formatRegion(ChromosomalRegion region) {
-        return String.format("%d:%d-%d", region.getStartContigId(), region.getStart(), region.getEnd());
+        return String.format("%d:%d-%d", region.contigId(), region.start(), region.end());
     }
 
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {

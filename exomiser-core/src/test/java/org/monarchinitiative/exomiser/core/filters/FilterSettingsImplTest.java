@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -160,11 +160,5 @@ public class FilterSettingsImplTest {
         FilterSettings other = FilterSettingsImpl.builder().minimumQuality(Float.MAX_VALUE).build();
         instance = builder.build();
         assertThat(instance.equals(other), is(false));
-    }
- 
-    @Test
-    public void testToString() {
-        instance = builder.build();
-        System.out.println(instance);
     }
 }

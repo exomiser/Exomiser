@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.jblas.ranges.IntervalRange;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -107,39 +106,39 @@ public class InMemoryDataMatrixTest {
         FloatMatrix geneColumn = new FloatMatrix(column);
 
         assertThat(instance.getColumnMatrixForGene(3333), equalTo(geneColumn));
-        System.out.println("Column matrix for gene 3333:");
-        for (float value : geneColumn.toArray()) {
-            System.out.println(value);
-        }
-
-        System.out.println("Column matrix for gene 3333 multiplied by 2:");
-        for (float value : instance.getColumnMatrixForGene(3333).mul(2.0f).toArray()) {
-            System.out.println(value);
-        }
-
-        System.out.printf("%nMatrix is (%d rows * %d columns:%n)", floatMatrix.rows, floatMatrix.columns);
-        System.out.println(floatMatrix);
-
-        System.out.println("Matrix as columns:");
-        List<FloatMatrix> columns = floatMatrix.columnsAsList();
-        for (int i = 0; i < columns.size(); i++) {
-            FloatMatrix matrix = columns.get(i);
-            System.out.printf("Column %d: ", i);
-            for (float value : matrix.toArray()) {
-                System.out.printf("%f ", value);
-            }
-            System.out.println();
-        }
-        System.out.println("Matrix as rows:");
-        List<FloatMatrix> rows = floatMatrix.rowsAsList();
-        for (int i = 0; i < rows.size(); i++) {
-            FloatMatrix matrix = rows.get(i);
-            System.out.printf("Row %d: ", i);
-            for (float value : matrix.toArray()) {
-                System.out.printf("%f, ", value);
-            }
-            System.out.println();
-        }
+//        System.out.println("Column matrix for gene 3333:");
+//        for (float value : geneColumn.toArray()) {
+//            System.out.println(value);
+//        }
+//
+//        System.out.println("Column matrix for gene 3333 multiplied by 2:");
+//        for (float value : instance.getColumnMatrixForGene(3333).mul(2.0f).toArray()) {
+//            System.out.println(value);
+//        }
+//
+//        System.out.printf("%nMatrix is (%d rows * %d columns:%n)", floatMatrix.rows, floatMatrix.columns);
+//        System.out.println(floatMatrix);
+//
+//        System.out.println("Matrix as columns:");
+//        List<FloatMatrix> columns = floatMatrix.columnsAsList();
+//        for (int i = 0; i < columns.size(); i++) {
+//            FloatMatrix matrix = columns.get(i);
+//            System.out.printf("Column %d: ", i);
+//            for (float value : matrix.toArray()) {
+//                System.out.printf("%f ", value);
+//            }
+//            System.out.println();
+//        }
+//        System.out.println("Matrix as rows:");
+//        List<FloatMatrix> rows = floatMatrix.rowsAsList();
+//        for (int i = 0; i < rows.size(); i++) {
+//            FloatMatrix matrix = rows.get(i);
+//            System.out.printf("Row %d: ", i);
+//            for (float value : matrix.toArray()) {
+//                System.out.printf("%f, ", value);
+//            }
+//            System.out.println();
+//        }
     }
 
     @Test
@@ -148,7 +147,7 @@ public class InMemoryDataMatrixTest {
         FloatMatrix expected = new FloatMatrix(matrix);
 
         FloatMatrix subMatrix = floatMatrix.get(new IntervalRange(0, 3), new IntervalRange(0, 3));
-        System.out.println(subMatrix);
+//        System.out.println(subMatrix);
         assertThat(subMatrix, equalTo(expected));
 
     }

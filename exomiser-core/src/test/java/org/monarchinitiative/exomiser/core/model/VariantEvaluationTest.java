@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -43,12 +45,14 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -132,68 +136,53 @@ public class VariantEvaluationTest {
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
-//    @Test
-//    public void testSpecifiedGenomeAssemblyFromValue() {
-//        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
-//                .genomeAssembly("GRCh38")
-//                .build();
-//        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-//    }
-//
-//    @Test
-//    public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
-//        assertThrows(RuntimeException.class, () -> VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
-//                .genomeAssembly("wibble")
-//        );
-//    }
-
     @Test
     public void testGetChromosome() {
-        assertThat(instance.getStartContigId(), equalTo(CHROMOSOME));
+        assertThat(instance.contigId(), equalTo(CHROMOSOME));
     }
 
     @Test
     public void testGetContig() {
-        assertThat(instance.getStartContigName(), equalTo(CHROMOSOME_NAME));
+        assertThat(instance.contigName(), equalTo(CHROMOSOME_NAME));
     }
 
     @Test
     public void testBuilderContig() {
-        VariantEvaluation variantEvaluation = testVariantBuilder().contig("Can be anything").build();
-        assertThat(variantEvaluation.getStartContigName(), equalTo("Can be anything"));
+//        VariantEvaluation variantEvaluation = testVariantBuilder().contig(Contig.unknown()).build();
+//        assertThat(variantEvaluation.getContigName(), equalTo("na"));
     }
 
     @Test
     public void testGetChromosomePosition() {
-        assertThat(instance.getStart(), equalTo(POSITION));
+        assertThat(instance.start(), equalTo(POSITION));
     }
 
     @Test
     public void testGetRef() {
-        assertThat(instance.getRef(), equalTo(REF));
+        assertThat(instance.ref(), equalTo(REF));
     }
 
     @Test
     public void testGetAlt() {
-        assertThat(instance.getAlt(), equalTo(ALT));
+        assertThat(instance.alt(), equalTo(ALT));
 
     }
 
     @Test
     void testGetIdDefault() {
-        assertThat(instance.getId(), equalTo(""));
+        assertThat(instance.id(), equalTo(""));
     }
 
     @Test
     void testGetId() {
         VariantEvaluation withId = testVariantBuilder().id("WIBBLE").build();
-        assertThat(withId.getId(), equalTo("WIBBLE"));
+        assertThat(withId.id(), equalTo("WIBBLE"));
     }
 
     @Test
     void testGetIdWithNull() {
         VariantEvaluation withId = testVariantBuilder().id(null).build();
-        assertThat(withId.getId(), equalTo(""));
+        assertThat(withId.id(), equalTo(""));
     }
 
     @Test
@@ -316,7 +305,6 @@ public class VariantEvaluationTest {
         VariantEvaluation variantEvaluation = testVariantBuilder()
                 .annotations(annotations)
                 .build();
-        System.out.println(annotations);
         assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(annotations));
     }
 
@@ -646,19 +634,19 @@ public class VariantEvaluationTest {
     @Test
     public void testGetChromosomeName23isX() {
         instance = VariantEvaluation.builder(23, 1, "A", "T").build();
-        assertThat(instance.getStartContigName(), equalTo("X"));
+        assertThat(instance.contigName(), equalTo("X"));
     }
 
     @Test
     public void testGetChromosomeName24isY() {
         instance = VariantEvaluation.builder(24, 1, "A", "T").build();
-        assertThat(instance.getStartContigName(), equalTo("Y"));
+        assertThat(instance.contigName(), equalTo("Y"));
     }
 
     @Test
     public void testGetChromosomeName25isMT() {
         instance = VariantEvaluation.builder(25, 1, "A", "T").build();
-        assertThat(instance.getStartContigName(), equalTo("MT"));
+        assertThat(instance.contigName(), equalTo("MT"));
     }
 
 //    @Test
@@ -757,7 +745,7 @@ public class VariantEvaluationTest {
 
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(true));
     }
-    
+
     @Test
     public void testCompareTo() {
         //variants are sorted according to chromosome, position  ref and alt.
@@ -770,17 +758,17 @@ public class VariantEvaluationTest {
         List<VariantEvaluation> variants = Arrays.asList(zero, one, two, three, four);
         Collections.shuffle(variants);
 
-        System.out.println("Shuffled:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getStartContigId(), variant
-                .getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Shuffled:");
+//        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getContigId(), variant
+//                .getStart(), variant.getRef(), variant.getAlt()));
 
-        Collections.sort(variants);
+        variants.sort(Variant.naturalOrder());
 
         List<VariantEvaluation> expected = Arrays.asList(zero, one, two, three, four);
 
-        System.out.println("Sorted:");
-        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getStartContigId(), variant
-                .getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Sorted:");
+//        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getContigId(), variant
+//                .getStart(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(expected));
     }
 
@@ -815,15 +803,15 @@ public class VariantEvaluationTest {
         List<VariantEvaluation> variants = scoredVariantsInDescendingRankOrder();
         Collections.shuffle(variants);
 
-        System.out.println("Shuffled:");
-        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Shuffled:");
+//        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+//                .getVariantScore(), variant.contigId(), variant.start(), variant.ref(), variant.alt()));
 
         variants.sort(new VariantEvaluation.RankBasedComparator());
 
-        System.out.println("Sorted:");
-        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Sorted:");
+//        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+//                .getVariantScore(), variant.contigId(), variant.start(), variant.ref(), variant.alt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 
@@ -833,30 +821,30 @@ public class VariantEvaluationTest {
         List<VariantEvaluation> variants = scoredVariantsInDescendingRankOrder();
         Collections.shuffle(variants);
 
-        System.out.println("Shuffled:");
-        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Shuffled:");
+//        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+//                .getVariantScore(), variant.contigId(), variant.start(), variant.ref(), variant.alt()));
 
         variants.sort(VariantEvaluation::compareByRank);
 
-        System.out.println("Sorted:");
-        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
-                .getVariantScore(), variant.getStartContigId(), variant.getStart(), variant.getRef(), variant.getAlt()));
+//        System.out.println("Sorted:");
+//        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+//                .getVariantScore(), variant.contigId(), variant.start(), variant.ref(), variant.alt()));
         assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
     }
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
-        System.out.println(instance);
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+//        System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
-        System.out.println(instance);
+//        System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
@@ -867,50 +855,46 @@ public class VariantEvaluationTest {
 
     @Test
     void testToGnomadSvIns() {
-        VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
-                .variantType(VariantType.INS)
-                .length(50)
+        VariantEvaluation sv = VariantEvaluation.builder(1, 100, 100,"A", "<INS>", 50)
                 .build();
         assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> 50bp"));
     }
 
-    @Test
-    void lengthFormat() {
-        VariantEvaluation.Builder sv = VariantEvaluation.builder(1, 100, "A", "<INS>")
-                .variantType(VariantType.INS);
-
-        assertThat(toGnomadWithLength(sv, 0), equalTo("1-100-100-A-<INS> 0bp"));
-        assertThat(toGnomadWithLength(sv, 8), equalTo("1-100-100-A-<INS> 8bp"));
-        assertThat(toGnomadWithLength(sv, 87), equalTo("1-100-100-A-<INS> 87bp"));
-        assertThat(toGnomadWithLength(sv, 876), equalTo("1-100-100-A-<INS> 876bp"));
-        assertThat(toGnomadWithLength(sv, 1_000), equalTo("1-100-100-A-<INS> 1.0kb"));
-        assertThat(toGnomadWithLength(sv, 8_765), equalTo("1-100-100-A-<INS> 8.7kb"));
-        assertThat(toGnomadWithLength(sv, 10_000), equalTo("1-100-100-A-<INS> 10.0kb"));
-        assertThat(toGnomadWithLength(sv, 87_654), equalTo("1-100-100-A-<INS> 87.6kb"));
-        assertThat(toGnomadWithLength(sv, 99_999), equalTo("1-100-100-A-<INS> 99.9kb"));
-        assertThat(toGnomadWithLength(sv, 100_000), equalTo("1-100-100-A-<INS> 100.0kb"));
-        assertThat(toGnomadWithLength(sv, 100_001), equalTo("1-100-100-A-<INS> 100.0kb"));
-        assertThat(toGnomadWithLength(sv, 100_199), equalTo("1-100-100-A-<INS> 100.1kb"));
-        assertThat(toGnomadWithLength(sv, 876_543), equalTo("1-100-100-A-<INS> 876.5kb"));
-        assertThat(toGnomadWithLength(sv, 1_000_000), equalTo("1-100-100-A-<INS> 1.0Mb"));
-        assertThat(toGnomadWithLength(sv, 8_765_432), equalTo("1-100-100-A-<INS> 8.7Mb"));
-        assertThat(toGnomadWithLength(sv, 100_000_000), equalTo("1-100-100-A-<INS> 100.0Mb"));
-        assertThat(toGnomadWithLength(sv, 876_543_210), equalTo("1-100-100-A-<INS> 876.5Mb"));
-        assertThat(toGnomadWithLength(sv, 1_000_000_000), equalTo("1-100-100-A-<INS> 1.0Gb"));
-        assertThat(toGnomadWithLength(sv, 1_000_000_001), equalTo("1-100-100-A-<INS> 1.0Gb"));
-        assertThat(toGnomadWithLength(sv, Integer.MAX_VALUE), equalTo("1-100-100-A-<INS> 2.1Gb"));
+    @ParameterizedTest
+    @CsvSource({
+            "1,   1bp",
+            "8,   8bp",
+            "87,    87bp",
+            "876,    876bp",
+            "1000,    1.0kb",
+            "8765,    8.7kb",
+            "10000,    10.0kb",
+            "87654,    87.6kb",
+            "99999,    99.9kb",
+            "100000,    100.0kb",
+            "100001,    100.0kb",
+            "100199,    100.1kb",
+            "876543,    876.5kb",
+            "1000000,    1.0Mb",
+            "8765432,    8.7Mb",
+            "100000000,    100.0Mb",
+            "876543210,    876.5Mb",
+            "1000000000,    1.0Gb",
+            "1000000001,    1.0Gb",
+            "2147483647,    2.1Gb",
+    })
+    void lengthFormat(int changeLength, String expected) {
+        VariantEvaluation sv = VariantEvaluation.builder(1, 100, 100,"A", "<INS>", changeLength).build();
+        assertThat(sv.toGnomad(), endsWith(expected));
     }
 
     private String toGnomadWithLength(VariantEvaluation.Builder sv, int length) {
-        return sv.length(length).build().toGnomad();
+        return VariantEvaluation.builder(1, 100, 100, "A", "<INS>", length).build().toGnomad();
     }
 
     @Test
     void testToGnomadSvDel() {
-        VariantEvaluation sv = VariantEvaluation.builder(1, 100, "A", "<DEL>")
-                .end(150)
-                .length(50)
-                .variantType(VariantType.DEL)
+        VariantEvaluation sv = VariantEvaluation.builder(1, 100, 150,"A", "<DEL>", -50)
                 .build();
         assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> 50bp"));
     }
@@ -970,55 +954,55 @@ public class VariantEvaluationTest {
     void testLengthUsesAllelesIfNotSetSnp() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "T")
                 .build();
-        assertThat(zero.getLength(), equalTo(1));
+        assertThat(zero.length(), equalTo(1));
+        assertThat(zero.changeLength(), equalTo(0));
     }
 
     @Test
     void testLengthUsesAllelesIfNotSetInsertion() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TTT")
                 .build();
-        assertThat(zero.getLength(), equalTo(2));
+        assertThat(zero.changeLength(), equalTo(2));
     }
 
     @Test
     void testLengthUsesAllelesIfNotSetDeletion() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "CTA", "T")
                 .build();
-        assertThat(zero.getLength(), equalTo(-2));
+        assertThat(zero.changeLength(), equalTo(-2));
     }
 
     @Test
     void testLengthUsesAllelesIfNotSetMnv() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "CTA", "TCG")
                 .build();
-        assertThat(zero.getLength(), equalTo(3));
+        assertThat(zero.length(), equalTo(3));
     }
 
     @Test
     void testEndUsesAllelesIfNotSet() {
         VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TTT")
                 .build();
-        assertThat(zero.getEnd(), equalTo(1));
+        assertThat(zero.end(), equalTo(1));
 
         VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
                 .build();
-        assertThat(one.getEnd(), equalTo(1));
+        assertThat(one.end(), equalTo(1));
     }
 
     @Test
-    void testLengthOfStructuralVariantIsZeroIfNotSet() {
-        VariantEvaluation sv = VariantEvaluation.builder(2, 1, "C", "<INS>")
-                .build();
-        assertThat(sv.getEnd(), equalTo(1));
-        assertThat(sv.getLength(), equalTo(0));
+    void throwsExceptionIfChangeLengthOfStructuralVariantNotProvided() {
+       assertThrows(IllegalArgumentException.class, () -> VariantEvaluation.builder(2, 1, "C", "<INS>").build());
     }
 
     @Test
     void testLengthOfStructuralVariantCanBeSet() {
-        VariantEvaluation sv = VariantEvaluation.builder(2, 1, "C", "<INS>")
-                .length(12345)
+        // TODO this is all mixed-up with the newer VariantAllele which is a very minor extension of the variant-api Variant.
+        //  It might be easier to compose the VariantEvaluation with a VariantAllele and have an AnnotatedVariant interface and remove the Builders
+        //  check the VariantFactoryImpl, SmallVariantAnnotator and
+        VariantEvaluation sv = VariantEvaluation.builder(2, 1, 1, "C", "<INS>", 12345)
                 .build();
-        assertThat(sv.getEnd(), equalTo(1));
-        assertThat(sv.getLength(), equalTo(12345));
+        assertThat(sv.end(), equalTo(1));
+        assertThat(sv.changeLength(), equalTo(12345));
     }
 }

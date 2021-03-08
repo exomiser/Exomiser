@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ public class TestSvDataSourceConfig {
     }
 
     private HikariConfig svDataSourceConfig() {
-        Path dbPath = Path.of("/Users/hhx640/Documents/sv_build/hg19_sv_database");
+        Path dbPath = Path.of("/home/hhx640/Documents/sv_build/hg19_sv_database");
 //        Path dbPath = Path.of("/Users/damiansmedley/exomiser-data/hg19_sv_database");
 
         String startUpArgs = ";SCHEMA=PBGA;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
@@ -48,9 +48,8 @@ public class TestSvDataSourceConfig {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl(jdbcUrl);
-//        config.setJdbcUrl("jdbc:h2:mem:");
         config.setUsername("sa");
-        config.setPassword("");
+        config.setPassword("sa");
         config.setMaximumPoolSize(3);
         config.setPoolName("exomiser-sv");
         return config;

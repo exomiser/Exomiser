@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,8 +34,11 @@ import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.VariantAllele;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,7 +76,7 @@ class JannovarDataFactoryTest {
     @Test
     void testBuildData(@TempDir Path tempDir) {
 
-        Path jannovarOutputDir = Paths.get("C:/Users/hhx640/Documents/Jannovar/data");
+        Path jannovarOutputDir = Paths.get("/home/hhx640/Documents/Jannovar/data");
         JannovarDataFactory instance = JannovarDataFactory.builder(iniFile).downloadDir(jannovarOutputDir).build();
 
         TranscriptSource[] transcriptSources = {TranscriptSource.ENSEMBL};
@@ -85,7 +88,7 @@ class JannovarDataFactoryTest {
             JannovarDataProtoSerialiser.save(jannovarOutputDir.resolve(outputName), jannovarData);
 
             JannovarData roundTripped = JannovarDataSourceLoader.loadJannovarData(jannovarOutputDir.resolve(outputName));
-            JannovarData preOrdered = JannovarDataSourceLoader.loadJannovarData(Paths.get("C:/Users/hhx640/Documents/Jannovar/data/old")
+            JannovarData preOrdered = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/Jannovar/data/old")
                     .resolve(outputName));
 
             ImmutableMap<String, TranscriptModel> preOrderedTmByAccession = preOrdered.getTmByAccession();
@@ -102,7 +105,8 @@ class JannovarDataFactoryTest {
             VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(genomeAssembly, roundTripped, ChromosomalRegionIndex
                     .empty());
 
-            List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(VariantAllele.of("19", 36227863, "C", "T"));
+            Variant variant = Variant.of(GenomeAssembly.HG19.getContigByName("19"), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(36227863), "C", "T");
+            List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variant);
             System.out.println(variantAnnotations);
             assertThat(variantAnnotations.size(), equalTo(1));
             VariantAnnotation variantAnnotation = variantAnnotations.get(0);

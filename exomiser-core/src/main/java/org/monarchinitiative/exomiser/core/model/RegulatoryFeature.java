@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,17 +42,17 @@ public class RegulatoryFeature implements ChromosomalRegion {
     }
 
     @Override
-    public int getStartContigId() {
+    public int contigId() {
         return chromosome;
     }
 
     @Override
-    public int getStart() {
+    public int start() {
         return start;
     }
 
     @Override
-    public int getEnd() {
+    public int end() {
         return end;
     }
 

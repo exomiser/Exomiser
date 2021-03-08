@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -100,7 +100,17 @@ public class TestPrioritiserDataFileReader {
         return line -> {
             String[] fields = line.split("\t");
             String modelId = fields[3] + "_" + fields[1];
-            return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
+            Disease disease = Disease.builder()
+                    .diseaseId(modelId)
+                    .diseaseName(fields[3])
+                    .diseaseType(Disease.DiseaseType.code(fields[7]))
+                    .associatedGeneId(Integer.parseInt(fields[1]))
+                    .associatedGeneSymbol(fields[2])
+                    .inheritanceModeCode(fields[6])
+                    .phenotypeIds(getOntologyTerms(fields[7]))
+                    .build();
+            return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), disease);
+//            return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
         };
     }
 

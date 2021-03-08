@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import org.monarchinitiative.exomiser.core.genome.ChromosomalRegionUtil;
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantType;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -64,14 +62,14 @@ public class SvPathogenicityDao implements PathogenicityDao {
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        int margin = ChromosomalRegionUtil.getBoundaryMargin(variant, 0.85);
+        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.85);
 
         logger.debug("{}", variant);
         List<SvResult> results = runQuery(variant, margin);
         results.forEach(svResult -> logger.debug("{}", svResult));
 
         Map<Double, List<SvResult>> resultsByScore = results.stream()
-                .collect(Collectors.groupingBy(svResult -> ChromosomalRegionUtil.jaccard(variant, svResult)));
+                .collect(Collectors.groupingBy(svResult -> SvDaoUtil.jaccard(variant, svResult)));
 
         List<SvResult> topMatches = resultsByScore.entrySet()
                 .stream()
@@ -162,25 +160,21 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 "         FROM ISCA\n" +
                 "     ) all_tables\n" +
                 "WHERE CHR_ONE = ?\n" +
-                "  and POS_ONE >= ? - ?\n" +
-                "  and POS_ONE <= ? + ?\n" +
-                "  and POS_TWO >= ? - ?\n" +
-                "  and POS_TWO <= ? + ?\n" +
+                "  and POS_ONE >= ?\n" +
+                "  and POS_ONE <= ?\n" +
+                "  and POS_TWO >= ?\n" +
+                "  and POS_TWO <= ?\n" +
                 "  and CLNSIG != 'UNKNOWN';";
 
         try (
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            ps.setInt(1, variant.getStartContigId());
-            ps.setInt(2, variant.getStart());
-            ps.setInt(3, margin);
-            ps.setInt(4, variant.getStart());
-            ps.setInt(5, margin);
-            ps.setInt(6, variant.getEnd());
-            ps.setInt(7, margin);
-            ps.setInt(8, variant.getEnd());
-            ps.setInt(9, margin);
+            ps.setInt(1, variant.contigId());
+            ps.setInt(2, variant.start() - margin);
+            ps.setInt(3, variant.start() + margin);
+            ps.setInt(4, variant.end() - margin);
+            ps.setInt(5, variant.end() + margin);
 
             ResultSet rs = ps.executeQuery();
 
@@ -227,68 +221,47 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
             VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
-            if (variantType.getBaseType() == variant.getVariantType().getBaseType()) {
-                SvResult svResult = new SvResult(chr, start, end, length, svType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
+            if (variantType.baseType() == variant.variantType().baseType()) {
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
                 results.add(svResult);
             }
         }
         return results;
     }
 
-    private static class SvResult implements ChromosomalRegion {
+    private static class SvResult extends BaseVariant<SvResult> {
 
-        private final int chr;
-        private final int start;
-        private final int end;
-        private final int length;
-        private final String svType;
         private final String source;
-        private final String id;
         private final ClinVarData.ClinSig clinSig;
         private final String clinVarAccession;
 
-        private SvResult(int chr, int start, int end, int length, String svType, String source, String id, ClinVarData.ClinSig clinSig, String clinVarAccession) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-            this.length = length;
-            this.svType = svType;
+        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, ClinVarData.ClinSig clinSig, String clinVarAccession) {
+            super(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength);
             this.source = source;
-            this.id = id;
             this.clinSig = clinSig;
             this.clinVarAccession = clinVarAccession;
         }
 
-        @Override
-        public int getStartContigId() {
-            return chr;
+        public static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String source, String id, ClinVarData.ClinSig clinSig, String clinvarAccession) {
+            String alt = '<' + variantType.baseType().toString() + '>';
+            return new SvResult(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "",  alt, changeLength, source, clinSig, clinvarAccession);
         }
 
         @Override
-        public int getStart() {
-            return start;
-        }
-
-        @Override
-        public int getEnd() {
-            return end;
-        }
-
-        @Override
-        public int getLength() {
-            return length;
+        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
+            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength, source, clinSig, clinVarAccession);
         }
 
         @Override
         public String toString() {
             return "SvResult{" +
-                    "chr=" + chr +
-                    ", start=" + start +
-                    ", end=" + end +
-                    ", length=" + length +
-                    ", svType='" + svType + '\'' +
+                    "chr=" + contigName() +
+                    ", start=" + start() +
+                    ", end=" + end() +
+                    ", length=" + length() +
+                    ", svType='" + variantType() + '\'' +
                     ", source='" + source + '\'' +
-                    ", id='" + id + '\'' +
+                    ", id='" + id() + '\'' +
                     ", clinsig=" + clinSig +
                     ", clinVarAccession=" + clinVarAccession +
                     '}';

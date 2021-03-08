@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,6 @@ class VariantEffectCounterTest {
     void singleSampleNoVariantSingleType() {
         VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur"), ImmutableList.of());
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        System.out.println(result);
         assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
                 .of(0)))));
     }
@@ -52,7 +51,6 @@ class VariantEffectCounterTest {
     void multiSampleNoVariantSingleType() {
         VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur", "Ford"), ImmutableList.of());
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        System.out.println(result);
         assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
                 .of(0,0)))));
     }
@@ -68,7 +66,6 @@ class VariantEffectCounterTest {
 
         VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur"), ImmutableList.of(missense));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        System.out.println(result);
         assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
                 .of(1)))));
     }
@@ -89,7 +86,6 @@ class VariantEffectCounterTest {
         VariantEffectCounter instance = new VariantEffectCounter(sampleGenotypes.keySet()
                 .asList(), ImmutableList.of(missense));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        System.out.println(result);
         assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
                 .of(1, 0, 1)))));
     }
@@ -121,7 +117,6 @@ class VariantEffectCounterTest {
         VariantEffectCounter instance = new VariantEffectCounter(missenseOneSampleGenotypes.keySet()
                 .asList(), ImmutableList.of(missenseOne, missenseTwo));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        System.out.println(result);
         assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
                 .of(2, 1, 1)))));
     }
@@ -154,7 +149,6 @@ class VariantEffectCounterTest {
                 .asList(), ImmutableList.of(missenseOne, stopGained));
 
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT, VariantEffect.STOP_GAINED));
-        System.out.println(result);
 
         ImmutableList<VariantEffectCount> expected = ImmutableList.of(
                 new VariantEffectCount(VariantEffect.STOP_GAINED, ImmutableList.of(1, 1, 0)),

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,13 @@
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
 import org.springframework.cache.interceptor.SimpleKey;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,10 +48,7 @@ public class VariantKeyGeneratorTest {
     @Test
     public void returnsKeyForVariant() throws Exception {
         Variant variant = VariantAnnotation.builder()
-                .chromosome(1)
-                .start(2345)
-                .ref("A")
-                .alt("T")
+                .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2345), "A", "T")
                 .build();
         // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches
         // created in version 10.1.1 its OK to use the AlleleKey as the cache key

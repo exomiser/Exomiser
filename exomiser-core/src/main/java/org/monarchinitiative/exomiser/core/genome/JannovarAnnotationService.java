@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,9 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
-import org.monarchinitiative.exomiser.core.model.AllelePosition;
-import org.monarchinitiative.exomiser.core.model.ConfidenceInterval;
-import org.monarchinitiative.exomiser.core.model.VariantType;
+import org.monarchinitiative.svart.ConfidenceInterval;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,27 +110,25 @@ public class JannovarAnnotationService {
     }
 
     /**
-     * @param variantType of the variant
-     * @param alt         alternate allele representation. This should be a symbolic type such as '<INS>'
-     * @param startContig Starting contig the variant is located on. Corresponds to the VCF 'CHROM' field.
-     * @param startPos    Starting position on the reference sequence variant is located at. Corresponds to the VCF 'POS' field.
-     * @param startCi     Confidence interval surrounding the startPos field. Corresponds to VCF 'CIPOS' field.
-     * @param endContig
-     * @param endPos      End position on the reference sequence variant is located at. Corresponds to the VCF 'END' field.
-     * @param endCi       Confidence interval surrounding the endPos field. Corresponds to VCF 'CIEND' field.
+     * @param variantType   {@link VariantType} of the variant
+     * @param alt           alternate allele representation. This should be a symbolic type such as '<INS>'
+     * @param contigName    Starting contig the variant is located on. Corresponds to the VCF 'CHROM' field.
+     * @param startPosition Starting position on the reference sequence variant is located at. Corresponds to the VCF 'POS' and 'CIPOS' fields.
+     * @param endPosition   End position on the reference sequence variant is located at. Corresponds to the VCF 'END' and 'CIEND' fields.
      * @return a set of {@link VariantAnnotations} for the given variant coordinates. CAUTION! THE RETURNED ANNOTATIONS
      * WILL USE ZERO-BASED COORDINATES AND WILL BE TRIMMED LEFT SIDE FIRST, ie. RIGHT SHIFTED. This is counter to VCF
      * conventions.
      * @since 13.0.0
      */
-    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String startContig, int startPos, ConfidenceInterval startCi, String endContig, int endPos, ConfidenceInterval endCi) {
-        GenomePosition start = buildGenomePosition(startContig, startPos);
-        GenomePosition end = buildGenomePosition(endContig, endPos);
+    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String contigName, Position startPosition, Position endPosition) {
 
-        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startCi, end, endCi);
+        GenomePosition start = buildGenomePosition(contigName, startPosition.pos());
+        GenomePosition end = buildGenomePosition(contigName, endPosition.pos());
+
+        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startPosition.confidenceInterval(), end, endPosition.confidenceInterval());
         // Unsupported types
-        if (!AllelePosition.isSymbolic(alt)) {
-            logger.warn("{}-{}-?-{} {} is not a symbolic allele - returning empty annotations", startContig, startPos, alt, variantType);
+        if (!VariantType.isSymbolic(alt)) {
+            logger.warn("{}-{}-?-{} {} is not a symbolic allele - returning empty annotations", contigName, startPosition, alt, variantType);
             return SVAnnotations.buildEmptyList(svGenomeVariant);
         }
 
@@ -148,13 +146,13 @@ public class JannovarAnnotationService {
 
     private SVGenomeVariant buildSvGenomeVariant(VariantType variantType, String alt, GenomePosition start, ConfidenceInterval startCi, GenomePosition end, ConfidenceInterval endCi) {
 
-        int startCiLower = startCi.getLowerBound();
-        int startCiUpper = startCi.getUpperBound();
+        int startCiLower = startCi.lowerBound();
+        int startCiUpper = startCi.upperBound();
 
-        int endCiLower = endCi.getLowerBound();
-        int endCiUpper = endCi.getUpperBound();
+        int endCiLower = endCi.lowerBound();
+        int endCiUpper = endCi.upperBound();
 
-        VariantType svSubType = variantType.getSubType();
+        VariantType svSubType = variantType.subType();
         switch (svSubType) {
             case DEL:
                 return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);

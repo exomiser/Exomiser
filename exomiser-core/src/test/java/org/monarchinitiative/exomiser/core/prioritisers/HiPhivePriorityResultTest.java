@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -192,6 +192,6 @@ public class HiPhivePriorityResultTest {
 
     @Test
     public void testToString() {
-        System.out.println(instance.toString());
+        assertThat(instance.toString(), equalTo("HiPhivePriorityResult{geneId=12345, geneSymbol='FGFR2', score=0.87, humanScore=0.0, mouseScore=0.0, fishScore=0.0, ppiScore=0.6, candidateGeneMatch=true, queryPhenotypeTerms=[], phenotypeEvidence=[], ppiEvidence=[]}"));
     }
 }
