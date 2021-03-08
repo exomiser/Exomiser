@@ -21,7 +21,10 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
@@ -30,22 +33,26 @@ import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoAdapter;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoMvStore;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -53,34 +60,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toMap;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VariantFactoryPerformanceTest {
 
-
-    @Test
-    void completableFutureSuppliers() throws Exception {
-        ExecutorService executor = Executors.newCachedThreadPool();
-
-        String joined = Stream.of("Hail", "smiling", "morn,", "smiling", "morn", "in", "who's", "great", "presence", "darkness", "flies", "away")
-                .parallel()
-                .map(val ->
-                        CompletableFuture.supplyAsync(() -> {
-                                    try {
-                                        Thread.sleep(1000);
-                                        System.out.println("Sleeping " + val);
-                                    } catch (InterruptedException ex) {
-
-                                    }
-                                    return val;
-                                }, executor)
-                )
-                .map(CompletableFuture::join)
-                .collect(Collectors.joining(" "));
-
-        System.out.println(joined);
-    }
+    Logger logger = LoggerFactory.getLogger(VariantFactoryPerformanceTest.class);
 
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
@@ -97,7 +84,7 @@ public class VariantFactoryPerformanceTest {
             countVariants(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"), stubAnnotationVariantFactory, new StubAllelePropertiesDao());
         }
 
-        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
+        Path vcfPath = Paths.get("/home/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/Pfeiffer-quartet.vcf.gz");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19240.sniffles.PB.vcf");
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/example_sv.vcf");
@@ -107,7 +94,8 @@ public class VariantFactoryPerformanceTest {
 
 //        List<VariantContext> variantContexts = VcfFiles.readVariantContexts(vcfPath).collect(Collectors.toList());
 
-        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData(), ChromosomalRegionIndex
+        JannovarData jannovarData = loadJannovarData();
+        VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, jannovarData, ChromosomalRegionIndex
                 .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
@@ -157,7 +145,7 @@ public class VariantFactoryPerformanceTest {
                 );
 
 
-        AllelePropertiesDaoMvStore allelePropertiesDaoMvStore = new AllelePropertiesDaoMvStore(MVStore.open("C:/Users/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_variants.mv.db"));
+        AllelePropertiesDaoMvStore allelePropertiesDaoMvStore = new AllelePropertiesDaoMvStore(MVStore.open("/home/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_variants.mv.db"));
         AllelePropertiesDaoAdapter allelePropertiesDao = new AllelePropertiesDaoAdapter(allelePropertiesDaoMvStore);
         VariantDataService variantDataService = VariantDataServiceImpl.builder()
                 .defaultFrequencyDao(allelePropertiesDao)
@@ -178,16 +166,15 @@ public class VariantFactoryPerformanceTest {
 
     private Consumer<VariantEvaluation> printVariant() {
         return variantEvaluation -> System.out.printf("%d:%d-%d %s>%s length:%d %s %s %s  %s %s score:%f freq:%f (max AF:%f) path:%f (%s)%n",
-                variantEvaluation.getStartContigId(), variantEvaluation.getStart(), variantEvaluation.getEnd(),
-                variantEvaluation.getRef(), variantEvaluation.getAlt(),
-                variantEvaluation.getLength(), variantEvaluation.getVariantType(), variantEvaluation.getVariantEffect(),
+                variantEvaluation.contigId(), variantEvaluation.start(), variantEvaluation.end(),
+                variantEvaluation.ref(), variantEvaluation.alt(),
+                variantEvaluation.changeLength(), variantEvaluation.variantType(), variantEvaluation.getVariantEffect(),
                 variantEvaluation.getGeneSymbol(),
                 variantEvaluation.getTranscriptAnnotations().get(0).getAccession(),
                 variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
                 variantEvaluation.getVariantScore(),
                 variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().getMaxFreq(),
-                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData()
-                        .getPredictedPathogenicityScores()
+                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().getPredictedPathogenicityScores()
         );
     }
 
@@ -248,19 +235,15 @@ public class VariantFactoryPerformanceTest {
 
     private static class StubVariantAnnotator implements VariantAnnotator {
 
-        public List<VariantAnnotation> annotate(VariantCoordinates variantCoordinates) {
+        @Override
+        public GenomeAssembly genomeAssembly() {
+            return GenomeAssembly.HG19;
+        }
+
+        @Override
+        public List<VariantAnnotation> annotate(Variant variant) {
             VariantAnnotation variantAnnotation = VariantAnnotation.builder()
-                    .contig(variantCoordinates.getStartContigName())
-                    .chromosome(Contigs.parseId(variantCoordinates.getStartContigName()))
-                    .start(variantCoordinates.getStart())
-                    .startCi(variantCoordinates.getStartCi())
-                    .ref(variantCoordinates.getRef())
-                    .alt(variantCoordinates.getAlt())
-                    .endContig(variantCoordinates.getEndContigName())
-                    .endChromosome(Contigs.parseId(variantCoordinates.getStartContigName()))
-                    .end(variantCoordinates.getEnd())
-                    .endCi(variantCoordinates.getEndCi())
-                    .variantType(variantCoordinates.getVariantType())
+                    .with(variant)
                     .geneSymbol("GENE")
                     .build();
             return ImmutableList.of(variantAnnotation);
@@ -268,7 +251,7 @@ public class VariantFactoryPerformanceTest {
     }
 
     private JannovarData loadJannovarData() {
-        Path transcriptFilePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_transcripts_ensembl.ser");
+        Path transcriptFilePath = Paths.get("/home/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_transcripts_ensembl.ser");
         return JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
     }
 
@@ -279,13 +262,13 @@ public class VariantFactoryPerformanceTest {
         }
 
         @Override
-        public AlleleProto.AlleleProperties getAlleleProperties(Variant variant) {
+        public AlleleProto.AlleleProperties getAlleleProperties(org.monarchinitiative.exomiser.core.model.Variant variant) {
             return AlleleProto.AlleleProperties.getDefaultInstance();
         }
     }
 
     private static AllelePropertiesDao allelePropertiesDao() {
-        Path mvStorePath = Paths.get("C:/Users/hhx640/Documents/exomiser-data/1811_hg19/1811_hg19_variants.mv.db")
+        Path mvStorePath = Paths.get("/home/hhx640/Documents/exomiser-data/1811_hg19/1811_hg19_variants.mv.db")
                 .toAbsolutePath();
         MVStore mvStore = new MVStore.Builder()
                 .fileName(mvStorePath.toString())
