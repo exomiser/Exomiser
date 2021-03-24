@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.web.dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -45,8 +46,12 @@ public class JdbcExomiserDao implements ExomiserDao {
     private final DataSource dataSource;
 
     @Autowired
-    public JdbcExomiserDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public JdbcExomiserDao(@Qualifier("phenotypeDataSource") DataSource phenotypeDataSource) {
+        // n.b. Need to use the phenotypeDatasource bean as this contains the reference to the exomiser database.
+        // This is provided via the exomiser-spring-boot-autoconfigure
+        // Without this spring will autowire the first datasource it finds which happens to be the genomeDatasource
+        // which has the wrong schema.
+        this.dataSource = phenotypeDataSource;
     }
 
     @Override
