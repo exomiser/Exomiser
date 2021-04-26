@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -80,9 +80,8 @@ public class ResourceDownloader {
         try {
             return new URL(alleleResource.getResourceUrl().toString() + ".tbi");
         } catch (MalformedURLException e) {
-            logger.error("Unable to create tabix url for {}", alleleResource.getName(), e);
+            throw new ResourceDownloadException("Unable to create tabix url for " + alleleResource.getName(), e);
         }
-        return null;
     }
 
     private static void downloadResourceFile(Resource<?> alleleResource) {
@@ -97,8 +96,7 @@ public class ResourceDownloader {
             FileUtils.copyURLToFile(resourceUrl, destination.toFile(), 2500, 15000);
             logger.info("Finished downloading {} to {}", name, destination);
         } catch (IOException ex) {
-            logger.error("Unable to download resource {} to {}", resourceUrl, destination, ex);
-            throw new ResourceDownloadException(ex);
+            throw new ResourceDownloadException("Unable to download resource " + resourceUrl + " to " + destination, ex);
         }
     }
 
