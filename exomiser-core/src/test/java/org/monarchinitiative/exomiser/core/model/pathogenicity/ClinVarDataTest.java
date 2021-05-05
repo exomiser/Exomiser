@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -67,7 +67,7 @@ public class ClinVarDataTest {
         assertThat(instance.getAlleleId(), equalTo(alleleId));
         assertThat(instance.getPrimaryInterpretation(), equalTo(clinSig));
         assertThat(instance.getSecondaryInterpretations(), equalTo(secondaryInterpretations));
-        assertThat(instance.getReviewStatus(), equalTo(reviewStatus));
+        assertThat(instance.getReviewStatus(), equalTo("multiple submitters, no conflict"));
         assertThat(instance.getIncludedAlleles(), equalTo(included));
     }
 

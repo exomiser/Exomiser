@@ -37,6 +37,7 @@ import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -71,7 +72,6 @@ public class JsonResultsWriterTest {
         contributingDominantAndRecessiveVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         contributingDominantAndRecessiveVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         contributingDominantAndRecessiveVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        contributingDominantAndRecessiveVariant.setWhiteListed(true);
         fgfr2.addVariant(contributingDominantAndRecessiveVariant);
         fgfr2.addGeneScore(GeneScore.builder()
                 .geneIdentifier(fgfr2.getGeneIdentifier())
@@ -122,7 +122,12 @@ public class JsonResultsWriterTest {
     private VariantEvaluation makeContributingDominantAndRecessiveVariant() {
         VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
-        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
+        variant.setWhiteListed(true);
+        ClinVarData clinVarData = ClinVarData.builder()
+                .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
+                .reviewStatus("criteria provided, multiple submitters, no conflicts")
+                .build();
+        variant.setPathogenicityData(PathogenicityData.of(clinVarData, PolyPhenScore.of(1f)));
         return variant;
     }
 

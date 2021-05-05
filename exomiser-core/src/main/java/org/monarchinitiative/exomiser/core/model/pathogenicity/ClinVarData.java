@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ public class ClinVarData {
         this.alleleId = builder.alleleId;
         this.primaryInterpretation = builder.primaryInterpretation;
         this.secondaryInterpretations = Sets.immutableEnumSet(builder.secondaryInterpretations);
-        this.reviewStatus = builder.reviewStatus;
+        this.reviewStatus = builder.reviewStatus.replace("_", " ");
         this.includedAlleles = ImmutableMap.copyOf(builder.includedAlleles);
     }
 
@@ -78,6 +78,7 @@ public class ClinVarData {
         return EMPTY;
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return this.equals(EMPTY);
     }
@@ -139,17 +140,16 @@ public class ClinVarData {
      * @return an integer value between 0 (worst) and 4 (best)
      * @since 13.0.0
      */
-    @JsonIgnore
     public int getStarRating() {
         switch (reviewStatus) {
-            case "criteria_provided,_single_submitter":
-            case "criteria_provided,_conflicting_interpretations":
+            case "criteria provided, single submitter":
+            case "criteria provided, conflicting interpretations":
                 return 1;
-            case "criteria_provided,_multiple_submitters,_no_conflicts":
+            case "criteria provided, multiple submitters, no conflicts":
                 return 2;
-            case "reviewed_by_expert_panel":
+            case "reviewed by expert panel":
                 return 3;
-            case "practice_guideline":
+            case "practice guideline":
                 return 4;
             default:
                 return 0;
