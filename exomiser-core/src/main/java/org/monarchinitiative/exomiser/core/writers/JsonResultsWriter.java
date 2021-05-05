@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,7 @@ public class JsonResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         ObjectWriter objectWriter = new ObjectMapper()
+                .addMixIn(Variant.class, VariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
@@ -72,8 +74,10 @@ public class JsonResultsWriter implements ResultsWriter {
 
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
-        //Add prettyPrintJson option to outputSettings?
-        ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
+        ObjectWriter objectWriter = new ObjectMapper()
+                .addMixIn(Variant.class, VariantMixin.class)
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+                .writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, stringWriter);
             stringWriter.flush();

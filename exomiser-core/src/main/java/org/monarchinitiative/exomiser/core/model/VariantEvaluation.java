@@ -51,8 +51,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-//TODO need a mixin for the
-@JsonPropertyOrder({"genomeAssembly", "contigName", "contigId", "start", "end", "ref", "alt", "id", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+@JsonPropertyOrder({"genomeAssembly", "contigName", "contigId", "start", "end", "ref", "alt", "id", "type", "length", "changeLength", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation extends AbstractVariant implements Comparable<VariantEvaluation>, Filterable, Inheritable {
 
     //threshold over which a variant effect score is considered pathogenic
