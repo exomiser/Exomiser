@@ -27,6 +27,7 @@ import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
@@ -46,12 +47,10 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -81,7 +80,6 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=quality,Description=\"Quality\">\n"
             + "##FILTER=<ID=reg-feat,Description=\"Regulatory feature\">\n"
             + "##FILTER=<ID=var-effect,Description=\"Variant effect\">\n"
-            + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
             + "##INFO=<ID=ExContribAltAllele,Number=A,Type=Flag,Description=\"Exomiser alt allele id contributing to score\">\n"
             + "##INFO=<ID=ExGeneSCombi,Number=A,Type=Float,Description=\"Exomiser gene combined score\">\n"
             + "##INFO=<ID=ExGeneSPheno,Number=A,Type=Float,Description=\"Exomiser gene phenotype score\">\n"
@@ -91,7 +89,6 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=ExVarEff,Number=A,Type=String,Description=\"Exomiser variant effect\">\n"
             + "##INFO=<ID=ExVarScore,Number=A,Type=Float,Description=\"Exomiser variant score\">\n"
             + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
-            + "##INFO=<ID=SVANN,Number=1,Type=String,Description=\"Functional SV Annotation:'Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|ERRORS / WARNINGS / INFO'\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
     private static final String CHR10_FGFR2_CONTRIBUTING_VARIANT = "chr10\t123256215\t.\tT\tG\t2.20\tPASS\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
     private static final String CHR10_FGFR2_PASS_VARIANT = "chr10\t123256214\t.\tA\tG\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89;RD=30\tGT:RD\t0/1:30\n";
@@ -107,7 +104,10 @@ public class VcfResultsWriterTest {
     private static VCFFileReader reader;
 
     //    private Path outPath;
-    private OutputSettings settings;
+    private OutputSettings settings = OutputSettings.builder()
+            .outputFormats(EnumSet.of(OutputFormat.VCF))
+            .outputPrefix("testWrite")
+            .build();
 
     private final Sample sample = Sample.builder()
             .vcfPath(Paths.get("src/test/resources/minimal.vcf"))
@@ -127,11 +127,6 @@ public class VcfResultsWriterTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        settings = OutputSettings.builder()
-                .outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outputPrefix("testWrite")
-                .build();
-
         setUpModel();
     }
 
@@ -264,6 +259,44 @@ public class VcfResultsWriterTest {
         String vcf = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         String expected = EXPECTED_HEADER + CHR10_FGFR2_CONTRIBUTING_VARIANT + CHR10_FGFR2_PASS_VARIANT;
         assertThat(vcf, equalTo(expected));
+    }
+
+    @Test
+    public void testWritePassVariantsToFile(@TempDir Path tempDir) throws IOException {
+        fgfr2PassMissenseVariant.addFilterResult(PASS_TARGET_RESULT);
+        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        fgfr2ContributingVariant.addFilterResult(PASS_TARGET_RESULT);
+        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        GeneScore geneScore = GeneScore.builder()
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
+                .contributingVariants(ImmutableList.of(fgfr2ContributingVariant))
+                .build();
+
+        fgfr2Gene.addVariant(fgfr2ContributingVariant);
+        fgfr2Gene.addGeneScore(geneScore);
+        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene);
+
+        Path vcfOutFilePrefix = tempDir.resolve("test-vcf-writer");
+        OutputSettings outputSettings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
+                .outputPrefix(vcfOutFilePrefix.toString())
+                .build();
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, outputSettings);
+
+        Path vcfOutFile = tempDir.resolve("test-vcf-writer_AD.vcf");
+        assertThat(Files.exists(vcfOutFile), equalTo(true));
+
+        List<String> headerLines = Arrays.asList(EXPECTED_HEADER.split("\n"));
+        List<String> expected = new ArrayList<>(headerLines);
+        expected.add(CHR10_FGFR2_CONTRIBUTING_VARIANT.replace("\n", ""));
+        expected.add(CHR10_FGFR2_PASS_VARIANT.replace("\n", ""));
+
+        assertThat(Files.readAllLines(vcfOutFile), equalTo(expected));
     }
 
     /* test writing out a variant failing the target filter */

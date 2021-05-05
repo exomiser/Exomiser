@@ -23,11 +23,12 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
@@ -119,12 +120,9 @@ public class VcfResultsWriter implements ResultsWriter {
         }
         String outFileName = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(
-                vcfHeader,
-                outFile.toString(),
-                getAdditionalHeaderLines(),
-                false)) {
+        VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
+        try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputPath(outFile).build()) {
+            writer.writeHeader(vcfHeader);
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
         logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
@@ -138,14 +136,34 @@ public class VcfResultsWriter implements ResultsWriter {
             logger.info("Skipping writing VCF results as no input VCF has been defined. Returning empty string.");
             return "";
         }
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos, getAdditionalHeaderLines())) {
+        VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
+        try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputStream(baos).build()) {
+            writer.writeHeader(vcfHeader);
             writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
         }
         logger.debug("{} results written to string buffer", OUTPUT_FORMAT);
         return baos.toString(StandardCharsets.UTF_8);
+    }
+
+    private VCFHeader readAndUpdateVcfHeader(Path vcfPath) {
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
+        // add INFO descriptions
+        for (ExomiserVcfInfoField infoField : ExomiserVcfInfoField.values()) {
+            vcfHeader.addMetaDataLine(infoField.getVcfHeaderLine());
+        }
+        // add FILTER descriptions
+        for (FilterType ft : FilterType.values()) {
+            vcfHeader.addMetaDataLine(new VCFFilterHeaderLine(ft.vcfValue(), ft.shortName()));
+        }
+        return vcfHeader;
+    }
+
+    private VariantContextWriterBuilder newNonIndexingVariantContextWriterBuilder() {
+        return new VariantContextWriterBuilder()
+                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+                .unsetOption(Options.INDEX_ON_THE_FLY);
     }
 
     private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, VariantContextWriter writer) {
@@ -224,12 +242,12 @@ public class VcfResultsWriter implements ResultsWriter {
         //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF
         // chr10-123256215-T*-[G, A]
         // chr5-11-AC*-[AT]
-        StringJoiner stringJoiner = new StringJoiner("-");
-        stringJoiner.add(variantContext.getContig());
-        stringJoiner.add(String.valueOf(variantContext.getStart()));
-        stringJoiner.add(variantContext.getReference().toString());
-        stringJoiner.add(variantContext.getAlternateAlleles().toString());
-        return stringJoiner.toString();
+        return new StringJoiner("-")
+                .add(variantContext.getContig())
+                .add(String.valueOf(variantContext.getStart()))
+                .add(variantContext.getReference().toString())
+                .add(variantContext.getAlternateAlleles().toString())
+                .toString();
     }
 
     private VariantContext updateRecord(List<VariantEvaluation> variantEvaluations, Gene gene, ModeOfInheritance modeOfInheritance) {
@@ -271,26 +289,6 @@ public class VcfResultsWriter implements ResultsWriter {
      */
     private Set<String> makeFailedFilters(Set<FilterType> failedFilterTypes) {
         return failedFilterTypes.stream().map(FilterType::vcfValue).collect(toSet());
-    }
-
-    /**
-     * @return list of additional {@link VCFHeaderLine}s to write out,
-     * explaining the Jannovar and Exomiser INFO and FILTER fields
-     */
-    private List<VCFHeaderLine> getAdditionalHeaderLines() {
-        List<VCFHeaderLine> lines = new ArrayList<>();
-
-        // add INFO descriptions
-        for (ExomiserVcfInfoField infoField : ExomiserVcfInfoField.values()) {
-            lines.add(infoField.getVcfHeaderLine());
-        }
-
-        // add FILTER descriptions
-        for (FilterType ft : FilterType.values()) {
-            lines.add(new VCFFilterHeaderLine(ft.vcfValue(), ft.shortName()));
-        }
-
-        return lines;
     }
 
     /**
