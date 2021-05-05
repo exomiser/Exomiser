@@ -60,7 +60,7 @@ public class JsonResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         ObjectWriter objectWriter = new ObjectMapper()
-                .addMixIn(Variant.class, VariantMixin.class)
+                .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
@@ -75,7 +75,7 @@ public class JsonResultsWriter implements ResultsWriter {
     @Override
     public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
         ObjectWriter objectWriter = new ObjectMapper()
-                .addMixIn(Variant.class, VariantMixin.class)
+                .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {

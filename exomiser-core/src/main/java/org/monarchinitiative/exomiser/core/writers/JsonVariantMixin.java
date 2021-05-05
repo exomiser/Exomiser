@@ -25,38 +25,55 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.svart.Variant;
 import org.monarchinitiative.svart.VariantType;
 
-public interface VariantMixin extends Variant {
+/**
+ * Jackson Mixin (http://www.cowtowncoder.com/blog/archives/2009/08/entry_305.html) class to add JSON serialisation to
+ * svart {@link Variant} fields.
+ *
+ * @since 13.0.0
+ */
+public interface JsonVariantMixin extends Variant {
 
     @JsonProperty("contigName")
+    @Override
     String contigName();
 
     @JsonProperty("contigId")
+    @Override
     int contigId();
 
     @JsonProperty("start")
+    @Override
     int start();
 
     @JsonProperty("end")
+    @Override
     int end();
 
     @JsonProperty("length")
+    @Override
     int length();
 
     @JsonProperty("changeLength")
+    @Override
     int changeLength();
 
     @JsonProperty("ref")
+    @Override
     String ref();
 
     @JsonProperty("alt")
+    @Override
     String alt();
 
     @JsonProperty("id")
+    @Override
     String id();
 
     @JsonProperty("type")
+    @Override
     VariantType variantType();
 
     @JsonIgnore
+    @Override
     boolean isOneBased();
 }
