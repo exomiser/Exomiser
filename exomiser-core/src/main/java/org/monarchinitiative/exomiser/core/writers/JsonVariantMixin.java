@@ -37,10 +37,6 @@ public interface JsonVariantMixin extends Variant {
     @Override
     String contigName();
 
-    @JsonProperty("contigId")
-    @Override
-    int contigId();
-
     @JsonProperty("start")
     @Override
     int start();
