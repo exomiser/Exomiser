@@ -27,6 +27,7 @@ import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +51,7 @@ public class VariantContextConverter {
     }
 
     @Nullable
-    public Variant convertToVariant(VariantContext variantContext, Allele altAllele) {
+    public Variant convertToVariant(@Nonnull VariantContext variantContext, @Nonnull Allele altAllele) {
         Contig contig = vcfConverter.parseContig(variantContext.getContig());
         if (contig.isUnknown()) {
             return null;
