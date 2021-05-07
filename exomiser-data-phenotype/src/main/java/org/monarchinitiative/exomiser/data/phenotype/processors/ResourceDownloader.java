@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -56,6 +56,8 @@ public class ResourceDownloader {
             if (Files.size(destination) == 0) {
                 logger.info("Deleting empty file {}", destination);
                 Files.deleteIfExists(destination);
+                // stop the entire build if resources failed to download
+                throw new IllegalStateException("Failed to transfer resource " + resource.getFileName());
             }
         } catch (IOException e) {
             logger.error("Unable to delete empty file {}", destination);
