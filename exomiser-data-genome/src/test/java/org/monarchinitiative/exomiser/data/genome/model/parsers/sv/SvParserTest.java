@@ -18,24 +18,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model.parsers.sv;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
+import org.junit.jupiter.api.Test;
 
-import java.io.Closeable;
-import java.util.stream.Stream;
+import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- */
-public interface Indexer<T> extends Closeable {
+public interface SvParserTest {
 
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
+    @Test
+    default void deletion() {
+        fail("Test not implemented");
     }
 
-    void write(T type);
+    @Test
+    default void insertion() {
+        fail("Test not implemented");
+    }
+
+    @Test
+    default void duplication() {
+        fail("Test not implemented");
+    }
+
+    @Test
+    default void inversion() {
+        fail("Test not implemented");
+    }
+
+    @Test
+    default void cnvGain() {
+        fail("Test not implemented");
+    }
+
+    @Test
+    default void cnvLoss() {
+        fail("Test not implemented");
+    }
+
+    @Test
+    default void breakend() {
+        fail("Test not implemented");
+    }
 
 }

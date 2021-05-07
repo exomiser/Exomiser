@@ -18,24 +18,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model.parsers.gene;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 
-import java.io.Closeable;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface Indexer<T> extends Closeable {
+public class GnomadGeneConstraintParser implements Parser<GnomadGeneConstraint> {
 
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
+    @Override
+    public List<GnomadGeneConstraint> parseLine(String line) {
+        String geneSymbol = "";
+        String geneId = "";
+        String geneTranscript = "";
+        float pLI = 0;
+        float oeLofLower = 0;
+        float oeLofUpper = 0;
+
+        GnomadGeneConstraint gnomadGeneConstraint = new GnomadGeneConstraint(geneSymbol, geneId, geneTranscript, pLI, oeLofLower, oeLofUpper);
+        return List.of(gnomadGeneConstraint);
     }
-
-    void write(T type);
-
 }

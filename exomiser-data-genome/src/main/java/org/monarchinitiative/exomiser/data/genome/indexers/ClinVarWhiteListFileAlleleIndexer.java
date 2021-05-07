@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -67,8 +67,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
                 // when writing out to the BlockCompressedOutputStream don't use flush()
                 // this is necessary if only writing to an uncompressed test file.
             } catch (IOException ex) {
-                logger.error("Unable to write to allele index file", ex);
-                throw new RuntimeException(ex);
+                throw new IllegalStateException("Unable to write to ClinVar whitelist index file", ex);
             }
             count.incrementAndGet();
         }
@@ -129,8 +128,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
         try {
             bufferedWriter.close();
         } catch (IOException e) {
-            logger.error("Unable to close allele index file", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Unable to close ClinVar whitelist index file", e);
         }
     }
 }

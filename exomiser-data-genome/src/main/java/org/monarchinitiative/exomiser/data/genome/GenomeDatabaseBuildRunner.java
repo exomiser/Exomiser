@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,15 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.io.FileUtils;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
+import org.monarchinitiative.exomiser.data.genome.model.OutputFileIndexingResource;
+import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.genome.EnsemblEnhancerParser;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.genome.FantomEnhancerParser;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.*;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -43,6 +49,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -70,7 +77,7 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Parsing ENSEMBL enhancers...");
         Path ensemblEnhancersFile = genomeDataPath.resolve("ensembl_enhancers.tsv");
         String martQuery = getMartQueryString("genome/ensembl_enhancer_biomart_query.xml");
-        downloadEnsemblEnhancers(buildInfo.getAssembly(), martQuery, ensemblEnhancersFile);
+//        downloadEnsemblEnhancers(buildInfo.getAssembly(), martQuery, ensemblEnhancersFile);
         EnsemblEnhancerParser ensemblEnhancerParser = new EnsemblEnhancerParser(ensemblEnhancersFile, genomeDataPath.resolve("ensembl_enhancers.pg"));
         ensemblEnhancerParser.parse();
 
@@ -85,6 +92,44 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Extracting TAD resource...");
         downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeDataPath.resolve("tad.pg"));
 
+        // can do SV build here
+        DbVarSvResource dbVarResource = dbVarFrequencyResource();
+        GnomadSvResource gnomadSvResource = gnomadSvFrequencyResource();
+        GonlSvResource gonlSvResource = gonlSvFrequencyResource();
+        DgvSvResource dgvSvResource = dgvSvResource();
+
+        ClinVarSvResource clinVarSvResource = clinvarSvResource();
+
+//        ResourceDownloader.download(clinVarSvResource);
+//        clinVarSvResource.indexResource();
+
+        List<SvFrequencyResource> svFrequencyResources = List.of(dgvSvResource);
+
+        // download sv/genome resources - e.g. dbvar, gnomAD-SV, gnomAD pLOF
+        // TODO: Do this on a dedicated thread pool
+        svFrequencyResources.parallelStream().forEach(ResourceDownloader::download);
+        // process with something like an SvAlleleWriter - write out one .pg file per resource - very similar to the phenotype build process
+        // dbvar, dgv, decipher, gonl, gnomad-sv
+        //        alleleResources.forEach(alleleIndexer::index);
+        // read in resources as a migration and do mega union all sort SQL in migration script to produce the
+        // sv_freq and sv_path tables
+        // e.g. V1.3.0__insert_sv_freq
+        // e.g. V1.3.1__insert_sv_path
+        // truncate and drop original resource tables
+
+        // TODO: ADD gnomAD pLOF, pLI, HI, triplosensitivity, genic intolerance, gene constraint scores.
+        //                    // TODO: do we want to do this? Don't we want each resource to handle its own sources, parsing and writing?
+        //                    //  e.g. dbVar has 3-4 nr_ source files, clinVar has one file for both assemblies and only the correct
+        //                    //  lines should be converted and written.
+        //                    try (OutputFileIndexer indexer = new OutputFileIndexer(svFrequencyResource)) {
+        //                        indexer.index(svFrequencyResource);
+        //                    } catch (IOException e) {
+        //                        throw new IllegalStateException(e.getMessage());
+        //                    }
+        svFrequencyResources.parallelStream()
+                .forEach(OutputFileIndexingResource::indexResource);
+
+
         //build genome.h2.db
         Path databasePath = outputPath.resolve(String.format("%s_genome", buildInfo.getBuildString()));
         DataSource dataSource = createDataSource(databasePath);
@@ -93,12 +138,74 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Finished importing genome data");
     }
 
+    private DbVarSvResource dbVarFrequencyResource() {
+        try {
+            return new DbVarSvResource("hg19.dbvar",
+                    new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/vcf/GRCh37.variant_call.all.vcf.gz"),
+                    new TabixArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/GRCh37.variant_call.all.vcf.gz")),
+                    new DbVarFreqParser(),
+                    new OutputFileIndexer<>(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/dbvar_freq.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private GnomadSvResource gnomadSvFrequencyResource() {
+        try {
+            // https://doi.org/10.1038/s41586-020-2287-8
+            //
+            return new GnomadSvResource("hg19.gnomad-sv",
+                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+                    new TabixArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/gnomad_v2.1_sv.sites.vcf.gz")),
+                    new GnomadSvVcfFreqParser(),
+                    new OutputFileIndexer<>(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/gnomad-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private GonlSvResource gonlSvFrequencyResource() {
+        try {
+            return new GonlSvResource("hg19.gonl",
+                    new URL("http://molgenis26.target.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
+                    new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
+                    new GonlSvFreqParser(),
+                    new OutputFileIndexer<>(genomeDataPath.resolve("gonl.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private ClinVarSvResource clinvarSvResource() {
+        try {
+            return new ClinVarSvResource("hg19.clinvar-sv",
+                    new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
+                    new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/variant_summary.txt.gz")),
+                    new ClinVarSvParser(GenomeAssembly.HG19),
+                    new OutputFileIndexer<>(genomeDataPath.resolve("clinvar-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private DgvSvResource dgvSvResource() {
+        try {
+            return new DgvSvResource("hg19.dgv-sv",
+                    new URL("http://dgv.tcag.ca/dgv/docs/GRCh37_hg19_variants_2020-02-25.txt"),
+                    new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/dgv-hg19-variants-2020-02-25.txt")),
+                    new DgvSvFreqParser(),
+                    new OutputFileIndexer<>(genomeDataPath.resolve("dgv-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private String getMartQueryString(String martQueryResourcePath) {
         try {
             Resource martQuery = new ClassPathResource(martQueryResourcePath);
-            try(BufferedReader reader = new BufferedReader(new InputStreamReader(martQuery.getInputStream()))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(martQuery.getInputStream()))) {
                 String xml = reader.lines().collect(Collectors.joining("\n"));
-                return URLEncoder.encode(xml, "UTF-8");
+                return URLEncoder.encode(xml, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
             logger.error("", e);

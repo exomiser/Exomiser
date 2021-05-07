@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@ public interface Resource<T> {
         // wrap this in a try-with-resources to close the underlying file resources when the stream closes
         try (Stream<String> lines = getArchive().lines()) {
             return lines
-//                       .peek(line -> logger.info("{}", line))
+//                       .peek(System.out::println)
                     .flatMap(line -> getParser().parseLine(line).stream());
         }
     }

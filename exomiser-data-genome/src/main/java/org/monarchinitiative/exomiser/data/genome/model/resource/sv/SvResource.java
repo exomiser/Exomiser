@@ -18,24 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model.resource.sv;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
+import org.monarchinitiative.exomiser.data.genome.model.OutputFileIndexingResource;
+import org.monarchinitiative.exomiser.data.genome.model.OutputLine;
 
-import java.io.Closeable;
-import java.util.stream.Stream;
-
-/**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- */
-public interface Indexer<T> extends Closeable {
-
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
-    }
-
-    void write(T type);
-
+public interface SvResource<T extends OutputLine> extends OutputFileIndexingResource<T> {
 }

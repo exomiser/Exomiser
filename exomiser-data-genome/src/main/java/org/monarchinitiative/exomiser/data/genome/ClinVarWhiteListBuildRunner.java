@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -80,9 +80,8 @@ public class ClinVarWhiteListBuildRunner {
         BlockCompressedOutputStream blockCompressedOutputStream = new BlockCompressedOutputStream(whiteListBgZipPath.toFile(), 6);
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(blockCompressedOutputStream);
 
-        try (BufferedWriter bgZipWriter = new BufferedWriter(outputStreamWriter)) {
-            Set<Allele> blacklist = buildInfo.getAssembly() == GenomeAssembly.HG19 ? HG19_BLACKLIST : HG38_BLACKLIST;
-            Indexer<Allele> alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(bgZipWriter, blacklist);
+        Set<Allele> blacklist = buildInfo.getAssembly() == GenomeAssembly.HG19 ? HG19_BLACKLIST : HG38_BLACKLIST;
+        try (Indexer<Allele> alleleIndexer = new ClinVarWhiteListFileAlleleIndexer(new BufferedWriter(outputStreamWriter), blacklist)) {
             alleleIndexer.index(clinVarAlleleResource);
         } catch (IOException e) {
             logger.error("Unable to write whitelist to bgzip.", e);

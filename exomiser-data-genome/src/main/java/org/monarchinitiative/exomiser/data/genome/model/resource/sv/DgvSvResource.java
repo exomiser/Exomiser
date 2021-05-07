@@ -18,24 +18,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model.resource.sv;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
+import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
+import org.monarchinitiative.exomiser.data.genome.model.SvFrequency;
+import org.monarchinitiative.exomiser.data.genome.model.archive.Archive;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 
-import java.io.Closeable;
-import java.util.stream.Stream;
+import java.net.URL;
 
-/**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- */
-public interface Indexer<T> extends Closeable {
+public class DgvSvResource extends AbstractSvIndexingResource<SvFrequency> implements SvFrequencyResource {
 
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
+    public DgvSvResource(String name, URL resourceUrl, Archive archive, Parser<SvFrequency> parser, Indexer<SvFrequency> indexer) {
+        super(name, resourceUrl, archive, parser, indexer);
     }
-
-    void write(T type);
-
 }

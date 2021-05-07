@@ -18,24 +18,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
 
-import java.io.Closeable;
-import java.util.stream.Stream;
+import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
+import org.monarchinitiative.exomiser.data.genome.indexers.IndexingException;
+
+import java.io.IOException;
+
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface Indexer<T> extends Closeable {
+public interface OutputFileIndexingResource<T extends OutputLine> extends Resource<T> {
 
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
+    Indexer<T> indexer();
+
+    default void indexResource() {
+        try (Indexer<T> indexer = indexer()) {
+            indexer.index(this);
+        } catch (IOException exception) {
+            throw new IndexingException(exception);
         }
     }
-
-    void write(T type);
 
 }

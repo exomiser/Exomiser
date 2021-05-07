@@ -20,22 +20,20 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
+public class IndexingException extends RuntimeException {
 
-import java.io.Closeable;
-import java.util.stream.Stream;
-
-/**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
- */
-public interface Indexer<T> extends Closeable {
-
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
+    public IndexingException() {
     }
 
-    void write(T type);
+    public IndexingException(String message) {
+        super(message);
+    }
 
+    public IndexingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public IndexingException(Throwable cause) {
+        super(cause);
+    }
 }
