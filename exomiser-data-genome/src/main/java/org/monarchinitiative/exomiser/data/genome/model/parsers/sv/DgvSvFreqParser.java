@@ -50,7 +50,7 @@ public class DgvSvFreqParser implements Parser<SvFrequency> {
         int losses = zeroIfEmpty(tokens[16]);
         if (gains != 0 && losses != 0) {
             return List.of(
-                    new SvFrequency(chr, start, end, 0, VariantType.CNV_GAIN, accession, "DGV", accession, gains, an),
+                    new SvFrequency(chr, start, end, 0, VariantType.DUP, accession, "DGV", accession, gains, an),
                     new SvFrequency(chr, start, end, 0, VariantType.DEL, accession, "DGV", accession, losses, an)
             );
         }

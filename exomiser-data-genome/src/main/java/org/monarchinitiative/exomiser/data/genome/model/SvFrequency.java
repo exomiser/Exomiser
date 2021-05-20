@@ -74,8 +74,8 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
                 return zeroStart - end;
             case DUP:
             case INS:
-                return end - zeroStart;
             case INV:
+                return end - zeroStart;
             default:
                 return 0;
         }
