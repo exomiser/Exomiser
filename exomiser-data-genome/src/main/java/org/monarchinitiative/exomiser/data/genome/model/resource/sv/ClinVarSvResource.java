@@ -27,7 +27,7 @@ import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.ClinVarSvPars
 
 import java.net.URL;
 
-public class ClinVarSvResource extends AbstractSvIndexingResource<SvPathogenicity> implements SvPathogenicityResource {
+public class ClinVarSvResource extends SvPathogenicityResource {
 
     public ClinVarSvResource(String name, URL resourceUrl, Archive archive, ClinVarSvParser resourceParser, Indexer<SvPathogenicity> indexer) {
         super(name, resourceUrl, archive, resourceParser, indexer);

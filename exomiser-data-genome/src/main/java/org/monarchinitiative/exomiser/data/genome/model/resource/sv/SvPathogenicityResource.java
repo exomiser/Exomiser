@@ -21,15 +21,15 @@
 package org.monarchinitiative.exomiser.data.genome.model.resource.sv;
 
 import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
-import org.monarchinitiative.exomiser.data.genome.model.SvFrequency;
+import org.monarchinitiative.exomiser.data.genome.model.SvPathogenicity;
 import org.monarchinitiative.exomiser.data.genome.model.archive.Archive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 
 import java.net.URL;
 
-public class DgvSvResource extends SvFrequencyResource {
+public class SvPathogenicityResource extends AbstractSvIndexingResource<SvPathogenicity> {
 
-    public DgvSvResource(String name, URL resourceUrl, Archive archive, Parser<SvFrequency> parser, Indexer<SvFrequency> indexer) {
+    SvPathogenicityResource(String name, URL resourceUrl, Archive archive, Parser<SvPathogenicity> parser, Indexer<SvPathogenicity> indexer) {
         super(name, resourceUrl, archive, parser, indexer);
     }
 }

@@ -30,7 +30,7 @@ import java.net.URL;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GonlSvResource extends AbstractSvIndexingResource<SvFrequency> implements SvFrequencyResource {
+public class GonlSvResource extends SvFrequencyResource {
 
     public GonlSvResource(String name, URL resourceUrl, Archive archive, Parser<SvFrequency> resourceParser, Indexer<SvFrequency> indexer) {
         super(name, resourceUrl, archive, resourceParser, indexer);

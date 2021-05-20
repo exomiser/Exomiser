@@ -31,7 +31,7 @@ import java.net.URL;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbVarSvResource extends AbstractSvIndexingResource<SvFrequency> implements SvFrequencyResource {
+public class DbVarSvResource extends SvFrequencyResource {
 
     public DbVarSvResource(String name, URL resourceUrl, Archive archive, DbVarFreqParser resourceParser, Indexer<SvFrequency> indexer) {
         super(name, resourceUrl, archive, resourceParser, indexer);

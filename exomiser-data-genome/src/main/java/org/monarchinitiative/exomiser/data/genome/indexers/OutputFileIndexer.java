@@ -41,10 +41,14 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
     private final BufferedWriter bufferedWriter;
     private final Path outFilePath;
 
-    public OutputFileIndexer(Path outFilePath) throws IOException {
+    public OutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
         logger.info("Writing to {}", outFilePath);
-        this.bufferedWriter = Files.newBufferedWriter(outFilePath);
+        try {
+            this.bufferedWriter = Files.newBufferedWriter(outFilePath);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
+        }
     }
 
     @Override

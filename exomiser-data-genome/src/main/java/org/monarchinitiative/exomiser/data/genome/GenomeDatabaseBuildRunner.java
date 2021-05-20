@@ -26,7 +26,6 @@ import org.flywaydb.core.Flyway;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
-import org.monarchinitiative.exomiser.data.genome.model.OutputFileIndexingResource;
 import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
 import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.genome.EnsemblEnhancerParser;
@@ -93,17 +92,23 @@ public class GenomeDatabaseBuildRunner {
         downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeDataPath.resolve("tad.pg"));
 
         // can do SV build here
-        DbVarSvResource dbVarResource = dbVarFrequencyResource();
-        GnomadSvResource gnomadSvResource = gnomadSvFrequencyResource();
-        GonlSvResource gonlSvResource = gonlSvFrequencyResource();
-        DgvSvResource dgvSvResource = dgvSvResource();
+        SvFrequencyResource dbVarResource = dbVarFrequencyResource();
+        SvFrequencyResource gnomadSvResource = gnomadSvFrequencyResource();
+        SvFrequencyResource gonlSvResource = gonlSvFrequencyResource();
+        SvFrequencyResource dgvSvResource = dgvSvResource();
+        SvFrequencyResource decipherSvResource = decipherSvResource();
 
-        ClinVarSvResource clinVarSvResource = clinvarSvResource();
+        SvPathogenicityResource clinVarSvResource = clinvarSvResource();
 
-//        ResourceDownloader.download(clinVarSvResource);
-//        clinVarSvResource.indexResource();
+        List<SvResource<?>> svFrequencyResources = List.of(
+                clinVarSvResource,
+                dbVarResource,
+                gnomadSvResource,
+                gonlSvResource,
+                dgvSvResource,
+                decipherSvResource
+        );
 
-        List<SvFrequencyResource> svFrequencyResources = List.of(dgvSvResource);
 
         // download sv/genome resources - e.g. dbvar, gnomAD-SV, gnomAD pLOF
         // TODO: Do this on a dedicated thread pool
@@ -127,7 +132,7 @@ public class GenomeDatabaseBuildRunner {
         //                        throw new IllegalStateException(e.getMessage());
         //                    }
         svFrequencyResources.parallelStream()
-                .forEach(OutputFileIndexingResource::indexResource);
+                .forEach(SvResource::indexResource);
 
 
         //build genome.h2.db
@@ -195,6 +200,18 @@ public class GenomeDatabaseBuildRunner {
                     new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/dgv-hg19-variants-2020-02-25.txt")),
                     new DgvSvFreqParser(),
                     new OutputFileIndexer<>(genomeDataPath.resolve("dgv-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private DecipherSvResource decipherSvResource() {
+        try {
+            return new DecipherSvResource("hg19.decipher-sv",
+                    new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch37.txt.gz"),
+                    new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/decipher_population_cnv_grch37.txt.gz")),
+                    new DecipherSvFreqParser(),
+                    new OutputFileIndexer<>(genomeDataPath.resolve("decipher-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

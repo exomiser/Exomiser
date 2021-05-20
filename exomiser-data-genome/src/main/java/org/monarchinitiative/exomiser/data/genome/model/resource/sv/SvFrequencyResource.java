@@ -27,9 +27,9 @@ import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 
 import java.net.URL;
 
-public class DgvSvResource extends SvFrequencyResource {
+public class SvFrequencyResource extends AbstractSvIndexingResource<SvFrequency> {
 
-    public DgvSvResource(String name, URL resourceUrl, Archive archive, Parser<SvFrequency> parser, Indexer<SvFrequency> indexer) {
-        super(name, resourceUrl, archive, parser, indexer);
+    public SvFrequencyResource(String name, URL resourceUrl, Archive archive, Parser<SvFrequency> resourceParser, Indexer<SvFrequency> indexer) {
+        super(name, resourceUrl, archive, resourceParser, indexer);
     }
 }

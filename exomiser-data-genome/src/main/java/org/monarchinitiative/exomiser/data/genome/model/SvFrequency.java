@@ -53,19 +53,28 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
         this.alleleNum = alleleNum;
     }
 
+    /**
+     * Caution! This method assumes 1-based coordinates.
+     *
+     * @param start
+     * @param end
+     * @param variantType
+     * @return
+     */
     private int calculateLength(int start, int end, VariantType variantType) {
+        int zeroStart = start - 1;
         // CNV_GAIN and CNV_LOSS have a CNV case type which is no so informative.
         if (variantType == VariantType.CNV_GAIN) {
-            return end - start;
+            return end - zeroStart;
         } else if (variantType == VariantType.CNV_LOSS) {
-            return start - end;
+            return zeroStart - end;
         }
         switch (variantType.baseType()) {
             case DEL:
-                return start - end;
+                return zeroStart - end;
             case DUP:
             case INS:
-                return end - start;
+                return end - zeroStart;
             case INV:
             default:
                 return 0;

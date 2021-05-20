@@ -37,7 +37,7 @@ public class ClinVarSvParserTest implements SvParserTest {
     ClinVarSvParser instance = new ClinVarSvParser(GenomeAssembly.HG19);
 
     @Test
-    void parseHeaderLine() {
+    public void parseHeaderLine() {
         List<SvPathogenicity> result = instance.parseLine("#AlleleID\tType\tName\tGeneID\tGeneSymbol\tHGNC_ID\tClinicalSignificance\tClinSigSimple\tLastEvaluated\tRS# (dbSNP)\tnsv/esv (dbVar)\tRCVaccession\tPhenotypeIDS\tPhenotypeList\tOrigin\tOriginSimple\tAssembly\tChromosomeAccession\tChromosome\tStart\tStop\tReferenceAllele\tAlternateAllele\tCytogenetic\tReviewStatus\tNumberSubmitters\tGuidelines\tTestedInGTR\tOtherIDs\tSubmitterCategories\tVariationID\tPositionVCF\tReferenceAlleleVCF\tAlternateAlleleVCF\n");
         assertThat(result, equalTo(List.of()));
     }
@@ -75,7 +75,7 @@ public class ClinVarSvParserTest implements SvParserTest {
     public void insertion() {
         List<SvPathogenicity> result = instance.parseLine("21676\tInsertion\tNM_007129.4(ZIC2):c.177_178ins56\t7546\tZIC2\tHGNC:12873\tPathogenic\t1\tAug 29, 2013\t-1\tnsv1067866\tRCV000007016\tMONDO:MONDO:0012322,MedGen:C1864827,OMIM:609637,Orphanet:2162\tHoloprosencephaly 5\tgermline\tgermline\tGRCh37\tNC_000013.10\t13\t100634495\t100634496\tna\tna\t13q32.3\tno assertion criteria provided\t2\t-\tN\tdbVar:nssv3761594,OMIM:603073.0001\t16637\t-1\tna\tna\n");
         System.out.println(result);
-        assertThat(result, equalTo(List.of(new SvPathogenicity(13, 100634495, 100634496, 56, VariantType.INS, "nsv1067866", "CLINVAR", "RCV000007016", "21676", ClinVarData.ClinSig.PATHOGENIC, "no assertion criteria provided"))));
+        assertThat(result, equalTo(List.of(new SvPathogenicity(13, 100634495, 100634496, 1, VariantType.INS, "nsv1067866", "CLINVAR", "RCV000007016", "21676", ClinVarData.ClinSig.PATHOGENIC, "no assertion criteria provided"))));
     }
 
     @Test
@@ -97,13 +97,11 @@ public class ClinVarSvParserTest implements SvParserTest {
         assertThat(result, equalTo(List.of(new SvPathogenicity(22, 42126499, 42130881, 4382, VariantType.DUP, "nsv1197529", "CLINVAR", "RCV000030944", "31935", ClinVarData.ClinSig.DRUG_RESPONSE, "no assertion criteria provided"))));
     }
 
-    @Test
     @Override
     public void inversion() {
         // empty - there are no inversions with an nsv
     }
 
-    @Test
     @Override
     public void breakend() {
         // empty - there are no breakends with an nsv
