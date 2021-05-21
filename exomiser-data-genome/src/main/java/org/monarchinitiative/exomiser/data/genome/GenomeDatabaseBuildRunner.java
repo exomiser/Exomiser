@@ -149,7 +149,7 @@ public class GenomeDatabaseBuildRunner {
                     new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/vcf/GRCh37.variant_call.all.vcf.gz"),
                     new TabixArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/GRCh37.variant_call.all.vcf.gz")),
                     new DbVarFreqParser(),
-                    new OutputFileIndexer<>(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/dbvar_freq.pg")));
+                    new OutputFileIndexer<>(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/dbvar-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -175,7 +175,7 @@ public class GenomeDatabaseBuildRunner {
                     new URL("http://molgenis26.target.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
                     new FileArchive(Path.of("/home/hhx640/Documents/exomiser-build/hg19/genome/20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
                     new GonlSvFreqParser(),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("gonl.pg")));
+                    new OutputFileIndexer<>(genomeDataPath.resolve("gonl-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
