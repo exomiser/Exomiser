@@ -45,19 +45,27 @@ public class DgvSvFreqParser implements Parser<SvFrequency> {
         // n.b. gain+loss sites are multiallelic so need to be assigned based on the observed gains/losses below
         VariantType variantType = parseType(tokens[5]);
         String dbVarId = parseDbVarId(tokens[11]);
+
+        // switch dgv accessions with dbvar nsv identifier
+        if (accession.startsWith("dgv")) {
+            String temp = accession;
+            accession = dbVarId;
+            dbVarId = temp;
+        }
+
         int an = Integer.parseInt(tokens[14]);
         int gains = zeroIfEmpty(tokens[15]);
         int losses = zeroIfEmpty(tokens[16]);
         if (gains != 0 && losses != 0) {
             return List.of(
-                    new SvFrequency(chr, start, end, 0, VariantType.DUP, accession, "DGV", accession, gains, an),
-                    new SvFrequency(chr, start, end, 0, VariantType.DEL, accession, "DGV", accession, losses, an)
+                    new SvFrequency(chr, start, end, 0, VariantType.DUP, accession, "DGV", dbVarId, gains, an),
+                    new SvFrequency(chr, start, end, 0, VariantType.DEL, accession, "DGV", dbVarId, losses, an)
             );
         }
         if (gains != 0) {
-            return List.of(new SvFrequency(chr, start, end, 0, variantType, dbVarId, "DGV", accession, gains, an));
+            return List.of(new SvFrequency(chr, start, end, 0, variantType, accession, "DGV", dbVarId, gains, an));
         }
-        return List.of(new SvFrequency(chr, start, end, 0, variantType, dbVarId, "DGV", accession, losses, an));
+        return List.of(new SvFrequency(chr, start, end, 0, variantType, accession, "DGV", dbVarId, losses, an));
     }
 
     private int zeroIfEmpty(String token) {
