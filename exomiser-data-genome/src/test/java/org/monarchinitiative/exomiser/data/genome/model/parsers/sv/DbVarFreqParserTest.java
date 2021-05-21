@@ -32,14 +32,20 @@ import static org.hamcrest.Matchers.equalTo;
  */
 class DbVarFreqParserTest {
 
+    private final DbVarFreqParser instance = new DbVarFreqParser();
+
     @Test
     void lineWithoutFrequencyInfoReturnsEmptyList() {
         String line = "2\t145346767\tessv17884129\tA\t<INS:ME:ALU>\t.\t.\tDBVARID;SVTYPE=INS;END=145346767;SVLEN=274;EXPERIMENT=9;SAMPLE=NA20758;REGIONID=esv3826447;AN=30;AC=3";
         String line1 = "2\t145346767\tessv17884129\tA\t<INS:ME:ALU>\t.\t.\tDBVARID;SVTYPE=INS;END=145346767;SVLEN=274;EXPERIMENT=9;SAMPLE=NA20758;REGIONID=esv3826447";
         String line2 = "2\t145346767\tessv17884129\tA\t<INS:ME:ALU>\t.\t.\tDBVARID;SVTYPE=INS;END=145346767;SVLEN=274;EXPERIMENT=9;SAMPLE=NA20758;REGIONID=esv3826447";
-        DbVarFreqParser instance = new DbVarFreqParser();
 //        assertThat(instance.parseLine(line), equalTo(List.of()));
         assertThat(instance.parseLine(line1), equalTo(List.of()));
         assertThat(instance.parseLine(line2), equalTo(List.of()));
+    }
+
+    @Test
+    public void testInsertionNoFreq() {
+        System.out.println(instance.parseLine("1\t10726\tnssv14489056\tG\t<INS>\t.\t.\tDBVARID;SVTYPE=INS;END=10726;SVLEN=58;EXPERIMENT=1;SAMPLE=HG00268;REGIONID=nsv3320784\n"));
     }
 }

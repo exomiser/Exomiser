@@ -48,7 +48,8 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
         int chr = Contigs.parseId(tokens[0]);
         int start = Integer.parseInt(tokens[1]);
         String id = tokens[2];
-        String infoField = tokens[7];
+        String regionId = "";
+        String infoField = tokens[7].trim();
 
         int end = 0;
 
@@ -75,6 +76,8 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
                     svLen = parseIntOrDefault(keyValues[1], 0);
                 } else if ("END".equals(keyValues[0])) {
                     end = Integer.parseInt(keyValues[1]);
+                } else if ("REGIONID".equals(keyValues[0])) {
+                    regionId = keyValues[1];
                 }
             }
         }
@@ -82,7 +85,7 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
         if (alleleCount == 0 && alleleNum == 0) {
             return List.of();
         }
-        return List.of(new SvFrequency(chr, start, end, svLen, svType, "", "DBVAR", id, alleleCount, alleleNum));
+        return List.of(new SvFrequency(chr, start, end, svLen, svType, regionId, "DBVAR", id, alleleCount, alleleNum));
     }
 
     private int parseIntOrDefault(String value, int defaultInt) {
