@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.monarchinitiative.svart.VariantType.BND;
+import static org.monarchinitiative.svart.VariantType.SYMBOLIC;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -56,9 +59,14 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
         int svLen = 0;
         VariantType svType = VariantType.parseType(tokens[4]);
 
-        int alleleCount = 0;
+        if (svType == BND || svType == SYMBOLIC) {
+            // parse these with the other BND sources
+            return List.of();
+        }
+
+        int alleleCount = 1;
         float alleleFreq = 0f;
-        int alleleNum = 0;
+        int alleleNum = 1;
 
         for (String keyValue : infoField.split(";")) {
             String[] keyValues = keyValue.split("=");
@@ -67,7 +75,7 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
                 // CIPOS=0,.
                 // CIEND=.,0
                 if ("AF".equals(keyValues[0])) {
-                    alleleFreq = Float.parseFloat(keyValues[1]);
+//                    alleleFreq = Float.parseFloat(keyValues[1]);
                 } else if ("AN".equals(keyValues[0])) {
                     alleleNum = parseIntOrDefault(keyValues[1], 0);
                 } else if ("AC".equals(keyValues[0])) {
@@ -77,7 +85,7 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
                 } else if ("END".equals(keyValues[0])) {
                     end = Integer.parseInt(keyValues[1]);
                 } else if ("REGIONID".equals(keyValues[0])) {
-                    regionId = keyValues[1];
+                    regionId = splitByReturnFirst(",", keyValues[1]);
                 }
             }
         }
@@ -86,6 +94,14 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
             return List.of();
         }
         return List.of(new SvFrequency(chr, start, end, svLen, svType, regionId, "DBVAR", id, alleleCount, alleleNum));
+    }
+
+    private String splitByReturnFirst(String regex, String keyValue) {
+        if (keyValue.contains(regex)) {
+            String[] tokens = keyValue.split(regex);
+            return tokens[0];
+        }
+        return keyValue;
     }
 
     private int parseIntOrDefault(String value, int defaultInt) {

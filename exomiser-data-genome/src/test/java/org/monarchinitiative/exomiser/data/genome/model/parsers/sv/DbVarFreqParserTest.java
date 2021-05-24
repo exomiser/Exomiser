@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers.sv;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.data.genome.model.SvFrequency;
+import org.monarchinitiative.svart.VariantType;
 
 import java.util.List;
 
@@ -46,6 +48,15 @@ class DbVarFreqParserTest {
 
     @Test
     public void testInsertionNoFreq() {
-        System.out.println(instance.parseLine("1\t10726\tnssv14489056\tG\t<INS>\t.\t.\tDBVARID;SVTYPE=INS;END=10726;SVLEN=58;EXPERIMENT=1;SAMPLE=HG00268;REGIONID=nsv3320784\n"));
+        List<SvFrequency> actual = instance.parseLine("1\t10726\tnssv14489056\tG\t<INS>\t.\t.\tDBVARID;SVTYPE=INS;END=10726;SVLEN=58;EXPERIMENT=1;SAMPLE=HG00268;REGIONID=nsv3320784\n");
+        List<SvFrequency> expected = List.of(new SvFrequency(1, 10726, 10726, 58, VariantType.INS, "nsv3320784", "DBVAR", "nssv14489056", 1, 0));
+        assertThat(actual, equalTo(expected));
+    }
+
+    @Test
+    public void testMultipleRegionIds() {
+        List<SvFrequency> actual = instance.parseLine("1\t757864\tessv6773385\tG\t<DEL>\t.\t.\tDBVARID;SVTYPE=DEL;IMPRECISE;END=758041;CIPOS=0,.;CIEND=.,0;SVLEN=-178;EXPERIMENT=1;SAMPLE=SSM066;REGIONID=esv2725027,esv2746029,esv2747140\n");
+        List<SvFrequency> expected = List.of(new SvFrequency(1, 757864, 758041, -178, VariantType.DEL, "esv2725027", "DBVAR", "essv6773385", 1, 0));
+        assertThat(actual, equalTo(expected));
     }
 }
