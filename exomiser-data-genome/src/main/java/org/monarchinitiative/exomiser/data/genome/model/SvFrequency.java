@@ -53,6 +53,30 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
         this.alleleNum = alleleNum;
     }
 
+    public int getChr() {
+        return chr;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public int getSvLen() {
+        return svLen;
+    }
+
+    public VariantType getSvType() {
+        return svType;
+    }
+
+    public String getDbVarId() {
+        return dbVarId;
+    }
+
     /**
      * Caution! This method assumes 1-based coordinates.
      *
