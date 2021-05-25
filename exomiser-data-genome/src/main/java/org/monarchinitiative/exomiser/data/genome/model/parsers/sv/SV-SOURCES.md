@@ -8,16 +8,22 @@ sources.
 
 Common elements from all the datasources can be distilled into two tables:
 
-Pathogenicity:
+### Pathogenicity:
 
 ```text
 CONTIG | START | END | CHANGE_LENGTH | VARIANT_TYPE | SSV_AC | RCV_AC | VARIATION_ID | ALLELE_ID | CLIN_SIG | CLIN_REV_STAT   
 ```
 
-Frequency:
+### Frequency:
 
 ```text
 CONTIG | START | END | CHANGE_LENGTH | VARIANT_TYPE | SSV_AC | SOURCE | SOURCE_ID | AN | AC | AF (alternatively add in VCF INFO field?)
+```
+
+### Gene Constraint / Dosage Sensitivity:
+
+```text
+
 ```
 
 ## Pathogenicity Sources
