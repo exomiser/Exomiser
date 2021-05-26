@@ -100,12 +100,12 @@ analysis:
                 THREE_PRIME_UTR_EXON_VARIANT,
                 THREE_PRIME_UTR_INTRON_VARIANT,
                 NON_CODING_TRANSCRIPT_EXON_VARIANT,
-                UPSTREAM_GENE_VARIANT,
-                INTERGENIC_VARIANT,
-                REGULATORY_REGION_VARIANT,
-                CODING_TRANSCRIPT_INTRON_VARIANT,
                 NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                DOWNSTREAM_GENE_VARIANT
+                CODING_TRANSCRIPT_INTRON_VARIANT,
+                UPSTREAM_GENE_VARIANT,
+                DOWNSTREAM_GENE_VARIANT,
+                INTERGENIC_VARIANT,
+                REGULATORY_REGION_VARIANT
             ]
         },
         #knownVariantFilter: {}, #removes variants represented in the database
