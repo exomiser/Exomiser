@@ -38,16 +38,24 @@ class SvDaoUtilTest {
 
     private final GenomicAssembly hg37 = GenomicAssemblies.GRCh37p13();
 
+    private GenomicRegion buildRegion(int chr, int start, int end) {
+        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, end);
+    }
+
+    private GenomicRegion minRegion(GenomicRegion insertion, int margin) {
+        return buildRegion(1, insertion.start() + margin, insertion.end() - margin);
+    }
+
+    private GenomicRegion maxRegion(GenomicRegion insertion, int margin) {
+        return buildRegion(1, Math.max(insertion.start() - margin, 1), insertion.end() + margin);
+    }
+
     @Test
     void testJaccardCoefficientOtherChromosomes() {
         GenomicRegion R1_100 = buildRegion(1, 1, 100);
         GenomicRegion R2_100 = buildRegion(2, 1, 100);
 
         assertThat(SvDaoUtil.jaccard(R1_100, R2_100), equalTo(0.0));
-    }
-
-    private GenomicRegion buildRegion(int chr, int start, int end) {
-        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, end);
     }
 
     @ParameterizedTest
@@ -139,13 +147,5 @@ class SvDaoUtilTest {
         double error = 0.01;
         assertThat(SvDaoUtil.jaccard(deletion, maxRegion(deletion, margin)), greaterThan(minCoverage - error));
         assertThat(SvDaoUtil.jaccard(deletion, minRegion(deletion, margin)), greaterThan(minCoverage - error));
-    }
-
-    private GenomicRegion minRegion(GenomicRegion insertion, int margin) {
-        return buildRegion(1, insertion.start() + margin, insertion.end() - margin);
-    }
-
-    private GenomicRegion maxRegion(GenomicRegion insertion, int margin) {
-        return buildRegion(1, Math.max(insertion.start() - margin, 1), insertion.end() + margin);
     }
 }
