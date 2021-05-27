@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.svart.*;
@@ -46,7 +45,7 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         this.geneSymbol = builder.geneSymbol;
         this.geneId = builder.geneId;
         this.variantEffect = builder.variantEffect;
-        this.annotations = ImmutableList.copyOf(builder.annotations);
+        this.annotations = List.copyOf(builder.annotations);
     }
 
     AbstractVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
@@ -55,7 +54,7 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         this.geneSymbol = geneSymbol;
         this.geneId = geneId;
         this.variantEffect = variantEffect;
-        this.annotations = ImmutableList.copyOf(annotations);
+        this.annotations = List.copyOf(annotations);
     }
 
     @Override
@@ -109,7 +108,7 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         private String geneSymbol = "";
         private String geneId = "";
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
-        private List<TranscriptAnnotation> annotations = ImmutableList.of();
+        private List<TranscriptAnnotation> annotations = List.of();
 
         public T with(Variant variant) {
             super.with(variant);
