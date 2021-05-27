@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -57,18 +57,4 @@ public class Hg19GenomeProperties extends AbstractGenomeProperties {
     public HikariDataSource genomeDataSource() {
         return hg19genomeDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
-
-    // Structural variants database
-    @Bean
-    @ConfigurationProperties("exomiser.hg19.sv.datasource")
-    public DataSourceProperties hg19svDataSourceProperties() {
-        return new DataSourceProperties();
-    }
-
-    @Bean(name = "hg19svDataSource")
-    @ConfigurationProperties("exomiser.hg19.sv.datasource.hikari")
-    public HikariDataSource svDataSource() {
-        return hg19svDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
-    }
-
 }

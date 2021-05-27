@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,35 +36,35 @@ import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
  */
 public interface GenomeAnalysisServiceConfiguration {
 
-    public JannovarData jannovarData();
+    JannovarData jannovarData();
 
-    public MVStore mvStore();
+    MVStore mvStore();
 
-    public VariantAnnotator variantAnnotator();
+    VariantAnnotator variantAnnotator();
 
-    public VariantFactory variantFactory();
+    VariantFactory variantFactory();
 
-    public GenomeDataService genomeDataService();
+    GenomeDataService genomeDataService();
 
-    public VariantDataService variantDataService();
+    VariantDataService variantDataService();
 
-    public VariantWhiteList variantWhiteList();
+    VariantWhiteList variantWhiteList();
 
     //The classes below require Spring to managed the caching
-    public GenomeAnalysisService genomeAnalysisService();
+    GenomeAnalysisService genomeAnalysisService();
 
-    public AllelePropertiesDao allelePropertiesDao();
+    AllelePropertiesDao allelePropertiesDao();
 
-    public FrequencyDao localFrequencyDao();
+    FrequencyDao localFrequencyDao();
 
-    public PathogenicityDao remmDao();
+    PathogenicityDao remmDao();
 
-    public PathogenicityDao caddDao();
+    PathogenicityDao caddDao();
 
-    public PathogenicityDao testPathScoreDao();
+    PathogenicityDao testPathScoreDao();
 
     // Structural Variant Dao
-    public FrequencyDao svFrequencyDao();
+    FrequencyDao svFrequencyDao();
 
-    public PathogenicityDao svPathogenicityDao();
+    PathogenicityDao svPathogenicityDao();
 }

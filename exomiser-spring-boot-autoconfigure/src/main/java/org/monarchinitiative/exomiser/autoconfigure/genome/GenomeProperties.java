@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,49 +35,47 @@ import java.nio.file.Path;
  */
 interface GenomeProperties {
 
-    public GenomeAssembly getAssembly();
+    GenomeAssembly getAssembly();
 
-    public String getDataVersion();
+    String getDataVersion();
 
-    public void setDataVersion(String dataVersion);
+    void setDataVersion(String dataVersion);
 
-    public TranscriptSource getTranscriptSource();
+    TranscriptSource getTranscriptSource();
 
-    public void setTranscriptSource(TranscriptSource transcriptSource);
+    void setTranscriptSource(TranscriptSource transcriptSource);
 
-    public void setTranscriptSource(String name);
+    void setTranscriptSource(String name);
 
-    public Path getDataDirectory();
+    Path getDataDirectory();
 
-    public void setDataDirectory(String dataDirectory);
+    void setDataDirectory(String dataDirectory);
 
-    public HikariDataSource genomeDataSource();
-
-    public HikariDataSource svDataSource();
+    HikariDataSource genomeDataSource();
 
     //Optional tabix variant data
 
-    public String getVariantWhiteListPath();
+    String getVariantWhiteListPath();
 
-    public void setVariantWhiteListPath(String VariantWhiteListPath);
+    void setVariantWhiteListPath(String VariantWhiteListPath);
 
-    public String getCaddSnvPath();
+    String getCaddSnvPath();
 
-    public void setCaddSnvPath(String caddSnvPath);
+    void setCaddSnvPath(String caddSnvPath);
 
-    public String getCaddInDelPath();
+    String getCaddInDelPath();
 
-    public void setCaddInDelPath(String caddInDelPath);
+    void setCaddInDelPath(String caddInDelPath);
 
-    public String getRemmPath();
+    String getRemmPath();
 
-    public void setRemmPath(String remmPath);
+    void setRemmPath(String remmPath);
 
-    public String getLocalFrequencyPath();
+    String getLocalFrequencyPath();
 
-    public void setLocalFrequencyPath(String localFrequencyPath);
+    void setLocalFrequencyPath(String localFrequencyPath);
 
-    public String getTestPathogenicityScorePath();
+    String getTestPathogenicityScorePath();
 
-    public void setTestPathogenicityScorePath(String testPathogenicityScorePath);
+    void setTestPathogenicityScorePath(String testPathogenicityScorePath);
 }

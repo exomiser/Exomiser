@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -138,12 +138,12 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg19svFrequencyDao")
     @Override
     public FrequencyDao svFrequencyDao() {
-        return new SvFrequencyDao(svDataSource);
+        return new SvFrequencyDao(genomeDataSource);
     }
 
     @Bean("hg19svPathogenicityDao")
     @Override
     public PathogenicityDao svPathogenicityDao() {
-        return new SvPathogenicityDao(svDataSource);
+        return new SvPathogenicityDao(genomeDataSource);
     }
 }

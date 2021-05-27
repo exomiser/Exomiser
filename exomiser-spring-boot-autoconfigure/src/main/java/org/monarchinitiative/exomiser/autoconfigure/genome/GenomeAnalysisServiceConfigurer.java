@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,12 +50,11 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     protected final GenomeDataSourceLoader genomeDataSourceLoader;
 
     protected final DataSource genomeDataSource;
-    protected final DataSource svDataSource;
 
     protected final JannovarData jannovarData;
     protected final MVStore mvStore;
 
-    public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
+    protected GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
         logger.debug("Loading data sources for {} {} {}", genomeProperties.getDataVersion(), genomeProperties.getAssembly(), genomeProperties
                 .getTranscriptSource());
@@ -63,7 +62,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         this.genomeDataSourceLoader = new GenomeDataSourceLoader(genomeProperties, genomeDataResolver);
 
         this.genomeDataSource = genomeProperties.genomeDataSource();
-        this.svDataSource = genomeProperties.svDataSource();
 
         this.jannovarData = genomeDataSourceLoader.getJannovarData();
         this.mvStore = genomeDataSourceLoader.getMvStore();

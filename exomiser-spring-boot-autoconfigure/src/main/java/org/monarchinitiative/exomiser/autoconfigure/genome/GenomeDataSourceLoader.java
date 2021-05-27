@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -115,7 +115,7 @@ public class GenomeDataSourceLoader {
             logger.info("Opening {} data from source: {}", dataSourceName, path);
             return TabixDataSourceLoader.load(path);
         } else {
-            logger.warn("Data for {} is not configured. THIS WILL LEAD TO ERRORS IF REQUIRED DURING ANALYSIS. Check the application.properties is pointing to a valid file.", dataSourceName);
+            logger.debug("Data for {} is not configured. THIS WILL LEAD TO ERRORS IF REQUIRED DURING ANALYSIS. Check the application.properties is pointing to a valid file.", dataSourceName);
             String message = "Data for " + dataSourceName + " is not configured. Check the application.properties is pointing to a valid file.";
             return new ErrorThrowingTabixDataSource(message);
         }
