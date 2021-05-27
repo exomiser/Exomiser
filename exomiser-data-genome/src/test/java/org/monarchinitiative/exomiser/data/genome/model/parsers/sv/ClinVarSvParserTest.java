@@ -72,6 +72,13 @@ public class ClinVarSvParserTest implements SvParserTest {
     }
 
     @Test
+    public void multipleRcvIds() {
+        List<SvPathogenicity> result = instance.parseLine("190774\tDeletion\tNM_000157.4(GBA):c.1265_1319del (p.Leu422fs)\t2629\tGBA\tHGNC:4177\tPathogenic\t1\tDec 03, 2019\t80356768\tnsv1067916\tRCV000004555|RCV000020147|RCV000173718|RCV000723462\tMONDO:MONDO:0011945,MedGen:C1842704,OMIM:608013,Orphanet:85212|MONDO:MONDO:0018150,MedGen:C0017205,Orphanet:355|MONDO:MONDO:0009265,MedGen:C1961835,OMIM:230800,Orphanet:355,Orphanet:77259|MedGen:CN517202\tGaucher disease, perinatal lethal|Gaucher disease|Gaucher's disease, type 1|not provided\tgermline\tgermline\tGRCh37\tNC_000001.10\t1\t155205541\t155205595\tna\tna\t1q22\tcriteria provided, multiple submitters, no conflicts\t5\t-\tY\tClinGen:CA253083,dbVar:nssv3761540,OMIM:606463.0023\t3\t193611\t155205540\tGGGACTGTCGACAAAGTTACGCACCCAATTGGGTCCTCCTTCGGGGTTCAGGGCAA\tG\n");
+        assertThat(result, equalTo(List.of(new SvPathogenicity(1, 155205541, 155205595, -54, VariantType.DEL, "nsv1067916", "CLINVAR", "RCV000004555", "190774", ClinVarData.ClinSig.PATHOGENIC, "criteria provided, multiple submitters, no conflicts"))));
+
+    }
+
+    @Test
     public void insertion() {
         List<SvPathogenicity> result = instance.parseLine("21676\tInsertion\tNM_007129.4(ZIC2):c.177_178ins56\t7546\tZIC2\tHGNC:12873\tPathogenic\t1\tAug 29, 2013\t-1\tnsv1067866\tRCV000007016\tMONDO:MONDO:0012322,MedGen:C1864827,OMIM:609637,Orphanet:2162\tHoloprosencephaly 5\tgermline\tgermline\tGRCh37\tNC_000013.10\t13\t100634495\t100634496\tna\tna\t13q32.3\tno assertion criteria provided\t2\t-\tN\tdbVar:nssv3761594,OMIM:603073.0001\t16637\t-1\tna\tna\n");
         System.out.println(result);
@@ -82,7 +89,7 @@ public class ClinVarSvParserTest implements SvParserTest {
     public void deletionPrecise() {
         // This variant is also in the standard ClinVar whitelist for precise variants.
         List<SvPathogenicity> result = instance.parseLine("190774\tDeletion\tNM_000157.4(GBA):c.1265_1319del (p.Leu422fs)\t2629\tGBA\tHGNC:4177\tPathogenic\t1\tDec 03, 2019\t80356768\tnsv1067916\tRCV000004555|RCV000020147|RCV000173718|RCV000723462\tMONDO:MONDO:0011945,MedGen:C1842704,OMIM:608013,Orphanet:85212|MONDO:MONDO:0018150,MedGen:C0017205,Orphanet:355|MONDO:MONDO:0009265,MedGen:C1961835,OMIM:230800,Orphanet:355,Orphanet:77259|MedGen:CN517202\tGaucher disease, perinatal lethal|Gaucher disease|Gaucher's disease, type 1|not provided\tgermline\tgermline\tGRCh37\tNC_000001.10\t1\t155205541\t155205595\tna\tna\t1q22\tcriteria provided, multiple submitters, no conflicts\t5\t-\tY\tClinGen:CA253083,dbVar:nssv3761540,OMIM:606463.0023\t3\t193611\t155205540\tGGGACTGTCGACAAAGTTACGCACCCAATTGGGTCCTCCTTCGGGGTTCAGGGCAA\tG\n");
-        assertThat(result, equalTo(List.of(new SvPathogenicity(1, 155205541, 155205595, -54, VariantType.DEL, "nsv1067916", "CLINVAR", "RCV000004555|RCV000020147|RCV000173718|RCV000723462", "190774", ClinVarData.ClinSig.PATHOGENIC, "criteria provided, multiple submitters, no conflicts"))));
+        assertThat(result, equalTo(List.of(new SvPathogenicity(1, 155205541, 155205595, -54, VariantType.DEL, "nsv1067916", "CLINVAR", "RCV000004555", "190774", ClinVarData.ClinSig.PATHOGENIC, "criteria provided, multiple submitters, no conflicts"))));
     }
 
     @Test
