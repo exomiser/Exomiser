@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.*;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.hgvs.AminoAcidCode;
@@ -42,7 +41,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -82,13 +81,13 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
                     .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, variant, variantGeneAnnotations))
-                    .collect(toList());
+                    .collect(toUnmodifiableList());
         }
-        return ImmutableList.of(buildVariantAlleleAnnotation(genomeAssembly, variant, variantAnnotations));
+        return List.of(buildVariantAlleleAnnotation(genomeAssembly, variant, variantAnnotations));
     }
 
     private boolean effectsMoreThanOneGeneWithMinimumImpact(VariantAnnotations variantAnnotations, PutativeImpact minimumImpact) {
-        ImmutableList<Annotation> annotations = variantAnnotations.getAnnotations();
+        List<Annotation> annotations = variantAnnotations.getAnnotations();
         // increasing cost of computation with each stage of the evaluation - don't change order.
         return annotations.size() > 1 &&
                 variantEffectImpactIsAtLeast(variantAnnotations.getHighestImpactEffect(), minimumImpact) &&
@@ -101,11 +100,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         return variantEffect.getImpact().ordinal() <= minimumImpact.ordinal();
     }
 
-    private boolean annotationsContainMoreThanOneGene(ImmutableList<Annotation> annotations) {
+    private boolean annotationsContainMoreThanOneGene(List<Annotation> annotations) {
         return annotations.stream().map(Annotation::getGeneSymbol).distinct().count() > 1L;
     }
 
-    private boolean annotationsEffectMoreThanOneGeneWithMinimumImpact(ImmutableList<Annotation> annotations, PutativeImpact minimumImpact) {
+    private boolean annotationsEffectMoreThanOneGeneWithMinimumImpact(List<Annotation> annotations, PutativeImpact minimumImpact) {
         Map<String, List<Annotation>> annotationsByGene = annotations.stream()
                 .filter(annotation -> annotation.getMostPathogenicVarType() != null)
                 .filter(annotation -> variantEffectImpactIsAtLeast(annotation.getMostPathogenicVarType(), minimumImpact))
@@ -114,7 +113,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private Stream<VariantAnnotations> splitAnnotationsByGene(VariantAnnotations variantAnnotations) {
-        ImmutableList<Annotation> annotations = variantAnnotations.getAnnotations();
+        List<Annotation> annotations = variantAnnotations.getAnnotations();
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         logger.debug("Multiple annotations for {} {} {} {}", genomeVariant.getChrName(), genomeVariant.getPos(), genomeVariant
                 .getRef(), genomeVariant.getAlt());
@@ -177,7 +176,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         for (Annotation annotation : annotations) {
             transcriptAnnotations.add(toTranscriptAnnotation(annotation));
         }
-        return transcriptAnnotations;
+        return List.copyOf(transcriptAnnotations);
     }
 
     private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
