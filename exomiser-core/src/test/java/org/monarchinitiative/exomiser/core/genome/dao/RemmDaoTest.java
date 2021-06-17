@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -101,12 +101,19 @@ public class RemmDaoTest {
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.of(1f))));
     }
-    
+
     @Test
     public void testGetPathogenicityDataDeletion() {
         MockTabixIterator mockIterator = MockTabixIterator.of("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0", "1\t4\t0.0");
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of(RemmScore.of(1f))));
+    }
+
+    @Test
+    public void testWithNoOpTabixDataSource() {
+        NoOpTabixDataSource noOpTabixDataSource = new NoOpTabixDataSource("REMM-hg38");
+        RemmDao instance = new RemmDao(noOpTabixDataSource);
+        assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of()));
     }
 }

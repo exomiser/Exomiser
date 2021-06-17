@@ -120,7 +120,8 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg38remmDao")
     @Override
     public RemmDao remmDao() {
-        return new RemmDao(genomeDataSourceLoader.getRemmTabixDataSource());
+        //there is no REMM for hg38
+        return new RemmDao(new NoOpTabixDataSource("REMM-hg38"));
     }
 
     @Bean("hg38caddDao")
