@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -152,6 +152,7 @@ public class SampleGenotype {
      * @return the number of calls for this {@link SampleGenotype}
      * @since 13.0.0
      */
+    @JsonIgnore
     public int numCalls() {
         return alleleCalls.length;
     }
