@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -91,6 +91,11 @@ public class InheritanceModeAnalyser {
     private void checkInheritanceCompatibilityOfPassedVariants(Gene gene) {
         //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.
         List<VariantEvaluation> passedVariantEvaluations = gene.getPassedVariantEvaluations();
+        if (passedVariantEvaluations.isEmpty()) {
+            logger.trace("Gene {} has no passed variants - skipping MOI compatibility check", gene.getGeneSymbol());
+            return;
+        }
+        logger.debug("Checking {} passed variants in gene {} for MOI compatibility", passedVariantEvaluations.size(), gene.getGeneSymbol());
         if (passedVariantEvaluations.size() > 1000) {
             logger.info("Warning - this will take a while. Testing gene {} with {} passed variants for inheritance mode compatibility!", gene
                     .getGeneSymbol(), passedVariantEvaluations.size());
