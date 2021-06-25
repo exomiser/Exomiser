@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
@@ -96,22 +95,39 @@ public class VariantFactoryImpl implements VariantFactory {
             // Itererating by alleleId here this is less clean, but faster
             // alternate Alleles are always after the reference allele, which is 0
             int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
+            GenotypesContext genotypes = variantContext.getGenotypes();
             // n.b. samples with no genotypes (e.g. ./.) will return no variants
-            if (alleleIsObservedInGenotypes(altAllele, variantContext.getGenotypes())) {
+            if (alleleIsObservedInGenotypes(altAllele, genotypes) || hasCopyNumber(altAllele, genotypes)) {
                 return buildVariantEvaluations(variantContext, altAlleleId, altAllele);
             }
-            return ImmutableList.of();
+            logger.debug("Skipping allele {} - has no genotype or copy-number", altAllele);
+            return List.of();
         };
     }
 
     // this is required in case of incorrectly merged multi-sample VCF files to remove alleles not represented in the sample genotypes
+    // however sometimes genotyping isn't run...
     private synchronized boolean alleleIsObservedInGenotypes(Allele allele, GenotypesContext genotypesContext) {
         for (Genotype genotype : genotypesContext) {
             List<Allele> genotypeAlleles = genotype.getAlleles();
             if (genotypeAlleles.contains(allele)) {
+                logger.trace("Allele {} found in genotype {}", allele, genotype);
                 return true;
             }
         }
+        logger.debug("Allele {} has no genotype {}", allele, genotypesContext);
+        return false;
+    }
+
+    // .. but if there is a CN (copy number) attribute, we might be able to make a guess
+    private boolean hasCopyNumber(Allele allele, GenotypesContext genotypesContext) {
+        for (Genotype genotype : genotypesContext) {
+            if (genotype.hasExtendedAttribute("CN")) {
+                logger.trace("Found copy number variant {}", genotype);
+                return true;
+            }
+        }
+        logger.debug("Allele {} has no reported copy number", allele);
         return false;
     }
 
@@ -125,11 +141,22 @@ public class VariantFactoryImpl implements VariantFactory {
         // phenotypes for each gene
         // should this return some VariantCoordinates or a VariantPosition? Could also use a Variant.Builder to collect the annotations into
         Variant variant = variantContextConverter.convertToVariant(variantContext, altAllele);
+        logger.trace("Converted variant context {} allele {} to {}", variantContext, altAlleleId, variant);
+
 //        VariantContext -> Variant -> VariantAnnotation -> VariantEvaluation
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variant);
 
+        // TODO: Plan for Breakends...
+        //  Return List<TranscriptAnnotation> from VariantAnnotator
+        //  Remove intermediate VariantAnnotation class
+        //  Go straight to creating a VariantEvaluation.
+        //  REASON: Creating a Variant from a VariantContext can result in a BreakendVariant being created which
+        //  throws an exception when being used with the VariantEvaluation.with constructor. In fact all Exomiser Variant
+        //  classes extend BaseVariant which means breakends *cannot* currently be analysed.
+
+
         // https://github.com/Illumina/ExpansionHunter format for STR - this isn't part of the standard VCF spec
-        // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit
+        // also consider <STR27> RU=CAG expands to (CAG)*27 STR = Short Tandem Repeats RU = Repeat Unit, CN = 27
         // link to https://panelapp.genomicsengland.co.uk/panels/20/str/PPP2R2B_CAG/
         // https://panelapp.genomicsengland.co.uk/WebServices/get_panel/20/?format=json
         List<VariantEvaluation> variantEvaluations = new ArrayList<>(variantAnnotations.size());
@@ -142,15 +169,11 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, Allele altAllele, VariantAnnotation variantAnnotation) {
         // See also notes in InheritanceModeAnnotator.
+        // TODO: move this into Variant along with a similar method for extracting the copy-number, this can then be added to the VariantContextConverter,
+        //  which makes sense in the context of what's happening with the rest of this method...
         Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-        // all the variantAnnotation methods are present on the Variant interface so this should be a VariantEvaluation.copy(Variant)
+
         return VariantEvaluation.with(variantAnnotation)
-                //HTSJDK derived data are used for writing out the
-                //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
-                //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
-                //need most/all of the info in order to write it all out again.
-                //If we could remove this direct dependency the RAM usage can be halved such that a SPARSE analysis of the POMP sample can be held comfortably in 8GB RAM
-                //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())

@@ -413,7 +413,7 @@ public class VariantFactoryImplTest {
 
         assertThat(variantEvaluation.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
         assertThat(variantEvaluation.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
-        assertThat(variantEvaluation.changeLength(), equalTo(-1440));
+        assertThat(variantEvaluation.changeLength(), equalTo(-1441));
 
         assertThat(variantEvaluation.ref(), equalTo("T"));
         assertThat(variantEvaluation.alt(), equalTo("<DEL>"));
@@ -468,6 +468,18 @@ public class VariantFactoryImplTest {
         assertThat(variants.size(), equalTo(1));
         VariantEvaluation variantEvaluation = variants.get(0);
         assertThat(variantEvaluation.id(), equalTo(""));
+    }
+
+    @Test
+    void testRetainsCopyNumberVariantWithoutGenotype() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1", "Sample2")
+                .parseVariantContext("1 112992009 Canvas:COMPLEX T <CNV> 100 PASS END=112993000 CN 3 0");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(variantContexts)
+                .collect(toList());
+        assertThat(variants.size(), equalTo(1));
+        VariantEvaluation variantEvaluation = variants.get(0);
+        assertThat(variantEvaluation.getSampleGenotype("Sample1"), equalTo(SampleGenotype.het()));
+        assertThat(variantEvaluation.getSampleGenotype("Sample2"), equalTo(SampleGenotype.homAlt()));
     }
 
 }
