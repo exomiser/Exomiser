@@ -22,11 +22,12 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -34,7 +35,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class VariantContextConverterTest {
 
-    private final VariantContextConverter instance = VariantContextConverter.of(GenomicAssemblies.GRCh37p13(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+    private final VariantContextConverter instance = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+
+
+    private Variant parseVcfRecord(String vcfRecord) {
+        VariantContext variantContext = parseVariantContext(vcfRecord);
+        return instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+    }
 
     private VariantContext parseVariantContext(String vcfLine) {
         return TestVcfParser.forSamples("Sample1")
@@ -42,10 +49,24 @@ class VariantContextConverterTest {
     }
 
     @Test
-    public void snv() {
-        VariantContext variantContext = parseVariantContext("10\t123256215\t.\tT\tG\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
+    void doesNotConvertUnassembledMolecules() {
+        // this is dependant on the provided GenomicAssembly only containing assembled molecules
+        VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+        VariantContext variantContext = parseVariantContext("chrUn_KI270424v1\t123256215\t.\tT\tG\t100\tPASS\t.\tGT\t1|0");
+        assertThat(variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0)), is(nullValue()));
+    }
 
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+    @Test
+    void warnsAndReturnsNullOnSymbolicError() {
+        Contig chr1 = GenomeAssembly.HG19.getContigById(1);
+        // This symbolic variant has been called past the end of the contig, which will cause svart to complain and explode
+        VariantContext variantContext = parseVariantContext("1\t123256215\t.\tT\t<DEL>\t100\tPASS\tSVYTPE=DEL;END=" + (chr1.length() + 1) + "\tGT\t1|0");
+        assertThat(instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0)), is(nullValue()));
+    }
+
+    @Test
+    public void snv() {
+        Variant variantAllele = parseVcfRecord("10\t123256215\t.\tT\tG\t100\tPASS\t.\tGT\t1|0");
 
         assertThat(variantAllele.ref(), equalTo("T"));
         assertThat(variantAllele.alt(), equalTo("G"));
@@ -61,9 +82,7 @@ class VariantContextConverterTest {
 
     @Test
     public void smallInsertion() {
-        VariantContext variantContext = parseVariantContext("10\t123256215\t.\tT\tGA\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("10\t123256215\t.\tT\tGA\t100\tPASS\t.\tGT\t1|0");
 
         assertThat(variantAllele.ref(), equalTo("T"));
         assertThat(variantAllele.alt(), equalTo("GA"));
@@ -79,9 +98,8 @@ class VariantContextConverterTest {
 
     @Test
     public void smallDeletion() {
-        VariantContext variantContext = parseVariantContext("10\t123256215\t.\tTA\tG\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
 
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("10\t123256215\t.\tTA\tG\t100\tPASS\t.\tGT\t1|0");
 
         assertThat(variantAllele.ref(), equalTo("TA"));
         assertThat(variantAllele.alt(), equalTo("G"));
@@ -97,9 +115,8 @@ class VariantContextConverterTest {
 
     @Test
     public void smallMnv() {
-        VariantContext variantContext = parseVariantContext("10\t123256215\t.\tTA\tGC\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
 
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("10\t123256215\t.\tTA\tGC\t100\tPASS\t.\tGT\t1|0");
 
         assertThat(variantAllele.ref(), equalTo("TA"));
         assertThat(variantAllele.alt(), equalTo("GC"));
@@ -116,9 +133,7 @@ class VariantContextConverterTest {
     @Test
     void preciseDeletionWithKnownBreakpoint() {
         // 1.  A precise deletion with known breakpoint, a one base micro-homology, and a sample that is homozygous for the deletion.
-        VariantContext variantContext = parseVariantContext("1       2827694 rs2376870 CGTGGATGCGGGGAC  C            .    PASS   SVTYPE=DEL;END=2827708;HOMLEN=1;HOMSEQ=G;SVLEN=-14                 GT:GQ        1/1:14");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("1       2827694 rs2376870 CGTGGATGCGGGGAC  C            .    PASS   SVTYPE=DEL;END=2827708;HOMLEN=1;HOMSEQ=G;SVLEN=-14                 GT:GQ        1/1:14");
 
         assertThat(variantAllele.ref(), equalTo("CGTGGATGCGGGGAC"));
         assertThat(variantAllele.alt(), equalTo("C"));
@@ -135,9 +150,7 @@ class VariantContextConverterTest {
     @Test
     void impreciseDeletion() {
         // 2.  An imprecise deletion of approximately 205 bp.
-        VariantContext variantContext = parseVariantContext("2       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;END=321887;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62         GT:GQ        0/1:12");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("2       321682 .         T                <DEL>        6    PASS   SVTYPE=DEL;END=321887;SVLEN=-205;CIPOS=-56,20;CIEND=-10,62         GT:GQ        0/1:12");
 
         assertThat(variantAllele.ref(), equalTo("T"));
         assertThat(variantAllele.alt(), equalTo("<DEL>"));
@@ -153,9 +166,7 @@ class VariantContextConverterTest {
     @Test
     void impreciseAluDeletion() {
         // 3.  An imprecise deletion of an ALU element relative to the reference.
-        VariantContext variantContext = parseVariantContext("2     14477084 .         C                <DEL:ME:ALU> 12   PASS   SVTYPE=DEL;END=14477381;SVLEN=-297;CIPOS=-22,18;CIEND=-12,32       GT:GQ        0/1:12");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("2     14477084 .         C                <DEL:ME:ALU> 12   PASS   SVTYPE=DEL;END=14477381;SVLEN=-297;CIPOS=-22,18;CIEND=-12,32       GT:GQ        0/1:12");
 
         assertThat(variantAllele.ref(), equalTo("C"));
         assertThat(variantAllele.alt(), equalTo("<DEL:ME:ALU>"));
@@ -171,9 +182,7 @@ class VariantContextConverterTest {
     @Test
     void impreciseL1Insertion() {
         // 4.  An imprecise insertion of an L1 element relative to the reference.
-        VariantContext variantContext = parseVariantContext("3      9425916 .         C                <INS:ME:L1>  23   PASS   SVTYPE=INS;END=9425916;SVLEN=6027;CIPOS=-16,22                     GT:GQ        1/1:15");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("3      9425916 .         C                <INS:ME:L1>  23   PASS   SVTYPE=INS;END=9425916;SVLEN=6027;CIPOS=-16,22                     GT:GQ        1/1:15");
 
         assertThat(variantAllele.ref(), equalTo("C"));
         assertThat(variantAllele.alt(), equalTo("<INS:ME:L1>"));
@@ -189,11 +198,8 @@ class VariantContextConverterTest {
 
     @Test
     void impreciseDuplication() {
-//        5.  An imprecise duplication of approximately 21Kb.  The sample genotype is copy number 3 (one extra copy of the duplicated sequence).
-//
-        VariantContext variantContext = parseVariantContext("3     12665100 .         A                <DUP>        14   PASS   SVTYPE=DUP;END=12686200;SVLEN=21100;CIPOS=-500,500;CIEND=-500,500  GT:GQ:CN:CNQ ./.:0:3:16.2");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        // 5.  An imprecise duplication of approximately 21Kb.  The sample genotype is copy number 3 (one extra copy of the duplicated sequence).
+        Variant variantAllele = parseVcfRecord("3     12665100 .         A                <DUP>        14   PASS   SVTYPE=DUP;END=12686200;SVLEN=21100;CIPOS=-500,500;CIEND=-500,500  GT:GQ:CN:CNQ ./.:0:3:16.2");
 
         assertThat(variantAllele.ref(), equalTo("A"));
         assertThat(variantAllele.alt(), equalTo("<DUP>"));
@@ -202,26 +208,18 @@ class VariantContextConverterTest {
         assertThat(variantAllele.contigId(), equalTo(3));
         assertThat(variantAllele.contigName(), equalTo("3"));
         assertThat(variantAllele.start(), equalTo(12665100));
-//        assertThat(variantAllele.getStartCi(), equalTo(ConfidenceInterval.of(-500, 500)));
-//        assertThat(variantAllele.getStartMin(), equalTo(12665100 - 500));
-//        assertThat(variantAllele.getStartMax(), equalTo(12665100 + 500));
+        assertThat(variantAllele.startPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
 
         assertThat(variantAllele.changeLength(), equalTo(21100));
 
         assertThat(variantAllele.end(), equalTo(12686200));
-//        assertThat(variantAllele.getEndContigId(), equalTo(3));
-//        assertThat(variantAllele.getEndContigName(), equalTo("3"));
-//        assertThat(variantAllele.getEndCi(), equalTo(ConfidenceInterval.of(-500, 500)));
-//        assertThat(variantAllele.getEndMin(), equalTo(12686200 - 500));
-//        assertThat(variantAllele.getEndMax(), equalTo(12686200 + 500));
+        assertThat(variantAllele.endPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
     }
 
     @Test
     void impreciseTandemDuplication() {
-//        6.  An imprecise tandem duplication of 76bp.  The sample genotype is copy number 5 (but the two haplotypes are not known).
-        VariantContext variantContext = parseVariantContext("4     18665128 .         T                <DUP:TANDEM> 11   PASS   SVTYPE=DUP;END=18665204;SVLEN=76;CIPOS=-10,10;CIEND=-10,10         GT:GQ:CN:CNQ ./.:0:5:8.3");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        // 6.  An imprecise tandem duplication of 76bp.  The sample genotype is copy number 5 (but the two haplotypes are not known).
+        Variant variantAllele = parseVcfRecord("4     18665128 .         T                <DUP:TANDEM> 11   PASS   SVTYPE=DUP;END=18665204;SVLEN=76;CIPOS=-10,10;CIEND=-10,10         GT:GQ:CN:CNQ ./.:0:5:8.3");
 
         assertThat(variantAllele.ref(), equalTo("T"));
         assertThat(variantAllele.alt(), equalTo("<DUP:TANDEM>"));
@@ -236,15 +234,13 @@ class VariantContextConverterTest {
 
     @Test
     void impreciseStructuralVariantNoLengthSpecifiedCalculatesLength() {
-        VariantContext variantContext = parseVariantContext("1 212471179 esv3588749 T <DEL> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVTYPE=DEL;VT=SV GT 0|1");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("1 212471179 esv3588749 T <DEL> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVTYPE=DEL;VT=SV GT 0|1");
 
         assertThat(variantAllele.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
         assertThat(variantAllele.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
         assertThat(variantAllele.endPosition().maxPos(), equalTo(212472619 + 444));
 
-        assertThat(variantAllele.changeLength(), equalTo(-1440));
+        assertThat(variantAllele.changeLength(), equalTo(-1441));
 
         assertThat(variantAllele.ref(), equalTo("T"));
         assertThat(variantAllele.alt(), equalTo("<DEL>"));
@@ -253,9 +249,7 @@ class VariantContextConverterTest {
 
     @Test
     void impreciseStructuralVariantLengthSpecifiedReturnsLengthFromVariantContext() {
-        VariantContext variantContext = parseVariantContext("1 212471179 esv3588749 T <CNV> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVLEN=200;SVTYPE=DEL;VT=SV GT 0|1");
-
-        Variant variantAllele = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variantAllele = parseVcfRecord("1 212471179 esv3588749 T <CNV> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVLEN=200;SVTYPE=DEL;VT=SV GT 0|1");
 
         assertThat(variantAllele.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
         assertThat(variantAllele.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
@@ -266,14 +260,163 @@ class VariantContextConverterTest {
         assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
     }
 
+    @Test
+    void dup() {
+        Variant variantAllele = parseVcfRecord("3       138946021       .       N       <DUP>   50      .       SVTYPE=DUP;END=138946051        GT      0/1");
+
+        assertThat(variantAllele.ref(), equalTo("N"));
+        assertThat(variantAllele.alt(), equalTo("<DUP>"));
+        assertThat(variantAllele.variantType(), equalTo(VariantType.DUP));
+
+        assertThat(variantAllele.contigId(), equalTo(3));
+        assertThat(variantAllele.contigName(), equalTo("3"));
+        assertThat(variantAllele.startPosition(), equalTo(Position.of(138946021)));
+        assertThat(variantAllele.changeLength(), equalTo(31));
+
+        assertThat(variantAllele.endPosition(), equalTo(Position.of(138946051)));
+    }
+
+    @Nested
+    class MantaTests {
+
+        @Test
+        void mantaDeletion() {
+            Variant variantAllele = parseVcfRecord("chr1   15725445      MantaDEL:1022:0:1:0:0:0     C      <DEL>  87     PASS       END=15728944;SVTYPE=DEL;SVLEN=-3499;SVINSLEN=15;SVINSSEQ=GGGCCGGCTAATATA;   GT:FT:GQ:PL:PR:SR    0/1:PASS:87:137,0,999:11,2:25,4");
+
+            assertThat(variantAllele.ref(), equalTo("C"));
+            assertThat(variantAllele.alt(), equalTo("<DEL>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.DEL));
+
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(15725445)));
+            assertThat(variantAllele.changeLength(), equalTo(-3499));
+
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(15728944)));
+        }
+
+        @Test
+        void mantaInsertion() {
+            Variant variantAllele = parseVcfRecord("1      40935372      MantaINS:3084:0:0:0:4:0     A      <INS>  58.00  PASS       END=40935373;SVTYPE=INS;UPSTREAM_PAIR_COUNT=0;DOWNSTREAM_PAIR_COUNT=0;PAIR_COUNT=0;LEFT_SVINSSEQ=AAAATATATATATATATATATATATATATATATATATATATATATATATTT;RIGHT_SVINSSEQ=ATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATATATATATATATATATATATATATATATATATATATAT       GT:GQ:PR:SR   0/1:58:0,0:3,6");
+
+            assertThat(variantAllele.ref(), equalTo("A"));
+            assertThat(variantAllele.alt(), equalTo("<INS>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.INS));
+
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(40935372)));
+            assertThat(variantAllele.changeLength(), equalTo(2));
+
+            //TODO : check whether INS should have start == end
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(40935373)));
+        }
+
+        @Test
+        void mantaBreakend() {
+            Variant variantAllele = parseVcfRecord("chr1    2683545 MantaBND:159:22:23:0:0:0:0      A       A]KN707905.1:547]       999     PASS    SVTYPE=BND;MATEID=MantaBND:159:22:23:0:0:0:1;IMPRECISE;CIPOS=-181,181;EVENT=MantaBND:159:22:23:0:0:0:0;JUNCTION_QUAL=0;BND_DEPTH=60;MATE_BND_DEPTH=120;CSQT=1|TTC34|ENST00000401095|    GT:FT:GQ:PL:PR  0/1:PASS:999:999,0,999:32,4");
+            assertThat(variantAllele, is(nullValue()));
+//        assertThat(variantAllele.ref(), equalTo("C"));
+//        assertThat(variantAllele.alt(), equalTo("<DEL>"));
+//        assertThat(variantAllele.variantType(), equalTo(VariantType.DEL));
+//
+//        assertThat(variantAllele.contigId(), equalTo(1));
+//        assertThat(variantAllele.contigName(), equalTo("1"));
+//        assertThat(variantAllele.startPosition(), equalTo(Position.of(15825445)));
+//        assertThat(variantAllele.changeLength(), equalTo(-3499));
+//
+//        assertThat(variantAllele.endPosition(), equalTo(Position.of(15828944)));
+        }
+    }
+
+    @Nested
+    class CanvasTests {
+        @Test
+        void canvasGain() {
+            Variant variantAllele = parseVcfRecord("1\t10006065\tCanvas:GAIN:1:10006065:10014592\tN\t<CNV>\t4.00\tq10;CLT10kb\tSVTYPE=CNV;END=10014592;\tGT:RC:BC:CN\t0/1:186:7:4");
+
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(10006065)));
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(10014592)));
+            assertThat(variantAllele.changeLength(), equalTo(8528));
+
+            assertThat(variantAllele.ref(), equalTo("N"));
+            assertThat(variantAllele.alt(), equalTo("<CNV>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
+        }
+
+        @Test
+        void canvasGainNoGenotype() {
+            Variant variantAllele = parseVcfRecord("1\t10006065\tCanvas:GAIN:1:10006065:10014592\tN\t<CNV>\t4.00\tq10;CLT10kb\tSVTYPE=CNV;END=10014592;\tCN\t4");
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(10006065)));
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(10014592)));
+            assertThat(variantAllele.changeLength(), equalTo(8528));
+
+            assertThat(variantAllele.ref(), equalTo("N"));
+            assertThat(variantAllele.alt(), equalTo("<CNV>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
+        }
+
+        @Test
+        void canvasLoss() {
+            Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tGT:RC:BC:CN\t0/1:51:41:1\n");
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.changeLength(), equalTo(43931));
+
+            assertThat(variantAllele.ref(), equalTo("N"));
+            assertThat(variantAllele.alt(), equalTo("<CNV>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
+        }
+
+        @Test
+        void canvasLossCN1NoGenotype() {
+            Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\t1\n");
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.changeLength(), equalTo(43931));
+
+            assertThat(variantAllele.ref(), equalTo("N"));
+            assertThat(variantAllele.alt(), equalTo("<CNV>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
+        }
+
+        @Test
+        void canvasLossCN0() {
+            Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\t0\n");
+            assertThat(variantAllele.contigId(), equalTo(1));
+            assertThat(variantAllele.contigName(), equalTo("1"));
+            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
+            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.changeLength(), equalTo(43931));
+
+            assertThat(variantAllele.ref(), equalTo("N"));
+            assertThat(variantAllele.alt(), equalTo("<CNV>"));
+            assertThat(variantAllele.variantType(), equalTo(VariantType.CNV));
+        }
+    }
+
+    @Nested
+    class ThousandGenomesCopyNumberTest {
+        @Test
+        void testCn0() {
+            Variant variant = parseVcfRecord("15\t23671395\tesv3635841\tA\t<CN0>\t100\tPASS\tAC=2;AF=0.978235;AFR_AF=0.9198;AMR_AF=0.9971;AN=2;CIEND=-500,1000;CIPOS=-1000,500;CS=DEL_union;DP=11333;EAS_AF=0.999;END=23674750;EUR_AF=1;NS=2504;SAS_AF=1;SVTYPE=DEL;VT=SV\tGT\t1|1");
+            System.out.println(variant);
+        }
+    }
     // breakend tests
 
     @Disabled
     @Test
     void preciseBreakend() {
-        VariantContext variantContext = parseVariantContext("2 321681 bnd_W G G]17:198982] 6 PASS SVTYPE=BND .");
-
-        Variant variant = instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        Variant variant = parseVcfRecord("2 321681 bnd_W G G]17:198982] 6 PASS SVTYPE=BND .");
 
         assertThat(variant.isBreakend(), equalTo(true));
         assertThat(variant.id(), equalTo("bnd_W"));
