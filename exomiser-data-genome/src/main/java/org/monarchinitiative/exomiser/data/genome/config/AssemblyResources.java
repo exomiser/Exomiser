@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,14 +37,15 @@ import static java.util.stream.Collectors.toList;
 public class AssemblyResources {
 
     private final GenomeAssembly genomeAssembly;
-    private final Map<String, AlleleResource> alleleResources;
     private final Path genomeDataPath;
-    // add sv and gene resources here...
+    private final Map<String, AlleleResource> alleleResources;
+    private final List<SvResource> svResources;
 
-    public AssemblyResources(GenomeAssembly genomeAssembly, Map<String, AlleleResource> alleleResources, Path genomeDataPath) {
+    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
         this.genomeAssembly = genomeAssembly;
-        this.alleleResources = alleleResources;
         this.genomeDataPath = genomeDataPath;
+        this.alleleResources = alleleResources;
+        this.svResources = svResources;
     }
 
     public GenomeAssembly getGenomeAssembly() {
@@ -66,5 +68,9 @@ public class AssemblyResources {
                 .filter(alleleResources::containsKey)
                 .map(alleleResources::get)
                 .collect(toList());
+    }
+
+    public List<SvResource> getSvResources() {
+        return svResources;
     }
 }

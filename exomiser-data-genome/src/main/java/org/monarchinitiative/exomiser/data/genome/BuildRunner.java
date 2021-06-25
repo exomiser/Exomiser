@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.monarchinitiative.exomiser.data.genome.config.AssemblyResources;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -171,7 +172,8 @@ public class BuildRunner implements ApplicationRunner {
         logger.info("Building genome database...");
         Path genomePath = assemblyResources.getGenomeDataPath();
         logger.info("Genome Path: {}", genomePath);
-        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath);
+        List<SvResource> svResources = assemblyResources.getSvResources();
+        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath, svResources);
         genomeDatabaseBuildRunner.run();
     }
 

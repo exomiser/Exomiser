@@ -31,15 +31,15 @@ public class GnomadGeneConstraint implements OutputLine, Comparable<GnomadGeneCo
 
     private final String geneSymbol;
     private final String geneId;
-    private final String geneTranscript;
+    private final String transcriptId;
     private final float pLI;
     private final float oeLofLower;
     private final float oeLofUpper;
 
-    public GnomadGeneConstraint(String geneSymbol, String geneId, String geneTranscript, float pLI, float oeLofLower, float oeLofUpper) {
+    public GnomadGeneConstraint(String geneSymbol, String geneId, String transcriptId, float pLI, float oeLofLower, float oeLofUpper) {
         this.geneSymbol = geneSymbol;
         this.geneId = geneId;
-        this.geneTranscript = geneTranscript;
+        this.transcriptId = transcriptId;
         this.pLI = pLI;
         this.oeLofLower = oeLofLower;
         this.oeLofUpper = oeLofUpper;
@@ -47,7 +47,7 @@ public class GnomadGeneConstraint implements OutputLine, Comparable<GnomadGeneCo
 
     @Override
     public String toOutputLine() {
-        return geneSymbol + SEP + geneId + SEP + geneTranscript + SEP + pLI + SEP + oeLofLower + SEP + oeLofUpper;
+        return geneSymbol + SEP + geneId + SEP + transcriptId + SEP + pLI + SEP + oeLofLower + SEP + oeLofUpper;
     }
 
     @Override
@@ -65,12 +65,12 @@ public class GnomadGeneConstraint implements OutputLine, Comparable<GnomadGeneCo
                 Float.compare(that.oeLofUpper, oeLofUpper) == 0 &&
                 geneSymbol.equals(that.geneSymbol) &&
                 geneId.equals(that.geneId) &&
-                geneTranscript.equals(that.geneTranscript);
+                transcriptId.equals(that.transcriptId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(geneSymbol, geneId, geneTranscript, pLI, oeLofLower, oeLofUpper);
+        return Objects.hash(geneSymbol, geneId, transcriptId, pLI, oeLofLower, oeLofUpper);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class GnomadGeneConstraint implements OutputLine, Comparable<GnomadGeneCo
         return "GnomadGeneConstraint{" +
                 "geneSymbol='" + geneSymbol + '\'' +
                 ", geneId='" + geneId + '\'' +
-                ", geneTranscript='" + geneTranscript + '\'' +
+                ", geneTranscript='" + transcriptId + '\'' +
                 ", pLI=" + pLI +
                 ", eoLofLower=" + oeLofLower +
                 ", eoLofUpper=" + oeLofUpper +

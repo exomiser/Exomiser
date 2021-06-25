@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,24 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.data.genome.indexers.DbVarDeDupOutputFileIndexer;
+import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.*;
 import org.monarchinitiative.exomiser.data.genome.model.resource.*;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,9 +57,10 @@ public class Hg38Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
-        Map<String, AlleleResource> alleleResources = hg38AlleleResources();
         Path genomeDataPath = hg38GenomePath();
-        return new AssemblyResources(GenomeAssembly.HG38, alleleResources, genomeDataPath);
+        Map<String, AlleleResource> alleleResources = hg38AlleleResources();
+        List<SvResource> svResources = hg38SvResources();
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, alleleResources, svResources);
     }
 
     public Path hg38GenomePath() {
@@ -115,6 +124,90 @@ public class Hg38Config extends ResourceConfig {
 
     public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
         return alleleResource(GnomadExomeAlleleResource.class, "hg38.gnomad-exome");
+    }
+
+    public List<SvResource> hg38SvResources() {
+        return List.of(
+                clinvarSvResource(),
+                dbVarFrequencyResource(),
+                // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
+                dgvSvResource(),
+                decipherSvResource()
+        );
+    }
+
+    public ClinVarSvResource clinvarSvResource() {
+        try {
+            return new ClinVarSvResource("hg38.clinvar-sv",
+                    new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
+                    new FileArchive(hg38GenomePath().resolve("variant_summary.txt.gz")),
+                    new ClinVarSvParser(GenomeAssembly.HG38),
+                    new OutputFileIndexer<>(hg38GenomePath().resolve("clinvar-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DbVarSvResource dbVarFrequencyResource() {
+        try {
+            return new DbVarSvResource("hg38.dbvar",
+                    new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh38/vcf/GRCh38.variant_call.all.vcf.gz"),
+                    new TabixArchive(hg38GenomePath().resolve("GRCh38.variant_call.all.vcf.gz")),
+                    new DbVarFreqParser(),
+                    new DbVarDeDupOutputFileIndexer(hg38GenomePath().resolve("dbvar-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public GnomadSvResource gnomadSvFrequencyResource() {
+        try {
+            // https://doi.org/10.1038/s41586-020-2287-8
+            //
+            return new GnomadSvResource("hg38.gnomad-sv",
+                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+                    new TabixArchive(hg38GenomePath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
+                    new GnomadSvVcfFreqParser(),
+                    new OutputFileIndexer<>(hg38GenomePath().resolve("gnomad-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public GonlSvResource gonlSvFrequencyResource() {
+        try {
+            return new GonlSvResource("hg38.gonl",
+                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
+                    new FileArchive(hg38GenomePath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
+                    new GonlSvFreqParser(),
+                    new OutputFileIndexer<>(hg38GenomePath().resolve("gonl-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DgvSvResource dgvSvResource() {
+        try {
+            return new DgvSvResource("hg38.dgv-sv",
+                    new URL("http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2020-02-25.txt"),
+                    new FileArchive(hg38GenomePath().resolve("dgv-hg38-variants-2020-02-25.txt")),
+                    new DgvSvFreqParser(),
+                    new OutputFileIndexer<>(hg38GenomePath().resolve("dgv-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DecipherSvResource decipherSvResource() {
+        try {
+            return new DecipherSvResource("hg38.decipher-sv",
+                    new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch38.txt.gz"),
+                    new FileArchive(hg38GenomePath().resolve("decipher_population_cnv_grch38.txt.gz")),
+                    new DecipherSvFreqParser(),
+                    new OutputFileIndexer<>(hg38GenomePath().resolve("decipher-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }

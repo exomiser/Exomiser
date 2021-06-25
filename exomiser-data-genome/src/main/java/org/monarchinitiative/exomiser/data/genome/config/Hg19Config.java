@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,24 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.data.genome.indexers.DbVarDeDupOutputFileIndexer;
+import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
+import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.*;
 import org.monarchinitiative.exomiser.data.genome.model.resource.*;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,8 +63,9 @@ public class Hg19Config extends ResourceConfig {
     @Bean
     public AssemblyResources hg19AssemblyResources() {
         Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
+        List<SvResource> hg19SvResources = hg19SvResources();
         Path hg19GenomePath = hg19GenomePath();
-        return new AssemblyResources(GenomeAssembly.HG19, hg19AlleleResources, hg19GenomePath);
+        return new AssemblyResources(GenomeAssembly.HG19, hg19GenomePath, hg19AlleleResources, hg19SvResources);
     }
 
     public Path hg19GenomePath() {
@@ -129,6 +138,92 @@ public class Hg19Config extends ResourceConfig {
 
     public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
         return alleleResource(GnomadExomeAlleleResource.class, "hg19.gnomad-exome");
+    }
+
+    private List<SvResource> hg19SvResources() {
+        return List.of(
+                clinvarSvResource(),
+                dbVarFrequencyResource(),
+                gnomadSvFrequencyResource(),
+                gonlSvFrequencyResource(),
+                dgvSvResource(),
+                decipherSvResource()
+        );
+    }
+
+
+    public ClinVarSvResource clinvarSvResource() {
+        try {
+            return new ClinVarSvResource("hg19.clinvar-sv",
+                    new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
+                    new FileArchive(hg19GenomePath().resolve("variant_summary.txt.gz")),
+                    new ClinVarSvParser(GenomeAssembly.HG19),
+                    new OutputFileIndexer<>(hg19GenomePath().resolve("clinvar-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DbVarSvResource dbVarFrequencyResource() {
+        try {
+            return new DbVarSvResource("hg19.dbvar",
+                    new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/vcf/GRCh37.variant_call.all.vcf.gz"),
+                    new TabixArchive(hg19GenomePath().resolve("GRCh37.variant_call.all.vcf.gz")),
+                    new DbVarFreqParser(),
+                    new DbVarDeDupOutputFileIndexer(hg19GenomePath().resolve("dbvar-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public GnomadSvResource gnomadSvFrequencyResource() {
+        try {
+            // https://doi.org/10.1038/s41586-020-2287-8
+            //
+            return new GnomadSvResource("hg19.gnomad-sv",
+                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+                    new TabixArchive(hg19GenomePath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
+                    new GnomadSvVcfFreqParser(),
+                    new OutputFileIndexer<>(hg19GenomePath().resolve("gnomad-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public GonlSvResource gonlSvFrequencyResource() {
+        try {
+            return new GonlSvResource("hg19.gonl",
+                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
+                    new FileArchive(hg19GenomePath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
+                    new GonlSvFreqParser(),
+                    new OutputFileIndexer<>(hg19GenomePath().resolve("gonl-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DgvSvResource dgvSvResource() {
+        try {
+            return new DgvSvResource("hg19.dgv-sv",
+                    new URL("http://dgv.tcag.ca/dgv/docs/GRCh37_hg19_variants_2020-02-25.txt"),
+                    new FileArchive(hg19GenomePath().resolve("dgv-hg19-variants-2020-02-25.txt")),
+                    new DgvSvFreqParser(),
+                    new OutputFileIndexer<>(hg19GenomePath().resolve("dgv-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public DecipherSvResource decipherSvResource() {
+        try {
+            return new DecipherSvResource("hg19.decipher-sv",
+                    new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch37.txt.gz"),
+                    new FileArchive(hg19GenomePath().resolve("decipher_population_cnv_grch37.txt.gz")),
+                    new DecipherSvFreqParser(),
+                    new OutputFileIndexer<>(hg19GenomePath().resolve("decipher-sv.pg")));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }

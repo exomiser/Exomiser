@@ -24,15 +24,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.io.FileUtils;
 import org.flywaydb.core.Flyway;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.data.genome.indexers.DbVarDeDupOutputFileIndexer;
-import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
-import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
-import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.genome.EnsemblEnhancerParser;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.genome.FantomEnhancerParser;
-import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.*;
-import org.monarchinitiative.exomiser.data.genome.model.resource.sv.*;
+import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -65,11 +60,13 @@ public class GenomeDatabaseBuildRunner {
     private final BuildInfo buildInfo;
     private final Path genomeDataPath;
     private final Path outputPath;
+    private final List<SvResource> svResources;
 
-    public GenomeDatabaseBuildRunner(BuildInfo buildInfo, Path genomeDataPath, Path outputPath) {
+    public GenomeDatabaseBuildRunner(BuildInfo buildInfo, Path genomeDataPath, Path outputPath, List<SvResource> svResources) {
         this.buildInfo = buildInfo;
         this.genomeDataPath = genomeDataPath;
         this.outputPath = outputPath;
+        this.svResources = svResources;
     }
 
     public void run() {
@@ -92,27 +89,9 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Extracting TAD resource...");
         downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeDataPath.resolve("tad.pg"));
 
-        // can do SV build here
-        SvFrequencyResource dbVarResource = dbVarFrequencyResource();
-        SvFrequencyResource gnomadSvResource = gnomadSvFrequencyResource();
-        SvFrequencyResource gonlSvResource = gonlSvFrequencyResource();
-        SvFrequencyResource dgvSvResource = dgvSvResource();
-        SvFrequencyResource decipherSvResource = decipherSvResource();
 
-        SvPathogenicityResource clinVarSvResource = clinvarSvResource();
-
-
-        List<SvResource<?>> svFrequencyResources = List.of(
-                clinVarSvResource,
-                dbVarResource,
-                gnomadSvResource,
-                gonlSvResource,
-                dgvSvResource,
-                decipherSvResource
-        );
-
-        svFrequencyResources.parallelStream().forEach(ResourceDownloader::download);
-        svFrequencyResources.parallelStream().forEach(SvResource::indexResource);
+        svResources.parallelStream().forEach(ResourceDownloader::download);
+        svResources.parallelStream().forEach(SvResource::indexResource);
 
         // process with something like an SvAlleleWriter - write out one .pg file per resource - very similar to the phenotype build process
         // dbvar, dgv, decipher, gonl, gnomad-sv
@@ -134,80 +113,6 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Created database: {}", databasePath);
         migrateDatabase(dataSource);
         logger.info("Finished importing genome data");
-    }
-
-    private DbVarSvResource dbVarFrequencyResource() {
-        try {
-            return new DbVarSvResource("hg19.dbvar",
-                    new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/vcf/GRCh37.variant_call.all.vcf.gz"),
-                    new TabixArchive(genomeDataPath.resolve("GRCh37.variant_call.all.vcf.gz")),
-                    new DbVarFreqParser(),
-                    new DbVarDeDupOutputFileIndexer(genomeDataPath.resolve("dbvar-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private GnomadSvResource gnomadSvFrequencyResource() {
-        try {
-            // https://doi.org/10.1038/s41586-020-2287-8
-            //
-            return new GnomadSvResource("hg19.gnomad-sv",
-                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
-                    new TabixArchive(genomeDataPath.resolve("gnomad_v2.1_sv.sites.vcf.gz")),
-                    new GnomadSvVcfFreqParser(),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("gnomad-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private GonlSvResource gonlSvFrequencyResource() {
-        try {
-            return new GonlSvResource("hg19.gonl",
-                    new URL("http://molgenis26.target.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
-                    new FileArchive(genomeDataPath.resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
-                    new GonlSvFreqParser(),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("gonl-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private ClinVarSvResource clinvarSvResource() {
-        try {
-            return new ClinVarSvResource("hg19.clinvar-sv",
-                    new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
-                    new FileArchive(genomeDataPath.resolve("variant_summary.txt.gz")),
-                    new ClinVarSvParser(GenomeAssembly.HG19),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("clinvar-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private DgvSvResource dgvSvResource() {
-        try {
-            return new DgvSvResource("hg19.dgv-sv",
-                    new URL("http://dgv.tcag.ca/dgv/docs/GRCh37_hg19_variants_2020-02-25.txt"),
-                    new FileArchive(genomeDataPath.resolve("dgv-hg19-variants-2020-02-25.txt")),
-                    new DgvSvFreqParser(),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("dgv-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private DecipherSvResource decipherSvResource() {
-        try {
-            return new DecipherSvResource("hg19.decipher-sv",
-                    new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch37.txt.gz"),
-                    new FileArchive(genomeDataPath.resolve("decipher_population_cnv_grch37.txt.gz")),
-                    new DecipherSvFreqParser(),
-                    new OutputFileIndexer<>(genomeDataPath.resolve("decipher-sv.pg")));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     private String getMartQueryString(String martQueryResourcePath) {
