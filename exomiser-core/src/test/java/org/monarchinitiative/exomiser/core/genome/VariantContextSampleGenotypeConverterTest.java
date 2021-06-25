@@ -24,7 +24,10 @@ import com.google.common.collect.ImmutableMap;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 
@@ -202,4 +205,63 @@ public class VariantContextSampleGenotypeConverterTest {
         );
         assertThat(allele2Result, equalTo(expected2));
     }
+
+    @Nested
+    public class CnvSampleGenotypes {
+
+        @Test
+        void cnvSampleGenotypes() {
+            // The issue here is that sometimes the GT is missing from a CNV type.
+            VariantContext variantContext = TestVcfParser.forSamples("sample")
+                    .toVariantContext("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tGT:RC:BC:CN\t0/1:51:41:1\n");
+
+            Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
+            System.out.println(sampleGenotypes);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "0, 1/1",
+                "1, 0/1",
+                "2, 0/1",
+        })
+        void cnvSampleGenotypesFromCopyNumber(int CN, String expected) {
+            // The issue here is that sometimes the GT is missing from a CNV type.
+            VariantContext variantContext = TestVcfParser.forSamples("sample")
+                    .toVariantContext("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\t" + CN + "\t\n");
+
+            Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
+            assertThat(sampleGenotypes.get("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "0, 0, 1/1",
+                "1, 1, 1/1",
+                "2, 1, 0/1",
+                "2, 2, 1/1",
+                "4, 2, 0/1",
+                "4, 3, 0/1",
+                "4, 4, 1/1",
+        })
+        void cnvSampleGenotypesFromCopyNumberWithMajorChromosomeCount(int CN, int MCC, String expected) {
+            // The issue here is that sometimes the GT is missing from a CNV type.
+            VariantContext variantContext = TestVcfParser.forSamples("sample")
+                    .toVariantContext("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN:MCC\t" + CN + ":" + MCC + "\t\n");
+
+            Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
+            assertThat(sampleGenotypes.get("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
+        }
+
+        @Test
+        void cnvSampleGenotypesFromCopyNumberNonNumericCN() {
+            // The issue here is that sometimes the GT is missing from a CNV type.
+            VariantContext variantContext = TestVcfParser.forSamples("sample")
+                    .toVariantContext("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\tWibble!\t\n");
+
+            Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
+            assertThat(sampleGenotypes.get("sample"), equalTo(SampleGenotype.het()));
+        }
+    }
+
 }

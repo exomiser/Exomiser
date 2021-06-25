@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -66,14 +66,34 @@ public class VariantContextSampleGenotypeConverter {
 
         for (Genotype genotype : variantContext.getGenotypes()) {
             logger.debug("Building sample genotype for {}", genotype);
-            AlleleCall[] alleleCalls = buildAlleleCalls(refAllele, altAllele, genotype.getAlleles());
-            SampleGenotype sampleGenotype = buildSampleGenotype(genotype, alleleCalls);
+            SampleGenotype sampleGenotype;
+            if (genotype.hasAnyAttribute("GT")) {
+                AlleleCall[] alleleCalls = buildAlleleCalls(refAllele, altAllele, genotype.getAlleles());
+                sampleGenotype = buildSampleGenotype(genotype, alleleCalls);
+            } else if (genotype.hasExtendedAttribute("CN")) {
+                logger.debug("Building sample genotype from CN {}", genotype);
+                int CN = parseIntAttribute(genotype, "CN", 2);
+                // MCC is a Canvas-specific major chromosome count
+                int MCC = parseIntAttribute(genotype, "MCC", -1);
+                sampleGenotype = (CN == 0 || CN == MCC) ? SampleGenotype.homAlt() : SampleGenotype.het();
+            } else {
+                sampleGenotype = SampleGenotype.empty();
+            }
             logger.debug("Variant [{} {}] sample {} {} has genotype {}", variantContext.getReference(), altAllele, genotype, genotype.getType(), sampleGenotype);
             String sampleName = genotype.getSampleName();
             builder.put(sampleName, sampleGenotype);
         }
 
         return builder.build();
+    }
+
+    private static int parseIntAttribute(Genotype genotype, String key, int defaultValue) {
+        try {
+            return Integer.parseInt((String) genotype.getExtendedAttribute(key));
+        } catch (NumberFormatException e) {
+            // swallow
+        }
+        return defaultValue;
     }
 
     private static AlleleCall[] buildAlleleCalls(Allele refAllele, Allele altAllele, List<Allele> genotypeAlleles) {
