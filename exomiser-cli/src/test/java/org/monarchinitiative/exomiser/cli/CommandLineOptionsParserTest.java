@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -82,6 +82,22 @@ class CommandLineOptionsParserTest {
     }
 
     @Test
+    void parseIllegalSampleAssemblyCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", resource("pfeiffer-job-sample.yml"),
+                "--assembly", "GRCh37"
+        ));
+    }
+
+//    @Test
+//    void parseIllegalAnalysisVcfCombination() {
+//        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+//                "--analysis", resource("pfeiffer-analysis-v8-12.yml"),
+//                "--vcf", resource("Pfeiffer.vcf")
+//        ));
+//    }
+
+    @Test
     void parseWillStopAtUnknownArgumentBefore() {
         // This happens due to the stopAtNonOptions = true argument in DefaultParser().parse(options, args, true)
         CommandLine commandLine = CommandLineOptionsParser.parse(
@@ -120,6 +136,17 @@ class CommandLineOptionsParserTest {
                 "--sample", resource("exome-analysis.yml"));
         assertTrue(commandLine.hasOption("sample"));
         assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
+    }
+
+    @Test
+    void parseSampleAndVcf() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", resource("exome-analysis.yml"),
+                "--vcf", resource("Pfeiffer.vcf"));
+        assertTrue(commandLine.hasOption("sample"));
+        assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
+        assertTrue(commandLine.hasOption("vcf"));
+        assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
     }
 
     @Test

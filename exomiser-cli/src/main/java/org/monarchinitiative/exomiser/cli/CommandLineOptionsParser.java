@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,10 +55,32 @@ public class CommandLineOptionsParser {
                 .build());
 
         options.addOption(Option.builder()
+                .longOpt("batch")
+                .desc("Path to cli batch file. This should be in plain text file with the cli input for an analysis on each line.")
+                .hasArg()
+                .argName("file")
+                .build());
+
+        options.addOption(Option.builder()
                 .longOpt("sample")
                 .desc("Path to sample or phenopacket file. This should be in JSON or YAML format.")
                 .hasArg()
                 .argName("file")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("vcf")
+                .desc("Path to sample VCF file.")
+                .hasArg()
+                .argName("file")
+                .build());
+
+
+        options.addOption(Option.builder()
+                .longOpt("assembly")
+                .desc("Genome assembly of sample VCF file. Either 'GRCh37' or 'GRCh38'")
+                .hasArg()
+                .argName("assembly")
                 .build());
 
         options.addOption(Option.builder()
@@ -109,6 +131,10 @@ public class CommandLineOptionsParser {
 
         if (commandLine.hasOption("analysis") && commandLine.hasOption("preset")) {
             throw new CommandLineParseError("preset and analysis options are mutually exclusive");
+        }
+
+        if (commandLine.hasOption("sample") && commandLine.hasOption("assembly") && !commandLine.hasOption("vcf")) {
+            throw new CommandLineParseError("assembly present without vcf option");
         }
 
         if (!hasInputFileOption(commandLine)) {

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,11 +32,11 @@ import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
+import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -61,23 +61,29 @@ public class CommandLineJobReader {
         // old cli option - expect an old-style analysis where the sample is specified in the analysis
         // this is maintained for backwards-compatibility
         if (userOptions.equals(Set.of("analysis"))) {
-            Path analysisPath = Paths.get(commandLine.getOptionValue("analysis"));
+            Path analysisPath = Path.of(commandLine.getOptionValue("analysis"));
             JobProto.Job job = JobReader.readJob(analysisPath);
             return List.of(job);
         }
         // old cli option for running a batch of analyses
         if (userOptions.equals(Set.of("analysis-batch"))) {
-            Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
+            Path analysisBatchFile = Path.of(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             return analysisScripts.stream().map(JobReader::readJob).collect(Collectors.toList());
         }
+
+        if (userOptions.equals(Set.of("batch"))) {
+            var analysisBatchFile = Path.of(commandLine.getOptionValue("batch"));
+            return BatchFileReader.readJobsFromBatchFile(analysisBatchFile);
+        }
+
         // new option replacing the analysis with job. These are functionally equivalent, but the sample is separated
         // from the analysis part to allow for greater flexibility
 
         // TODO: do we need a job option if the analysis and analysis-batch options can read either a new job or old
         //  analysis?
         if (userOptions.equals(Set.of("job"))) {
-            Path jobPath = Paths.get(commandLine.getOptionValue("job"));
+            Path jobPath = Path.of(commandLine.getOptionValue("job"));
             JobProto.Job job = JobReader.readJob(jobPath);
             return List.of(job);
         }
@@ -90,6 +96,8 @@ public class CommandLineJobReader {
         // "sample", "preset"
         // "sample", "preset", "output"
         // "sample", "output"
+        // "sample", "vcf", "output"
+        // "sample", "vcf", "ped", "output"
         if (userOptions.contains("sample")) {
             JobProto.Job.Builder jobBuilder = newDefaultJobBuilder();
             for (String option : userOptions) {
@@ -106,6 +114,18 @@ public class CommandLineJobReader {
                 if ("output".equals(option)) {
                     handleOutputOption(optionValue, jobBuilder);
                 }
+            }
+            // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
+            if (userOptions.contains("vcf") || userOptions.contains("ped")) {
+                if (userOptions.contains("vcf")) {
+                    handleVcfOption(commandLine.getOptionValue("vcf"), jobBuilder);
+                }
+                if (userOptions.contains("assembly")) {
+                    handleAssemblyOption(commandLine.getOptionValue("assembly"), jobBuilder);
+                }
+//                if ("ped".equals(option)) {
+//                    handlePedOption(optionValue, jobBuilder);
+//                }
             }
             return List.of(jobBuilder.build());
         }
@@ -131,15 +151,54 @@ public class CommandLineJobReader {
     }
 
     private void handleSampleOption(String sampleOptionValue, JobProto.Job.Builder jobBuilder) {
-        Path samplePath = Paths.get(sampleOptionValue);
+        Path samplePath = Path.of(sampleOptionValue);
         // This could be a Sample a Phenopacket or a Family
         JobProto.Job sampleJob = readSampleJob(samplePath);
         jobBuilder.mergeFrom(sampleJob);
     }
 
     private void handleAnalysisOption(String analysisOptionValue, JobProto.Job.Builder jobBuilder) {
-        Path analysisPath = Paths.get(analysisOptionValue);
+        Path analysisPath = Path.of(analysisOptionValue);
         jobBuilder.setAnalysis(readAnalysis(analysisPath));
+    }
+
+    private void handleVcfOption(String vcfOptionValue, JobProto.Job.Builder jobBuilder) {
+        Path vcfPath = Path.of(vcfOptionValue);
+        // TODO check for Family!
+        if (jobBuilder.hasPhenopacket()) {
+            Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
+            HtsFile.Builder htsFile = HtsFile.newBuilder()
+                    .setHtsFormat(HtsFile.HtsFormat.VCF)
+                    .setUri(vcfPath.toUri().toString());
+            if (phenopacketBuilder.getHtsFilesCount() != 0) {
+                phenopacketBuilder.clearHtsFiles();
+            }
+            phenopacketBuilder.addHtsFiles(htsFile);
+        } else {
+            jobBuilder.getSampleBuilder().setVcf(vcfPath.toAbsolutePath().toString());
+        }
+    }
+
+    private void handleAssemblyOption(String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
+        // CAUTION! THIS METHOD ASSUMES THAT IT IS RUN AFTER THE VCF OPTION
+        if (jobBuilder.hasPhenopacket()) {
+            Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
+            if (phenopacketBuilder.getHtsFilesCount() != 0) {
+                HtsFile.Builder htsFile = phenopacketBuilder.getHtsFilesBuilder(0);
+                htsFile.setGenomeAssembly(assemblyOptionValue);
+                phenopacketBuilder.setHtsFiles(0, htsFile);
+            } else {
+                throw new IllegalStateException("Unable to set assembly when no VCF file present");
+            }
+        } else {
+            jobBuilder.getSampleBuilder().setGenomeAssembly(assemblyOptionValue);
+        }
+    }
+
+    private void handlePedOption(String pedOptionValue, JobProto.Job.Builder jobBuilder) {
+        Path pedPath = Path.of(pedOptionValue);
+        //TODO this needs to check or upgrade the phenopacket to a family and create a Pedigree object from the PED file
+        jobBuilder.getSampleBuilder().setPed(pedPath.toAbsolutePath().toString());
     }
 
     private void handlePresetOption(String presetValue, JobProto.Job.Builder jobBuilder) {
@@ -147,7 +206,7 @@ public class CommandLineJobReader {
     }
 
     private void handleOutputOption(String outputOptionValue, JobProto.Job.Builder jobBuilder) {
-        Path outputOptionPath = Paths.get(outputOptionValue);
+        Path outputOptionPath = Path.of(outputOptionValue);
         jobBuilder.setOutputOptions(readOutputOptions(outputOptionPath));
     }
 

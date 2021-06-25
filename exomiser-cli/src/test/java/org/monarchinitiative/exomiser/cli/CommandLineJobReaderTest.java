@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@ import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
@@ -398,6 +399,87 @@ class CommandLineJobReaderTest {
     void readCliSampleOnlyWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleOnlyWithPhenopacketAndVcf() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "GRCh37"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        HtsFile userSpecifiedVcf = HtsFile.newBuilder()
+                .setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setUri(Path.of("src/test/resources/Pfeiffer.vcf").toUri().toString())
+                .setGenomeAssembly("GRCh37")
+                .build();
+
+        Phenopacket updated = PHENOPACKET.toBuilder().setHtsFiles(0, userSpecifiedVcf).build();
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(updated)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleAnalysisVcfOutput() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "GRCh37",
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
+        );
+
+        SampleProto.Sample updated = SampleProto.Sample.newBuilder()
+                .setVcf(Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath().toString())
+                .setGenomeAssembly("GRCh37")
+                .build();
+
+        JobProto.Job expected = PFEIFFER_SAMPLE_JOB.toBuilder().mergeSample(updated).build();
+
+        assertThat(instance.readJobs(commandLine), equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleLegacyAnalysisVcfOutput() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis", "src/test/resources/pfeiffer-analysis-v8-12.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "GRCh37",
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
+        );
+
+        SampleProto.Sample updated = SampleProto.Sample.newBuilder()
+                .setVcf(Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath().toString())
+                .setGenomeAssembly("GRCh37")
+                .build();
+
+        JobProto.Job expected = PFEIFFER_SAMPLE_JOB.toBuilder().mergeSample(updated).build();
+
+        assertThat(instance.readJobs(commandLine), equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliBatch() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--batch", "src/test/resources/test-analysis-batch-commands.txt"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
