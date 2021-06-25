@@ -28,13 +28,9 @@ import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.*;
-import org.monarchinitiative.svart.ConfidenceInterval;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -110,34 +106,12 @@ public class JannovarAnnotationService {
     }
 
     /**
-     * @param variantType   {@link VariantType} of the variant
-     * @param alt           alternate allele representation. This should be a symbolic type such as '<INS>'
-     * @param contigName    Starting contig the variant is located on. Corresponds to the VCF 'CHROM' field.
-     * @param startPosition Starting position on the reference sequence variant is located at. Corresponds to the VCF 'POS' and 'CIPOS' fields.
-     * @param endPosition   End position on the reference sequence variant is located at. Corresponds to the VCF 'END' and 'CIEND' fields.
-     * @return a set of {@link VariantAnnotations} for the given variant coordinates. CAUTION! THE RETURNED ANNOTATIONS
+     * @param svGenomeVariant A Jannovar {@link SVGenomeVariant} requiring annotation
+     * @return a set of {@link SVAnnotations} for the given {@link SVGenomeVariant}. CAUTION! THE RETURNED ANNOTATIONS
      * WILL USE ZERO-BASED COORDINATES AND WILL BE TRIMMED LEFT SIDE FIRST, ie. RIGHT SHIFTED. This is counter to VCF
      * conventions.
      * @since 13.0.0
      */
-    public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String contigName, Position startPosition, Position endPosition) {
-        GenomePosition start = buildGenomePosition(contigName, startPosition.pos());
-        GenomePosition end = buildGenomePosition(contigName, endPosition.pos());
-
-        SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startPosition.confidenceInterval(), end, endPosition.confidenceInterval());
-        // Unsupported types
-        if (!VariantType.isSymbolic(alt)) {
-            logger.warn("{}-{}-{} {} is not a symbolic allele - returning empty annotations",
-                    svGenomeVariant.getChrName(),
-                    svGenomeVariant.getPos(),
-                    svGenomeVariant.getPos2(),
-                    variantType);
-            return SVAnnotations.buildEmptyList(svGenomeVariant);
-        }
-
-        return annotateSvGenomeVariant(svGenomeVariant);
-    }
-
     public SVAnnotations annotateSvGenomeVariant(SVGenomeVariant svGenomeVariant) {
         try {
             return structuralVariantAnnotator.buildAnnotations(svGenomeVariant);
@@ -149,61 +123,5 @@ public class JannovarAnnotationService {
                     e);
         }
         return SVAnnotations.buildEmptyList(svGenomeVariant);
-    }
-
-    private SVGenomeVariant buildSvGenomeVariant(VariantType variantType, String alt, GenomePosition start, ConfidenceInterval startCi, GenomePosition end, ConfidenceInterval endCi) {
-
-        int startCiLower = startCi.lowerBound();
-        int startCiUpper = startCi.upperBound();
-
-        int endCiLower = endCi.lowerBound();
-        int endCiUpper = endCi.upperBound();
-
-        VariantType svSubType = variantType.subType();
-        switch (svSubType) {
-            case DEL:
-                return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DEL_ME:
-                return new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP:
-                return new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP_TANDEM:
-                return new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case INS:
-                return new SVInsertion(start, startCiLower, startCiUpper);
-            case INS_ME:
-                return new SVMobileElementInsertion(start, startCiLower, startCiUpper);
-            case INV:
-                return new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case CNV:
-                return new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case BND:
-                return buildBreakendVariant(alt, start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            default:
-                return new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-        }
-    }
-
-    private SVGenomeVariant buildBreakendVariant(String alt, GenomePosition start, GenomePosition end, int lowerCiStart, int upperCiStart, int lowerCiEnd, int upperCiEnd) {
-        Matcher matcher = BND_PATTERN.matcher(alt);
-        if (matcher.matches()) {
-            String firstBracket = matcher.group("firstBracket");
-            String secondBracket = matcher.group("secondBracket");
-            if (firstBracket.equals(secondBracket)) {
-                String contig2 = matcher.group("targetChrom");
-                int pos2 = Integer.parseInt(matcher.group("targetPos"));
-                GenomePosition gBNDPos2 = buildGenomePosition(contig2, pos2);
-
-                String leadingBases = matcher.group("leadingBases");
-                String trailingBases = matcher.group("trailingBases");
-
-                return new SVBreakend(
-                        start, gBNDPos2, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd,
-                        leadingBases, trailingBases,
-                        "]".equals(firstBracket) ? SVBreakend.Side.LEFT_END : SVBreakend.Side.RIGHT_END);
-            }
-        }
-        logger.error("Invalid BND alternative allele: '{}'", alt);
-        return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
     }
 }
