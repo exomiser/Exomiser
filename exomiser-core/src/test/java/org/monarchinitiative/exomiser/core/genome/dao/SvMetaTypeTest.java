@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.svart.VariantType;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,8 +43,16 @@ class SvMetaTypeTest {
             "INS, DEL,           false",
             "INS, CNV_LOSS,      false",
             "INS, BND,           false",
+            "CNV, INS,           true",
+            "CNV, DUP,           true",
+            "CNV, CNV_GAIN,      true",
+            "CNV, DEL,           true",
+            "DEL, CNV,           true",
+            "CNV, CNV_LOSS,      true",
+            "CNV, INV,           false",
+            "CNV, BND,           false",
     })
     public void testEquivalentTypes(VariantType a, VariantType b, boolean expected) {
-        assertThat(SvMetaType.equivalentTypes(a, b), equalTo(expected));
+        assertThat(SvMetaType.isEquivalent(a, b), equalTo(expected));
     }
 }

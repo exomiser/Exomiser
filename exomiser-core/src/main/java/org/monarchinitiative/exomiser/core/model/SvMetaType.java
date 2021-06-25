@@ -18,12 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.genome.dao;
+package org.monarchinitiative.exomiser.core.model;
 
 import org.monarchinitiative.svart.VariantType;
 
-enum SvMetaType {
-    GAIN, GAIN_ME, LOSS, LOSS_ME, INVERSION, COMPLEX, NEUTRAL;
+public enum SvMetaType {
+    GAIN, GAIN_ME, LOSS, LOSS_ME, INVERSION, COMPLEX, CNV, NEUTRAL;
 
     static SvMetaType toMetaType(VariantType variantType) {
         switch (variantType) {
@@ -53,6 +53,7 @@ enum SvMetaType {
             case INV:
                 return INVERSION;
             case CNV:
+                return CNV;
             case BND:
             case CNV_COMPLEX:
             case TRA:
@@ -62,9 +63,42 @@ enum SvMetaType {
         }
     }
 
-    static boolean equivalentTypes(VariantType a, VariantType b) {
+    public static boolean isEquivalent(VariantType a, VariantType b) {
         SvMetaType aBaseType = toMetaType(a);
         SvMetaType bBaseType = toMetaType(b);
-        return aBaseType == bBaseType;
+        if (aBaseType == bBaseType) {
+            return true;
+        }
+        if (aBaseType == CNV && isGainOrLoss(bBaseType)) {
+            return true;
+        }
+        return bBaseType == CNV && isGainOrLoss(aBaseType);
+    }
+
+    private static boolean isGainOrLoss(SvMetaType svMetaType) {
+        return isGain(svMetaType) || isLoss(svMetaType);
+    }
+
+    private static boolean isGain(SvMetaType svMetaType) {
+        return svMetaType == GAIN || svMetaType == GAIN_ME;
+    }
+
+    private static boolean isLoss(SvMetaType svMetaType) {
+        return svMetaType == LOSS || svMetaType == LOSS_ME;
+    }
+
+    public static boolean isGain(VariantType variantType) {
+        SvMetaType svMetaType = toMetaType(variantType);
+        return isGain(svMetaType);
+    }
+
+    public static boolean isLoss(VariantType variantType) {
+        SvMetaType svMetaType = toMetaType(variantType);
+        return isLoss(svMetaType);
+    }
+
+    public static boolean isNeutral(VariantType variantType) {
+        SvMetaType svMetaType = toMetaType(variantType);
+        return svMetaType == NEUTRAL;
     }
 }
