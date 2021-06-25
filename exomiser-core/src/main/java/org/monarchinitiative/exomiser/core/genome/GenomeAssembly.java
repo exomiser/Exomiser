@@ -28,10 +28,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.monarchinitiative.svart.SequenceRole.ASSEMBLED_MOLECULE;
+
 /**
  * Genome reference assembly version - hg19/hg38.
  */
 public enum GenomeAssembly {
+
+    UNKNOWN("na", "na", "na", GenomicAssembly.of("", "", "", "", "", "", "", List.of())),
 
     // GRCh37.p13:
     // https://www.ncbi.nlm.nih.gov/grc/human/data?asm=GRCh37.p13
@@ -77,7 +81,10 @@ public enum GenomeAssembly {
         this.grcValue = grcValue;
         this.name = name;
         this.genomicAssembly = genomicAssembly;
-        this.contigs = genomicAssembly.contigs().stream().collect(Collectors.toList());
+        this.contigs = genomicAssembly.contigs().stream()
+                // only want 1-25, X, Y, MT
+                .filter(contig -> contig.sequenceRole() == ASSEMBLED_MOLECULE)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public static GenomeAssembly defaultBuild() {

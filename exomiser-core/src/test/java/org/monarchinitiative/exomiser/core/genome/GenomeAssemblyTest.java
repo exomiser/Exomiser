@@ -23,6 +23,10 @@ package org.monarchinitiative.exomiser.core.genome;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.Contig;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -197,5 +201,12 @@ public class GenomeAssemblyTest {
         assertThat(hg38chrM.name(), equalTo("MT"));
         assertThat(hg38chrM.length(), equalTo(16569));
         assertThat(hg38chrM.refSeqAccession(), equalTo("NC_012920.1"));
+    }
+
+    @Test
+    void onlyContainsAssembledMolecules() {
+        List<Integer> expected = Stream.iterate(1, i -> i + 1).limit(25).collect(toList());
+        assertThat(GenomeAssembly.HG19.contigs().stream().map(Contig::id).collect(toList()), equalTo(expected));
+        assertThat(GenomeAssembly.HG38.contigs().stream().map(Contig::id).collect(toList()), equalTo(expected));
     }
 }
