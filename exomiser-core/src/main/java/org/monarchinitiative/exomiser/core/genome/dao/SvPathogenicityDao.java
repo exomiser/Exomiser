@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -88,10 +89,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
             return PathogenicityData.empty();
         }
         SvResult first = topMatches.get(0);
-        ClinVarData clinVarData = ClinVarData.builder()
-                .alleleId(first.clinVarAccession)
-                .primaryInterpretation(first.clinSig)
-                .build();
+        ClinVarData clinVarData = first.clinVarData;
 
         List<PathogenicityScore> pathogenicityScores = topMatches.stream()
                 .map(this::toPathScore)
@@ -101,20 +99,9 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private PathogenicityScore toPathScore(SvResult svResult) {
-        PathogenicitySource source = mapToSource(svResult.source);
-        float score = mapClinSigToScore(svResult.clinSig);
-        return PathogenicityScore.of(source, score);
-    }
-
-    private PathogenicitySource mapToSource(String source) {
-        switch (source) {
-            case "DBVAR":
-                return PathogenicitySource.DBVAR;
-            case "ISCA":
-                return PathogenicitySource.ISCA;
-            default:
-                return PathogenicitySource.TEST;
-        }
+        ClinVarData clinVarData = svResult.clinVarData;
+        float score = mapClinSigToScore(clinVarData.getPrimaryInterpretation());
+        return PathogenicityScore.of(PathogenicitySource.CLINVAR, score);
     }
 
     private float mapClinSigToScore(ClinVarData.ClinSig primaryInterpretation) {
@@ -133,48 +120,44 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private List<SvResult> runQuery(Variant variant, int margin) {
-        String query = "SELECT *\n" +
-                "FROM (\n" +
-                "         SELECT 'DBVAR' as SOURCE,\n" +
-                "                CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                DBVAR_ACC as ID,\n" +
-                "                CLNSIG,\n" +
-                "                CLNSIG_SOURCE,\n" +
-                "                CLINVAR_ACCESSIONS\n" +
-                "         FROM DBVAR_VARIANTS\n" +
-                "         UNION ALL\n" +
-                "         SELECT 'ISCA' as SOURCE,\n" +
-                "                CONTIG as CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                ID,\n" +
-                "                CLNSIG,\n" +
-                "                CLNSIG_SOURCE,\n" +
-                "                CLINVAR_ACCESSIONS\n" +
-                "         FROM ISCA\n" +
-                "     ) all_tables\n" +
-                "WHERE CHR_ONE = ?\n" +
-                "  and POS_ONE >= ?\n" +
-                "  and POS_ONE <= ?\n" +
-                "  and POS_TWO >= ?\n" +
-                "  and POS_TWO <= ?\n" +
-                "  and CLNSIG != 'UNKNOWN';";
+//        TODO: For INS types (ME especially) it might be best to allow a 150bp (-75, +75) window around the reported insertion point and
+//         check for insertion type at that point rather than filter by reciprocal overlap length as this isn't always known.
+        String query = "SELECT " +
+                "       CHROMOSOME,\n" +
+                "       START,\n" +
+                "       \"end\",\n" +
+                "       CHANGE_LENGTH,\n" +
+                "       VARIANT_TYPE,\n" +
+                "       DBVAR_ID,\n" +
+                "       SOURCE,\n" +
+                "       RCV_ID,\n" +
+                "       ALLELE_ID,\n" +
+                "       CLIN_SIG,\n" +
+                "       CLIN_REV_STAT\n" +
+                "FROM SV_PATH \n" +
+                "WHERE CHROMOSOME = ?\n" +
+                "  and START >= ?\n" +
+                "  and START <= ?\n" +
+                "  and \"end\" >= ?\n" +
+                "  and \"end\" <= ?\n" +
+                "  and CLIN_SIG != 'UNKNOWN';";
 
         try (
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
+
+            logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
+                    variant.contigId(),
+                    variant.startPosition().minPos() - margin, variant.startPosition().maxPos() + margin,
+                    variant.endPosition().minPos() - margin, variant.endPosition().maxPos() + margin
+            );
+
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, variant.start() - margin);
-            ps.setInt(3, variant.start() + margin);
-            ps.setInt(4, variant.end() - margin);
-            ps.setInt(5, variant.end() + margin);
+            ps.setInt(2, variant.startPosition().minPos() - margin);
+            ps.setInt(3, variant.startPosition().maxPos() + margin);
+            ps.setInt(4, variant.endPosition().minPos() - margin);
+            ps.setInt(5, variant.endPosition().maxPos() + margin);
 
             ResultSet rs = ps.executeQuery();
 
@@ -187,42 +170,29 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private List<SvResult> getSvResults(ResultSet rs, Variant variant) throws SQLException {
-
-//            SOURCE	CHR_ONE	POS_ONE	POS_TWO	SV_LEN	SV_TYPE	ID	CLINSIG	CLINSIG_SOURCE	CLINVAR_ACCESSIONS
-//        DBVAR	20	61569	62915555	62853987	DUP	nssv15161429	PATHOGENIC	clinvar	RCV000512450.1
-//        ISCA	20	61569	62915555	62853987	DUP	nssv13652173	PATHOGENIC	clinvar	SCV000586014
-
-//        UNCERTAIN_SIGNIFICANCE
-//        UNKNOWN
-//        LIKELY_PATHOGENIC
-//        BENIGN
-//        LIKELY_BENIGN
-//        PATHOGENIC
-
-//        clinvar
-//        not_provided
-
-//        submitter
-//        clinvar
-//        clingen_dosage_sensitivity_map
-//        not_provided
-
         List<SvResult> results = new ArrayList<>();
         while (rs.next()) {
-            int chr = rs.getInt("CHR_ONE");
-            int start = rs.getInt("POS_ONE");
-            int end = rs.getInt("POS_TWO");
-            int length = rs.getInt("SV_LEN");
-            String svType = rs.getString("SV_TYPE");
+            int chr = rs.getInt("CHROMOSOME");
+            int start = rs.getInt("START");
+            int end = rs.getInt("end");
+            int length = rs.getInt("CHANGE_LENGTH");
+            String svType = rs.getString("VARIANT_TYPE");
             String source = rs.getString("SOURCE");
-            String id = rs.getString("ID");
-            String clnsig = rs.getString("CLNSIG");
-            String clinvarAccession = rs.getString("CLINVAR_ACCESSIONS");
+            String id = rs.getString("RCV_ID");
+            String alleleId = rs.getString("ALLELE_ID");
+            String clinSig = rs.getString("CLIN_SIG");
+            String clinRevStat = rs.getString("CLIN_REV_STAT");
 
             VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
-            if (variantType.baseType() == variant.variantType().baseType()) {
-                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, ClinVarData.ClinSig.valueOf(clnsig), clinvarAccession);
+            if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
+                ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
+                ClinVarData clinVarData = ClinVarData.builder()
+                        .alleleId(alleleId)
+                        .primaryInterpretation(sig)
+                        .reviewStatus(clinRevStat)
+                        .build();
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, alleleId);
                 results.add(svResult);
             }
         }
@@ -232,24 +202,24 @@ public class SvPathogenicityDao implements PathogenicityDao {
     private static class SvResult extends BaseVariant<SvResult> {
 
         private final String source;
-        private final ClinVarData.ClinSig clinSig;
+        private final ClinVarData clinVarData;
         private final String clinVarAccession;
 
-        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, ClinVarData.ClinSig clinSig, String clinVarAccession) {
+        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, ClinVarData clinVarData, String clinVarAccession) {
             super(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength);
             this.source = source;
-            this.clinSig = clinSig;
+            this.clinVarData = clinVarData;
             this.clinVarAccession = clinVarAccession;
         }
 
-        public static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String source, String id, ClinVarData.ClinSig clinSig, String clinvarAccession) {
-            String alt = '<' + variantType.baseType().toString() + '>';
-            return new SvResult(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "",  alt, changeLength, source, clinSig, clinvarAccession);
+        public static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String source, String id, ClinVarData clinVarData, String clinvarAccession) {
+            String alt = '<' + variantType.toString().replace("_", ":") + '>';
+            return new SvResult(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, changeLength, source, clinVarData, clinvarAccession);
         }
 
         @Override
         protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength, source, clinSig, clinVarAccession);
+            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength, source, clinVarData, clinVarAccession);
         }
 
         @Override
@@ -262,7 +232,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                     ", svType='" + variantType() + '\'' +
                     ", source='" + source + '\'' +
                     ", id='" + id() + '\'' +
-                    ", clinsig=" + clinSig +
+                    ", clinVarData=" + clinVarData +
                     ", clinVarAccession=" + clinVarAccession +
                     '}';
         }

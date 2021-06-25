@@ -51,8 +51,9 @@ class SvPathogenicityDaoTest {
     @ParameterizedTest
     @CsvSource({
             "1,  19225,  4401691, <DUP>,     319",
-            "1,    141475, 155000, <DUP>,   13525",
-            "10,  105817214,   105817214, <INS>,   400",
+            "1,    155205541, 155205595, <DEL>,   -54",
+            "14, 105814886, 107285437, <DEL>,  -1470551",
+            "8, 7268819, 7752586, <CNV:GAIN>,  483767",
     })
     void getPathogenicityData(int chr, int start, int end, String alt, int changeLength) {
         Variant variant = VariantEvaluation.builder(chr, start, end, "", alt, changeLength).build();

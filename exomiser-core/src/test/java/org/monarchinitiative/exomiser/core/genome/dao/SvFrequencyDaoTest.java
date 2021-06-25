@@ -31,7 +31,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.svart.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,6 +41,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Iterator;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -76,6 +81,7 @@ class SvFrequencyDaoTest {
             "10,    23037995,     23037995, <INS:ME>,      300",
             "15,    62706090,     62707793, <DEL>,      -1703",
             "12,    71525479,     71525479, <INS:ME:ALU>,  275",
+            "7,    17094714,     17094714, <INS:ME:LINE1>,  275",
     })
     void getFrequencyData(int chr, int start, int end, String alt, int changeLength) {
         Variant variant = VariantEvaluation.builder(chr, start, end, "", alt, changeLength).build();
@@ -83,69 +89,37 @@ class SvFrequencyDaoTest {
         System.out.println(result);
     }
 
-//
-//    @Test
-//    void commonInversion() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(1))
-//                .start(119273928)
-//                .end(119274269)
-//                .changeLength(0)
-//                .variantType(VariantType.INV)
-//                .build();
-//
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        assertThat(result, equalTo(FrequencyData.of("nssv15605273", Frequency.of(FrequencySource.DBVAR, 10.1961f))));
-//    }
 
-//    @Test
-//    void getInsMeExactMatch() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(1))
-//                .start(521332)
-//                .end(521332)
-//                .changeLength(0)
-//                .variantType(VariantType.INS_ME)
-//                .build();
-//
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        assertThat(result, equalTo(FrequencyData.of(Frequency.of(FrequencySource.GONL, 54.941483f))));
-//    }
+    @Test
+    void commonInversion() {
+        Variant variant = VariantEvaluation.builder(1, 240116000, 240116800, "", "<INV>", 0).build();
+        FrequencyData result = instance.getFrequencyData(variant);
+        assertThat(result, equalTo(FrequencyData.of("esv3822662", Frequency.of(FrequencySource.DBVAR, 17.591854f))));
+    }
 
-//    @Test
-//    void getInsMeDgvMatch() {
-//        // TODO - Check the SV database build - thi dbVar the coordinates are reported as (b37) 23037995 - 23037995
-//        //  however the database has stored these as 23037995 - 23037996
-//        // esv3304209 is an INS_ME
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(10))
-//                .startPosition(Position.of(23037995, ConfidenceInterval.of(-32, 32)))
-//                .endPosition(Position.of(23037996, ConfidenceInterval.of(-32, 32)))
-//                .changeLength(300)
-//                .ref("A")
-//                .alt("<INS:ME>")
-//                .build();
-//
-//        FrequencyData result = instance.getFrequencyData(variant);
-//        assertThat(result, equalTo(FrequencyData.of("esv3304209")));
-//    }
-//
-//    @Test
-//    void getDelManyPotentialMatches() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(15))
-//                .start(62706090)
-//                .end(62707793)
-//                .changeLength(0)
-//                .variantType(VariantType.DEL)
-//                .build();
-//
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
+    @Test
+    void getInsMeExactMatch() {
+        Variant variant = VariantEvaluation.builder(1, 521332, 521332, "", "<INS:ME>", 200).build();
+        FrequencyData result = instance.getFrequencyData(variant);
+        assertThat(result, equalTo(FrequencyData.of(Frequency.of(FrequencySource.GONL, 54.941483f))));
+    }
+
+    @Test
+    void getInsMeDgvMatch() {
+        // TODO - Check the SV database build - thi dbVar the coordinates are reported as (b37) 23037995 - 23037995
+        //  however the database has stored these as 23037995 - 23037996
+        // esv3304209 is an INS_ME
+        Variant variant = VariantEvaluation.builder(10, 23037995, 23037996, "", "<INS:ME>", 300).build();
+        FrequencyData result = instance.getFrequencyData(variant);
+        assertThat(result, equalTo(FrequencyData.of("esv3304209", Frequency.of(FrequencySource.DGV, 5.4054055f))));
+    }
+
+    @Test
+    void getDelManyPotentialMatches() {
+        Variant variant = VariantEvaluation.builder(15, 62706090, 62707793, "", "<DEL>", 62706090 - 62707793).build();
+        FrequencyData result = instance.getFrequencyData(variant);
+        System.out.println(result);
+    }
 //
 //    @Test
 //    void submitSnv() {
@@ -229,44 +203,38 @@ class SvFrequencyDaoTest {
 //
 //        System.out.println(result);
 //    }
-//
-//    @Test
-//    void getDgvCanvasGain() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(2))
-//                .start(37958137)
-//                .end(38002170)
-//                .changeLength(0)
-//                .variantType(VariantType.CNV_GAIN)
-//                .build();
-//
-//        System.out.println(variant.getLength());
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
+
+    @Test
+    void getDgvCanvasGain() {
+        Variant variant = VariantEvaluation.builder(2, 37958137, 38002170, "", "<CNV:GAIN>", 20).build();
+
+        System.out.println(variant.length());
+        FrequencyData result = instance.getFrequencyData(variant);
+
+        System.out.println(result);
+    }
 
     @Test
     void mvStoreRtree() {
         Contig chr1 = GenomicAssemblies.GRCh37p13().contigById(1);
         Contig chr2 = GenomicAssemblies.GRCh37p13().contigById(2);
 //        gnomAD_v2_DUP_1_1,1,10000,1,20000,10000,DUP,0.939508,20175,0.955696,OTH=0.920103;EAS=0.907374;AFR=0.955696;EUR=0.937878;AMR=0.904709,OTH=357;EAS=2018;AFR=9060;EUR=7126;AMR=1614,BAF;RD
-        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_1 = SvFrequencyDao.SvResult.of(chr1, 10000, 20000, 10000, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_1_1", 20175, 0.939508f);
+        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_1 = SvFrequencyDao.SvResult.of(chr1, 10000, 20000, 10000, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_1_1", 20175, 2000);
 
 //        gnomAD_v2_DUP_1_3,1,20650,1,47000,26350,DUP,0.023753,241,0.046801,OTH=0.005102;EAS=0.0;AFR=0.046801;EUR=6.08E-4;AMR=0.001266,OTH=1;EAS=0;AFR=237;EUR=2;AMR=1,RD
-        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_3 = SvFrequencyDao.SvResult.of(chr1, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_1_3", 241, 0.023753f);
+        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_3 = SvFrequencyDao.SvResult.of(chr1, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_1_3", 241, 20);
 
 //        gnomAD_v2_DEL_1_1,1,21000,1,26000,5000,DEL,0.014596,133,0.069602,OTH=0.011111;EAS=0.069602;AFR=0.006801;EUR=0.013791;AMR=0.009412,OTH=2;EAS=49;AFR=27;EUR=47;AMR=8,RD
-        SvFrequencyDao.SvResult gnomAD_v2_DEL_1_1 = SvFrequencyDao.SvResult.of(chr1, 21000, 26000, -5000, VariantType.DEL, "gnomad_SV", "gnomAD_v2_DEL_1_1", 133, 0.014596f);
+        SvFrequencyDao.SvResult gnomAD_v2_DEL_1_1 = SvFrequencyDao.SvResult.of(chr1, 21000, 26000, -5000, VariantType.DEL, "gnomad_SV", "gnomAD_v2_DEL_1_1", 133, 1);
 
 //        gnomAD_v2_DUP_1_4,1,40000,1,47200,7200,DUP,0.070284,877,0.139293,OTH=0.019417;EAS=0.012542;AFR=0.139293;EUR=0.008134;AMR=0.017794,OTH=4;EAS=15;AFR=804;EUR=34;AMR=20,RD
-        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_4 = SvFrequencyDao.SvResult.of(chr1, 40000, 47200, -7200, VariantType.DEL, "gnomad_SV", "gnomAD_v2_DUP_1_4", 877, 0.070284f);
+        SvFrequencyDao.SvResult gnomAD_v2_DUP_1_4 = SvFrequencyDao.SvResult.of(chr1, 40000, 47200, -7200, VariantType.DEL, "gnomad_SV", "gnomAD_v2_DUP_1_4", 877, 1);
 
 //        gnomAD_v2_DEL_2_16412,2,10000,2,590000,580000,DEL,0.000047,1,0.000457,OTH=0.0;EAS=4.57E-4;AFR=0.0;EUR=0.0;AMR=0.0,OTH=0;EAS=1;AFR=0;EUR=0;AMR=0,RD
-        SvFrequencyDao.SvResult gnomAD_v2_DUP_2_3 = SvFrequencyDao.SvResult.of(chr2, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_2_3", 241, 0.023753f);
+        SvFrequencyDao.SvResult gnomAD_v2_DUP_2_3 = SvFrequencyDao.SvResult.of(chr2, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_2_3", 241, 1);
 
 //        1	105832823	gnomAD-SV_v2.1_BND_1_3219	N	<BND>	717	UNRESOLVED	END=105832824;SVTYPE=BND;SVLEN=11547;CHR2=1;POS2=105844370;END2=105844371;ALGORITHMS=delly;BOTHSIDES_SUPPORT;EVIDENCE=BAF,PE,SR;UNRESOLVED_TYPE=MIXED_BREAKENDS;AN=21688;AC=64;AF=0.002951;
-        SvFrequencyDao.SvResult gnomAD_v2_BND_2_7 = SvFrequencyDao.SvResult.of(chr2, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_2_3", 241, 0.023753f);
+        SvFrequencyDao.SvResult gnomAD_v2_BND_2_7 = SvFrequencyDao.SvResult.of(chr2, 20650, 47000, 26350, VariantType.DUP, "gnomad_SV", "gnomAD_v2_DUP_2_3", 241, 1);
 
         List<SvFrequencyDao.SvResult> svs = List.of(gnomAD_v2_DUP_1_1, gnomAD_v2_DUP_1_3, gnomAD_v2_DEL_1_1, gnomAD_v2_DUP_1_4, gnomAD_v2_DUP_2_3);
 

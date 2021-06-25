@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -40,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.monarchinitiative.exomiser.core.model.SvMetaType.isEquivalent;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -84,7 +87,7 @@ public class SvFrequencyDao implements FrequencyDao {
 
     private Function<SvResult, Double> score(Variant variant) {
         // geometric mean of num alleles and similarity - try and get the best represented and most similar allele
-        return svResult -> Math.sqrt(svResult.ac * SvDaoUtil.jaccard(variant, svResult));
+        return svResult -> Math.sqrt(svResult.an * SvDaoUtil.jaccard(variant, svResult));
     }
 
     private FrequencyData mapToFrequencyData(List<SvResult> topMatches) {
@@ -93,8 +96,8 @@ public class SvFrequencyDao implements FrequencyDao {
         }
         SvResult first = topMatches.get(0);
         Frequency frequency = toFrequency(first);
-        if (frequency.getFrequency() == 0) {
-            // DGV has no frequency information, but does have an id
+        if (first.an < 100 || frequency.getFrequency() == 0) {
+            // Don't report poorly defined frequencies
             return FrequencyData.of(first.id());
         }
         return FrequencyData.of(first.id(), frequency);
@@ -102,12 +105,12 @@ public class SvFrequencyDao implements FrequencyDao {
 
     private Frequency toFrequency(SvResult first) {
         FrequencySource frequencySource = frequencySource(first);
-        return Frequency.of(frequencySource, first.af * 100);
+        return Frequency.of(frequencySource, first.af);
     }
 
     private FrequencySource frequencySource(SvResult first) {
         switch (first.source) {
-            case "GNOMAD_SV":
+            case "GNOMAD-SV":
                 return FrequencySource.GNOMAD_SV;
             case "DBVAR":
                 return FrequencySource.DBVAR;
@@ -123,79 +126,42 @@ public class SvFrequencyDao implements FrequencyDao {
     }
 
     private List<SvResult> runQuery(Variant variant, int margin) {
-        String query = "SELECT *\n" +
-                "FROM (\n" +
-                "         SELECT 'GNOMAD_SV' as SOURCE,\n" +
-                "                CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                ID,\n" +
-                "                AC,\n" +
-                "                AF\n" +
-                "         FROM GNOMAD_SV\n" +
-                "         UNION ALL\n" +
-                "         SELECT 'DBVAR'          as SOURCE,\n" +
-                "                CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                DBVAR_ACC        as ID,\n" +
-                "                ALLELE_COUNT     as AC,\n" +
-                "                ALLELE_FREQUENCY as AF\n" +
-                "         FROM DBVAR_VARIANTS\n" +
-                "         UNION ALL\n" +
-                "         SELECT 'GONL' as SOURCE,\n" +
-                "                CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                ID,\n" +
-                "                AN     as AC,\n" +
-                "                AF\n" +
-                "         FROM GONL\n" +
-                "         UNION ALL\n" +
-                "         SELECT 'DGV' as SOURCE,\n" +
-                "                CONTIG         as CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                POS_TWO - POS_ONE as SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                ACCESSION      as ID,\n" +
-                "                SAMPLE_SIZE    as AC,\n" +
-                "                0              as AF\n" +
-                "         FROM DGV_VARIANTS\n" +
-                "         UNION ALL\n" +
-                "         SELECT 'DECIPHER'    as SOURCE,\n" +
-                "                CONTIG            as CHR_ONE,\n" +
-                "                POS_ONE,\n" +
-                "                POS_TWO,\n" +
-                "                POS_TWO - POS_ONE as SV_LEN,\n" +
-                "                SV_TYPE,\n" +
-                "                POPULATION_CNV_ID as ID,\n" +
-                "                OBSERVATIONS      as AC,\n" +
-                "                FREQUENCY         as AF\n" +
-                "         FROM DECIPHER_CNV\n" +
-                "     ) all_tables\n" +
-                "WHERE CHR_ONE = ?\n" +
-                "  and POS_ONE >= ?\n" +
-                "  and POS_ONE <= ?\n" +
-                "  and POS_TWO >= ?\n" +
-                "  and POS_TWO <= ?\n" +
-                "  and AC != -1;";
-
+//        TODO: For INS types (ME especially) it might be best to allow a 150bp (-75, +75) window around the reported insertion point and
+//         check for insertion type at that point rather than filter by reciprocal overlap length as this isn't always known.
+        String query =
+                "SELECT " +
+                        "       CHROMOSOME,\n" +
+                        "       START,\n" +
+                        "       \"end\",\n" +
+                        "       CHANGE_LENGTH,\n" +
+                        "       VARIANT_TYPE,\n" +
+                        "       DBVAR_ID,\n" +
+                        "       SOURCE,\n" +
+                        "       SOURCE_ID,\n" +
+                        "       ALLELE_COUNT,\n" +
+                        "       ALLELE_NUMBER\n" +
+                        "FROM SV_FREQ\n" +
+                        "WHERE CHROMOSOME = ?\n" +
+                        "  and START >= ?\n" +
+                        "  and START <= ?\n" +
+                        "  and \"end\" >= ?\n" +
+                        "  and \"end\" <= ?\n" +
+                        "  and ALLELE_COUNT != 0;";
         try (
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
+            // TODO - check end > start or start -1 , end +1 in order to cater for differences in INS coordinates
+            logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
+                    variant.contigId(),
+                    variant.startPosition().minPos() - margin, variant.startPosition().maxPos() + margin,
+                    variant.endPosition().minPos() - margin, variant.endPosition().maxPos() + margin
+            );
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, variant.start() - margin);
-            ps.setInt(3, variant.start() + margin);
-            ps.setInt(4, variant.end() - margin);
-            ps.setInt(5, variant.end() + margin);
+            ps.setInt(2, variant.startPosition().minPos() - margin);
+            ps.setInt(3, variant.startPosition().maxPos() + margin);
+            ps.setInt(4, variant.endPosition().minPos() - margin);
+            ps.setInt(5, variant.endPosition().maxPos() + margin);
 
             ResultSet rs = ps.executeQuery();
 
@@ -219,20 +185,20 @@ public class SvFrequencyDao implements FrequencyDao {
         List<SvResult> results = new ArrayList<>();
         while (rs.next()) {
             String source = rs.getString("SOURCE");
-            int chr = rs.getInt("CHR_ONE");
-            int start = rs.getInt("POS_ONE");
-            int end = rs.getInt("POS_TWO");
-            int length = rs.getInt("SV_LEN");
-            String svType = rs.getString("SV_TYPE");
-            String id = rs.getString("ID");
-            int ac = rs.getInt("AC");
-            float af = rs.getFloat("AF");
+            int chr = rs.getInt("CHROMOSOME");
+            int start = rs.getInt("START");
+            int end = rs.getInt("end");
+            int length = rs.getInt("CHANGE_LENGTH");
+            String svType = rs.getString("VARIANT_TYPE");
+            String id = rs.getString("DBVAR_ID");
+            int ac = rs.getInt("ALLELE_COUNT");
+            int an = rs.getInt("ALLELE_NUMBER");
 
             VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
             // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
-            if (variantType.baseType() == variant.variantType().baseType()) {
-                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, id, source, ac, af);
+            if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, id == null ? "" : id, source, ac, an);
                 results.add(svResult);
             }
         }
@@ -243,27 +209,29 @@ public class SvFrequencyDao implements FrequencyDao {
 
         private final String source;
         private final int ac;
+        private final int an;
         private final float af;
 
-        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, int ac, float af) {
+        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, int ac, int an) {
             super(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength);
             this.source = source;
             this.ac = ac;
-            this.af = af;
+            this.an = an;
+            this.af = (float) ac / (float) an * 100f;
         }
 
-        static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, float af) {
-            String alt = '<' + variantType.baseType().toString() + '>';
+        static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, int an) {
+            String alt = '<' + variantType.toString().replace("_", ":") + '>';
             int correctedChangeLength = checkChangeLength(variantType, start, end, changeLength);
 //            System.out.printf("contig=%s, id=%s, start=%d, end=%d, changeLength=%d, %s, %s, ac=%d, af=%f%n", contig.name(), id, start, end, changeLength, variantType, source, ac, af);
-            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, correctedChangeLength, source, ac, af);
+            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, correctedChangeLength, source, ac, an);
         }
 
         private static int checkChangeLength(VariantType variantType, int start, int end, int changeLength) {
-            if (variantType.baseType() == VariantType.DEL && changeLength >= 0) {
+            if (isEquivalent(variantType, VariantType.DEL) && changeLength >= 0) {
                 return start - end;
             }
-            if (variantType.baseType() == VariantType.INS && changeLength <= 0) {
+            if (isEquivalent(variantType, VariantType.INS) && changeLength <= 0) {
                 // hack for DGV where INS variants don't have a length
                 return +changeLength + changeLength == 0 ? 1 : changeLength;
             }
@@ -272,7 +240,7 @@ public class SvFrequencyDao implements FrequencyDao {
 
         @Override
         protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, source, ac, af);
+            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, source, ac, an);
         }
 
         @Override
@@ -286,6 +254,7 @@ public class SvFrequencyDao implements FrequencyDao {
                     ", source='" + source + '\'' +
                     ", id='" + id() + '\'' +
                     ", ac=" + ac +
+                    ", an=" + an +
                     ", af=" + af +
                     '}';
         }
