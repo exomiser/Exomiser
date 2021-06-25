@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 /**
  * Immutable class representing the genotype of a sample, expressed as a phased or un-phased set of {@link AlleleCall}.
@@ -35,6 +36,8 @@ import java.util.StringJoiner;
  * @since 10.0.0
  */
 public class SampleGenotype {
+
+    private static final Pattern GT = Pattern.compile("([0-9.-][/|]?)*+");
 
     private static final SampleGenotype EMPTY = new SampleGenotype(false);
     //cached common diploid genotypes - these are going to be super-common in multi-sample cases
@@ -139,6 +142,35 @@ public class SampleGenotype {
     private SampleGenotype(boolean phased, AlleleCall... alleleCalls) {
         this.alleleCalls = Arrays.copyOf(alleleCalls, alleleCalls.length);
         this.phased = phased;
+    }
+
+    /**
+     * Parse a VCF-style genotype string into a {@link SampleGenotype} - e.g. 0/1 or 1/1
+     * This method will handle no calls (.) phasing (/ or |) and polyploid genotypes.
+     *
+     * @param genotype The genotype in VCF format.
+     * @return a SampleGenotype parsed from the input string or an empty instance if unrecognised.
+     * @since 13.0.0
+     */
+    public static SampleGenotype parseGenotype(String genotype) {
+        if (genotype == null || genotype.isEmpty() || genotype.equals("NA")) {
+            return SampleGenotype.empty();
+        }
+        if (GT.matcher(genotype).matches()) {
+            boolean phased = genotype.contains("|");
+            AlleleCall[] alleleCalls = parseAlleleCalls(phased, genotype);
+            return phased ? SampleGenotype.phased(alleleCalls) : SampleGenotype.of(alleleCalls);
+        }
+        return SampleGenotype.empty();
+    }
+
+    private static AlleleCall[] parseAlleleCalls(boolean phased, String genotype) {
+        String[] calls = phased ? genotype.split("\\|") : genotype.split("/");
+        AlleleCall[] alleleCalls = new AlleleCall[calls.length];
+        for (int i = 0; i < calls.length; i++) {
+            alleleCalls[i] = AlleleCall.parseAlleleCall(calls[i]);
+        }
+        return alleleCalls;
     }
 
     public List<AlleleCall> getCalls() {

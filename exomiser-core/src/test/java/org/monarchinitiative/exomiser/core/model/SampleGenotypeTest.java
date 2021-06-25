@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -189,5 +189,45 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF), not(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT)));
 
         assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF), not(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT)));
+    }
+
+    @Test
+    void testParseGenotype() {
+        // empty
+        assertThat(SampleGenotype.parseGenotype(null), equalTo(SampleGenotype.empty()));
+        assertThat(SampleGenotype.parseGenotype(""), equalTo(SampleGenotype.empty()));
+        assertThat(SampleGenotype.parseGenotype("NA"), equalTo(SampleGenotype.empty()));
+
+        // no call
+        assertThat(SampleGenotype.parseGenotype("null"), equalTo(SampleGenotype.empty()));
+
+        // monoploid
+        assertThat(SampleGenotype.parseGenotype("-"), equalTo(SampleGenotype.of(AlleleCall.OTHER_ALT)));
+        assertThat(SampleGenotype.parseGenotype("."), equalTo(SampleGenotype.of(AlleleCall.NO_CALL)));
+        assertThat(SampleGenotype.parseGenotype("0"), equalTo(SampleGenotype.of(AlleleCall.REF)));
+        assertThat(SampleGenotype.parseGenotype("1"), equalTo(SampleGenotype.of(AlleleCall.ALT)));
+
+        // diploid
+        assertThat(SampleGenotype.parseGenotype("1/-"), equalTo(SampleGenotype.of(AlleleCall.ALT, AlleleCall.OTHER_ALT)));
+        assertThat(SampleGenotype.parseGenotype("./."), equalTo(SampleGenotype.noCall()));
+        assertThat(SampleGenotype.parseGenotype("0/0"), equalTo(SampleGenotype.homRef()));
+        assertThat(SampleGenotype.parseGenotype("0/1"), equalTo(SampleGenotype.het()));
+        assertThat(SampleGenotype.parseGenotype("1/1"), equalTo(SampleGenotype.homAlt()));
+
+        // diploid phased
+        assertThat(SampleGenotype.parseGenotype("1|-"), equalTo(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.OTHER_ALT)));
+        assertThat(SampleGenotype.parseGenotype(".|."), equalTo(SampleGenotype.phased(AlleleCall.NO_CALL, AlleleCall.NO_CALL)));
+        assertThat(SampleGenotype.parseGenotype("0|0"), equalTo(SampleGenotype.phased(AlleleCall.REF, AlleleCall.REF)));
+        assertThat(SampleGenotype.parseGenotype("0|1"), equalTo(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.parseGenotype("1|0"), equalTo(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF)));
+        assertThat(SampleGenotype.parseGenotype("1|1"), equalTo(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.ALT)));
+        assertThat(SampleGenotype.parseGenotype("1|2"), equalTo(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.OTHER_ALT)));
+
+        // triploid
+        assertThat(SampleGenotype.parseGenotype("-/-/-"), equalTo(SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT)));
+        assertThat(SampleGenotype.parseGenotype("././."), equalTo(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL, AlleleCall.NO_CALL)));
+        assertThat(SampleGenotype.parseGenotype("0/1/0"), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT, AlleleCall.REF)));
+        assertThat(SampleGenotype.parseGenotype("1/1/1"), equalTo(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT, AlleleCall.ALT)));
+        assertThat(SampleGenotype.parseGenotype("0|1|0"), equalTo(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT, AlleleCall.REF)));
     }
 }
