@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -54,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class JobParserTest {
+
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
     private final PriorityService priorityService = TestPriorityServiceFactory.stubPriorityService();
