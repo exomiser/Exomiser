@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -52,4 +52,26 @@ public enum AlleleCall {
         }
     }
 
+    public static AlleleCall parseAlleleCall(String call) {
+        if (call == null || call.isEmpty() || call.equals(".")) {
+            return NO_CALL;
+        }
+        if (call.equals("-")) {
+            return OTHER_ALT;
+        }
+        try {
+            int callInt = Integer.parseInt(call);
+            switch (callInt) {
+                case 0:
+                    return REF;
+                case 1:
+                    return ALT;
+                default:
+                    return OTHER_ALT;
+            }
+        } catch (NumberFormatException e) {
+            // oops! swallow
+        }
+        return NO_CALL;
+    }
 }
