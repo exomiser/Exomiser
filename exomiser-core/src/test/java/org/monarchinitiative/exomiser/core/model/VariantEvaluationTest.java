@@ -835,14 +835,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T id= qual=2.2 SNV SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
 //        System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariantContributesToGeneScore() {
-        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T qual=2.2 SNV SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 strand=+ start=1 end=1 length=1 ref=C alt=T id= qual=2.2 SNV SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[] sampleGenotypes={sample=0/1}}";
         instance.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
 //        System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

@@ -59,9 +59,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
     // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
-    static final ImmutableMap<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = ImmutableMap.of(
-            DEFAULT_SAMPLE_NAME, SampleGenotype.het()
-    );
+    protected static final Map<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = Map.of(DEFAULT_SAMPLE_NAME, SampleGenotype.het());
 
     // HTSJDK {@link VariantContext} instance of this allele
     private final VariantContext variantContext;
@@ -543,10 +541,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
