@@ -53,7 +53,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
     public GenomeAssembly genomeAssembly() {
         return genomeAssembly;
     }
-    
+
     /**
      * Given a single allele from a multi-positional site, incoming variants might not be fully trimmed.
      * In cases where there is repetition, depending on the program used, the final variant allele will be different.
@@ -90,6 +90,8 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         if (variant == null) {
             return List.of();
         }
-        return variant.isSymbolic() ? structuralVariantAnnotator.annotate(variant) : smallVariantAnnotator.annotate(variant);
+        // Jannovar has a 1Kb cut-off for precise variant where it will simply assign them as 'STRUCTURAL_VARIANT'.
+        // Here we're going to hack Jannovar and send any of these types to the structural variant annotator.
+        return (variant.isSymbolic() || Math.abs(variant.changeLength()) >= 1000) ? structuralVariantAnnotator.annotate(variant) : smallVariantAnnotator.annotate(variant);
     }
 }
