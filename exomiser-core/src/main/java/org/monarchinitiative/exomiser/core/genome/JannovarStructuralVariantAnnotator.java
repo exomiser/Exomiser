@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.SVAnnotation;
 import de.charite.compbio.jannovar.annotation.SVAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.SVGenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -52,12 +54,14 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     private static final Logger logger = LoggerFactory.getLogger(JannovarStructuralVariantAnnotator.class);
 
     private final GenomeAssembly genomeAssembly;
+    private final JannovarVariantConverter jannovarVariantConverter;
     private final JannovarAnnotationService jannovarAnnotationService;
     private final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex;
 
     JannovarStructuralVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData, ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         this.genomeAssembly = genomeAssembly;
         this.jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
+        this.jannovarVariantConverter = new JannovarVariantConverter(jannovarData);
         this.regulatoryRegionIndex = regulatoryRegionIndex;
     }
 
@@ -68,8 +72,12 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     @Override
     public List<VariantAnnotation> annotate(Variant variant) {
-        SVAnnotations svAnnotations = jannovarAnnotationService
-                .annotateStructuralVariant(variant.variantType(), variant.alt(), variant.contigName(), variant.startPosition(), variant.endPosition());
+        if (variant.isBreakend()) {
+            // TODO: re-enable breakends!
+            return List.of();
+        }
+        SVGenomeVariant svGenomeVariant = jannovarVariantConverter.toSvGenomeVariant(variant);
+        SVAnnotations svAnnotations = jannovarAnnotationService.annotateSvGenomeVariant(svGenomeVariant);
         return buildVariantAnnotations(svAnnotations, variant);
     }
 
@@ -96,7 +104,6 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, Variant variant) {
         svAnnotations.sort(SVAnnotation::compareTo);
-//        svAnnotations.forEach(svAnnotation -> logger.info("{}", svAnnotation));
         SVAnnotation highestImpactAnnotation = svAnnotations.isEmpty() ? null : svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
         VariantEffect highestImpactEffect = getHighestImpactEffect(highestImpactAnnotation);
@@ -104,9 +111,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         String geneId = buildGeneId(highestImpactAnnotation);
         List<TranscriptAnnotation> annotations = buildSvTranscriptAnnotations(svAnnotations);
 
-        int chr = genomeVariant.getChr();
-        int endChr = genomeVariant.getChr2();
-        // The genomeVariant.getStart() seems to be 0-based despite being constructed using 1-based coordinates
+        // The genomeVariant.getStart() is 0-based despite being constructed using 1-based coordinates
         //  so ensure we use the original startPos from the VCF to avoid confusion.
         VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, variant);
 
@@ -166,23 +171,35 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
+        return variantEffect == INTERGENIC_VARIANT || variantEffect == UPSTREAM_GENE_VARIANT;
     }
 
     private int getDistFromNearestGene(SVAnnotation annotation) {
-
         TranscriptModel tm = annotation.getTranscript();
         if (tm == null) {
             return Integer.MIN_VALUE;
         }
-        SVGenomeVariant change = annotation.getVariant();
         Set<VariantEffect> effects = annotation.getEffects();
-        if (effects.contains(VariantEffect.INTERGENIC_VARIANT) || effects.contains(VariantEffect.UPSTREAM_GENE_VARIANT) || effects
-                .contains(VariantEffect.DOWNSTREAM_GENE_VARIANT)) {
-            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos()))
-                return tm.getTXRegion().getGenomeBeginPos().differenceTo(change.getGenomeInterval().getGenomeEndPos());
-            else
-                return change.getGenomeInterval().getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+        SVGenomeVariant change = annotation.getVariant();
+        if (change.getChr() != change.getChr2()) {
+            // breakend
+            if (change.getChr() == tm.getChr()) {
+                return distToNearestGene(tm, new GenomeInterval(change.getGenomePos(), 1), effects);
+            }
+            if (change.getChr2() == tm.getChr()) {
+                return distToNearestGene(tm, new GenomeInterval(change.getGenomePos2(), 1), effects);
+            }
+        }
+        return distToNearestGene(tm, change.getGenomeInterval(), effects);
+    }
+
+    private int distToNearestGene(TranscriptModel tm, GenomeInterval genomeInterval, Set<VariantEffect> effects) {
+        if (effects.contains(INTERGENIC_VARIANT) || effects.contains(UPSTREAM_GENE_VARIANT) || effects.contains(DOWNSTREAM_GENE_VARIANT)) {
+            if (genomeInterval.isLeftOf(tm.getTXRegion().getGenomeBeginPos())) {
+                return tm.getTXRegion().getGenomeBeginPos().differenceTo(genomeInterval.getGenomeEndPos());
+            } else {
+                return genomeInterval.getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+            }
         }
         // we're in a gene region so there is no distance
         return 0;

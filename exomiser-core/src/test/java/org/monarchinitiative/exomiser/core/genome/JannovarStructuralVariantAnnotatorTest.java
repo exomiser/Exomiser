@@ -34,8 +34,7 @@ import org.monarchinitiative.svart.util.VariantTrimmer;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -67,7 +66,7 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.TRANSCRIPT_ABLATION));
     }
 
     private Variant variant(Contig contig, int start, int end, String ref, String alt, int changeLength) {
@@ -76,8 +75,8 @@ class JannovarStructuralVariantAnnotatorTest {
 
     @Test
     public void exonicInsertion() {
-        Variant variantCoordinates = variant(chr10, 123237843, 123237843, "T", "<INS>", 200);
-        List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
+        Variant variant = variant(chr10, 123237843, 123237843, "T", "<INS>", 200);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
 
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
@@ -99,8 +98,8 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void exonicDeletion() {
         // Exon 2 loss
-        Variant variantCoordinates = variant(chr10, 123353221, 123353480, "T", "<DEL>", -259);
-        List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
+        Variant variant = variant(chr10, 123353221, 123353480, "T", "<DEL>", -259);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
 
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
@@ -117,6 +116,16 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         // this is an EXON_LOSS
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.START_LOST));
+    }
+
+    @Test
+    void testBnd() {
+        VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("1\t243097603\tMantaBND:12652:0:1:1:1:0:0\tA\t]Y:13954151]A\t428.00\tMaxDepth\tSVTYPE=BND;MATEID=MantaBND:12652:0:1:1:1:0:1;BND_PAIR_COUNT=10;PAIR_COUNT=9;CIPOS=0,12;HOMLEN=12;HOMSEQ=ATAATAATAATA;BND_DEPTH=31;MATE_BND_DEPTH=47\tGT:GQ:PR:SR\t0/1:428:26,4:13,13");
+        Variant variant = variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
+        assertThat(variant, is(nullValue()));
+//        List<VariantAnnotation> variantAnnotations = instance.annotate(variant);
+//        System.out.println(variantAnnotations);
     }
 
     @Disabled

@@ -91,7 +91,7 @@ public class JannovarAnnotationService {
         return referenceDictionary.getContigNameToID().getOrDefault(contig, UNKNOWN_CHROMOSOME);
     }
 
-    private VariantAnnotations annotateGenomeVariant(GenomeVariant genomeVariant) {
+    public VariantAnnotations annotateGenomeVariant(GenomeVariant genomeVariant) {
         if (genomeVariant.getChr() == UNKNOWN_CHROMOSOME) {
             //Need to check this here and return otherwise the variantAnnotator will throw a NPE.
             return VariantAnnotations.buildEmptyList(genomeVariant);
@@ -121,17 +121,24 @@ public class JannovarAnnotationService {
      * @since 13.0.0
      */
     public SVAnnotations annotateStructuralVariant(VariantType variantType, String alt, String contigName, Position startPosition, Position endPosition) {
-
         GenomePosition start = buildGenomePosition(contigName, startPosition.pos());
         GenomePosition end = buildGenomePosition(contigName, endPosition.pos());
 
         SVGenomeVariant svGenomeVariant = buildSvGenomeVariant(variantType, alt, start, startPosition.confidenceInterval(), end, endPosition.confidenceInterval());
         // Unsupported types
         if (!VariantType.isSymbolic(alt)) {
-            logger.warn("{}-{}-?-{} {} is not a symbolic allele - returning empty annotations", contigName, startPosition, alt, variantType);
+            logger.warn("{}-{}-{} {} is not a symbolic allele - returning empty annotations",
+                    svGenomeVariant.getChrName(),
+                    svGenomeVariant.getPos(),
+                    svGenomeVariant.getPos2(),
+                    variantType);
             return SVAnnotations.buildEmptyList(svGenomeVariant);
         }
 
+        return annotateSvGenomeVariant(svGenomeVariant);
+    }
+
+    public SVAnnotations annotateSvGenomeVariant(SVGenomeVariant svGenomeVariant) {
         try {
             return structuralVariantAnnotator.buildAnnotations(svGenomeVariant);
         } catch (Exception e) {
@@ -196,7 +203,7 @@ public class JannovarAnnotationService {
                         "]".equals(firstBracket) ? SVBreakend.Side.LEFT_END : SVBreakend.Side.RIGHT_END);
             }
         }
-        logger.error("Invalid BND alternative allele: {}", alt);
+        logger.error("Invalid BND alternative allele: '{}'", alt);
         return new SVUnknown(start, end, lowerCiStart, upperCiStart, lowerCiEnd, upperCiEnd);
     }
 }

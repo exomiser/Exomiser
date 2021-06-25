@@ -52,11 +52,13 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     private static final Logger logger = LoggerFactory.getLogger(JannovarSmallVariantAnnotator.class);
 
     private final GenomeAssembly genomeAssembly;
+    private final JannovarVariantConverter jannovarVariantConverter;
     private final JannovarAnnotationService jannovarAnnotationService;
     private final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex;
 
     JannovarSmallVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData, ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         this.genomeAssembly = genomeAssembly;
+        this.jannovarVariantConverter = new JannovarVariantConverter(jannovarData);
         this.jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
         this.regulatoryRegionIndex = regulatoryRegionIndex;
     }
@@ -68,8 +70,8 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
 
     @Override
     public List<VariantAnnotation> annotate(Variant variant) {
-        VariantAnnotations variantAnnotations = jannovarAnnotationService
-                .annotateVariant(variant.contigName(), variant.start(), variant.ref(), variant.alt());
+        GenomeVariant genomeVariant = jannovarVariantConverter.toGenomeVariant(variant);
+        VariantAnnotations variantAnnotations = jannovarAnnotationService.annotateGenomeVariant(genomeVariant);
         return buildVariantAnnotations(variant, variantAnnotations);
     }
 
@@ -205,10 +207,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         Set<VariantEffect> effects = annotation.getEffects();
         if (effects.contains(VariantEffect.INTERGENIC_VARIANT) || effects.contains(VariantEffect.UPSTREAM_GENE_VARIANT) || effects
                 .contains(VariantEffect.DOWNSTREAM_GENE_VARIANT)) {
-            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos()))
+            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos())) {
                 return tm.getTXRegion().getGenomeBeginPos().differenceTo(change.getGenomeInterval().getGenomeEndPos());
-            else
+            } else {
                 return change.getGenomeInterval().getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+            }
         }
         // we're in a gene region so there is no distance
         return 0;
