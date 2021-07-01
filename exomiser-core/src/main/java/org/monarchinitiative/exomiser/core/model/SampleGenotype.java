@@ -272,6 +272,22 @@ public class SampleGenotype {
         return alleleCalls.length == 0;
     }
 
+    /**
+     * Tests whether the current {@link SampleGenotype} does NOT contain a NO_CALL.
+     *
+     * @return true if the genotype only contains NO CALLs, otherwise false
+     * @since 13.0.0
+     */
+    @JsonIgnore
+    public boolean isNoCall() {
+        for (int i = 0; i < alleleCalls.length; i++) {
+            if (alleleCalls[i] != AlleleCall.NO_CALL) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

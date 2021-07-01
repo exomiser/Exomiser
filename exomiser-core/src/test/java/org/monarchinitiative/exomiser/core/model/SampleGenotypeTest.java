@@ -230,4 +230,16 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.parseGenotype("1/1/1"), equalTo(SampleGenotype.of(AlleleCall.ALT, AlleleCall.ALT, AlleleCall.ALT)));
         assertThat(SampleGenotype.parseGenotype("0|1|0"), equalTo(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT, AlleleCall.REF)));
     }
+
+    @Test
+    void testIsNoCall() {
+        assertThat(SampleGenotype.parseGenotype("").isNoCall(), equalTo(true));
+        assertThat(SampleGenotype.parseGenotype(".").isNoCall(), equalTo(true));
+        assertThat(SampleGenotype.parseGenotype("./.").isNoCall(), equalTo(true));
+        assertThat(SampleGenotype.parseGenotype("././.").isNoCall(), equalTo(true));
+
+        assertThat(SampleGenotype.parseGenotype("-").isNoCall(), equalTo(false));
+        assertThat(SampleGenotype.parseGenotype("0/1").isNoCall(), equalTo(false));
+        assertThat(SampleGenotype.parseGenotype("1/1/2").isNoCall(), equalTo(false));
+    }
 }
