@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,13 +20,9 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology;
 
-import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,10 +44,10 @@ public class OboOntology {
         this.dataVersion = dataVersion;
         this.currentOntologyTerms = ontologyTerms.stream()
                 .filter(ontologyTerm -> !ontologyTerm.isObsolete())
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
         this.obsoleteOntologyTerms = ontologyTerms.stream()
                 .filter(OboOntologyTerm::isObsolete)
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
         this.obsoleteIdToCurrentTerms = makeObsoleteTerms(currentOntologyTerms, obsoleteOntologyTerms);
     }
 
@@ -78,7 +74,7 @@ public class OboOntology {
             }
         }
 
-        return ImmutableMap.copyOf(idToTerms);
+        return Collections.unmodifiableMap(idToTerms);
     }
 
     public String getDataVersion() {

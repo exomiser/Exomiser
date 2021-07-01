@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLine;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class OboOntologyTerm implements OutputLine {
         this.id = builder.id;
         this.label = builder.label == null ? "" : builder.label;
         this.obsolete = builder.obsolete;
-        this.altIds = builder.altIds == null ? ImmutableList.of() : ImmutableList.copyOf(builder.altIds);
+        this.altIds = builder.altIds == null ? List.of() : List.copyOf(builder.altIds);
         this.replacedBy = builder.replacedBy == null ? "" : builder.replacedBy;
     }
 
