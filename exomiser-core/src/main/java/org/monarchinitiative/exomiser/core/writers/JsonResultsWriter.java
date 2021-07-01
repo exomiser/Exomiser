@@ -64,7 +64,7 @@ public class JsonResultsWriter implements ResultsWriter {
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, bufferedWriter);
+            writeData(modeOfInheritance, analysisResults, settings, objectWriter, bufferedWriter);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -79,7 +79,7 @@ public class JsonResultsWriter implements ResultsWriter {
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), objectWriter, stringWriter);
+            writeData(modeOfInheritance, analysisResults, settings, objectWriter, stringWriter);
             stringWriter.flush();
             logger.info("{} {} results written to string", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
                     .getAbbreviation());
@@ -90,18 +90,18 @@ public class JsonResultsWriter implements ResultsWriter {
         return "";
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, ObjectWriter objectWriter, Writer writer) throws IOException {
-        List<Gene> compatibleGenes = getCompatibleGene(modeOfInheritance, analysisResults.getGenes());
-        if (writeOnlyContributingVariants) {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings, ObjectWriter objectWriter, Writer writer) throws IOException {
+        List<Gene> compatibleGenes = getCompatibleGenesForMoi(modeOfInheritance, analysisResults.getGenes());
+        if (settings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
             List<Gene> passedGenes = makePassedGenes(modeOfInheritance, compatibleGenes);
-            objectWriter.writeValue(writer, passedGenes);
+            objectWriter.writeValue(writer, settings.filterGenesForOutput(passedGenes));
         } else {
-            objectWriter.writeValue(writer, compatibleGenes);
+            objectWriter.writeValue(writer, settings.filterGenesForOutput(compatibleGenes));
         }
     }
 
-    private List<Gene> getCompatibleGene(ModeOfInheritance modeOfInheritance, List<Gene> genes) {
+    private List<Gene> getCompatibleGenesForMoi(ModeOfInheritance modeOfInheritance, List<Gene> genes) {
         if (modeOfInheritance == ModeOfInheritance.ANY) {
             return genes;
         }

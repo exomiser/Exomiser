@@ -20,13 +20,20 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleMismatchException;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
+import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnnotator;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
@@ -34,9 +41,13 @@ import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.nio.file.Paths;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -472,4 +483,33 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123239370));
     }
 
+    @Test
+    void testMergedCanvasCnvCalls() {
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Proband", "Mother")
+                .parseVariantContext(
+                        "1 145508656 Canvas:GAIN N <CNV> 100 PASS END=145508956 GT:CN .:3 .:.",
+                        "1 145508756 Canvas:GAIN N <CNV> 100 PASS END=145509056 GT:CN .:. .:4"
+                );
+        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContexts)
+                .collect(toList());
+
+        Gene rbm8a = new Gene("ABC", 123);
+        VariantEffectFilter variantEffectFilter = new VariantEffectFilter(EnumSet.of(VariantEffect.UPSTREAM_GENE_VARIANT, VariantEffect.DOWNSTREAM_GENE_VARIANT));
+        variants.forEach(variantEvaluation -> {
+            var result = variantEffectFilter.runFilter(variantEvaluation);
+            variantEvaluation.addFilterResult(result);
+            if (result.passed()) {
+                rbm8a.addVariant(variantEvaluation);
+            }
+        });
+
+        Pedigree pedigree = Pedigree.of(Pedigree.Individual.builder().id("Proband").sex(Pedigree.Individual.Sex.MALE).motherId("Mother").status(Pedigree.Individual.Status.AFFECTED).build(),
+                Pedigree.Individual.builder().id("Mother").sex(Pedigree.Individual.Sex.FEMALE).status(Pedigree.Individual.Status.AFFECTED).build());
+
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults()));
+        instance.analyseInheritanceModes(List.of(rbm8a));
+        System.out.println(rbm8a.getCompatibleInheritanceModes());
+        rbm8a.getPassedVariantEvaluations().forEach(System.out::println);
+    }
 }

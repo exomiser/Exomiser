@@ -17,6 +17,7 @@ enum OutputFormat {
 message OutputOptions {
     bool outputContributingVariantsOnly = 1;
     int32 numGenes = 2;
-    string outputPrefix = 3;
-    repeated string outputFormats = 4;
+    float minExomiserGeneScore = 3;
+    string outputPrefix = 4;
+    repeated string outputFormats = 5;
 }

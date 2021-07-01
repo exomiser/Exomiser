@@ -75,12 +75,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysisResults, outputSettings, printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFileName, ex);
         }
@@ -88,10 +88,10 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), printer);
+            writeData(modeOfInheritance, analysisResults, outputSettings, printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}", output, ex);
         }
@@ -99,16 +99,17 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults,
-                           boolean writeOnlyContributingVariants, CSVPrinter printer) throws IOException {
-        if (writeOnlyContributingVariants) {
+                           OutputSettings outputSettings, CSVPrinter printer) throws IOException {
+        List<Gene> passedGenes = outputSettings.filterGenesForOutput(analysisResults.getGenes());
+        if (outputSettings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
-            for (Gene gene : analysisResults.getGenes()) {
+            for (Gene gene : passedGenes) {
                 if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
                     writeOnlyContributingVariantsOfGene(modeOfInheritance, gene, printer);
                 }
             }
         } else {
-            for (Gene gene : analysisResults.getGenes()) {
+            for (Gene gene : passedGenes) {
                 writeAllVariantsOfGene(modeOfInheritance, gene, printer);
             }
         }
@@ -154,7 +155,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // HGVS
         record.add(getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
         // EXOMISER_GENE
-        record.add(ve.getGeneSymbol());
+        record.add(dotIfEmpty(ve.getGeneSymbol()));
         PathogenicityData pathogenicityData = ve.getPathogenicityData();
         // CADD
         record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.CADD)));

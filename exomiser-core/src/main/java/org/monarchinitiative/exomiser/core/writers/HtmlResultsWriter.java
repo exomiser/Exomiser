@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,13 +94,13 @@ public class HtmlResultsWriter implements ResultsWriter {
         return templateEngine.process("results", context);
     }
 
-    private Context buildContext(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    private Context buildContext(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
         Context context = new Context();
 
         Analysis analysis = analysisResults.getAnalysis();
         Sample sample = analysisResults.getSample();
 
-        String yamlString = toYamlJobString(sample, analysis, settings);
+        String yamlString = toYamlJobString(sample, analysis, outputSettings);
         context.setVariable("settings", yamlString);
 
         //make the user aware of any unanalysed variants
@@ -123,8 +123,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("variantTypeCounters", variantTypeCounters);
 
         context.setVariable("modeOfInheritance", modeOfInheritance);
-        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(analysisResults.getGenes(), settings.getNumberOfGenesToShow());
-        context.setVariable("genes", passedGenes);
+        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.getGenes());
+        context.setVariable("genes", filteredGenes);
 
         //this will change the links to the relevant resource.
         // For the time being we're going to maintain the original behaviour (UCSC)

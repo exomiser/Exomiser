@@ -123,7 +123,7 @@ public class VcfResultsWriter implements ResultsWriter {
         VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
         try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputPath(outFile).build()) {
             writer.writeHeader(vcfHeader);
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
+            writeData(modeOfInheritance, analysisResults, settings, writer);
         }
         logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
     }
@@ -141,7 +141,7 @@ public class VcfResultsWriter implements ResultsWriter {
         VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
         try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputStream(baos).build()) {
             writer.writeHeader(vcfHeader);
-            writeData(modeOfInheritance, analysisResults, settings.outputContributingVariantsOnly(), writer);
+            writeData(modeOfInheritance, analysisResults, settings, writer);
         }
         logger.debug("{} results written to string buffer", OUTPUT_FORMAT);
         return baos.toString(StandardCharsets.UTF_8);
@@ -166,14 +166,15 @@ public class VcfResultsWriter implements ResultsWriter {
                 .unsetOption(Options.INDEX_ON_THE_FLY);
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, boolean writeOnlyContributingVariants, VariantContextWriter writer) {
+    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings, VariantContextWriter writer) {
         writeUnannotatedVariants(modeOfInheritance, analysisResults, writer);
+        List<Gene> passedGenes = outputSettings.filterGenesForOutput(analysisResults.getGenes());
         // actually write the data and close writer again
-        if (writeOnlyContributingVariants) {
+        if (outputSettings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
-            writeOnlyContributingData(modeOfInheritance, analysisResults, writer);
+            writeOnlyContributingData(modeOfInheritance, passedGenes, writer);
         } else {
-            writeAllSampleData(modeOfInheritance, analysisResults, writer);
+            writeAllSampleData(modeOfInheritance, passedGenes, writer);
         }
     }
 
@@ -182,8 +183,8 @@ public class VcfResultsWriter implements ResultsWriter {
         updatedRecords.forEach(writer::add);
     }
 
-    private void writeOnlyContributingData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
-        for (Gene gene : analysisResults.getGenes()) {
+    private void writeOnlyContributingData(ModeOfInheritance modeOfInheritance, List<Gene> genes, VariantContextWriter writer) {
+        for (Gene gene : genes) {
             if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
                 List<VariantEvaluation> compatibleVariants = gene.getGeneScoreForMode(modeOfInheritance).getContributingVariants();
                 List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, compatibleVariants);
@@ -199,14 +200,14 @@ public class VcfResultsWriter implements ResultsWriter {
      * headers, so data is written out directly for each
      * {@link VariantEvaluation} in <code>analysisResults</code>.
      *
-     * @param analysisResults data set to write out
-     * @param writer          writer to write to
+     * @param genes  data set to write out
+     * @param writer writer to write to
      */
-    private void writeAllSampleData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
-        for (Gene gene : analysisResults.getGenes()) {
-                logger.debug("updating variant records for gene {}", gene);
-                List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, gene.getVariantEvaluations());
-                updatedRecords.forEach(writer::add);
+    private void writeAllSampleData(ModeOfInheritance modeOfInheritance, List<Gene> genes, VariantContextWriter writer) {
+        for (Gene gene : genes) {
+            logger.debug("updating variant records for gene {}", gene);
+            List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, gene.getVariantEvaluations());
+            updatedRecords.forEach(writer::add);
         }
     }
 

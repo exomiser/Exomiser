@@ -28,8 +28,13 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.filters.FilterResult;
+import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -153,10 +158,52 @@ public class OutputSettingsTest {
         String output = mapper.writeValueAsString(instance);
         String expected = "---\n" +
                 "outputContributingVariantsOnly: false\n" +
+                "minExomiserGeneScore: 0.0\n" +
                 "outputPrefix: \"\"\n" +
                 "outputFormats:\n" +
                 "- \"HTML\"\n" +
                 "numGenes: 0\n";
         assertThat(output, equalTo(expected));
+    }
+
+    @Test
+    void testFilterGenes() {
+        Gene overGeneCombinedScore1 = new Gene("GENE:1", 1);
+        overGeneCombinedScore1.addFilterResult(FilterResult.pass(FilterType.INHERITANCE_FILTER));
+        overGeneCombinedScore1.addGeneScore(GeneScore.builder().combinedScore(0.90f).build());
+
+        Gene overGeneCombinedScore2 = new Gene("GENE:2", 2);
+        overGeneCombinedScore2.addFilterResult(FilterResult.pass(FilterType.INHERITANCE_FILTER));
+        overGeneCombinedScore2.addGeneScore(GeneScore.builder().combinedScore(0.80f).build());
+
+        Gene overGeneCombinedScore3 = new Gene("GENE:3", 3);
+        overGeneCombinedScore3.addFilterResult(FilterResult.pass(FilterType.INHERITANCE_FILTER));
+        overGeneCombinedScore3.addGeneScore(GeneScore.builder().combinedScore(0.70f).build());
+
+        Gene failedFilters = new Gene("GENE:4", 4);
+        failedFilters.addFilterResult(FilterResult.fail(FilterType.INHERITANCE_FILTER));
+
+        List<Gene> genes = List.of(overGeneCombinedScore1, overGeneCombinedScore2, overGeneCombinedScore3, failedFilters);
+
+        OutputSettings highMinScoreAndNumGenes = OutputSettings.builder()
+                .minExomiserGeneScore(0.9f)
+                .numberOfGenesToShow(2)
+                .build();
+        assertThat(highMinScoreAndNumGenes.filterGenesForOutput(genes), equalTo(List.of(overGeneCombinedScore1)));
+
+        OutputSettings minScoreAndNumGenes = OutputSettings.builder()
+                .minExomiserGeneScore(0.7f)
+                .numberOfGenesToShow(2)
+                .build();
+        assertThat(minScoreAndNumGenes.filterGenesForOutput(genes), equalTo(List.of(overGeneCombinedScore1, overGeneCombinedScore2)));
+
+        OutputSettings minScoreAndAllGenes = OutputSettings.builder()
+                .minExomiserGeneScore(0.7f)
+                .numberOfGenesToShow(0)
+                .build();
+        assertThat(minScoreAndAllGenes.filterGenesForOutput(genes), equalTo(List.of(overGeneCombinedScore1, overGeneCombinedScore2, overGeneCombinedScore3)));
+
+        assertThat(OutputSettings.defaults().filterGenesForOutput(genes), equalTo(List.of(overGeneCombinedScore1, overGeneCombinedScore2, overGeneCombinedScore3, failedFilters)));
+        assertThat(OutputSettings.defaults().filterPassedGenesForOutput(genes), equalTo(List.of(overGeneCombinedScore1, overGeneCombinedScore2, overGeneCombinedScore3)));
     }
 }
