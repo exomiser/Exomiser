@@ -42,8 +42,8 @@ class DbVarFreqParserTest {
         String line1 = "2\t145346767\tessv17884129\tA\t<INS:ME:ALU>\t.\t.\tDBVARID;SVTYPE=INS;END=145346767;SVLEN=274;EXPERIMENT=9;SAMPLE=NA20758;REGIONID=esv3826447";
         String line2 = "2\t145346767\tessv17884129\tA\t<INS:ME:ALU>\t.\t.\tDBVARID;SVTYPE=INS;END=145346767;SVLEN=274;EXPERIMENT=9;SAMPLE=NA20758;REGIONID=esv3826447";
 //        assertThat(instance.parseLine(line), equalTo(List.of()));
-        assertThat(instance.parseLine(line1), equalTo(List.of()));
-        assertThat(instance.parseLine(line2), equalTo(List.of()));
+        assertThat(instance.parseLine(line1), equalTo(List.of(new SvFrequency(2, 145346767, 145346767, 274, VariantType.INS_ME_ALU, "esv3826447", "DBVAR", "essv17884129", 1, 0))));
+        assertThat(instance.parseLine(line2), equalTo(List.of(new SvFrequency(2, 145346767, 145346767, 274, VariantType.INS_ME_ALU, "esv3826447", "DBVAR", "essv17884129", 1, 0))));
     }
 
     @Test

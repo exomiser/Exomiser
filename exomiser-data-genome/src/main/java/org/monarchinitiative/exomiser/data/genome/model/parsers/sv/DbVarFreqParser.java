@@ -65,8 +65,7 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
         }
 
         int alleleCount = 1;
-        float alleleFreq = 0f;
-        int alleleNum = 1;
+        int alleleNum = 0;
 
         for (String keyValue : infoField.split(";")) {
             String[] keyValues = keyValue.split("=");
@@ -75,7 +74,7 @@ public class DbVarFreqParser implements Parser<SvFrequency> {
                 // CIPOS=0,.
                 // CIEND=.,0
                 if ("AF".equals(keyValues[0])) {
-//                    alleleFreq = Float.parseFloat(keyValues[1]);
+                    // don't parse the AF as this isn't necessarily informative with low AN
                 } else if ("AN".equals(keyValues[0])) {
                     alleleNum = parseIntOrDefault(keyValues[1], 0);
                 } else if ("AC".equals(keyValues[0])) {
