@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Timestamp;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.apache.commons.cli.CommandLine;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
@@ -483,13 +484,45 @@ class CommandLineJobReaderTest {
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
-        JobProto.Job expected = JobProto.Job.newBuilder()
+        // --sample src/test/resources/pfeiffer-phenopacket.json
+        JobProto.Job phenopacketExomePresetJob = JobProto.Job.newBuilder()
                 .setPhenopacket(PHENOPACKET)
                 .setPreset(AnalysisProto.Preset.EXOME)
                 .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
                 .build();
 
-        assertThat(jobs, equalTo(List.of(expected)));
+        // --sample src/test/resources/pfeiffer-phenopacket.json --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
+        Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
+        HtsFile htsFile = HtsFile.newBuilder().setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF).setGenomeAssembly("hg19").build();
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET.toBuilder().setHtsFiles(0, htsFile).build())
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        // --sample src/test/resources/pfeiffer-sample.json    --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
+        JobProto.Job updateSampleJsonHg19AssemblyNoAnalysisOption = JobProto.Job.newBuilder()
+                .setSample(SAMPLE.toBuilder().setVcf(vcfPath.toString()).setGenomeAssembly("hg19").build())
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        // --sample src/test/resources/pfeiffer-sample.yml --vcf src/test/resources/Pfeiffer.vcf --assembly GRCh37 --preset GENOME
+        JobProto.Job updateSampleWithGenomePreset = JobProto.Job.newBuilder()
+                .setSample(SAMPLE.toBuilder().setVcf(vcfPath.toString()).setGenomeAssembly("GRCh37").build())
+                .setPreset(AnalysisProto.Preset.GENOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        // --analysis src/test/resources/pfeiffer-analysis-v8-12.yml
+        JobProto.Job oldAnalysis = PFEIFFER_SAMPLE_JOB;
+
+        assertThat(jobs.size(), equalTo(5));
+        assertThat(jobs.get(0), equalTo(phenopacketExomePresetJob));
+        assertThat(jobs.get(1), equalTo(expected));
+        assertThat(jobs.get(2), equalTo(updateSampleJsonHg19AssemblyNoAnalysisOption));
+        assertThat(jobs.get(3), equalTo(updateSampleWithGenomePreset));
+        assertThat(jobs.get(4), equalTo(oldAnalysis));
     }
 
     @Test
@@ -620,6 +653,7 @@ class CommandLineJobReaderTest {
         assertThat(jobs, equalTo(List.of(expected)));
     }
 
+    @Disabled("Potentially confusing, but still legal input")
     @Test
     void readCliSampleWithLegacyAnalysisThrowsException() {
         CommandLine commandLine = CommandLineOptionsParser.parse(

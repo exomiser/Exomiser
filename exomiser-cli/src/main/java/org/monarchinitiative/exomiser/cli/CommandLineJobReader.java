@@ -71,7 +71,7 @@ public class CommandLineJobReader {
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
             return analysisScripts.stream().map(JobReader::readJob).collect(Collectors.toList());
         }
-
+        // new batch option which will parse each line as a cli command
         if (userOptions.equals(Set.of("batch"))) {
             var analysisBatchFile = Path.of(commandLine.getOptionValue("batch"));
             return BatchFileReader.readJobsFromBatchFile(analysisBatchFile);
@@ -98,8 +98,13 @@ public class CommandLineJobReader {
         // "sample", "output"
         // "sample", "vcf", "output"
         // "sample", "vcf", "ped", "output"
-        if (userOptions.contains("sample")) {
+        if (userOptions.contains("sample") || userOptions.contains("analysis")) {
             JobProto.Job.Builder jobBuilder = newDefaultJobBuilder();
+            // parse the analysis first as this could be a legacy analysis (which contains the sample, analysis and output)
+            // or it could just be a new analysis without the sample data.
+            if (userOptions.contains("analysis")) {
+                handleAnalysisOption(commandLine.getOptionValue("analysis"), jobBuilder);
+            }
             for (String option : userOptions) {
                 String optionValue = commandLine.getOptionValue(option);
                 if ("sample".equals(option)) {
@@ -107,9 +112,6 @@ public class CommandLineJobReader {
                 }
                 if ("preset".equals(option)) {
                     handlePresetOption(optionValue, jobBuilder);
-                }
-                if ("analysis".equals(option)) {
-                    handleAnalysisOption(optionValue, jobBuilder);
                 }
                 if ("output".equals(option)) {
                     handleOutputOption(optionValue, jobBuilder);
@@ -126,6 +128,9 @@ public class CommandLineJobReader {
 //                if ("ped".equals(option)) {
 //                    handlePedOption(optionValue, jobBuilder);
 //                }
+            }
+            if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
+                throw new CommandLineParseError("No sample specified!");
             }
             return List.of(jobBuilder.build());
         }
@@ -159,7 +164,18 @@ public class CommandLineJobReader {
 
     private void handleAnalysisOption(String analysisOptionValue, JobProto.Job.Builder jobBuilder) {
         Path analysisPath = Path.of(analysisOptionValue);
-        jobBuilder.setAnalysis(readAnalysis(analysisPath));
+        boolean isLegacyAnalysis = false;
+        try {
+            JobProto.Job job = JobReader.readJob(analysisPath);
+            jobBuilder.mergeFrom(job);
+            isLegacyAnalysis = true;
+            logger.debug("{} is a legacy analysis format", analysisPath);
+        } catch (IllegalArgumentException e) {
+            // not a legacy analysis job
+        }
+        if (!isLegacyAnalysis) {
+            jobBuilder.setAnalysis(readAnalysis(analysisPath));
+        }
     }
 
     private void handleVcfOption(String vcfOptionValue, JobProto.Job.Builder jobBuilder) {

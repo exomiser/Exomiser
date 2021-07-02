@@ -1,0 +1,9 @@
+# This is an example analysis batch file to be run using the --analysis-batch command
+#
+# Each line should specify the path of a single analysis file, either relative to the directory the exomiser
+# is being run from or the full system path.
+--sample src/test/resources/pfeiffer-phenopacket.json
+--sample src/test/resources/pfeiffer-phenopacket.json --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
+--sample src/test/resources/pfeiffer-sample.json    --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
+--sample src/test/resources/pfeiffer-sample.yml --vcf src/test/resources/Pfeiffer.vcf --assembly GRCh37 --preset GENOME
+--analysis src/test/resources/pfeiffer-analysis-v8-12.yml
