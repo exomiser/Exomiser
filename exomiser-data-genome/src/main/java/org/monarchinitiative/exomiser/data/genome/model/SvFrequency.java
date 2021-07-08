@@ -96,6 +96,7 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
         switch (variantType.baseType()) {
             case DEL:
                 return zeroStart - end;
+            case CNV:
             case DUP:
             case INS:
             case INV:
