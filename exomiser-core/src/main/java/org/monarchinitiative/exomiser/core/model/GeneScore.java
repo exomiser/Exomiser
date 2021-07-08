@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
@@ -53,8 +52,8 @@ public final class GeneScore implements Comparable<GeneScore> {
         this.combinedScore = builder.combinedScore;
         this.phenotypeScore = builder.phenotypeScore;
         this.variantScore = builder.variantScore;
-        this.contributingVariants = ImmutableList.copyOf(builder.contributingVariants);
-        this.compatibleDiseaseMatches = ImmutableList.copyOf(builder.compatibleDiseaseMatches);
+        this.contributingVariants = List.copyOf(builder.contributingVariants);
+        this.compatibleDiseaseMatches = List.copyOf(builder.compatibleDiseaseMatches);
     }
 
     public GeneIdentifier getGeneIdentifier() {
@@ -195,8 +194,8 @@ public final class GeneScore implements Comparable<GeneScore> {
         private float combinedScore;
         private float phenotypeScore;
         private float variantScore;
-        private List<VariantEvaluation> contributingVariants = ImmutableList.of();
-        private List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = ImmutableList.of();
+        private List<VariantEvaluation> contributingVariants = List.of();
+        private List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of();
 
         public Builder geneIdentifier(GeneIdentifier geneIdentifier) {
             this.geneIdentifier = geneIdentifier;

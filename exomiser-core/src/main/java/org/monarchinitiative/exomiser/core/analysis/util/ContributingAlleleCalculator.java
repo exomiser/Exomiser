@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * Non-public helper class for finding contributing alleles.
@@ -70,7 +69,7 @@ class ContributingAlleleCalculator {
                 //It is critical only the PASS variants are used in the scoring
                 .filter(VariantEvaluation::passedFilters)
                 .filter(variantEvaluation -> variantEvaluation.isCompatibleWith(modeOfInheritance))
-                .collect(toList());
+                .collect(toUnmodifiableList());
         //note these need to be filtered for the relevant ModeOfInheritance before being checked for the contributing variants
         if (variantsCompatibleWithMode.isEmpty()) {
             return Collections.emptyList();
@@ -140,7 +139,7 @@ class ContributingAlleleCalculator {
             VariantEvaluation topHomAlt = bestHomozygousAlt.get();
             topHomAlt.setContributesToGeneScoreUnderMode(modeOfInheritance);
             logger.debug("Top scoring AR is hom alt: {}", topHomAlt);
-            return ImmutableList.of(topHomAlt);
+            return List.of(topHomAlt);
         }
         logger.debug("No AR candidate alleles found");
         return Collections.emptyList();
