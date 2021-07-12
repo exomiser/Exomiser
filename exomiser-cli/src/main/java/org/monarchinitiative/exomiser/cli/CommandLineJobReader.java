@@ -74,15 +74,13 @@ public class CommandLineJobReader {
         }
         // new batch option which will parse each line as a cli command
         if (userOptions.equals(Set.of("batch"))) {
-            var analysisBatchFile = Path.of(commandLine.getOptionValue("batch"));
+            Path analysisBatchFile = Path.of(commandLine.getOptionValue("batch"));
             return BatchFileReader.readJobsFromBatchFile(analysisBatchFile);
         }
 
         // new option replacing the analysis with job. These are functionally equivalent, but the sample is separated
         // from the analysis part to allow for greater flexibility
 
-        // TODO: do we need a job option if the analysis and analysis-batch options can read either a new job or old
-        //  analysis?
         if (userOptions.equals(Set.of("job"))) {
             Path jobPath = Path.of(commandLine.getOptionValue("job"));
             JobProto.Job job = JobReader.readJob(jobPath);
@@ -100,38 +98,42 @@ public class CommandLineJobReader {
         // "sample", "vcf", "output"
         // "sample", "vcf", "ped", "output"
         if (userOptions.contains("sample") || userOptions.contains("analysis")) {
-            JobProto.Job.Builder jobBuilder = newDefaultJobBuilder();
-            // parse the analysis first as this could be a legacy analysis (which contains the sample, analysis and output)
-            // or it could just be a new analysis without the sample data.
-            if (userOptions.contains("analysis")) {
-                handleAnalysisOption(commandLine.getOptionValue("analysis"), jobBuilder);
-            }
-            for (String option : userOptions) {
-                String optionValue = commandLine.getOptionValue(option);
-                if ("sample".equals(option)) {
-                    handleSampleOption(optionValue, jobBuilder);
-                }
-                if ("preset".equals(option)) {
-                    handlePresetOption(optionValue, jobBuilder);
-                }
-                if ("output".equals(option)) {
-                    handleOutputOption(optionValue, jobBuilder);
-                }
-            }
-            // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
-            if (userOptions.contains("vcf")) {
-                handleVcfAndAssemblyOptions(commandLine.getOptionValue("vcf"), commandLine.getOptionValue("assembly"), jobBuilder);
-            }
-//            if ("ped".equals(option)) {
-//                handlePedOption(optionValue, jobBuilder);
-//            }
-            if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
-                throw new CommandLineParseError("No sample specified!");
-            }
-            return List.of(jobBuilder.build());
+            return handleMultipleUserOptions(commandLine, userOptions);
         }
 
         throw new CommandLineParseError("No sample specified!");
+    }
+
+    private List<JobProto.Job> handleMultipleUserOptions(CommandLine commandLine, Set<String> userOptions) {
+        JobProto.Job.Builder jobBuilder = newDefaultJobBuilder();
+        // parse the analysis first as this could be a legacy analysis (which contains the sample, analysis and output)
+        // or it could just be a new analysis without the sample data.
+        if (userOptions.contains("analysis")) {
+            handleAnalysisOption(commandLine.getOptionValue("analysis"), jobBuilder);
+        }
+        for (String option : userOptions) {
+            String optionValue = commandLine.getOptionValue(option);
+            if ("sample".equals(option)) {
+                handleSampleOption(optionValue, jobBuilder);
+            }
+            if ("preset".equals(option)) {
+                handlePresetOption(optionValue, jobBuilder);
+            }
+            if ("output".equals(option)) {
+                handleOutputOption(optionValue, jobBuilder);
+            }
+        }
+        // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
+        if (userOptions.contains("vcf")) {
+            handleVcfAndAssemblyOptions(commandLine.getOptionValue("vcf"), commandLine.getOptionValue("assembly"), jobBuilder);
+        }
+//            if ("ped".equals(option)) {
+//                handlePedOption(optionValue, jobBuilder);
+//            }
+        if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
+            throw new CommandLineParseError("No sample specified!");
+        }
+        return List.of(jobBuilder.build());
     }
 
     private JobProto.Job.Builder newDefaultJobBuilder() {
