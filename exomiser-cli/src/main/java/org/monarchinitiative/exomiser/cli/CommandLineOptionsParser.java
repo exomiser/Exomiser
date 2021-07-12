@@ -75,12 +75,18 @@ public class CommandLineOptionsParser {
                 .argName("file")
                 .build());
 
-
         options.addOption(Option.builder()
                 .longOpt("assembly")
                 .desc("Genome assembly of sample VCF file. Either 'GRCh37' or 'GRCh38'")
                 .hasArg()
                 .argName("assembly")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("ped")
+                .desc("Path to sample PED file.")
+                .hasArg()
+                .argName("file")
                 .build());
 
         options.addOption(Option.builder()

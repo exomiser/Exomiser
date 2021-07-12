@@ -33,8 +33,10 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoBuilder;
+import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeReader;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
@@ -582,6 +584,72 @@ class CommandLineJobReaderTest {
 
         assertThat(jobs, equalTo(List.of(expected)));
     }
+
+    @Test
+    void readCliFamilyExomeWithVcfAndPedigreeOption() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-family.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--ped", "src/test/resources/pfeiffer-singleton.ped"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
+
+        HtsFile htsFile = HtsFile.newBuilder()
+                .setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setGenomeAssembly("GRCh37")
+                .build();
+        Family family = FAMILY.toBuilder()
+                .clearHtsFiles().addHtsFiles(0, htsFile)
+                .setPedigree(PedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
+                .build();
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setFamily(family)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliPhenopacketWithVcfAndPedigreeOption() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--ped", "src/test/resources/pfeiffer-singleton.ped"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
+
+        HtsFile htsFile = HtsFile.newBuilder()
+                .setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setGenomeAssembly("GRCh37")
+                .build();
+
+        Phenopacket phenopacket = ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), Path.of("src/test/resources/pfeiffer-phenopacket.yml"))
+                .clearHtsFiles()
+                .build();
+
+        Family family = Family.newBuilder()
+                .setId(phenopacket.getId())
+                .setProband(phenopacket)
+                .addHtsFiles(htsFile)
+                .setPedigree(PedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
+                .build();
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setFamily(family)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
 
     @Test
     void readCliSampleIllegalPreset() {

@@ -175,6 +175,6 @@ class CommandLineOptionsParserTest {
 
     @Test
     void fileDependentOptions() {
-        assertThat(CommandLineOptionsParser.fileDependentOptions(), equalTo(List.of("analysis", "analysis-batch", "batch", "sample", "vcf", "job")));
+        assertThat(CommandLineOptionsParser.fileDependentOptions(), equalTo(List.of("analysis", "analysis-batch", "batch", "sample", "vcf", "ped", "job")));
     }
 }

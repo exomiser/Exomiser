@@ -28,11 +28,13 @@ import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.JobReader;
+import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeReader;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
+import org.phenopackets.schema.v1.core.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,9 +129,9 @@ public class CommandLineJobReader {
         if (userOptions.contains("vcf")) {
             handleVcfAndAssemblyOptions(commandLine.getOptionValue("vcf"), commandLine.getOptionValue("assembly"), jobBuilder);
         }
-//            if ("ped".equals(option)) {
-//                handlePedOption(optionValue, jobBuilder);
-//            }
+        if (userOptions.contains("ped")) {
+            handlePedOption(commandLine.getOptionValue("ped"), jobBuilder);
+        }
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
         }
@@ -177,7 +179,7 @@ public class CommandLineJobReader {
     }
 
     private void handleVcfAndAssemblyOptions(String vcfOptionValue, @Nullable String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
-        logger.info("Handling VCF/assembly option {} {}", vcfOptionValue, assemblyOptionValue);
+        logger.debug("Handling VCF/assembly option {} {}", vcfOptionValue, assemblyOptionValue);
         Path vcfPath = Path.of(vcfOptionValue);
         String assembly = assemblyOptionValue == null ? "GRCh37" : assemblyOptionValue;
         if (jobBuilder.hasPhenopacket()) {
@@ -200,7 +202,7 @@ public class CommandLineJobReader {
     }
 
     private HtsFile.Builder buildHtsFile(Path vcfPath, String assembly) {
-        logger.info("Building HtsFile VCF {} {}", vcfPath, assembly);
+        logger.debug("Building HtsFile VCF {} {}", vcfPath, assembly);
         return HtsFile.newBuilder()
                 .setHtsFormat(HtsFile.HtsFormat.VCF)
                 .setUri(vcfPath.toUri().toString())
@@ -208,9 +210,27 @@ public class CommandLineJobReader {
     }
 
     private void handlePedOption(String pedOptionValue, JobProto.Job.Builder jobBuilder) {
+        logger.debug("Got a PED option {}", pedOptionValue);
         Path pedPath = Path.of(pedOptionValue);
-        //TODO this needs to check or upgrade the phenopacket to a family and create a Pedigree object from the PED file
-        jobBuilder.getSampleBuilder().setPed(pedPath.toAbsolutePath().toString());
+        if (jobBuilder.hasPhenopacket()) {
+            // upgrade to family
+            Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
+            Pedigree pedigree = PedigreeReader.readPedFile(pedPath);
+            List<HtsFile> htsFilesList = phenopacketBuilder.getHtsFilesList();
+
+            Family.Builder familyBuilder = Family.newBuilder()
+                    .setId(phenopacketBuilder.getId())
+                    .setProband(phenopacketBuilder.clearHtsFiles().build())
+                    .addAllHtsFiles(htsFilesList)
+                    .setPedigree(pedigree);
+
+            jobBuilder.setFamily(familyBuilder);
+        } else if (jobBuilder.hasFamily()) {
+            Pedigree pedigree = PedigreeReader.readPedFile(pedPath);
+            jobBuilder.getFamilyBuilder().setPedigree(pedigree);
+        } else {
+            jobBuilder.getSampleBuilder().setPed(pedPath.toAbsolutePath().toString());
+        }
     }
 
     private void handlePresetOption(String presetValue, JobProto.Job.Builder jobBuilder) {
