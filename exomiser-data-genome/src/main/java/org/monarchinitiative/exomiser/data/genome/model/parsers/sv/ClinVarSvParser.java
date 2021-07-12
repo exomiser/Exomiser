@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers.sv;
 import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.data.genome.model.SvLengthCalculator;
 import org.monarchinitiative.exomiser.data.genome.model.SvPathogenicity;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.Parser;
 import org.monarchinitiative.svart.VariantType;
@@ -59,7 +60,7 @@ public class ClinVarSvParser implements Parser<SvPathogenicity> {
         int start = Integer.parseInt(tokens[19]);
         int end = Integer.parseInt(tokens[20]);
         VariantType variantType = parseType(tokens[1]);
-        int svLen = calculateLength(start, end, variantType);
+        int svLen = SvLengthCalculator.calculateLength(start, end, variantType);
         String dbVarId = tokens[10];
         // Only include SV variants - there are a lot of small variants in the file too.
         if (dbVarId.isEmpty() || dbVarId.equals("-")) {
@@ -88,25 +89,6 @@ public class ClinVarSvParser implements Parser<SvPathogenicity> {
             // swallow
         }
         return false;
-    }
-
-    private int calculateLength(int start, int end, VariantType variantType) {
-        // CNV_GAIN and CNV_LOSS have a CNV case type which is no so informative.
-        if (variantType == VariantType.CNV_GAIN) {
-            return end - start;
-        } else if (variantType == VariantType.CNV_LOSS) {
-            return start - end;
-        }
-        switch (variantType.baseType()) {
-            case DEL:
-                return start - end;
-            case DUP:
-            case INS:
-                return end - start;
-            case INV:
-            default:
-                return 0;
-        }
     }
 
     private VariantType parseType(String type) {

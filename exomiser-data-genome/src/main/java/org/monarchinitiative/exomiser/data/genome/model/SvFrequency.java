@@ -45,7 +45,7 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
         this.start = start;
         this.end = end;
         this.svType = svType;
-        this.svLen = svLen == 0 ? calculateLength(start, end, svType) : svLen;
+        this.svLen = svLen == 0 ? SvLengthCalculator.calculateLength(start, end, svType) : svLen;
         this.dbVarId = dbVarId;
         this.source = source;
         this.sourceId = sourceId;
@@ -75,35 +75,6 @@ public class SvFrequency implements OutputLine, Comparable<SvFrequency> {
 
     public String getDbVarId() {
         return dbVarId;
-    }
-
-    /**
-     * Caution! This method assumes 1-based coordinates.
-     *
-     * @param start
-     * @param end
-     * @param variantType
-     * @return
-     */
-    private int calculateLength(int start, int end, VariantType variantType) {
-        int zeroStart = start - 1;
-        // CNV_GAIN and CNV_LOSS have a CNV case type which is no so informative.
-        if (variantType == VariantType.CNV_GAIN) {
-            return end - zeroStart;
-        } else if (variantType == VariantType.CNV_LOSS) {
-            return zeroStart - end;
-        }
-        switch (variantType.baseType()) {
-            case DEL:
-                return zeroStart - end;
-            case CNV:
-            case DUP:
-            case INS:
-            case INV:
-                return end - zeroStart;
-            default:
-                return 0;
-        }
     }
 
     @Override
