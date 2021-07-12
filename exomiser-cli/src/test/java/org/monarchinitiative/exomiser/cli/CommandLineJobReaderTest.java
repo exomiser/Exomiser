@@ -559,6 +559,31 @@ class CommandLineJobReaderTest {
     }
 
     @Test
+    void readCliFamilyExomeWithVcfOption() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-family.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
+
+        HtsFile htsFile = HtsFile.newBuilder()
+                .setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setGenomeAssembly("GRCh37")
+                .build();
+        Family family = FAMILY.toBuilder().clearHtsFiles().addHtsFiles(0, htsFile).build();
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setFamily(family)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
     void readCliSampleIllegalPreset() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-sample.yml",

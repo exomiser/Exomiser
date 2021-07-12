@@ -36,6 +36,7 @@ import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -118,17 +119,12 @@ public class CommandLineJobReader {
                 }
             }
             // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
-            if (userOptions.contains("vcf") || userOptions.contains("ped")) {
-                if (userOptions.contains("vcf")) {
-                    handleVcfOption(commandLine.getOptionValue("vcf"), jobBuilder);
-                }
-                if (userOptions.contains("assembly")) {
-                    handleAssemblyOption(commandLine.getOptionValue("assembly"), jobBuilder);
-                }
-//                if ("ped".equals(option)) {
-//                    handlePedOption(optionValue, jobBuilder);
-//                }
+            if (userOptions.contains("vcf")) {
+                handleVcfAndAssemblyOptions(commandLine.getOptionValue("vcf"), commandLine.getOptionValue("assembly"), jobBuilder);
             }
+//            if ("ped".equals(option)) {
+//                handlePedOption(optionValue, jobBuilder);
+//            }
             if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
                 throw new CommandLineParseError("No sample specified!");
             }
@@ -178,37 +174,35 @@ public class CommandLineJobReader {
         }
     }
 
-    private void handleVcfOption(String vcfOptionValue, JobProto.Job.Builder jobBuilder) {
+    private void handleVcfAndAssemblyOptions(String vcfOptionValue, @Nullable String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
+        logger.info("Handling VCF/assembly option {} {}", vcfOptionValue, assemblyOptionValue);
         Path vcfPath = Path.of(vcfOptionValue);
-        // TODO check for Family!
+        String assembly = assemblyOptionValue == null ? "GRCh37" : assemblyOptionValue;
         if (jobBuilder.hasPhenopacket()) {
             Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
-            HtsFile.Builder htsFile = HtsFile.newBuilder()
-                    .setHtsFormat(HtsFile.HtsFormat.VCF)
-                    .setUri(vcfPath.toUri().toString());
             if (phenopacketBuilder.getHtsFilesCount() != 0) {
                 phenopacketBuilder.clearHtsFiles();
             }
-            phenopacketBuilder.addHtsFiles(htsFile);
+            phenopacketBuilder.addHtsFiles(buildHtsFile(vcfPath, assembly));
+        } else if (jobBuilder.hasFamily()) {
+            Family.Builder familyBuilder = jobBuilder.getFamilyBuilder();
+            if (familyBuilder.getHtsFilesCount() != 0) {
+                familyBuilder.clearHtsFiles();
+            }
+            familyBuilder.addHtsFiles(buildHtsFile(vcfPath, assembly));
         } else {
-            jobBuilder.getSampleBuilder().setVcf(vcfPath.toAbsolutePath().toString());
+            jobBuilder.getSampleBuilder()
+                    .setVcf(vcfPath.toAbsolutePath().toString())
+                    .setGenomeAssembly(assembly);
         }
     }
 
-    private void handleAssemblyOption(String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
-        // CAUTION! THIS METHOD ASSUMES THAT IT IS RUN AFTER THE VCF OPTION
-        if (jobBuilder.hasPhenopacket()) {
-            Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
-            if (phenopacketBuilder.getHtsFilesCount() != 0) {
-                HtsFile.Builder htsFile = phenopacketBuilder.getHtsFilesBuilder(0);
-                htsFile.setGenomeAssembly(assemblyOptionValue);
-                phenopacketBuilder.setHtsFiles(0, htsFile);
-            } else {
-                throw new IllegalStateException("Unable to set assembly when no VCF file present");
-            }
-        } else {
-            jobBuilder.getSampleBuilder().setGenomeAssembly(assemblyOptionValue);
-        }
+    private HtsFile.Builder buildHtsFile(Path vcfPath, String assembly) {
+        logger.info("Building HtsFile VCF {} {}", vcfPath, assembly);
+        return HtsFile.newBuilder()
+                .setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setUri(vcfPath.toUri().toString())
+                .setGenomeAssembly(assembly);
     }
 
     private void handlePedOption(String pedOptionValue, JobProto.Job.Builder jobBuilder) {
@@ -265,7 +259,7 @@ public class CommandLineJobReader {
         try {
             return ProtoParser.parseFromJsonOrYaml(messageBuilder, path);
         } catch (Exception exception) {
-            logger.info("{} not parsable as a {} ...", path, messageBuilder.getClass().getName());
+            logger.debug("{} not parsable as a {} ...", path, messageBuilder.getClass().getName());
         }
         return messageBuilder;
     }
