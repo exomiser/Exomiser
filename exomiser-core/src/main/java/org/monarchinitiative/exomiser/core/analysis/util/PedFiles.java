@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -51,7 +51,6 @@ public class PedFiles {
         try (Stream<String> lines = Files.lines(pedFile)) {
             return parsePedigree(lines);
         } catch (Exception e) {
-            logger.error("Error reading PED file {}", pedFile, e);
             throw new PedFilesException(String.format("Error reading PED file %s", pedFile), e);
         }
     }
@@ -77,7 +76,6 @@ public class PedFiles {
         return line -> {
             String[] tokens = line.split("\\s+");
             if (tokens.length < 6) {
-                logger.error("PED file must have at least 6 fields - found {} in line '{}'", tokens.length, line);
                 throw new PedFilesParseException(String.format("PED file must have at least 6 fields - found %d in line '%s'", tokens.length, line));
             }
             String familyId = tokens[0];
@@ -99,7 +97,6 @@ public class PedFiles {
 
     private static String parseId(String token) {
         if (token.isEmpty()) {
-            logger.error("Individual id cannot be empty");
             throw new PedFilesParseException("Individual id cannot be empty");
         }
         return token;
@@ -107,7 +104,6 @@ public class PedFiles {
 
     private static String parseParentId(String token) {
         if (token.isEmpty()) {
-            logger.error("Parent id cannot be empty");
             throw new PedFilesParseException("Parent id cannot be empty");
         }
         if ("0".equals(token)) {
@@ -138,7 +134,6 @@ public class PedFiles {
             case "2":
                 return Individual.Status.AFFECTED;
             default:
-                logger.error("Individual status must be one of -9 0, 1, 2. Found '{}'", token);
                 throw new PedFilesParseException(String.format("Individual status must be one of -9 0, 1, 2. Found '%s'", token));
         }
     }
