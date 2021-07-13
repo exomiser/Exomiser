@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -53,7 +52,7 @@ public class QueryPhenotypeMatch {
         this.organism = organism;
         this.queryTermPhenotypeMatches = ImmutableMap.copyOf(queryTermPhenotypeMatches);
 
-        this.queryTerms = ImmutableList.copyOf(this.queryTermPhenotypeMatches.keySet());
+        this.queryTerms = List.copyOf(this.queryTermPhenotypeMatches.keySet());
         this.bestPhenotypeMatches = makeBestPhenotypeMatches(this.queryTermPhenotypeMatches);
         this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
         this.theoreticalBestAvgScore = calculateBestAverageScore(bestPhenotypeMatches, queryTerms.size());

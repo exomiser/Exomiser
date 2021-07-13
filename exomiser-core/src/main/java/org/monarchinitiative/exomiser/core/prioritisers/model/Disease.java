@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.phenotype.Model;
 
 import java.util.List;
@@ -83,7 +82,7 @@ public final class Disease implements Model {
         this.associateGeneSymbol = builder.humanGeneSymbol;
         this.diseaseType = builder.diseaseType;
         this.inheritanceMode = builder.inheritanceMode;
-        this.phenotypeIds = ImmutableList.copyOf(builder.phenotypeIds);
+        this.phenotypeIds = List.copyOf(builder.phenotypeIds);
     }
 
     public String getDiseaseId() {
@@ -168,7 +167,7 @@ public final class Disease implements Model {
         private DiseaseType diseaseType = DiseaseType.UNCONFIRMED;
         private InheritanceMode inheritanceMode = InheritanceMode.UNKNOWN;
 
-        private List<String> phenotypeIds = ImmutableList.of();
+        private List<String> phenotypeIds = List.of();
 
         private Builder() {
         }
@@ -214,7 +213,7 @@ public final class Disease implements Model {
         }
 
         public Builder phenotypeIds(List<String> phenotypeIds) {
-            this.phenotypeIds = Objects.requireNonNullElse(phenotypeIds, ImmutableList.of());
+            this.phenotypeIds = Objects.requireNonNullElse(phenotypeIds, List.of());
             return this;
         }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -120,13 +120,13 @@ public class GeneOrthologModelTest {
     
     @Test
     public void testNotEqualsPhenotypes() {
-        GeneOrthologModel other = new GeneOrthologModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, null);
+        GeneOrthologModel other = new GeneOrthologModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, List.of());
         assertThat(instance.equals(other), is(false));
     }
     
     @Test
     public void testNotEqualsOrganism() {
-        GeneOrthologModel other = new GeneOrthologModel(modelId, Organism.HUMAN, entrezGeneId, humanGeneSymbol, modelId, modelGeneSymbol, null);
+        GeneOrthologModel other = new GeneOrthologModel(modelId, Organism.HUMAN, entrezGeneId, humanGeneSymbol, modelId, modelGeneSymbol, List.of());
         assertThat(instance.equals(other), is(false));
     }
     

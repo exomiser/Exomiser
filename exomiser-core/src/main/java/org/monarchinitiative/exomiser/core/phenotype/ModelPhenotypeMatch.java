@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
  */
 
 package org.monarchinitiative.exomiser.core.phenotype;
-
-import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +42,7 @@ public final class ModelPhenotypeMatch<T extends Model> implements Comparable<Mo
     }
 
     public static <T extends Model> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
-        return new ModelPhenotypeMatch<>(score, model, ImmutableList.copyOf(bestPhenotypeMatches));
+        return new ModelPhenotypeMatch<>(score, model, List.copyOf(bestPhenotypeMatches));
     }
 
     public double getScore() {

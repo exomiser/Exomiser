@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,6 @@
  */
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +40,7 @@ public class GeneMatch {
         this.queryGeneId = queryGeneId;
         this.matchGeneId = matchGeneId;
         this.score = score;
-        this.bestMatchModels = ImmutableList.copyOf(bestMatchModels);
+        this.bestMatchModels = List.copyOf(bestMatchModels);
     }
 
     public Integer getQueryGeneId() {
@@ -97,7 +94,7 @@ public class GeneMatch {
         private Integer queryGeneId = 0;
         private Integer matchGeneId = 0;
         private double score = 0;
-        private List<GeneModelPhenotypeMatch> bestMatchModels = Lists.newArrayList();
+        private List<GeneModelPhenotypeMatch> bestMatchModels = List.of();
 
 
         public Builder queryGeneId(Integer queryGeneId) {

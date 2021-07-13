@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * Service for generating the best phenotypic matches for a given set of HPO terms against human, mouse or fish
@@ -76,7 +76,7 @@ public class PhenotypeMatchService {
         return hpoIds.stream()
                 .map(ontologyService::getPhenotypeTermForHpoId)
                 .filter(Objects::nonNull)
-                .collect(toList());
+                .collect(toUnmodifiableList());
     }
 
     private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {

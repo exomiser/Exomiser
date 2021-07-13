@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -79,11 +79,7 @@ public class DefaultDiseaseDao implements DiseaseDao {
         if (rs.next()) {
             String hpoListString = rs.getString("hp_id");
             String[] hpoArray = hpoListString.split(",");
-            ImmutableSet.Builder<String> hpoIdSetBuilder = new ImmutableSet.Builder<>();
-            for (String string : hpoArray) {
-                hpoIdSetBuilder.add(string.trim());
-            }
-            return hpoIdSetBuilder.build();
+            return ImmutableSet.copyOf(hpoArray);
         }
         return Collections.emptySet();
     }
@@ -119,9 +115,9 @@ public class DefaultDiseaseDao implements DiseaseDao {
     }
 
     private List<Disease> processDiseaseResults(ResultSet rs) throws SQLException {
-        ImmutableList.Builder<Disease> listBuilder = ImmutableList.builder();
+        List<Disease> listBuilder = new ArrayList<>();
         while (rs.next()) {
-            List<String> phenotypes = ImmutableList.copyOf(rs.getString("pheno_ids").split(","));
+            List<String> phenotypes = List.of(rs.getString("pheno_ids").split(","));
             Disease disease = Disease.builder()
                     .diseaseId(rs.getString("disease_id"))
                     .diseaseName(rs.getString("disease_name"))
@@ -133,7 +129,7 @@ public class DefaultDiseaseDao implements DiseaseDao {
                     .build();
             listBuilder.add(disease);
         }
-        return listBuilder.build();
+        return List.copyOf(listBuilder);
     }
 
     // work-around for the inheritance code being defined as a char and interpreted as a char2 which will contain whitespace
