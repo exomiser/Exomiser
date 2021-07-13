@@ -45,11 +45,13 @@ class ContributingAlleleCalculator {
     private final SampleIdentifier probandSampleIdentifier;
     private final Sex probandSex;
     private final CompHetAlleleCalculator compHetAlleleCalculator;
+    private final IncompletePenetranceAlleleCalculator incompletePenetranceAlleleCalculator;
 
     ContributingAlleleCalculator(SampleIdentifier probandSampleIdentifier, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
         this.probandSampleIdentifier = probandSampleIdentifier;
         this.probandSex = probandSex;
         this.compHetAlleleCalculator = new CompHetAlleleCalculator(inheritanceModeAnnotator);
+        this.incompletePenetranceAlleleCalculator = new IncompletePenetranceAlleleCalculator(inheritanceModeAnnotator.getPedigree());
     }
 
     /**
@@ -72,17 +74,28 @@ class ContributingAlleleCalculator {
                 .collect(toUnmodifiableList());
         //note these need to be filtered for the relevant ModeOfInheritance before being checked for the contributing variants
         if (variantsCompatibleWithMode.isEmpty()) {
-            return Collections.emptyList();
+            return variantsCompatibleWithMode;
         }
         switch (modeOfInheritance) {
             case AUTOSOMAL_RECESSIVE:
                 return findAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
             case X_RECESSIVE:
                 return findXRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+            case ANY:
+                return findIncompletePenetranceContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
             default:
                 return findNonAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
         }
 
+    }
+
+    /**
+     * @since 13.0.0
+     */
+    private List<VariantEvaluation> findIncompletePenetranceContributingVariants(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
+        logger.debug("Checking ANY mode for {}", variantEvaluations);
+        List<VariantEvaluation> compatibleVariants = incompletePenetranceAlleleCalculator.findCompatibleVariants(variantEvaluations);
+        return findNonAutosomalRecessiveContributingVariants(modeOfInheritance, compatibleVariants);
     }
 
     /**
@@ -146,6 +159,9 @@ class ContributingAlleleCalculator {
     }
 
     private List<VariantEvaluation> findNonAutosomalRecessiveContributingVariants(ModeOfInheritance modeOfInheritance, List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.isEmpty()) {
+            return Collections.emptyList();
+        }
         Optional<VariantEvaluation> bestVariant = variantEvaluations.stream()
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 

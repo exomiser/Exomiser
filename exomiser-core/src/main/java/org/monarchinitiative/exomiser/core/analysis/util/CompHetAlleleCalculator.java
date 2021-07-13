@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -58,15 +60,15 @@ class CompHetAlleleCalculator {
                 VariantEvaluation ve1 = passedVariantEvaluations.get(i);
                 VariantEvaluation ve2 = passedVariantEvaluations.get(j);
                 if (!ve1.equals(ve2) && isCompHetCompatible(ve1, ve2)) {
-                    compatibleAllelePairs.add(ImmutableList.of(ve1, ve2));
+                    compatibleAllelePairs.add(List.of(ve1, ve2));
                 }
             }
         }
-        return ImmutableList.copyOf(compatibleAllelePairs);
+        return List.copyOf(compatibleAllelePairs);
     }
 
     private boolean isCompHetCompatible(VariantEvaluation ve1, VariantEvaluation ve2) {
-        List<VariantEvaluation> pair = Arrays.asList(ve1, ve2);
+        List<VariantEvaluation> pair = List.of(ve1, ve2);
         Map<SubModeOfInheritance, List<VariantEvaluation>> compatibleSubModesMap = inheritanceAnnotator
                 .computeCompatibleInheritanceSubModes(pair);
         if (compatibleSubModesMap.containsKey(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET)) {
