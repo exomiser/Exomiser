@@ -40,7 +40,12 @@ import static org.monarchinitiative.exomiser.core.model.Pedigree.justProband;
 
 class IncompletePenetranceAlleleCalculatorTest {
 
-    Contig chr1 = GenomicAssemblies.GRCh37p13().contigById(1);
+    private final Contig chr1 = GenomicAssemblies.GRCh37p13().contigById(1);
+    private final Pedigree twoAffected = Pedigree.of(
+            Individual.builder().id("proband").motherId("affectedMother").fatherId("unaffectedFather").sex(MALE).status(AFFECTED).build(),
+            Individual.builder().id("affectedMother").sex(FEMALE).status(AFFECTED).build(),
+            Individual.builder().id("unaffectedFather").sex(MALE).status(UNAFFECTED).build()
+    );
 
     @Test
     void findCompatibleVariantsSingleton() {
@@ -57,11 +62,6 @@ class IncompletePenetranceAlleleCalculatorTest {
 
     @Test
     void findCompatibleVariantsTrio() {
-        Pedigree singleton = Pedigree.of(
-                Individual.builder().id("proband").motherId("affectedMother").fatherId("unaffectedFather").sex(MALE).status(AFFECTED).build(),
-                Individual.builder().id("affectedMother").sex(FEMALE).status(AFFECTED).build(),
-                Individual.builder().id("unaffectedFather").sex(MALE).status(UNAFFECTED).build());
-
         Map<String, SampleGenotype> sampleGenotypes = Map.of(
                 "proband", SampleGenotype.het(),
                 "affectedMother", SampleGenotype.homAlt(),
@@ -72,18 +72,12 @@ class IncompletePenetranceAlleleCalculatorTest {
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
-        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(singleton);
+        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(twoAffected);
         assertThat(instance.findCompatibleVariants(List.of(variant)), equalTo(List.of(variant)));
     }
 
     @Test
     void canBePresentInUnaffected() {
-        Pedigree singleton = Pedigree.of(
-                Individual.builder().id("proband").motherId("affectedMother").fatherId("unaffectedFather").sex(MALE).status(AFFECTED).build(),
-                Individual.builder().id("affectedMother").sex(FEMALE).status(AFFECTED).build(),
-                Individual.builder().id("unaffectedFather").sex(MALE).status(UNAFFECTED).build()
-        );
-
         Map<String, SampleGenotype> sampleGenotypes = Map.of(
                 "proband", SampleGenotype.het(),
                 "affectedMother", SampleGenotype.homAlt(),
@@ -94,18 +88,12 @@ class IncompletePenetranceAlleleCalculatorTest {
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
-        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(singleton);
+        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(twoAffected);
         assertThat(instance.findCompatibleVariants(List.of(variant)), equalTo(List.of(variant)));
     }
 
     @Test
     void mustBePresentInAllAffected() {
-        Pedigree singleton = Pedigree.of(
-                Individual.builder().id("proband").motherId("affectedMother").fatherId("unaffectedFather").sex(MALE).status(AFFECTED).build(),
-                Individual.builder().id("affectedMother").sex(FEMALE).status(AFFECTED).build(),
-                Individual.builder().id("unaffectedFather").sex(MALE).status(UNAFFECTED).build()
-        );
-
         Map<String, SampleGenotype> sampleGenotypes = Map.of(
                 "proband", SampleGenotype.het(),
                 "affectedMother", SampleGenotype.homRef(),
@@ -116,7 +104,7 @@ class IncompletePenetranceAlleleCalculatorTest {
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
-        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(singleton);
+        IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(twoAffected);
         assertThat(instance.findCompatibleVariants(List.of(variant)), equalTo(List.of()));
     }
 }
