@@ -153,7 +153,7 @@ public class SampleGenotype {
      * @since 13.0.0
      */
     public static SampleGenotype parseGenotype(String genotype) {
-        if (genotype == null || genotype.isEmpty() || genotype.equals("NA")) {
+        if (genotype == null || genotype.isEmpty() || genotype.equals(".") || genotype.equals("NA")) {
             return SampleGenotype.empty();
         }
         if (GT.matcher(genotype).matches()) {
@@ -307,7 +307,7 @@ public class SampleGenotype {
     @Override
     public String toString() {
         if (isEmpty()){
-            return "NA";
+            return ".";
         }
         StringJoiner stringJoiner;
         if (phased) {

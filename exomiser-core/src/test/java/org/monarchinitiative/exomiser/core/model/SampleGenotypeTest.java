@@ -51,8 +51,9 @@ public class SampleGenotypeTest {
 
     @Test
     public void testToString() {
-        assertThat(SampleGenotype.empty().toString(), equalTo("NA"));
+        assertThat(SampleGenotype.empty().toString(), equalTo("."));
 
+        // unphased
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL).toString(), equalTo("./."));
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.REF).toString(), equalTo("./0"));
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.ALT).toString(), equalTo("./1"));
@@ -69,7 +70,7 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.ALT).toString(), equalTo("-/1"));
         assertThat(SampleGenotype.of(AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT).toString(), equalTo("-/-"));
 
-
+        // phased
         assertThat(SampleGenotype.phased(AlleleCall.NO_CALL, AlleleCall.NO_CALL).toString(), equalTo(".|."));
         assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.NO_CALL).toString(), equalTo("1|."));
         assertThat(SampleGenotype.phased(AlleleCall.NO_CALL, AlleleCall.REF).toString(), equalTo(".|0"));
@@ -85,7 +86,6 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.OTHER_ALT).toString(), equalTo("1|-"));
         assertThat(SampleGenotype.phased(AlleleCall.OTHER_ALT, AlleleCall.ALT).toString(), equalTo("-|1"));
         assertThat(SampleGenotype.phased(AlleleCall.OTHER_ALT, AlleleCall.OTHER_ALT).toString(), equalTo("-|-"));
-
     }
 
     @Test
@@ -197,13 +197,13 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.parseGenotype(null), equalTo(SampleGenotype.empty()));
         assertThat(SampleGenotype.parseGenotype(""), equalTo(SampleGenotype.empty()));
         assertThat(SampleGenotype.parseGenotype("NA"), equalTo(SampleGenotype.empty()));
+        assertThat(SampleGenotype.parseGenotype("."), equalTo(SampleGenotype.empty()));
 
         // no call
         assertThat(SampleGenotype.parseGenotype("null"), equalTo(SampleGenotype.empty()));
 
         // monoploid
         assertThat(SampleGenotype.parseGenotype("-"), equalTo(SampleGenotype.of(AlleleCall.OTHER_ALT)));
-        assertThat(SampleGenotype.parseGenotype("."), equalTo(SampleGenotype.of(AlleleCall.NO_CALL)));
         assertThat(SampleGenotype.parseGenotype("0"), equalTo(SampleGenotype.of(AlleleCall.REF)));
         assertThat(SampleGenotype.parseGenotype("1"), equalTo(SampleGenotype.of(AlleleCall.ALT)));
 
