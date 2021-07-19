@@ -24,7 +24,6 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.SvMetaType;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
@@ -43,6 +42,13 @@ import java.util.Objects;
 public class VariantContextConverter {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantContextConverter.class);
+
+    private static final String A = "A";
+    private static final String T = "T";
+    private static final String G = "G";
+    private static final String C = "C";
+    private static final String NO_CALL = ".";
+    private static final String N = "N";
 
     private final VcfConverter vcfConverter;
 
@@ -65,15 +71,11 @@ public class VariantContextConverter {
         }
         String id = variantContext.getID();
         int start = variantContext.getStart();
-        String ref = variantContext.getReference().getBaseString();
+        String ref = getBaseString(variantContext.getReference().getBases());
         // Symbolic variants are 'symbolic' in that they have no reported bases and/or contain non-base characters '<>[].'
         String alt = parseAlt(variantContext, altAllele);
 
         VariantType variantType = VariantType.parseType(ref, alt);
-
-        int altAlleleId = variantContext.getAlleleIndex(altAllele) - 1;
-        // TODO: re-enable once moved from VariantFactoryImpl
-//        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         if (VariantType.isBreakend(alt) || variantType == VariantType.BND || variantType == VariantType.TRA) {
 //            ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
@@ -96,29 +98,17 @@ public class VariantContextConverter {
             try {
                 // due to the general imprecision and lack of definition about symbolic variants skip any which svart
                 // has issues with as svart can be annoyingly precise and inflexible for these types.
-                return vcfConverter.convertSymbolic(VariantEvaluation.builder(), contig, id, startPos, endPos, ref, alt, changeLength)
-                        .variantContext(variantContext)
-                        .altAlleleId(altAlleleId)
-                        .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())
-//                        .sampleGenotypes(sampleGenotypes)
-                        .quality(variantContext.getPhredScaledQual())
-                        .build();
+                return vcfConverter.convertSymbolic(contig, id, startPos, endPos, ref, alt, changeLength);
             } catch (Exception e) {
                 logger.warn("Skipping variant {}-{}-{}-{}-{} due to {}: {}", contig.id(), start, end, ref, alt, e.getClass().getName(), e.getMessage());
             }
             return null;
         }
-        return vcfConverter.convert(VariantEvaluation.builder(), contig, id, start, ref, alt)
-                .variantContext(variantContext)
-                .altAlleleId(altAlleleId)
-                .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())
-//                .sampleGenotypes(sampleGenotypes)
-                .quality(variantContext.getPhredScaledQual())
-                .build();
+        return vcfConverter.convert(contig, id, start, ref, alt);
     }
 
     private String parseAlt(VariantContext variantContext, Allele altAllele) {
-        String alt = altAllele.isSymbolic() ? altAllele.getDisplayString() : altAllele.getBaseString();
+        String alt = altAllele.isSymbolic() ? altAllele.getDisplayString() : getBaseString(altAllele.getBases());
         if (alt.startsWith("<CN")) {
             if (variantContext.getGenotypes().size() == 1) {
                 logger.debug("Single-sample CNV - setting type based on sample CN");
@@ -128,6 +118,30 @@ public class VariantContextConverter {
             return "<CNV>";
         }
         return alt;
+    }
+
+    private String getBaseString(byte[] bases) {
+        // seems petty, but this can save ~200MB RAM and tens of thousands of object allocations
+        // on the 4.5 million variant POMP sample.
+        if (bases.length == 1) {
+            switch (bases[0]) {
+                case 'A':
+                    return A;
+                case 'T':
+                    return T;
+                case 'G':
+                    return G;
+                case 'C':
+                    return C;
+                case '.':
+                    return NO_CALL;
+                case 'N':
+                    return N;
+                default:
+                    return N;
+            }
+        }
+        return new String(bases);
     }
 
     private int parseChangeLength(VariantContext variantContext, int start, VariantType variantType, int end) {
