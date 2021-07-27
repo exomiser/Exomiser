@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.genome.dao;
 import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -40,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PathogenicityDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
 
     private VariantEvaluation.Builder variantBuilder() {
-        return VariantEvaluation.builder(1, 12345, "A", "T");
+        return TestFactory.variantBuilder(1, 12345, "A", "T");
     }
 
     @Test

@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
@@ -76,13 +77,13 @@ public class FilterReportFactoryTest {
     }
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {
-        return VariantEvaluation.builder(6, 1000000, "C", "T")
+        return TestFactory.variantBuilder(6, 1000000, "C", "T")
                 .filterResults(new FailFilterResult(filterType))
                 .build();
     }
 
     private VariantEvaluation makePassedVariant(FilterType filterType) {
-        return VariantEvaluation.builder(6, 1000000, "C", "T")
+        return TestFactory.variantBuilder(6, 1000000, "C", "T")
                 .filterResults(new PassFilterResult(filterType))
                 .build();
     }

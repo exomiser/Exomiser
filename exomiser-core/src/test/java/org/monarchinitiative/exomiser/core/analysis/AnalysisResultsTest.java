@@ -109,7 +109,7 @@ public class AnalysisResultsTest {
     public void testGetGeneScores() {
         //
         Gene fgfr2Gene = TestFactory.newGeneFGFR2();
-        VariantEvaluation top = VariantEvaluation.builder(10, 23456, "G", "T").build();
+        VariantEvaluation top = TestFactory.variantBuilder(10, 23456, "G", "T").build();
         GeneScore first = GeneScore.builder()
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
@@ -117,7 +117,7 @@ public class AnalysisResultsTest {
                 .contributingVariants(ImmutableList.of(top))
                 .build();
 
-        VariantEvaluation bottom = VariantEvaluation.builder(10, 23456, "A", "T").build();
+        VariantEvaluation bottom = TestFactory.variantBuilder(10, 23456, "A", "T").build();
         GeneScore third = GeneScore.builder()
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
@@ -129,7 +129,7 @@ public class AnalysisResultsTest {
         fgfr2Gene.addGeneScore(third);
 
         Gene rbm8aGene = TestFactory.newGeneRBM8A();
-        VariantEvaluation middle = VariantEvaluation.builder(7, 456889, "C", "A").build();
+        VariantEvaluation middle = TestFactory.variantBuilder(7, 456889, "C", "A").build();
         GeneScore second = GeneScore.builder()
                 .geneIdentifier(rbm8aGene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
@@ -154,7 +154,7 @@ public class AnalysisResultsTest {
     @Test
     public void testGetGeneScoresForMode() {
         Gene fgfr2Gene = TestFactory.newGeneFGFR2();
-        VariantEvaluation top = VariantEvaluation.builder(10, 23456, "G", "T").build();
+        VariantEvaluation top = TestFactory.variantBuilder(10, 23456, "G", "T").build();
         GeneScore firstAD = GeneScore.builder()
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
@@ -162,7 +162,7 @@ public class AnalysisResultsTest {
                 .contributingVariants(ImmutableList.of(top))
                 .build();
 
-        VariantEvaluation bottom = VariantEvaluation.builder(10, 23456, "A", "T").build();
+        VariantEvaluation bottom = TestFactory.variantBuilder(10, 23456, "A", "T").build();
         GeneScore thirdAR = GeneScore.builder()
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
@@ -174,7 +174,7 @@ public class AnalysisResultsTest {
         fgfr2Gene.addGeneScore(thirdAR);
 
         Gene rbm8aGene = TestFactory.newGeneRBM8A();
-        VariantEvaluation middle = VariantEvaluation.builder(7, 456889, "C", "A").build();
+        VariantEvaluation middle = TestFactory.variantBuilder(7, 456889, "C", "A").build();
         GeneScore secondAD = GeneScore.builder()
                 .geneIdentifier(rbm8aGene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
@@ -198,11 +198,11 @@ public class AnalysisResultsTest {
 
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
-        VariantEvaluation annotatedVariantEvaluation = VariantEvaluation.builder(10, 123353297, "G", "C")
+        VariantEvaluation annotatedVariantEvaluation = TestFactory.variantBuilder(10, 123353297, "G", "C")
                 .annotations(Collections.singletonList(TranscriptAnnotation.empty()))
                 .build();
 
-        VariantEvaluation unAnnotatedVariantEvaluation = VariantEvaluation.builder(7, 155604800, "C", "CTT").build();
+        VariantEvaluation unAnnotatedVariantEvaluation = TestFactory.variantBuilder(7, 155604800, "C", "CTT").build();
 
         List<VariantEvaluation> allVariantEvaluations = ImmutableList.of(annotatedVariantEvaluation, unAnnotatedVariantEvaluation);
 

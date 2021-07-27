@@ -34,6 +34,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
@@ -73,10 +74,10 @@ public class SparseVariantFilterRunnerTest {
     @BeforeEach
     public void setUp() {
 
-        passesAllFilters = VariantEvaluation.builder(1, 1, "A", "T").build();
-        failsAllFilters = VariantEvaluation.builder(2, 2, "A", "T").build();
-        passesQualityFrequencyFilter = VariantEvaluation.builder(3, 3, "A", "T").build();
-        passesTargetQualityFilter = VariantEvaluation.builder(4, 4, "A", "T").build();
+        passesAllFilters = TestFactory.variantBuilder(1, 1, "A", "T").build();
+        failsAllFilters = TestFactory.variantBuilder(2, 2, "A", "T").build();
+        passesQualityFrequencyFilter = TestFactory.variantBuilder(3, 3, "A", "T").build();
+        passesTargetQualityFilter = TestFactory.variantBuilder(4, 4, "A", "T").build();
 
         makeVariantEvaluations();
 

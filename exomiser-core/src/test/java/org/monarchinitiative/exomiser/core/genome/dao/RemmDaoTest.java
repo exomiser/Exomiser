@@ -34,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
@@ -63,11 +64,11 @@ public class RemmDaoTest {
         if (ref.equals("-") || alt.equals("-")) {
             //this is used to get round the fact that in real life the variant evaluation 
             //is built from a variantContext and some variantAnnotations
-            return VariantEvaluation.builder(chr, pos, ref, alt)
+            return TestFactory.variantBuilder(chr, pos, ref, alt)
                     .variantContext(Mockito.mock(VariantContext.class))
                     .build();
         }
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .variantEffect(VariantEffect.REGULATORY_REGION_VARIANT)
                 .build();
     }
@@ -75,7 +76,7 @@ public class RemmDaoTest {
     @Test
     public void testGetPathogenicityDataMissenseVariant() {
         //missense variants are by definition protein-coding and therefore cannot be non-coding so we expect nothing 
-        VariantEvaluation missenseVariant = VariantEvaluation.builder(1, 1, "A", "T")
+        VariantEvaluation missenseVariant = TestFactory.variantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
         assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.empty()));

@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -47,8 +47,7 @@ public class AlleleProtoAdaptorTest {
 
     @Test
     public void generateAlleleKey() {
-        Variant variant = VariantEvaluation.builder(1, 12345, "A", "T")
-                .genomeAssembly(GenomeAssembly.HG19)
+        Variant variant = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .build();
 
         AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()

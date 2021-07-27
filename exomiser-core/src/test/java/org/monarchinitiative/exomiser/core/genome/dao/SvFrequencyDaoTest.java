@@ -29,8 +29,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -62,7 +62,7 @@ class SvFrequencyDaoTest {
 
     @Test
     void getIns() {
-        Variant variant = VariantEvaluation.builder(18, 24538029, 67519385, "A", "<INS>", 319).build();
+        Variant variant = TestFactory.variantBuilder(18, 24538029, 67519385, "A", "<INS>", 319).build();
 
         FrequencyData result = instance.getFrequencyData(variant);
 
@@ -74,8 +74,13 @@ class SvFrequencyDaoTest {
             "18,  24538029,  67519385, <INS>,     319",
             "7,    4972268,  62707793, <DEL>,   -1003",
             "7,      33300,     33700, <DEL>,    -400",
-            "1,  119273928, 119273929, <INV>,       0",
+            "18,  29396397, 29397996, <INV>,     1700",
             "1,    521332,     521332, <INS:ME>,   1",
+            "1,    1546903,     1546903, <INS>,      200",
+            "1,    66576,     66576, <INS>,      2",
+            "1,    66575,     66576, <INS>,      2",
+            "1,    66576,     66577, <INS>,      2",
+            "1,    66575,     66577, <INS>,      2",
             "1,    530886,     530887, <INS>,      50",
             "1,    530886,     530887, <INS>,      1",
             "10,    23037995,     23037995, <INS:ME>,      300",
@@ -84,7 +89,7 @@ class SvFrequencyDaoTest {
             "7,    17094714,     17094714, <INS:ME:LINE1>,  275",
     })
     void getFrequencyData(int chr, int start, int end, String alt, int changeLength) {
-        Variant variant = VariantEvaluation.builder(chr, start, end, "", alt, changeLength).build();
+        Variant variant = TestFactory.variantBuilder(chr, start, end, "", alt, changeLength).build();
         FrequencyData result = instance.getFrequencyData(variant);
         System.out.println(result);
     }
@@ -92,14 +97,14 @@ class SvFrequencyDaoTest {
 
     @Test
     void commonInversion() {
-        Variant variant = VariantEvaluation.builder(1, 240116000, 240116800, "", "<INV>", 0).build();
+        Variant variant = TestFactory.variantBuilder(1, 240116000, 240116800, "", "<INV>", 0).build();
         FrequencyData result = instance.getFrequencyData(variant);
         assertThat(result, equalTo(FrequencyData.of("esv3822662", Frequency.of(FrequencySource.DBVAR, 17.591854f))));
     }
 
     @Test
     void getInsMeExactMatch() {
-        Variant variant = VariantEvaluation.builder(1, 521332, 521332, "", "<INS:ME>", 200).build();
+        Variant variant = TestFactory.variantBuilder(1, 521332, 521332, "", "<INS:ME>", 200).build();
         FrequencyData result = instance.getFrequencyData(variant);
         assertThat(result, equalTo(FrequencyData.of(Frequency.of(FrequencySource.GONL, 54.941483f))));
     }
@@ -109,14 +114,21 @@ class SvFrequencyDaoTest {
         // TODO - Check the SV database build - thi dbVar the coordinates are reported as (b37) 23037995 - 23037995
         //  however the database has stored these as 23037995 - 23037996
         // esv3304209 is an INS_ME
-        Variant variant = VariantEvaluation.builder(10, 23037995, 23037996, "", "<INS:ME>", 300).build();
+        Variant variant = TestFactory.variantBuilder(10, 23037995, 23037996, "", "<INS:ME>", 300).build();
         FrequencyData result = instance.getFrequencyData(variant);
         assertThat(result, equalTo(FrequencyData.of("esv3304209", Frequency.of(FrequencySource.DGV, 5.4054055f))));
     }
 
     @Test
     void getDelManyPotentialMatches() {
-        Variant variant = VariantEvaluation.builder(15, 62706090, 62707793, "", "<DEL>", 62706090 - 62707793).build();
+        Variant variant = TestFactory.variantBuilder(15, 62706090, 62707793, "", "<DEL>", 62706090 - 62707793).build();
+        FrequencyData result = instance.getFrequencyData(variant);
+        System.out.println(result);
+    }
+
+    @Test
+    void getCnvManyPotentialMatches() {
+        Variant variant = TestFactory.variantBuilder(15, 62706090, 62707793, "", "<CNV:GAIN>", 0).build();
         FrequencyData result = instance.getFrequencyData(variant);
         System.out.println(result);
     }
@@ -206,9 +218,8 @@ class SvFrequencyDaoTest {
 
     @Test
     void getDgvCanvasGain() {
-        Variant variant = VariantEvaluation.builder(2, 37958137, 38002170, "", "<CNV:GAIN>", 20).build();
+        Variant variant = TestFactory.variantBuilder(2, 37958137, 38002170, "", "<CNV:GAIN>", 20).build();
 
-        System.out.println(variant.length());
         FrequencyData result = instance.getFrequencyData(variant);
 
         System.out.println(result);

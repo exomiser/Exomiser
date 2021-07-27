@@ -139,7 +139,7 @@ public class JannovarAnnotationServiceTest {
     @Test
     void testBnd() {
         VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
-        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("1\t243097603\tMantaBND:12652:0:1:1:1:0:0\tA\t]Y:13954151]A\t428.00\tMaxDepth\tSVTYPE=BND;MATEID=MantaBND:12652:0:1:1:1:0:1;BND_PAIR_COUNT=10;PAIR_COUNT=9;CIPOS=0,12;HOMLEN=12;HOMSEQ=ATAATAATAATA;BND_DEPTH=31;MATE_BND_DEPTH=47\tGT:GQ:PR:SR\t0/1:428:26,4:13,13");
+        VariantContext variantContext = TestVcfReader.forSamples("sample").readVariantContext("1\t243097603\tMantaBND:12652:0:1:1:1:0:0\tA\t]Y:13954151]A\t428.00\tMaxDepth\tSVTYPE=BND;MATEID=MantaBND:12652:0:1:1:1:0:1;BND_PAIR_COUNT=10;PAIR_COUNT=9;CIPOS=0,12;HOMLEN=12;HOMSEQ=ATAATAATAATA;BND_DEPTH=31;MATE_BND_DEPTH=47\tGT:GQ:PR:SR\t0/1:428:26,4:13,13");
         Variant variant = variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
         assertThat(variant, is(nullValue()));
 //        System.out.println(variant);

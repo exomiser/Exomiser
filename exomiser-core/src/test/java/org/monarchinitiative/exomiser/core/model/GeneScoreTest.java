@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -82,8 +83,8 @@ public class GeneScoreTest {
     @Test
     public void getContributingVariants() {
         List<VariantEvaluation> contributingVariants = Arrays.asList(
-                VariantEvaluation.builder(1, 12335, "T", "C").build(),
-                VariantEvaluation.builder(1, 23446, "A", "T").build()
+                TestFactory.variantBuilder(1, 12335, "T", "C").build(),
+                TestFactory.variantBuilder(1, 23446, "A", "T").build()
         );
 
         GeneScore instance = GeneScore.builder()

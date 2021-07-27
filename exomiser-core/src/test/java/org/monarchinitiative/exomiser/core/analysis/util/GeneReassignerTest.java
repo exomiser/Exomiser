@@ -31,10 +31,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.genome.GeneTranscriptModelBuilder;
-import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -42,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -118,7 +114,7 @@ public class GeneReassignerTest {
     }
 
     private VariantEvaluation.Builder variantBuilder(int chr, int pos, String ref, String alt, VariantEffect variantEffect, Gene gene) {
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .variantContext(buildVariantContext(chr, pos, ref, alt))
                 .variantEffect(variantEffect)
                 .geneId(gene.getGeneId())
@@ -427,12 +423,13 @@ public class GeneReassignerTest {
 
     @Test
     public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotationsMissenseAnnotationsAreNotReassigned() {
-        Stream<VariantContext> variantContext = TestVcfParser
-                .forSamples("Adam", "Eve")
-                .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
+        VcfReader vcfReader = TestVcfReader.builder()
+                .samples("Adam", "Eve")
+                .vcfLines("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2")
+                .build();
 
-        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContext).collect(toList());
+        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory(vcfReader);
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations().collect(toList());
 
         Gene GNRHR2 = TestFactory.newGeneGNRHR2();
         GNRHR2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, GNRHR2.getEntrezGeneID(), GNRHR2.getGeneSymbol(), 1.0));
@@ -475,7 +472,7 @@ public class GeneReassignerTest {
         TopologicalDomain topologicalDomain = makeTad(1, 1, 20000, GNRHR2, topPhenotypeMatchGene);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, topologicalDomain);
 
-        VariantEvaluation intergenicAndUpstreamVar = VariantEvaluation.builder(1, 1000, "A", "T")
+        VariantEvaluation intergenicAndUpstreamVar = TestFactory.variantBuilder(1, 1000, "A", "T")
                 .variantEffect(VariantEffect.INTERGENIC_VARIANT)
                 .variantContext(buildVariantContext(1, 1000, "A", "T"))
                 .geneSymbol(GNRHR2.getGeneSymbol())
@@ -603,7 +600,7 @@ public class GeneReassignerTest {
                 .addExon(156, 196)
                 .build();
 
-        VariantFactory variantFactory = TestFactory.buildVariantFactory(gene1TranscriptModel);
+        VariantAnnotator variantAnnotator = TestFactory.buildJannovarVariantAnnotator(gene1TranscriptModel);
 
         String gene1VarUpstream = "1 50 . A T 0 . GENE=GENE1 GT 0/1";
         String gene1VarUtr5 = "1 117 . A T 0 . GENE=GENE1 GT 0/1";
@@ -613,18 +610,21 @@ public class GeneReassignerTest {
         String gene1VarMissense1Exon2 = "1 160 . C T 0 . GENE=GENE1 GT 0/1";
         String gene1VarUtr3 = "1 181 . A TGTT 0 . GENE=GENE1 GT 0/1";
 
-        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
-                .parseVariantContext(gene1VarUpstream,
+        VcfReader vcfReader = TestVcfReader.builder()
+                .samples("Sample")
+                .vcfLines(gene1VarUpstream,
                         gene1VarUtr5,
                         gene1VarMissense1Exon1,
                         gene1Var1SpliceRegion1,
                         gene1Var1Intron1,
                         gene1VarMissense1Exon2,
-                        gene1VarUtr3);
+                        gene1VarUtr3)
+                .build();
 
-//        variantFactory.createVariantEvaluations(variantContexts)
-//                .peek(variantContext -> logger.info("{}", variantContext))
-//                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getTranscriptAnnotations()));
+        VariantFactory variantFactory = new VariantFactoryImpl(variantAnnotator, vcfReader);
+        variantFactory.createVariantEvaluations()
+                .peek(variantContext -> logger.info("{}", variantContext))
+                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getTranscriptAnnotations()));
 
     }
 //    gene lies within two overlapping TADs

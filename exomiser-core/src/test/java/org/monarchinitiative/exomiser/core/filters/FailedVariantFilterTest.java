@@ -25,6 +25,7 @@ import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -49,7 +50,7 @@ public class FailedVariantFilterTest {
         String vcfLine = "1\t123456789\t.\tG\tA\t0\t" + filterField + "\t.";
 
         VariantContext variantContext = vcfCodec.decode(vcfLine);
-        return VariantEvaluation.builder(1, 123456789, "G","A")
+        return TestFactory.variantBuilder(1, 123456789, "G", "A")
                 .variantContext(variantContext)
                 .build();
     }

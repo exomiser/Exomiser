@@ -25,8 +25,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.svart.Contig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ class SvPathogenicityDaoTest {
             "8, 7268819, 7752586, <CNV:GAIN>,  483767",
     })
     void getPathogenicityData(int chr, int start, int end, String alt, int changeLength) {
-        Variant variant = VariantEvaluation.builder(chr, start, end, "", alt, changeLength).build();
+        Variant variant = TestFactory.variantBuilder(chr, start, end, "", alt, changeLength).build();
         PathogenicityData result = instance.getPathogenicityData(variant);
         System.out.println(result);
     }

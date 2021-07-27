@@ -22,18 +22,17 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.sample.SampleMismatchException;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnnotator;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
+import org.monarchinitiative.exomiser.core.genome.TestVcfReader;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
+import org.monarchinitiative.exomiser.core.genome.VcfReader;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
@@ -45,7 +44,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.*;
@@ -99,8 +97,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         for (Gene gene : analysisResults.getGenes()) {
             assertThat(gene.passedFilters(), is(true));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
-                SampleGenotype probandGenotype = sampleGenotypes.get(analysisResults.getProbandSampleName());
+                SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(analysisResults.getProbandSampleName());
                 assertThat(probandGenotype.getCalls().contains(AlleleCall.ALT), is(true));
             }
         }
@@ -200,7 +197,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .build();
         Analysis analysis = Analysis.builder()
                 .build();
-        assertThrows(SampleMismatchException.class, () -> instance.run(sample, analysis));
+        assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
     }
 
     @Test
@@ -221,7 +218,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .build();
         Analysis analysis = Analysis.builder()
                 .build();
-        assertThrows(SampleMismatchException.class, () -> instance.run(sample, analysis));
+        assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
     }
 
     @Test
@@ -485,13 +482,15 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     void testMergedCanvasCnvCalls() {
-        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Proband", "Mother")
-                .parseVariantContext(
+        VcfReader vcfReader = TestVcfReader.builder()
+                .samples("Proband", "Mother")
+                .vcfLines(
                         "1 145508656 Canvas:GAIN N <CNV> 100 PASS END=145508956 GT:CN .:3 .:.",
                         "1 145508756 Canvas:GAIN N <CNV> 100 PASS END=145509056 GT:CN .:. .:4"
-                );
-        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContexts)
+                )
+                .build();
+        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory(vcfReader);
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations()
                 .collect(toList());
 
         Gene rbm8a = new Gene("ABC", 123);

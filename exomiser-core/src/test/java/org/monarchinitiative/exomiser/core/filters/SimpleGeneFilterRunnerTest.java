@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -82,8 +83,8 @@ public class SimpleGeneFilterRunnerTest {
         //Add some variants. For the purposes of this test these are required to
         //have the same inheritance mode as the gene to satisfy the unique bahaviour of the Inheritance filter. 
         //TODO: change this - mock filter required? We're not trying to test the functionality of the InheritanceFilter here.
-        gene.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
-        gene.addVariant(VariantEvaluation.builder(1, 2, "G", "T").build());
+        gene.addVariant(TestFactory.variantBuilder(1, 1, "A", "T").build());
+        gene.addVariant(TestFactory.variantBuilder(1, 2, "G", "T").build());
         for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
             variantEvaluation.setCompatibleInheritanceModes(inheritanceModes);
         }

@@ -57,11 +57,6 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         this.annotations = List.copyOf(annotations);
     }
 
-    @Override
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
     public String getGeneSymbol() {
         return geneSymbol;
     }

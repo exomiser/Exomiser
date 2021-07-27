@@ -20,9 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -36,6 +34,7 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -48,6 +47,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -79,7 +79,7 @@ public class JsonResultsWriterTest {
                 .phenotypeScore(1.0f)
                 .combinedScore(1.0f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .contributingVariants(ImmutableList.of(contributingDominantAndRecessiveVariant)).build()
+                .contributingVariants(List.of(contributingDominantAndRecessiveVariant)).build()
         );
 
         VariantEvaluation contributingRecessiveCompHetVariant = makeContributingCompHetRecessiveVariant();
@@ -92,7 +92,7 @@ public class JsonResultsWriterTest {
                 .phenotypeScore(1.0f)
                 .combinedScore(0.945f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
-                .contributingVariants(ImmutableList.of(contributingDominantAndRecessiveVariant, contributingRecessiveCompHetVariant)).build()
+                .contributingVariants(List.of(contributingDominantAndRecessiveVariant, contributingRecessiveCompHetVariant)).build()
         );
         fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
@@ -113,14 +113,14 @@ public class JsonResultsWriterTest {
     }
 
     private VariantEvaluation makeContributingCompHetRecessiveVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         return variant;
     }
 
     private VariantEvaluation makeContributingDominantAndRecessiveVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setWhiteListed(true);
         ClinVarData clinVarData = ClinVarData.builder()
@@ -132,14 +132,14 @@ public class JsonResultsWriterTest {
     }
 
     private VariantEvaluation makePassVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256204, "A", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256204, "A", "G", SampleGenotype.het(), 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.6f)));
         return variant;
     }
 
     private VariantEvaluation makeFailVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 1.0);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(7, 155604800, "C", "CTT", SampleGenotype.het(), 30, 1.0);
         variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
         return variant;
     }

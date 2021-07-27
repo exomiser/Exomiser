@@ -44,8 +44,8 @@ class VariantContextConverterTest {
     }
 
     private VariantContext parseVariantContext(String vcfLine) {
-        return TestVcfParser.forSamples("Sample1")
-                .toVariantContext(vcfLine);
+        return TestVcfReader.forSamples("Sample1")
+                .readVariantContext(vcfLine);
     }
 
     @Test

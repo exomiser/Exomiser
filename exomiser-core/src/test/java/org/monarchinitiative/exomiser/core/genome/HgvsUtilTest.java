@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
@@ -37,13 +36,13 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvSubstitution() {
-        Variant variant = VariantEvaluation.builder(1, 12345, "A", "T").build();
+        Variant variant = TestFactory.variantBuilder(1, 12345, "A", "T").build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.12345A>T"));
     }
 
     @Test
     void toHgvsSnvDelSingle() {
-        Variant variant = VariantEvaluation.builder(1, 18, "AT", "A").build();
+        Variant variant = TestFactory.variantBuilder(1, 18, "AT", "A").build();
         // n.b. VCF used 1-based whereas HGVS is 0-based
         // a deletion of the T at position g.19 in the sequence AGAA_T_CACA to AGAA___CACA
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19delT"));
@@ -51,7 +50,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDelSingleReal() {
-        Variant variant = VariantEvaluation.builder(19, 23844937, "CA", "C").build();
+        Variant variant = TestFactory.variantBuilder(19, 23844937, "CA", "C").build();
         // https://www.ncbi.nlm.nih.gov/snp/rs1359868666
         // https://gnomad.broadinstitute.org/variant/19-23844937-CA-C
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000019.9:g.23844938delA"));
@@ -59,7 +58,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDelMultiple() {
-        Variant variant = VariantEvaluation.builder(1, 17, "ATCA", "A").build();
+        Variant variant = TestFactory.variantBuilder(1, 17, "ATCA", "A").build();
         // n.b. VCF used 1-based whereas HGVS is 0-based
         // a deletion of nucleotides g.19 to g.21 in the sequence AGAA_TCA_CA to AGAA___CA
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19_21delTCA"));
@@ -67,7 +66,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDelMultipleReal() {
-        Variant variant = VariantEvaluation.builder(14, 23371269, "GCA", "G").build();
+        Variant variant = TestFactory.variantBuilder(14, 23371269, "GCA", "G").build();
         // https://www.ncbi.nlm.nih.gov/snp/rs762848810
         // https://gnomad.broadinstitute.org/variant/14-23371269-GCA-G
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000014.8:g.23371270_23371271delCA"));
@@ -75,14 +74,14 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSvDel() {
-        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<DEL>", -80).build();
+        Variant variant = TestFactory.variantBuilder(10, 20, 100, "T", "<DEL>", -80).build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100del"));
     }
 
     @Test
     void toHgvsSvInversion() {
-        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<INV>", 0).build();
-//        Variant variant = VariantEvaluation.builder(10, 20, "T", "<INV>")
+        Variant variant = TestFactory.variantBuilder(10, 20, 100, "T", "<INV>", 0).build();
+//        Variant variant = TestFactory.variantBuilder(10, 20, "T", "<INV>")
 //                .end(100)
 //                .variantType(VariantType.INV)
 //                .build();
@@ -91,21 +90,21 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvInsSingle() {
-        Variant variant = VariantEvaluation.builder(10, 32867861, "A", "AT").build();
+        Variant variant = TestFactory.variantBuilder(10, 32867861, "A", "AT").build();
         // the insertion of an T nucleotide between nucleotides g.32867861 and g.32867862
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.32867861_32867862insT"));
     }
 
     @Test
     void toHgvsSnvInsMultiple() {
-        Variant variant = VariantEvaluation.builder(10, 32862923, "A", "ACCT").build();
+        Variant variant = TestFactory.variantBuilder(10, 32862923, "A", "ACCT").build();
         // the insertion of nucleotides CCT between nucleotides g.32862923 and g.32862924
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.32862923_32862924insCCT"));
     }
 
     @Test
     void toHgvsSnvInsMultipleReal() {
-        Variant variant = VariantEvaluation.builder(12, 53207583, "C", "CCCGG").build();
+        Variant variant = TestFactory.variantBuilder(12, 53207583, "C", "CCCGG").build();
         // n.b this isn't strictly correct due to the way these are generated from the VCF coordinates and the fact
         // that VCF and HGVS shift in opposite directions.
         // Strictly this should be NC_000012.11:g.53207584_53207585insCGGC
@@ -114,7 +113,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvInsMultipleRealX() {
-        Variant variant = VariantEvaluation.builder(23, 31457623, "T", "TAAAAAA").build();
+        Variant variant = TestFactory.variantBuilder(23, 31457623, "T", "TAAAAAA").build();
         // n.b this isn't strictly correct due to the way these are generated from the VCF coordinates and the fact
         // that VCF and HGVS shift in opposite directions.
         // Strictly this should be NC_000023.10:g.31457624_31457629dupAAAAAA
@@ -123,13 +122,13 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSvIns() {
-        Variant variant = VariantEvaluation.builder(10, 20, 100, "T", "<INS>", 80).build();
+        Variant variant = TestFactory.variantBuilder(10, 20, 100, "T", "<INS>", 80).build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100ins"));
     }
 
     @Test
     void toHgvsSnvDupSingle() {
-        Variant variant = VariantEvaluation.builder(10, 20, "T", "TT").build();
+        Variant variant = TestFactory.variantBuilder(10, 20, "T", "TT").build();
         // the duplication of a T at position c.20 in the sequence AGAAG_T_AGAGG to AGAAG_TT_AGAGG
         // NOTE: it is allowed to describe the variant as c.20dupT
         // NOTE: it is not allowed to describe the variant as g.19_20insT (see prioritisation)
@@ -150,7 +149,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDelInsSingle() {
-        Variant variant = VariantEvaluation.builder(1, 6775, "T", "GA").build();
+        Variant variant = TestFactory.variantBuilder(1, 6775, "T", "GA").build();
         // a deletion of nucleotide g.6775 (a T, not described),
         // replaced by nucleotides GA, changing AGGC_T_CATT to AGGC_GA_CATT
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.6775delinsGA"));
@@ -158,7 +157,7 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDelInsMultiple() {
-        Variant variant = VariantEvaluation.builder(1, 6775, "TCA", "C").build();
+        Variant variant = TestFactory.variantBuilder(1, 6775, "TCA", "C").build();
         // a deletion of nucleotides g.6775 to g.6777 (TCA, not described),
         // replaced by nucleotides C, changing AGGC_TCA_TT to AGGC_C_TT
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.6775_6777delinsC"));

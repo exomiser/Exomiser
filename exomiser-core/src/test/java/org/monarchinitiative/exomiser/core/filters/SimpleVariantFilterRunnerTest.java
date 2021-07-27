@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.Variant;
@@ -74,19 +75,19 @@ public class SimpleVariantFilterRunnerTest {
     @BeforeEach
     public void setUp() {
 
-        passesAllFilters = VariantEvaluation.builder(1, 1, "A", "T")
+        passesAllFilters = TestFactory.variantBuilder(1, 1, "A", "T")
                 .quality(PASS_QUALITY)
                 .variantEffect(PASS_VARIANT_EFFECT)
                 .build();
-        failsAllFilters = VariantEvaluation.builder(2, 2, "A", "T")
+        failsAllFilters = TestFactory.variantBuilder(2, 2, "A", "T")
                 .quality(FAIL_QUALITY)
                 .variantEffect(FAIL_VARIANT_EFFECT)
                 .build();
-        passesQualityFrequencyFilter = VariantEvaluation.builder(3, 3, "A", "T")
+        passesQualityFrequencyFilter = TestFactory.variantBuilder(3, 3, "A", "T")
                 .quality(PASS_QUALITY)
                 .variantEffect(FAIL_VARIANT_EFFECT)
                 .build();
-        passesTargetQualityFilter = VariantEvaluation.builder(4, 4, "A", "T")
+        passesTargetQualityFilter = TestFactory.variantBuilder(4, 4, "A", "T")
                 .quality(PASS_QUALITY)
                 .variantEffect(PASS_VARIANT_EFFECT)
                 .build();
