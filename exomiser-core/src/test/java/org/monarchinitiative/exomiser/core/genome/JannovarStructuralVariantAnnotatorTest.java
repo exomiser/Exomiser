@@ -73,13 +73,6 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-//        assertThat(variantAnnotation.contigId(), equalTo(10));
-//        assertThat(variantAnnotation.contigName(), equalTo("10"));
-//        assertThat(variantAnnotation.start(), equalTo(123237843));
-//        assertThat(variantAnnotation.end(), equalTo(123237843));
-//        assertThat(variantAnnotation.changeLength(), equalTo(200));
-//        assertThat(variantAnnotation.ref(), equalTo("T"));
-//        assertThat(variantAnnotation.alt(), equalTo("<INS>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
 
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -96,13 +89,6 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-//        assertThat(variantAnnotation.contigId(), equalTo(10));
-//        assertThat(variantAnnotation.contigName(), equalTo("10"));
-//        assertThat(variantAnnotation.start(), equalTo(123353221));
-//        assertThat(variantAnnotation.end(), equalTo(123353480));
-//        assertThat(variantAnnotation.changeLength(), equalTo(-259));
-//        assertThat(variantAnnotation.ref(), equalTo("T"));
-//        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
