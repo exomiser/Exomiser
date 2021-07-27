@@ -60,13 +60,13 @@ public enum GenomeAssembly {
      * @return The {@link GenomeAssembly} of the {@link Contig}
      */
     public static GenomeAssembly assemblyOfContig(Contig contig) {
-        if (HG19.genomicAssembly.containsContig(contig)) {
+        if (HG19.containsContig(contig)) {
             return HG19;
         }
-        if (HG38.genomicAssembly.containsContig(contig)) {
+        if (HG38.containsContig(contig)) {
             return HG38;
         }
-        return HG19;
+        return UNKNOWN;
     }
 
     private final String value;
