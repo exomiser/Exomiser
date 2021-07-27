@@ -31,8 +31,6 @@ import de.charite.compbio.jannovar.reference.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.regex.Pattern;
-
 /**
  * Wrapper to build Jannovar annotations for variants. CAUTION! This class returns native Jannovar objects which use zero-based
  * coordinates.
@@ -42,10 +40,6 @@ import java.util.regex.Pattern;
 public class JannovarAnnotationService {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarAnnotationService.class);
-
-    // Regular expression pattern for matching breakends in VCF.
-    private static final Pattern BND_PATTERN = Pattern.compile(
-            "^(?<leadingBases>\\w*)(?<firstBracket>[\\[\\]])(?<targetChrom>[^:]+):(?<targetPos>\\w+)(?<secondBracket>[\\[\\]])(?<trailingBases>\\w*)$");
 
     //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
     //requirement of a variant having an integer chromosome

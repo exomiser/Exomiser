@@ -55,14 +55,6 @@ class JannovarStructuralVariantAnnotatorTest {
         List<VariantAnnotation> annotations = instance.annotate(variantCoordinates);
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123237843));
-        assertThat(variantAnnotation.end(), equalTo(123357972));
-        assertThat(variantAnnotation.changeLength(), equalTo(-120129));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
-        assertThat(variantAnnotation.variantType(), equalTo(VariantType.DEL));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -81,13 +73,13 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.start(), equalTo(123237843));
-        assertThat(variantAnnotation.end(), equalTo(123237843));
-        assertThat(variantAnnotation.changeLength(), equalTo(200));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("<INS>"));
+//        assertThat(variantAnnotation.contigId(), equalTo(10));
+//        assertThat(variantAnnotation.contigName(), equalTo("10"));
+//        assertThat(variantAnnotation.start(), equalTo(123237843));
+//        assertThat(variantAnnotation.end(), equalTo(123237843));
+//        assertThat(variantAnnotation.changeLength(), equalTo(200));
+//        assertThat(variantAnnotation.ref(), equalTo("T"));
+//        assertThat(variantAnnotation.alt(), equalTo("<INS>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
 
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
@@ -104,13 +96,13 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.start(), equalTo(123353221));
-        assertThat(variantAnnotation.end(), equalTo(123353480));
-        assertThat(variantAnnotation.changeLength(), equalTo(-259));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
+//        assertThat(variantAnnotation.contigId(), equalTo(10));
+//        assertThat(variantAnnotation.contigName(), equalTo("10"));
+//        assertThat(variantAnnotation.start(), equalTo(123353221));
+//        assertThat(variantAnnotation.end(), equalTo(123353480));
+//        assertThat(variantAnnotation.changeLength(), equalTo(-259));
+//        assertThat(variantAnnotation.ref(), equalTo("T"));
+//        assertThat(variantAnnotation.alt(), equalTo("<DEL>"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
@@ -121,7 +113,7 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     void testBnd() {
         VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
-        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("1\t243097603\tMantaBND:12652:0:1:1:1:0:0\tA\t]Y:13954151]A\t428.00\tMaxDepth\tSVTYPE=BND;MATEID=MantaBND:12652:0:1:1:1:0:1;BND_PAIR_COUNT=10;PAIR_COUNT=9;CIPOS=0,12;HOMLEN=12;HOMSEQ=ATAATAATAATA;BND_DEPTH=31;MATE_BND_DEPTH=47\tGT:GQ:PR:SR\t0/1:428:26,4:13,13");
+        VariantContext variantContext = TestVcfReader.forSamples("sample").readVariantContext("1\t243097603\tMantaBND:12652:0:1:1:1:0:0\tA\t]Y:13954151]A\t428.00\tMaxDepth\tSVTYPE=BND;MATEID=MantaBND:12652:0:1:1:1:0:1;BND_PAIR_COUNT=10;PAIR_COUNT=9;CIPOS=0,12;HOMLEN=12;HOMSEQ=ATAATAATAATA;BND_DEPTH=31;MATE_BND_DEPTH=47\tGT:GQ:PR:SR\t0/1:428:26,4:13,13");
         Variant variant = variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
         assertThat(variant, is(nullValue()));
 //        List<VariantAnnotation> variantAnnotations = instance.annotate(variant);
@@ -132,7 +124,7 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void preciseStructuralVariant() {
 
-        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("CM000663.2      30912   pbsv.DEL.0      CTCTCTCTCTCGCTATCTCATTTT        C       .       PASS    SVTYPE=DEL;END=30935;SVLEN=-23  GT:AD:DP:SAC    0/1:45,15:60:28,17,9,6");
+        VariantContext variantContext = TestVcfReader.forSamples("sample").readVariantContext("CM000663.2      30912   pbsv.DEL.0      CTCTCTCTCTCGCTATCTCATTTT        C       .       PASS    SVTYPE=DEL;END=30935;SVLEN=-23  GT:AD:DP:SAC    0/1:45,15:60:28,17,9,6");
         System.out.println(variantContext);
 
         GenomeAssembly hg38 = GenomeAssembly.HG38;

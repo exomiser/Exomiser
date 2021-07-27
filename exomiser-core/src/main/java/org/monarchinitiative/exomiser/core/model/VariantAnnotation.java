@@ -21,31 +21,36 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.Strand;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Simple immutable data class to represent annotations for a variant.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantAnnotation extends AbstractVariant {
+public class VariantAnnotation implements VariantAnnotations {
 
-    private static final VariantAnnotation EMPTY = new Builder()
-            .with(Contig.unknown(), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(1), Position.of(0), "", "", 0)
-            .build();
+    private static final VariantAnnotation EMPTY = new VariantAnnotation("", "", VariantEffect.SEQUENCE_VARIANT, List.of());
 
-    private VariantAnnotation(Builder builder) {
-        super(builder);
+    private final String geneSymbol;
+    private final String geneId;
+    private final VariantEffect variantEffect;
+    private final List<TranscriptAnnotation> transcriptAnnotations;
+
+    private VariantAnnotation(String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
+        this.geneSymbol = Objects.requireNonNull(geneSymbol);
+        this.geneId = Objects.requireNonNull(geneId);
+        this.variantEffect = Objects.requireNonNull(variantEffect);
+        this.transcriptAnnotations = Objects.requireNonNull(transcriptAnnotations);
     }
 
-    private VariantAnnotation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
-        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
+    public static VariantAnnotation of(String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
+        if (geneSymbol.isEmpty() && geneId.isEmpty() && variantEffect == VariantEffect.SEQUENCE_VARIANT && transcriptAnnotations.isEmpty()) {
+            return VariantAnnotation.empty();
+        }
+        return new VariantAnnotation(geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     public static VariantAnnotation empty() {
@@ -53,63 +58,50 @@ public class VariantAnnotation extends AbstractVariant {
     }
 
     @Override
+    public String getGeneSymbol() {
+        return geneSymbol;
+    }
+
+    @Override
+    public String getGeneId() {
+        return geneId;
+    }
+
+    @Override
+    public VariantEffect getVariantEffect() {
+        return variantEffect;
+    }
+
+    @Override
+    public List<TranscriptAnnotation> getTranscriptAnnotations() {
+        return transcriptAnnotations;
+    }
+
+    @Override
+    public boolean hasTranscriptAnnotations() {
+        return !transcriptAnnotations.isEmpty();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VariantAnnotation that = (VariantAnnotation) o;
+        return geneSymbol.equals(that.geneSymbol) && geneId.equals(that.geneId) && variantEffect == that.variantEffect && transcriptAnnotations.equals(that.transcriptAnnotations);
+    }
+
+    @Override
     public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    protected VariantAnnotation newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength) {
-        return new VariantAnnotation(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+        return Objects.hash(geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     @Override
     public String toString() {
         return "VariantAnnotation{" +
-                "genomeAssembly=" + genomeAssembly +
-                ", chromosome=" + contig().id() +
-                ", contig='" + contig().name() + '\'' +
-                ", strand=" + strand() +
-                ", start=" + start() +
-                ", end=" + end() +
-                ", length=" + length() +
-                ", ref='" + ref() + '\'' +
-                ", alt='" + alt() + '\'' +
-                ", geneSymbol='" + geneSymbol + '\'' +
+                "geneSymbol='" + geneSymbol + '\'' +
                 ", geneId='" + geneId + '\'' +
                 ", variantEffect=" + variantEffect +
-                ", annotations=" + annotations +
+                ", transcriptAnnotations=" + transcriptAnnotations +
                 '}';
-    }
-
-    public static Builder builder(GenomeAssembly assembly, int chr, int start, String ref, String alt) {
-        return new Builder().with(assembly.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), ref, alt)
-                .genomeAssembly(assembly);
-    }
-
-    public static Builder builder(GenomeAssembly assembly, int chr, int start, int end, String ref, String alt, int changeLength) {
-        return new Builder().with(assembly.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength)
-                .genomeAssembly(assembly);
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder extends AbstractVariant.Builder<Builder> {
-
-        @Override
-        public VariantAnnotation build() {
-            return new VariantAnnotation(selfWithEndIfMissing());
-        }
-
-        @Override
-        protected Builder self() {
-            return this;
-        }
     }
 }

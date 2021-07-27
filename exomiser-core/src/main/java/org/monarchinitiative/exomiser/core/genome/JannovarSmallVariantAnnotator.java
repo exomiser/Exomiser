@@ -70,6 +70,9 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
 
     @Override
     public List<VariantAnnotation> annotate(Variant variant) {
+        if (variant == null) {
+            return List.of();
+        }
         GenomeVariant genomeVariant = jannovarVariantConverter.toGenomeVariant(variant);
         VariantAnnotations variantAnnotations = jannovarAnnotationService.annotateGenomeVariant(genomeVariant);
         return buildVariantAnnotations(variant, variantAnnotations);
@@ -82,10 +85,10 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         // VariantAnnotations returned by only splitting those with a MODERATE or greater putative impact.
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
-                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(genomeAssembly, variant, variantGeneAnnotations))
+                    .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(variant, variantGeneAnnotations))
                     .collect(toUnmodifiableList());
         }
-        return List.of(buildVariantAlleleAnnotation(genomeAssembly, variant, variantAnnotations));
+        return List.of(buildVariantAlleleAnnotation(variant, variantAnnotations));
     }
 
     private boolean effectsMoreThanOneGeneWithMinimumImpact(VariantAnnotations variantAnnotations, PutativeImpact minimumImpact) {
@@ -137,12 +140,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
                 annotation.getTranscript();
     }
 
-    private String getChromosomeNameOrDefault(String chrName, String startContig) {
-        return chrName == null ? startContig : chrName;
-    }
-
-    private VariantAnnotation buildVariantAlleleAnnotation(GenomeAssembly genomeAssembly, Variant variant, VariantAnnotations variantAnnotations) {
-        int chr = variantAnnotations.getChr();
+    private VariantAnnotation buildVariantAlleleAnnotation(Variant variant, VariantAnnotations variantAnnotations) {
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
@@ -151,18 +149,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         //Jannovar presently ignores all structural variants, so flag it here. Not that we do anything with them at present.
         VariantEffect highestImpactEffect = variant.isSymbolic() ? VariantEffect.STRUCTURAL_VARIANT : variantAnnotations
                 .getHighestImpactEffect();
-        List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
+        List<TranscriptAnnotation> transcriptAnnotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, variant);
-        //TODO: Add method to return highest impact annotation?
-        return VariantAnnotation.builder()
-                .genomeAssembly(genomeAssembly)
-                .with(variant)
-                .geneId(geneId)
-                .geneSymbol(geneSymbol)
-                .variantEffect(variantEffect)
-                .annotations(annotations)
-                .build();
+
+        return VariantAnnotation.of(geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     private String buildGeneId(Annotation annotation) {
@@ -170,10 +161,13 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private String buildGeneSymbol(Annotation annotation) {
-        return annotation == null ? "." : TranscriptModelUtil.getTranscriptGeneSymbol(annotation.getTranscript());
+        return annotation == null ? "" : TranscriptModelUtil.getTranscriptGeneSymbol(annotation.getTranscript());
     }
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
+        if (annotations.isEmpty()) {
+            return List.of();
+        }
         List<TranscriptAnnotation> transcriptAnnotations = new ArrayList<>(annotations.size());
         for (Annotation annotation : annotations) {
             transcriptAnnotations.add(toTranscriptAnnotation(annotation));

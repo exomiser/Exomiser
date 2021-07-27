@@ -43,7 +43,7 @@ import java.util.Set;
 
 import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -52,6 +52,7 @@ import static java.util.stream.Collectors.toList;
 class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(JannovarStructuralVariantAnnotator.class);
+    private static final VariantAnnotation EMPTY_STRUCTURAL_ANNOTATION = VariantAnnotation.of("", "", STRUCTURAL_VARIANT, List.of());
 
     private final GenomeAssembly genomeAssembly;
     private final JannovarVariantConverter jannovarVariantConverter;
@@ -72,7 +73,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     @Override
     public List<VariantAnnotation> annotate(Variant variant) {
-        if (variant.isBreakend()) {
+        if (variant == null || variant.isBreakend()) {
             // TODO: re-enable breakends!
             return List.of();
         }
@@ -83,7 +84,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, Variant variant) {
         if (!svAnnotations.hasAnnotation()) {
-            return List.of(toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), new ArrayList<>(), variant));
+            return List.of(EMPTY_STRUCTURAL_ANNOTATION);
         }
 
         // This is a map of gene symbol to SVAnnotation
@@ -94,44 +95,27 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
         return annotationsByGeneSymbol.values()
                 .stream()
-                .map(geneSvAnnotations -> toStructuralVariantAnnotation(genomeAssembly, svAnnotations.getGenomeVariant(), geneSvAnnotations, variant))
-                .collect(toList());
+                .map(geneSvAnnotations -> toStructuralVariantAnnotation(variant, geneSvAnnotations))
+                .collect(toUnmodifiableList());
     }
 
-    private String buildGeneSymbol(@Nullable SVAnnotation svAnnotation) {
-        return svAnnotation == null ? "." : TranscriptModelUtil.getTranscriptGeneSymbol(svAnnotation.getTranscript());
-    }
-
-    private VariantAnnotation toStructuralVariantAnnotation(GenomeAssembly genomeAssembly, SVGenomeVariant genomeVariant, List<SVAnnotation> svAnnotations, Variant variant) {
+    private VariantAnnotation toStructuralVariantAnnotation(Variant variant, List<SVAnnotation> svAnnotations) {
         svAnnotations.sort(SVAnnotation::compareTo);
         SVAnnotation highestImpactAnnotation = svAnnotations.isEmpty() ? null : svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
         VariantEffect highestImpactEffect = getHighestImpactEffect(highestImpactAnnotation);
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
         String geneId = buildGeneId(highestImpactAnnotation);
-        List<TranscriptAnnotation> annotations = buildSvTranscriptAnnotations(svAnnotations);
+        List<TranscriptAnnotation> transcriptAnnotations = buildSvTranscriptAnnotations(svAnnotations);
 
-        // The genomeVariant.getStart() is 0-based despite being constructed using 1-based coordinates
-        //  so ensure we use the original startPos from the VCF to avoid confusion.
         VariantEffect variantEffect = checkRegulatoryRegionVariantEffect(highestImpactEffect, variant);
 
-        return VariantAnnotation.builder()
-                .with(variant)
-                .genomeAssembly(genomeAssembly)
-                .geneId(geneId)
-                .geneSymbol(geneSymbol)
-                .variantEffect(variantEffect)
-                .annotations(annotations)
-                .build();
+        return VariantAnnotation.of(geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     private VariantEffect getHighestImpactEffect(@Nullable SVAnnotation highestImpactAnnotation) {
         return (highestImpactAnnotation == null || highestImpactAnnotation.getMostPathogenicVariantEffect() == null) ? VariantEffect.STRUCTURAL_VARIANT : highestImpactAnnotation
                 .getMostPathogenicVariantEffect();
-    }
-
-    private String getChromosomeNameOrDefault(@Nullable String chrName, String startContig) {
-        return chrName == null ? startContig : chrName;
     }
 
     private List<TranscriptAnnotation> buildSvTranscriptAnnotations(List<SVAnnotation> svAnnotations) {
@@ -157,6 +141,10 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
 
     private String buildGeneId(@Nullable SVAnnotation svAnnotation) {
         return svAnnotation == null ? "" : TranscriptModelUtil.getTranscriptGeneId(svAnnotation.getTranscript());
+    }
+
+    private String buildGeneSymbol(@Nullable SVAnnotation svAnnotation) {
+        return svAnnotation == null ? "" : TranscriptModelUtil.getTranscriptGeneSymbol(svAnnotation.getTranscript());
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.

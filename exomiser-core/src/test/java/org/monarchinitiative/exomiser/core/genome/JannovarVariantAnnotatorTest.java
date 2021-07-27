@@ -72,11 +72,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123256215));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
@@ -99,11 +95,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123243319));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.SPLICE_ACCEPTOR_VARIANT));
@@ -126,11 +118,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123237800));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
@@ -150,11 +138,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123357973));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
@@ -174,11 +158,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigName(), equalTo("10"));
-        assertThat(variantAnnotation.contigId(), equalTo(10));
-        assertThat(variantAnnotation.start(), equalTo(123458888));
-        assertThat(variantAnnotation.ref(), equalTo("T"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
+
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -191,22 +171,24 @@ public class JannovarVariantAnnotatorTest {
 
     @Test
     void testUpstreamGeneIntergenicVariantsInRegulatoryRegion() {
+        Variant upstreamVariant = variant("10", 123357973, "T", "G");
         //Without the regulatory regions in the annotator
-        List<VariantAnnotation> upstreamVariantAnnots = annotate(instance, "10", 123357973, "T", "G");
+        List<VariantAnnotation> upstreamVariantAnnots = instance.annotate(upstreamVariant);
         assertThat(upstreamVariantAnnots.size(), equalTo(1));
-        VariantAnnotation upstreamVariant = upstreamVariantAnnots.get(0);
+        VariantAnnotation upstreamAnnotations = upstreamVariantAnnots.get(0);
 
-        assertThat(upstreamVariant.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(upstreamAnnotations.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
 
+        Variant intergenicVariant = variant("10", 123458888, "T", "G");
         List<VariantAnnotation> intergenicVariantAnnots = annotate(instance, "10", 123458888, "T", "G");
         assertThat(intergenicVariantAnnots.size(), equalTo(1));
-        VariantAnnotation intergenicVariant = intergenicVariantAnnots.get(0);
+        VariantAnnotation intergenicAnnotations = intergenicVariantAnnots.get(0);
 
-        assertThat(intergenicVariant.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(intergenicAnnotations.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
 
         //Regulatory regions containing the variants
-        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.start(), upstreamVariant.start(), RegulatoryFeature.FeatureType.ENHANCER);
-        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.start(), intergenicVariant.start(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
+        RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.start(), upstreamVariant.end(), RegulatoryFeature.FeatureType.ENHANCER);
+        RegulatoryFeature tfBindingSite = new RegulatoryFeature(10, intergenicVariant.start(), intergenicVariant.end(), RegulatoryFeature.FeatureType.TF_BINDING_SITE);
 
         //Create new annotator with the regulatory regions
         VariantAnnotator annotatorWithRegulatoryRegions = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(),
@@ -260,10 +242,6 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.contigId(), equalTo(23));
-        assertThat(variantAnnotation.start(), equalTo(118608471));
-        assertThat(variantAnnotation.ref(), equalTo("GT"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
@@ -279,12 +257,6 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.contigId(), equalTo(23));
-        assertThat(variantAnnotation.start(), equalTo(118608471));
-        assertThat(variantAnnotation.end(), equalTo(118608472));
-        assertThat(variantAnnotation.changeLength(), equalTo(-1));
-        assertThat(variantAnnotation.ref(), equalTo("GT"));
-        assertThat(variantAnnotation.alt(), equalTo("G"));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
     }
 
@@ -300,14 +272,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
 
         VariantAnnotation variantAnnotation = annotations.get(0);
-        assertThat(variantAnnotation.contigId(), equalTo(23));
-        assertThat(variantAnnotation.start(), equalTo(pos));
-        assertThat(variantAnnotation.end(), equalTo(pos));
-        assertThat(variantAnnotation.length(), equalTo(1));
-        assertThat(variantAnnotation.changeLength(), equalTo(100));
-        assertThat(variantAnnotation.ref(), equalTo(ref));
-        assertThat(variantAnnotation.alt(), equalTo(alt));
-        assertThat(variantAnnotation.variantType(), equalTo(VariantType.INS));
+
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
     }
@@ -366,11 +331,12 @@ public class JannovarVariantAnnotatorTest {
 
     @Test
     public void testMassivePreciseVariantIsTreatedAsStructural() {
-        VariantContext variantContext = TestVcfParser.forSamples("sample").toVariantContext("10      123352331   .      GGCGCCTGTAGTCCCAGCTACTTGGGAGGCTGAGGCTCGAGAATCGCTTGAACCTAGGAGGGGGAGGTTGCAGTGAGCCGAGATCGTGCCACTGCACTCCAGCTTGGCAACAGAGCAAGACTCCATCTCAAAAAAAAAAAAAAAATTGTGTCTATGTATTATAAGCCATATCCTTTGGGAAGCAGACAAGATATAAATAATAAATAACTGTAATAACACATTCTATACATTAAATCATTTCATCTACTACTAAATTACAATACTTATTTTACAGCACTTTATGAAAGTGTGCTCACCTGAAATTTGCTAAAAGGAGCTCAAAAGAGCTAGGGAGAGATGCAAATCAATACCCAAGGGACAGATTAAGACAGAGGCAGGCATCAGAGCTAAAGTATACAAACTAACATGGAACTATTAGGAAATTTTACTGGTTACATTCTCAGAATGATGGCTCTAGGTACACACTGGCTTTTGGCTCACAGTGTAAGCTAATCACAATACTGAGTTATGCCCATTAAAATCATGACTATCCTGAAATGGAACCCTGGCATTAACCTTTTAAGACCAACCTGAAGGGCACTGCACACTGTGATTTCAGGTGTTCTCAAAACAGGGATTTGCTGATGTTTATTCACTAAAGTCTAGGACTAAAATTCTGTAAGTATGTGACTAAGTTGCAAGGAGTATTCCTTAAACCTAAGTGCAGCCGTACTGCAGAAATGAAGACTTCTCTGCTAAATATCAAGGCTGAGTGCTCTCTTGGCAAAAACTTAGCAACAACTAATACAAAATCTAGAAGTTGTCAAGAATACACATACATTTTCTGTTTCTGTTAATCAAATATCATCCACAACCTGAAAATTCCTTTCATTGCCACACAAACTTAATTTTGCATAGAACTTCTTGGGCATAAAATTATTCTGATCCCATCCTACTAAATATCACATGAATATCCCTTTTATTTCTGTCTATTAAGTATTCAAGTTGCGGACTCTAAATTAGCAATTTGATTTTAAATTCTACTAGCTCCTGGATTACTTCTAATGTTAATGAAGATTAGACAATAGGCTTAAAAAGTAGGACTTTTCTGGGTGGGTTCTGACCAATTCTTTCCCCCTTAATATTCCAGAATGATTAAATGCATTCATTGTTATTAAAGCAGTGGTCTATTGAGTCACATACGGTACCTTGGGGCCATGTGGGAAGTCAAACAGGTAAGTCATAATTTTCTGGAAAAAAAAATTTAACATAAGGTCCATATACTACTTTTGCAAAAGGTATATAACCTAAAGAAATTACAAGCTTTTCACAAAACATGTCTTTTTCAACATAGGACTCACCACATTCTTGTTTCCTCTAAATTTTATGAAATCATGGCAGTGGAAGCCAGAAATTAATGCTTTACCATATACCAAAAAGAAAAAAAGGCTTCTGACATTCTCAGGGAGGATACATACTTCCTCTGGAAGATGTTTTTGAACACACATTTGGAGGAAAGGAGCATATGAGGTAGGGGTATAGAGAAAACTAATGACTCACACAGAAATAACCTATCACCTTGGCTTCGCTACTGCCATCCCTAGACCAACTAAGTCAACAAACCAACGGTTTATGTAAGACTGTTTACTACAAATCACCAGGTGTCTAAATCAAGTTTACATGTACAGCGAATTGGGGGAAGTGGAACTTCTTGCCAGTACTATAAATTTTTAAGTGTCTCAGCAAAAGTAAGATGAAGTTAAGGAGTTAGATCAGTTTTTCCACATGCTTTAATCATGGGAAAAAACTGTTTTTAAGAGGTAGTAAATTTTGGGCTGGGCACAGTGACTCACGCCTGTAATCCCAGCACTTTGGGAGGCCAAGGTGGGTGGATCACGAGGTCAGGAGTTCAAGACCAGCCTGTCCAAGATGTTAAAACCTCGTCTCTACTAAAAATACAAAAAAATTAGCCAGGCGCAGTGGCAGGT        G       .       PASS    .  GT    1/1");
+        VariantContext variantContext = TestVcfReader.forSamples("sample").readVariantContext("10      123352331   .      GGCGCCTGTAGTCCCAGCTACTTGGGAGGCTGAGGCTCGAGAATCGCTTGAACCTAGGAGGGGGAGGTTGCAGTGAGCCGAGATCGTGCCACTGCACTCCAGCTTGGCAACAGAGCAAGACTCCATCTCAAAAAAAAAAAAAAAATTGTGTCTATGTATTATAAGCCATATCCTTTGGGAAGCAGACAAGATATAAATAATAAATAACTGTAATAACACATTCTATACATTAAATCATTTCATCTACTACTAAATTACAATACTTATTTTACAGCACTTTATGAAAGTGTGCTCACCTGAAATTTGCTAAAAGGAGCTCAAAAGAGCTAGGGAGAGATGCAAATCAATACCCAAGGGACAGATTAAGACAGAGGCAGGCATCAGAGCTAAAGTATACAAACTAACATGGAACTATTAGGAAATTTTACTGGTTACATTCTCAGAATGATGGCTCTAGGTACACACTGGCTTTTGGCTCACAGTGTAAGCTAATCACAATACTGAGTTATGCCCATTAAAATCATGACTATCCTGAAATGGAACCCTGGCATTAACCTTTTAAGACCAACCTGAAGGGCACTGCACACTGTGATTTCAGGTGTTCTCAAAACAGGGATTTGCTGATGTTTATTCACTAAAGTCTAGGACTAAAATTCTGTAAGTATGTGACTAAGTTGCAAGGAGTATTCCTTAAACCTAAGTGCAGCCGTACTGCAGAAATGAAGACTTCTCTGCTAAATATCAAGGCTGAGTGCTCTCTTGGCAAAAACTTAGCAACAACTAATACAAAATCTAGAAGTTGTCAAGAATACACATACATTTTCTGTTTCTGTTAATCAAATATCATCCACAACCTGAAAATTCCTTTCATTGCCACACAAACTTAATTTTGCATAGAACTTCTTGGGCATAAAATTATTCTGATCCCATCCTACTAAATATCACATGAATATCCCTTTTATTTCTGTCTATTAAGTATTCAAGTTGCGGACTCTAAATTAGCAATTTGATTTTAAATTCTACTAGCTCCTGGATTACTTCTAATGTTAATGAAGATTAGACAATAGGCTTAAAAAGTAGGACTTTTCTGGGTGGGTTCTGACCAATTCTTTCCCCCTTAATATTCCAGAATGATTAAATGCATTCATTGTTATTAAAGCAGTGGTCTATTGAGTCACATACGGTACCTTGGGGCCATGTGGGAAGTCAAACAGGTAAGTCATAATTTTCTGGAAAAAAAAATTTAACATAAGGTCCATATACTACTTTTGCAAAAGGTATATAACCTAAAGAAATTACAAGCTTTTCACAAAACATGTCTTTTTCAACATAGGACTCACCACATTCTTGTTTCCTCTAAATTTTATGAAATCATGGCAGTGGAAGCCAGAAATTAATGCTTTACCATATACCAAAAAGAAAAAAAGGCTTCTGACATTCTCAGGGAGGATACATACTTCCTCTGGAAGATGTTTTTGAACACACATTTGGAGGAAAGGAGCATATGAGGTAGGGGTATAGAGAAAACTAATGACTCACACAGAAATAACCTATCACCTTGGCTTCGCTACTGCCATCCCTAGACCAACTAAGTCAACAAACCAACGGTTTATGTAAGACTGTTTACTACAAATCACCAGGTGTCTAAATCAAGTTTACATGTACAGCGAATTGGGGGAAGTGGAACTTCTTGCCAGTACTATAAATTTTTAAGTGTCTCAGCAAAAGTAAGATGAAGTTAAGGAGTTAGATCAGTTTTTCCACATGCTTTAATCATGGGAAAAAACTGTTTTTAAGAGGTAGTAAATTTTGGGCTGGGCACAGTGACTCACGCCTGTAATCCCAGCACTTTGGGAGGCCAAGGTGGGTGGATCACGAGGTCAGGAGTTCAAGACCAGCCTGTCCAAGATGTTAAAACCTCGTCTCTACTAAAAATACAAAAAAATTAGCCAGGCGCAGTGGCAGGT        G       .       PASS    .  GT    1/1");
         GenomeAssembly hg19 = GenomeAssembly.HG19;
         VariantContextConverter variantContextConverter = VariantContextConverter.of(hg19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
         Variant variant = variantContextConverter.convertToVariant(variantContext, variantContext.getAlternateAllele(0));
         List<VariantAnnotation> variantAnnotations = instance.annotate(variant);
+
         assertThat(variantAnnotations.size(), equalTo(1));
         assertThat(variantAnnotations.get(0).getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
     }
