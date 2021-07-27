@@ -23,7 +23,10 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
-import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -72,12 +75,6 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Override
     public VariantAnnotator variantAnnotator() {
         return super.buildVariantAnnotator();
-    }
-
-    @Bean("hg19variantFactory")
-    @Override
-    public VariantFactory variantFactory() {
-        return super.buildVariantFactory();
     }
 
     @Bean("hg19variantDataService")

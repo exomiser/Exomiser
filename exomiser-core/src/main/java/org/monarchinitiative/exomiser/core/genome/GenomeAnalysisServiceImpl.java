@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -29,7 +28,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySour
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -40,18 +38,23 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
 
     private final GenomeDataService genomeDataService;
     private final VariantDataService variantDataService;
-    private final VariantFactory variantFactory;
+    private final VariantAnnotator variantAnnotator;
 
-    public GenomeAnalysisServiceImpl(GenomeAssembly genomeAssembly, GenomeDataService genomeDataService, VariantDataService variantDataService, VariantFactory variantFactory) {
+    public GenomeAnalysisServiceImpl(GenomeAssembly genomeAssembly, GenomeDataService genomeDataService, VariantDataService variantDataService, VariantAnnotator variantAnnotator) {
         this.genomeAssembly = genomeAssembly;
         this.genomeDataService = genomeDataService;
         this.variantDataService = variantDataService;
-        this.variantFactory = variantFactory;
+        this.variantAnnotator = variantAnnotator;
     }
 
     @Override
     public GenomeAssembly getGenomeAssembly() {
         return genomeAssembly;
+    }
+
+    @Override
+    public VariantAnnotator getVariantAnnotator() {
+        return variantAnnotator;
     }
 
     @Override
@@ -89,8 +92,8 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
         return variantDataService.getVariantPathogenicityData(variant, pathogenicitySources);
     }
 
-    @Override
-    public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream) {
-        return variantFactory.createVariantEvaluations(variantContextStream);
-    }
+//    @Override
+//    public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream) {
+//        return variantFactory.createVariantEvaluations(variantContextStream);
+//    }
 }

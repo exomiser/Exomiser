@@ -72,10 +72,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         return new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData, regulatoryRegionIndex);
     }
 
-    protected VariantFactory buildVariantFactory() {
-        return new VariantFactoryImpl(variantAnnotator());
-    }
-
     //This method is calling the public interface of the concrete implementation so that the caching works on the DAOs
     protected VariantDataService buildVariantDataService() {
         AllelePropertiesDaoAdapter allelePropertiesDaoAdapter = new AllelePropertiesDaoAdapter(allelePropertiesDao());
@@ -103,6 +99,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     // Spring can intercept any caching annotations, but otherwise keep the duplicated GenomeAnalysisServices separate from
     // any auto-wiring and auto-configuration which will cause name clashes.
     protected GenomeAnalysisService buildGenomeAnalysisService() {
-        return new GenomeAnalysisServiceImpl(genomeProperties.getAssembly(), genomeDataService(), variantDataService(), variantFactory());
+        return new GenomeAnalysisServiceImpl(genomeProperties.getAssembly(), genomeDataService(), variantDataService(), variantAnnotator());
     }
 }

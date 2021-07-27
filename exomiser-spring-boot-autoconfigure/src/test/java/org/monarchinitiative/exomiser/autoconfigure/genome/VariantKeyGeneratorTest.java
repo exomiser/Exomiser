@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Position;
@@ -47,7 +47,7 @@ public class VariantKeyGeneratorTest {
 
     @Test
     public void returnsKeyForVariant() throws Exception {
-        Variant variant = VariantAnnotation.builder()
+        Variant variant = VariantEvaluation.builder()
                 .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2345), "A", "T")
                 .build();
         // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches

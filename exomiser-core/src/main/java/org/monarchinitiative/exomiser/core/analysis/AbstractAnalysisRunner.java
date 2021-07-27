@@ -25,8 +25,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleIdentifierUtil;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
-import org.monarchinitiative.exomiser.core.genome.VcfFiles;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -78,12 +77,14 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Using genome assembly {}", sample.getGenomeAssembly());
         // all the sample-related bits, might be worth encapsulating
         Path vcfPath = sample.getVcfPath();
+        VcfReader vcfReader = vcfPath == null ? new NoOpVcfReader() : new VcfFileReader(vcfPath);
         // n.b. this next block will safely handle a null VCF file
         logger.info("Checking proband and pedigree for VCF {}", vcfPath);
-        List<String> sampleNames = VcfFiles.readSampleIdentifiers(vcfPath);
-        // TODO: given we now have a Sample object, shouldn't it be used in the analysis?
-        SampleIdentifier sampleIdentifier = SampleIdentifierUtil.createProbandIdentifier(sample.getProbandSampleName(), sampleNames);
-        Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.getPedigree(), sampleIdentifier, sampleNames);
+        List<String> sampleNames = vcfReader.readSampleIdentifiers();
+        VariantFactory variantFactory = new VariantFactoryImpl(genomeAnalysisService.getVariantAnnotator(), vcfReader);
+
+        String probandIdentifier = SampleIdentifiers.checkProbandIdentifier(sample.getProbandSampleName(), sampleNames);
+        Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.getPedigree(), probandIdentifier, sampleNames);
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
 
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(validatedPedigree, inheritanceModeOptions);
@@ -133,7 +134,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //this would fit well with a lot of people's pipelines where they only want the phenotype score as they are using VEP or ANNOVAR for variant analysis.
 
         if (!variantsLoaded && sample.hasVcf()) {
-            try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
+            try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
                 variantEvaluations = variantStream.collect(toList());
             }
             assignVariantsToGenes(variantEvaluations, allGenes);
@@ -143,7 +144,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Scoring genes");
         List<Gene> genes;
         List<VariantEvaluation> variants;
-        GeneScorer geneScorer = new RawScoreGeneScorer(sampleIdentifier, sample.getSex(), inheritanceModeAnnotator);
+        GeneScorer geneScorer = new RawScoreGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator);
         if (variantsLoaded) {
             genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes));
             variants = getFinalVariantList(variantEvaluations);
@@ -179,16 +180,16 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
     }
 
-    private List<VariantEvaluation> loadAndFilterVariants(Sample sample, SampleIdentifier sampleIdentifier, Map<String, Gene> allGenes, AnalysisGroup analysisGroup, Analysis analysis, FilterStats filterStats) {
+    private List<VariantEvaluation> loadAndFilterVariants(VariantFactory variantFactory, String probandIdentifier, Map<String, Gene> allGenes, AnalysisGroup analysisGroup, Analysis analysis, FilterStats filterStats) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = prepareVariantFilterSteps(analysis, analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
         VariantLogger variantLogger = new VariantLogger();
-        try (Stream<VariantEvaluation> variantStream = loadVariants(sample.getVcfPath())) {
+        try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
             filteredVariants = variantStream
                     .peek(variantLogger.logLoadedAndPassedVariants())
-                    .filter(isObservedInProband(sampleIdentifier))
+                    .filter(isObservedInProband(probandIdentifier))
                     .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
                     .map(flagWhiteListedVariants())
                     .filter(isAssociatedWithKnownGene(allGenes))
@@ -233,14 +234,9 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return variantFilter;
     }
 
-    private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
-        //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-        return genomeAnalysisService.createVariantEvaluations(vcfPath);
-    }
-
-    private Predicate<VariantEvaluation> isObservedInProband(SampleIdentifier probandSample) {
+    private Predicate<VariantEvaluation> isObservedInProband(String probandId) {
         return variantEvaluation -> {
-            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandSample.getId());
+            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously
             // only add VariantEvaluation where the proband has an ALT allele (OTHER_ALT should be present as an ALT in another VariantEvaluation)
             return probandGenotype.getCalls().contains(AlleleCall.ALT);

@@ -22,7 +22,10 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDao;
 import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
@@ -41,8 +44,6 @@ public interface GenomeAnalysisServiceConfiguration {
     MVStore mvStore();
 
     VariantAnnotator variantAnnotator();
-
-    VariantFactory variantFactory();
 
     GenomeDataService genomeDataService();
 

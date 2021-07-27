@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,12 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Strand;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -52,7 +57,6 @@ public class TestFactory {
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
     private static final VariantAnnotator DEFAULT_VARIANT_ANNOTATOR = new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA, ChromosomalRegionIndex
             .empty());
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryImpl(DEFAULT_VARIANT_ANNOTATOR);
 
     private TestFactory() {
         //this class should be used in a static context.
@@ -74,18 +78,21 @@ public class TestFactory {
         return DEFAULT_VARIANT_ANNOTATOR;
     }
 
-    public static VariantFactory buildDefaultVariantFactory() {
-        return DEFAULT_VARIANT_FACTORY;
+    public static VariantFactory buildDefaultVariantFactory(Path vcfPath) {
+        return new VariantFactoryImpl(DEFAULT_VARIANT_ANNOTATOR, new VcfFileReader(vcfPath));
+    }
+
+    public static VariantFactory buildDefaultVariantFactory(VcfReader vcfReader) {
+        return new VariantFactoryImpl(DEFAULT_VARIANT_ANNOTATOR, vcfReader);
+    }
+
+    public static JannovarVariantAnnotator buildJannovarVariantAnnotator(TranscriptModel... transcriptModels) {
+        JannovarData jannovarData = buildJannovarData(transcriptModels);
+        return new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData, ChromosomalRegionIndex.empty());
     }
 
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
         return new JannovarData(DEFAULT_REF_DICT, ImmutableList.copyOf(transcriptModels));
-    }
-
-    public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
-        JannovarData jannovarData = buildJannovarData(transcriptModels);
-        JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData, ChromosomalRegionIndex.empty());
-        return new VariantFactoryImpl(variantAnnotator);
     }
 
     public static GeneFactory buildDefaultGeneFactory() {
@@ -113,7 +120,7 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
-        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), TestVariantDataService.stub(), DEFAULT_VARIANT_FACTORY);
+        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), TestVariantDataService.stub(), DEFAULT_VARIANT_ANNOTATOR);
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {

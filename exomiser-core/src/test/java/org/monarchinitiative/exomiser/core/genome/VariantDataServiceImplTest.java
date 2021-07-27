@@ -112,7 +112,7 @@ public class VariantDataServiceImplTest {
     }
 
     private VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
-        return VariantEvaluation.builder(1, 1, "A", "T").variantEffect(variantEffect).build();
+        return TestFactory.variantBuilder(1, 1, "A", "T").variantEffect(variantEffect).build();
     }
 
     @Test
@@ -270,8 +270,8 @@ public class VariantDataServiceImplTest {
 
     @Test
     void whiteListedVariant() {
-        Variant whiteListVariant = VariantEvaluation.builder(3, 12345, "A", "C").build();
-        Variant nonWhiteListVariant = VariantEvaluation.builder(3, 12345, "G", "T").build();
+        Variant whiteListVariant = TestFactory.variantBuilder(3, 12345, "A", "C").build();
+        Variant nonWhiteListVariant = TestFactory.variantBuilder(3, 12345, "G", "T").build();
 
         VariantWhiteList whiteList = InMemoryVariantWhiteList.of(ImmutableSet.of(AlleleProtoAdaptor.toAlleleKey(whiteListVariant)));
         VariantDataServiceImpl instance = VariantDataServiceImpl.builder().variantWhiteList(whiteList).build();
