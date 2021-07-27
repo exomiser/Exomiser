@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -36,22 +36,41 @@ import java.util.stream.Stream;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public final class TestVcfParser {
+public final class TestVcfReader implements VcfReader {
 
     private final VCFCodec vcfCodec;
+    private final List<String> vcfLines;
 
-    public static TestVcfParser forSamples(String... sampleNames) {
-        return new TestVcfParser(sampleNames);
+    private TestVcfReader(List<String> sampleNames, List<String> vcfLines) {
+        this.vcfCodec = getVcfCodecForSamples(List.copyOf(sampleNames));
+        this.vcfLines = List.copyOf(vcfLines);
     }
 
-    private TestVcfParser(String... sampleNames) {
-        vcfCodec = getVcfCodecForSamples(sampleNames);
+    public static TestVcfReader of(List<String> sampleNames, String... vcfLines) {
+        return new TestVcfReader(sampleNames, List.of(vcfLines));
     }
 
-    private VCFCodec getVcfCodecForSamples(String... sampleNames) {
+    public static TestVcfReader forSamples(String... sampleNames) {
+        return new TestVcfReader(List.of(sampleNames), List.of());
+    }
+
+    private VCFCodec getVcfCodecForSamples(List<String> sampleNames) {
         VCFCodec vcfCodec = new VCFCodec();
-        vcfCodec.setVCFHeader(new VCFHeader(Collections.emptySet(), Arrays.asList(sampleNames)), VCFHeaderVersion.VCF4_2);
+        vcfCodec.setVCFHeader(new VCFHeader(Collections.emptySet(), sampleNames), VCFHeaderVersion.VCF4_2);
         return vcfCodec;
+    }
+
+    @Override
+    public List<String> readSampleIdentifiers() {
+        return vcfCodec.getHeader().getGenotypeSamples();
+    }
+
+    @Override
+    public Stream<VariantContext> readVariantContexts() {
+        if (vcfLines.isEmpty()) {
+            throw new IllegalStateException("No  lines to read!");
+        }
+        return vcfLines.stream().map(toVariantContext());
     }
 
     /**
@@ -66,12 +85,12 @@ public final class TestVcfParser {
      * @param lines
      * @return a Stream of VariantContext for the line provided.
      */
-    public Stream<VariantContext> parseVariantContext(String... lines) {
+    public Stream<VariantContext> readVariantContexts(String... lines) {
         return Stream.of(lines).map(toVariantContext());
     }
 
     private Function<String, VariantContext> toVariantContext() {
-        return this::toVariantContext;
+        return this::readVariantContext;
     }
 
     /**
@@ -85,7 +104,30 @@ public final class TestVcfParser {
      * @param line
      * @return a VariantContext for the line provided.
      */
-    public VariantContext toVariantContext(String line) {
-        return vcfCodec.decode(line.replaceAll("[ ]+", "\t"));
+    public VariantContext readVariantContext(String line) {
+        return vcfCodec.decode(line.replaceAll("[ ]+", "\t").trim());
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private List<String> sampleNames = List.of();
+        private List<String> vcfLines = List.of();
+
+        public Builder samples(String... sample) {
+            this.sampleNames = List.of(sample);
+            return this;
+        }
+
+        public Builder vcfLines(String... vcfLine) {
+            this.vcfLines = List.of(vcfLine);
+            return this;
+        }
+
+        public TestVcfReader build() {
+            return new TestVcfReader(sampleNames, vcfLines);
+        }
     }
 }

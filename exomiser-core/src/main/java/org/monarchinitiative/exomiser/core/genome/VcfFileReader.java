@@ -21,34 +21,34 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFCodec;
-import htsjdk.variant.vcf.VCFEncoder;
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.List;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * Reads a VCF file - wrapper for HTSJDK VCFFileReader
  */
-class VcfCodecsTest {
+public class VcfFileReader implements VcfReader {
 
-    @Test
-    void getEncoder() {
-        List<String> sampleGenotypes = List.of("Arthur", "Ford");
+    private static final Logger logger = LoggerFactory.getLogger(VcfFileReader.class);
 
-        VariantContext variantContext = TestVcfReader
-                .forSamples("Arthur", "Ford")
-                .readVariantContext("1 12345 . A T,C 100 PASS WIBBLE;FROOD GT 0/1 1/2");
+    private final Path vcfPath;
 
-        VCFEncoder encoder = VcfCodecs.encoder(sampleGenotypes);
-        String encoded = encoder.encode(variantContext);
+    public VcfFileReader(Path vcfPath) {
+        this.vcfPath = Objects.requireNonNull(vcfPath, "Cannot read from null vcfPath");
+    }
 
-        VCFCodec decoder = VcfCodecs.decoder(sampleGenotypes);
-        VariantContext decoded = decoder.decode(encoded);
+    @Override
+    public List<String> readSampleIdentifiers() {
+        return VcfFiles.readSampleIdentifiers(vcfPath);
+    }
 
-        assertThat(variantContext.toStringDecodeGenotypes(), equalTo(decoded.toStringDecodeGenotypes()));
+    @Override
+    public Stream<VariantContext> readVariantContexts() {
+        return VcfFiles.readVariantContexts(vcfPath);
     }
 }

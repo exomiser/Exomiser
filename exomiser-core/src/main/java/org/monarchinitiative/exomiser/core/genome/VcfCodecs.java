@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,8 +41,8 @@ public class VcfCodecs {
     private static final Logger logger = LoggerFactory.getLogger(VcfCodecs.class);
 
     // TODO: use Caffeine cache with TTL as this could get really large for a long-running process
-    private static final Map<Set<String>, VCFEncoder> encoderCache = new HashMap<>();
-    private static final Map<Set<String>, VCFCodec> decoderCache = new HashMap<>();
+    private static final Map<List<String>, VCFEncoder> encoderCache = new HashMap<>();
+    private static final Map<List<String>, VCFCodec> decoderCache = new HashMap<>();
 
     private VcfCodecs() {
     }
@@ -54,7 +54,7 @@ public class VcfCodecs {
      * @param sampleGenotypes
      * @return a VCFEncoder for the specified sampleGenotypes
      */
-    public static VCFEncoder encoder(Set<String> sampleGenotypes) {
+    public static VCFEncoder encoder(List<String> sampleGenotypes) {
         return encoderCache.computeIfAbsent(sampleGenotypes, key -> {
             VCFHeader vcfHeader = new VCFHeader(Collections.emptySet(), new ArrayList<>(sampleGenotypes));
             logger.debug("Making new VCFEncoder for samples {}", sampleGenotypes);
@@ -69,7 +69,7 @@ public class VcfCodecs {
      * @param sampleGenotypes
      * @return a VCFCodec for the specified sampleGenotypes
      */
-    public static VCFCodec decoder(Set<String> sampleGenotypes) {
+    public static VCFCodec decoder(List<String> sampleGenotypes) {
         return decoderCache.computeIfAbsent(sampleGenotypes, key -> {
             VCFHeader vcfHeader = new VCFHeader(Collections.emptySet(), new ArrayList<>(sampleGenotypes));
             VCFCodec vcfCodec = new VCFCodec();

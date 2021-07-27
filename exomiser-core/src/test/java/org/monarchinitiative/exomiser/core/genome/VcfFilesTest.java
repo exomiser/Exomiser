@@ -106,4 +106,11 @@ public class VcfFilesTest {
         List<String> samples = VcfFiles.readSampleIdentifiers(vcfPath);
         assertThat(samples, equalTo(List.of("sample")));
     }
+
+    @Test
+    public void testReadMultipleSampleIdentifiers() {
+        Path vcfPath = Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf");
+        List<String> expected = List.of("Seth", "Adam", "Eva");
+        assertThat(VcfFiles.readSampleIdentifiers(vcfPath), equalTo(expected));
+    }
 }
