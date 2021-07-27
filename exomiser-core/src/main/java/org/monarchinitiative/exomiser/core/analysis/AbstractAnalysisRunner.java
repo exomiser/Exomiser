@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.sample.SampleIdentifierUtil;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
@@ -90,8 +89,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(validatedPedigree, inheritanceModeOptions);
 
         //now run the analysis on the sample
-        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", sampleIdentifier.getId(), sampleIdentifier
-                .getGenotypePosition() + 1, sampleNames);
+        int vcfGenotypePosition = SampleIdentifiers.samplePosition(probandIdentifier, sampleNames);
+        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandIdentifier, vcfGenotypePosition, sampleNames);
         Instant timeStart = Instant.now();
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
@@ -111,7 +110,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 // Variants take up 99% of all the memory in an analysis - this scales approximately linearly with the
                 //  sample size so for whole genomes this is best run as a stream to filter out the unwanted variants
                 //  with as many filters as possible in one go
-                variantEvaluations = loadAndFilterVariants(sample, sampleIdentifier, allGenes, analysisGroup, analysis, filterStats);
+                variantEvaluations = loadAndFilterVariants(variantFactory, probandIdentifier, allGenes, analysisGroup, analysis, filterStats);
                 // This is done here as there are GeneFilter steps which may require Variants in the genes, or the
                 //  InheritanceModeDependent steps which definitely need them...
                 assignVariantsToGenes(variantEvaluations, allGenes);

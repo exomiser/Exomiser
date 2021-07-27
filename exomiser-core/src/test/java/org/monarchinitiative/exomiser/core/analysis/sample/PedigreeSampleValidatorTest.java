@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
+import org.monarchinitiative.exomiser.core.model.SampleIdentifiers;
 
 import java.util.Collections;
 
@@ -72,7 +72,7 @@ public class PedigreeSampleValidatorTest {
     @Test
     public void pedigreeNotNullInConstructor() {
         assertThrows(NullPointerException.class, () ->
-                PedigreeSampleValidator.validate(null, SampleIdentifier.of("sample", 0), Collections.emptyList())
+                PedigreeSampleValidator.validate(null, SampleIdentifiers.defaultSample(), Collections.emptyList())
         );
     }
 
@@ -86,15 +86,15 @@ public class PedigreeSampleValidatorTest {
     @Test
     public void sampleNamesNotNullInConstructor() {
         assertThrows(NullPointerException.class, () ->
-                PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("sample", 0), null)
+                PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifiers.defaultSample(), null)
         );
     }
 
     @Test
     public void createsSingleSamplePedigreeWithDefaultNameWhenSampleHasNoNameOrPedFile() {
-        Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.defaultSample(), Collections
+        Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifiers.defaultSample(), Collections
                 .emptyList());
-        Pedigree expected = Pedigree.justProband(SampleIdentifier.defaultSample().getId());
+        Pedigree expected = Pedigree.justProband(SampleIdentifiers.defaultSample());
         assertThat(result, equalTo(expected));
     }
 
@@ -103,27 +103,27 @@ public class PedigreeSampleValidatorTest {
         Individual individual = Individual.builder().id("Nemo").build();
         Pedigree input = Pedigree.of(individual);
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(input, SampleIdentifier.defaultSample(), Collections.emptyList())
+                PedigreeSampleValidator.validate(input, SampleIdentifiers.defaultSample(), Collections.emptyList())
         );
     }
 
     @Test
     public void noPedigreeSampleIdentifierAndSampleNamesDoNotMatch() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Nemo", 0), ImmutableList.of("Adam"))
+                PedigreeSampleValidator.validate(Pedigree.empty(), "Nemo", ImmutableList.of("Adam"))
         );
     }
 
     @Test()
     public void singleSamplePedigreePresentAndAllIsWell() {
         Pedigree input = Pedigree.justProband("Adam");
-        Pedigree validated = PedigreeSampleValidator.validate(input, SampleIdentifier.of("Adam", 0), ImmutableList.of("Adam"));
+        Pedigree validated = PedigreeSampleValidator.validate(input, "Adam", ImmutableList.of("Adam"));
         assertThat(input, equalTo(validated));
     }
 
     @Test
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndEmptyPedigree() {
-        Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Adam", 0), ImmutableList
+        Pedigree result = PedigreeSampleValidator.validate(Pedigree.empty(), "Adam", ImmutableList
                 .of("Adam"));
         Pedigree expected = Pedigree.justProband("Adam");
         assertThat(result, equalTo(expected));
@@ -131,7 +131,7 @@ public class PedigreeSampleValidatorTest {
 
     @Test
     public void createsSingleSamplePedigreeWithSampleName() {
-        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 0), ImmutableList
+        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList
                 .of("Seth"));
         assertThat(result, equalTo(VALID_PEDIGREE));
     }
@@ -139,20 +139,20 @@ public class PedigreeSampleValidatorTest {
     @Test
     public void throwsErrorWhenMultiSampleDataHasNoPedFile() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(Pedigree.empty(), SampleIdentifier.of("Cain", 2), ImmutableList.of("Adam", "Eve", "Cain", "Abel"))
+                PedigreeSampleValidator.validate(Pedigree.empty(), "Cain", ImmutableList.of("Adam", "Eve", "Cain", "Abel"))
         );
     }
 
     @Test
     public void createsPedigreeForNamedMultiSampleWithPedFile() {
-        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 2), ImmutableList
+        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList
                 .of("Adam", "Eva", "Seth"));
         assertThat(result, equalTo(VALID_PEDIGREE));
     }
 
     @Test
     public void testCreatePedigreeWithMorePedigreeMembersThanSampleNames() {
-        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 2), ImmutableList
+        Pedigree result = PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList
                 .of("Eva", "Seth"));
         assertThat(result, equalTo(VALID_PEDIGREE));
     }
@@ -160,35 +160,35 @@ public class PedigreeSampleValidatorTest {
     @Test
     public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembers() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 4), ImmutableList.of("Adam", "Eva", "Cain", "Abel", "Seth"))
+                PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList.of("Adam", "Eva", "Cain", "Abel", "Seth"))
         );
     }
 
     @Test
     public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembersAndMismatchedSample() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 3), ImmutableList.of("Adam", "Marge", "Abel", "Seth"))
+                PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList.of("Adam", "Marge", "Abel", "Seth"))
         );
     }
 
     @Test
     public void testCreatePedigreeWithMismatchedSampleNameAndPedigreeMember() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 2), ImmutableList.of("Adam", "Marge", "Seth"))
+                PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList.of("Adam", "Marge", "Seth"))
         );
     }
 
     @Test
     public void testCreatePedigreeWithCompletelyMismatchedSampleNames() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Seth", 2), ImmutableList.of("Homer", "Marge", "Bart", "Lisa", "Maggie"))
+                PedigreeSampleValidator.validate(VALID_PEDIGREE, "Seth", ImmutableList.of("Homer", "Marge", "Bart", "Lisa", "Maggie"))
         );
     }
 
     @Test
     public void testValidatePedigreeWithMisMatchedSampleIdentifier() {
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(VALID_PEDIGREE, SampleIdentifier.of("Homer", 2), ImmutableList.of("Adam", "Eva", "Seth"))
+                PedigreeSampleValidator.validate(VALID_PEDIGREE, "Homer", ImmutableList.of("Adam", "Eva", "Seth"))
         );
     }
 
@@ -201,7 +201,7 @@ public class PedigreeSampleValidatorTest {
                         .build()
         );
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(pedigree, SampleIdentifier.of("Adam", 0), ImmutableList.of("Adam"))
+                PedigreeSampleValidator.validate(pedigree, "Adam", ImmutableList.of("Adam"))
         );
     }
 
@@ -222,7 +222,7 @@ public class PedigreeSampleValidatorTest {
                         .build()
         );
         assertThrows(RuntimeException.class, () ->
-                PedigreeSampleValidator.validate(multiFamilyPed, SampleIdentifier.of("Homer", 1), ImmutableList.of("Adam", "Homer"))
+                PedigreeSampleValidator.validate(multiFamilyPed, "Homer", ImmutableList.of("Adam", "Homer"))
         );
     }
 }

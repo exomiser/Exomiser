@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,9 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +37,7 @@ import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -87,7 +86,7 @@ public class HtmlResultsWriterTest {
     public void setUp(){
         TestVariantFactory varFactory = new TestVariantFactory();
 
-        VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation fgfr2MissenseVariantEvaluation = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
         fgfr2MissenseVariantEvaluation.setFrequencyData(FrequencyData.of("rs123456", Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.01f)));
         fgfr2MissenseVariantEvaluation.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f), MutationTasterScore
                 .of(1f), SiftScore.of(0f), CaddScore.of(1f)));
@@ -98,22 +97,22 @@ public class HtmlResultsWriterTest {
         fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2MissenseVariantEvaluation);
 
-        VariantEvaluation shhIndelVariantEvaluation = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 1.0);
+        VariantEvaluation shhIndelVariantEvaluation = TestVariantFactory.buildVariant(7, 155604800, "C", "CTT", SampleGenotype.het(), 30, 1.0);
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariantEvaluation);
 
         fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
 
-        unAnnotatedVariantEvaluation1 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30 , 1.0);
-        unAnnotatedVariantEvaluation2 = varFactory.buildVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30 , 1.0);
+        unAnnotatedVariantEvaluation1 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
+        unAnnotatedVariantEvaluation2 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
     }
 
     private AnalysisResults buildAnalysisResults(Sample sample, Analysis analysis, List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         return AnalysisResults.builder()
                 .sample(sample)
                 .analysis(analysis)
-                .sampleNames(Lists.newArrayList("Slartibartfast"))
+                .sampleNames(List.of("Slartibartfast"))
                 .genes(genes)
                 .variantEvaluations(variantEvaluations)
                 .build();
@@ -141,7 +140,7 @@ public class HtmlResultsWriterTest {
         Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
 
-        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        List<VariantEvaluation> variants = List.of(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), variants);
 
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantData").toString();
@@ -161,8 +160,8 @@ public class HtmlResultsWriterTest {
         Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
 
-        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
-        List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
+        List<VariantEvaluation> variants = List.of(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        List<Gene> genes = List.of(fgfr2Gene, shhGene);
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, genes, variants);
 
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
@@ -182,7 +181,7 @@ public class HtmlResultsWriterTest {
     public void testWriteTemplateWithEmptyDataAndFullAnalysis() throws Exception {
 
         Sample sample = Sample.builder()
-                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .hpoIds(List.of("HP:000001", "HP:000002"))
                 .build();
 
         Analysis analysis = Analysis.builder()
@@ -204,11 +203,11 @@ public class HtmlResultsWriterTest {
 
         unAnnotatedVariantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
 
-        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
-        List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
+        List<VariantEvaluation> variants = List.of(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        List<Gene> genes = List.of(fgfr2Gene, shhGene);
 
         Sample sample = Sample.builder()
-                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .hpoIds(List.of("HP:000001", "HP:000002"))
                 .build();
 
         Analysis analysis = Analysis.builder()

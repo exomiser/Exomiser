@@ -20,11 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.EnumSet;
@@ -39,120 +40,116 @@ import static org.hamcrest.MatcherAssert.assertThat;
 class VariantEffectCounterTest {
 
 
+    private final String arthur = "Arthur";
+    private final String zaphod = "Zaphod";
+    private final String trillian = "Trillian";
+
+    private final List<String> sampleNames = List.of(arthur, zaphod, trillian);
+
     @Test
     void singleSampleNoVariantSingleType() {
-        VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur"), ImmutableList.of());
+        VariantEffectCounter instance = new VariantEffectCounter(List.of("Arthur"), List.of());
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
-                .of(0)))));
+        assertThat(result, equalTo(List.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(0)))));
     }
 
     @Test
     void multiSampleNoVariantSingleType() {
-        VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur", "Ford"), ImmutableList.of());
+        VariantEffectCounter instance = new VariantEffectCounter(List.of("Arthur", "Ford"), List.of());
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
-                .of(0,0)))));
+        assertThat(result, equalTo(List.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(0, 0)))));
     }
-
 
     @Test
     void singleSampleSingleVariantSingleType() {
-
-        VariantEvaluation missense = VariantEvaluation.builder(1, 12345, "A", "T")
+        VariantEvaluation missense = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .sampleGenotypes(ImmutableMap.of("Arthur", SampleGenotype.het()))
+                .sampleGenotypes(SampleGenotypes.of(arthur, SampleGenotype.het()))
                 .build();
 
-        VariantEffectCounter instance = new VariantEffectCounter(ImmutableList.of("Arthur"), ImmutableList.of(missense));
+        VariantEffectCounter instance = new VariantEffectCounter(List.of("Arthur"), List.of(missense));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
-                .of(1)))));
+        assertThat(result, equalTo(List.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(1)))));
     }
 
     @Test
     void multiSampleSingleVariantSingleType() {
 
-        ImmutableMap<String, SampleGenotype> sampleGenotypes = ImmutableMap.of(
-                "Arthur", SampleGenotype.het(),
-                "Zaphod", SampleGenotype.homRef(),
-                "Trillian", SampleGenotype.homAlt()
+        SampleGenotypes sampleGenotypes = SampleGenotypes.of(
+                arthur, SampleGenotype.het(),
+                zaphod, SampleGenotype.homRef(),
+                trillian, SampleGenotype.homAlt()
         );
-        VariantEvaluation missense = VariantEvaluation.builder(1, 12345, "A", "T")
+        VariantEvaluation missense = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
-        VariantEffectCounter instance = new VariantEffectCounter(sampleGenotypes.keySet()
-                .asList(), ImmutableList.of(missense));
+        VariantEffectCounter instance = new VariantEffectCounter(sampleNames, List.of(missense));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
-                .of(1, 0, 1)))));
+        assertThat(result, equalTo(List.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(1, 0, 1)))));
     }
 
     @Test
     void multiSampleMultiVariantSingleType() {
 
-        ImmutableMap<String, SampleGenotype> missenseOneSampleGenotypes = ImmutableMap.of(
-                "Arthur", SampleGenotype.het(),
-                "Zaphod", SampleGenotype.homRef(),
-                "Trillian", SampleGenotype.homAlt()
+        SampleGenotypes missenseOneSampleGenotypes = SampleGenotypes.of(
+                arthur, SampleGenotype.het(),
+                zaphod, SampleGenotype.homRef(),
+                trillian, SampleGenotype.homAlt()
         );
-        VariantEvaluation missenseOne = VariantEvaluation.builder(1, 12345, "A", "T")
+        VariantEvaluation missenseOne = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(missenseOneSampleGenotypes)
                 .build();
 
-        ImmutableMap<String, SampleGenotype> missenseTwoSampleGenotypes = ImmutableMap.of(
-                "Arthur", SampleGenotype.het(),
-                "Zaphod", SampleGenotype.het(),
-                "Trillian", SampleGenotype.homRef()
+        SampleGenotypes missenseTwoSampleGenotypes = SampleGenotypes.of(
+                SampleData.of(arthur, SampleGenotype.het()),
+                SampleData.of(zaphod, SampleGenotype.het()),
+                SampleData.of(trillian, SampleGenotype.homRef())
         );
-        VariantEvaluation missenseTwo = VariantEvaluation.builder(2, 54321, "C", "G")
+        VariantEvaluation missenseTwo = TestFactory.variantBuilder(2, 54321, "C", "G")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(missenseTwoSampleGenotypes)
                 .build();
 
 
-        VariantEffectCounter instance = new VariantEffectCounter(missenseOneSampleGenotypes.keySet()
-                .asList(), ImmutableList.of(missenseOne, missenseTwo));
+        VariantEffectCounter instance = new VariantEffectCounter(sampleNames, List.of(missenseOne, missenseTwo));
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT));
-        assertThat(result, equalTo(ImmutableList.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList
-                .of(2, 1, 1)))));
+        assertThat(result, equalTo(List.of(new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(2, 1, 1)))));
     }
 
     @Test
     void multiSampleMultiVariantMultiType() {
 
-        ImmutableMap<String, SampleGenotype> missenseOneSampleGenotypes = ImmutableMap.of(
-                "Arthur", SampleGenotype.het(),
-                "Zaphod", SampleGenotype.homRef(),
-                "Trillian", SampleGenotype.homAlt()
+        SampleGenotypes missenseOneSampleGenotypes = SampleGenotypes.of(
+                arthur, SampleGenotype.het(),
+                zaphod, SampleGenotype.homRef(),
+                trillian, SampleGenotype.homAlt()
         );
-        VariantEvaluation missenseOne = VariantEvaluation.builder(1, 12345, "A", "T")
+        VariantEvaluation missenseOne = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(missenseOneSampleGenotypes)
                 .build();
 
-        ImmutableMap<String, SampleGenotype> stopGainedSampleGenotypes = ImmutableMap.of(
-                "Arthur", SampleGenotype.het(),
-                "Zaphod", SampleGenotype.het(),
-                "Trillian", SampleGenotype.homRef()
+        SampleGenotypes stopGainedSampleGenotypes = SampleGenotypes.of(
+                arthur, SampleGenotype.het(),
+                zaphod, SampleGenotype.het(),
+                trillian, SampleGenotype.homRef()
         );
-        VariantEvaluation stopGained = VariantEvaluation.builder(2, 54321, "C", "G")
+        VariantEvaluation stopGained = TestFactory.variantBuilder(2, 54321, "C", "G")
                 .variantEffect(VariantEffect.STOP_GAINED)
                 .sampleGenotypes(stopGainedSampleGenotypes)
                 .build();
 
 
-        VariantEffectCounter instance = new VariantEffectCounter(missenseOneSampleGenotypes.keySet()
-                .asList(), ImmutableList.of(missenseOne, stopGained));
+        VariantEffectCounter instance = new VariantEffectCounter(sampleNames, List.of(missenseOne, stopGained));
 
         List<VariantEffectCount> result = instance.getVariantEffectCounts(EnumSet.of(VariantEffect.MISSENSE_VARIANT, VariantEffect.STOP_GAINED));
 
-        ImmutableList<VariantEffectCount> expected = ImmutableList.of(
-                new VariantEffectCount(VariantEffect.STOP_GAINED, ImmutableList.of(1, 1, 0)),
-                new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, ImmutableList.of(1, 0, 1))
+        List<VariantEffectCount> expected = List.of(
+                new VariantEffectCount(VariantEffect.STOP_GAINED, List.of(1, 1, 0)),
+                new VariantEffectCount(VariantEffect.MISSENSE_VARIANT, List.of(1, 0, 1))
         );
         assertThat(result, equalTo(expected));
     }

@@ -22,10 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.*;
-import org.monarchinitiative.exomiser.core.model.AlleleCall;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,11 +170,11 @@ public class InheritanceModeAnnotator {
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation
             //then we can mostly discard the VariantContext, apart from writing out again...
-            Map<String, SampleGenotype> sampleGenotypes = variantEvaluation.getSampleGenotypes();
+            SampleGenotypes sampleGenotypes = variantEvaluation.getSampleGenotypes();
             logger.debug("Converting {} {} {}", variantEvaluation.ref(), variantEvaluation.alt(), sampleGenotypes);
-            for (Map.Entry<String, SampleGenotype> entry : sampleGenotypes.entrySet()) {
-                String sampleName = entry.getKey();
-                SampleGenotype sampleGenotype = entry.getValue();
+            for (SampleData sampleData : sampleGenotypes) {
+                String sampleName = sampleData.getId();
+                SampleGenotype sampleGenotype = sampleData.getSampleGenotype();
                 Genotype genotype = toGenotype(sampleGenotype);
                 logger.debug("Converted {} {} to {}", sampleName, sampleGenotype, genotype);
                 genotypeCallsBuilder.getSampleToGenotype().put(sampleName, genotype);

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.AlleleCall;
+import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
@@ -65,13 +65,12 @@ public class VariantEffectCounter {
         }
 
         for (VariantEvaluation variant : variantEvaluations) {
-            Map<String, SampleGenotype> sampleGenotypes = variant.getSampleGenotypes();
-            // this is always an ordered map in the order of the sample names declared in the VCF header
-            List<SampleGenotype> genotypes = ImmutableList.copyOf(sampleGenotypes.values());
+            // this is always in the order of the sample names declared in the VCF header
+            List<SampleData> sampleData = variant.getSampleGenotypes().getSampleData();
             VariantEffect effect = variant.getVariantEffect();
             int[] effectCounts = tempCounts.get(effect);
-            for (int i = 0; i < genotypes.size(); i++) {
-                SampleGenotype sampleGenotype = genotypes.get(i);
+            for (int i = 0; i < sampleData.size(); i++) {
+                SampleGenotype sampleGenotype = sampleData.get(i).getSampleGenotype();
                 List<AlleleCall> calls = sampleGenotype.getCalls();
                 if (calls.size() == 2 && calls.contains(AlleleCall.ALT)) {
                     effectCounts[i]++;

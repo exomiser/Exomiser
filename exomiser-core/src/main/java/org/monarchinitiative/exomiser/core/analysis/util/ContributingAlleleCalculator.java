@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +41,13 @@ class ContributingAlleleCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(ContributingAlleleCalculator.class);
 
-    private final SampleIdentifier probandSampleIdentifier;
+    private final String probandId;
     private final Sex probandSex;
     private final CompHetAlleleCalculator compHetAlleleCalculator;
     private final IncompletePenetranceAlleleCalculator incompletePenetranceAlleleCalculator;
 
-    ContributingAlleleCalculator(SampleIdentifier probandSampleIdentifier, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
-        this.probandSampleIdentifier = probandSampleIdentifier;
+    ContributingAlleleCalculator(String probandId, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        this.probandId = probandId;
         this.probandSex = probandSex;
         this.compHetAlleleCalculator = new CompHetAlleleCalculator(inheritanceModeAnnotator);
         this.incompletePenetranceAlleleCalculator = new IncompletePenetranceAlleleCalculator(inheritanceModeAnnotator.getPedigree());
@@ -127,7 +126,7 @@ class ContributingAlleleCalculator {
         logger.debug("Best CompHet: {}", bestCompHetPair);
 
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt(probandSampleIdentifier))
+                .filter(variantIsHomozygousAlt(probandId))
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
         logger.debug("Best HomAlt: {}", bestHomozygousAlt);
 
@@ -170,8 +169,8 @@ class ContributingAlleleCalculator {
         return bestVariant.map(Collections::singletonList).orElseGet(Collections::emptyList);
     }
 
-    private Predicate<VariantEvaluation> variantIsHomozygousAlt(SampleIdentifier probandSampleIdentifier) {
-        return ve -> ve.getSampleGenotype(probandSampleIdentifier.getId()).isHomAlt();
+    private Predicate<VariantEvaluation> variantIsHomozygousAlt(String probandId) {
+        return ve -> ve.getSampleGenotype(probandId).isHomAlt();
     }
 
     /**

@@ -35,12 +35,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -54,13 +53,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceModeAnalyserTest {
 
     private Gene newGene() {
         return new Gene("ABC", 123);
+    }
+
+    private Gene newGene(VariantEvaluation... variantEvaluations) {
+        Gene gene = newGene();
+        for (int i = 0; i < variantEvaluations.length; i++) {
+            gene.addVariant(variantEvaluations[i]);
+        }
+        return gene;
     }
 
     private String variantString(VariantEvaluation variant) {
@@ -92,9 +98,10 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModesSingleSampleNoPassedVariants() {
-        Gene gene = newGene();
-        gene.addVariant(filteredVariant(1, 1 , "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER)));
-
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 1, "A", "T")
+                .filterResults(FilterResult.fail(FilterType.FREQUENCY_FILTER))
+                .build();
+        Gene gene = newGene(variantEvaluation);
         Pedigree pedigree = Pedigree.justProband("Adam");
 
         InheritanceModeAnalyser instance = newInheritanceModeAnalyser(pedigree);
@@ -106,15 +113,11 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModesSingleSampleOnePassedVariantHet() {
-        List<Allele> alleles = buildAlleles("A", "T");
-        // build Genotype
-        Genotype genotype = buildPhasedSampleGenotype("Adam", alleles.get(0), alleles.get(1));
-        assertThat(genotype.getType(), equalTo(GenotypeType.HET));
-
-        VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
-
-        Gene gene = newGene();
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12345, "A", "T")
+                .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
+                .sampleGenotypes(SampleGenotypes.of("Adam", SampleGenotype.het()))
+                .build();
+        Gene gene = newGene(variantEvaluation);
 
         Pedigree pedigree = Pedigree.justProband("Adam");
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
-import org.monarchinitiative.exomiser.core.model.SampleIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -55,16 +54,16 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
     /**
-     * @param probandSampleIdentifier  Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
+     * @param probandId                Sample id of the proband in the VCF.
      * @param inheritanceModeAnnotator An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
      * @throws NullPointerException if any input arguments are null.
      * @since 10.0.0
      */
-    public RawScoreGeneScorer(SampleIdentifier probandSampleIdentifier, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
-        Objects.requireNonNull(probandSampleIdentifier);
+    public RawScoreGeneScorer(String probandId, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        Objects.requireNonNull(probandId);
         Objects.requireNonNull(inheritanceModeAnnotator);
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
-        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandSampleIdentifier, probandSex, inheritanceModeAnnotator);
+        this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
     }
 

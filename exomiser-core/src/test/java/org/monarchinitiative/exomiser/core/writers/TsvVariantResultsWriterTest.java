@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,9 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
@@ -39,6 +37,7 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
@@ -49,6 +48,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -59,8 +59,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class TsvVariantResultsWriterTest {
-
-    private final TestVariantFactory varFactory = new TestVariantFactory();
 
     private final TsvVariantResultsWriter instance = new TsvVariantResultsWriter();
 
@@ -113,20 +111,20 @@ public class TsvVariantResultsWriterTest {
     }
 
     private VariantEvaluation makeFailVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30,1.0);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(7, 155604800, "C", "CTT", SampleGenotype.het(), 30, 1.0);
         variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
         return variant;
     }
 
     private VariantEvaluation makePassVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256214, "A", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         return variant;
     }
 
     private VariantEvaluation makeContributingVariant() {
-        VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 2.2);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         return variant;
@@ -180,7 +178,7 @@ public class TsvVariantResultsWriterTest {
         GeneScore geneScore = GeneScore.builder()
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .geneIdentifier(fgfr2.getGeneIdentifier())
-                .contributingVariants(ImmutableList.of(contributingVariant))
+                .contributingVariants(List.of(contributingVariant))
                 .build();
 
         fgfr2.addVariant(contributingVariant);
@@ -216,7 +214,7 @@ public class TsvVariantResultsWriterTest {
         GeneScore geneScore = GeneScore.builder()
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .geneIdentifier(fgfr2.getGeneIdentifier())
-                .contributingVariants(ImmutableList.of(contributingVariant))
+                .contributingVariants(List.of(contributingVariant))
                 .build();
 
         fgfr2.addVariant(contributingVariant);

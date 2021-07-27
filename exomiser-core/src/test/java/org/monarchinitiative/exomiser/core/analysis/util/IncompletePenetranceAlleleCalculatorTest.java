@@ -21,13 +21,13 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.svart.*;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -40,20 +40,22 @@ import static org.monarchinitiative.exomiser.core.model.Pedigree.justProband;
 
 class IncompletePenetranceAlleleCalculatorTest {
 
-    private final Contig chr1 = GenomicAssemblies.GRCh37p13().contigById(1);
+    private final String proband = "proband";
+    private final String affectedMother = "affectedMother";
+    private final String unaffectedFather = "unaffectedFather";
+
     private final Pedigree twoAffected = Pedigree.of(
-            Individual.builder().id("proband").motherId("affectedMother").fatherId("unaffectedFather").sex(MALE).status(AFFECTED).build(),
-            Individual.builder().id("affectedMother").sex(FEMALE).status(AFFECTED).build(),
-            Individual.builder().id("unaffectedFather").sex(MALE).status(UNAFFECTED).build()
+            Individual.builder().id(proband).motherId(affectedMother).fatherId(unaffectedFather).sex(MALE).status(AFFECTED).build(),
+            Individual.builder().id(affectedMother).sex(FEMALE).status(AFFECTED).build(),
+            Individual.builder().id(unaffectedFather).sex(MALE).status(UNAFFECTED).build()
     );
 
     @Test
     void findCompatibleVariantsSingleton() {
         Pedigree singleton = justProband("proband");
 
-        // TODO - make a testVariantbuilder to use chr, pos etc...
-        VariantEvaluation variant = VariantEvaluation.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), "A", "T")
-                .sampleGenotypes(Map.of("proband", SampleGenotype.het()))
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 12345, "A", "T")
+                .sampleGenotypes(SampleGenotypes.of(proband, SampleGenotype.het()))
                 .build();
 
         IncompletePenetranceAlleleCalculator instance = new IncompletePenetranceAlleleCalculator(singleton);
@@ -62,13 +64,13 @@ class IncompletePenetranceAlleleCalculatorTest {
 
     @Test
     void findCompatibleVariantsTrio() {
-        Map<String, SampleGenotype> sampleGenotypes = Map.of(
-                "proband", SampleGenotype.het(),
-                "affectedMother", SampleGenotype.homAlt(),
-                "unaffectedFather", SampleGenotype.homRef()
+        SampleGenotypes sampleGenotypes = SampleGenotypes.of(
+                proband, SampleGenotype.het(),
+                affectedMother, SampleGenotype.homAlt(),
+                unaffectedFather, SampleGenotype.homRef()
         );
 
-        VariantEvaluation variant = VariantEvaluation.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), "A", "T")
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
@@ -78,13 +80,13 @@ class IncompletePenetranceAlleleCalculatorTest {
 
     @Test
     void canBePresentInUnaffected() {
-        Map<String, SampleGenotype> sampleGenotypes = Map.of(
-                "proband", SampleGenotype.het(),
-                "affectedMother", SampleGenotype.homAlt(),
-                "unaffectedFather", SampleGenotype.het()
+        SampleGenotypes sampleGenotypes = SampleGenotypes.of(
+                proband, SampleGenotype.het(),
+                affectedMother, SampleGenotype.homAlt(),
+                unaffectedFather, SampleGenotype.het()
         );
 
-        VariantEvaluation variant = VariantEvaluation.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), "A", "T")
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 
@@ -94,13 +96,13 @@ class IncompletePenetranceAlleleCalculatorTest {
 
     @Test
     void mustBePresentInAllAffected() {
-        Map<String, SampleGenotype> sampleGenotypes = Map.of(
-                "proband", SampleGenotype.het(),
-                "affectedMother", SampleGenotype.homRef(),
-                "unaffectedFather", SampleGenotype.het()
+        SampleGenotypes sampleGenotypes = SampleGenotypes.of(
+                proband, SampleGenotype.het(),
+                affectedMother, SampleGenotype.homRef(),
+                unaffectedFather, SampleGenotype.het()
         );
 
-        VariantEvaluation variant = VariantEvaluation.builder().with(chr1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(12345), "A", "T")
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 12345, "A", "T")
                 .sampleGenotypes(sampleGenotypes)
                 .build();
 

@@ -23,13 +23,9 @@ package org.monarchinitiative.exomiser.core.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -51,15 +47,15 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-@JsonPropertyOrder({"genomeAssembly", "contigName", "contigId", "start", "end", "ref", "alt", "id", "type", "length", "changeLength", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
+@JsonPropertyOrder({"genomeAssembly", "contigName", "contigId", "start", "end", "ref", "alt", "id", "type", "length", "changeLength", "phredScore", "variantEffect", "nonCodingVariant", "whiteListed", "filterStatus", "contributesToGeneScore", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
 public class VariantEvaluation extends AbstractVariant implements Comparable<VariantEvaluation>, Filterable, Inheritable {
 
     //threshold over which a variant effect score is considered pathogenic
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
 
-    private static final String DEFAULT_SAMPLE_NAME = SampleIdentifier.defaultSample().getId();
     // These shouldn't be used in production, but in cases where there is no genotype this will prevent NullPointer and ArrayIndexOutOfBounds Exceptions
-    protected static final Map<String, SampleGenotype> SINGLE_SAMPLE_HET_GENOTYPE = Map.of(DEFAULT_SAMPLE_NAME, SampleGenotype.het());
+    private static final SampleData DEFAULT_SAMPLE_DATA = SampleData.of(SampleIdentifiers.defaultSample(), SampleGenotype.het());
+    protected static final SampleGenotypes SINGLE_SAMPLE_DATA_HET_GENOTYPE = SampleGenotypes.of(DEFAULT_SAMPLE_DATA);
 
     // HTSJDK {@link VariantContext} instance of this allele
     private final VariantContext variantContext;
@@ -70,9 +66,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     // Variant variables, for a richer more VCF-like experience
     private final double phredScore;
 
-    // IMPORTANT! This map *MUST* be an ordered map
-    // TODO: link to SampleIdentifier
-    private final Map<String, SampleGenotype> sampleGenotypes;
+    private final SampleGenotypes sampleGenotypes;
 
     //VariantAnnotation
     private final String geneSymbol;
@@ -98,9 +92,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.variantContext = builder.variantContext;
         this.altAlleleId = builder.altAlleleId;
         this.phredScore = builder.phredScore;
-        // IMPORTANT! This map *MUST* be an ordered map
-        this.sampleGenotypes = builder.sampleGenotypes.isEmpty() ? SINGLE_SAMPLE_HET_GENOTYPE
-                : ImmutableMap.copyOf(builder.sampleGenotypes);
+
+        this.sampleGenotypes = builder.sampleGenotypes.isEmpty() ? SINGLE_SAMPLE_DATA_HET_GENOTYPE : builder.sampleGenotypes;
 
         this.passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
         this.failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
@@ -113,7 +106,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.pathogenicityData = builder.pathogenicityData;
     }
 
-    private VariantEvaluation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, Map<String, SampleGenotype> sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
+    private VariantEvaluation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
         super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
         this.variantContext = variantContext;
         this.altAlleleId = altAlleleId;
@@ -207,24 +200,24 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     @JsonIgnore
     public String getGenotypeString() {
-        List<String> genotypeStrings = new ArrayList<>(sampleGenotypes.size());
-
-        for (SampleGenotype sampleGenotype : sampleGenotypes.values()) {
+        StringJoiner genotypeStrings = new StringJoiner(":");
+        for (SampleData sampleData : sampleGenotypes) {
+            SampleGenotype sampleGenotype = sampleData.getSampleGenotype();
             if (sampleGenotype.isEmpty()) {
                 genotypeStrings.add(SampleGenotype.noCall().toString());
             } else {
                 genotypeStrings.add(sampleGenotype.toString());
             }
         }
-        return String.join(":", genotypeStrings);
+        return genotypeStrings.toString();
     }
 
     /**
-     * @return A map of sample ids and their corresponding {@link SampleGenotype}
-     * @since 11.0.0
+     * @return A list of {@link SampleData} for this variant
+     * @since 13.0.0
      */
     @JsonIgnore
-    public Map<String, SampleGenotype> getSampleGenotypes() {
+    public SampleGenotypes getSampleGenotypes() {
         return sampleGenotypes;
     }
 
@@ -238,7 +231,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @since 11.0.0
      */
     public SampleGenotype getSampleGenotype(String sampleId) {
-        return sampleGenotypes.getOrDefault(sampleId, SampleGenotype.empty());
+        return sampleGenotypes.getSampleGenotype(sampleId);
     }
 
     /**
@@ -453,6 +446,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         contributingModes.add(modeOfInheritance);
     }
 
+    @JsonProperty("contributesToGeneScore")
     public boolean contributesToGeneScore() {
         return !contributingModes.isEmpty();
     }
@@ -541,10 +535,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
@@ -580,39 +574,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return new Builder().with(variant);
     }
 
-    /**
-     * Testing only builder function - TODO: move to TestFactory or something?
-     * DO NOT USE IN PRODUCTION CODE!
-     *
-     * @param chr
-     * @param start
-     * @param ref
-     * @param alt
-     * @return
-     * @deprecated This is a test-only method which will be moved
-     */
-    public static VariantEvaluation.Builder builder(int chr, int start, String ref, String alt) {
-        return builder().with(GenomeAssembly.HG19.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), ref, alt)
-                .genomeAssembly(GenomeAssembly.HG19);
-    }
-
-    /**
-     * Testing only builder function - TODO: move to TestFactory or something?
-     * DO NOT USE IN PRODUCTION CODE!
-     *
-     * @param chr
-     * @param start
-     * @param ref
-     * @param alt
-     * @return
-     * @deprecated This is a test-only method which will be moved
-     */
-    public static VariantEvaluation.Builder builder(int chr, int start, int end, String ref, String alt, int changeLength) {
-        return builder()
-                .with(GenomeAssembly.HG19.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), Position.of(end), ref, alt, changeLength)
-                .genomeAssembly(GenomeAssembly.HG19);
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -625,7 +586,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         private double phredScore = 0;
         private VariantContext variantContext;
         private int altAlleleId;
-        private Map<String, SampleGenotype> sampleGenotypes = ImmutableMap.of();
+        private SampleGenotypes sampleGenotypes = SampleGenotypes.of();
 
         private PathogenicityData pathogenicityData = PathogenicityData.empty();
         private FrequencyData frequencyData = FrequencyData.empty();
@@ -656,9 +617,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return this;
         }
 
-        //TODO - this is error-prone as it is possible to supply a HashMap which would screw-up the fact that we're
-        // relying on the inherently ORDERED ImmutableMap implementation
-        public Builder sampleGenotypes(Map<String, SampleGenotype> sampleGenotypes) {
+        public Builder sampleGenotypes(SampleGenotypes sampleGenotypes) {
             this.sampleGenotypes = Objects.requireNonNull(sampleGenotypes);
             return this;
         }
@@ -720,30 +679,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         @Override
         protected Builder self() {
             return this;
-        }
-
-        /**
-         * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
-         */
-        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
-            Allele refAllele = Allele.create(ref, true);
-            Allele altAllele = Allele.create(alt);
-            List<Allele> alleles = Arrays.asList(refAllele, altAllele);
-
-            VariantContextBuilder vcBuilder = new VariantContextBuilder();
-
-            // build Genotype
-            GenotypeBuilder gtBuilder = new GenotypeBuilder(DEFAULT_SAMPLE_NAME).noAttributes();
-            //default to HETEROZYGOUS
-            gtBuilder.alleles(alleles);
-
-            // build VariantContext
-            vcBuilder.loc(String.valueOf(chr), pos, pos - 1L + ref.length());
-            vcBuilder.alleles(alleles);
-            vcBuilder.genotypes(gtBuilder.make());
-            vcBuilder.log10PError(-0.1 * qual);
-
-            return vcBuilder.make();
         }
 
     }

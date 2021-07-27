@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,18 +20,18 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
@@ -43,8 +43,6 @@ import java.util.stream.Stream;
 public class TestVariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(TestVariantFactory.class);
-
-    private final VariantFactoryImpl variantFactory = (VariantFactoryImpl) TestFactory.buildDefaultVariantFactory();
 
     /**
      * Construct a new {@link Variant} object with the given values. n.b. this follows the VCF standard of being 1-based.
@@ -58,15 +56,20 @@ public class TestVariantFactory {
      * @param qual phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
+    public static VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, SampleGenotype gt, int readDepth, double qual) {
         if (alt.contains(",")) {
             throw new IllegalArgumentException("Only single ALT alleles supported.");
         }
-        VariantContext variantContext = buildVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-        return variantFactory.createVariantEvaluations(Stream.of(variantContext)).findFirst().get();
+        String vcfLine = String.format("%d %d . %s %s %f PASS . GT:RD %s:%d", chrom, pos, ref, alt, qual, gt, readDepth);
+        VcfReader vcfReader = TestVcfReader.builder()
+                .samples("sample")
+                .vcfLines(vcfLine)
+                .build();
+        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory(vcfReader);
+        return variantFactory.createVariantEvaluations().findFirst().get();
     }
 
-    private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, Genotype genotype, int readDepth, double qual) {
+    private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, SampleGenotype genotype, int readDepth, double qual) {
         Allele refAllele = Allele.create(ref, true);
         Allele altAllele = Allele.create(alt);
 
@@ -85,27 +88,22 @@ public class TestVariantFactory {
         return vcBuilder.make();
     }
 
-    private GenotypeBuilder buildGenotype(Genotype gt, int readDepth, Allele refAllele, Allele altAllele) {
+    private GenotypeBuilder buildGenotype(SampleGenotype gt, int readDepth, Allele refAllele, Allele altAllele) {
         GenotypeBuilder gtBuilder = new GenotypeBuilder("sample");
-        setGenotype(gtBuilder, refAllele, altAllele, gt);
+        gtBuilder.alleles(genotype(refAllele, altAllele, gt));
         gtBuilder.attribute("RD", readDepth);
         return gtBuilder;
     }
 
-    private void setGenotype(GenotypeBuilder genotypeBuilder, Allele refAllele, Allele altAllele, Genotype genotype) {
-        switch (genotype) {
-            case HOMOZYGOUS_ALT:
-                genotypeBuilder.alleles(Arrays.asList(altAllele, altAllele));
-                break;
-            case HOMOZYGOUS_REF:
-                genotypeBuilder.alleles(Arrays.asList(refAllele, refAllele));
-                break;
-            case HETEROZYGOUS:
-                genotypeBuilder.alleles(Arrays.asList(refAllele, altAllele));
-                break;
-            default:
-                break;
+    private List<Allele> genotype(Allele refAllele, Allele altAllele, SampleGenotype genotype) {
+        if (genotype.isHomRef()) {
+            return List.of(altAllele, altAllele);
+        } else if (genotype.isHomRef()) {
+            return List.of(refAllele, refAllele);
+        } else if (genotype.isHet()) {
+            return List.of(refAllele, altAllele);
         }
+        return List.of();
     }
 
 }

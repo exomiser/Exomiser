@@ -20,15 +20,14 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableMap;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.exomiser.core.model.AlleleCall;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -58,33 +57,38 @@ public class VariantContextSampleGenotypeConverter {
      * @param altAlleleId
      * @return
      */
-    public static Map<String, SampleGenotype> createAlleleSampleGenotypes(VariantContext variantContext, int altAlleleId) {
-        ImmutableMap.Builder<String, SampleGenotype> builder = ImmutableMap.builder();
+    public static SampleGenotypes createAlleleSampleGenotypes(VariantContext variantContext, int altAlleleId) {
         Allele refAllele = variantContext.getReference();
         Allele altAllele = variantContext.getAlternateAllele(altAlleleId);
         logger.debug("Making sample genotypes for altAllele: {} {} {} {}", altAlleleId, refAllele, altAllele, variantContext);
-
+        List<SampleData> samples = new ArrayList<>(variantContext.getNSamples());
         for (Genotype genotype : variantContext.getGenotypes()) {
             logger.debug("Building sample genotype for {}", genotype);
-            SampleGenotype sampleGenotype;
-            if (genotype.hasAnyAttribute("GT")) {
-                AlleleCall[] alleleCalls = buildAlleleCalls(refAllele, altAllele, genotype.getAlleles());
-                sampleGenotype = buildSampleGenotype(genotype, alleleCalls);
-            } else if (genotype.hasExtendedAttribute("CN")) {
+            String sampleName = genotype.getSampleName();
+            SampleGenotype sampleGenotype = buildSampleGenotype(refAllele, altAllele, genotype);
+            CopyNumber copyNumber = buildCopyNumber(genotype);
+            if (sampleGenotype.isNoCall() && !copyNumber.isEmpty()) {
+                // Canvas hack to
                 logger.debug("Building sample genotype from CN {}", genotype);
-                int CN = parseIntAttribute(genotype, "CN", 2);
-                // MCC is a Canvas-specific major chromosome count
+                int CN = copyNumber.copies();
+                // BUT chrX 140205371 Canvas:REF:chrX:140205371-140208082 N . 7.53 PASS DQ=31.0549859513643;dq20;END=140208082;CIPOS=-221,221;CIEND=-291,221 RC:BC:CN 56:5:1
+                // MCC is a Canvas-specific major chromosome count - WT is 1 (1 maternal, 1 paternal)
                 int MCC = parseIntAttribute(genotype, "MCC", -1);
                 sampleGenotype = (CN == 0 || CN == MCC) ? SampleGenotype.homAlt() : SampleGenotype.het();
-            } else {
-                sampleGenotype = SampleGenotype.empty();
             }
             logger.debug("Variant [{} {}] sample {} {} has genotype {}", variantContext.getReference(), altAllele, genotype, genotype.getType(), sampleGenotype);
-            String sampleName = genotype.getSampleName();
-            builder.put(sampleName, sampleGenotype);
+            SampleData sampleData = SampleData.of(sampleName, sampleGenotype, copyNumber);
+            samples.add(sampleData);
         }
+        return SampleGenotypes.of(samples);
+    }
 
-        return builder.build();
+    private static CopyNumber buildCopyNumber(Genotype genotype) {
+        if (genotype.hasExtendedAttribute("CN")) {
+            int copyNumber = parseIntAttribute(genotype, "CN", -1);
+            return CopyNumber.of(copyNumber);
+        }
+        return CopyNumber.empty();
     }
 
     private static int parseIntAttribute(Genotype genotype, String key, int defaultValue) {
@@ -94,6 +98,14 @@ public class VariantContextSampleGenotypeConverter {
             // swallow
         }
         return defaultValue;
+    }
+
+    private static SampleGenotype buildSampleGenotype(Allele refAllele, Allele altAllele, Genotype genotype) {
+        if (genotype.hasAnyAttribute("GT")) {
+            AlleleCall[] alleleCalls = buildAlleleCalls(refAllele, altAllele, genotype.getAlleles());
+            return genotype.isPhased() ? SampleGenotype.phased(alleleCalls) : SampleGenotype.of(alleleCalls);
+        }
+        return SampleGenotype.empty();
     }
 
     private static AlleleCall[] buildAlleleCalls(Allele refAllele, Allele altAllele, List<Allele> genotypeAlleles) {
@@ -127,9 +139,5 @@ public class VariantContextSampleGenotypeConverter {
         }
         //does this make sense for symbolic?
         return AlleleCall.OTHER_ALT;
-    }
-
-    private static SampleGenotype buildSampleGenotype(Genotype genotype, AlleleCall[] alleleCalls) {
-        return genotype.isPhased() ? SampleGenotype.phased(alleleCalls) : SampleGenotype.of(alleleCalls);
     }
 }

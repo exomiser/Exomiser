@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,17 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.*;
-import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.*;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.VariantContextSampleGenotypeConverter;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -49,25 +49,26 @@ public final class TestAlleleFactory {
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .filterResults(filterResult)
                 .build();
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantEffect variantEffect) {
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .variantEffect(variantEffect)
                 .filterResults(filterResult)
                 .build();
     }
 
+    // TODO: Should this be replaced with the TestVcfReader?
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext) {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
         int altAlleleId = findAltAlleleId(alt, altAlleles);
+        // TODO: Should this be replaced with the TestVcfReader?
+        SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
-        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
-
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
                 .sampleGenotypes(sampleGenotypes)
@@ -79,9 +80,9 @@ public final class TestAlleleFactory {
         List<Allele> altAlleles = variantContext.getAlternateAlleles();
         int altAlleleId = findAltAlleleId(alt, altAlleles);
 
-        Map<String, SampleGenotype> sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
+        SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
-        return VariantEvaluation.builder(chr, pos, ref, alt)
+        return TestFactory.variantBuilder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
                 .variantEffect(variantEffect)
