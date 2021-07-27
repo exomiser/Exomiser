@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFConstants;
 import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
@@ -168,33 +167,6 @@ public class VariantContextConverter {
             return variantContext.getAttributeAsString("EVENT", "");
         }
         return variantContext.getAttributeAsString("EVENTID", "");
-    }
-
-    private static VariantType parseAlleleVariantType(VariantContext variantContext, Allele altAllele) {
-        // WARNING! variantContext.getStructuralVariantType() IS NOT SAFE! It throws the following exception:
-        //  java.lang.IllegalArgumentException: No enum constant htsjdk.variant.variantcontext.StructuralVariantType.SVA
-        //  for the line
-        //  22   16918023    esv3647185  C   <INS:ME:SVA>    100 PASS    SVLEN=1312;SVTYPE=SVA;TSD=AAAAATACAAAAATTTGC;VT=SV   GT  0|1
-        if (altAllele.isSymbolic()) {
-            String svTypeString = variantContext.getAttributeAsString(VCFConstants.SVTYPE, "");
-            // SV types should not be SMALL so try parsing the alt allele if the SVTYPE field isn't recognised (as in the case of ALU, LINE, SVA from 1000 genomes)
-            VariantType parseValue = VariantType.parseType(altAllele.getDisplayString());
-            return parseValue == VariantType.SYMBOLIC ? VariantType.parseType(svTypeString) : parseValue;
-        }
-
-        return nonSymbolicVariantType(variantContext.getReference(), altAllele);
-    }
-
-    private static VariantType nonSymbolicVariantType(Allele refAllele, Allele altAllele) {
-        int refLength = refAllele.length();
-        int altLength = altAllele.length();
-        if (refLength == altLength) {
-            if (altLength == 1) {
-                return VariantType.SNV;
-            }
-            return VariantType.MNV;
-        }
-        return refLength > altLength ? VariantType.DEL : VariantType.INS;
     }
 
     private static ConfidenceInterval parseConfidenceInterval(VariantContext variantContext, String ciKey) {
