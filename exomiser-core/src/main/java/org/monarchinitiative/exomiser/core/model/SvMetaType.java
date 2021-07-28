@@ -25,7 +25,7 @@ import org.monarchinitiative.svart.VariantType;
 public enum SvMetaType {
     GAIN, GAIN_ME, LOSS, LOSS_ME, INVERSION, COMPLEX, CNV, NEUTRAL;
 
-    static SvMetaType toMetaType(VariantType variantType) {
+    private static SvMetaType toMetaType(VariantType variantType) {
         switch (variantType) {
             case DEL:
             case CNV_LOSS:
@@ -43,6 +43,7 @@ public enum SvMetaType {
             case DUP_INV_BEFORE:
             case DUP_INV_AFTER:
             case CNV_GAIN:
+            case STR:
                 return GAIN;
             case INS_ME:
             case INS_ME_ALU:
