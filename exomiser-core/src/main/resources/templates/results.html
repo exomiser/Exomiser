@@ -190,7 +190,8 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row"
+                 th:unless="${#sets.isEmpty(gene.getCompatibleInheritanceModes())}">
                 <div class="col-sm-12">
                     <b>Gene scores under compatible inheritance modes:</b>
                 </div>
