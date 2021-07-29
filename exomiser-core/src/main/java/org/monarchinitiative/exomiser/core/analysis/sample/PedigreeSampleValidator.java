@@ -139,6 +139,9 @@ public class PedigreeSampleValidator {
     }
 
     private static List<String> findSampleNamesNotRepresentedInPedigree(Collection<String> pedNames, List<String> sampleNames) {
+        if (sampleNames.isEmpty()) {
+            return List.of();
+        }
         Map<Boolean, List<String>> samples = sampleNames.stream().collect(partitioningBy(pedNames::contains));
 
         List<String> representedSamples = samples.get(true);
