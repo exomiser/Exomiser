@@ -3,6 +3,7 @@
 outputContributingVariantsOnly: false
 #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
 numGenes: 0
+#minExomiserGeneScore: 0.7
 #outputPrefix options: specify the path/filename without an extension and this will be added
 # according to the outputFormats option. If unspecified this will default to the following:
 # {exomiserDir}/results/input-vcf-name-exomiser-results.html
