@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,6 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
         assertThat(context.getBean("hg38jannovarData"), instanceOf(JannovarData.class));
         assertThat(context.getBean("hg38mvStore"), instanceOf(MVStore.class));
         assertThat(context.getBean("hg38variantAnnotator"), instanceOf(VariantAnnotator.class));
-        assertThat(context.getBean("hg38variantFactory"), instanceOf(VariantFactory.class));
         assertThat(context.getBean("hg38variantDataService"), instanceOf(VariantDataService.class));
         assertThat(context.getBean("hg38genomeDataService"), instanceOf(GenomeDataService.class));
 
