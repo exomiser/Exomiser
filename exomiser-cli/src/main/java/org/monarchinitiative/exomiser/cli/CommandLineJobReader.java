@@ -292,6 +292,8 @@ public class CommandLineJobReader {
                 return AnalysisProto.Preset.EXOME;
             case "genome":
                 return AnalysisProto.Preset.GENOME;
+            case "phenotype-only":
+                return AnalysisProto.Preset.PHENOTYPE_ONLY;
             default:
                 throw new IllegalArgumentException("Unrecognised preset option: " + presetValue);
         }

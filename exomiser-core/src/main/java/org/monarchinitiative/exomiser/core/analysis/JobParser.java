@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.*;
@@ -106,6 +105,10 @@ public class JobParser {
         return analysisPresetBuilder.buildGenomePreset();
     }
 
+    public Analysis phenotypeOnlyPreset() {
+        return analysisPresetBuilder.buildPhenotypeOnlyPreset();
+    }
+
     private Sample getSample(JobProto.Job protoJob) {
         if (protoJob.hasSample()) {
             return Sample.from(protoJob.getSample());
@@ -158,6 +161,9 @@ public class JobParser {
 
     private Analysis parsePreset(JobProto.Job protoJob) {
         switch (protoJob.getPreset()) {
+            case PHENOTYPE_ONLY:
+                logger.info("Running PHENOTYPE_ONLY preset");
+                return analysisPresetBuilder.buildPhenotypeOnlyPreset();
             case GENOME:
                 logger.info("Running GENOME preset");
                 return analysisPresetBuilder.buildGenomePreset();
@@ -279,7 +285,7 @@ public class JobParser {
     private List<ChromosomalRegion> parseIntervalFilterOptions(FiltersProto.IntervalFilter intervalFilter) {
         if (!intervalFilter.getInterval().isEmpty()) {
             String interval = intervalFilter.getInterval();
-            return ImmutableList.of(GeneticInterval.parseString(interval));
+            return List.of(GeneticInterval.parseString(interval));
         }
         if (!intervalFilter.getIntervalsList().isEmpty()) {
             List<String> intervalStrings = intervalFilter.getIntervalsList();

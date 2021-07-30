@@ -12,6 +12,7 @@ option java_outer_classname = "AnalysisProto";
 enum Preset {
     EXOME = 0;
     GENOME = 1;
+    PHENOTYPE_ONLY = 2;
 }
 
 enum AnalysisMode {

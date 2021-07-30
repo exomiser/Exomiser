@@ -98,7 +98,7 @@ public class CommandLineOptionsParser {
 
         options.addOption(Option.builder()
                 .longOpt("preset")
-                .desc("The Exomiser analysis preset for the input sample. One of 'exome' or 'genome'")
+                .desc("The Exomiser analysis preset for the input sample. One of 'exome', 'genome' or 'phenotype-only'")
                 .hasArg()
                 .argName("string")
                 .build());

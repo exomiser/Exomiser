@@ -140,4 +140,13 @@ class AnalysisPresetBuilder {
                 .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
                 .build();
     }
+
+    protected Analysis buildPhenotypeOnlyPreset() {
+        return new AnalysisBuilder(genomeAnalysisServiceProvider, prioritiserFactory, ontologyService)
+                .analysisMode(AnalysisMode.PASS_ONLY)
+                .inheritanceModes(InheritanceModeOptions.empty())
+                .addOmimPrioritiser()
+                .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
+                .build();
+    }
 }
