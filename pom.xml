@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2020 Queen Mary University of London.
+  ~ Copyright (c) 2016-2021 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -92,11 +92,12 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.29</jannovar.version>
-        <htsjdk.version>2.19.0</htsjdk.version>
+        <jannovar.version>0.30</jannovar.version>
+        <svart.version>1.0.1</svart.version>
+        <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>27.1-jre</guava.version>
-        <protobuf.version>3.8.0</protobuf.version>
-        <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
+        <protobuf.version>3.17.3</protobuf.version>
+        <spring-boot.version>2.5.3</spring-boot.version>
     </properties>
  
     <repositories>
@@ -126,7 +127,7 @@
         <dependency>
             <groupId>org.monarchinitiative.svart</groupId>
             <artifactId>svart</artifactId>
-            <version>1.0.0</version>
+            <version>${svart.version}</version>
         </dependency>
         <!--DI framework -->
         <dependency>
@@ -231,6 +232,12 @@
     <build>
         <plugins>
             <plugin>
+                <!-- n.b. the wrapper plugin is completely broken and will only work on Maven 3.7.0+ -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-wrapper-plugin</artifactId>
+                <version>3.0.1</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
@@ -242,10 +249,33 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.0.0-M5</version>
                 <!-- Don't enable parallel tests as these will fail in the autoconfigure module due to MVStore
                 only being able to be opened once by any given JVM -->
+                <!--                <configuration>-->
+                <!--                    <forkCount>0</forkCount>-->
+                <!--                </configuration>-->
             </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.pitest</groupId>-->
+            <!--                <artifactId>pitest-maven</artifactId>-->
+            <!--                <version>1.5.1</version>-->
+            <!--                <configuration>-->
+            <!--                    <targetClasses>-->
+            <!--                        <param>org.monarchinitiative.exomiser.core.*</param>-->
+            <!--                    </targetClasses>-->
+            <!--                    <targetTests>-->
+            <!--                        <param>org.monarchinitiative.exomiser.core*</param>-->
+            <!--                    </targetTests>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
+            <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
+            <!--            <plugin>-->
+            <!--                    <groupId>org.sonarsource.scanner.maven</groupId>-->
+            <!--                    <artifactId>sonar-maven-plugin</artifactId>-->
+            <!--                    <version>3.7.0.1746</version>-->
+            <!--            </plugin>-->
+            <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
