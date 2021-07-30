@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2018 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -84,7 +84,7 @@ public class HiPhiveProteinInteractionScorer {
         Map<Integer, Double> highestGeneIdPhenoScores = new LinkedHashMap<>();
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : bestGeneModelPhenoMatches) {
             Integer entrezId = geneModelPhenotypeMatch.getEntrezGeneId();
-            Double score = geneModelPhenotypeMatch.getScore();
+            double score = geneModelPhenotypeMatch.getScore();
             // only build PPI network for high quality hits contained in the matrix
             if (score > highQualityPhenoScoreCutOff && dataMatrix.containsGene(entrezId)) {
                 logger.debug("Adding high quality score for {} score={}", geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch
@@ -163,7 +163,7 @@ public class HiPhiveProteinInteractionScorer {
     /**
      * Mapping between an entrez gene id, its phenotype score and a column in the high-quality matrix
      */
-    class GeneColumnIndex {
+    private static class GeneColumnIndex {
         private final Integer geneId;
         private final double phenoScore;
         private final int columnIndex;
