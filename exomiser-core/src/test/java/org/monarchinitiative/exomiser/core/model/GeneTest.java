@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -577,7 +576,7 @@ public class GeneTest {
         instance.addGeneScore(geneScoreAD);
 
         assertThat(instance.getGeneScoreForMode(modeOfInheritanceAD), equalTo(geneScoreAD));
-        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(geneScoreAD)));
+        assertThat(instance.getGeneScores(), equalTo(List.of(geneScoreAD)));
 
         ModeOfInheritance modeOfInheritanceAR = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
         GeneScore geneScoreAR = GeneScore.builder()
@@ -587,7 +586,7 @@ public class GeneTest {
                 .build();
         instance.addGeneScore(geneScoreAR);
 
-        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(geneScoreAD, geneScoreAR)));
+        assertThat(instance.getGeneScores(), equalTo(List.of(geneScoreAD, geneScoreAR)));
 
     }
 
@@ -604,18 +603,18 @@ public class GeneTest {
         assertThat(instance.getVariantScore(), equalTo(defaultGeneScore.getVariantScore()));
         assertThat(instance.getPriorityScore(), equalTo(defaultGeneScore.getPhenotypeScore()));
         assertThat(instance.getCombinedScore(), equalTo(defaultGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of()));
+        assertThat(instance.getGeneScores(), equalTo(List.of()));
 
         //test returns zero with no score
-        assertThat(instance.getPriorityScoreForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(0f));
+        assertThat(instance.getPriorityScoreForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(0d));
 
-        float phenotypeScore = 1f;
+        double phenotypeScore = 1d;
         GeneScore firstGeneScore = GeneScore.builder()
                 .geneIdentifier(instance.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .phenotypeScore(0.5f)
-                .variantScore(0.5f)
-                .combinedScore(0.5f)
+                .phenotypeScore(0.5d)
+                .variantScore(0.5d)
+                .combinedScore(0.5d)
                 .build();
         instance.addGeneScore(firstGeneScore);
 
@@ -624,14 +623,14 @@ public class GeneTest {
         assertThat(instance.getVariantScore(), equalTo(firstGeneScore.getVariantScore()));
         assertThat(instance.getPriorityScore(), equalTo(firstGeneScore.getPhenotypeScore()));
         assertThat(instance.getCombinedScore(), equalTo(firstGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(firstGeneScore)));
+        assertThat(instance.getGeneScores(), equalTo(List.of(firstGeneScore)));
 
         GeneScore secondGeneScore = GeneScore.builder()
                 .geneIdentifier(instance.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
-                .phenotypeScore(1f)
-                .variantScore(1f)
-                .combinedScore(1f)
+                .phenotypeScore(1d)
+                .variantScore(1d)
+                .combinedScore(1d)
                 .build();
         instance.addGeneScore(secondGeneScore);
 
@@ -640,7 +639,7 @@ public class GeneTest {
         assertThat(instance.getVariantScore(), equalTo(secondGeneScore.getVariantScore()));
         assertThat(instance.getPriorityScore(), equalTo(secondGeneScore.getPhenotypeScore()));
         assertThat(instance.getCombinedScore(), equalTo(secondGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(ImmutableList.of(firstGeneScore, secondGeneScore)));
+        assertThat(instance.getGeneScores(), equalTo(List.of(firstGeneScore, secondGeneScore)));
     }
 
     @Test
@@ -648,9 +647,9 @@ public class GeneTest {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
         assertThat(instance.getGeneScores().isEmpty(), is(true));
         //test returns zero with no score
-        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(0f));
+        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(0d));
 
-        float phenotypeScore = 1f;
+        double phenotypeScore = 1d;
         GeneScore firstGeneScore = GeneScore.builder()
                 .phenotypeScore(phenotypeScore)
                 .geneIdentifier(instance.getGeneIdentifier())
@@ -659,7 +658,7 @@ public class GeneTest {
         instance.addGeneScore(firstGeneScore);
         assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(phenotypeScore));
 
-        float secondScore = 1.0f;
+        double secondScore = 1d;
         GeneScore secondGeneScore = GeneScore.builder()
                 .phenotypeScore(phenotypeScore)
                 .geneIdentifier(instance.getGeneIdentifier())

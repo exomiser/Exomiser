@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
@@ -65,7 +64,7 @@ class GenePriorityScoreCalculator {
         // Adjust score using the MOI compatible disease models from the HiPhiveResult
         HiPhivePriorityResult hiPhivePriorityResult = gene.getPriorityResult(HiPhivePriorityResult.class);
         if (hiPhivePriorityResult == null) {
-            return new GenePriorityScore(score, modeOfInheritance, ImmutableList.of());
+            return new GenePriorityScore(score, modeOfInheritance, List.of());
         }
         return hiPhiveAdjustedGenePriorityScore(modeOfInheritance, knownDiseaseInheritanceModeModifier, hiPhivePriorityResult);
     }

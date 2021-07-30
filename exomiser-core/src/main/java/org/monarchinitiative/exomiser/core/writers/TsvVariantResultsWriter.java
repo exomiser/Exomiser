@@ -68,7 +68,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                     "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
                     "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE", "CONTRIBUTING_VARIANT");
 
-    private final DecimalFormat formatter = new DecimalFormat(".##");
+    private final DecimalFormat formatter = new DecimalFormat(".####");
 
     public TsvVariantResultsWriter() {
         Locale.setDefault(Locale.UK);

@@ -46,7 +46,7 @@ public class PriorityScoreFilterTest {
     private PriorityScoreFilter instance;
 
     private final PriorityType priorityType = PriorityType.PHIVE_PRIORITY;
-    private final float minPriorityScore = 0.8f;
+    private final double minPriorityScore = 0.8;
 
     private Gene gene;
 
@@ -103,7 +103,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilterPassesGeneWithCorrectPriorityTypeScoreOverThreshold() {
-        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore + 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore + 0.2);
         gene.addPriorityResult(priorityResult);
 
         FilterResult result = instance.runFilter(gene);
@@ -113,7 +113,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilterFailsGeneWithCorrectPriorityTypeScoreUnderThreshold() {
-        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2);
         gene.addPriorityResult(priorityResult);
 
         FilterResult result = instance.runFilter(gene);
@@ -123,7 +123,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilterVariantInFailedGeneAlsoFailsTheFilter() {
-        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2);
         gene.addPriorityResult(priorityResult);
         VariantEvaluation variant = TestFactory.variantBuilder(1, 1, "A", "T").build();
         gene.addVariant(variant);
@@ -135,7 +135,7 @@ public class PriorityScoreFilterTest {
         assertThat(variant.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
     }
 
-    private PriorityResult makeDefaultPriorityResult(float score) {
+    private PriorityResult makeDefaultPriorityResult(double score) {
         return new MockPriorityResult(priorityType, gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
     }
 
@@ -162,7 +162,7 @@ public class PriorityScoreFilterTest {
 
     @Test
     public void testNotEqualsDifferentScore() {
-        PriorityScoreFilter other = new PriorityScoreFilter(priorityType, minPriorityScore + .03f);
+        PriorityScoreFilter other = new PriorityScoreFilter(priorityType, minPriorityScore + .03);
         assertThat(instance.equals(other), is(false));
     }
     

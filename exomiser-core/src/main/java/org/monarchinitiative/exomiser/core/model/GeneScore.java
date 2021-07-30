@@ -40,9 +40,9 @@ public final class GeneScore implements Comparable<GeneScore> {
 
     private final GeneIdentifier geneIdentifier;
     private final ModeOfInheritance modeOfInheritance;
-    private final float combinedScore;
-    private final float phenotypeScore;
-    private final float variantScore;
+    private final double combinedScore;
+    private final double phenotypeScore;
+    private final double variantScore;
     private final List<VariantEvaluation> contributingVariants;
     private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
 
@@ -64,15 +64,15 @@ public final class GeneScore implements Comparable<GeneScore> {
         return modeOfInheritance;
     }
 
-    public float getCombinedScore() {
+    public double getCombinedScore() {
         return combinedScore;
     }
 
-    public float getPhenotypeScore() {
+    public double getPhenotypeScore() {
         return phenotypeScore;
     }
 
-    public float getVariantScore() {
+    public double getVariantScore() {
         return variantScore;
     }
 
@@ -107,7 +107,7 @@ public final class GeneScore implements Comparable<GeneScore> {
      * @return the {@code GeneScore} with the highest combined score.
      */
     public static GeneScore max(GeneScore s1, GeneScore s2) {
-        return (Float.compare(s1.getCombinedScore(), s2.getCombinedScore()) >= 0) ? s1 : s2;
+        return (Double.compare(s1.getCombinedScore(), s2.getCombinedScore()) >= 0) ? s1 : s2;
     }
 
     /**
@@ -138,8 +138,8 @@ public final class GeneScore implements Comparable<GeneScore> {
      * @throws NullPointerException if an argument is null
      */
     public static int compare(GeneScore s1, GeneScore s2) {
-        float s1CombinedScore = s1.getCombinedScore();
-        float s2CombinedScore = s2.getCombinedScore();
+        double s1CombinedScore = s1.getCombinedScore();
+        double s2CombinedScore = s2.getCombinedScore();
         if (s1CombinedScore < s2CombinedScore) {
             return 1;
         }
@@ -155,9 +155,9 @@ public final class GeneScore implements Comparable<GeneScore> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GeneScore geneScore = (GeneScore) o;
-        return Float.compare(geneScore.combinedScore, combinedScore) == 0 &&
-                Float.compare(geneScore.phenotypeScore, phenotypeScore) == 0 &&
-                Float.compare(geneScore.variantScore, variantScore) == 0 &&
+        return Double.compare(geneScore.combinedScore, combinedScore) == 0 &&
+                Double.compare(geneScore.phenotypeScore, phenotypeScore) == 0 &&
+                Double.compare(geneScore.variantScore, variantScore) == 0 &&
                 Objects.equals(geneIdentifier, geneScore.geneIdentifier) &&
                 modeOfInheritance == geneScore.modeOfInheritance &&
                 Objects.equals(contributingVariants, geneScore.contributingVariants);
@@ -191,9 +191,9 @@ public final class GeneScore implements Comparable<GeneScore> {
     public static class Builder {
         private GeneIdentifier geneIdentifier = GeneIdentifier.builder().build();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
-        private float combinedScore;
-        private float phenotypeScore;
-        private float variantScore;
+        private double combinedScore;
+        private double phenotypeScore;
+        private double variantScore;
         private List<VariantEvaluation> contributingVariants = List.of();
         private List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of();
 
@@ -207,17 +207,17 @@ public final class GeneScore implements Comparable<GeneScore> {
             return this;
         }
 
-        public Builder combinedScore(float combinedScore) {
+        public Builder combinedScore(double combinedScore) {
             this.combinedScore = combinedScore;
             return this;
         }
 
-        public Builder phenotypeScore(float phenotypeScore) {
+        public Builder phenotypeScore(double phenotypeScore) {
             this.phenotypeScore = phenotypeScore;
             return this;
         }
 
-        public Builder variantScore(float variantScore) {
+        public Builder variantScore(double variantScore) {
             this.variantScore = variantScore;
             return this;
         }

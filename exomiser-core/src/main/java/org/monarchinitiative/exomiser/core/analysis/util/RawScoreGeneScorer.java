@@ -105,19 +105,19 @@ public class RawScoreGeneScorer implements GeneScorer {
 
         GenePriorityScoreCalculator.GenePriorityScore priorityScore = genePriorityScoreCalculator.calculateGenePriorityScore(gene, modeOfInheritance);
 
-        float variantScore = (float) contributingVariants.stream()
+        double variantScore = contributingVariants.stream()
                 .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
                 .orElse(0);
 
-        float combinedScore = (float) calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults()
+        double combinedScore = calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults()
                 .keySet());
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
                 .variantScore(variantScore)
-                .phenotypeScore((float) priorityScore.getScore())
+                .phenotypeScore(priorityScore.getScore())
                 .combinedScore(combinedScore)
                 .contributingVariants(contributingVariants)
                 // TODO this would be a good place to put a contributingModel
@@ -148,7 +148,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
             return phenixLogitScore(variantScore, priorityScore);
         }
-        return (priorityScore + variantScore) / 2f;
+        return (priorityScore + variantScore) / 2d;
     }
 
     private double hiPhiveLogitScore(double variantScore, double priorityScore) {

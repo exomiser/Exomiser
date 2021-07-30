@@ -43,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -101,12 +102,16 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.VCF;
 
+    private final NumberFormat numberFormat;
+
     /**
      * Initialize the object, given the original {@link VCFFileReader} from the
      * input.
      */
     public VcfResultsWriter() {
-        Locale.setDefault(Locale.UK);
+        numberFormat = NumberFormat.getInstance(Locale.UK);
+        numberFormat.setMinimumFractionDigits(1);
+        numberFormat.setMaximumFractionDigits(4);
     }
 
     @Override
@@ -300,9 +305,9 @@ public class VcfResultsWriter implements ResultsWriter {
         if (!variantEvaluations.isEmpty() && gene != null) {
             builder.attribute(ExomiserVcfInfoField.GENE_SYMBOL.getId(), gene.getGeneSymbol().replace(" ", "_"));
             builder.attribute(ExomiserVcfInfoField.GENE_ID.getId(), gene.getGeneId());
-            builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), gene.getCombinedScoreForMode(modeOfInheritance));
-            builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), gene.getPriorityScoreForMode(modeOfInheritance));
-            builder.attribute(ExomiserVcfInfoField.GENE_VARIANT_SCORE.getId(), gene.getVariantScoreForMode(modeOfInheritance));
+            builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), numberFormat.format(gene.getCombinedScoreForMode(modeOfInheritance)));
+            builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), numberFormat.format(gene.getPriorityScoreForMode(modeOfInheritance)));
+            builder.attribute(ExomiserVcfInfoField.GENE_VARIANT_SCORE.getId(), numberFormat.format(gene.getVariantScoreForMode(modeOfInheritance)));
             //variant scores need a list of VariantEvaluations so as to concatenate the fields in Allele order
             builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations));
             builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
@@ -318,13 +323,10 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private String buildVariantScore(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.size() == 1) {
-            return String.valueOf(variantEvaluations.get(0).getVariantScore());
+            return numberFormat.format(variantEvaluations.get(0).getVariantScore());
         }
-        StringBuilder variantScoreBuilder = new StringBuilder();
-        variantScoreBuilder.append(variantEvaluations.get(0).getVariantScore());
-        for (int i = 1; i < variantEvaluations.size(); i++) {
-            variantScoreBuilder.append(',').append(variantEvaluations.get(i).getVariantScore());
-        }
+        StringJoiner variantScoreBuilder = new StringJoiner(",");
+        variantEvaluations.forEach(varEval -> variantScoreBuilder.add(numberFormat.format(varEval.getVariantScore())));
         return variantScoreBuilder.toString();
     }
 

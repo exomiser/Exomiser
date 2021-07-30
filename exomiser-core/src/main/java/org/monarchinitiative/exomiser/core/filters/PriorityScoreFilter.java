@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,11 +45,11 @@ public class PriorityScoreFilter implements GeneFilter {
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final float minPriorityScore;
+    private final double minPriorityScore;
 
     private final PriorityType priorityType;
 
-    public PriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
+    public PriorityScoreFilter(PriorityType priorityType, double minPriorityScore) {
         this.minPriorityScore = minPriorityScore;
         this.priorityType = priorityType;
     }
@@ -58,7 +58,7 @@ public class PriorityScoreFilter implements GeneFilter {
         return priorityType;
     }
 
-    public float getMinPriorityScore() {
+    public double getMinPriorityScore() {
         return minPriorityScore;
     }
 
@@ -95,26 +95,16 @@ public class PriorityScoreFilter implements GeneFilter {
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 17 * hash + Float.floatToIntBits(this.minPriorityScore);
-        hash = 17 * hash + Objects.hashCode(this.priorityType);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PriorityScoreFilter that = (PriorityScoreFilter) o;
+        return Double.compare(that.minPriorityScore, minPriorityScore) == 0 && priorityType == that.priorityType;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PriorityScoreFilter other = (PriorityScoreFilter) obj;
-        if (Float.floatToIntBits(this.minPriorityScore) != Float.floatToIntBits(other.minPriorityScore)) {
-            return false;
-        }
-        return this.priorityType == other.priorityType;
+    public int hashCode() {
+        return Objects.hash(minPriorityScore, priorityType);
     }
 
     @Override

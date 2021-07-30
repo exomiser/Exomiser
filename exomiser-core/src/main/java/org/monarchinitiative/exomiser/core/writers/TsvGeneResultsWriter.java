@@ -43,7 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -82,10 +82,12 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                     "FISH_PPI_EVIDENCE"
             );
 
-    private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
+    private final NumberFormat decimalFormat;
 
     public TsvGeneResultsWriter() {
-        Locale.setDefault(Locale.UK);
+        decimalFormat = NumberFormat.getInstance(Locale.UK);
+        decimalFormat.setMinimumFractionDigits(4);
+        decimalFormat.setMaximumFractionDigits(4);
     }
 
     @Override

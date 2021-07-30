@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,9 +36,9 @@ import java.util.stream.Stream;
 public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
 
     private final PriorityType priorityType;
-    private final Map<String, Float> expectedScores;
+    private final Map<String, Double> expectedScores;
 
-    public MockPrioritiser(PriorityType priorityType, Map<String, Float> geneSymbolPrioritiserScores) {
+    public MockPrioritiser(PriorityType priorityType, Map<String, Double> geneSymbolPrioritiserScores) {
         this.priorityType = priorityType;
         expectedScores = geneSymbolPrioritiserScores;
     }
@@ -66,7 +66,7 @@ public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
     private Function<Gene, MockPriorityResult> prioritiseGene() {
         return gene -> {
             String geneSymbol = gene.getGeneSymbol();
-            Float score = expectedScores.getOrDefault(geneSymbol, 0f);
+            Double score = expectedScores.getOrDefault(geneSymbol, 0d);
             int geneId = gene.getEntrezGeneID();
             return new MockPriorityResult(priorityType, geneId, geneSymbol, score);
         };

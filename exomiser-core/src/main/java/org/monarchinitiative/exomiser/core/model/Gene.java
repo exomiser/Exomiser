@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -371,7 +370,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     public List<GeneScore> getGeneScores() {
-        return ImmutableList.copyOf(geneScoreMap.values());
+        return List.copyOf(geneScoreMap.values());
     }
 
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
@@ -385,9 +384,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
      * Gets the priority score for the gene.
-     *
      */
-    public float getPriorityScore() {
+    public double getPriorityScore() {
         return topGeneScore.getPhenotypeScore();
     }
 
@@ -397,7 +395,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a score that will be used to rank the gene.
      */
-    public float getPriorityScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double getPriorityScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getPhenotypeScore();
@@ -406,20 +404,20 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * Get the variant score for the gene.
      */
-    public float getVariantScore() {
+    public double getVariantScore() {
         return topGeneScore.getVariantScore();
     }
 
     /**
      * @return a variant score that will be used to rank the gene.
      */
-    public float getVariantScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double getVariantScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getVariantScore();
     }
 
-    public float getCombinedScore() {
+    public double getCombinedScore() {
         return topGeneScore.getCombinedScore();
     }
 
@@ -429,7 +427,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a combined score that will be used to rank the gene.
      */
-    public float getCombinedScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double getCombinedScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
         return geneScore.getCombinedScore();

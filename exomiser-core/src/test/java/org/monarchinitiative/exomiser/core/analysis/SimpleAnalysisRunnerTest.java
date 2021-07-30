@@ -34,7 +34,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -151,9 +150,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void runAnalysisTwoVariantFiltersOnePrioritiserVariantsShouldHaveAllVariantFilterResults() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
-        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
-        hiPhiveGeneScores.put("GNRHR2", 0.75f);
-        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Map<String, Double> hiPhiveGeneScores = Map.of("GNRHR2", 0.75, "RBM8A", 0.65);
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
 
         Sample sample = vcfandPhenotypesSample;
@@ -193,9 +190,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void runAnalysisTwoVariantFiltersOnePrioritiserRecessiveInheritanceFilterVariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(120);
-        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
-        hiPhiveGeneScores.put("GNRHR2", 0.75f);
-        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Map<String, Double> hiPhiveGeneScores = Map.of("GNRHR2", 0.75, "RBM8A", 0.65);
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
@@ -244,13 +239,12 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void runAnalysisPrioritiserAndPriorityScoreFilterOnly() {
-        Float desiredPrioritiserScore = 0.9f;
-        Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
-        geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
+        double desiredPrioritiserScore = 0.9;
+        Map<String, Double> geneSymbolPrioritiserScores = Map.of("RBM8A", desiredPrioritiserScore);
 
         PriorityType prioritiserTypeToMock = PriorityType.HIPHIVE_PRIORITY;
         Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
-        GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
+        GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1);
 
         Sample sample = vcfandPhenotypesSample;
         Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter);
@@ -287,9 +281,8 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void runAnalysisPrioritiserPriorityScoreFilterVariantFilter() {
-        Float desiredPrioritiserScore = 0.9f;
-        Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
-        geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
+        double desiredPrioritiserScore = 0.9f;
+        Map<String, Double> geneSymbolPrioritiserScores = Map.of("RBM8A", desiredPrioritiserScore);
 
         Prioritiser prioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, desiredPrioritiserScore - 0.1f);
@@ -330,13 +323,12 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void runAnalysisVariantFilterPrioritiserPriorityScoreFilterVariantFilter() {
-        Float desiredPrioritiserScore = 0.9f;
-        Map<String, Float> geneSymbolPrioritiserScores = new HashMap<>();
-        geneSymbolPrioritiserScores.put("RBM8A", desiredPrioritiserScore);
+        double desiredPrioritiserScore = 0.9f;
+        Map<String, Double> geneSymbolPrioritiserScores = Map.of("RBM8A", desiredPrioritiserScore);
 
         VariantFilter qualityFilter = new QualityFilter(120);
         Prioritiser prioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, geneSymbolPrioritiserScores);
-        GeneFilter priorityScoreFilter = new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, desiredPrioritiserScore - 0.1f);
+        GeneFilter priorityScoreFilter = new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, desiredPrioritiserScore - 0.1);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
