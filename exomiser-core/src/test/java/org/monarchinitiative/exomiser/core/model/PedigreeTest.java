@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.model;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -164,5 +165,25 @@ public class PedigreeTest {
     public void testGetIndividualById() {
         Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
         assertThat(instance.getIndividualById(MOTHER.getId()), equalTo(MOTHER));
+    }
+
+    @Test
+    public void testAncestorsOf() {
+        Individual maternalFather = Individual.builder().id("MorFar").fatherId("").motherId("").sex(Sex.MALE).build();
+        Individual maternalMother = Individual.builder().id("MorMor").fatherId("").motherId("").sex(Sex.FEMALE).build();
+
+        Individual mother = Individual.builder().id("Mor").fatherId("MorFar").motherId("MorMor").sex(Sex.FEMALE).build();
+
+        Individual paternalMother = Individual.builder().id("FarMor").fatherId("").motherId("").sex(Sex.FEMALE).build();
+
+        Individual father = Individual.builder().id("Far").fatherId("").motherId("FarMor").sex(Sex.MALE).build();
+
+        Individual brother = Individual.builder().id("Bro").fatherId("Far").motherId("Mor").sex(Sex.MALE).build();
+        Individual proband = Individual.builder().id("Bro").fatherId("Far").motherId("Mor").sex(Sex.MALE).build();
+
+        Pedigree instance = Pedigree.of(proband, brother, mother, father, brother, maternalFather, maternalMother, paternalMother);
+        assertThat(instance.anscestorsOf(mother), equalTo(List.of(maternalMother, maternalFather)));
+        assertThat(instance.anscestorsOf(father), equalTo(List.of(paternalMother)));
+        assertThat(instance.anscestorsOf(proband), equalTo(List.of(mother, maternalMother, maternalFather, father, paternalMother)));
     }
 }
