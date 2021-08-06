@@ -63,7 +63,7 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.85);
+        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.80);
 
         logger.debug("{}", variant);
         logger.debug("Searching for {}:{}-{}", variant.contigId(), variant.start() - margin, variant.end() + margin);
@@ -96,16 +96,16 @@ public class SvFrequencyDao implements FrequencyDao {
         }
         SvResult first = topMatches.get(0);
         Frequency frequency = toFrequency(first);
-        if (first.an < 100 || frequency.getFrequency() == 0) {
+        if (first.an < 10 || frequency.getFrequency() == 0) {
             // Don't report poorly defined frequencies
             return FrequencyData.of(first.id());
         }
         return FrequencyData.of(first.id(), frequency);
     }
 
-    private Frequency toFrequency(SvResult first) {
-        FrequencySource frequencySource = frequencySource(first);
-        return Frequency.of(frequencySource, first.af);
+    private Frequency toFrequency(SvResult svResult) {
+        FrequencySource frequencySource = frequencySource(svResult);
+        return Frequency.of(frequencySource, svResult.af);
     }
 
     private FrequencySource frequencySource(SvResult first) {
@@ -126,8 +126,6 @@ public class SvFrequencyDao implements FrequencyDao {
     }
 
     private List<SvResult> runQuery(Variant variant, int margin) {
-//        TODO: For INS types (ME especially) it might be best to allow a 150bp (-75, +75) window around the reported insertion point and
-//         check for insertion type at that point rather than filter by reciprocal overlap length as this isn't always known.
         String query =
                 "SELECT " +
                         "       CHROMOSOME,\n" +
@@ -151,29 +149,30 @@ public class SvFrequencyDao implements FrequencyDao {
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            // TODO - check end > start or start -1 , end +1 in order to cater for differences in INS coordinates
+            Position start = variant.startPosition();
+            Position end = variant.endPosition();
             logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
                     variant.contigId(),
-                    variant.startPosition().minPos() - margin, variant.startPosition().maxPos() + margin,
-                    variant.endPosition().minPos() - margin, variant.endPosition().maxPos() + margin
+                    start.minPos() - margin, start.maxPos() + margin,
+                    end.minPos() - margin, end.maxPos() + margin
             );
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, variant.startPosition().minPos() - margin);
-            ps.setInt(3, variant.startPosition().maxPos() + margin);
-            ps.setInt(4, variant.endPosition().minPos() - margin);
-            ps.setInt(5, variant.endPosition().maxPos() + margin);
+            ps.setInt(2, start.minPos() - margin);
+            ps.setInt(3, start.maxPos() + margin);
+            ps.setInt(4, end.minPos() - margin);
+            ps.setInt(5, end.maxPos() + margin);
 
             ResultSet rs = ps.executeQuery();
 
 // consider also complex types where CHR_ONE != CHR_TWO - there are only about 600 in gnomad and gonl combined.
-            return getSvResults(rs, variant);
+            return processSvResults(rs, variant);
         } catch (SQLException e) {
             logger.error("", e);
         }
         return List.of();
     }
 
-    private List<SvResult> getSvResults(ResultSet rs, Variant variant) throws SQLException {
+    private List<SvResult> processSvResults(ResultSet rs, Variant variant) throws SQLException {
 
 //            SOURCE	CHR_ONE	POS_ONE	POS_TWO	SV_LEN	SV_TYPE	ID	AC	AF
 //            GNOMAD_SV	7	4972268	4973271	1003	DEL	gnomAD_v2_DEL_7_90956	94	0.004377
@@ -217,7 +216,7 @@ public class SvFrequencyDao implements FrequencyDao {
             this.source = source;
             this.ac = ac;
             this.an = an;
-            this.af = (float) ac / (float) an * 100f;
+            this.af = ac == 0 ? 0 : (float) ac / (float) an * 100f;
         }
 
         static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, int an) {

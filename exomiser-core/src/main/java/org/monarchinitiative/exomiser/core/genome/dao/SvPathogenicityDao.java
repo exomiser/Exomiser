@@ -63,7 +63,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.85);
+        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.80);
 
         logger.debug("{}", variant);
         List<SvResult> results = runQuery(variant, margin);
@@ -120,8 +120,6 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private List<SvResult> runQuery(Variant variant, int margin) {
-//        TODO: For INS types (ME especially) it might be best to allow a 150bp (-75, +75) window around the reported insertion point and
-//         check for insertion type at that point rather than filter by reciprocal overlap length as this isn't always known.
         String query = "SELECT " +
                 "       CHROMOSOME,\n" +
                 "       START,\n" +
@@ -147,29 +145,31 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
 
+            Position start = variant.startPosition().equals(variant.endPosition()) ? variant.startPosition().shift(-1) : variant.startPosition();
+            Position end = variant.endPosition().equals(variant.startPosition()) ? variant.endPosition().shift(1) : variant.endPosition();
             logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
                     variant.contigId(),
-                    variant.startPosition().minPos() - margin, variant.startPosition().maxPos() + margin,
-                    variant.endPosition().minPos() - margin, variant.endPosition().maxPos() + margin
+                    start.minPos() - margin, start.maxPos() + margin,
+                    end.minPos() - margin, end.maxPos() + margin
             );
 
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, variant.startPosition().minPos() - margin);
-            ps.setInt(3, variant.startPosition().maxPos() + margin);
-            ps.setInt(4, variant.endPosition().minPos() - margin);
-            ps.setInt(5, variant.endPosition().maxPos() + margin);
+            ps.setInt(2, start.minPos() - margin);
+            ps.setInt(3, start.maxPos() + margin);
+            ps.setInt(4, end.minPos() - margin);
+            ps.setInt(5, end.maxPos() + margin);
 
             ResultSet rs = ps.executeQuery();
 
 // consider also complex types where CHR_ONE != CHR_TWO - there are only about 600 in gnomad and gonl combined.
-            return getSvResults(rs, variant);
+            return processSvResults(rs, variant);
         } catch (SQLException e) {
             logger.error("", e);
         }
         return List.of();
     }
 
-    private List<SvResult> getSvResults(ResultSet rs, Variant variant) throws SQLException {
+    private List<SvResult> processSvResults(ResultSet rs, Variant variant) throws SQLException {
         List<SvResult> results = new ArrayList<>();
         while (rs.next()) {
             int chr = rs.getInt("CHROMOSOME");

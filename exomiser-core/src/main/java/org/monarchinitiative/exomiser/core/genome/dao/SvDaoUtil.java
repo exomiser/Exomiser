@@ -50,7 +50,7 @@ class SvDaoUtil {
         if (minCoverage < -0 || minCoverage > 1) {
             throw new IllegalArgumentException("minCoverage must be in range 0.0 - 1.0");
         }
-        return (int) Math.abs(region.length() * (1 - minCoverage) / 2d);
+        return (int) Math.max(1, Math.abs(region.length() * (1 - minCoverage * 2) / 2d));
     }
 
     /**
@@ -69,7 +69,21 @@ class SvDaoUtil {
         //              |-------|               = intersection(x, y)
         //    |-----------------------------|   = union(x, y)
         // J(x, y) = intersection(x, y) / (length(x) + length(y) - intersection(x, y))
-        int intersection = x.overlapLength(y);
-        return (double) intersection / (x.length() + y.length() - intersection);
+        double intersection = x.overlapLength(y);
+        return intersection / (x.length() + y.length() - intersection);
+    }
+
+    public static double reciprocalOverlap(GenomicRegion x, GenomicRegion y) {
+        if (!x.overlapsWith(y)) {
+            return 0;
+        }
+//        int maxStart = Math.max(x.startWithCoordinateSystem(CoordinateSystem.zeroBased()),
+//                y.startOnStrandWithCoordinateSystem(x.strand(), CoordinateSystem.zeroBased()));
+//        int minEnd = Math.min(x.endWithCoordinateSystem(CoordinateSystem.zeroBased()),
+//                y.endOnStrandWithCoordinateSystem(x.strand(), CoordinateSystem.zeroBased()));
+//
+//        double intersection = minEnd - (double) maxStart;
+        double intersection = x.overlapLength(y);
+        return Math.min(intersection / x.length(), intersection / y.length());
     }
 }
