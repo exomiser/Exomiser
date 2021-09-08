@@ -89,7 +89,7 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Extracting TAD resource...");
         downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeDataPath.resolve("tad.pg"));
 
-
+        logger.info("Downloading and indexing SV resources...");
         svResources.parallelStream().forEach(ResourceDownloader::download);
         svResources.parallelStream().forEach(SvResource::indexResource);
 
