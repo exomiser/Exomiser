@@ -77,15 +77,21 @@ public class BuildRunner implements ApplicationRunner {
         // --assembly=hg19
         // --version=1711
         // --build-dir=
-        // --resources=exac,gnomad-exome
+        // AND OPTIONALLY
+        // --variants
+        // OR
+        // --variants=exac,gnomad-exome,dbsnp...
+        // --transcripts
+        // OR
+        // --transcripts=ensembl,ucsc
 
-        if (!args.containsOption("assembly")){
+        if (!args.containsOption("assembly")) {
             throw new IllegalArgumentException("Missing assembly argument");
         }
         String assemblyOption = args.getOptionValues("assembly").get(0);
         GenomeAssembly assembly = GenomeAssembly.parseAssembly(assemblyOption);
 
-        if (!args.containsOption("version")){
+        if (!args.containsOption("version")) {
             throw new IllegalArgumentException("Missing version argument");
         }
         String version = args.getOptionValues("version").get(0);
