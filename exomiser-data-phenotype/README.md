@@ -33,7 +33,7 @@ be incorporated into this codebase:
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
 ```perl
-system("wget http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/phenotype_annotation.tab");
+system("wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_annotation.tab:");
 open(IN,"phenotype_annotation.tab");
 open(OUT1,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt");
 open(OUT2,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt");
@@ -80,16 +80,20 @@ owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove
 owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
 owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 
+```
 
-Run final commands on high mem machines on apocrita
+9. Run final commands on high mem machines on apocrita after scp *-merged.owl and upheno/hp-mp/mp_hp-align-equiv.owl to aprocrita
+
+```
 qsub owltools_hp_hp.sh
 qsub owltools_hp_mp.sh
 qsub owltools_hp_zp.sh
 
-
 ```
 
-## Running the build
+10. gzip the hp-*-mapping-cache.txt.gz files and transfer to relevanet resources folder as below
+
+11. Running the build
 
 This application will handle the downloading and processing resources and building the H2 database.
 
