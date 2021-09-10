@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -68,6 +69,11 @@ public class SampleGenotypes implements Iterable<SampleData> {
         return List.copyOf(sampleDataById.values());
     }
 
+    @Nullable
+    public SampleData getSampleData(String sampleId) {
+        return sampleDataById.get(sampleId);
+    }
+
     public SampleGenotype getSampleGenotype(String sampleId) {
         SampleData sampleData = sampleDataById.get(sampleId);
         return sampleData == null ? SampleGenotype.empty() : sampleData.getSampleGenotype();
@@ -80,6 +86,10 @@ public class SampleGenotypes implements Iterable<SampleData> {
 
     public boolean isEmpty() {
         return sampleDataById.isEmpty();
+    }
+
+    public int size() {
+        return sampleDataById.size();
     }
 
     @Override
