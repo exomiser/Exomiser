@@ -82,7 +82,7 @@ owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equiva
 
 ```
 
-9. Run final commands on high mem machines on apocrita after scp *-merged.owl and upheno/hp-mp/mp_hp-align-equiv.owl to aprocrita
+9. Run final commands on high mem machines on apocrita after scp *-merged.owl and upheno/hp-mp/mp_hp-align-equiv.owl to aprocrita (home folder on login.hpc.qmul.ac.uk)
 
 ```
 qsub owltools_hp_hp.sh
@@ -91,9 +91,16 @@ qsub owltools_hp_zp.sh
 
 ```
 
-10. gzip the hp-*-mapping-cache.txt.gz files and transfer to relevanet resources folder as below
+10. Running the build. More detail below but essentially
 
-11. Running the build
+```
+gzip hp-*-mapping-cache.txt
+cd /data/WHRI-Phenogenomics/projects/Damian/
+mkdir -p 2109-phenotype-build/resources
+cp ~/hp-*cache.txt.gz 2109-phenotype-build/resources
+java -jar exomiser-data-phenotype-13.0.0-SNAPSHOT.jar --phenotype.build-version=2109 --phenotype.build-dir=/data/WHRI-phenogemonics/projects/Damian/2109-phenotype-build
+```
+
 
 This application will handle the downloading and processing resources and building the H2 database.
 
