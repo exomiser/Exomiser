@@ -277,9 +277,9 @@ public class JobParser {
         } else if (protoAnalysisStep.hasPhenixPrioritiser()) {
 //            throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
             analysisBuilder.addPhenixPrioritiser();
+        } else if (protoAnalysisStep.hasExomeWalkerPrioritiser()) {
+            analysisBuilder.addExomeWalkerPrioritiser(protoAnalysisStep.getExomeWalkerPrioritiser().getSeedGeneIdsList());
         }
-//        case "exomeWalkerPrioritiser":
-//        return makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
     }
 
     private List<ChromosomalRegion> parseIntervalFilterOptions(FiltersProto.IntervalFilter intervalFilter) {

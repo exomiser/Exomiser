@@ -23,3 +23,7 @@ message PhivePrioritiser {
 message PhenixPrioritiser {
 
 }
+
+message ExomeWalkerPrioritiser {
+    repeated int32 seed_gene_ids = 1;
+}

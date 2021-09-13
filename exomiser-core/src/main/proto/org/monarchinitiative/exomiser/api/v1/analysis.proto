@@ -71,6 +71,7 @@ message AnalysisStep {
         PhivePrioritiser phive_prioritiser = 13;
         PhenixPrioritiser phenix_prioritiser = 14;
         PriorityScoreFilter priority_score_filter = 15;
+        ExomeWalkerPrioritiser exome_walker_prioritiser = 16;
     }
 }
 

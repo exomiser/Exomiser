@@ -231,20 +231,17 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
 
     //Prioritisers
     public AnalysisProtoBuilder addOmimPrioritiser() {
-        builder.addSteps(stepBuilder().setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.getDefaultInstance())
-                .build());
+        builder.addSteps(stepBuilder().setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.getDefaultInstance()));
         return this;
     }
 
     public AnalysisProtoBuilder addPhivePrioritiser() {
-        builder.addSteps(stepBuilder().setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.getDefaultInstance())
-                .build());
+        builder.addSteps(stepBuilder().setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.getDefaultInstance()));
         return this;
     }
 
     public AnalysisProtoBuilder addHiPhivePrioritiser() {
-        builder.addSteps(stepBuilder().setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.getDefaultInstance())
-                .build());
+        builder.addSteps(stepBuilder().setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.getDefaultInstance()));
         return this;
     }
 
@@ -256,19 +253,18 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
                                 .setCandidateGeneSymbol(hiPhiveOptions.getCandidateGeneSymbol())
                                 .setDiseaseId(hiPhiveOptions.getDiseaseId())
                 )
-                .build()
         );
         return this;
     }
 
     public AnalysisProtoBuilder addPhenixPrioritiser() {
-        builder.addSteps(stepBuilder().setPhenixPrioritiser(PrioritisersProto.PhenixPrioritiser.getDefaultInstance())
-                .build());
+        builder.addSteps(stepBuilder().setPhenixPrioritiser(PrioritisersProto.PhenixPrioritiser.getDefaultInstance()));
         return this;
     }
 
     public AnalysisProtoBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
-        // no-op
+        builder.addSteps(stepBuilder()
+                .setExomeWalkerPrioritiser(PrioritisersProto.ExomeWalkerPrioritiser.newBuilder().addAllSeedGeneIds(seedGenes)));
         return this;
     }
 
