@@ -181,7 +181,7 @@ public class Hg19Config extends ResourceConfig {
             // https://doi.org/10.1038/s41586-020-2287-8
             //
             return new GnomadSvResource("hg19.gnomad-sv",
-                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
                     new TabixArchive(hg19GenomePath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
                     new GnomadSvVcfFreqParser(),
                     new OutputFileIndexer<>(hg19GenomePath().resolve("gnomad-sv.pg")));

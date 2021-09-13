@@ -165,7 +165,7 @@ public class Hg38Config extends ResourceConfig {
             // https://doi.org/10.1038/s41586-020-2287-8
             //
             return new GnomadSvResource("hg38.gnomad-sv",
-                    new URL("https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
                     new TabixArchive(hg38GenomePath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
                     new GnomadSvVcfFreqParser(),
                     new OutputFileIndexer<>(hg38GenomePath().resolve("gnomad-sv.pg")));
@@ -174,6 +174,8 @@ public class Hg38Config extends ResourceConfig {
         }
     }
 
+    // TODO: make these NoOp versions - there is no hg38 data available for GONL or gnomAD-SV and the H2 migration fails due to missing gnomad-sv.pg and gonl-sv.pg files
+    // TODO: Externalise these in the application.properties
     public GonlSvResource gonlSvFrequencyResource() {
         try {
             return new GonlSvResource("hg38.gonl",
