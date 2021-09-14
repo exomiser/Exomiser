@@ -273,7 +273,7 @@
                             <b th:text=" ${variantEvaluation.variantType}"> SNV</b>
                                 <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                                     chr10:g.123256215T>G [0/1]</b>
-                                <th:block th:each="varId: ${variantEvaluation.id}"
+                                <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
                                           th:if="!${#strings.isEmpty(varId)}"
                                           th:switch="${#strings.substring(varId, 0, 2)}">
                                     <a th:case="'rs'"
@@ -391,7 +391,7 @@
                         <b th:text=" ${variantEvaluation.variantType}"> SNV</b>
                         <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
                             chr10:g.123256215T>G [0/1]</b>
-                        <th:block th:each="varId: ${variantEvaluation.id}"
+                        <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
                                   th:if="!${#strings.isEmpty(varId)}"
                                   th:switch="${#strings.substring(varId, 0, 2)}">
                             <a th:case="'rs'"
