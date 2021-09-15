@@ -103,7 +103,7 @@ public class ClinVarDataTest {
         return ClinVarData.builder()
                 .reviewStatus(clinRevStat)
                 .build()
-                .getStarRating();
+                .starRating();
     }
 
     @Test

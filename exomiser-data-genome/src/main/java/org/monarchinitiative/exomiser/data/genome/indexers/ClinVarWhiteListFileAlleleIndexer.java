@@ -53,7 +53,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
     @Override
     public void write(Allele allele) {
         ClinVarData clinVarData = allele.getClinVarData();
-        if (isPathOrLikelyPath(clinVarData) && hasAssertionCriteria(clinVarData) && notOnBlackList(allele)) {
+        if (!clinVarData.isSecondaryAssociationRiskFactorOrOther() && isPathOrLikelyPath(clinVarData) && clinVarData.starRating() >= 1 && notOnBlackList(allele)) {
             StringJoiner stringJoiner = new StringJoiner("\t");
             stringJoiner.add(Integer.toString(allele.getChr()));
             stringJoiner.add(Integer.toString(allele.getPos()));
@@ -89,16 +89,8 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
     //   2* criteria_provided,_multiple_submitters,_no_conflicts,
     //   3* reviewed_by_expert_panel
     //   4* practice_guideline,
-    private boolean hasAssertionCriteria(ClinVarData clinVarData) {
-        // maps to the CLNREVSTAT subfield in the VCF INFO. Many alleles with 'no_assertion_criteria_provided'
-        // or 'no_assertion_provided' have incredibly high MAF, some even as high as 98% in some populations.
-        return !clinVarData.getReviewStatus().startsWith("no_assertion");
-    }
 
     private boolean isPathOrLikelyPath(ClinVarData clinVarData) {
-        if (clinVarData.isSecondaryAssociationRiskFactorOrOther()) {
-            return false;
-        }
         switch (clinVarData.getPrimaryInterpretation()) {
             case PATHOGENIC:
             case PATHOGENIC_OR_LIKELY_PATHOGENIC:
@@ -113,8 +105,8 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
         StringJoiner stringJoiner = new StringJoiner(";");
         stringJoiner.add("ALLELEID=" + clinVarData.getAlleleId());
         stringJoiner.add("CLNSIG=" + clinVarData.getPrimaryInterpretation());
-        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus());
-        stringJoiner.add("STARS=" + clinVarData.getStarRating());
+        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus().replace(" ", "_"));
+        stringJoiner.add("STARS=" + clinVarData.starRating());
         return stringJoiner;
     }
 

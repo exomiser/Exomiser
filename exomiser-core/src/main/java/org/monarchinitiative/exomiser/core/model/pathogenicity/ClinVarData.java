@@ -120,6 +120,8 @@ public class ClinVarData {
                 case RISK_FACTOR:
                 case PROTECTIVE:
                     return true;
+                default:
+                    return false;
             }
         }
         return false;
@@ -140,7 +142,7 @@ public class ClinVarData {
      * @return an integer value between 0 (worst) and 4 (best)
      * @since 13.0.0
      */
-    public int getStarRating() {
+    public int starRating() {
         switch (reviewStatus) {
             case "criteria provided, single submitter":
             case "criteria provided, conflicting interpretations":
