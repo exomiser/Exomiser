@@ -35,22 +35,25 @@ class SvDaoUtil {
     }
 
     /**
-     * Returns a value to be added/subtracted to a ChromosomalRegion's start and end positions such that another region
-     * whose start and end positions fall within these boundaries will have the required minimum coverage provided in the
-     * method. For example the region 10-20 with a 0.85 overlap would have a margin value of 1 to be added/subtracted to
-     * the start and end - i.e. anywhere between 10+/-1 and 20+/-1 will satisfy the 85% overlap requirement. Return values
-     * are rounded to the nearest integer.
+     * Determines the Jaccard coefficient of two variant change lengths. A
+     * return value of 1.0 indicates an identical change length and 0 two opposite signed values. For example an
+     * insertion with a positive change length and a deletion with a negative change length will return a value of zero.
      *
-     * @param region      The {@link GenomicRegion} for which the boundaries are to be calculated
-     * @param minCoverage The minimum required overlap for other regions
-     * @return The modifier, to the nearest whole number, to be added and subtracted from the start and end of the input
-     * region
+     * @param x the first variant change length
+     * @param y the second variant change length
+     * @return Jaccard coefficient of x and y, assuming the same sign or 0
      */
-    public static int getBoundaryMargin(GenomicRegion region, double minCoverage) {
-        if (minCoverage < -0 || minCoverage > 1) {
-            throw new IllegalArgumentException("minCoverage must be in range 0.0 - 1.0");
+    public static double jaccard(int x, int y) {
+        if (x == 0 && y == 0) {
+            return 1;
         }
-        return (int) Math.max(1, Math.abs(region.length() * (1 - minCoverage * 2) / 2d));
+        if (Integer.signum(x) != Integer.signum(y)) {
+            return 0;
+        }
+        int absX = Math.abs(x);
+        int absY = Math.abs(y);
+        double intersection = Math.min(absX, absY);
+        return intersection / (absX + absY - intersection);
     }
 
     /**
@@ -77,12 +80,6 @@ class SvDaoUtil {
         if (!x.overlapsWith(y)) {
             return 0;
         }
-//        int maxStart = Math.max(x.startWithCoordinateSystem(CoordinateSystem.zeroBased()),
-//                y.startOnStrandWithCoordinateSystem(x.strand(), CoordinateSystem.zeroBased()));
-//        int minEnd = Math.min(x.endWithCoordinateSystem(CoordinateSystem.zeroBased()),
-//                y.endOnStrandWithCoordinateSystem(x.strand(), CoordinateSystem.zeroBased()));
-//
-//        double intersection = minEnd - (double) maxStart;
         double intersection = x.overlapLength(y);
         return Math.min(intersection / x.length(), intersection / y.length());
     }

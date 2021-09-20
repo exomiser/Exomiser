@@ -27,9 +27,7 @@ import org.monarchinitiative.svart.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.number.IsCloseTo.closeTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -42,14 +40,6 @@ class SvDaoUtilTest {
         return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, end);
     }
 
-    private GenomicRegion minRegion(GenomicRegion insertion, int margin) {
-        return buildRegion(1, insertion.start() + margin, insertion.end() - margin);
-    }
-
-    private GenomicRegion maxRegion(GenomicRegion insertion, int margin) {
-        return buildRegion(1, Math.max(insertion.start() - margin, 1), insertion.end() + margin);
-    }
-
     @Test
     void testJaccardCoefficientOtherChromosomes() {
         GenomicRegion R1_100 = buildRegion(1, 1, 100);
@@ -60,20 +50,88 @@ class SvDaoUtilTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1,  1, 100,    1,   1, 100,   1.0",
-            "1,  1, 100,    1,  10,  10,   0.01",
-            "1,  1, 100,    1,  10,  20,   0.1",
-            "1,  1, 100,    1,  50, 100,   0.5",
-            "1,  1, 100,    1,  50, 150,   0.33",
-            "1, 10, 100,    1,   1, 110,   0.825",
-            "1, 50, 150,    1,  50, 100,   0.5",
-            "1,  1, 100,    1, 200, 500,   0.0",
-    })
-    void testJaccardCoefficient(int chrX, int startX, int endX, int chrY, int startY, int endY, float expect) {
-        GenomicRegion x = buildRegion(chrX, startX, endX);
-        GenomicRegion y = buildRegion(chrY, startY, endY);
+            "  1, 100,     1, 100,   1.0",
+            "  1, 100,    10,  10,   0.01",
+            "  1, 100,    11,  11,   0.01",
+            "  1, 100,    99,  99,   0.01",
+            "  1, 100,    11,  20,   0.1",
+            " 10, 100,    50, 100,   0.56",
+            "  1, 100,    51, 150,   0.333",
+            " 10, 100,     1, 110,   0.827",
+            "  1, 110,    10, 100,   0.827",
+            " 50, 150,    50, 100,   0.504",
+            "  1, 100,   200, 500,   0.0",
 
-        assertThat(SvDaoUtil.jaccard(x, y), closeTo(expect, 0.1));
+            // minima
+            "100, 200,   125, 200,   0.75",  // 25 = 100 * (1 - 0.75)
+            "100, 200,   100, 175,   0.75",
+            // maxima
+            "100, 200,    66, 200,   0.75", // 33 = (100 / 0.75) - 100
+            "100, 200,   100, 233,   0.75",
+
+            // minima
+            "100, 200,   130, 200,   0.70",  // 30 = 100 * (1 - 0.70)
+            "100, 200,   100, 170,   0.70",
+            // maxima
+            "100, 200,    57, 200,   0.70", // 43 = (100 / 0.75) - 100
+            "100, 200,   100, 243,   0.70",
+
+            // minima
+            "100, 200,   150, 200,   0.50",  // 50 = 100 * (1 - 0.50)
+            "100, 200,   100, 150,   0.50",
+            // maxima
+            "100, 200,     1, 200,   0.50", // 100 = (100 / 0.75) - 100
+            "100, 200,   100, 300,   0.50",
+
+            // minima
+            "1000, 2000,   1250, 2000,   0.75", // 250 = (2000 - 1000) * (1 - 0.75)
+            "1000, 2000,   1000, 1750,   0.75",
+            // maxima
+            "1000, 2000,    667, 2000,   0.75", // 333 = ((2000 - 1000) / 0.75 ) - (2000 - 1000)
+            "1000, 2000,   1000, 2333,   0.75",
+
+            // minima
+            "2000, 4000,   2500, 4000,   0.75", // 500 = (4000 - 2000) * (1 - 0.75)
+            "2000, 4000,   2000, 3500,   0.75",
+            // maxima
+            "2000, 4000,   1333, 4000,   0.75", // 700 = (2000 / 0.75 ) - 2000
+            "2000, 4000,   2000, 4666,   0.75",
+
+            // minima
+            "2133, 4007,   2602, 4007,   0.75", // 468.5 = (4007 - 2133) * (1 - 0.75)
+            "2133, 4007,   2133, 3538,   0.75", // 469
+            // maxima
+            "2133, 4007,   1508, 4007,   0.75", // 625 = 624.666666667 = ((4007 - 2133) / 0.75)  - (4007 - 2133)
+            "2133, 4007,   2133, 4632,   0.75", // 656
+
+            "234613, 24006577,   1, 31930565,   0.75", // 7923988 = ((24006577 - 234613) / 0.75)  - (24006577 - 234613)
+    })
+    void testJaccardCoefficient(int startX, int endX, int startY, int endY, float expect) {
+        GenomicRegion x = buildRegion(1, startX, endX);
+        GenomicRegion y = buildRegion(1, startY, endY);
+        assertThat(SvDaoUtil.jaccard(x, y), closeTo(expect, 0.01));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            " 1, 100,     1, 100,   1.0",
+            " 1, 100,    10,  10,   0.01",
+            " 1, 100,    10,  20,   0.1",
+            "11, 100,    50, 100,   0.56",
+            " 1, 100,    50, 150,   0.5", // n.b. this is 0.33 when calculated using jaccard
+            "10, 100,     1, 110,   0.825",
+            " 1, 110,    10, 100,   0.825",
+            "50, 150,    50, 100,   0.5",
+            "50, 100,    50, 150,   0.5",
+            " 1, 100,   200, 500,   0.0",
+            " 100, 200,   100, 175,   0.75",
+            " 100, 200,   125, 200,   0.75",
+            " 100, 200,   125, 175,   0.50",
+    })
+    void testReciprocalOverlap(int startX, int endX, int startY, int endY, float expect) {
+        GenomicRegion x = buildRegion(1, startX, endX);
+        GenomicRegion y = buildRegion(1, startY, endY);
+        assertThat(SvDaoUtil.reciprocalOverlap(x, y), closeTo(expect, 0.01));
     }
 
     @Test
@@ -98,54 +156,24 @@ class SvDaoUtilTest {
         assertThat(SvDaoUtil.jaccard(insMe, insMe), equalTo(1.0));
     }
 
-    @Test
-    void bondaryCalcThrowsExceptionWithZeroValueInput() {
-        GenomicRegion region = buildRegion(1, 1, 100);
-        assertThrows(IllegalArgumentException.class, () -> SvDaoUtil.getBoundaryMargin(region, -0.1));
-    }
+    @ParameterizedTest
+    @CsvSource({
+            "1, 1, 1.0",
+            "10, 10, 1.0",
+            "10, 7, 0.7",
+            "10, 5, 0.5",
+            "100, 99, 0.99",
+            "99, 100, 0.99",
+            "10, 100, 0.10",
+            "-1, 1, 0.0",
+            "-10, 1, 0.0",
+            "-10, -5, 0.5",
+            "-10, -7, 0.7",
+            "-10, -10, 1.0",
+            "-99, -100, 0.99",
 
-    @Test
-    void bondaryCalcThrowsExceptionWithGreaterThanOneInput() {
-        GenomicRegion region = buildRegion(1, 1, 100);
-        assertThrows(IllegalArgumentException.class, () -> SvDaoUtil.getBoundaryMargin(region, 1.1));
-    }
-
-    @Test
-    void boundaryCalc() {
-        GenomicRegion region = buildRegion(1, 1, 100);
-        double minCoverage = 0.85;
-        int margin = SvDaoUtil.getBoundaryMargin(region, minCoverage);
-        // maximum range
-        assertThat(SvDaoUtil.jaccard(region, maxRegion(region, margin)), greaterThan(minCoverage));
-        // minimum range
-        assertThat(SvDaoUtil.jaccard(region, minRegion(region, margin)), greaterThan(minCoverage));
-    }
-
-    @Test
-    void testMarginLargeInsertion() {
-        GenomicRegion region = buildRegion(1, 112345, 9998362);
-        double minCoverage = 0.95;
-        int margin = SvDaoUtil.getBoundaryMargin(region, minCoverage);
-        assertThat(SvDaoUtil.jaccard(region, maxRegion(region, margin)), greaterThan(minCoverage));
-        assertThat(SvDaoUtil.jaccard(region, minRegion(region, margin)), greaterThan(minCoverage));
-    }
-
-    @Test
-    void testMarginDeletion() {
-        GenomicRegion deletion = buildRegion(1, 40685415, 40685474);
-        double minCoverage = 0.85;
-        int margin = SvDaoUtil.getBoundaryMargin(deletion, minCoverage);
-        assertThat(SvDaoUtil.jaccard(deletion, maxRegion(deletion, margin)), greaterThan(minCoverage));
-        assertThat(SvDaoUtil.jaccard(deletion, minRegion(deletion, margin)), greaterThan(minCoverage));
-    }
-
-    @Test
-    void testDeletion() {
-        GenomicRegion deletion = buildRegion(1, 61569, 62915555);
-        double minCoverage = 0.85;
-        int margin = SvDaoUtil.getBoundaryMargin(deletion, minCoverage);
-        double error = 0.01;
-        assertThat(SvDaoUtil.jaccard(deletion, maxRegion(deletion, margin)), greaterThan(minCoverage - error));
-        assertThat(SvDaoUtil.jaccard(deletion, minRegion(deletion, margin)), greaterThan(minCoverage - error));
+    })
+    void testJaccardChangeLength(int x, int y, double expect) {
+        assertThat(SvDaoUtil.jaccard(x, y), equalTo(expect));
     }
 }
