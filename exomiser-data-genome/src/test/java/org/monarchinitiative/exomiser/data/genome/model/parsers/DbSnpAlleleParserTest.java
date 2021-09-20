@@ -111,6 +111,18 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
     }
 
     @Test
+    public void testSingleAlleleSnpBuild155() {
+        String line = "NC_000016.9	2150254	rs147967021	G	A	.	.	RS=147967021;dbSNPBuildID=134;SSR=0;GENEINFO=PKD1:5310;VC=SNV;NSM;R3;GNO;FREQ=1000Genomes:0.9998,0.0001997|ExAC:0.9999,9.404e-05|GnomAD:1,4.989e-05|GnomAD_exomes:0.9999,0.0001088|TOPMED:0.9999,7.934e-05|dbGaP_PopFreq:0.9999,8.681e-05";
+
+        Allele expected = new Allele(16, 2150254, "G", "A");
+        expected.setRsId("rs147967021");
+        expected.addValue(AlleleProperty.KG, 0.01997f);
+        expected.addValue(AlleleProperty.TOPMED, 0.007934f);
+
+        assertParseLineEquals(line, Collections.singletonList(expected));
+    }
+
+    @Test
     public void testSingleAlleleDeletion() {
         DbSnpAlleleParser instance = new DbSnpAlleleParser();
         String line = "1\t10353088\trs763778935\tTC\tT\t.\t.\tRS=763778935;RSPOS=10353089;dbSNPBuildID=144;SSR=0;SAO=0;VP=0x050000080005000002000200;GENEINFO=KIF1B:23095;WGT=1;VC=DIV;INT;ASP";
