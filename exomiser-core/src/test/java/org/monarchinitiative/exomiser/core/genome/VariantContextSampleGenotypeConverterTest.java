@@ -72,7 +72,6 @@ public class VariantContextSampleGenotypeConverterTest {
             sampleData.add(SampleData.of(names[i], SampleGenotype.parseGenotype(genotypes[i])));
         }
         SampleGenotypes expected = SampleGenotypes.of(sampleData);
-        System.out.println(actual);
         assertThat(actual, equalTo(expected));
     }
 
