@@ -62,7 +62,7 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        logger.info("{}", variant);
+        logger.debug("{}", variant);
         List<SvResult> results = runQuery(variant);
         results.forEach(svResult -> logger.debug("{}, jaccard={}, jaccardChangeLength={}, score={}", svResult, SvDaoUtil.jaccard(variant, svResult), SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()), score(variant).apply(svResult)));
 
@@ -75,8 +75,8 @@ public class SvFrequencyDao implements FrequencyDao {
                 .map(Map.Entry::getValue)
                 .orElse(List.of());
 
-        logger.info("Top match(es)");
-        topMatches.forEach(svResult -> logger.info("{}, jaccard={}, jaccardChangeLength={}, score={}", svResult, SvDaoUtil.jaccard(variant, svResult), SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()), score(variant).apply(svResult)));
+        logger.debug("Top match(es)");
+        topMatches.forEach(svResult -> logger.debug("{}, jaccard={}, jaccardChangeLength={}, score={}", svResult, SvDaoUtil.jaccard(variant, svResult), SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()), score(variant).apply(svResult)));
 
         return mapToFrequencyData(topMatches);
     }
