@@ -38,7 +38,7 @@ public class TestSvDataSourceConfig {
     }
 
     private HikariConfig svDataSourceConfig() {
-        Path dbPath = Path.of("/home/hhx640/Documents/exomiser-build/2105_hg19/2105_hg19_genome");
+        Path dbPath = Path.of("/home/hhx640/Documents/exomiser-data/2109_hg19/2109_hg19_genome");
 
         String startUpArgs = ";MODE=PostgreSQL;SCHEMA=exomiser;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
 

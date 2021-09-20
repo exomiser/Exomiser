@@ -24,14 +24,16 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.svart.Contig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -44,48 +46,17 @@ class SvPathogenicityDaoTest {
     @Autowired
     private SvPathogenicityDao instance;
 
-    private Contig contig(int id) {
-        return GenomeAssembly.HG19.getContigById(id);
-    }
-
     @ParameterizedTest
     @CsvSource({
-            "1,  19225,  4401691, <DUP>,     319",
-            "1,    155205541, 155205595, <DEL>,   -54",
-            "14, 105814886, 107285437, <DEL>,  -1470551",
-            "8, 7268819, 7752586, <CNV:GAIN>,  483767",
+            "1,      19225,   4401691, <DUP>,        319,   PATHOGENIC",
+            "1,  155205541, 155205595, <DEL>,        -54,   PATHOGENIC",
+            "14, 105814886, 107285437, <DEL>,     -1470551, UNCERTAIN_SIGNIFICANCE",
+            "8,    7268819,   7752586, <CNV:GAIN>, 483767,  BENIGN",
+            "7,      33350,     33670, <DEL>,        -320,  NOT_PROVIDED",
     })
-    void getPathogenicityData(int chr, int start, int end, String alt, int changeLength) {
+    void getPathogenicityData(int chr, int start, int end, String alt, int changeLength, ClinVarData.ClinSig expected) {
         Variant variant = TestFactory.variantBuilder(chr, start, end, "", alt, changeLength).build();
         PathogenicityData result = instance.getPathogenicityData(variant);
-        System.out.println(result);
+        assertThat(result.getClinVarData().getPrimaryInterpretation(), equalTo(expected));
     }
-//
-//    @Test
-//    void getDupInexactMatch() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(17))
-//                .start(500)
-//                .end(82_041_938)
-//                .variantType(VariantType.DUP)
-//                .build();
-//
-//        PathogenicityData result = instance.getPathogenicityData(variant);
-//
-//        System.out.println(result);
-//    }
-//
-//    @Test
-//    void getInsExactMatch() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(10))
-//                .start(105_817_214)
-//                .end(105_817_214)
-//                .variantType(VariantType.DUP)
-//                .build();
-//
-//        PathogenicityData result = instance.getPathogenicityData(variant);
-//
-//        System.out.println(result);
-//    }
 }

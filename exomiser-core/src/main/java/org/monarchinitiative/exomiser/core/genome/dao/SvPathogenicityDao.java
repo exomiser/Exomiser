@@ -49,9 +49,10 @@ import static java.util.stream.Collectors.toList;
  */
 public class SvPathogenicityDao implements PathogenicityDao {
 
-    private final Logger logger = LoggerFactory.getLogger(SvFrequencyDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(SvFrequencyDao.class);
 
     private final DataSource svDataSource;
+    private final double minSimilarity = 0.80;
 
     public SvPathogenicityDao(DataSource svDataSource) {
         this.svDataSource = svDataSource;
@@ -63,10 +64,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.80);
-
         logger.debug("{}", variant);
-        List<SvResult> results = runQuery(variant, margin);
+        List<SvResult> results = runQuery(variant);
         results.forEach(svResult -> logger.debug("{}", svResult));
 
         Map<Double, List<SvResult>> resultsByScore = results.stream()
@@ -119,7 +118,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
         }
     }
 
-    private List<SvResult> runQuery(Variant variant, int margin) {
+    private List<SvResult> runQuery(Variant variant) {
         String query = "SELECT " +
                 "       CHROMOSOME,\n" +
                 "       START,\n" +
@@ -145,19 +144,25 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
 
-            Position start = variant.startPosition().equals(variant.endPosition()) ? variant.startPosition().shift(-1) : variant.startPosition();
-            Position end = variant.endPosition().equals(variant.startPosition()) ? variant.endPosition().shift(1) : variant.endPosition();
+            SvDaoBoundaryCalculator svDaoBoundaryCalculator = new SvDaoBoundaryCalculator(variant, minSimilarity);
+
+            int startMin = svDaoBoundaryCalculator.startMin();
+            int startMax = svDaoBoundaryCalculator.startMax();
+
+            int endMin = svDaoBoundaryCalculator.endMin();
+            int endMax = svDaoBoundaryCalculator.endMax();
+
             logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
                     variant.contigId(),
-                    start.minPos() - margin, start.maxPos() + margin,
-                    end.minPos() - margin, end.maxPos() + margin
+                    startMin, startMax,
+                    endMin, endMax
             );
 
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, start.minPos() - margin);
-            ps.setInt(3, start.maxPos() + margin);
-            ps.setInt(4, end.minPos() - margin);
-            ps.setInt(5, end.maxPos() + margin);
+            ps.setInt(2, startMin);
+            ps.setInt(3, startMax);
+            ps.setInt(4, endMin);
+            ps.setInt(5, endMax);
 
             ResultSet rs = ps.executeQuery();
 
@@ -184,7 +189,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
             String clinRevStat = rs.getString("CLIN_REV_STAT");
 
             VariantType variantType = VariantType.valueOf(svType);
-            // there are cases such as INS_ME which won't match the database so we have to filter these here
+            // n.b there are only 4 INS entries in the 2109 pathogenicity_sv table (all pathogenic), but the
+            // lengths all == 2, so there isn't any awkward changeLength fiddling required here.
             if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
                 ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
                 ClinVarData clinVarData = ClinVarData.builder()
@@ -229,6 +235,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                     ", start=" + start() +
                     ", end=" + end() +
                     ", length=" + length() +
+                    ", changeLength=" + changeLength() +
                     ", svType='" + variantType() + '\'' +
                     ", source='" + source + '\'' +
                     ", id='" + id() + '\'' +

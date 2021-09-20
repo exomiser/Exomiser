@@ -62,38 +62,59 @@ class SvFrequencyDaoTest {
 
     @Test
     void getIns() {
-        Variant variant = TestFactory.variantBuilder(18, 24538029, 67519385, "A", "<INS>", 319).build();
-
+        Variant variant = TestFactory.variantBuilder(18, 24538029, 24538029, "A", "<INS>", 319).build();
         FrequencyData result = instance.getFrequencyData(variant);
-
-        System.out.println(result);
+        assertThat(result, equalTo(FrequencyData.of("nsv4544061", Frequency.of(FrequencySource.DBVAR, 13.219134f))));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "18,  24538029,  67519385, <INS>,     319",
-            "7,    4972268,  62707793, <DEL>,   -1003",
-            "7,      33300,     33700, <DEL>,    -400",
-            "18,  29396397, 29397996, <INV>,     1700",
-            "1,    521332,     521332, <INS:ME>,   1",
-            "1,    1546903,     1546903, <INS>,      200",
-            "1,    66576,     66576, <INS>,      2",
-            "1,    66575,     66576, <INS>,      2",
-            "1,    66576,     66577, <INS>,      2",
-            "1,    66575,     66577, <INS>,      2",
-            "1,    530886,     530887, <INS>,      50",
-            "1,    530886,     530887, <INS>,      1",
-            "10,    23037995,     23037995, <INS:ME>,      300",
-            "15,    62706090,     62707793, <DEL>,      -1703",
-            "12,    71525479,     71525479, <INS:ME:ALU>,  275",
-            "7,    17094714,     17094714, <INS:ME:LINE1>,  275",
+            "1,     724132,    726937,  <INS>,      2806, nsv544884, DGV=0.06888238", //  nsv544884
+            "1,     724131,    724132,  <INS>,      2806, '', ''", //
+            "7,    4972268,  62707793,  <DEL>, -57735526, nsv3168780, ''", // nsv3168780 , -,  nsv3168780
+            "7,      33300,     33700,  <DEL>,      -401, nsv1133639, ''", // nsv1133639, nsv1133639, nsv1133639
+            "7,      33350,     33670,  <DEL>,      -321, nsv1133639, ''", // nsv1133639, -, nsv1133639
+            "18,   2806309,   2806425,  <INV>,       117, nsv4316669, 'DBVAR=0.01844508'", // -, -, nsv4316669
+            "1,     521332,    521332,  <INS:ME>,      1, '', ''", // - , GONL=54.941483, GONL=54.941483
+            "1,     521332,    521332,  <INS:ME>,    300, '', 'GONL=54.941483'", // - , GONL=54.941483, GONL=54.941483
+            "1,     521332,    521632,  <INS:ME>,    300, '', ''", // - , GONL=54.941483, GONL=54.941483
+            "1,    1546902,   1546904,  <INS>,       200, '', ''",
+            "1,      66576,     66576,  <INS>,         2, nsv4534800, 'DGV=0.009219139'", // - , nsv4534800, nsv4534800
+            "1,      66575,     66576,  <INS>,         2, nsv4534800, 'DGV=0.009219139'", // - , nsv4534800, nsv4534800
+            "1,      66575,     66576,  <INS>,        20, '', ''", // - , nsv4534800, - (too short)
+            "1,      66575,     66576,  <INS>,        50, nsv4534800, 'DBVAR=0.02336012'", // - , nsv4534800, nsv4534800
+            "1,      66576,     66577,  <INS>,        50, '', 'GNOMAD_SV=0.02336012'", // - , nsv4534800, nsv4534800
+            "1,      66575,     66577,  <INS>,        50, '', 'GNOMAD_SV=0.02336012'", // - , nsv4534800, nsv4534800
+            "1,     530886,     530887, <INS>,        50, '', 'GNOMAD_SV=0.009297136'", // nsv4290545, nsv4290545, nsv4290545
+            "1,     530886,     530887, <INS>,       500, '', ''", // nsv4290545, nsv4290545, - (too long)
+            "1,     530886,     531387, <INS>,       500, 'nsv5212639', ''", // - (maps to a CNV from DBVAR - chr=1, start=530881, end=531480, length=600, changeLength=600, svType='CNV', source='DBVAR', id='nsv5212639' )
+            "1,     530886,     530887, <INS>,         1, nsv4290545, 'DGV=0.009219139'", // nsv4290545, nsv4290545, nsv4290545
+            "1,     181263,     181263, <INS>,        52, '', ''",
+            "10,  23037995,   23037995, <INS:ME>,    300, esv3304209, ''", // - , esv3304209, esv3304209
+            "15,  62706090,   62707793, <DEL>,     -1703, nsv4635624, 'DBVAR=18.81283'", // nsv4530637, nsv4530637, nsv4530637 nsv4635624
+            "12,  71525479,   71525479, <INS:ME:ALU>,    275, esv3867958, 'DBVAR=30.970448'", // - , esv3867958, esv3867958
+            "7,   17094714,   17094715, <INS:ME:LINE1>,  275, esv3848531, 'DBVAR=18.530352'", // nsv3564873, esv3848531, esv3848531
+            "10,  23037995,   23037996, <INS:ME>,     2, esv3304209, 'DGV=5.4054055'", // esv3304209
+            "10,  23037995,   23037996, <INS:ME>,   300, esv3304209, ''", // esv3304209 - same entry but DBVAR has no frequency data
     })
-    void getFrequencyData(int chr, int start, int end, String alt, int changeLength) {
+    void getFrequencyData(int chr, int start, int end, String alt, int changeLength, String expectedId, String expectedFrequencies) {
         Variant variant = TestFactory.variantBuilder(chr, start, end, "", alt, changeLength).build();
         FrequencyData result = instance.getFrequencyData(variant);
-        System.out.println(result);
+        assertThat(result, equalTo(FrequencyData.of(expectedId, parsefrequencies(expectedFrequencies))));
     }
 
+    private Frequency[] parsefrequencies(String expectedFrequencies) {
+        if (expectedFrequencies.isEmpty()) {
+            return new Frequency[0];
+        }
+        String[] tokens = expectedFrequencies.split(";");
+        Frequency[] frequencies = new Frequency[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            String[] freqVal = tokens[i].split("=");
+            frequencies[i] = Frequency.of(FrequencySource.valueOf(freqVal[0]), Float.parseFloat(freqVal[1]));
+        }
+        return frequencies;
+    }
 
     @Test
     void commonInversion() {
@@ -104,17 +125,15 @@ class SvFrequencyDaoTest {
 
     @Test
     void getInsMeExactMatch() {
-        Variant variant = TestFactory.variantBuilder(1, 521332, 521332, "", "<INS:ME>", 200).build();
+        Variant variant = TestFactory.variantBuilder(1, 521331, 521332, "", "<INS:ME>", 300).build();
         FrequencyData result = instance.getFrequencyData(variant);
         assertThat(result, equalTo(FrequencyData.of(Frequency.of(FrequencySource.GONL, 54.941483f))));
     }
 
     @Test
     void getInsMeDgvMatch() {
-        // TODO - Check the SV database build - thi dbVar the coordinates are reported as (b37) 23037995 - 23037995
-        //  however the database has stored these as 23037995 - 23037996
         // esv3304209 is an INS_ME
-        Variant variant = TestFactory.variantBuilder(10, 23037995, 23037996, "", "<INS:ME>", 300).build();
+        Variant variant = TestFactory.variantBuilder(10, 23037995, 23037996, "", "<INS:ME>", 2).build();
         FrequencyData result = instance.getFrequencyData(variant);
         assertThat(result, equalTo(FrequencyData.of("esv3304209", Frequency.of(FrequencySource.DGV, 5.4054055f))));
     }
@@ -123,106 +142,21 @@ class SvFrequencyDaoTest {
     void getDelManyPotentialMatches() {
         Variant variant = TestFactory.variantBuilder(15, 62706090, 62707793, "", "<DEL>", 62706090 - 62707793).build();
         FrequencyData result = instance.getFrequencyData(variant);
-        System.out.println(result);
+        assertThat(result, equalTo(FrequencyData.of("nsv4635624", Frequency.of(FrequencySource.DBVAR, 18.81283f))));
     }
 
     @Test
     void getCnvManyPotentialMatches() {
         Variant variant = TestFactory.variantBuilder(15, 62706090, 62707793, "", "<CNV:GAIN>", 0).build();
         FrequencyData result = instance.getFrequencyData(variant);
-        System.out.println(result);
+        assertThat(result, equalTo(FrequencyData.of("esv29792", Frequency.of(FrequencySource.DGV, 97.5f))));
     }
-//
-//    @Test
-//    void submitSnv() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(1))
-//                .start(62399)
-//                .end(62489)
-//                .changeLength(90)
-//                .variantType(VariantType.DEL)
-//                .build();
-//
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
-//
-//    @Test
-//    void getCnvManyPotentialMatches() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(14))
-//                .start(20194092)
-//                .end(20424243)
-//                .changeLength(230151)
-//                .ref("A")
-//                .alt("<CNV")
-//                .variantType(VariantType.CNV)
-//                .build();
-//
-//        System.out.println(variant);
-//        System.out.println(variant.getLength());
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
-//
-//    @Test
-//    void getCnvLoss() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(15))
-//                .start(62_706_194)
-//                .end(62_707_654)
-//                .changeLength(0)
-//                .variantType(VariantType.CNV_LOSS)
-//                .build();
-//
-//        System.out.println(variant.getLength());
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
-//
-//    @Test
-//    void getDgvInsMe() {
-//        Variant variant = VariantAnnotation.builder()
-//                .contig(contig(1))
-//                .start(4288450)
-//                .end(4288450)
-//                .changeLength(300)
-//                // this should be an INS_ME
-//                .variantType(VariantType.INS_ME)
-//                .build();
-//
-//        System.out.println(variant.getLength());
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
-//
-//    @Test
-//    void getDgvCnv() {
-//        Variant variant = VariantAnnotation.builder()
-////                .contig(contig(22))
-////                .start(24346935)
-////                .end(24394915)
-////                .changeLength(-47980)
-//                .variantType(VariantType.CNV_LOSS)
-//                .build();
-//
-//        System.out.println(variant.getLength());
-//        FrequencyData result = instance.getFrequencyData(variant);
-//
-//        System.out.println(result);
-//    }
 
     @Test
     void getDgvCanvasGain() {
         Variant variant = TestFactory.variantBuilder(2, 37958137, 38002170, "", "<CNV:GAIN>", 20).build();
-
         FrequencyData result = instance.getFrequencyData(variant);
-
-        System.out.println(result);
+        assertThat(result, equalTo(FrequencyData.of("nsv4583525", Frequency.of(FrequencySource.DBVAR, 59.555553f))));
     }
 
     @Test
@@ -277,7 +211,8 @@ class SvFrequencyDaoTest {
         r.entrySet().forEach(System.out::println);
 
         GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 21000, 46000);
-        int margin = SvDaoUtil.getBoundaryMargin(region, 0.85);
+        SvDaoBoundaryCalculator boundaryCalculator = new SvDaoBoundaryCalculator(region, 0.85);
+        int margin = boundaryCalculator.outerBoundsOffset();
 
         System.out.println(region);
         System.out.println("margin: " + margin);
@@ -286,11 +221,11 @@ class SvFrequencyDaoTest {
 // iterate over the intersecting keys
         Iterator<SpatialKey> it =
 //                r.findContainedKeys(new SpatialKey(0, 0f, 9f, 3f, 6f));
-                r.findIntersectingKeys(new SpatialKey(0, region.start() - margin, region.end() + margin, region.contigId(), region.contigId()));
+                r.findIntersectingKeys(new SpatialKey(0, boundaryCalculator.startMin(), boundaryCalculator.endMax(), region.contigId(), region.contigId()));
         while (it.hasNext()) {
             SpatialKey k = it.next();
             SvFrequencyDao.SvResult svResult = r.get(k);
-            System.out.println(k + ": " + svResult + " " + SvDaoUtil.jaccard(region, svResult));
+            System.out.println(k + ": " + svResult + ", simJ=" + SvDaoUtil.jaccard(region, svResult));
         }
         s.close();
     }

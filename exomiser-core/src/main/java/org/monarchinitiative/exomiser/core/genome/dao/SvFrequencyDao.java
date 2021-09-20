@@ -42,16 +42,15 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.monarchinitiative.exomiser.core.model.SvMetaType.isEquivalent;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class SvFrequencyDao implements FrequencyDao {
 
-    private final Logger logger = LoggerFactory.getLogger(SvFrequencyDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(SvFrequencyDao.class);
 
     private final DataSource svDataSource;
+    private final double minSimilarity = 0.80;
 
     public SvFrequencyDao(DataSource svDataSource) {
         this.svDataSource = svDataSource;
@@ -63,12 +62,9 @@ public class SvFrequencyDao implements FrequencyDao {
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        int margin = SvDaoUtil.getBoundaryMargin(variant, 0.80);
-
-        logger.debug("{}", variant);
-        logger.debug("Searching for {}:{}-{}", variant.contigId(), variant.start() - margin, variant.end() + margin);
-        List<SvResult> results = runQuery(variant, margin);
-        results.forEach(svResult -> logger.debug("{}", svResult));
+        logger.info("{}", variant);
+        List<SvResult> results = runQuery(variant);
+        results.forEach(svResult -> logger.debug("{}, jaccard={}, jaccardChangeLength={}, score={}", svResult, SvDaoUtil.jaccard(variant, svResult), SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()), score(variant).apply(svResult)));
 
         Map<Double, List<SvResult>> resultsByScore = results.stream()
                 .collect(Collectors.groupingBy(score(variant)));
@@ -79,8 +75,8 @@ public class SvFrequencyDao implements FrequencyDao {
                 .map(Map.Entry::getValue)
                 .orElse(List.of());
 
-        logger.debug("Top match(es)");
-        topMatches.forEach(svResult -> logger.debug("{}", svResult));
+        logger.info("Top match(es)");
+        topMatches.forEach(svResult -> logger.info("{}, jaccard={}, jaccardChangeLength={}, score={}", svResult, SvDaoUtil.jaccard(variant, svResult), SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()), score(variant).apply(svResult)));
 
         return mapToFrequencyData(topMatches);
     }
@@ -88,6 +84,10 @@ public class SvFrequencyDao implements FrequencyDao {
     private Function<SvResult, Double> score(Variant variant) {
         // geometric mean of num alleles and similarity - try and get the best represented and most similar allele
         return svResult -> Math.sqrt(svResult.an * SvDaoUtil.jaccard(variant, svResult));
+    }
+
+    private boolean isInsertion(Variant variant) {
+        return variant.variantType().baseType().equals(VariantType.INS);
     }
 
     private FrequencyData mapToFrequencyData(List<SvResult> topMatches) {
@@ -125,7 +125,7 @@ public class SvFrequencyDao implements FrequencyDao {
         }
     }
 
-    private List<SvResult> runQuery(Variant variant, int margin) {
+    private List<SvResult> runQuery(Variant variant) {
         String query =
                 "SELECT " +
                         "       CHROMOSOME,\n" +
@@ -149,18 +149,26 @@ public class SvFrequencyDao implements FrequencyDao {
                 Connection connection = svDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            Position start = variant.startPosition();
-            Position end = variant.endPosition();
+
+            SvDaoBoundaryCalculator svDaoBoundaryCalculator = new SvDaoBoundaryCalculator(variant, minSimilarity);
+
+            int startMin = svDaoBoundaryCalculator.startMin();
+            int startMax = svDaoBoundaryCalculator.startMax();
+
+            int endMin = svDaoBoundaryCalculator.endMin();
+            int endMax = svDaoBoundaryCalculator.endMax();
+
             logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
                     variant.contigId(),
-                    start.minPos() - margin, start.maxPos() + margin,
-                    end.minPos() - margin, end.maxPos() + margin
+                    startMin, startMax,
+                    endMin, endMax
             );
             ps.setInt(1, variant.contigId());
-            ps.setInt(2, start.minPos() - margin);
-            ps.setInt(3, start.maxPos() + margin);
-            ps.setInt(4, end.minPos() - margin);
-            ps.setInt(5, end.maxPos() + margin);
+            ps.setInt(2, startMin);
+            ps.setInt(3, startMax);
+            ps.setInt(4, endMin);
+            ps.setInt(5, endMax);
+
 
             ResultSet rs = ps.executeQuery();
 
@@ -187,7 +195,7 @@ public class SvFrequencyDao implements FrequencyDao {
             int chr = rs.getInt("CHROMOSOME");
             int start = rs.getInt("START");
             int end = rs.getInt("end");
-            int length = rs.getInt("CHANGE_LENGTH");
+            int changeLength = rs.getInt("CHANGE_LENGTH");
             String svType = rs.getString("VARIANT_TYPE");
             String id = rs.getString("DBVAR_ID");
             int ac = rs.getInt("ALLELE_COUNT");
@@ -196,12 +204,38 @@ public class SvFrequencyDao implements FrequencyDao {
             VariantType variantType = VariantType.valueOf(svType);
             // there are cases such as INS_ME which won't match the database so we have to filter these here
             // consider also DEL/CNV_LOSS INS/CNV_GAIN/DUP/INS_ME and CNV
+            changeLength = checkChangeLength(variantType, start, end, changeLength);
+
             if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
-                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, id == null ? "" : id, source, ac, an);
-                results.add(svResult);
+                SvResult svResult = SvResult.of(variant.contig(), start, end, changeLength, variantType, id == null ? "" : id, source, ac, an);
+                if (isInsertion(variant)) {
+                    if (changeLength >= 20 && SvDaoUtil.jaccard(variant.changeLength(), svResult.changeLength()) >= 0.75) {
+                        results.add(svResult);
+                    }
+                    // both too short to apply similarity cutoff
+                    if (changeLength < 20 && variant.changeLength() < 20) {
+                        results.add(svResult);
+                    }
+                } else {
+                    results.add(svResult);
+                }
             }
         }
         return results;
+    }
+
+    private static int checkChangeLength(VariantType variantType, int start, int end, int changeLength) {
+        if (variantType == VariantType.CNV) {
+            return changeLength;
+        }
+        if (SvMetaType.isEquivalent(variantType, VariantType.DEL) && changeLength >= 0) {
+            return start - end;
+        }
+        if (SvMetaType.isEquivalent(variantType, VariantType.INS) && changeLength <= 0) {
+            // hack for DGV where INS variants don't have a length
+            return changeLength + changeLength == 0 ? 1 : changeLength;
+        }
+        return changeLength;
     }
 
     static class SvResult extends BaseVariant<SvResult> {
@@ -221,20 +255,8 @@ public class SvFrequencyDao implements FrequencyDao {
 
         static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, int an) {
             String alt = '<' + variantType.toString().replace("_", ":") + '>';
-            int correctedChangeLength = checkChangeLength(variantType, start, end, changeLength);
 //            System.out.printf("contig=%s, id=%s, start=%d, end=%d, changeLength=%d, %s, %s, ac=%d, af=%f%n", contig.name(), id, start, end, changeLength, variantType, source, ac, af);
-            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, correctedChangeLength, source, ac, an);
-        }
-
-        private static int checkChangeLength(VariantType variantType, int start, int end, int changeLength) {
-            if (isEquivalent(variantType, VariantType.DEL) && changeLength >= 0) {
-                return start - end;
-            }
-            if (isEquivalent(variantType, VariantType.INS) && changeLength <= 0) {
-                // hack for DGV where INS variants don't have a length
-                return +changeLength + changeLength == 0 ? 1 : changeLength;
-            }
-            return changeLength;
+            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, changeLength, source, ac, an);
         }
 
         @Override
@@ -249,6 +271,7 @@ public class SvFrequencyDao implements FrequencyDao {
                     ", start=" + start() +
                     ", end=" + end() +
                     ", length=" + length() +
+                    ", changeLength=" + changeLength() +
                     ", svType='" + variantType() + '\'' +
                     ", source='" + source + '\'' +
                     ", id='" + id() + '\'' +
