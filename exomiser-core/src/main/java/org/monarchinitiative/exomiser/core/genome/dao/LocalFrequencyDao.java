@@ -73,7 +73,7 @@ public class LocalFrequencyDao implements FrequencyDao {
         //1 12345   AT   G   0.02  (an AT->G deletion on chr1 at position 12345 with frequency of 0.02%)
         //1 12345   T   .   0.03  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with frequency of 0.03%)
         try {
-            TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + start);
+            TabixReader.Iterator results = tabixDataSource.query(chromosome, start, start);
             String line;
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");

@@ -106,7 +106,7 @@ public class RemmDao implements PathogenicityDao {
         try {
             float score = Float.NaN;
             String line;
-            TabixReader.Iterator results = remmTabixDataSource.query(chromosome + ":" + start + "-" + end);
+            TabixReader.Iterator results = remmTabixDataSource.query(chromosome, start, end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 if (Float.isNaN(score)) {

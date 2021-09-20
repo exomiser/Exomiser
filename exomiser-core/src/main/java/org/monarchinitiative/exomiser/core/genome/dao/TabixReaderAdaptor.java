@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,12 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper for an HTSJDK TabixReader.
@@ -30,19 +36,38 @@ import htsjdk.tribble.readers.TabixReader;
 public class TabixReaderAdaptor implements TabixDataSource {
 
     private final TabixReader tabixReader;
+    private final Map<String, String> chrIndex;
 
     public TabixReaderAdaptor(TabixReader tabixReader) {
         this.tabixReader = tabixReader;
+        this.chrIndex = createChrIndex(tabixReader.getChromosomes());
     }
 
+    private Map<String, String> createChrIndex(Set<String> tabixChromosomes) {
+        // create a map of what Exomiser calls a chromosome with what the tabix file uses to identify the chromosome
+        // e.g. chr1 or 1, chrY or Y
+        GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
+        return tabixChromosomes.stream().collect(Collectors.toMap(tabixChr -> genomeAssembly.getContigByName(tabixChr).name(), Function.identity()));
+    }
+
+    /**
+     * @deprecated Unless you're 100% certain, use the method query(String chromosome, int start, int end) which will
+     * automatically translate the chromosome name to the internal tabix identifier. USING THIS METHOD MAY RESULT IN NO
+     * DATA BEING RETURNED DUE TO CHROMOSOME NAMING DIFFERENCES.
+     */
     @Override
     public TabixReader.Iterator query(String query) {
         return tabixReader.query(query);
     }
 
+    /**
+     * @implNote This method will automatically map from the Exomiser chromosome name (1-22,X,Y,MT) to the value used in
+     * the tabix file. Requires fully-closed start and end coordinates.
+     */
     @Override
     public TabixReader.Iterator query(String chromosome, int start, int end) {
-        return tabixReader.query(chromosome, start, end);
+        String chr = chrIndex.get(chromosome);
+        return tabixReader.query(tabixReader.chr2tid(chr), start - 1, end);
     }
 
     @Override

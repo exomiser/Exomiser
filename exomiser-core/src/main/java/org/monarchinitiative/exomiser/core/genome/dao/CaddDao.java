@@ -76,7 +76,7 @@ public class CaddDao implements PathogenicityDao {
 
     private PathogenicityData getCaddPathogenicityData(TabixDataSource tabixDataSource, String chromosome, int start, String ref, String alt) {
         try {
-            TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + start);
+            TabixReader.Iterator results = tabixDataSource.query(chromosome, start, start);
             String line;
             //there can be 0 - N results in this format:
             //#Chrom  Pos     Ref     Alt     RawScore        PHRED
