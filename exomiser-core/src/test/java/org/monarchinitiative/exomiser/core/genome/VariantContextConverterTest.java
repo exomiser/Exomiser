@@ -408,7 +408,7 @@ class VariantContextConverterTest {
         @Test
         void testCn0() {
             Variant variant = parseVcfRecord("15\t23671395\tesv3635841\tA\t<CN0>\t100\tPASS\tAC=2;AF=0.978235;AFR_AF=0.9198;AMR_AF=0.9971;AN=2;CIEND=-500,1000;CIPOS=-1000,500;CS=DEL_union;DP=11333;EAS_AF=0.999;END=23674750;EUR_AF=1;NS=2504;SAS_AF=1;SVTYPE=DEL;VT=SV\tGT\t1|1");
-            System.out.println(variant);
+            assertThat(variant.variantType(), equalTo(VariantType.CNV));
         }
     }
     // breakend tests
