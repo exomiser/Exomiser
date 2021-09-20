@@ -4,78 +4,107 @@ option java_package = "org.monarchinitiative.exomiser.core.proto";
 option java_outer_classname = "JannovarProto";
 
 message JannovarData {
-    ReferenceDictionary reference_dictionary = 1;
-    repeated TranscriptModel transcript_models = 2;
+  ReferenceDictionary reference_dictionary = 1;
+  repeated TranscriptModel transcript_models = 2;
 }
 
 message ReferenceDictionary {
-    /**
-	 * stores a mapping from the string chromosome/contig name to its numeric id, e.g. from both <code>"chr1"</code> and
-	 * <code>"1"</code> to <code>(int)1</code>
-	 */
-    map<string, int32> contig_name_to_id = 1;
+  /**
+ * stores a mapping from the string chromosome/contig name to its numeric id, e.g. from both <code>"chr1"</code> and
+ * <code>"1"</code> to <code>(int)1</code>
+ */
+  map<string, int32> contig_name_to_id = 1;
 
-    /** stores primary name for each numeric chromsomomeID/contigID */
-    map<int32, string> contig_id_to_name = 2;
+  /** stores primary name for each numeric chromsomomeID/contigID */
+  map<int32, string> contig_id_to_name = 2;
 
-    /** stores a mapping from numeric chromosomeID/contigID to chromosome/contig length */
-    map<int32, int32> contig_id_to_length = 3;
+  /** stores a mapping from numeric chromosomeID/contigID to chromosome/contig length */
+  map<int32, int32> contig_id_to_length = 3;
 }
 
 message TranscriptModel {
-    string accession = 1;
-    /**
-     * Gene symbol of the known Gene. Can be null for some genes. Note that in annovar, $name2 corresponds to the
-     * geneSymbol if available, otherwise the kgID is used.
-     */
-    string gene_symbol = 2;
-    /** Genomic interval with transcript begin/end. */
-    GenomeInterval tx_region = 3;
-    /**
-     * Genomic interval with CDS begin/end.
-     *
-     * <b>Note</b> that in Jannovar, the CDS region includes the start and stop codon.
-     */
-    GenomeInterval cds_region = 4;
-    /** Genomic intervals with the exons, order is dictated by strand of transcript. */
-    repeated GenomeInterval exon_regions = 5;
-	/** cDNA sequence of the spliced RNA of this known gene transcript. */
-	string sequence = 6;
-	/**
-	 * The gene ID, from Ensembl (<code>"ENS[MUS]*G0+([0-9]+)"</code>), Entrez ("<code>ENTREZ([0-9]+)</code>
-	 * "), RefSeq ("<code>gene([0-9]+)</code>").
-	 *
-	 * <code>null</code> for no available gene ID.
-	 */
-	string gene_iD = 7;
-	/**
-	 * Alternative gene IDs, as parsed from RefSeq GFF3 file
-	 *
-	 * See {@link #getAltGeneIDs()} for more information
-	 */
-	map<string, string> alt_gene_ids = 8;
-	/**
-	 * The transcript support level of the this transcript (the lower the better).
-	 *
-	 * @see TranscriptSupportLevels
-	 * @see <a href="http://www.ensembl.org/Help/Glossary?id=492">http://www.ensembl.org/Help/Glossary?id=492</a>
-	 */
-	int32 transcript_support_level = 9;
+  string accession = 1;
+  /**
+   * Gene symbol of the known Gene. Can be null for some genes. Note that in annovar, $name2 corresponds to the
+   * geneSymbol if available, otherwise the kgID is used.
+   */
+  string gene_symbol = 2;
+  /** Genomic interval with transcript begin/end. */
+  GenomeInterval tx_region = 3;
+  /**
+   * Genomic interval with CDS begin/end.
+   *
+   * <b>Note</b> that in Jannovar, the CDS region includes the start and stop codon.
+   */
+  GenomeInterval cds_region = 4;
+  /** Genomic intervals with the exons, order is dictated by strand of transcript. */
+  repeated GenomeInterval exon_regions = 5;
+  /** cDNA sequence of the spliced RNA of this known gene transcript. */
+  string sequence = 6;
+  /**
+   * The gene ID, from Ensembl (<code>"ENS[MUS]*G0+([0-9]+)"</code>), Entrez ("<code>ENTREZ([0-9]+)</code>
+   * "), RefSeq ("<code>gene([0-9]+)</code>").
+   *
+   * <code>null</code> for no available gene ID.
+   */
+  string gene_iD = 7;
+  /**
+   * Alternative gene IDs, as parsed from RefSeq GFF3 file
+   *
+   * See {@link #getAltGeneIDs()} for more information
+   */
+  map<string, string> alt_gene_ids = 8;
+  /**
+   * The transcript support level of the this transcript (the lower the better).
+   *
+   * @see TranscriptSupportLevels
+   * @see <a href="http://www.ensembl.org/Help/Glossary?id=492">http://www.ensembl.org/Help/Glossary?id=492</a>
+   */
+  int32 transcript_support_level = 9;
+
+  // The alignment of the transcript sequence to the genomic exon region.
+  Alignment alignment = 10;
+
+  // Whether or not the transcript aligns with mismatches to the reference.
+  bool hasSubstitutions = 11;
+
+  // Whether or not the transcript aligns with indels to the reference.
+  bool hasIndels = 12;
 }
 
 message GenomeInterval {
-   // ReferenceDictionary refDict = 1;
-	/** the strand that the position is located on */
-    Strand strand = 2;
-	/** the chromosome number, as index in chromosome dictionary */
-	int32 chr = 3;
-	/** the begin position on the chromosome */
-	int32 begin_pos = 4;
-	/** the end position on the chromosome */
-	int32 end_pos = 5;
+  //
+  Contig contig = 1;
+  /** the strand that the position is located on */
+  Strand strand = 2;
+  /** the chromosome number, as index in chromosome dictionary */
+  int32 chr = 3;
+  /** the begin position on the chromosome */
+  int32 begin_pos = 4;
+  /** the end position on the chromosome */
+  int32 end_pos = 5;
 }
 
 enum Strand {
-    FWD = 0;
-    REV = 1;
+  FWD = 0;
+  REV = 1;
+}
+
+message Contig {
+  /** the chromosome number, as indexed in chromosome dictionary */
+  int32 id = 1;
+  /** the chromosome name, as indexed in chromosome dictionary */
+  string name = 2;
+  /** the chromosome length, as indexed in chromosome dictionary */
+  int32 length = 3;
+}
+
+message Alignment {
+  repeated Anchor refAnchors = 1;
+  repeated Anchor qryAnchors = 2;
+}
+
+message Anchor {
+  int32 gapPos = 1;
+  int32 seqPos = 2;
 }
