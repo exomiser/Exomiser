@@ -296,27 +296,49 @@
                                           th:text="${varId}">12345
                                     </span>
                                 </th:block>
-                            </div>
-                            <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
-                                <b>ClinVar: </b>
-                                <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
-                                          th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                        </div>
+                        <div class="col-sm-12">
+                            <b>Exomiser ACMG: </b>
+                            <th:block th:with="acmgClassification = ${variantEvaluation.getAcmgClassification()}"
+                                      th:switch="${acmgClassification.toString()}">
+                                    <span th:case="'BENIGN'" class="label label-success"
+                                          th:text="${acmgClassification}">BENIGN</span>
+                                <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                      th:text="${acmgClassification}">LIKELY_BENIGN</span>
+                                <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                      th:text="${acmgClassification}">LIKELY_PATHOGENIC</span>
+                                <span th:case="'PATHOGENIC'" class="label label-danger"
+                                      th:text="${acmgClassification}">PATHOGENIC</span>
+                                <span th:case="'UNCERTAIN_SIGNIFICANCE'" class="label label-default"
+                                      th:text="${acmgClassification}">UNCERTAIN_SIGNIFICANCE</span>
+                                <span th:case="*" class="label label-default"
+                                      th:text="${acmgClassification}">NOT_AVAILABLE</span>
+                                <b
+                                        th:text="${variantEvaluation.getAcmgCategories()}">
+                                    [PVS1, BP2]
+                                </b>
+                            </th:block>
+                        </div>
+                        <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
+                            <b>ClinVar: </b>
+                            <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                      th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
                                     <span th:case="'BENIGN'" class="label label-success"
                                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
-                                    <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
-                                    <span th:case="'LIKELY_BENIGN'" class="label label-info"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
-                                    <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
-                                    <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
-                                    <span th:case="'PATHOGENIC'" class="label label-danger"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
-                                    <span th:case="*" class="label label-default"
-                                          th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
-                                    <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
-                                       th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                                <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                                <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                                <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                                <span th:case="'PATHOGENIC'" class="label label-danger"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                                <span th:case="*" class="label label-default"
+                                      th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                                <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                   th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                         (criteria_provided,_single_submitter)
                                     </a>
                                 </th:block>
@@ -413,6 +435,28 @@
                             <span th:case="*"
                                   th:text="${varId}">12345
                                     </span>
+                        </th:block>
+                    </div>
+                    <div class="col-sm-12">
+                        <b>Exomiser ACMG: </b>
+                        <th:block th:with="acmgClassification = ${variantEvaluation.getAcmgClassification()}"
+                                  th:switch="${acmgClassification.toString()}">
+                                    <span th:case="'BENIGN'" class="label label-success"
+                                          th:text="${acmgClassification}">BENIGN</span>
+                            <span th:case="'LIKELY_BENIGN'" class="label label-info"
+                                  th:text="${acmgClassification}">LIKELY_BENIGN</span>
+                            <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
+                                  th:text="${acmgClassification}">LIKELY_PATHOGENIC</span>
+                            <span th:case="'PATHOGENIC'" class="label label-danger"
+                                  th:text="${acmgClassification}">PATHOGENIC</span>
+                            <span th:case="'UNCERTAIN_SIGNIFICANCE'" class="label label-default"
+                                  th:text="${acmgClassification}">UNCERTAIN_SIGNIFICANCE</span>
+                            <span th:case="*" class="label label-default"
+                                  th:text="${acmgClassification}">NOT_AVAILABLE</span>
+                            <b
+                                    th:text="${variantEvaluation.getAcmgCategories()}">
+                                [PVS1, BP2]
+                            </b>
                         </th:block>
                     </div>
                     <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
