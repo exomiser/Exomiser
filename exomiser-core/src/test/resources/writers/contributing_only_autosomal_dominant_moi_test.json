@@ -13,7 +13,6 @@
     "combinedScore": 1.0,
     "priorityScore": 1.0,
     "variantScore": 1.0,
-    "priorityResults": {},
     "compatibleInheritanceModes": [
       "AUTOSOMAL_DOMINANT",
       "AUTOSOMAL_RECESSIVE"
@@ -36,16 +35,18 @@
         "contributingVariants": [
           {
             "genomeAssembly": "HG19",
-            "chromosomeName": "10",
-            "chromosome": 10,
-            "position": 123256215,
+            "contigName": "10",
+            "start": 123256215,
+            "end": 123256215,
             "ref": "T",
             "alt": "G",
-            "id": "",
+            "type": "SNV",
+            "length": 1,
             "phredScore": 2.2,
             "variantEffect": "MISSENSE_VARIANT",
-            "whiteListed": false,
+            "whiteListed": true,
             "filterStatus": "PASSED",
+            "contributesToGeneScore": true,
             "variantScore": 1.0,
             "frequencyScore": 1.0,
             "pathogenicityScore": 1.0,
@@ -53,23 +54,13 @@
             "passedFilterTypes": [
               "VARIANT_EFFECT_FILTER"
             ],
-            "failedFilterTypes": [],
             "frequencyData": {
-              "rsId": {
-                "id": 0,
-                "empty": true
-              },
-              "knownFrequencies": [],
               "score": 1.0
             },
             "pathogenicityData": {
               "clinVarData": {
-                "alleleId": "",
-                "primaryInterpretation": "NOT_PROVIDED",
-                "secondaryInterpretations": [],
-                "reviewStatus": "",
-                "includedAlleles": {},
-                "empty": true
+                "primaryInterpretation": "PATHOGENIC",
+                "reviewStatus": "criteria provided, multiple submitters, no conflicts"
               },
               "score": 1.0,
               "predictedPathogenicityScores": [
@@ -98,11 +89,9 @@
                 "accession": "uc021pzz.1",
                 "hgvsGenomic": "g.12278533A>C",
                 "hgvsCdna": "c.1694A>C",
-                "hgvsProtein": "p.(Glu565Ala)",
-                "distanceFromNearestGene": -2147483648
+                "hgvsProtein": "p.(Glu565Ala)"
               }
-            ],
-            "altAlleleId": 0
+            ]
           }
         ]
       }
@@ -110,16 +99,18 @@
     "variantEvaluations": [
       {
         "genomeAssembly": "HG19",
-        "chromosomeName": "10",
-        "chromosome": 10,
-        "position": 123256215,
+        "contigName": "10",
+        "start": 123256215,
+        "end": 123256215,
         "ref": "T",
         "alt": "G",
-        "id": "",
+        "type": "SNV",
+        "length": 1,
         "phredScore": 2.2,
         "variantEffect": "MISSENSE_VARIANT",
-        "whiteListed": false,
+        "whiteListed": true,
         "filterStatus": "PASSED",
+        "contributesToGeneScore": true,
         "variantScore": 1.0,
         "frequencyScore": 1.0,
         "pathogenicityScore": 1.0,
@@ -127,23 +118,13 @@
         "passedFilterTypes": [
           "VARIANT_EFFECT_FILTER"
         ],
-        "failedFilterTypes": [],
         "frequencyData": {
-          "rsId": {
-            "id": 0,
-            "empty": true
-          },
-          "knownFrequencies": [],
           "score": 1.0
         },
         "pathogenicityData": {
           "clinVarData": {
-            "alleleId": "",
-            "primaryInterpretation": "NOT_PROVIDED",
-            "secondaryInterpretations": [],
-            "reviewStatus": "",
-            "includedAlleles": {},
-            "empty": true
+            "primaryInterpretation": "PATHOGENIC",
+            "reviewStatus": "criteria provided, multiple submitters, no conflicts"
           },
           "score": 1.0,
           "predictedPathogenicityScores": [
@@ -172,11 +153,9 @@
             "accession": "uc021pzz.1",
             "hgvsGenomic": "g.12278533A>C",
             "hgvsCdna": "c.1694A>C",
-            "hgvsProtein": "p.(Glu565Ala)",
-            "distanceFromNearestGene": -2147483648
+            "hgvsProtein": "p.(Glu565Ala)"
           }
-        ],
-        "altAlleleId": 0
+        ]
       }
     ]
   }
