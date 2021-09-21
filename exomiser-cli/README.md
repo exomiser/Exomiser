@@ -11,7 +11,7 @@ Further information can be found in the [online documentation](http://exomiser.g
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
  - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
  - Any 64-bit operating system
- - Java 8 or above
+ - Java 11 or above
  - At least 50GB free disk space (SSD preferred for best performance)
  - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
   networked database (optional).
@@ -31,22 +31,22 @@ Windows:
  
 Linux: 
 The following shell script should work-
-    
+
     #download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/1802_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/11802_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2109_phenotype.zip
 
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    unzip 1802_*.zip -d exomiser-cli-${project.version}/data
+    unzip 2109_*.zip -d exomiser-cli-${project.version}/data
 
     #Check the application.properties are pointing to the correct versions
-    #exomiser.hg19.data-version=1802
-    #exomiser.hg38.data-version=1802
-    #exomiser.phenotype.data-version=1802
+    #exomiser.hg19.data-version=2109
+    #exomiser.hg38.data-version=2109
+    #exomiser.phenotype.data-version=2109
     
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
@@ -56,7 +56,10 @@ This script will download, verify and extract the exomiser files and then run th
 
 ## Genomiser data files
 
-In order to run the Genomiser you will also need to download the REMM data file from [here](https://charite.github.io/software-remm-score.html). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz file to the ```application.properties``` file. For example if you downloaded the file to the exomiser data directory you could add the entry like this:
+In order to run the Genomiser you will also need to download the REMM data file
+from [here](https://zenodo.org/record/4768448). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz
+file to the ```application.properties``` file. For example if you downloaded the file to the exomiser data directory you
+could add the entry like this:
 
     exomiser.hg19.remm-path=${exomiser.hg19.data-directory}/ReMM.v0.3.1.tsv.gz
  
