@@ -32,10 +32,12 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoConverter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
@@ -137,12 +139,12 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     String toYamlJobString(Sample sample, Analysis analysis, OutputSettings outputSettings) {
         SampleProto.Sample protoSample = new SampleProtoConverter().toProto(sample);
-        // TODO: AnalysisProtoConverter().toProto(analysis) ?
+        AnalysisProto.Analysis protoAnalysis = new AnalysisProtoConverter().toProto(analysis);
         OutputProto.OutputOptions protoOutputOptions = new OutputSettingsProtoConverter().toProto(outputSettings);
 
         JobProto.Job protoJob = JobProto.Job.newBuilder()
                 .setSample(protoSample)
-//                .setAnalysis(protoAnalysis)
+                .setAnalysis(protoAnalysis)
                 .setOutputOptions(protoOutputOptions)
                 .build();
 

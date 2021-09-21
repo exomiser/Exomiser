@@ -90,6 +90,10 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
         this.combinedProximityVector = computeDistanceAllNodesFromStartNodes(this.randomWalkMatrix, this.seedGenes);
     }
 
+    public List<Integer> getSeedGenes() {
+        return seedGenes;
+    }
+
     /**
      * Adds the Entrez ids in the list provided to the seedGenes if it is
      * contained in the DataMatrix.

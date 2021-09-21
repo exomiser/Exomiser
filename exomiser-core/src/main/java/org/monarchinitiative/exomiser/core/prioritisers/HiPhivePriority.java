@@ -77,6 +77,10 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
         return PRIORITY_TYPE;
     }
 
+    public HiPhiveOptions getOptions() {
+        return options;
+    }
+
     @Override
     public Stream<HiPhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         if (options.isBenchmarkingEnabled()) {
