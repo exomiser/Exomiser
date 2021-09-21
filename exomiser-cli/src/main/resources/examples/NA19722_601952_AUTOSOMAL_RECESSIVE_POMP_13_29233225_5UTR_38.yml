@@ -5,7 +5,7 @@
 analysis:
     # hg19 or hg38 - ensure that the application has been configured to run the specified assembly otherwise it will halt.
     genomeAssembly: hg19
-    vcf: examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz
+    vcf: examples/NA19722_CHR13_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz
     ped:
     proband:
     hpoIds: ['HP:0000982',
