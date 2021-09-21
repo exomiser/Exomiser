@@ -1,11 +1,20 @@
 # The Exomiser Command Line Executable - Changelog
 
-## 13.0.0
+## 13.0.0 2021-09-21
 
-- SV interpretation alongside small variants
+- Minimum Java version is now set to __Java 11__
+- New structural variant interpretation alongside small variants - requires data version __2109__ or higher. This has
+  been tested using Manta and Canvas short-read callers and Sniffles long-read caller.
+- New command line options for more flexible input: --sample --output, --vcf, --batch, --preset --assembly --ped . Run
+  --help for details
 - Phenopackets v1.0 can be used to input sample phenotype data
+- Added ability to specify proband age and sex in input options either via a phenopacket or the 'sample' format
+- Improved MOI disease - phenotype matching with added Orphanet MOIs
+- Improved incomplete penetrance calculation when using the ANY mode of inheritance option
+- Added a `minExomiserGeneScore` option for limiting the output genes to have a mimimum Exomiser combined score. This is
+  disabled by default. If enabling it, we recommend using a minimum score of 0.7
 - __BREAKING CHANGE__ - JSON output changes `pos` renamed as `start`, `chrmosomeName` renamed as `contigName`.
-  Deleted `chromosome` field (use `contigName`). New fields: `end`, `lenght`, `changeLength` and `variantType`
+  Deleted `chromosome` field (use `contigName`). New fields: `end`, `length`, `changeLength` and `variantType`
 
 ## 12.1.0 2019-09-25
 
