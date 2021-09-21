@@ -1,0 +1,64 @@
+## Exomiser genome analysis template.
+# These are all the possible options for running exomiser. Use this as a template for
+# your own set-up.
+---
+analysisMode: PASS_ONLY
+inheritanceModes: {
+  AUTOSOMAL_DOMINANT: 0.1,
+  AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
+  AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
+  X_DOMINANT: 0.1,
+  X_RECESSIVE_HOM_ALT: 0.1,
+  X_RECESSIVE_COMP_HET: 2.0,
+  MITOCHONDRIAL: 0.2
+}
+frequencySources: [
+    THOUSAND_GENOMES,
+    TOPMED,
+    UK10K,
+
+    ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+
+    EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+    EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+    EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+    EXAC_OTHER,
+
+    GNOMAD_E_AFR,
+    GNOMAD_E_AMR,
+  #        GNOMAD_E_ASJ,
+    GNOMAD_E_EAS,
+    GNOMAD_E_FIN,
+    GNOMAD_E_NFE,
+    GNOMAD_E_OTH,
+    GNOMAD_E_SAS,
+
+    GNOMAD_G_AFR,
+    GNOMAD_G_AMR,
+  #        GNOMAD_G_ASJ,
+    GNOMAD_G_EAS,
+    GNOMAD_G_FIN,
+    GNOMAD_G_NFE,
+    GNOMAD_G_OTH,
+    GNOMAD_G_SAS
+]
+# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+# REMM is trained on non-coding regulatory regions
+# *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+# and updated their location in the application.properties. Exomiser will not run without this.
+pathogenicitySources: [ REVEL, MVP, REMM ]
+# this is the recommended order for a genome-sized analysis.
+steps: [
+    hiPhivePrioritiser: { },
+  # running the prioritiser followed by a priorityScoreFilter will remove genes
+  # which are least likely to contribute to the phenotype defined in hpoIds, this will
+  # dramatically reduce the time and memory required to analyse a genome.
+  # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
+    priorityScoreFilter: { priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501 },
+    failedVariantFilter: { },
+    regulatoryFeatureFilter: { },
+    frequencyFilter: { maxFrequency: 2.0 },
+    pathogenicityFilter: { keepNonPathogenic: true },
+    inheritanceFilter: { },
+    omimPrioritiser: { }
+]
