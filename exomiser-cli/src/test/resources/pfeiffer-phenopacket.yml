@@ -1,3 +1,4 @@
+# a v1 phenopacket describing an individual https://phenopacket-schema.readthedocs.io/en/1.0.0/phenopacket.html
 ---
 id: manuel
 subject:
@@ -36,4 +37,4 @@ metaData:
       version: hp/releases/2019-11-08
       namespacePrefix: HP
       iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
-  phenopacketSchemaVersion: 1.0.0
+  phenopacketSchemaVersion: 1.0

@@ -1,3 +1,4 @@
+# a v1 phenopacket describing a family https://phenopacket-schema.readthedocs.io/en/1.0.0/family.html
 ---
 id: ISDBM322017-family
 proband:
@@ -45,3 +46,14 @@ htsFiles:
   - uri: examples/Pfeiffer-quartet.vcf.gz
     htsFormat: VCF
     genomeAssembly: GRCh37
+metaData:
+  created: '2019-11-12T13:47:51.948Z'
+  createdBy: julesj
+  resources:
+    - id: hp
+      name: human phenotype ontology
+      url: http://purl.obolibrary.org/obo/hp.owl
+      version: hp/releases/2019-11-08
+      namespacePrefix: HP
+      iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
+  phenopacketSchemaVersion: 1.0

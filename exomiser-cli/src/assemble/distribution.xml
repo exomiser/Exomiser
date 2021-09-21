@@ -1,7 +1,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2016-2021 Queen Mary University of London.
   ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -69,9 +69,15 @@
             <outputDirectory>./examples</outputDirectory>
             <includes>
                 <include>*.yml</include>
+                <include>*.gz</include>
+                <include>*.tbi</include>
                 <include>test-analysis-batch.txt</include>
+                <include>test-analysis-batch-commands.txt</include>
                 <include>Pfeiffer.vcf</include>
+                <include>Pfeiffer.vcf.gz</include>
+                <include>Pfeiffer.vcf.gz.tbi</include>
                 <include>Pfeiffer-quartet.vcf.gz</include>
+                <include>Pfeiffer-quartet.vcf.gz.tbi</include>
                 <include>Pfeiffer-quartet.ped</include>
                 <include>NA19722_252900_AR_SGSH_1_NONSYNONYMOUS.vcf</include>
                 <include>NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz</include>

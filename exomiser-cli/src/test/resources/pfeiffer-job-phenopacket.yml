@@ -1,5 +1,11 @@
-## Exomiser Analysis Template.
-# This is the original analysis template used for Exomiser versions 7-12. It is *almost* the same as the pfeiffer_job.yml
+## Exomiser Job Template.
+# The job is split into three sections:
+#    sample: describes the proband
+#    analysis: details the steps exomiser will take to analyse the sample
+#    outputOptions: specifies what files to output and where with filtering options for the number of genes and the exomiser score
+#
+# These can be input separately on the command line e.g. --sample sample.yml --analysis analysis.yml
+# In this example the 'sample' is replaced with a 'phenopacket' see https://phenopacket-schema.readthedocs.io/en/1.0.0/phenopacket.html
 ---
 phenopacket:
   id: manuel
@@ -39,7 +45,7 @@ phenopacket:
         version: hp/releases/2019-11-08
         namespacePrefix: HP
         iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
-    phenopacketSchemaVersion: 1.0.0
+    phenopacketSchemaVersion: 1.0
 analysis:
   #FULL or PASS_ONLY
   analysisMode: PASS_ONLY

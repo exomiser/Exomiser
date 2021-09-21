@@ -1,5 +1,11 @@
-## Exomiser Analysis Template.
-# This is the original analysis template used for Exomiser versions 7-12. It is *almost* the same as the pfeiffer_job.yml
+## Exomiser Job Template.
+# The job is split into three sections:
+#    sample: describes the proband
+#    analysis: details the steps exomiser will take to analyse the sample
+#    outputOptions: specifies what files to output and where with filtering options for the number of genes and the exomiser score
+#
+# These can be input separately on the command line e.g. --sample sample.yml --analysis analysis.yml
+# In this example the 'sample' is the original exomiser sample format
 ---
 sample:
   # hg19 or hg38 - ensure that the application has been configured to run the specified assembly otherwise it will halt.
@@ -7,7 +13,7 @@ sample:
   vcf: examples/Pfeiffer.vcf
   ped: examples/Pfeiffer-singleton.ped
   proband: manuel
-  hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+  hpoIds: [ 'HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055' ]
 analysis:
   #FULL or PASS_ONLY
   analysisMode: PASS_ONLY

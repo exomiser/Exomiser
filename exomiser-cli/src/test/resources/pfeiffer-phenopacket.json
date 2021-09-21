@@ -62,6 +62,6 @@
         "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
       }
     ],
-    "phenopacketSchemaVersion": "1.0.0"
+    "phenopacketSchemaVersion": "1.0"
   }
 }
