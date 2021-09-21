@@ -112,6 +112,9 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder().build())
                     .build();
         }
+        if (analysisStep instanceof RegulatoryFeatureFilter) {
+            return stepBuilder.setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()).build();
+        }
         if (analysisStep instanceof PriorityScoreFilter) {
             PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) analysisStep;
             return stepBuilder

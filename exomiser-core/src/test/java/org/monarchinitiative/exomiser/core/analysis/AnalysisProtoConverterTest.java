@@ -26,14 +26,13 @@ import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
-import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
-import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
+import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
@@ -46,7 +45,7 @@ import static org.hamcrest.Matchers.equalTo;
 class AnalysisProtoConverterTest {
 
     @Test
-    void toProto() {
+    void testToProtoGlobalOptions() {
         Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(
                         InheritanceModeOptions.of(Map.of(
@@ -54,13 +53,7 @@ class AnalysisProtoConverterTest {
                                 SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f)))
                 .frequencySources(EnumSet.of(FrequencySource.GNOMAD_G_NFE, FrequencySource.THOUSAND_GENOMES, FrequencySource.TOPMED))
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MVP, PathogenicitySource.REVEL))
-                .addStep(new FrequencyFilter(0.2f))
-                .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
-                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
-                .addStep(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService()))
                 .build();
-        System.out.println(analysis);
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
         AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
                 .putAllInheritanceModes(Map.of(
@@ -73,11 +66,52 @@ class AnalysisProtoConverterTest {
                 .addPathogenicitySources("POLYPHEN")
                 .addPathogenicitySources("REVEL")
                 .addPathogenicitySources("MVP")
+                .build();
+        assertThat(result, equalTo(expected));
+    }
+
+    @Test
+    void testToProtoExomeAnalysisSteps() {
+        Analysis analysis = Analysis.builder()
+                .addStep(new FrequencyFilter(0.2f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new InheritanceFilter())
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService()))
+                .build();
+        AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
+        AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder().setRunParams("human, mouse, fish, ppi")))
+                .build();
+        assertThat(result, equalTo(expected));
+    }
+
+    @Test
+    void testToProtoGenomeAnalysisSteps() {
+        Analysis analysis = Analysis.builder()
+                .addStep(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))
+                .addStep(new FailedVariantFilter())
+                .addStep(new RegulatoryFeatureFilter())
+                .addStep(new FrequencyFilter(0.2f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new InheritanceFilter())
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .build();
+        AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
+        AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder().setRunParams("human, mouse, fish, ppi")))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder().setPriorityType("HIPHIVE_PRIORITY").setMinPriorityScore(0.501f)))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFailedVariantFilter(FiltersProto.FailedVariantFilter.newBuilder()))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder()))
                 .build();
         assertThat(result, equalTo(expected));
     }
