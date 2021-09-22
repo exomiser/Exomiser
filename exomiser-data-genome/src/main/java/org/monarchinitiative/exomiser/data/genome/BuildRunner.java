@@ -179,7 +179,8 @@ public class BuildRunner implements ApplicationRunner {
         Path genomePath = assemblyResources.getGenomeDataPath();
         logger.info("Genome Path: {}", genomePath);
         List<SvResource> svResources = assemblyResources.getSvResources();
-        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, outPath, svResources);
+        Path genomeProcessedPath = assemblyResources.getGenomeProcessedPath();
+        GenomeDatabaseBuildRunner genomeDatabaseBuildRunner = new GenomeDatabaseBuildRunner(buildInfo, genomePath, genomeProcessedPath, outPath, svResources);
         genomeDatabaseBuildRunner.run();
     }
 

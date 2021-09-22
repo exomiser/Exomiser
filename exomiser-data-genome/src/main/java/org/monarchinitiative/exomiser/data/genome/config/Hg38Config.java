@@ -28,17 +28,22 @@ import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.archive.FileArchive;
 import org.monarchinitiative.exomiser.data.genome.model.archive.TabixArchive;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.DbNsfpColumnIndex;
-import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.*;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.ClinVarSvParser;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.DbVarFreqParser;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.DecipherSvFreqParser;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.sv.DgvSvFreqParser;
 import org.monarchinitiative.exomiser.data.genome.model.resource.*;
 import org.monarchinitiative.exomiser.data.genome.model.resource.sv.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +52,8 @@ import java.util.Map;
  */
 @Configuration
 public class Hg38Config extends ResourceConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
 
     private final Environment environment;
 
@@ -57,14 +64,37 @@ public class Hg38Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
-        Path genomeDataPath = hg38GenomePath();
+        Path genomeDataPath = genomeDataPath();
+        Path genomeProcessPath = genomeProcessPath();
         Map<String, AlleleResource> alleleResources = hg38AlleleResources();
-        List<SvResource> svResources = hg38SvResources();
-        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, alleleResources, svResources);
+        List<SvResource> svResources = hg38SvResources(genomeProcessPath);
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, alleleResources, svResources);
     }
 
-    public Path hg38GenomePath() {
-        return Paths.get(environment.getProperty("hg38.genome-dir"));
+    public Path genomeDataPath() {
+        return getPathForProperty("hg38.genome-dir");
+    }
+
+    public Path genomeProcessPath() {
+        return getPathForProperty("hg38.genome-processed-dir");
+    }
+
+    private Path getPathForProperty(String propertyKey) {
+        String property = environment.getProperty(propertyKey, "");
+
+        if (property.isEmpty()) {
+            throw new IllegalArgumentException(propertyKey + " has not been specified!");
+        }
+        Path path = Path.of(property);
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectory(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            logger.info("Created missing directory {}", path);
+        }
+        return path;
     }
 
     public Map<String, AlleleResource> hg38AlleleResources() {
@@ -126,87 +156,96 @@ public class Hg38Config extends ResourceConfig {
         return alleleResource(GnomadExomeAlleleResource.class, "hg38.gnomad-exome");
     }
 
-    public List<SvResource> hg38SvResources() {
+    public List<SvResource> hg38SvResources(Path genomeProcessPath) {
+        // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
+        gonlSvFrequencyResource(genomeProcessPath);
+        gnomadSvFrequencyResource(genomeProcessPath);
         return List.of(
-                clinvarSvResource(),
-                dbVarFrequencyResource(),
-                // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
-                dgvSvResource(),
-                decipherSvResource()
+                clinvarSvResource(genomeProcessPath),
+                dbVarFrequencyResource(genomeProcessPath),
+                dgvSvResource(genomeProcessPath),
+                decipherSvResource(genomeProcessPath)
         );
     }
 
-    public ClinVarSvResource clinvarSvResource() {
+    public ClinVarSvResource clinvarSvResource(Path genomeProcessPath) {
         try {
             return new ClinVarSvResource("hg38.clinvar-sv",
                     new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
-                    new FileArchive(hg38GenomePath().resolve("variant_summary.txt.gz")),
+                    new FileArchive(genomeDataPath().resolve("variant_summary.txt.gz")),
                     new ClinVarSvParser(GenomeAssembly.HG38),
-                    new OutputFileIndexer<>(hg38GenomePath().resolve("clinvar-sv.pg")));
+                    new OutputFileIndexer<>(genomeProcessPath.resolve("clinvar-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public DbVarSvResource dbVarFrequencyResource() {
+    public DbVarSvResource dbVarFrequencyResource(Path genomeProcessPath) {
         try {
             return new DbVarSvResource("hg38.dbvar",
                     new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh38/vcf/GRCh38.variant_call.all.vcf.gz"),
-                    new TabixArchive(hg38GenomePath().resolve("GRCh38.variant_call.all.vcf.gz")),
+                    new TabixArchive(genomeDataPath().resolve("GRCh38.variant_call.all.vcf.gz")),
                     new DbVarFreqParser(),
-                    new DbVarDeDupOutputFileIndexer(hg38GenomePath().resolve("dbvar-sv.pg")));
+                    new DbVarDeDupOutputFileIndexer(genomeProcessPath.resolve("dbvar-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public GnomadSvResource gnomadSvFrequencyResource() {
+    public void gnomadSvFrequencyResource(Path genomeProcessPath) {
         try {
+            Path path = genomeProcessPath.resolve("gnomad-sv.pg");
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
             // https://doi.org/10.1038/s41586-020-2287-8
             //
-            return new GnomadSvResource("hg38.gnomad-sv",
-                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
-                    new TabixArchive(hg38GenomePath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
-                    new GnomadSvVcfFreqParser(),
-                    new OutputFileIndexer<>(hg38GenomePath().resolve("gnomad-sv.pg")));
-        } catch (IOException e) {
+//            return new GnomadSvResource("hg38.gnomad-sv",
+//                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
+//                    new TabixArchive(genomeDataPath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
+//                    new GnomadSvVcfFreqParser(),
+//                    new OutputFileIndexer<>(genomeProcessPath.resolve("gnomad-sv.pg")));
+        } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
-    // TODO: make these NoOp versions - there is no hg38 data available for GONL or gnomAD-SV and the H2 migration fails due to missing gnomad-sv.pg and gonl-sv.pg files
     // TODO: Externalise these in the application.properties
-    public GonlSvResource gonlSvFrequencyResource() {
+    public void gonlSvFrequencyResource(Path genomeProcessPath) {
         try {
-            return new GonlSvResource("hg38.gonl",
-                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
-                    new FileArchive(hg38GenomePath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
-                    new GonlSvFreqParser(),
-                    new OutputFileIndexer<>(hg38GenomePath().resolve("gonl-sv.pg")));
-        } catch (IOException e) {
+            Path path = genomeProcessPath.resolve("gonl-sv.pg");
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
+//            return new GonlSvResource("hg38.gonl",
+//                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
+//                    new FileArchive(genomeDataPath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
+//                    new GonlSvFreqParser(),
+//                    new OutputFileIndexer<>(genomeProcessPath.resolve("gonl-sv.pg")));
+        } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public DgvSvResource dgvSvResource() {
+    public DgvSvResource dgvSvResource(Path genomeProcessPath) {
         try {
             return new DgvSvResource("hg38.dgv-sv",
                     new URL("http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2020-02-25.txt"),
-                    new FileArchive(hg38GenomePath().resolve("dgv-hg38-variants-2020-02-25.txt")),
+                    new FileArchive(genomeDataPath().resolve("dgv-hg38-variants-2020-02-25.txt")),
                     new DgvSvFreqParser(),
-                    new OutputFileIndexer<>(hg38GenomePath().resolve("dgv-sv.pg")));
+                    new OutputFileIndexer<>(genomeProcessPath.resolve("dgv-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public DecipherSvResource decipherSvResource() {
+    public DecipherSvResource decipherSvResource(Path genomeProcessPath) {
         try {
             return new DecipherSvResource("hg38.decipher-sv",
                     new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch38.txt.gz"),
-                    new FileArchive(hg38GenomePath().resolve("decipher_population_cnv_grch38.txt.gz")),
+                    new FileArchive(genomeDataPath().resolve("decipher_population_cnv_grch38.txt.gz")),
                     new DecipherSvFreqParser(),
-                    new OutputFileIndexer<>(hg38GenomePath().resolve("decipher-sv.pg")));
+                    new OutputFileIndexer<>(genomeProcessPath.resolve("decipher-sv.pg")));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

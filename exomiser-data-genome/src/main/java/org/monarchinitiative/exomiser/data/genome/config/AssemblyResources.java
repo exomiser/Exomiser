@@ -38,12 +38,14 @@ public class AssemblyResources {
 
     private final GenomeAssembly genomeAssembly;
     private final Path genomeDataPath;
+    private final Path genomeProcessedPath;
     private final Map<String, AlleleResource> alleleResources;
     private final List<SvResource> svResources;
 
-    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
+    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Path genomeProcessedPath, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
         this.genomeAssembly = genomeAssembly;
         this.genomeDataPath = genomeDataPath;
+        this.genomeProcessedPath = genomeProcessedPath;
         this.alleleResources = alleleResources;
         this.svResources = svResources;
     }
@@ -54,6 +56,10 @@ public class AssemblyResources {
 
     public Path getGenomeDataPath() {
         return genomeDataPath;
+    }
+
+    public Path getGenomeProcessedPath() {
+        return genomeProcessedPath;
     }
 
     public Map<String, AlleleResource> getAlleleResources() {

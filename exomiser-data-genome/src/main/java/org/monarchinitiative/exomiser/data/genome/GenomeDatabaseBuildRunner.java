@@ -59,12 +59,14 @@ public class GenomeDatabaseBuildRunner {
 
     private final BuildInfo buildInfo;
     private final Path genomeDataPath;
+    private final Path genomeProcessedPath;
     private final Path outputPath;
     private final List<SvResource> svResources;
 
-    public GenomeDatabaseBuildRunner(BuildInfo buildInfo, Path genomeDataPath, Path outputPath, List<SvResource> svResources) {
+    public GenomeDatabaseBuildRunner(BuildInfo buildInfo, Path genomeDataPath, Path genomeProcessedPath, Path outputPath, List<SvResource> svResources) {
         this.buildInfo = buildInfo;
         this.genomeDataPath = genomeDataPath;
+        this.genomeProcessedPath = genomeProcessedPath;
         this.outputPath = outputPath;
         this.svResources = svResources;
     }
@@ -75,19 +77,19 @@ public class GenomeDatabaseBuildRunner {
         Path ensemblEnhancersFile = genomeDataPath.resolve("ensembl_enhancers.tsv");
         String martQuery = getMartQueryString("genome/ensembl_enhancer_biomart_query.xml");
         downloadEnsemblEnhancers(buildInfo.getAssembly(), martQuery, ensemblEnhancersFile);
-        EnsemblEnhancerParser ensemblEnhancerParser = new EnsemblEnhancerParser(ensemblEnhancersFile, genomeDataPath.resolve("ensembl_enhancers.pg"));
+        EnsemblEnhancerParser ensemblEnhancerParser = new EnsemblEnhancerParser(ensemblEnhancersFile, genomeProcessedPath.resolve("ensembl_enhancers.pg"));
         ensemblEnhancerParser.parse();
 
         logger.info("Parsing FANTOM 5 enhancers...");
         Path fantomBedPath = genomeDataPath.resolve("fantom_enhancers.bed");
         downloadClassPathResource(String.format("genome/%s_fantom_permissive_enhancer_usage.bed", buildInfo.getAssembly()), fantomBedPath);
 
-        FantomEnhancerParser fantomEnhancerParser = new FantomEnhancerParser(fantomBedPath, genomeDataPath.resolve("fantom_enhancers.pg"));
+        FantomEnhancerParser fantomEnhancerParser = new FantomEnhancerParser(fantomBedPath, genomeProcessedPath.resolve("fantom_enhancers.pg"));
         fantomEnhancerParser.parse();
 
         // extract hg19_tad.pg from the jar to genomeDataPath as tad.pg
         logger.info("Extracting TAD resource...");
-        downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeDataPath.resolve("tad.pg"));
+        downloadClassPathResource(String.format("genome/%s_tad.pg", buildInfo.getAssembly()), genomeProcessedPath.resolve("tad.pg"));
 
         logger.info("Downloading and indexing SV resources...");
         svResources.parallelStream().forEach(ResourceDownloader::download);
@@ -174,7 +176,7 @@ public class GenomeDatabaseBuildRunner {
 
     private void migrateDatabase(DataSource dataSource) {
         Map<String, String> propertyPlaceHolders = new HashMap<>();
-        propertyPlaceHolders.put("import.path", genomeDataPath.toString());
+        propertyPlaceHolders.put("import.path", genomeProcessedPath.toString());
 
         logger.info("Migrating {} genome database...", buildInfo.getBuildString());
         Flyway h2Flyway = Flyway.configure()
