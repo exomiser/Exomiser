@@ -31,6 +31,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ClinVarWhiteListFileAlleleIndexerTest {
 
@@ -51,7 +52,7 @@ class ClinVarWhiteListFileAlleleIndexerTest {
 
     @Test
     void testCorruptedClinVarVcfLine() {
-        assertThat(indexLine("1	155235058	991404	C	G	.	.	ALLELEID=97i949|synony552ucleotide_variCLNREVSTAT=c_l;CLNREVSTAT=criteria_proviP:aNRE;CLNVC=singlla;CLNREVSTAT=no_a2ingle_submitter;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;CLNVI=OMIM_Allelic_Variant:606463.0021|UsCLNSIG=Pathogenic;Cl_disorder_of_glycosylation_type_1O;CLNHGVS=NC_000001.11:g.155140056G>A;CLNREVSTAT=criteria_provided,_single_73;CLNMONDO:MONDO:0018150,MedGen:C0017205,Orphanet:ORPHA355|MONDO:MONDO:0018466,MedGen:CN237447,Orphanet:ORPHA411602|MedGen:CN517202;CLNDN=Lewy_body_dementia|Parkinson_R	PGINCL=424820:Likely_pathogenic").isEmpty(), equalTo(true));
+        assertThrows(Exception.class, () -> indexLine("1	155235058	991404	C	G	.	.	ALLELEID=97i949|synony552ucleotide_variCLNREVSTAT=c_l;CLNREVSTAT=criteria_proviP:aNRE;CLNVC=singlla;CLNREVSTAT=no_a2ingle_submitter;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;CLNVI=OMIM_Allelic_Variant:606463.0021|UsCLNSIG=Pathogenic;Cl_disorder_of_glycosylation_type_1O;CLNHGVS=NC_000001.11:g.155140056G>A;CLNREVSTAT=criteria_provided,_single_73;CLNMONDO:MONDO:0018150,MedGen:C0017205,Orphanet:ORPHA355|MONDO:MONDO:0018466,MedGen:CN237447,Orphanet:ORPHA411602|MedGen:CN517202;CLNDN=Lewy_body_dementia|Parkinson_R	PGINCL=424820:Likely_pathogenic"));
     }
 
     @Test
