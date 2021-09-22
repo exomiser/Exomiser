@@ -37,8 +37,6 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 
-import java.io.IOException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -196,17 +194,5 @@ public class CaddDaoTest {
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
         assertPathDataContainsCaddScore(result, 3.45f);
-    }
-
-    @Test
-    void name() throws IOException {
-        TabixReader snpReader = new TabixReader("/home/hhx640/Documents/exomiser-data/cadd/1.4/hg19/whole_genome_SNVs.tsv.gz");
-        TabixReader inDelReader = new TabixReader("/home/hhx640/Documents/exomiser-data/cadd/1.4/hg19/InDels.tsv.gz");
-        CaddDao instance = new CaddDao(new TabixReaderAdaptor(inDelReader), new TabixReaderAdaptor(snpReader));
-
-        System.out.println(instance.getPathogenicityData(variant(1, 10067, "T", "TAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCC")));
-        System.out.println(instance.getPathogenicityData(variant(1, 10067, "TA", "T")));
-        System.out.println(instance.getPathogenicityData(variant(1, 10067, "A", "T")));
-        System.out.println(instance.getPathogenicityData(variant(1, 10003, "A", "C")));
     }
 }
