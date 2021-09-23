@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * VariantFilter variants according to a linkage interval. For instance, if the
@@ -64,7 +64,7 @@ public class IntervalFilter implements VariantFilter {
      * @param interval the chromosomal region within which a variant will pass the filter.
      */
     public IntervalFilter(ChromosomalRegion interval) {
-        this(ImmutableList.of(interval));
+        this(List.of(interval));
     }
 
     /**
@@ -92,7 +92,7 @@ public class IntervalFilter implements VariantFilter {
         return geneticIntervals.stream()
                 .distinct()
                 .sorted(ChromosomalRegion::compare)
-                .collect(ImmutableList.toImmutableList());
+                .collect(Collectors.toUnmodifiableList());
     }
 
     /**
