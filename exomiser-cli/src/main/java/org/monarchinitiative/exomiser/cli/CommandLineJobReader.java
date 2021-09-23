@@ -28,7 +28,7 @@ import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.JobReader;
-import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeReader;
+import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeReader;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.phenopackets.schema.v1.Family;
@@ -215,7 +215,7 @@ public class CommandLineJobReader {
         if (jobBuilder.hasPhenopacket()) {
             // upgrade to family
             Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
-            Pedigree pedigree = PedigreeReader.readPedFile(pedPath);
+            Pedigree pedigree = PhenopacketPedigreeReader.readPedFile(pedPath);
             List<HtsFile> htsFilesList = phenopacketBuilder.getHtsFilesList();
 
             Family.Builder familyBuilder = Family.newBuilder()
@@ -226,7 +226,7 @@ public class CommandLineJobReader {
 
             jobBuilder.setFamily(familyBuilder);
         } else if (jobBuilder.hasFamily()) {
-            Pedigree pedigree = PedigreeReader.readPedFile(pedPath);
+            Pedigree pedigree = PhenopacketPedigreeReader.readPedFile(pedPath);
             jobBuilder.getFamilyBuilder().setPedigree(pedigree);
         } else {
             jobBuilder.getSampleBuilder().setPed(pedPath.toAbsolutePath().toString());

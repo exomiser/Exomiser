@@ -33,7 +33,7 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoBuilder;
-import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeReader;
+import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeReader;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
@@ -618,7 +618,7 @@ class CommandLineJobReaderTest {
                 .build();
         Family family = FAMILY.toBuilder()
                 .clearHtsFiles().addHtsFiles(0, htsFile)
-                .setPedigree(PedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
+                .setPedigree(PhenopacketPedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
                 .build();
 
         JobProto.Job expected = JobProto.Job.newBuilder()
@@ -654,7 +654,7 @@ class CommandLineJobReaderTest {
                 .setId(phenopacket.getId())
                 .setProband(phenopacket)
                 .addHtsFiles(htsFile)
-                .setPedigree(PedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
+                .setPedigree(PhenopacketPedigreeReader.readPedFile(Path.of("src/test/resources/pfeiffer-singleton.ped")))
                 .build();
 
         JobProto.Job expected = JobProto.Job.newBuilder()

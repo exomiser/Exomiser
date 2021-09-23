@@ -35,11 +35,11 @@ import java.util.stream.Stream;
 /**
  * Utility for reading a PED file into a {@link Pedigree} object.
  */
-public class PedigreeReader {
+public class PhenopacketPedigreeReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(PedigreeReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhenopacketPedigreeReader.class);
 
-    private PedigreeReader() {
+    private PhenopacketPedigreeReader() {
         //empty
     }
 
