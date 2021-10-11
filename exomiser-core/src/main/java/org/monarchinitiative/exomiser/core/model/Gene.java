@@ -364,6 +364,13 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
+    public synchronized void addGeneScores(Collection<GeneScore> geneScores) {
+        Objects.requireNonNull(geneScores);
+        for (GeneScore geneScore : geneScores) {
+            addGeneScore(geneScore);
+        }
+    }
+
     @JsonIgnore
     public GeneScore getTopGeneScore() {
         return topGeneScore;

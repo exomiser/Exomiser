@@ -53,6 +53,8 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final ContributingAlleleCalculator contributingAlleleCalculator;
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
+    private final AcmgCriteriaAssigner acmgCriteriaAssigner;
+
     /**
      * @param probandId                Sample id of the proband in the VCF.
      * @param inheritanceModeAnnotator An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
@@ -65,6 +67,25 @@ public class RawScoreGeneScorer implements GeneScorer {
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
         this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
+        this.acmgCriteriaAssigner = new AcmgCriteriaAssigner(probandId, probandSex, inheritanceModeAnnotator.getPedigree());
+    }
+
+    @Override
+    public List<Gene> scoreGenes(List<Gene> genes) {
+        for (Gene gene : genes) {
+            List<GeneScore> geneScores = scoreGene().apply(gene);
+            gene.addGeneScores(geneScores);
+            gene.getPassedVariantEvaluations().forEach(variantEvaluation -> {
+                Set<AcmgCriterion> acmgCategories = acmgCriteriaAssigner.assignVariantAcmgCriteria(variantEvaluation, gene);
+                variantEvaluation.setAcmgCategories(acmgCategories);
+                AcmgClassification classification = variantEvaluation.getAcmgClassification();
+                if (classification != AcmgClassification.UNCERTAIN_SIGNIFICANCE) {
+                    logger.debug("{}: {}: {}", classification, acmgCategories, variantEvaluation);
+                }
+            });
+        }
+        Collections.sort(genes);
+        return genes;
     }
 
     /**
