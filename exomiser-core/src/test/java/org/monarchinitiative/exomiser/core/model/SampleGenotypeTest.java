@@ -20,8 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,14 +40,14 @@ public class SampleGenotypeTest {
 
     @Test
     public void testHetUnphased() {
-        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
     }
 
     @Test
     public void testHetPhased() {
-        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(ImmutableList.of(AlleleCall.ALT, AlleleCall.REF)));
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.ALT, AlleleCall.REF)));
     }
 
     @Test
