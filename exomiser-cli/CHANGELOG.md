@@ -1,5 +1,9 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 13.0.1 2021-11-23
+
+- Bug fix for issue where application fails to start when only specifying hg38 data in `application.properties`
+
 ## 13.0.0 2021-09-21
 
 - Minimum Java version is now set to __Java 11__
