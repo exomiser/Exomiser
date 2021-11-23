@@ -39,11 +39,11 @@ import static org.hamcrest.Matchers.instanceOf;
 public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
-    public synchronized void genomeAnalysisService() throws Exception {
+    public void genomeAnalysisService() throws Exception {
 
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.local-frequency-path=../local/local_freq.tsv.gz");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710");
 
-        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) this.context.getBean("hg19genomeAnalysisService");
+        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) context.getBean("hg19genomeAnalysisService");
         assertThat(genomeAnalysisService.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
 
         assertThat(context.getBean("hg19jannovarData"), instanceOf(JannovarData.class));
@@ -60,7 +60,7 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
     }
 
     @Test
-    public synchronized void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
+    public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
 
         String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg19.test-pathogenicity-score-path=" + testPathogenicitySourcePath);

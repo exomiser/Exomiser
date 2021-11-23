@@ -43,7 +43,7 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
 
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710");
 
-        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) this.context.getBean("hg38genomeAnalysisService");
+        GenomeAnalysisService genomeAnalysisService = (GenomeAnalysisService) context.getBean("hg38genomeAnalysisService");
         assertThat(genomeAnalysisService.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
 
         assertThat(context.getBean("hg38jannovarData"), instanceOf(JannovarData.class));
@@ -61,6 +61,7 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
 
     @Test
     public void genomeAnalysisServiceWithOptionalTestPathDao() throws Exception {
+
         String testPathogenicitySourcePath = TEST_DATA.resolve("remm/remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710", "exomiser.hg38.test-pathogenicity-score-path=" + testPathogenicitySourcePath);
 

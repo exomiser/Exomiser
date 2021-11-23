@@ -44,10 +44,14 @@ public class Hg38GenomeProperties extends AbstractGenomeProperties {
         return new DataSourceProperties();
     }
 
-    @Bean(name = "hg38genomeDataSource")
+    @Bean
     @ConfigurationProperties("exomiser.hg38.genome.datasource.hikari")
-    public HikariDataSource genomeDataSource() {
-        return hg38genomeDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    public HikariDataSource hg38genomeDataSource(DataSourceProperties hg38genomeDataSourceProperties) {
+        return hg38genomeDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
+    @Override
+    public HikariDataSource genomeDataSource() {
+        return hg38genomeDataSource(hg38genomeDataSourceProperties());
+    }
 }

@@ -26,7 +26,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -44,17 +43,20 @@ public class Hg19GenomeProperties extends AbstractGenomeProperties {
     // the default configuration is contained in the application.properties shipped in the jar's classpath
     // this can be overridden by the user in their own application.properties.
 
-    @Primary
     @Bean
     @ConfigurationProperties("exomiser.hg19.genome.datasource")
     public DataSourceProperties hg19genomeDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-    @Primary
-    @Bean(name = "hg19genomeDataSource")
+    @Bean
     @ConfigurationProperties("exomiser.hg19.genome.datasource.hikari")
+    public HikariDataSource hg19genomeDataSource(DataSourceProperties hg19genomeDataSourceProperties) {
+        return hg19genomeDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    }
+
+    @Override
     public HikariDataSource genomeDataSource() {
-        return hg19genomeDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        return hg19genomeDataSource(hg19genomeDataSourceProperties());
     }
 }
