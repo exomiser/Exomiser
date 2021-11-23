@@ -51,6 +51,10 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     // datastore
     private String testPathogenicityScorePath = "";
 
+    protected AbstractGenomeProperties(GenomeAssembly assembly) {
+        this.assembly = assembly;
+    }
+
     @Override
     public Path getDataDirectory() {
         return dataDirectory;
@@ -59,10 +63,6 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     @Override
     public void setDataDirectory(String dataDirectory) {
         this.dataDirectory = Paths.get(dataDirectory);
-    }
-
-    public AbstractGenomeProperties(GenomeAssembly assembly) {
-        this.assembly = assembly;
     }
 
     public GenomeAssembly getAssembly() {

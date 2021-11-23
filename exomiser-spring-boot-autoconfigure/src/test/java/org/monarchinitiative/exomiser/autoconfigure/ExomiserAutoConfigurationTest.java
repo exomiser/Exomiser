@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -43,7 +42,6 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
 
     // n.b there are issues with the @PreDestroy shutdown hooks for classes in the GenomeAnalysisServiceConfigurer using the MVStore
     // so all the relevant beans are being tested in one go
-    @Disabled("File lock exception when run as part of full test suite")
     @Test
     public void testAutoConfiguration() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
@@ -53,6 +51,36 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
         GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
         assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
         assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG19), is(true));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG38), is(true));
+
+        PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");
+        assertThat(phenotypeMatchService, instanceOf(PhenotypeMatchService.class));
+    }
+
+    @Test
+    public void testHg19OnlyAutoConfiguration() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg19.data-version=1710", "exomiser.phenotype.data-version=1710");
+        Exomiser exomiser = (Exomiser) context.getBean("exomiser");
+        assertThat(exomiser, instanceOf(Exomiser.class));
+
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
+        assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG19), is(true));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG38), is(false));
+
+        PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");
+        assertThat(phenotypeMatchService, instanceOf(PhenotypeMatchService.class));
+    }
+
+    @Test
+    public void testHg38OnlyAutoConfiguration() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hg38.data-version=1710", "exomiser.phenotype.data-version=1710");
+        Exomiser exomiser = (Exomiser) context.getBean("exomiser");
+        assertThat(exomiser, instanceOf(Exomiser.class));
+
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
+        assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
+        assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG19), is(false));
         assertThat(genomeAnalysisServiceProvider.hasServiceFor(GenomeAssembly.HG38), is(true));
 
         PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");

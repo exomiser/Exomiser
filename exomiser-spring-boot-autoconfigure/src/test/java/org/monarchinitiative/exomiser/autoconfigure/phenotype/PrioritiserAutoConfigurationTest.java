@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2021 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
@@ -59,11 +58,9 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         assertThat(context.getBean("phenotypeDataDirectory"), not(nullValue()));
     }
 
-    //this works in prod, but fails to autowire the phenotypeDataSource in test, despite being able to load the dataSource.
-    @Disabled
     @Test
     public void canDefinePhenotypeDataDirectory() {
-        Path definedDir = TEST_DATA.resolve("user-defined");
+        Path definedDir = TEST_DATA.resolve("1710_phenotype");
         load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.data-directory=" + definedDir);
         Path phenotypeDataDirectory = (Path) this.context.getBean("phenotypeDataDirectory");
         assertThat(phenotypeDataDirectory, equalTo(definedDir));
