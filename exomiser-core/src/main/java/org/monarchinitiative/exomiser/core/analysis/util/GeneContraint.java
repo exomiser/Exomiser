@@ -86,7 +86,10 @@ public class GeneContraint {
      * @return true if the loeufUpper is less than 0.35
      */
     public boolean isLossOfFunctionIntolerant() {
-        return loeufUpper < 0.35;
+        //gnomAD suggest using a loeufUpper < 0.35;
+        // However varsome suggests a relaxed metric has better recall due to lower FP.
+        // https://varsome.com/about/resources/acmg-implementation/#pvs1
+        return loeufUpper < 0.7635;
     }
 
     @Override
