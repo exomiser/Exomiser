@@ -26,9 +26,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgClassification;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgClassifier;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -87,7 +84,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     private final Set<ModeOfInheritance> contributingModes;
     private Set<ModeOfInheritance> compatibleInheritanceModes;
 
-    private Set<AcmgCriterion> acmgCategories;
 
     private VariantEvaluation(Builder builder) {
         super(builder);
@@ -477,19 +473,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     @Override
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
         return modeOfInheritance == ModeOfInheritance.ANY || compatibleInheritanceModes.contains(modeOfInheritance);
-    }
-
-    public void setAcmgCategories(Set<AcmgCriterion> acmgCategories) {
-        Objects.requireNonNull(acmgCategories);
-        this.acmgCategories = Collections.unmodifiableSet(EnumSet.copyOf(acmgCategories));
-    }
-
-    public Set<AcmgCriterion> getAcmgCategories() {
-        return acmgCategories;
-    }
-
-    public AcmgClassification getAcmgClassification() {
-        return AcmgClassifier.classify(acmgCategories);
     }
 
     /**
