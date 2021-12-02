@@ -24,14 +24,33 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Evidence;
 
 class AcmgCriterionTest {
 
     @Test
-    void moderatedCriterion() {
-        AcmgCriterion.ModeratedAcmgCriterion moderatePs1 = AcmgCriterion.ModeratedAcmgCriterion.of(AcmgCriterion.PS1, AcmgCriterion.Evidence.MODERATE);
-        System.out.println(moderatePs1);
-        assertThat(moderatePs1.evidence(), equalTo(AcmgCriterion.Evidence.MODERATE));
-        System.out.println(moderatePs1.description());
+    void testEvidenceDisplayString() {
+        assertThat(Evidence.STAND_ALONE.displayString(), equalTo("StandAlone"));
+        assertThat(Evidence.VERY_STRONG.displayString(), equalTo("VeryStrong"));
+        assertThat(Evidence.STRONG.displayString(), equalTo("Strong"));
+        assertThat(Evidence.MODERATE.displayString(), equalTo("Moderate"));
+        assertThat(Evidence.SUPPORTING.displayString(), equalTo("Supporting"));
     }
+
+    @Test
+    void testEvidenceParseValue() {
+        assertThat(Evidence.parseValue("STAND_ALONE"), equalTo(Evidence.STAND_ALONE));
+        assertThat(Evidence.parseValue("StandAlone"), equalTo(Evidence.STAND_ALONE));
+        assertThat(Evidence.parseValue("VeryStrong"), equalTo(Evidence.VERY_STRONG));
+        assertThat(Evidence.parseValue("Strong"), equalTo(Evidence.STRONG));
+        assertThat(Evidence.parseValue("Moderate"), equalTo(Evidence.MODERATE));
+        assertThat(Evidence.parseValue("Supporting"), equalTo(Evidence.SUPPORTING));
+    }
+
+    @Test
+    void testEvidenceParseValueNotRecognisedThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> Evidence.parseValue("Invalid input"));
+    }
+
 }

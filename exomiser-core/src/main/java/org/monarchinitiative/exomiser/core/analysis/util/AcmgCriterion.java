@@ -20,14 +20,10 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import java.util.Objects;
-
 import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Evidence.*;
 import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Impact.BENIGN;
 import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Impact.PATHOGENIC;
 
-// TODO: If all categories can be moderated, create and extend AcmgCategory interface
-//  create new ModeratedAcmgCategory.of(AcmgCategory category, Evidence e)
 public enum AcmgCriterion {
 
     // PATHOGENIC - Table 3 of https://www.acmg.net/docs/Standards_Guidelines_for_the_Interpretation_of_Sequence_Variants.pdf
@@ -37,7 +33,6 @@ public enum AcmgCriterion {
     PS2(PATHOGENIC, STRONG, "De novo (both maternity and paternity confirmed) in a patient with the disease and no family history"),
     PS3(PATHOGENIC, STRONG, "Well-established in vitro or in vivo functional studies supportive of a damaging effect on the gene or gene product"),
     PS4(PATHOGENIC, STRONG, "The prevalence of the variant in affected individuals is significantly increased compared with the prevalence in controls"),
-    PP1_S(PATHOGENIC, STRONG, "(strong) Cosegregation with disease in multiple affected family members in a gene definitively known to cause the disease"),
 
     PM1(PATHOGENIC, MODERATE, "Located in a mutational hot spot and/or critical and well-established functional domain (e.g., active site of an enzyme) without benign variation"),
     PM2(PATHOGENIC, MODERATE, "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"),
@@ -45,7 +40,6 @@ public enum AcmgCriterion {
     PM4(PATHOGENIC, MODERATE, "Protein length changes as a result of in-frame deletions/insertions in a nonrepeat region or stop-loss variants"),
     PM5(PATHOGENIC, MODERATE, "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"),
     PM6(PATHOGENIC, MODERATE, "Assumed de novo, but without confirmation of paternity and maternity"),
-    PP1_M(PATHOGENIC, MODERATE, "(moderate) Cosegregation with disease in multiple affected family members in a gene definitively known to cause the disease"),
 
     PP1(PATHOGENIC, SUPPORTING, "Cosegregation with disease in multiple affected family members in a gene definitively known to cause the disease"),
     PP2(PATHOGENIC, SUPPORTING, "Missense variant in a gene that has a low rate of benign missense variation and in which missense variants are a common mechanism of disease"),
@@ -54,20 +48,20 @@ public enum AcmgCriterion {
     PP5(PATHOGENIC, SUPPORTING, "Reputable source recently reports variant as pathogenic, but the evidence is not available to the laboratory to perform an independent evaluation"),
 
     // BENIGN - Table 4 of https://www.acmg.net/docs/Standards_Guidelines_for_the_Interpretation_of_Sequence_Variants.pdf
-    BP1(BENIGN, SUPPORTING, "Missense variant in a gene for which primarily truncating variants are known to cause disease"),
-    BP2(BENIGN, SUPPORTING, "Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern"),
-    BP3(BENIGN, SUPPORTING, "In-frame deletions/insertions in a repetitive region without a known function"),
-    BP4(BENIGN, SUPPORTING, "Multiple lines of computational evidence suggest no impact on gene or gene product (conservation, evolutionary, splicing impact, etc.)"),
-    BP5(BENIGN, SUPPORTING, "Variant found in a case with an alternate molecular basis for disease"),
-    BP6(BENIGN, SUPPORTING, "Reputable source recently reports variant as benign, but the evidence is not available to the laboratory to perform an independent evaluation"),
-    BP7(BENIGN, SUPPORTING, "A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved"),
+    BA1(BENIGN, STAND_ALONE, "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"),
 
     BS1(BENIGN, STRONG, "Allele frequency is greater than expected for disorder"),
     BS2(BENIGN, STRONG, "Observed in a healthy adult individual for a recessive (homozygous), dominant (heterozygous), or X-linked (hemizygous) disorder, with full penetrance expected at an early age"),
     BS3(BENIGN, STRONG, "Well-established in vitro or in vivo functional studies show no damaging effect on protein function or splicing"),
     BS4(BENIGN, STRONG, "Lack of segregation in affected members of a family"),
 
-    BA1(BENIGN, STAND_ALONE, "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium");
+    BP1(BENIGN, SUPPORTING, "Missense variant in a gene for which primarily truncating variants are known to cause disease"),
+    BP2(BENIGN, SUPPORTING, "Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern"),
+    BP3(BENIGN, SUPPORTING, "In-frame deletions/insertions in a repetitive region without a known function"),
+    BP4(BENIGN, SUPPORTING, "Multiple lines of computational evidence suggest no impact on gene or gene product (conservation, evolutionary, splicing impact, etc.)"),
+    BP5(BENIGN, SUPPORTING, "Variant found in a case with an alternate molecular basis for disease"),
+    BP6(BENIGN, SUPPORTING, "Reputable source recently reports variant as benign, but the evidence is not available to the laboratory to perform an independent evaluation"),
+    BP7(BENIGN, SUPPORTING, "A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved");
 
     public enum Impact {
         PATHOGENIC, BENIGN;
@@ -75,6 +69,44 @@ public enum AcmgCriterion {
 
     public enum Evidence {
         STAND_ALONE, VERY_STRONG, STRONG, MODERATE, SUPPORTING;
+
+        public static Evidence parseValue(String displayString) {
+            try {
+                return Evidence.valueOf(displayString);
+            } catch (IllegalArgumentException ex) {
+                // swallow and try the display string
+            }
+            switch (displayString) {
+                case "StandAlone":
+                    return STAND_ALONE;
+                case "VeryStrong":
+                    return VERY_STRONG;
+                case "Strong":
+                    return STRONG;
+                case "Moderate":
+                    return MODERATE;
+                case "Supporting":
+                    return SUPPORTING;
+                default:
+                    throw new IllegalArgumentException("");
+            }
+        }
+
+        public String displayString() {
+            switch (this) {
+                case STAND_ALONE:
+                    return "StandAlone";
+                case VERY_STRONG:
+                    return "VeryStrong";
+                case STRONG:
+                    return "Strong";
+                case MODERATE:
+                    return "Moderate";
+                case SUPPORTING:
+                    return "Supporting";
+            }
+            return "";
+        }
     }
 
     private final Impact impact;
@@ -87,7 +119,7 @@ public enum AcmgCriterion {
         this.description = description;
     }
 
-    public Impact category() {
+    public Impact impact() {
         return impact;
     }
 
@@ -107,76 +139,4 @@ public enum AcmgCriterion {
         return description;
     }
 
-
-    public static class ModeratedAcmgCriterion {
-
-        private final AcmgCriterion acmgCriterion;
-        private final Evidence evidence;
-
-        private ModeratedAcmgCriterion(AcmgCriterion acmgCriterion, Evidence evidence) {
-            this.acmgCriterion = Objects.requireNonNull(acmgCriterion);
-            this.evidence = Objects.requireNonNull(evidence);
-        }
-
-        public static ModeratedAcmgCriterion of(AcmgCriterion acmgCriterion, Evidence evidence) {
-            return new ModeratedAcmgCriterion(acmgCriterion, evidence);
-        }
-
-        public Impact category() {
-            return acmgCriterion.category();
-        }
-
-        public boolean isPathogenic() {
-            return category() == PATHOGENIC;
-        }
-
-        public boolean isBenign() {
-            return category() == BENIGN;
-        }
-
-        public Evidence evidence() {
-            return evidence;
-        }
-
-        public String description() {
-            return evidenceModifier(evidence) + " " + acmgCriterion.description();
-        }
-
-        private String evidenceModifier(Evidence evidence) {
-            switch (evidence) {
-                case STAND_ALONE:
-                    return "(stand-alone)";
-                case VERY_STRONG:
-                    return "(very strong)";
-                case STRONG:
-                    return "(strong)";
-                case MODERATE:
-                    return "(moderate)";
-                case SUPPORTING:
-                    return "(supporting)";
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ModeratedAcmgCriterion that = (ModeratedAcmgCriterion) o;
-            return acmgCriterion == that.acmgCriterion && evidence == that.evidence;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(acmgCriterion, evidence);
-        }
-
-        @Override
-        public String toString() {
-            return acmgCriterion +
-                    "(" + evidence +
-                    ')';
-        }
-    }
 }
