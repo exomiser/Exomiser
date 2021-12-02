@@ -22,7 +22,11 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.Arrays;
 import java.util.List;
@@ -91,6 +95,16 @@ public class GeneScoreTest {
                 .contributingVariants(contributingVariants)
                 .build();
         assertThat(instance.getContributingVariants(), equalTo(contributingVariants));
+    }
+
+    @Test
+    void testAcmgAssignment() {
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(TestFactory.variantBuilder(1, 12335, "T", "C").build(), TestFactory.newGeneFGFR2().getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, Disease.builder().build(), AcmgEvidence.builder().build(), AcmgClassification.PATHOGENIC);
+
+        GeneScore instance = GeneScore.builder()
+                .acmgAssignments(List.of(acmgAssignment))
+                .build();
+        assertThat(instance.getAcmgAssignments(), equalTo(List.of(acmgAssignment)));
     }
 
     @Test

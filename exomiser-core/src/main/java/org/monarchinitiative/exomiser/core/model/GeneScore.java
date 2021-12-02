@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.util.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
@@ -45,6 +46,7 @@ public final class GeneScore implements Comparable<GeneScore> {
     private final double variantScore;
     private final List<VariantEvaluation> contributingVariants;
     private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
+    private final List<AcmgAssignment> acmgAssignments;
 
     private GeneScore(Builder builder) {
         this.geneIdentifier = builder.geneIdentifier;
@@ -54,6 +56,7 @@ public final class GeneScore implements Comparable<GeneScore> {
         this.variantScore = builder.variantScore;
         this.contributingVariants = List.copyOf(builder.contributingVariants);
         this.compatibleDiseaseMatches = List.copyOf(builder.compatibleDiseaseMatches);
+        this.acmgAssignments = List.copyOf(builder.acmgAssignments);
     }
 
     public GeneIdentifier getGeneIdentifier() {
@@ -90,12 +93,29 @@ public final class GeneScore implements Comparable<GeneScore> {
         return !contributingVariants.isEmpty();
     }
 
+    /**
+     * @return A list of diseases associated with the Gene under the mode of inheritance for the GeneScore.
+     * @since 13.0.0
+     */
     public List<ModelPhenotypeMatch<Disease>> getCompatibleDiseaseMatches() {
         return compatibleDiseaseMatches;
     }
 
+    /**
+     * @return true if there is a disease associated with the Gene under the mode of inheritance for the GeneScore.
+     * @since 13.0.0
+     */
     public boolean hasCompatibleDiseaseMatches() {
         return !compatibleDiseaseMatches.isEmpty();
+    }
+
+    /**
+     * @return A list of {@link AcmgAssignment} for variants associated with the Gene under the mode of inheritance for
+     * the GeneScore.
+     * @since 13.1.0
+     */
+    public List<AcmgAssignment> getAcmgAssignments() {
+        return acmgAssignments;
     }
 
     /**
@@ -196,6 +216,7 @@ public final class GeneScore implements Comparable<GeneScore> {
         private double variantScore;
         private List<VariantEvaluation> contributingVariants = List.of();
         private List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of();
+        private List<AcmgAssignment> acmgAssignments = List.of();
 
         public Builder geneIdentifier(GeneIdentifier geneIdentifier) {
             this.geneIdentifier = geneIdentifier;
@@ -234,6 +255,11 @@ public final class GeneScore implements Comparable<GeneScore> {
 
         public GeneScore build() {
             return new GeneScore(this);
+        }
+
+        public Builder acmgAssignments(List<AcmgAssignment> acmgAssignments) {
+            this.acmgAssignments = Objects.requireNonNull(acmgAssignments);
+            return this;
         }
     }
 }
