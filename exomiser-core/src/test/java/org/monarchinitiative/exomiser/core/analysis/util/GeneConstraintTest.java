@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-class GeneContraintTest {
+class GeneConstraintTest {
 
     @ParameterizedTest
     @CsvSource({
@@ -34,7 +34,7 @@ class GeneContraintTest {
             "0.76349, true",
     })
     void testGeneIsLofIntolerant(double loufUpper, boolean expected) {
-        GeneContraint instance = new GeneContraint("GENE1", "ENST000000000", 0, 0, 0, loufUpper);
+        GeneConstraint instance = new GeneConstraint("GENE1", "ENST000000000", 0, 0, 0, loufUpper);
         assertThat(instance.loeufUpper(), equalTo(loufUpper));
         assertThat(instance.isLossOfFunctionIntolerant(), equalTo(expected));
     }

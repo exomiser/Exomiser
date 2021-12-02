@@ -32,25 +32,25 @@ import java.util.Optional;
 
 public class GeneConstraints {
 
-    private static final Map<String, GeneContraint> geneConstraints = GnomadGeneConstraintParser.readGeneConstraints("gnomad.v2.1.1.gene-constraints.tsv");
+    private static final Map<String, GeneConstraint> geneConstraints = GnomadGeneConstraintParser.readGeneConstraints("gnomad.v2.1.1.gene-constraints.tsv");
 
     private GeneConstraints() {
     }
 
     @Nullable
-    public static GeneContraint geneContraint(String geneSymbol) {
+    public static GeneConstraint geneContraint(String geneSymbol) {
         return geneConstraints.get(geneSymbol);
     }
 
     private static class GnomadGeneConstraintParser {
 
-        private static Map<String, GeneContraint> readGeneConstraints(String constraintsFile) {
-            Map<String, GeneContraint> geneConstraints = new LinkedHashMap<>();
+        private static Map<String, GeneConstraint> readGeneConstraints(String constraintsFile) {
+            Map<String, GeneConstraint> geneConstraints = new LinkedHashMap<>();
             // #gene	transcript	pLI	oe_lof	oe_lof_lower	oe_lof_upper
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getResourceAsStream(constraintsFile)))) {
                 for (String line; (line = bufferedReader.readLine()) != null; ) {
                     if (!line.startsWith("#")) {
-                        GeneContraint geneContraint = parseGeneConstraint(line);
+                        GeneConstraint geneContraint = parseGeneConstraint(line);
                         if (!Double.isNaN(geneContraint.loeufUpper())) {
                             geneConstraints.put(geneContraint.geneSymbol(), geneContraint);
                         }
@@ -62,7 +62,7 @@ public class GeneConstraints {
             return Collections.unmodifiableMap(geneConstraints);
         }
 
-        private static GeneContraint parseGeneConstraint(String line) {
+        private static GeneConstraint parseGeneConstraint(String line) {
             String[] fields = line.split("\t");
             String geneSymbol = fields[0];
             String transcriptId = fields[1];
@@ -70,7 +70,7 @@ public class GeneConstraints {
             double loeuf = parseDouble(fields[3]);
             double loeufLower = parseDouble(fields[4]);
             double loeufUpper = parseDouble(fields[5]);
-            return new GeneContraint(geneSymbol, transcriptId, pLI, loeuf, loeufLower, loeufUpper);
+            return new GeneConstraint(geneSymbol, transcriptId, pLI, loeuf, loeufLower, loeufUpper);
         }
 
         private static double parseDouble(String field) {

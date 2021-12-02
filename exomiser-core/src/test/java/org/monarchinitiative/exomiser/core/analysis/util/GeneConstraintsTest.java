@@ -29,17 +29,6 @@ class GeneConstraintsTest {
 
     @Test
     void geneContraint() {
-        assertThat(GeneConstraints.geneContraint("USP9X"), equalTo(new GeneContraint("USP9X", "ENST00000324545", 1.0, 0.010698, 0.003, 0.051)));
-    }
-
-    @Test
-    void myh7() {
-        System.out.println(GeneConstraints.geneContraint("FGFR2"));
-        System.out.println(GeneConstraints.geneContraint("GFAP"));
-        System.out.println(GeneConstraints.geneContraint("MYH7"));
-        System.out.println(GeneConstraints.geneContraint("CFTR"));
-        System.out.println(GeneConstraints.geneContraint("DHFR"));
-        System.out.println(GeneConstraints.geneContraint("DHODH"));
-        System.out.println(GeneConstraints.geneContraint("CEP104"));
+        assertThat(GeneConstraints.geneContraint("USP9X"), equalTo(new GeneConstraint("USP9X", "ENST00000324545", 1.0, 0.010698, 0.003, 0.051)));
     }
 }
