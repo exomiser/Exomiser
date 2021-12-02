@@ -266,17 +266,18 @@
                         </div>
                     </div>
                     <div class="row"
-                         th:each="variantEvaluation: ${#lists.sort(geneScore.getContributingVariants(), variantRankComparator)}">
+                         th:each="acmgAssignment: ${geneScore.getAcmgAssignments()}"
+                         th:with="variantEvaluation = ${acmgAssignment.variantEvaluation()}">
                         <div class="col-sm-12">
                                 <span class="label label-danger"
                                       th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                             <b th:text=" ${variantEvaluation.variantType}"> SNV</b>
-                                <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
-                                    chr10:g.123256215T>G [0/1]</b>
-                                <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
-                                          th:if="!${#strings.isEmpty(varId)}"
-                                          th:switch="${#strings.substring(varId, 0, 2)}">
-                                    <a th:case="'rs'"
+                            <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
+                                chr10:g.123256215T>G [0/1]</b>
+                            <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
+                                      th:if="!${#strings.isEmpty(varId)}"
+                                      th:switch="${#strings.substring(varId, 0, 2)}">
+                                <a th:case="'rs'"
                                        th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${varId}|}"
                                        th:text="${varId}">rs141235720
                                     </a>
@@ -299,7 +300,7 @@
                         </div>
                         <div class="col-sm-12">
                             <b>Exomiser ACMG: </b>
-                            <th:block th:with="acmgClassification = ${variantEvaluation.getAcmgClassification()}"
+                            <th:block th:with="acmgClassification = ${acmgAssignment.acmgClassification()}"
                                       th:switch="${acmgClassification.toString()}">
                                     <span th:case="'BENIGN'" class="label label-success"
                                           th:text="${acmgClassification}">BENIGN</span>
@@ -314,7 +315,7 @@
                                 <span th:case="*" class="label label-default"
                                       th:text="${acmgClassification}">NOT_AVAILABLE</span>
                                 <b
-                                        th:text="${variantEvaluation.getAcmgCategories()}">
+                                        th:text="${acmgAssignment.acmgEvidence()}">
                                     [PVS1, BP2]
                                 </b>
                             </th:block>
@@ -437,28 +438,28 @@
                                     </span>
                         </th:block>
                     </div>
-                    <div class="col-sm-12">
-                        <b>Exomiser ACMG: </b>
-                        <th:block th:with="acmgClassification = ${variantEvaluation.getAcmgClassification()}"
-                                  th:switch="${acmgClassification.toString()}">
-                                    <span th:case="'BENIGN'" class="label label-success"
-                                          th:text="${acmgClassification}">BENIGN</span>
-                            <span th:case="'LIKELY_BENIGN'" class="label label-info"
-                                  th:text="${acmgClassification}">LIKELY_BENIGN</span>
-                            <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
-                                  th:text="${acmgClassification}">LIKELY_PATHOGENIC</span>
-                            <span th:case="'PATHOGENIC'" class="label label-danger"
-                                  th:text="${acmgClassification}">PATHOGENIC</span>
-                            <span th:case="'UNCERTAIN_SIGNIFICANCE'" class="label label-default"
-                                  th:text="${acmgClassification}">UNCERTAIN_SIGNIFICANCE</span>
-                            <span th:case="*" class="label label-default"
-                                  th:text="${acmgClassification}">NOT_AVAILABLE</span>
-                            <b
-                                    th:text="${variantEvaluation.getAcmgCategories()}">
-                                [PVS1, BP2]
-                            </b>
-                        </th:block>
-                    </div>
+                    <!--                    <div class="col-sm-12">-->
+                    <!--                        <b>Exomiser ACMG: </b>-->
+                    <!--                        <th:bloc  th:with="moi =${geneScore.getModeOfInheritance()} , acmgClassification = ${variantEvaluation.acmgAssignmentForMoi(${moi})}"-->
+                    <!--                                  th:switch="${acmgClassification.toString()}">-->
+                    <!--                                    <span th:case="'BENIGN'" class="label label-success"-->
+                    <!--                                          th:text="${acmgClassification}">BENIGN</span>-->
+                    <!--                            <span th:case="'LIKELY_BENIGN'" class="label label-info"-->
+                    <!--                                  th:text="${acmgClassification}">LIKELY_BENIGN</span>-->
+                    <!--                            <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"-->
+                    <!--                                  th:text="${acmgClassification}">LIKELY_PATHOGENIC</span>-->
+                    <!--                            <span th:case="'PATHOGENIC'" class="label label-danger"-->
+                    <!--                                  th:text="${acmgClassification}">PATHOGENIC</span>-->
+                    <!--                            <span th:case="'UNCERTAIN_SIGNIFICANCE'" class="label label-default"-->
+                    <!--                                  th:text="${acmgClassification}">UNCERTAIN_SIGNIFICANCE</span>-->
+                    <!--                            <span th:case="*" class="label label-default"-->
+                    <!--                                  th:text="${acmgClassification}">NOT_AVAILABLE</span>-->
+                    <!--                            <b-->
+                    <!--                                    th:text="${acmgClassification.acmgCriteria()}">-->
+                    <!--                                [PVS1, BP2]-->
+                    <!--                            </b>-->
+                    <!--                        </th:bloc>-->
+                    <!--                    </div>-->
                     <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
                         <b>ClinVar: </b>
                         <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
