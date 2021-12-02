@@ -32,6 +32,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.*;
 
@@ -717,5 +718,15 @@ public class GeneTest {
     @Test
     public void testToString() {
         assertThat(instance.toString(), equalTo("Gene{geneSymbol='GENE1', entrezGeneId=1234567, compatibleWith=[], filterStatus=PASSED, failedFilterTypes=[], passedFilterTypes=[], combinedScore=0.0, phenotypeScore=0.0, variantScore=0.0, variants=0}"));
+    }
+
+    @Test
+    void testGetAssociatedDiseases() {
+        Gene instance = TestFactory.newGeneFGFR2();
+        assertThat(instance.getAssociatedDiseases().isEmpty(), is(true));
+        Disease pfeifferSyndrome = Disease.builder().diseaseId("OMIM:101600").diseaseName("Pfeiffer syndrome").build();
+        OmimPriorityResult priorityResult = new OmimPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 1.0, List.of(pfeifferSyndrome), Map.of());
+        instance.addPriorityResult(priorityResult);
+        assertThat(instance.getAssociatedDiseases(), equalTo(List.of(pfeifferSyndrome)));
     }
 }
