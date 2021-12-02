@@ -23,17 +23,18 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-class AcmgClassifierTest {
+class Acmg2015ClassifierTest {
 
-    private Set<AcmgCriterion> toAcmgCriteria(String criteria) {
-        return Arrays.stream(criteria.split(" ")).map(AcmgCriterion::valueOf).collect(Collectors.toSet());
+    private AcmgEvidence parseAcmgEvidence(String criteria) {
+        AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+        for (String criterion : criteria.split(" ")) {
+            AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criterion);
+            acmgEvidenceBuilder.add(acmgCriterion);
+        }
+        return acmgEvidenceBuilder.build();
     }
 
     @ParameterizedTest
@@ -60,8 +61,8 @@ class AcmgClassifierTest {
             "PVS1 PP1 PP2 PP3",
     })
     void classifiesPathogenic(String criteria) {
-        Set<AcmgCriterion> acmgCriteria = toAcmgCriteria(criteria);
-        assertThat(AcmgClassifier.classify(acmgCriteria), equalTo(AcmgClassification.PATHOGENIC));
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(Acmg2015Classifier.classify(acmgEvidence), equalTo(AcmgClassification.PATHOGENIC));
     }
 
     @ParameterizedTest
@@ -84,8 +85,8 @@ class AcmgClassifierTest {
             "PM1 PP1 PP2 PP3 PP4 PP5",
     })
     void classifiesLikelyPathogenic(String criteria) {
-        Set<AcmgCriterion> acmgCriteria = toAcmgCriteria(criteria);
-        assertThat(AcmgClassifier.classify(acmgCriteria), equalTo(AcmgClassification.LIKELY_PATHOGENIC));
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(Acmg2015Classifier.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_PATHOGENIC));
     }
 
     @ParameterizedTest
@@ -98,8 +99,8 @@ class AcmgClassifierTest {
             "BS1 BS2 BS3"
     })
     void classifiesBenign(String criteria) {
-        Set<AcmgCriterion> acmgCriteria = toAcmgCriteria(criteria);
-        assertThat(AcmgClassifier.classify(acmgCriteria), equalTo(AcmgClassification.BENIGN));
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(Acmg2015Classifier.classify(acmgEvidence), equalTo(AcmgClassification.BENIGN));
     }
 
     @ParameterizedTest
@@ -111,8 +112,8 @@ class AcmgClassifierTest {
             "BP1 BP2 BP3",
     })
     void classifiesLikelyBenign(String criteria) {
-        Set<AcmgCriterion> acmgCriteria = toAcmgCriteria(criteria);
-        assertThat(AcmgClassifier.classify(acmgCriteria), equalTo(AcmgClassification.LIKELY_BENIGN));
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(Acmg2015Classifier.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_BENIGN));
     }
 
     @ParameterizedTest
@@ -126,8 +127,8 @@ class AcmgClassifierTest {
             "BP1 BP2 BP3 PM1 PP1 PP2 PP3 PP4",
     })
     void classifiesUncertain(String criteria) {
-        Set<AcmgCriterion> acmgCriteria = toAcmgCriteria(criteria);
-        assertThat(AcmgClassifier.classify(acmgCriteria), equalTo(AcmgClassification.UNCERTAIN_SIGNIFICANCE));
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(Acmg2015Classifier.classify(acmgEvidence), equalTo(AcmgClassification.UNCERTAIN_SIGNIFICANCE));
     }
 
 }

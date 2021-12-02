@@ -22,68 +22,33 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.monarchinitiative.exomiser.core.analysis.util.AcmgClassification.*;
 
-public class AcmgClassifier {
+/**
+ * Implementation of the 2015 ACMG Standards guidelines for interpretation of sequence variants (Richards et al. doi:10.1038/gim.2015.30).
+ * Table 5 'Rules for combining criteria to classify sequence variants'
+ *
+ * @since 13.1.0
+ */
+public class Acmg2015Classifier {
 
-    private AcmgClassifier() {
+    private Acmg2015Classifier() {
     }
 
-    public static AcmgClassification classify(Set<AcmgCriterion> acmgCategories) {
-        if (acmgCategories == null || acmgCategories.isEmpty()) {
+    public static AcmgClassification classify(AcmgEvidence acmgEvidence) {
+        if (acmgEvidence == null || acmgEvidence.isEmpty()) {
             return AcmgClassification.UNCERTAIN_SIGNIFICANCE;
         }
 
-        int pvs = 0;
-        int ps = 0;
-        int pm = 0;
-        int pp = 0;
+        int pvs = acmgEvidence.pvs();
+        int ps = acmgEvidence.ps();
+        int pm = acmgEvidence.pm();
+        int pp = acmgEvidence.pp();
 
-        int ba = 0;
-        int bs = 0;
-        int bp = 0;
-
-        for (AcmgCriterion acmgCriterion : acmgCategories) {
-            AcmgCriterion.Evidence evidence = acmgCriterion.evidence();
-            if (acmgCriterion.isPathogenic()) {
-                switch (evidence) {
-                    case VERY_STRONG:
-                        pvs++;
-                        break;
-                    case STRONG:
-                        ps++;
-                        break;
-                    case MODERATE:
-                        pm++;
-                        break;
-                    case SUPPORTING:
-                        pp++;
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                }
-            }
-
-            if (acmgCriterion.isBenign()) {
-                switch (evidence) {
-                    case STAND_ALONE:
-                        ba++;
-                        break;
-                    case STRONG:
-                        bs++;
-                        break;
-                    case SUPPORTING:
-                        bp++;
-                        break;
-                    default:
-                        // do nothing
-                        break;
-                }
-            }
-        }
+        int ba = acmgEvidence.ba();
+        int bs = acmgEvidence.bs();
+        int bp = acmgEvidence.bp();
 
         return classifyCriteriaCounts(pvs, ps, pm, pp, ba, bs, bp);
     }
@@ -122,7 +87,13 @@ public class AcmgClassifier {
         if (ps == 1 && (pm == 1 || pm == 2) || ps == 1 && pp >= 2) {
             return true;
         }
-        return pm >= 3 || pm == 2 && pp >= 2 || pm == 1 && pp >= 4;
+        // https://varsome.com/about/resources/acmg-implementation/#acmgverdict
+        // "Since we can only automate 3 of the 5 pathogenic supporting rules, we have also adjusted the verdict so that
+        //   1 Moderate + 3 Supporting Pathogenic rules is sufficient to trigger 'Likely Pathogenic' (the standard
+        //   requires 1 Moderate + 4 Supporting)."
+        // standard ACMG guidelines require pm = 1 && pp >= 4
+//        return pm >= 3 || pm == 2 && pp >= 2 || pm == 1 && pp >= 4;
+        return pm >= 3 || pm == 2 && pp >= 2 || pm == 1 && pp >= 3;
     }
 
     private static boolean isBenign(int ba, int bs) {
