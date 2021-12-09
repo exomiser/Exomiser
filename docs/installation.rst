@@ -106,6 +106,32 @@ of writing.
   wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/InDels.tsv.gz
   wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/InDels.tsv.gz.tbi
 
+Enable Exomiser to use CADD by altering the ``application.properties`` file to enable these lines and ensure the
+``cadd.version`` property matches the version you downloaded.
+
+.. parsed-literal::
+
+    cadd.version=1.4
+
+    exomiser.hg19.cadd-snv-path=${exomiser.data-directory}/cadd/${cadd.version}/hg19/whole_genome_SNVs.tsv.gz
+    exomiser.hg19.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/hg19/InDels.tsv.gz
+
+    # and/or for hg38
+    exomiser.hg38.cadd-snv-path=${exomiser.data-directory}/cadd/${cadd.version}/whole_genome_SNVs.tsv.gz
+    exomiser.hg38.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/InDels.tsv.gz
+
+
+Exomiser will expect the tabix index ``.tbi`` file to be present in the same directory as the ``.tsv.gz`` files. To use
+CADD scores in an analysis, the ``pathogenicitySources`` should contain the ``CADD`` property
+
+.. code-block:: yaml
+
+    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
+    #REMM is trained on non-coding regulatory regions
+    #*WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+    #and updated their location in the application.properties. Exomiser will not run without this.
+    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, CADD]
+
 
 Alternative set-up
 ~~~~~~~~~~~~~~~~~~
@@ -121,6 +147,60 @@ with
 .. parsed-literal::
 
     exomiser.data-directory=/full/path/to/alternative/data/directory
+
+
+Configuring the application.properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you have downloaded and unzipped all the data, you will need to edit the exomiser-cli-\ |version|\/application.properties
+file located in the main exomiser-cli directory. This file contains a lot of comments for optional data and assemblies.
+Assuming the Exomiser data was located in the exomiser-cli-\ |version|\/data directory a minimal GRCh37/hg19 setup for
+exome analysis would only require the ``application.properties`` to contain this:
+
+.. code-block:: yaml
+
+    ### hg19 assembly ###
+    exomiser.hg19.data-version=2109
+    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.gz
+
+    ### phenotypes ###
+    exomiser.phenotype.data-version=2109
+
+
+For a GRCh38/hg38 only setup:
+
+.. code-block:: yaml
+
+    ### hg38 assembly ###
+    exomiser.hg38.data-version=2109
+    exomiser.hg38.variant-white-list-path=2109_hg38_clinvar_whitelist.tsv.gz
+
+    ### phenotypes ###
+    exomiser.phenotype.data-version=2109
+
+
+Or an install supporting both assemblies:
+
+.. code-block:: yaml
+
+    ### hg19 assembly ###
+    exomiser.hg19.data-version=2109
+    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.g
+
+    ### hg38 assembly ###
+    exomiser.hg38.data-version=2109
+    exomiser.hg38.variant-white-list-path=2109_hg38_clinvar_whitelist.tsv.gz
+
+    ### phenotypes ###
+    exomiser.phenotype.data-version=2109
+
+
+*n.b.* each assembly will require approximately 1GB RAM to load. Attempting to analyse a VCF called using an
+unsupported/unloaded assembly data will result in an unrecoverable error being thrown.
+
+Notice here that we are loading a whitelist created from ClinVar data. Exomiser will consider any variant on the whitelist
+to be maximally pathogenic, regardless of the underlying data (*e.g.* variant effect, allele frequency, predicted pathogenicity)
+and always included these in the results.
 
 
 Troubleshooting
