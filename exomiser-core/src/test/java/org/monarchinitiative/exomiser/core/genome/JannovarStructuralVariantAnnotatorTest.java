@@ -28,7 +28,10 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.Variant;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 
 import java.nio.file.Path;
@@ -62,7 +65,7 @@ class JannovarStructuralVariantAnnotatorTest {
     }
 
     private Variant variant(Contig contig, int start, int end, String ref, String alt, int changeLength) {
-        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength);
+        return Variant.of(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), start, end, ref, alt, changeLength);
     }
 
     @Test

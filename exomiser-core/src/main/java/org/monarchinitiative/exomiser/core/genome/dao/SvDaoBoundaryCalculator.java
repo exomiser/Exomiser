@@ -79,19 +79,19 @@ public class SvDaoBoundaryCalculator {
     }
 
     public int startMin() {
-        return Math.max(1, genomicRegion.startPosition().minPos() - outerBoundsOffset);
+        return Math.max(1, genomicRegion.startMin() - outerBoundsOffset);
     }
 
     public int startMax() {
-        return genomicRegion.startPosition().maxPos() + innerBoundsOffset;
+        return genomicRegion.startMax() + innerBoundsOffset;
     }
 
     public int endMin() {
-        return genomicRegion.endPosition().minPos() - innerBoundsOffset;
+        return genomicRegion.endMin() - innerBoundsOffset;
     }
 
     public int endMax() {
-        return Math.min(genomicRegion.contig().length(), genomicRegion.endPosition().maxPos() + outerBoundsOffset);
+        return Math.min(genomicRegion.contig().length(), genomicRegion.endMax() + outerBoundsOffset);
     }
 
     @Override

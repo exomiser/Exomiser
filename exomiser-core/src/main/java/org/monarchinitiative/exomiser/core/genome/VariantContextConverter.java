@@ -91,13 +91,13 @@ public class VariantContextConverter {
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             int changeLength = parseChangeLength(variantContext, start, variantType, end);
 
-            Position startPos = Position.of(start, parseConfidenceInterval(variantContext, "CIPOS"));
-            Position endPos = Position.of(end, parseConfidenceInterval(variantContext, "CIEND"));
+            ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
+            ConfidenceInterval endCi = parseConfidenceInterval(variantContext, "CIEND");
 
             try {
                 // due to the general imprecision and lack of definition about symbolic variants skip any which svart
                 // has issues with as svart can be annoyingly precise and inflexible for these types.
-                return vcfConverter.convertSymbolic(contig, id, startPos, endPos, ref, alt, changeLength);
+                return vcfConverter.convertSymbolic(contig, id, start, startCi, end, endCi, ref, alt, changeLength);
             } catch (Exception e) {
                 logger.warn("Skipping variant {}-{}-{}-{}-{} due to {}: {}", contig.id(), start, end, ref, alt, e.getClass().getName(), e.getMessage());
             }

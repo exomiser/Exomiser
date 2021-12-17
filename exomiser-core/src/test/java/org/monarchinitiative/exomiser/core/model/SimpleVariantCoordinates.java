@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.model;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.Variant;
 
@@ -35,7 +34,7 @@ public class SimpleVariantCoordinates {
     }
 
     public static Variant of(int chr, int start, String alt, String ref) {
-        return Variant.of(GenomeAssembly.HG19.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(start), ref, alt);
+        return Variant.of(GenomeAssembly.HG19.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), start, ref, alt);
     }
 
 }

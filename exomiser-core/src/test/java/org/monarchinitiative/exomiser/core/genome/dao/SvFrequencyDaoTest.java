@@ -210,7 +210,7 @@ class SvFrequencyDaoTest {
         System.out.println("Num SV in store: " + r.size());
         r.entrySet().forEach(System.out::println);
 
-        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 21000, 46000);
+        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.oneBased(), 21000, 46000);
         SvDaoBoundaryCalculator boundaryCalculator = new SvDaoBoundaryCalculator(region, 0.85);
         int margin = boundaryCalculator.outerBoundsOffset();
 

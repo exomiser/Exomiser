@@ -211,8 +211,8 @@ public class SvPathogenicityDao implements PathogenicityDao {
         private final ClinVarData clinVarData;
         private final String clinVarAccession;
 
-        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, ClinVarData clinVarData, String clinVarAccession) {
-            super(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength);
+        private SvResult(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String source, ClinVarData clinVarData, String clinVarAccession) {
+            super(contig, id, strand, coordinates, "", alt, changeLength);
             this.source = source;
             this.clinVarData = clinVarData;
             this.clinVarAccession = clinVarAccession;
@@ -220,12 +220,12 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
         public static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String source, String id, ClinVarData clinVarData, String clinvarAccession) {
             String alt = '<' + variantType.toString().replace("_", ":") + '>';
-            return new SvResult(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, changeLength, source, clinVarData, clinvarAccession);
+            return new SvResult(contig, id, Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), start, end), "", alt, changeLength, source, clinVarData, clinvarAccession);
         }
 
         @Override
-        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength, source, clinVarData, clinVarAccession);
+        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+            return new SvResult(contig, id, strand, coordinates, "", alt, changeLength, source, clinVarData, clinVarAccession);
         }
 
         @Override

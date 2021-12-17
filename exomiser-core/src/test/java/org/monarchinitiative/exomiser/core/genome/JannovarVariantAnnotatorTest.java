@@ -55,7 +55,7 @@ public class JannovarVariantAnnotatorTest {
 
     private Variant variant(String contig, int start, String ref, String alt) {
         VariantTrimmer.VariantPosition variantPosition = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()).trim(Strand.POSITIVE, start, ref, alt);
-        return Variant.of(GenomeAssembly.HG19.getContigByName(contig), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(variantPosition.start()), variantPosition.ref(), variantPosition.alt());
+        return Variant.of(GenomeAssembly.HG19.getContigByName(contig), "", Strand.POSITIVE, CoordinateSystem.oneBased(), variantPosition.start(), variantPosition.ref(), variantPosition.alt());
     }
 
     @Test
@@ -267,7 +267,7 @@ public class JannovarVariantAnnotatorTest {
         String ref = "A";
         String alt = "<INS>";
 
-        Variant variant = Variant.of(chrX, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(pos), Position.of(pos), ref, alt, 100);
+        Variant variant = Variant.of(chrX, "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, pos, ref, alt, 100);
         List<VariantAnnotation> annotations = instance.annotate(variant);
         assertThat(annotations.size(), equalTo(1));
 

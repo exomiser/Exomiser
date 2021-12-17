@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 import org.monarchinitiative.svart.Variant;
 
@@ -137,13 +136,13 @@ class HgvsUtilTest {
 
     @Test
     void toHgvsSnvDupMultiple() {
-        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED,Position.of(20), "T", "TTT");
+        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 20, "T", "TTT");
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_21dupTT"));
     }
 
     @Test
     void toHgvsSvDup() {
-        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(20), Position.of(100), "T", "<DUP>", 80);
+        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), 20, 100, "T", "<DUP>", 80);
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100dup"));
     }
 

@@ -114,8 +114,7 @@ public class VariantEvaluationTest {
 
     private VariantEvaluation newInstance() {
         return VariantEvaluation.builder()
-                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT)
-//                .genomeAssembly(GENOME_ASSEMBLY)
+                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
                 .geneId(GENE1_GENE_ID)
@@ -124,20 +123,17 @@ public class VariantEvaluationTest {
 
     private VariantEvaluation.Builder testVariantBuilder() {
         return VariantEvaluation.builder()
-                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT);
-//                .genomeAssembly(GENOME_ASSEMBLY);
+                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.oneBased(), POSITION, REF, ALT);
     }
 
     private VariantEvaluation.Builder newBuilder(int chr, int pos, String ref, String alt) {
         return VariantEvaluation.builder()
-                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(pos), ref, alt);
-//                .genomeAssembly(GenomeAssembly.HG19);
+                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.oneBased(), pos, ref, alt);
     }
 
     private VariantEvaluation.Builder newBuilder(int chr, int start, int end, String ref, String alt, int changeLength) {
         return VariantEvaluation.builder()
-                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength);
-//                .genomeAssembly(GenomeAssembly.HG19);
+                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength);
     }
 
     @Test
@@ -150,7 +146,7 @@ public class VariantEvaluationTest {
         Contig contig = GenomeAssembly.HG38.getContigById(CHROMOSOME);
 
         VariantEvaluation variantEvaluation = VariantEvaluation.builder()
-                .with(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT)
+                .with(contig, "", Strand.POSITIVE, CoordinateSystem.oneBased(), POSITION, REF, ALT)
                 .genomeAssembly(GenomeAssembly.HG38)
                 .build();
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));

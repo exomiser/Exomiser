@@ -34,7 +34,7 @@ class SvDaoBoundaryCalculatorTest {
     private final GenomicAssembly hg37 = GenomicAssemblies.GRCh37p13();
 
     private GenomicRegion buildRegion(int chr, int start, int end) {
-        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, end);
+        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.oneBased(), start, end);
     }
 
     @ParameterizedTest

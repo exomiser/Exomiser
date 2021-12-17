@@ -74,8 +74,8 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(10));
         assertThat(variantAllele.contigName(), equalTo("10"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(123256215)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(123256215)));
+        assertThat(variantAllele.start(), equalTo(123256215));
+        assertThat(variantAllele.end(), equalTo(123256215));
 
         assertThat(variantAllele.length(), equalTo(1));
     }
@@ -90,8 +90,8 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(10));
         assertThat(variantAllele.contigName(), equalTo("10"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(123256215)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(123256215)));
+        assertThat(variantAllele.start(), equalTo(123256215));
+        assertThat(variantAllele.end(), equalTo(123256215));
 
         assertThat(variantAllele.length(), equalTo(1));
     }
@@ -107,8 +107,8 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(10));
         assertThat(variantAllele.contigName(), equalTo("10"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(123256215)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(123256216)));
+        assertThat(variantAllele.start(), equalTo(123256215));
+        assertThat(variantAllele.end(), equalTo(123256216));
         assertThat(variantAllele.changeLength(), equalTo(-1));
 
     }
@@ -124,8 +124,8 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(10));
         assertThat(variantAllele.contigName(), equalTo("10"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(123256215)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(123256216)));
+        assertThat(variantAllele.start(), equalTo(123256215));
+        assertThat(variantAllele.end(), equalTo(123256216));
         assertThat(variantAllele.length(), equalTo(2));
     }
 
@@ -141,8 +141,8 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(1));
         assertThat(variantAllele.contigName(), equalTo("1"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(2827694)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(2827708)));
+        assertThat(variantAllele.start(), equalTo(2827694));
+        assertThat(variantAllele.end(), equalTo(2827708));
         assertThat(variantAllele.changeLength(), equalTo(-14));
         assertThat(variantAllele.length(), equalTo(15));
     }
@@ -158,8 +158,10 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(2));
         assertThat(variantAllele.contigName(), equalTo("2"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(321682, -56, 20)));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(321887, -10, 62)));
+        assertThat(variantAllele.start(), equalTo(321682));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-56, 20)));
+        assertThat(variantAllele.end(), equalTo(321887));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-10, 62)));
         assertThat(variantAllele.changeLength(), equalTo(-205));
     }
 
@@ -174,8 +176,10 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(2));
         assertThat(variantAllele.contigName(), equalTo("2"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(14477084, ConfidenceInterval.of(-22, 18))));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(14477381, ConfidenceInterval.of(-12, 32))));
+        assertThat(variantAllele.start(), equalTo(14477084));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-22, 18)));
+        assertThat(variantAllele.end(), equalTo(14477381));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-12, 32)));
         assertThat(variantAllele.changeLength(), equalTo(-297));
     }
 
@@ -190,10 +194,12 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(3));
         assertThat(variantAllele.contigName(), equalTo("3"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(9425916, ConfidenceInterval.of(-16, 22))));
+        assertThat(variantAllele.start(), equalTo(9425916));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-16, 22)));
         assertThat(variantAllele.changeLength(), equalTo(6027));
 
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(9425916)));
+        assertThat(variantAllele.end(), equalTo(9425916));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.precise()));
     }
 
     @Test
@@ -208,12 +214,12 @@ class VariantContextConverterTest {
         assertThat(variantAllele.contigId(), equalTo(3));
         assertThat(variantAllele.contigName(), equalTo("3"));
         assertThat(variantAllele.start(), equalTo(12665100));
-        assertThat(variantAllele.startPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
 
         assertThat(variantAllele.changeLength(), equalTo(21100));
 
         assertThat(variantAllele.end(), equalTo(12686200));
-        assertThat(variantAllele.endPosition().confidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-500, 500)));
     }
 
     @Test
@@ -227,8 +233,10 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(4));
         assertThat(variantAllele.contigName(), equalTo("4"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(18665128, ConfidenceInterval.of(-10, 10))));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(18665204, ConfidenceInterval.of(-10, 10))));
+        assertThat(variantAllele.start(), equalTo(18665128));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-10, 10)));
+        assertThat(variantAllele.end(), equalTo(18665204));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-10, 10)));
         assertThat(variantAllele.changeLength(), equalTo(76));
     }
 
@@ -236,9 +244,11 @@ class VariantContextConverterTest {
     void impreciseStructuralVariantNoLengthSpecifiedCalculatesLength() {
         Variant variantAllele = parseVcfRecord("1 212471179 esv3588749 T <DEL> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVTYPE=DEL;VT=SV GT 0|1");
 
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
-        assertThat(variantAllele.endPosition().maxPos(), equalTo(212472619 + 444));
+        assertThat(variantAllele.start(), equalTo(212471179));
+        assertThat(variantAllele.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-471, 0)));
+        assertThat(variantAllele.end(), equalTo(212472619));
+        assertThat(variantAllele.endConfidenceInterval(), equalTo(ConfidenceInterval.of(0, 444)));
+        assertThat(variantAllele.endMax(), equalTo(212472619 + 444));
 
         assertThat(variantAllele.changeLength(), equalTo(-1441));
 
@@ -251,8 +261,10 @@ class VariantContextConverterTest {
     void impreciseStructuralVariantLengthSpecifiedReturnsLengthFromVariantContext() {
         Variant variantAllele = parseVcfRecord("1 212471179 esv3588749 T <CNV> 100 PASS CIEND=0,444;CIPOS=-471,0;END=212472619;SVLEN=200;SVTYPE=DEL;VT=SV GT 0|1");
 
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
+        assertThat(variantAllele.coordinates(), equalTo(Coordinates.of(CoordinateSystem.oneBased(), 212471179, ConfidenceInterval.of(-471, 0), 212472619, ConfidenceInterval.of(0, 444))));
+//        assertThat(variantAllele.startConfidenceInterval(), equalTo(212471179, ConfidenceInterval.of(-471, 0)));
+//        assertThat(variantAllele.end(), equalTo());
+//        assertThat(variantAllele.endConfidenceInterval(), equalTo(212472619, ConfidenceInterval.of(0, 444)));
         assertThat(variantAllele.changeLength(), equalTo(200));
 
         assertThat(variantAllele.ref(), equalTo("T"));
@@ -270,10 +282,10 @@ class VariantContextConverterTest {
 
         assertThat(variantAllele.contigId(), equalTo(3));
         assertThat(variantAllele.contigName(), equalTo("3"));
-        assertThat(variantAllele.startPosition(), equalTo(Position.of(138946021)));
+        assertThat(variantAllele.start(), equalTo(138946021));
         assertThat(variantAllele.changeLength(), equalTo(31));
 
-        assertThat(variantAllele.endPosition(), equalTo(Position.of(138946051)));
+        assertThat(variantAllele.end(), equalTo(138946051));
     }
 
     @Nested
@@ -289,10 +301,10 @@ class VariantContextConverterTest {
 
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(15725445)));
+            assertThat(variantAllele.start(), equalTo(15725445));
             assertThat(variantAllele.changeLength(), equalTo(-3499));
 
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(15728944)));
+            assertThat(variantAllele.end(), equalTo(15728944));
         }
 
         @Test
@@ -305,11 +317,11 @@ class VariantContextConverterTest {
 
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(40935372)));
+            assertThat(variantAllele.start(), equalTo(40935372));
             assertThat(variantAllele.changeLength(), equalTo(2));
 
             //TODO : check whether INS should have start == end
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(40935373)));
+            assertThat(variantAllele.end(), equalTo(40935373));
         }
 
         @Test
@@ -322,10 +334,10 @@ class VariantContextConverterTest {
 //
 //        assertThat(variantAllele.contigId(), equalTo(1));
 //        assertThat(variantAllele.contigName(), equalTo("1"));
-//        assertThat(variantAllele.startPosition(), equalTo(Position.of(15825445)));
+//        assertThat(variantAllele.start(), equalTo(15825445));
 //        assertThat(variantAllele.changeLength(), equalTo(-3499));
 //
-//        assertThat(variantAllele.endPosition(), equalTo(Position.of(15828944)));
+//        assertThat(variantAllele.end(), equalTo(15828944));
         }
     }
 
@@ -337,8 +349,8 @@ class VariantContextConverterTest {
 
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(10006065)));
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(10014592)));
+            assertThat(variantAllele.start(), equalTo(10006065));
+            assertThat(variantAllele.end(), equalTo(10014592));
             assertThat(variantAllele.changeLength(), equalTo(8528));
 
             assertThat(variantAllele.ref(), equalTo("N"));
@@ -351,8 +363,8 @@ class VariantContextConverterTest {
             Variant variantAllele = parseVcfRecord("1\t10006065\tCanvas:GAIN:1:10006065:10014592\tN\t<CNV>\t4.00\tq10;CLT10kb\tSVTYPE=CNV;END=10014592;\tCN\t4");
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(10006065)));
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(10014592)));
+            assertThat(variantAllele.start(), equalTo(10006065));
+            assertThat(variantAllele.end(), equalTo(10014592));
             assertThat(variantAllele.changeLength(), equalTo(8528));
 
             assertThat(variantAllele.ref(), equalTo("N"));
@@ -365,8 +377,8 @@ class VariantContextConverterTest {
             Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tGT:RC:BC:CN\t0/1:51:41:1\n");
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.start(), equalTo(13195138));
+            assertThat(variantAllele.end(), equalTo(13239068));
             assertThat(variantAllele.changeLength(), equalTo(43931));
 
             assertThat(variantAllele.ref(), equalTo("N"));
@@ -379,8 +391,8 @@ class VariantContextConverterTest {
             Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\t1\n");
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.start(), equalTo(13195138));
+            assertThat(variantAllele.end(), equalTo(13239068));
             assertThat(variantAllele.changeLength(), equalTo(43931));
 
             assertThat(variantAllele.ref(), equalTo("N"));
@@ -393,8 +405,8 @@ class VariantContextConverterTest {
             Variant variantAllele = parseVcfRecord("1\t13195138\tCanvas:LOSS:1:13195138:13239068\tN\t<CNV>\t24.00\tPASS\tSVTYPE=CNV;END=13239068\tCN\t0\n");
             assertThat(variantAllele.contigId(), equalTo(1));
             assertThat(variantAllele.contigName(), equalTo("1"));
-            assertThat(variantAllele.startPosition(), equalTo(Position.of(13195138)));
-            assertThat(variantAllele.endPosition(), equalTo(Position.of(13239068)));
+            assertThat(variantAllele.start(), equalTo(13195138));
+            assertThat(variantAllele.end(), equalTo(13239068));
             assertThat(variantAllele.changeLength(), equalTo(43931));
 
             assertThat(variantAllele.ref(), equalTo("N"));

@@ -107,8 +107,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.pathogenicityData = builder.pathogenicityData;
     }
 
-    private VariantEvaluation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
-        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
+    private VariantEvaluation(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
         this.variantContext = variantContext;
         this.altAlleleId = altAlleleId;
         this.phredScore = phredScore;
@@ -124,8 +124,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @Override
-    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return new VariantEvaluation(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
+    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength) {
+        return new VariantEvaluation(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
     }
 
     private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {

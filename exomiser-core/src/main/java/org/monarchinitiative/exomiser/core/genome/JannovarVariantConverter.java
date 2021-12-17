@@ -52,14 +52,14 @@ public class JannovarVariantConverter {
     public SVGenomeVariant toSvGenomeVariant(Variant variant) {
         // n.b. it is possible to create a SVGenomeVariant from a precise variant, it need not be symbolic.
         GenomePosition start = startGenomePosition(variant);
-        ConfidenceInterval startCi = variant.startPosition().confidenceInterval();
+        ConfidenceInterval startCi = variant.startConfidenceInterval();
         int startCiLower = startCi.lowerBound();
         int startCiUpper = startCi.upperBound();
 
         // Breakend variants have a left and right Breakend - return the right one if this is a breakend, or the original variant if not.
         GenomicRegion endRegion = variantOrRightBreakend(variant);
         GenomePosition end = endGenomePosition(endRegion);
-        ConfidenceInterval endCi = endRegion.endPosition().confidenceInterval();
+        ConfidenceInterval endCi = endRegion.endConfidenceInterval();
         int endCiLower = endCi.lowerBound();
         int endCiUpper = endCi.upperBound();
 
