@@ -109,8 +109,8 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     @Nonnull
     public List<T> getRegionsContainingVariant(Variant variant) {
         int chromosome = variant.contigId();
-        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
-        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
+        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
         List<T> overlappingRegions = getRegionsOverlappingRegion(chromosome, start, end);
         List<T> containingRegions = new ArrayList<>();
         for (T overlapping : overlappingRegions) {
@@ -122,13 +122,13 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     }
 
     private boolean regionContainsVariant(T region, Variant variant) {
-      return Coordinates.aContainsB(CoordinateSystem.FULLY_CLOSED, region.start(), region.end(), variant.coordinateSystem(), variant.start(), variant.end());
+        return Coordinates.aContainsB(CoordinateSystem.oneBased(), region.start(), region.end(), variant.coordinateSystem(), variant.start(), variant.end());
     }
 
     public List<T> getRegionsOverlappingVariant(Variant variant) {
         int chromosome = variant.contigId();
-        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
-        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED);
+        int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
+        int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
         return getRegionsOverlappingRegion(chromosome, start, end);
     }
 

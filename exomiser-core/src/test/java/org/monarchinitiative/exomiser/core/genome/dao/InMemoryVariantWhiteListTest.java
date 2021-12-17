@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
@@ -28,6 +27,7 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -52,7 +52,7 @@ class InMemoryVariantWhiteListTest {
     @Test
     void testContains() {
         Variant whiteListedVariant = TestFactory.variantBuilder(1, 234567, "A", "G").build();
-        ImmutableSet<AlleleProto.AlleleKey> whitelistedKeys = ImmutableSet.of(AlleleProtoAdaptor.toAlleleKey(whiteListedVariant));
+        Set<AlleleProto.AlleleKey> whitelistedKeys = Set.of(AlleleProtoAdaptor.toAlleleKey(whiteListedVariant));
 
         VariantWhiteList instance = InMemoryVariantWhiteList.of(whitelistedKeys);
         assertThat(instance.contains(whiteListedVariant), is(true));
