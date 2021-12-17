@@ -64,6 +64,8 @@ The following shell script should work-
 
 This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
 
+.. _remm:
+
 Genomiser / REMM data
 ~~~~~~~~~~~~~~~~~~~~~
 

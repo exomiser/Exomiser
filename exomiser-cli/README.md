@@ -2,10 +2,11 @@
 
 The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
  
-To perform an analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also provided. 
-See [Usage](#usage) section for info on running an analysis.
+To perform an analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO
+terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also
+provided. See [Usage](#usage) section for info on running an analysis.
 
-Further information can be found in the [online documentation](http://exomiser.github.io/Exomiser/).
+Further information can be found in the [online documentation](https://exomiser.readthedocs.io/en/latest/).
 
 ## Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
@@ -19,38 +20,42 @@ Further information can be found in the [online documentation](http://exomiser.g
 
 ## Installation
 
-Windows:
-    
- 1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
- 2. Download the data and distribution files from ```https://data.monarchinitiative.org/exomiser/latest```
- 3. Extract the distribution files by right-clicking exomiser-cli-${project.version}-distribution.zip and selecting 7-Zip > Extract Here
- 4. Extract the data files (e.g. 1711_phenotype.zip, 1711_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files...
-   4.1 Extract the files to the exomiser data directory. By default exomiser expects this to be ```exomiser-cli-${project.version}/data```, but this can be changed in the ```application.properties``` 
- 5. cd exomiser-cli-${project.version}
- 6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
- 
-Linux: 
+### Windows
+
+1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues
+   extracting the zip files.
+2. Download the data and distribution files from ```https://data.monarchinitiative.org/exomiser/latest```
+3. Extract the distribution files by right-clicking exomiser-cli-${project.version}-distribution.zip and selecting
+   7-Zip > Extract Here
+4. Extract the data files (e.g. 1711_phenotype.zip, 1711_hg19.zip) by right-clicking the archive and selecting 7-Zip >
+   Extract files... 4.1 Extract the files to the exomiser data directory. By default exomiser expects this to
+   be ```exomiser-cli-${project.version}/data```, but this can be changed in the ```application.properties```
+5. cd exomiser-cli-${project.version}
+6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+
+### Linux
+
 The following shell script should work-
 
-    #download the distribution (won't take long)
+    # download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
-    #download the data (this is ~20GB and will take a while)
+    # download the data (this is ~20GB and will take a while)
     wget https://data.monarchinitiative.org/exomiser/latest/2109_hg19.zip
     wget https://data.monarchinitiative.org/exomiser/latest/2109_hg38.zip
     wget https://data.monarchinitiative.org/exomiser/latest/2109_phenotype.zip
 
-    #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
+    # unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
     unzip 2109_*.zip -d exomiser-cli-${project.version}/data
 
-    #Check the application.properties are pointing to the correct versions
-    #exomiser.hg19.data-version=2109
-    #exomiser.hg38.data-version=2109
-    #exomiser.phenotype.data-version=2109
+    # Check the application.properties are pointing to the correct versions:
+    #  exomiser.hg19.data-version=2109
+    #  exomiser.hg38.data-version=2109
+    #  exomiser.phenotype.data-version=2109
     
-    #run a test genomiser analysis
+    # run a test exome analysis
     cd exomiser-cli-${project.version}
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+    java -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
 
 This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
 
@@ -66,8 +71,8 @@ could add the entry like this:
 If this step is omitted, the application will throw and error and stop any analysis which defines ```REMM``` in the ```pathogenicitySources``` section of an analysis yml file. 
 
 Having done this, run the analysis like this:
- 
-    java -Xms4g -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
+
+    java -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
 
 This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
@@ -101,7 +106,7 @@ and pathogenicity data sources and the ability to tweak the order that analysis 
 
 See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for details.
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+    java -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
 a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
@@ -109,11 +114,11 @@ setting the analysisMode option to PASS_ONLY. This will also aid your ability to
 
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
+    java -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
     
 If you're running the exomiser from a different directory to the one the jar file is located in, you will need to specify the path to the ```application.properties``` file in the start-up command. For example:
 
-     java -Xms2g -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
+     java -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
 
     
 ### Want help?
@@ -123,24 +128,30 @@ If you're running the exomiser from a different directory to the one the jar fil
 ## Troubleshooting
 
 ### java.lang.UnsupportedClassVersionError:
-  If you get the following error message:
-  
+
+If you get the following error message:
+
     Exception in thread "main" java.lang.UnsupportedClassVersionError:
     org/monarchinitiative/exomiser/cli/Main : Unsupported major.minor version
 
-  You are running an older unsupported version of Java. Exomiser requires java version 8 or higher. This can be checked by running:
-    
+You are running an older unsupported version of Java. Exomiser requires java version 11 or higher. This can be checked
+by running:
+
     java -version
-  
-  You should see something like this in response:
-    
-    java version "1.8.0_65"
-    
-  versions lower than 1.8 (e.g. 1.5, 1.6 or 1.7) will not run exomiser so you will need to install the latest java version.
-  
+
+You should see something like this in response:
+
+    openjdk version "11.0.11" 2021-04-20
+    OpenJDK Runtime Environment (build 11.0.11+9-Ubuntu-0ubuntu2.20.04)
+    OpenJDK 64-Bit Server VM (build 11.0.11+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)
+
+versions lower than 11 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10) will not run exomiser, so you will need to install the latest
+java version.
+
 ### Zip file reported as too big or corrupted
-  If, when running unzip 'exomiser-cli-${project.version}-distribution.zip', you see the following:
-     
+
+If, when running 'unzip exomiser-cli-${project.version}-distribution.zip', you see the following:
+
     error:  Zip file too big (greater than 4294959102 bytes)
     Archive:  exomiser-cli-${project.version}-distribution.zip
     warning [exomiser-cli-${project.version}-distribution.zip]:  9940454202 extra bytes at beginning or within zipfile
