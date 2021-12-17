@@ -20,7 +20,7 @@ Variants are prioritised according to user-defined criteria on variant frequency
 .. toctree::
     :caption: Setup and Install
     :name: setup
-    :maxdepth: 2
+    :maxdepth: 3
     :hidden:
 
     installation
@@ -28,15 +28,18 @@ Variants are prioritised according to user-defined criteria on variant frequency
 .. toctree::
     :caption: Running the Exomiser
     :name: run
-    :maxdepth: 2
+    :maxdepth: 3
     :hidden:
 
     running
+    input_files_and_options
+    advanced_analysis
+    troubleshooting
 
 .. toctree::
     :caption: Interpreting Results
     :name: results
-    :maxdepth: 2
+    :maxdepth: 3
     :hidden:
 
     result_interpretation
@@ -44,7 +47,7 @@ Variants are prioritised according to user-defined criteria on variant frequency
 .. toctree::
     :caption: Publications
     :name: publications
-    :maxdepth: 1
+    :maxdepth: 3
     :hidden:
 
     publications
