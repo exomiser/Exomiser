@@ -98,12 +98,12 @@ public class JannovarVariantConverter {
 
     private GenomePosition startGenomePosition(GenomicRegion genomicRegion) {
         int chr = jannovarContigId(genomicRegion.contig());
-        return new GenomePosition(referenceDictionary, genomicRegion.strand() == POSITIVE ? FWD : REV, chr, genomicRegion.startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN), PositionType.ZERO_BASED);
+        return new GenomePosition(referenceDictionary, genomicRegion.strand() == POSITIVE ? FWD : REV, chr, genomicRegion.startWithCoordinateSystem(CoordinateSystem.zeroBased()), PositionType.ZERO_BASED);
     }
 
     private GenomePosition endGenomePosition(GenomicRegion genomicRegion) {
         int chr = jannovarContigId(genomicRegion.contig());
-        return new GenomePosition(referenceDictionary, genomicRegion.strand() == POSITIVE ? FWD : REV, chr, genomicRegion.endWithCoordinateSystem(CoordinateSystem.LEFT_OPEN), PositionType.ZERO_BASED);
+        return new GenomePosition(referenceDictionary, genomicRegion.strand() == POSITIVE ? FWD : REV, chr, genomicRegion.endWithCoordinateSystem(CoordinateSystem.zeroBased()), PositionType.ZERO_BASED);
     }
 
     private int jannovarContigId(Contig contig) {
