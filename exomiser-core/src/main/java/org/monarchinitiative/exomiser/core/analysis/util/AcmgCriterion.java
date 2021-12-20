@@ -88,7 +88,7 @@ public enum AcmgCriterion {
                 case "Supporting":
                     return SUPPORTING;
                 default:
-                    throw new IllegalArgumentException("");
+                    throw new IllegalArgumentException("Unrecognised evidence value '" + displayString + "'");
             }
         }
 
