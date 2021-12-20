@@ -74,7 +74,7 @@ public class Acgs2020Classifier {
     }
 
     private static boolean isPathogenic(int pvs, int ps, int pm, int pp) {
-        if (pvs == 1 && (ps >= 1 || pm >= 1 || pp >= 2)) {
+        if (pvs >= 2 || pvs == 1 && (ps >= 1 || pm >= 1 || pp >= 2)) {
             return true;
         }
         return ps >= 3 || ps == 2 && (pm >= 1 || pp >= 2) || ps == 1 && (pm >= 3 || (pm >= 2 && pp >= 2) || (pm >= 1 && pp >= 4));
@@ -84,7 +84,7 @@ public class Acgs2020Classifier {
         if (ps >= 2) {
             return true;
         }
-        if (ps == 1 && (pm == 1 || pm == 2) || ps == 1 && pp >= 2) {
+        if ((ps == 1 && (pm == 1 || pm == 2)) || (ps == 1 && pp >= 2)) {
             return true;
         }
         // https://varsome.com/about/resources/acmg-implementation/#acmgverdict
