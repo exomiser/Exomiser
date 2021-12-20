@@ -536,12 +536,20 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " " + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " " + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
+
+    // TODO - Will Composition make Breakends work?
+    // VariantEvaluation implements Variant, VariantAnnotations,
+    //    Variant
+    //    VariantContext
+    //    VariantAnnotations
+    //    pass/fail filters & priorityResults...
+    // TODO: Delete AbstractVariant add variantAnnotations to Builder
 
     /**
      * @return
