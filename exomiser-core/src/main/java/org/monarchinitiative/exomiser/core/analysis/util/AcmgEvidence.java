@@ -32,6 +32,8 @@ import java.util.StringJoiner;
 
 public class AcmgEvidence {
 
+    private static final AcmgEvidence EMPTY = new AcmgEvidence(new EnumMap<>(AcmgCriterion.class));
+
     @JsonProperty
     private final Map<AcmgCriterion, Evidence> evidence;
 
@@ -52,6 +54,10 @@ public class AcmgEvidence {
     @JsonCreator
     public static AcmgEvidence of(Map<AcmgCriterion, Evidence> evidence) {
         return new AcmgEvidence(evidence);
+    }
+
+    public static AcmgEvidence empty() {
+        return EMPTY;
     }
 
     private void countCriteriaEvidence(Map<AcmgCriterion, Evidence> evidence) {
@@ -193,7 +199,7 @@ public class AcmgEvidence {
         }
 
         public AcmgEvidence build() {
-            return new AcmgEvidence(evidence);
+            return evidence.isEmpty() ? EMPTY : new AcmgEvidence(evidence);
         }
     }
 }

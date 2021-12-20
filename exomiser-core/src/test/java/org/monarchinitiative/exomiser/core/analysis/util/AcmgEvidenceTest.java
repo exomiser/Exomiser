@@ -22,11 +22,29 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.*;
 
 public class AcmgEvidenceTest {
+
+    @Test
+    void testEmptyBuilder() {
+        assertThat(AcmgEvidence.builder().build(), equalTo(AcmgEvidence.empty()));
+    }
+
+    @Test
+    void testEmptyStaticFactory() {
+        assertThat(AcmgEvidence.of(Map.of()), equalTo(AcmgEvidence.empty()));
+    }
+
+    @Test
+    void testStaticFactoryDefaultEvidence() {
+        AcmgEvidence instance = AcmgEvidence.of(Map.of(PVS1, PVS1.evidence(), PS1, PS1.evidence()));
+        assertThat(instance.toString(), equalTo("[PVS1, PS1]"));
+    }
 
     @Test
     public void testToStringDefaultEvidence() {
