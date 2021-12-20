@@ -119,8 +119,19 @@ class Acmg2015ClassifierTest {
     @ParameterizedTest
     @CsvSource({
 //            (i)  Other criteria shown above are not met
-            "PS1",
-            "PS1 BP1",
+            "PVS1 PP1",
+            "PS1 PP1", // VUS_Hot
+            "PM1 PM2 PP1", // VUS_Hot
+            "PM1 PP1 PP2 PP3", // VUS_Hot
+            "PS1", // VUS_Warm
+            "PM1 PM2", // VUS_Warm
+            "PM1 PP1 PP2", // VUS_Warm
+            "PP1 PP2 PP3 PP4", // VUS_Warm
+            "PM1 PP2", // VUS_Tepid
+            "PP1 PP2 PP3", // VUS_Warm
+            "PM1", // VUS_Cool
+            "PP1 PP2", // VUS_Warm
+            "PP1", // VUS_Cold
 //            OR  (ii)   the criteria for benign and pathogenic are contradictory
             "BS1 BP1 PVS1 PS1",
             "BA1 PVS1 PM1",
