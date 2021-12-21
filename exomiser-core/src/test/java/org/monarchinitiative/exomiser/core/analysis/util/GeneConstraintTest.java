@@ -33,9 +33,9 @@ class GeneConstraintTest {
             "0.7635, false",
             "0.76349, true",
     })
-    void testGeneIsLofIntolerant(double loufUpper, boolean expected) {
-        GeneConstraint instance = new GeneConstraint("GENE1", "ENST000000000", 0, 0, 0, loufUpper);
-        assertThat(instance.loeufUpper(), equalTo(loufUpper));
+    void testGeneIsLofIntolerant(double louf, boolean expected) {
+        GeneConstraint instance = new GeneConstraint("GENE1", "ENST000000000", 0, louf, 0, 0);
+        assertThat(instance.loeuf(), equalTo(louf));
         assertThat(instance.isLossOfFunctionIntolerant(), equalTo(expected));
     }
 }
