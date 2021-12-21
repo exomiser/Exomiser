@@ -53,7 +53,7 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final ContributingAlleleCalculator contributingAlleleCalculator;
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
-    private final AcmgCriteriaAssigner acmgCriteriaAssigner;
+    private final AcmgAssignmentCalculator acmgAssignmentCalculator;
 
     /**
      * @param probandId                Sample id of the proband in the VCF.
@@ -67,7 +67,9 @@ public class RawScoreGeneScorer implements GeneScorer {
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
         this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
-        this.acmgCriteriaAssigner = new AcmgCriteriaAssigner(probandId, probandSex, inheritanceModeAnnotator.getPedigree());
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandId, inheritanceModeAnnotator.getPedigree());
+        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acgs2020Classifier();
+        this.acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, acmgEvidenceClassifier);
     }
 
     @Override
@@ -75,14 +77,6 @@ public class RawScoreGeneScorer implements GeneScorer {
         for (Gene gene : genes) {
             List<GeneScore> geneScores = scoreGene().apply(gene);
             gene.addGeneScores(geneScores);
-            gene.getPassedVariantEvaluations().forEach(variantEvaluation -> {
-                Set<AcmgCriterion> acmgCategories = acmgCriteriaAssigner.assignVariantAcmgCriteria(variantEvaluation, gene);
-                variantEvaluation.setAcmgCategories(acmgCategories);
-                AcmgClassification classification = variantEvaluation.getAcmgClassification();
-                if (classification != AcmgClassification.UNCERTAIN_SIGNIFICANCE) {
-                    logger.debug("{}: {}: {}", classification, acmgCategories, variantEvaluation);
-                }
-            });
         }
         Collections.sort(genes);
         return genes;
@@ -134,6 +128,10 @@ public class RawScoreGeneScorer implements GeneScorer {
         double combinedScore = calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults()
                 .keySet());
 
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
+
+        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
+
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
@@ -143,9 +141,9 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .contributingVariants(contributingVariants)
                 // TODO this would be a good place to put a contributingModel
                 //  i.e. from HiPhivePrioritiserResult see issue #363
-                // TODO add in/ use pLOF Haploinsufficieny/Triplosensitivity scores here too?
 //                .contributingModel()
-                .compatibleDiseaseMatches(priorityScore.getCompatibleDiseaseMatches())
+                .compatibleDiseaseMatches(compatibleDiseaseMatches)
+                .acmgAssignments(acmgAssignments)
                 .build();
     }
 

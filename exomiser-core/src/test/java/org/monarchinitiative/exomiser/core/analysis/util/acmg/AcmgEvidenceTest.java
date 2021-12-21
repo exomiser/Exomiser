@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
 public class AcmgEvidenceTest {
 

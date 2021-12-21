@@ -18,11 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Evidence.*;
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Impact.BENIGN;
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Impact.PATHOGENIC;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence.*;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Impact.BENIGN;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Impact.PATHOGENIC;
 
 public enum AcmgCriterion {
 

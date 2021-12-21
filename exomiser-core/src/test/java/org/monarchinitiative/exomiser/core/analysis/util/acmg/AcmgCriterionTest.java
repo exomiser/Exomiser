@@ -18,14 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Evidence;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence;
 
 class AcmgCriterionTest {
 

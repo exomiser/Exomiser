@@ -1,0 +1,551 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
+
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
+
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.FEMALE;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE;
+import static org.monarchinitiative.exomiser.core.model.Pedigree.justProband;
+
+class Acmg2015EvidenceAssignerTest {
+
+    @Test
+    void throwsExceptionWithMismatchedIds() {
+        assertThrows(IllegalArgumentException.class, () -> new Acmg2015EvidenceAssigner("Zaphod", justProband("Ford", MALE)));
+    }
+
+    @Test
+    void testAssignsPVS1() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .geneSymbol("PTEN")
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .variantEffect(VariantEffect.START_LOST)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PVS1).build()));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "MALE, AUTOSOMAL_DOMINANT, AUTOSOMAL_DOMINANT, true",
+            "FEMALE, AUTOSOMAL_DOMINANT, AUTOSOMAL_DOMINANT, true",
+            "UNKNOWN, AUTOSOMAL_DOMINANT, AUTOSOMAL_DOMINANT, true",
+
+            "MALE, AUTOSOMAL_RECESSIVE, AUTOSOMAL_RECESSIVE, true",
+            "FEMALE, AUTOSOMAL_RECESSIVE, AUTOSOMAL_RECESSIVE, true",
+            "UNKNOWN, AUTOSOMAL_RECESSIVE, AUTOSOMAL_RECESSIVE, true",
+
+            "MALE, AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, false",
+            "FEMALE, AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, false",
+            "UNKNOWN, AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, false",
+
+            "MALE, X_RECESSIVE, X_RECESSIVE, true",
+            "FEMALE, X_RECESSIVE, X_RECESSIVE, true",
+            "UNKNOWN, X_RECESSIVE, X_RECESSIVE, false",
+
+            "MALE, X_DOMINANT, X_DOMINANT, true",
+            "FEMALE, X_DOMINANT, X_DOMINANT, true",
+            "UNKNOWN, X_DOMINANT, X_DOMINANT, true",
+    })
+    void testAssignsPVS1(Pedigree.Individual.Sex probandSex, InheritanceMode diseaseInheritanceMode, ModeOfInheritance modeOfInheritance, boolean expectPvs1) {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", probandSex));
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .geneSymbol("PTEN")
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .variantEffect(VariantEffect.START_LOST)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(diseaseInheritanceMode).diseaseType(Disease.DiseaseType.DISEASE).build();
+        List<Disease> knownDiseases = diseaseInheritanceMode.isCompatibleWith(modeOfInheritance) ? List.of(cowdenSyndrome) : List.of();
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, List.of(variantEvaluation), knownDiseases, List.of());
+        AcmgEvidence expected = expectPvs1 ? AcmgEvidence.builder().add(PVS1).build() : AcmgEvidence.empty();
+        assertThat(acmgEvidence, equalTo(expected));
+    }
+
+    @Test
+    void testAssignsPS2() {
+        Individual proband = Individual.builder().id("proband").motherId("mother").fatherId("father").sex(MALE).status(Status.AFFECTED).build();
+        Individual mother = Individual.builder().id("mother").sex(FEMALE).status(Status.UNAFFECTED).build();
+        Individual father = Individual.builder().id("father").sex(MALE).status(Status.UNAFFECTED).build();
+        Pedigree pedigree = Pedigree.of(proband, mother, father);
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", pedigree);
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                // n.b. missense variant - will not trigger PVS1
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.het()),
+                        SampleData.of("mother", SampleGenotype.homRef()),
+                        SampleData.of("father", SampleGenotype.homRef())
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PS2).build()));
+    }
+
+    @Test
+    void testAssignsPS2_hasFamilyHistory() {
+        Individual proband = Individual.builder().id("proband").motherId("mother").fatherId("father").sex(MALE).status(Status.AFFECTED).build();
+        Individual mother = Individual.builder().id("mother").sex(FEMALE).status(Status.UNAFFECTED).build();
+        Individual father = Individual.builder().id("father").sex(MALE).status(Status.UNAFFECTED).build();
+        Pedigree pedigree = Pedigree.of(proband, mother, father);
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", pedigree);
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                // n.b. missense variant - will not trigger PVS1
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.het()),
+                        SampleData.of("mother", SampleGenotype.het()), // Unaffected mother has same genotype - can't be PS2
+                        SampleData.of("father", SampleGenotype.homRef())
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
+    }
+
+    @Test
+    void testAssignsPM2() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 12345, "A", "G")
+                // n.b. missing frequency data - will trigger PM2
+                .frequencyData(FrequencyData.of())
+                .build();
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
+
+        AcmgEvidence expected = AcmgEvidence.builder().add(AcmgCriterion.PM2).build();
+        assertThat(acmgEvidence, equalTo(expected));
+    }
+
+    @Test
+    void testAssignsPM3() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", null);
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89000000, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                // n.b. missense variant - will not trigger PVS1
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
+                ))
+                .build();
+
+        VariantEvaluation pathogenic = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. start loss variant - will trigger PVS1
+                .variantEffect(VariantEffect.START_LOST)
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("1|0"))
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_RECESSIVE).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variantEvaluation, pathogenic), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        AcmgEvidence expected = AcmgEvidence.builder().add(AcmgCriterion.PM3).build();
+        assertThat(acmgEvidence, equalTo(expected));
+    }
+
+    @Test
+    void testAssignsBP2_InCisWithPathAR() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89000000, "A", "G")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
+                ))
+                .build();
+
+        VariantEvaluation pathogenic = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_RECESSIVE).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variantEvaluation, pathogenic), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        AcmgEvidence expected = AcmgEvidence.builder().add(AcmgCriterion.BP2).build();
+        assertThat(acmgEvidence, equalTo(expected));
+    }
+
+    @Test
+    void testAssignsBP2_InTransWithPathAD() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89000000, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                // n.b. missense variant - will not trigger PVS1
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
+                ))
+                .build();
+
+        VariantEvaluation pathogenic = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. start loss variant - will trigger PVS1
+                .variantEffect(VariantEffect.START_LOST)
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.parseGenotype("1|0"))
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation, pathogenic), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        AcmgEvidence expected = AcmgEvidence.builder().add(AcmgCriterion.BP2).build();
+        assertThat(acmgEvidence, equalTo(expected));
+    }
+
+    @Test
+    void testAssignsPM4() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .geneSymbol("MUC6")
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .variantEffect(VariantEffect.STOP_LOST)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PM4).build()));
+    }
+
+    @Test
+    void testAssignsPM4_NotAssignedToPVS1() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // haploinsufficient gene
+                .geneSymbol("PTEN")
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .variantEffect(VariantEffect.STOP_LOST)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PVS1).build()));
+    }
+
+    @Nested
+    class ComputationalEvidence {
+
+        @Test
+        void testAssignsPP3() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(
+                            PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f),
+                            PathogenicityScore.of(PathogenicitySource.MVP, 1.0f)
+                    ))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PP3).build()));
+        }
+
+        @Test
+        void testAssignsPP3_singleScoreIsInsufficient() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f)))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
+        }
+
+        @Test
+        void testAssignsPP3_majorityMustBePath() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(
+                            PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f),
+                            PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
+                            PathogenicityScore.of(PathogenicitySource.M_CAP, 0.0f)
+                    ))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PP3).build()));
+        }
+
+        @Test
+        void testPP3andPM4_majorityMustBePathOrBenign() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(
+                            PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f),
+                            PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
+                            PathogenicityScore.of(PathogenicitySource.M_CAP, 0.0f),
+                            PathogenicityScore.of(PathogenicitySource.MUTATION_TASTER, 0.0f)
+                    ))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
+        }
+
+        @Test
+        void testAssignsBP4() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(
+                            PathogenicityScore.of(PathogenicitySource.REVEL, 0.0f),
+                            PathogenicityScore.of(PathogenicitySource.MVP, 0.0f)
+                    ))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.BP4).build()));
+        }
+
+        @Test
+        void testAssignsBP4_singleScoreIsInsufficient() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 0.0f)))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
+        }
+
+        @Test
+        void testAssignsBP4_majorityMustBeBenign() {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(
+                            PathogenicityScore.of(PathogenicitySource.REVEL, 0.0f),
+                            PathogenicityScore.of(PathogenicitySource.MVP, 0.0f),
+                            PathogenicityScore.of(PathogenicitySource.M_CAP, 1.0f)
+                    ))
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .build();
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.BP4).build()));
+        }
+    }
+
+    // PP4
+    @Test
+    void testAssignsPP4() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .geneSymbol("PTEN")
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // High phenotype match triggers - PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.6, cowdenSyndrome, List.of()));
+
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PP4).build()));
+    }
+
+    @Nested
+    class ClinicalEvidence {
+
+        @ParameterizedTest
+        @CsvSource(
+                delimiter = ';',
+                value = {
+                        "criteria provided, single submitter; SUPPORTING",
+                        "criteria provided, multiple submitters, no conflicts; STRONG",
+                        "reviewed by expert panel; STRONG",
+                        "practice guideline; STRONG",
+                })
+        void testAssignsPP5(String reviewStatus, AcmgCriterion.Evidence evidence) {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89000000, "A", "G")
+                    // n.b. PTEN is a haploinsufficient gene
+                    .geneSymbol("PTEN")
+                    // n.b. has frequency data - will not trigger PM2
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                    // n.b. missense variant - will not trigger PVS1
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(reviewStatus).build()))
+                    .build();
+
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            // n.b. low phenotype score - will not trigger PP4
+            List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(PP5, evidence).build()));
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+                delimiter = ';',
+                value = {
+                        "criteria provided, single submitter; SUPPORTING",
+                        "criteria provided, multiple submitters, no conflicts; STRONG",
+                        "reviewed by expert panel; STRONG",
+                        "practice guideline; STRONG",
+                })
+        void testAssignsBP6(String reviewStatus, AcmgCriterion.Evidence evidence) {
+            Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+            // https://www.ncbi.nlm.nih.gov/clinvar/variation/127667/
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89622915, "A", "G")
+                    // n.b. PTEN is a haploinsufficient gene
+                    .geneSymbol("PTEN")
+                    // n.b. has frequency data - will not trigger PM2
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, 1.42f)))
+                    // n.b. missense variant - will not trigger PVS1
+                    .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).reviewStatus(reviewStatus).build()))
+                    .build();
+
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+            // n.b. low phenotype score - will not trigger PP4
+            List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+            AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+            assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(BP6, evidence).build()));
+        }
+    }
+
+    @Test
+    void testAssignsBA1() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                .geneSymbol("PTEN")
+                // high allele freq - triggers BA1 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 5.0f)))
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.BA1).build()));
+    }
+
+    @Test
+    void testAssignsBS4() {
+        Individual proband = Individual.builder().id("proband").motherId("mother").fatherId("father").sex(MALE).status(Status.AFFECTED).build();
+        Individual mother = Individual.builder().id("mother").sex(FEMALE).status(Status.AFFECTED).build();
+        Individual father = Individual.builder().id("father").sex(MALE).status(Status.UNAFFECTED).build();
+        Pedigree pedigree = Pedigree.of(proband, mother, father);
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", pedigree);
+        // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
+                // n.b. PTEN is a haploinsufficient gene
+                .geneSymbol("PTEN")
+                // n.b. has frequency data - will not trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                // n.b. missense variant - will not trigger PVS1
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .sampleGenotypes(SampleGenotypes.of(
+                        SampleData.of("proband", SampleGenotype.het()),
+                        SampleData.of("mother", SampleGenotype.homRef()), // Affected mother has different genotype - can't be PS2
+                        SampleData.of("father", SampleGenotype.homRef())
+                ))
+                .build();
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+        // n.b. low phenotype score - will not trigger PP4
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
+
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(BS4).build()));
+    }
+}

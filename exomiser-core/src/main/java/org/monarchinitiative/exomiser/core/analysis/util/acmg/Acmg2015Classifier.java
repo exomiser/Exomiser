@@ -18,25 +18,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.AcmgClassification.*;
+import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification.*;
 
 /**
- * Implementation of the ACGS v4 guidelines, Table 3 from
- * https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf
+ * Implementation of the 2015 ACMG Standards guidelines for interpretation of sequence variants (Richards et al. doi:10.1038/gim.2015.30).
+ * Table 5 'Rules for combining criteria to classify sequence variants'
  *
  * @since 13.1.0
  */
-public class Acgs2020Classifier {
+public final class Acmg2015Classifier implements AcmgEvidenceClassifier {
 
-    private Acgs2020Classifier() {
-    }
-
-    public static AcmgClassification classify(AcmgEvidence acmgEvidence) {
+    public AcmgClassification classify(AcmgEvidence acmgEvidence) {
         if (acmgEvidence == null || acmgEvidence.isEmpty()) {
             return AcmgClassification.UNCERTAIN_SIGNIFICANCE;
         }
@@ -55,7 +52,7 @@ public class Acgs2020Classifier {
 
     private static AcmgClassification classifyCriteriaCounts(int pvs, int ps, int pm, int pp, int ba, int bs, int bp) {
         List<AcmgClassification> classifications = new ArrayList<>(2);
-        // Table 3 of https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf
+        // Table 5 of https://www.acmg.net/docs/Standards_Guidelines_for_the_Interpretation_of_Sequence_Variants.pdf
         if (isPathogenic(pvs, ps, pm, pp)) {
             classifications.add(PATHOGENIC);
         } else if (isLikelyPathogenic(pvs, ps, pm, pp)) {
@@ -74,17 +71,17 @@ public class Acgs2020Classifier {
     }
 
     private static boolean isPathogenic(int pvs, int ps, int pm, int pp) {
-        if (pvs >= 2 || pvs == 1 && (ps >= 1 || pm >= 1 || pp >= 2)) {
+        if (pvs == 1 && (ps >= 1 || pm >= 2 || (pm == 1 && pp == 1) || pp >= 2)) {
             return true;
         }
-        return ps >= 3 || ps == 2 && (pm >= 1 || pp >= 2) || ps == 1 && (pm >= 3 || (pm >= 2 && pp >= 2) || (pm >= 1 && pp >= 4));
+        return ps >= 2 || ps == 1 && (pm >= 3 || pm == 2 && pp >= 2 || pm == 1 && pp >= 4);
     }
 
     private static boolean isLikelyPathogenic(int pvs, int ps, int pm, int pp) {
-        if (ps >= 2) {
+        if (pvs == 1 && pm == 1) {
             return true;
         }
-        if ((ps == 1 && (pm == 1 || pm == 2)) || (ps == 1 && pp >= 2)) {
+        if (ps == 1 && (pm == 1 || pm == 2) || ps == 1 && pp >= 2) {
             return true;
         }
         // https://varsome.com/about/resources/acmg-implementation/#acmgverdict

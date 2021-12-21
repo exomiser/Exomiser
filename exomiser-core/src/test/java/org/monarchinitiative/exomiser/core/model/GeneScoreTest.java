@@ -22,9 +22,9 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgAssignment;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgClassification;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgEvidence;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 

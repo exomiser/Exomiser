@@ -18,97 +18,77 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-class Acgs2020ClassifierTest {
+class Acmg2015ClassifierTest {
+
+    private final Acmg2015Classifier instance = new Acmg2015Classifier();
 
     private AcmgEvidence parseAcmgEvidence(String criteria) {
         AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
         for (String criterion : criteria.split(" ")) {
-            String[] criteriaModifier = criterion.split("_");
-            AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criteriaModifier[0]);
-            if (criteriaModifier.length == 2) {
-                AcmgCriterion.Evidence evidence = AcmgCriterion.Evidence.parseValue(criteriaModifier[1]);
-                acmgEvidenceBuilder.add(acmgCriterion, evidence);
-            } else {
-//                AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criterion);
-                acmgEvidenceBuilder.add(acmgCriterion);
-            }
+            AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criterion);
+            acmgEvidenceBuilder.add(acmgCriterion);
         }
         return acmgEvidenceBuilder.build();
     }
 
     @ParameterizedTest
     @CsvSource({
-            "PVS1 PP5_VeryStrong",
-//      (a)  1 Very strong (PVS1) AND
-//            ≥1 Strong (PS1–PS4) OR
+//      (i)  1 Very strong (PVS1)
+//            AND  (a)  ≥1 Strong (PS1–PS4)
             "PVS1 PS1",
             "PVS1 PS2",
             "PVS1 PS3",
             "PVS1 PS4",
             "PVS1 PS1 PS2",
             "PVS1 PS1 PS2 PS3",
-//            ≥1 moderate (PM1–PM6) OR
-            "PVS1 PM1",
+            "PVS1 PS1 PM1 PP1",
+//            OR  (b)  ≥2 Moderate (PM1–PM6)
             "PVS1 PM1 PM2",
             "PVS1 PM1 PM2 PM3",
             "PVS1 PM1 PM2 PM3 PM4",
             "PVS1 PM1 PM2 PP1",
-//            ≥2 supporting (PP1–PP5)
+//            OR   (c)   1 Moderate (PM1–PM6) and 1 supporting (PP1–PP5)
+            "PVS1 PM1 PP1",
+            "PVS1 PM1 PP1 PP2",
+//            OR  (d)  ≥2 Supporting (PP1–PP5)
             "PVS1 PP1 PP2",
             "PVS1 PP1 PP2 PP3",
-//      (b)  ≥3 Strong (PS1-PS4)
-            "PS1 PS2 PS3",
-//      (c)  2 Strong (PS1-PS4) AND
-//            ≥1 moderate (PM1–PM6) OR
-            "PS1 PS2 PM1",
-//            ≥2 supporting (PP1–PP5)
-            "PS1 PS2 PP1 PP2",
-//      (d)  1 Strong (PS1-PS4) AND
-//            ≥3 moderate (PM1–PM6) OR
-            "PS1 PM1 PM2 PM3",
-//            ≥2 moderate (PM1–PM6) AND ≥2 supporting (PP1–PP5) OR
-            "PS1 PM1 PM2 PP1 PP2",
-//            ≥1 moderate (PM1–PM6) AND ≥4 supporting (PP1–PP5)
-            "PS1 PM1 PP1 PP2 PP3 PP4",
     })
     void classifiesPathogenic(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
-        assertThat(Acgs2020Classifier.classify(acmgEvidence), equalTo(AcmgClassification.PATHOGENIC));
+        assertThat(instance.classify(acmgEvidence), equalTo(AcmgClassification.PATHOGENIC));
     }
 
     @ParameterizedTest
     @CsvSource({
-//      (c)  >=2 Strong
-            "PS1 PS2",
-//      (b)  1 Strong (PS1–PS4) AND
-//             1–2 moderate (PM1–PM6) OR
+//            (i)   1 Very strong (PVS1) AND 1 moderate (PM1–PM6)
+            "PVS1 PM1",
+//            OR (ii)   1 Strong (PS1–PS4) AND 1–2 moderate (PM1–PM6)
             "PS1 PM1 PM2",
-//             ≥2 supporting (PP1–PP5)
+//            OR (iii)   1 Strong (PS1–PS4) AND ≥2 supporting (PP1–PP5)
             "PS1 PP1 PP2",
             "PS1 PP1 PP2 PP3",
-//      (c)  ≥3 Moderate (PM1–PM6) OR
+//            OR (iv)  ≥3 Moderate (PM1–PM6)
             "PM1 PM2 PM3",
-//           2 Moderate (PM1–PM6) AND ≥2 supporting (PP1–PP5) OR
+//            OR (v)   2 Moderate (PM1–PM6) AND ≥2 supporting (PP1–PP5)
             "PM1 PM2 PP1 PP2",
             "PM1 PM2 PP1 PP2 PP3",
             "PM1 PM2 PP1 PP2 PP3 PP4",
-//           1 Moderate (PM1–PM6) AND ≥4 supporting (PP1–PP5)
+//            OR (vi)   1 Moderate (PM1–PM6) AND ≥4 supporting (PP1–PP5)
             "PM1 PP1 PP2 PP3 PP4",
             "PM1 PP1 PP2 PP3 PP4 PP5",
-            "PM1 PP1 PP2 PP3", // VUS_Hot - we can only assign 3 out of
     })
     void classifiesLikelyPathogenic(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
-        assertThat(Acgs2020Classifier.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_PATHOGENIC));
+        assertThat(instance.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_PATHOGENIC));
     }
 
     @ParameterizedTest
@@ -122,7 +102,7 @@ class Acgs2020ClassifierTest {
     })
     void classifiesBenign(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
-        assertThat(Acgs2020Classifier.classify(acmgEvidence), equalTo(AcmgClassification.BENIGN));
+        assertThat(instance.classify(acmgEvidence), equalTo(AcmgClassification.BENIGN));
     }
 
     @ParameterizedTest
@@ -135,7 +115,7 @@ class Acgs2020ClassifierTest {
     })
     void classifiesLikelyBenign(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
-        assertThat(Acgs2020Classifier.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_BENIGN));
+        assertThat(instance.classify(acmgEvidence), equalTo(AcmgClassification.LIKELY_BENIGN));
     }
 
     @ParameterizedTest
@@ -144,7 +124,7 @@ class Acgs2020ClassifierTest {
             "PVS1 PP1",
             "PS1 PP1", // VUS_Hot
             "PM1 PM2 PP1", // VUS_Hot
-//            "PM1 PP1 PP2 PP3", // VUS_Hot
+//            "PM1 PP1 PP2 PP3", // VUS_Hot - classified as LP
             "PS1", // VUS_Warm
             "PM1 PM2", // VUS_Warm
             "PM1 PP1 PP2", // VUS_Warm
@@ -155,18 +135,13 @@ class Acgs2020ClassifierTest {
             "PP1 PP2", // VUS_Warm
             "PP1", // VUS_Cold
 //            OR  (ii)   the criteria for benign and pathogenic are contradictory
-            "PS1 BP1",
             "BS1 BP1 PVS1 PS1",
             "BA1 PVS1 PM1",
             "BP1 BP2 BP3 PM1 PP1 PP2 PP3 PP4",
     })
     void classifiesUncertain(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
-        assertThat(Acgs2020Classifier.classify(acmgEvidence), equalTo(AcmgClassification.UNCERTAIN_SIGNIFICANCE));
+        assertThat(instance.classify(acmgEvidence), equalTo(AcmgClassification.UNCERTAIN_SIGNIFICANCE));
     }
 
-    @Test
-    void noEvidenceClassifiesUnknown() {
-        assertThat(Acgs2020Classifier.classify(AcmgEvidence.empty()), equalTo(AcmgClassification.UNCERTAIN_SIGNIFICANCE));
-    }
 }

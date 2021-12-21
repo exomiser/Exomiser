@@ -18,11 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util;
+package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.monarchinitiative.exomiser.core.analysis.util.AcmgCriterion.Evidence;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
