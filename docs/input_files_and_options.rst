@@ -1,3 +1,5 @@
+.. _inputandoptions:
+
 =======================
 Input files and options
 =======================
@@ -68,8 +70,6 @@ Examples of these can be found in the `examples` directory of the installation.
 Preset
 ======
 
-Exomiser
-
 If no ``analysis`` is provided and no preset is specified, Exomiser will default to running the ``exome`` preset analysis.
 If you want to run Genomiser, which will analyse non-coding regions of a WGS sample use ``--preset genome``:
 
@@ -88,7 +88,8 @@ Analysis
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
 
-See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for details.
+See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for examples.
+Details can be found in the :ref:`analysis` section.
 
 .. parsed-literal::
 

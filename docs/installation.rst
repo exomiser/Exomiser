@@ -89,6 +89,8 @@ Having done this, run the analysis like this:
 This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952)
 
+.. _cadd-install:
+
 CADD data
 ~~~~~~~~~
 In order to use CADD you will need to download the CADD data files separately. These can be accessed from https://cadd.gs.washington.edu/download. Exomiser only
@@ -187,7 +189,7 @@ Or an install supporting both assemblies:
 
     ### hg19 assembly ###
     exomiser.hg19.data-version=2109
-    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.g
+    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.gz
 
     ### hg38 assembly ###
     exomiser.hg38.data-version=2109
