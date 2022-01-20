@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,7 @@ package org.monarchinitiative.exomiser.data.phenotype.processors.steps.disease;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.junitpioneer.jupiter.TempDirectory;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.disease.DiseaseGene;
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLineWriter;
@@ -37,18 +35,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@ExtendWith(TempDirectory.class)
 class DiseaseGeneStepTest {
 
     @Disabled
     @Test
     void testRun(@TempDir Path tempDir) {
         Path dataDir = Path.of("src/test/resources/data");
-        Resource phenotypeAnnotationsResource = Resource.of(dataDir, "phenotype_annotation.tab");
+        Resource phenotypeAnnotationsResource = Resource.of(dataDir, "phenotype_annotation_test.tab");
         Resource geneMap2Resource = Resource.of(dataDir, "genemap2.txt");
-        Resource mimToGeneResource = Resource.of(dataDir, "mim2gene.txt");
+        Resource mimToGeneResource = Resource.of(dataDir, "mim2gene_test.txt");
         Resource product1Resource = Resource.of(dataDir, "en_product1_test.xml");
-        Resource product6Resource = Resource.of(dataDir, "en_product6.xml");
+        Resource product6Resource = Resource.of(dataDir, "en_product6_test.xml");
         Resource product9Resource = Resource.of(dataDir, "en_product9_ages.xml");
 
         Path diseasePg = tempDir.resolve("disease.pg");

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers.genome.liftover;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
-import org.junitpioneer.jupiter.TempDirectory.TempDir;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +40,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class TadHg38BedToPgConverterTest {
 
     @Test
-    @ExtendWith(TempDirectory.class)
     public void testMerge(@TempDir Path tempDir) throws Exception {
         Path inputFile = Paths.get("src/test/resources/genome/liftover/test_split_tad.bed");
         Path expectedOutputFile = Paths.get("src/test/resources/genome/liftover/test_expected_tad.bed");

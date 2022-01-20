@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.resource.TabixAlleleResource;
 
@@ -33,7 +32,6 @@ import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junitpioneer.jupiter.TempDirectory.TempDir;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -41,7 +39,6 @@ import static org.junitpioneer.jupiter.TempDirectory.TempDir;
 class ResourceDownloaderTest {
 
     @Test
-    @ExtendWith(TempDirectory.class)
     void downloadWithTabixIndex(@TempDir Path tempDir) throws Exception {
         URL url = Paths.get("src/test/resources/test_empty.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("test_empty.vcf.gz");
@@ -52,7 +49,6 @@ class ResourceDownloaderTest {
     }
 
     @Test
-    @ExtendWith(TempDirectory.class)
     void downloadNonExistentFileThrowsException(@TempDir Path tempDir) throws Exception {
         URL url = Paths.get("src/test/resources/no_file_here.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("no_file_here.vcf.gz");
@@ -61,7 +57,6 @@ class ResourceDownloaderTest {
     }
 
     @Test
-    @ExtendWith(TempDirectory.class)
     void downloadWithoutTabixIndex(@TempDir Path tempDir) throws Exception {
         URL url = Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz").toUri().toURL();
         Path alleleGzipFile = tempDir.resolve("test_first_ten_dbsnp.vcf.gz");
