@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -133,13 +133,12 @@ public class HiPhiveOptions {
     }
 
     private boolean matchesCandidateGeneSymbol(GeneModel model) {
-        return model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol()
-                .equals(candidateGeneSymbol);
+        return model.getHumanGeneSymbol() != null && model.getHumanGeneSymbol().equals(candidateGeneSymbol);
     }
 
     private boolean matchesDisease(Model model) {
         // human model ID is now disease plus entrezgene to ensure uniqueness in HiPhive code
-        return model.getId() == null ? diseaseId == null : model.getId().split("_")[0].equals(diseaseId);
+        return model.getId() != null && model.getId().split("_")[0].equals(diseaseId);
     }
 
     public Set<Organism> getOrganismsToRun() {
