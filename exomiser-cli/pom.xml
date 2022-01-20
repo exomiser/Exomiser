@@ -195,6 +195,41 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>buildTar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <from>
+                        <!-- https://console.cloud.google.com/gcr/images/distroless/global/java17-debian11:latest-amd64 or latest-arm64 -->
+                        <image>
+                            gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
+                        </image>
+                    </from>
+                    <to>
+                        <image>exomiser-cli:${project.parent.version}</image>
+                        <tags>
+                            <tag>latest</tag>
+                        </tags>
+                    </to>
+                    <container>
+                        <!--                        <format>OCI</format>-->
+                        <volumes>
+                            <volume>/exomiser-data</volume>
+                            <volume>/exomiser</volume>
+                            <volume>/results</volume>
+                        </volumes>
+                    </container>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

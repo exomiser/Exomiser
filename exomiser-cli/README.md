@@ -161,8 +161,65 @@ If, when running 'unzip exomiser-cli-${project.version}-distribution.zip', you s
       (please check that you have transferred or created the zipfile in the
       appropriate BINARY mode and that you have compiled UnZip properly)
 
-  Check that your unzip version was compiled with LARGE_FILE_SUPPORT and ZIP64_SUPPORT. This is standard with UnZip 6.00 and can be checked by typing:
-     
+Check that your unzip version was compiled with LARGE_FILE_SUPPORT and ZIP64_SUPPORT. This is standard with UnZip 6.00
+and can be checked by typing:
+
     unzip -version
-    
-  This shouldn't be an issue with more recent linux distributions. 
+
+This shouldn't be an issue with more recent linux distributions.
+
+## Docker images with jib
+
+Docker images are build using [jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#quickstart)
+which does not require a Docker daemon to be running/installed in order to build an image. Tar images are built by
+default and are found in the `target` directory.
+
+Tar images can be installed locally like so and will create a Docker image:
+
+```shell
+$ docker load --input  Exomiser/exomiser-cli/target/jib-image.tar
+$ docker image list
+REPOSITORY                       TAG              IMAGE ID      CREATED         SIZE
+localhost/exomiser-cli           latest           c12b1878a8f3  52 years ago    273 MB
+localhost/exomiser-cli           ${project.version} c12b1878a8f3  52 years ago    273 MB
+```
+
+To run the image you will need the standard exomiser directory layout to mount as separate volumes as in the cli and
+supply an `application.properties` file or environmental variables to point to the data required _e.g._
+
+```shell
+docker run -v "/data/exomiser-data:/exomiser-data" \
+ -v "/opt/exomiser/exomiser-config/:/exomiser"  \
+ -v "/opt/exomiser/exomiser-cli-${project.version}/results:/results"  \
+ localhost/exomiser-cli:${project.version}  \
+ --analysis /exomiser/test-analysis-exome.yml  \
+ --vcf /exomiser/Pfeiffer.vcf.gz  \
+ --spring.config.location=/exomiser/application.properties
+```
+
+or using Spring configuration arguments instead of the `application.properties`:
+
+```shell
+docker run -v "/data/exomiser-data:/exomiser-data" \
+ -v "/opt/exomiser/exomiser-config/:/exomiser"  \
+ -v "/opt/exomiser/exomiser-cli-${project.version}/results:/results"  \
+ localhost/exomiser-cli:${project.version}  \
+ --analysis /exomiser/test-analysis-exome.yml  \
+ --vcf /exomiser/Pfeiffer.vcf.gz  \
+ # minimal requirements for an hg19 exome sample
+ --exomiser.data-directory=/exomiser-data \
+ --exomiser.hg19.data-version=2109 \
+ --exomiser.phenotype.data-version=2109
+```
+
+Here the contents of `/opt/exomiser/exomiser-config` is simply the `application.properties` file and the example files
+to test all is working correctly.
+
+```shell
+$ tree /opt/exomiser/exomiser-config/
+exomiser-config/
+├── application.properties
+├── Pfeiffer.vcf.gz
+├── Pfeiffer.vcf.gz.tbi
+└── test-analysis-exome.yml
+```
