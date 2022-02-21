@@ -3,24 +3,21 @@ The Exomiser - Phenotype DB build
 
 This maven project is used to build the Exomiser phenotype database used by the Exomiser. 
 
-Currently the build relies on a preliminary OWLSim2 file build which in future versions will
-be incorporated into this codebase:
+N.B. Now all run from apocrita (home folder on login.hpc.qmul.ac.uk) and from owltools installation at /data/WHRI-Phenogenomics/software/opt/owltools/owltools. To install from scratch use 
 
-N.B. Now all run from apocrita (home folder on login.hpc.qmul.ac.uk)
-
-1. OWLTools:
-    ```git clone https://github.com/owlcollab/owltools.git``` or ```git pull```
-    ```cd owltools/OWLTools-Parent
-    mvn clean install
+```git clone https://github.com/owlcollab/owltools.git```
+```cd owltools/OWLTools-Parent
+   mvn clean install
     cd ../../
     chmod +x owltools/OWLTools-Runner/bin/owltools
     ```
-    Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
-2. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
-3. ```wget http://purl.obolibrary.org/obo/mp.owl```
-4. ```wget http://purl.obolibrary.org/obo/hp.owl``` 
-5. ```wget https://raw.githubusercontent.com/obophenotype/zebrafish-phenotype-ontology-build/master/zp.owl```
-6. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
+Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
+
+1. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
+2. ```wget http://purl.obolibrary.org/obo/mp.owl```
+3. ```wget http://purl.obolibrary.org/obo/hp.owl``` 
+4. ```wget https://raw.githubusercontent.com/obophenotype/zebrafish-phenotype-ontology-build/master/zp.owl```
+5. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
 ```perl
@@ -51,23 +48,19 @@ close OUT1;
 close OUT2;
 ```
 
-7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_phenotype.txt```
-8. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
-9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
-10. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
-11. Run owltools commands:
+6. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_phenotype.txt```
+7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
+8. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
+9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
+10. Run owltools commands:
 
 ```
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
+owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
+owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
+owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
+owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
 /data/WHRI-Phenogenomics/software/opt/owltools/owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
-
+owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 ```
 
 12. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
