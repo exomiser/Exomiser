@@ -5,12 +5,13 @@ This maven project is used to build the Exomiser phenotype database used by the 
 
 N.B. Now all run from apocrita (home folder on login.hpc.qmul.ac.uk) and from owltools installation at /data/WHRI-Phenogenomics/software/opt/owltools/owltools. To install from scratch use 
 
-```git clone https://github.com/owlcollab/owltools.git```
-```cd owltools/OWLTools-Parent
-   mvn clean install
-    cd ../../
-    chmod +x owltools/OWLTools-Runner/bin/owltools
-    ```
+```git clone https://github.com/owlcollab/owltools.git
+cd owltools/OWLTools-Parent
+mvn clean install
+cd ../../
+chmod +x owltools/OWLTools-Runner/bin/owltools
+```
+
 Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
 
 1. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
@@ -56,10 +57,15 @@ close OUT2;
 
 ```
 owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
+
 owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
+
 owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
+
 owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
+
+owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
+
 owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 ```
 
