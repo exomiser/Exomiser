@@ -17,7 +17,7 @@ Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWL
 1. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
 2. ```wget http://purl.obolibrary.org/obo/mp.owl```
 3. ```wget http://purl.obolibrary.org/obo/hp.owl``` 
-4. ```wget https://raw.githubusercontent.com/obophenotype/zebrafish-phenotype-ontology-build/master/zp.owl```
+4. ```wget http://purl.obolibrary.org/obo/zp.owl```
 5. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
