@@ -22,13 +22,13 @@ be incorporated into this codebase:
 ```
     git clone https://github.com/obophenotype/mammalian-phenotype-ontology/ or git pull
     cd mammalian-phenotype-ontology/src/ontology
-    make mp.owl
+    wget http://purl.obolibrary.org/obo/mp.owl
     cd ../../../
    ```
 5. Clone uPheno:
 ```git clone https://github.com/obophenotype/upheno```
 6. Get ZPO:
-```wget http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl```
+```wget https://raw.githubusercontent.com/obophenotype/zebrafish-phenotype-ontology-build/master/zp.owl```
 7. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
