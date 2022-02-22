@@ -85,7 +85,7 @@ gzip hp-*-mapping-cache.txt
 cd /data/WHRI-Phenogenomics/projects/Damian/
 mkdir -p 2109-phenotype-build/resources
 cp ~/hp-*cache.txt.gz 2109-phenotype-build/resources
-java -jar exomiser-data-phenotype-13.0.0-SNAPSHOT.jar --phenotype.build-version=2109 --phenotype.build-dir=/data/WHRI-phenogemonics/projects/Damian/2109-phenotype-build
+java -Djava.io.tmpdir=/data/WHRI-Phenogenomics/projects/Damian  -jar exomiser-data-phenotype-13.0.0-SNAPSHOT.jar --phenotype.build-version=2109 --phenotype.build-dir=/data/WHRI-Phenogenomics/projects/Damian/2109-phenotype-build
 ```
 
 
