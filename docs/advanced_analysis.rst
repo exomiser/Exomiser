@@ -94,69 +94,71 @@ requires anything different, it is possible to manually define the data sources 
     analysisMode: PASS_ONLY
     inheritanceModes: {
       AUTOSOMAL_DOMINANT: 0.1,
-      AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
       AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
+      AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
       X_DOMINANT: 0.1,
-      X_RECESSIVE_COMP_HET: 2.0,
       X_RECESSIVE_HOM_ALT: 0.1,
+      X_RECESSIVE_COMP_HET: 2.0,
       MITOCHONDRIAL: 0.2
     }
     frequencySources: [
-      THOUSAND_GENOMES,
-      TOPMED,
-      UK10K,
+        THOUSAND_GENOMES,
+        TOPMED,
+        UK10K,
 
-      ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+        ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
 
-      EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-      EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-      EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-      EXAC_OTHER,
+        EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+        EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+        EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+        EXAC_OTHER,
 
-      GNOMAD_E_AFR,
-      GNOMAD_E_AMR,
+        GNOMAD_E_AFR,
+        GNOMAD_E_AMR,
       #        GNOMAD_E_ASJ,
-      GNOMAD_E_EAS,
-      GNOMAD_E_FIN,
-      GNOMAD_E_NFE,
-      GNOMAD_E_OTH,
-      GNOMAD_E_SAS,
+        GNOMAD_E_EAS,
+        GNOMAD_E_FIN,
+        GNOMAD_E_NFE,
+        GNOMAD_E_OTH,
+        GNOMAD_E_SAS,
 
-      GNOMAD_G_AFR,
-      GNOMAD_G_AMR,
+        GNOMAD_G_AFR,
+        GNOMAD_G_AMR,
       #        GNOMAD_G_ASJ,
-      GNOMAD_G_EAS,
-      GNOMAD_G_FIN,
-      GNOMAD_G_NFE,
-      GNOMAD_G_OTH,
-      GNOMAD_G_SAS
+        GNOMAD_G_EAS,
+        GNOMAD_G_FIN,
+        GNOMAD_G_NFE,
+        GNOMAD_G_OTH,
+        GNOMAD_G_SAS
     ]
-    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT]
+    # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+    # REMM is trained on non-coding regulatory regions
+    # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+    # and updated their location in the application.properties. Exomiser will not run without this.
+    pathogenicitySources: [ REVEL, MVP ]
     #this is the standard exomiser order.
     steps: [
-      variantEffectFilter: {
-        remove: [
-          FIVE_PRIME_UTR_EXON_VARIANT,
-          FIVE_PRIME_UTR_INTRON_VARIANT,
-          THREE_PRIME_UTR_EXON_VARIANT,
-          THREE_PRIME_UTR_INTRON_VARIANT,
-          NON_CODING_TRANSCRIPT_EXON_VARIANT,
-          UPSTREAM_GENE_VARIANT,
-          INTERGENIC_VARIANT,
-          REGULATORY_REGION_VARIANT,
-          CODING_TRANSCRIPT_INTRON_VARIANT,
-          NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-          DOWNSTREAM_GENE_VARIANT
-        ]
-      },
-      frequencyFilter: {maxFrequency: 2.0},
-      pathogenicityFilter: {keepNonPathogenic: true},
-      # inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
-      # they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
-      inheritanceFilter: {},
-      # omimPrioritiser isn't mandatory, but is highly recommended
-      omimPrioritiser: {},
-      hiPhivePrioritiser: {}
+        failedVariantFilter: { },
+        variantEffectFilter: {
+          remove: [
+              FIVE_PRIME_UTR_EXON_VARIANT,
+              FIVE_PRIME_UTR_INTRON_VARIANT,
+              THREE_PRIME_UTR_EXON_VARIANT,
+              THREE_PRIME_UTR_INTRON_VARIANT,
+              NON_CODING_TRANSCRIPT_EXON_VARIANT,
+              NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+              CODING_TRANSCRIPT_INTRON_VARIANT,
+              UPSTREAM_GENE_VARIANT,
+              DOWNSTREAM_GENE_VARIANT,
+              INTERGENIC_VARIANT,
+              REGULATORY_REGION_VARIANT
+          ]
+        },
+        frequencyFilter: { maxFrequency: 2.0 },
+        pathogenicityFilter: { keepNonPathogenic: true },
+        inheritanceFilter: { },
+        omimPrioritiser: { },
+        hiPhivePrioritiser: { }
     ]
 
 
@@ -325,9 +327,28 @@ Variant filters
 
 These operate on variants and will produce a pass or fail result for each variant run through the filter.
 
+failedVariantFilter:
+...............
+Removes variants which are not marked as `PASS` or `.` in the VCF file. This is a highly recommended filter which will
+remove a lot of noise.
+
+.. code-block:: yaml
+
+    failedVariantFilter: {}
+
+
+qualityFilter:
+...............
+Removes variants with VCF `QUAL` scores lower than the given `minQuality`.
+
+.. code-block:: yaml
+
+    qualityFilter: {minQuality: 50.0}
+
+
 intervalFilter:
 ...............
-Define an interval of interest. Only variants within this interval will be passed. Currently only single intervals are
+Defines an interval of interest. Only variants within this interval will be passed. Currently only single intervals are
 possible.
 
 .. code-block:: yaml
