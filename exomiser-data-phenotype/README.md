@@ -3,40 +3,29 @@ The Exomiser - Phenotype DB build
 
 This maven project is used to build the Exomiser phenotype database used by the Exomiser. 
 
-Currently the build relies on a preliminary OWLSim2 file build which in future versions will
-be incorporated into this codebase:
+N.B. Now all run from apocrita (home folder on login.hpc.qmul.ac.uk) and from owltools installation at /data/WHRI-Phenogenomics/software/opt/owltools/owltools. To install from scratch use 
 
-1. OWLTools:
-    ```git clone https://github.com/owlcollab/owltools.git``` or ```git pull```
-    ```cd owltools/OWLTools-Parent
-    mvn clean install
-    cd ../../
-    chmod +x owltools/OWLTools-Runner/bin/owltools
-    ```
-    Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
-2. Clone Monarch OwlSim:
-```git clone https://github.com/monarch-initiative/monarch-owlsim-data or git pull``` 
-3. Clone the HPO:
-```git clone https://github.com/obophenotype/human-phenotype-ontology/ or git pull```
-4. Clone the MPO: 
+```git clone https://github.com/owlcollab/owltools.git
+cd owltools/OWLTools-Parent
+mvn clean install
+cd ../../
+chmod +x owltools/OWLTools-Runner/bin/owltools
 ```
-    git clone https://github.com/obophenotype/mammalian-phenotype-ontology/ or git pull
-    cd mammalian-phenotype-ontology/src/ontology
-    make mp.owl
-    cd ../../../
-   ```
-5. Clone uPheno:
-```git clone https://github.com/obophenotype/upheno```
-6. Get ZPO:
-```wget http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl```
-7. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
+
+Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
+
+1. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
+2. ```wget http://purl.obolibrary.org/obo/mp.owl```
+3. ```wget http://purl.obolibrary.org/obo/hp.owl``` 
+4. ```wget http://purl.obolibrary.org/obo/zp.owl```
+5. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
 OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
 
 ```perl
-system("wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_annotation.tab:");
+system("wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_annotation.tab");
 open(IN,"phenotype_annotation.tab");
-open(OUT1,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt");
-open(OUT2,">monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt");
+open(OUT1,">Hs_disease_phenotype.txt");
+open(OUT2,">Hs_disease_labels.txt");
 my %data;
 while (my $line = <IN>){
     my @line = split(/\t/,$line);
@@ -60,29 +49,27 @@ close OUT1;
 close OUT2;
 ```
 
-8. Run owltools commands:
-
-TODO: switch to using archive monarch data for all builds
+6. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_phenotype.txt```
+7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
+8. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
+9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
+10. Run owltools commands:
 
 ```
+owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
 
-wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_phenotype.txt
-wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt
+owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
 
-
-owltools --catalog-xml upheno/catalog-v001.xml mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
-
-owltools --catalog-xml upheno/catalog-v001.xml  mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --merge-imports-closure --load-instances monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt --load-labels monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
-
-owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mammalian-phenotype-ontology/src/ontology/mp.owl human-phenotype-ontology/hp.owl zp.owl Mm_gene_phenotype.txt monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --load-instances monarch-owlsim-data/data/Danio_rerio/Dr_gene_phenotype.txt --load-labels monarch-owlsim-data/data/Danio_rerio/Dr_gene_labels.txt --load-instances monarch-owlsim-data/data/Homo_sapiens/Hs_disease_phenotype.txt --load-labels monarch-owlsim-data/data/Homo_sapiens/Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
+owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
 
 owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
-owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
-owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 
+owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
+
+owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
 ```
 
-9. Run final commands on high mem machines on apocrita after scp *-merged.owl and upheno/hp-mp/mp_hp-align-equiv.owl to aprocrita (home folder on login.hpc.qmul.ac.uk)
+12. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
 
 ```
 qsub owltools_hp_hp.sh
@@ -91,14 +78,14 @@ qsub owltools_hp_zp.sh
 
 ```
 
-10. Running the build. More detail below but essentially
+13. Running the build. More detail below but essentially
 
 ```
 gzip hp-*-mapping-cache.txt
 cd /data/WHRI-Phenogenomics/projects/Damian/
 mkdir -p 2109-phenotype-build/resources
 cp ~/hp-*cache.txt.gz 2109-phenotype-build/resources
-java -jar exomiser-data-phenotype-13.0.0-SNAPSHOT.jar --phenotype.build-version=2109 --phenotype.build-dir=/data/WHRI-phenogemonics/projects/Damian/2109-phenotype-build
+java -Djava.io.tmpdir=/data/WHRI-Phenogenomics/projects/Damian  -jar exomiser-data-phenotype-13.0.0-SNAPSHOT.jar --phenotype.build-version=2109 --phenotype.build-dir=/data/WHRI-Phenogenomics/projects/Damian/2109-phenotype-build
 ```
 
 
