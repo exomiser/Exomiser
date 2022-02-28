@@ -50,8 +50,68 @@ If the instance *is* running in a clinically-compliant setting, the banner can b
 ```properties
 exomiser.web.clinical-instance=true
 ```
+
 or override this by launching the application using the command-line option
 
 ```shell
 --exomiser.web.clinical-instance=true
+```
+
+## Running the Docker image
+
+To run the image you will need the standard exomiser directory layout to mount as separate volumes and supply
+an `application.properties` file or environmental variables to point to the data required _e.g._
+
+```shell
+docker run \
+-v "/data/exomiser-data:/exomiser-data" \
+-v "/opt/exomiser/exomiser-config/:/exomiser" \
+-p 8080:8080 \
+exomiser/exomiser-web:latest \
+--spring.config.location=/exomiser/application.properties
+```
+
+or using Spring configuration arguments instead of the `application.properties`:
+
+```shell
+docker run -v "/data/exomiser-data:/exomiser-data" \
+-p 8080:8080 \
+exomiser/exomiser-web:latest \
+--exomiser.data-directory=/exomiser-data \
+--exomiser.hg19.data-version=2109 \
+--exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.gz \
+--exomiser.phenotype.data-version=2109
+```
+
+Here the contents of `/opt/exomiser/exomiser-config` is simply the `application.properties` file.
+
+```shell
+$ tree /opt/exomiser/exomiser-config/
+exomiser-config/
+└──application.properties
+```
+
+and the `application.properties` contents for hg38:
+
+```yaml
+exomiser.data-directory=/exomiser-data
+
+## hg38 config
+exomiser.hg38.data-version=2109
+#exomiser.hg38.remm-path=${exomiser.data-directory}/remm/ReMM.v0.3.1.post1.hg38.tsv.gz
+#exomiser.hg38.local-frequency-path=${exomiser.data-directory}/local/local_frequency_test_hg38.tsv.gz
+exomiser.hg38.variant-white-list-path=${exomiser.hg38.data-version}_hg38_clinvar_whitelist.tsv.gz
+
+## phenotype config
+exomiser.phenotype.data-version=2109
+```
+
+Resizing the JVM
+-----------------------
+
+Running a WGS analysis can take a few GB of RAM, depending on the size of the sample in question. If you need to
+increase the max memory of the JVM, include the following environment variable:
+
+```shell
+-e JAVA_TOOL_OPTIONS="-Xmx8G" 
 ```

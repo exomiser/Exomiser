@@ -155,10 +155,17 @@
                 <configuration>
                     <from>
                         <image>${docker.base.image}</image>
+                        <platforms>
+                            <platform>
+                                <architecture>amd64</architecture>
+                                <os>linux</os>
+                            </platform>
+                        </platforms>
                     </from>
                     <to>
                         <image>${project.artifactId}:${project.parent.version}</image>
                         <tags>
+                            <tag>${project.parent.version}</tag>
                             <tag>latest</tag>
                         </tags>
                     </to>
