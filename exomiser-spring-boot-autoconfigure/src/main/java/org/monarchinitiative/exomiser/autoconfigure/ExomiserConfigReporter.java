@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.autoconfigure;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,7 +30,7 @@ public class ExomiserConfigReporter {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserConfigReporter.class);
 
-    public ExomiserConfigReporter(ExomiserProperties exomiserProperties) {
+    public ExomiserConfigReporter(ExomiserProperties exomiserProperties, Environment environment) {
 
         var dataDir = propertyOrDefault(exomiserProperties.getDataDirectory(), "-");
         logger.info("exomiser.data-directory: {}", dataDir);
@@ -45,6 +46,11 @@ public class ExomiserConfigReporter {
         var phenoProperties = exomiserProperties.getPhenotype();
         var phenoDataVersion = propertyOrDefault(phenoProperties.getDataVersion(), "-");
         logger.info("exomiser.phenotype.data-version: {}", phenoDataVersion);
+
+        String cacheType = environment.getProperty("spring.cache.type");
+        if (cacheType != null && !cacheType.equals("none")) {
+            logger.info("spring.cache.type: {}", cacheType);
+        }
     }
 
     private String propertyOrDefault(String property, String defaultValue) {
