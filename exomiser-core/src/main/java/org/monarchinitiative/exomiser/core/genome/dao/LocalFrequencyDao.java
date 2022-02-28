@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,7 +64,7 @@ public class LocalFrequencyDao implements FrequencyDao {
         return getPositionFrequencyData(chromosome, start, ref, alt);
     }
 
-    private FrequencyData getPositionFrequencyData(String chromosome, int start, String ref, String alt) {
+    private synchronized FrequencyData getPositionFrequencyData(String chromosome, int start, String ref, String alt) {
         //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:
         //chr   pos ref alt freq(%)
         //1 12345   A   T   23.0  (an A->T SNP on chr1 at position 12345 with frequency of 23.0%)
