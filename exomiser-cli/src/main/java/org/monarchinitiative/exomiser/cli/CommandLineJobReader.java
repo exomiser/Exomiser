@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -99,6 +99,7 @@ public class CommandLineJobReader {
         // "sample", "output"
         // "sample", "vcf", "output"
         // "sample", "vcf", "ped", "output"
+        // "sample", "vcf", "ped", "output", "output-prefix"
         if (userOptions.contains("sample") || userOptions.contains("analysis")) {
             return handleMultipleUserOptions(commandLine, userOptions);
         }
@@ -132,9 +133,13 @@ public class CommandLineJobReader {
         if (userOptions.contains("ped")) {
             handlePedOption(commandLine.getOptionValue("ped"), jobBuilder);
         }
+        if (userOptions.contains("output-prefix")) {
+            handleOutputPrefixOption(commandLine.getOptionValue("output-prefix"), jobBuilder);
+        }
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
         }
+        logger.debug("Submitting Exomiser job: {}", jobBuilder);
         return List.of(jobBuilder.build());
     }
 
@@ -240,6 +245,15 @@ public class CommandLineJobReader {
     private void handleOutputOption(String outputOptionValue, JobProto.Job.Builder jobBuilder) {
         Path outputOptionPath = Path.of(outputOptionValue);
         jobBuilder.setOutputOptions(readOutputOptions(outputOptionPath));
+    }
+
+    private void handleOutputPrefixOption(String outputPrefixOptionValue, JobProto.Job.Builder jobBuilder) {
+        Path outputPrefixOptionPath = Path.of(outputPrefixOptionValue);
+        logger.debug("Setting output-prefix to {}", outputPrefixOptionPath);
+        OutputProto.OutputOptions.Builder builder = jobBuilder
+                .getOutputOptions().toBuilder()
+                .setOutputPrefix(outputPrefixOptionPath.toString());
+        jobBuilder.setOutputOptions(builder);
     }
 
     private AnalysisProto.Analysis readAnalysis(Path analysisPath) {

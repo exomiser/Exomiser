@@ -417,6 +417,28 @@ class CommandLineJobReaderTest {
     }
 
     @Test
+    void readCliSampleWithOutputPrefix() {
+        String outputPrefixOption = "wibble";
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-sample.yml",
+                "--output-prefix", outputPrefixOption
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        OutputProto.OutputOptions outputOptions = DEFAULT_OUTPUT_OPTIONS.toBuilder()
+                .setOutputPrefix(outputPrefixOption)
+                .build();
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setSample(SAMPLE)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(outputOptions)
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
     void readCliSampleOnlyWithPhenopacket() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml"

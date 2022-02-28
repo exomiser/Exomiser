@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -147,6 +147,21 @@ class CommandLineOptionsParserTest {
         assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
         assertTrue(commandLine.hasOption("vcf"));
         assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
+    }
+
+    @Test
+    void parseSampleVcfAndOutputPrefix() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", resource("exome-analysis.yml"),
+                "--vcf", resource("Pfeiffer.vcf"),
+                "--output-prefix", "results/pfeiffer-exome-analysis-results"
+        );
+        assertTrue(commandLine.hasOption("sample"));
+        assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
+        assertTrue(commandLine.hasOption("vcf"));
+        assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
+        assertTrue(commandLine.hasOption("output-prefix"));
+        assertThat(commandLine.getOptionValue("output-prefix"), equalTo("results/pfeiffer-exome-analysis-results"));
     }
 
     @Test

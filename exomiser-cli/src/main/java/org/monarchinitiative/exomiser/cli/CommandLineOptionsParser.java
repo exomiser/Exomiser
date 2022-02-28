@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -106,6 +106,13 @@ public class CommandLineOptionsParser {
         options.addOption(Option.builder()
                 .longOpt("output")
                 .desc("Path to outputOptions file. This should be in JSON or YAML format.")
+                .hasArg()
+                .argName("string")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-prefix")
+                .desc("Path/filename without an extension to be prepended to the output file format options.")
                 .hasArg()
                 .argName("string")
                 .build());
