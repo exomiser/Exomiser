@@ -89,13 +89,22 @@ class CommandLineOptionsParserTest {
         ));
     }
 
-//    @Test
-//    void parseIllegalAnalysisVcfCombination() {
-//        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
-//                "--analysis", resource("pfeiffer-analysis-v8-12.yml"),
-//                "--vcf", resource("Pfeiffer.vcf")
-//        ));
-//    }
+    @Test
+    void parseIllegalMissingAssemblyAnalysisVcfCombination() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--analysis", resource("pfeiffer-analysis-v8-12.yml"),
+                "--vcf", resource("Pfeiffer.vcf")),
+                "--assembly option required when specifying vcf!");
+    }
+
+    @Test
+    void parseIllegalAssemblyValue() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", resource("pfeiffer-job-sample.yml"),
+                "--assembly", "wibble"),
+                "'wibble' is not a valid/supported genome assembly."
+        );
+    }
 
     @Test
     void parseWillStopAtUnknownArgumentBefore() {
@@ -142,11 +151,14 @@ class CommandLineOptionsParserTest {
     void parseSampleAndVcf() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", resource("exome-analysis.yml"),
-                "--vcf", resource("Pfeiffer.vcf"));
+                "--vcf", resource("Pfeiffer.vcf"),
+                "--assembly", "hg19");
         assertTrue(commandLine.hasOption("sample"));
         assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
         assertTrue(commandLine.hasOption("vcf"));
         assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
+        assertTrue(commandLine.hasOption("assembly"));
+        assertThat(commandLine.getOptionValue("assembly"), equalTo("hg19"));
     }
 
     @Test
@@ -154,12 +166,15 @@ class CommandLineOptionsParserTest {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", resource("exome-analysis.yml"),
                 "--vcf", resource("Pfeiffer.vcf"),
+                "--assembly", "hg19",
                 "--output-prefix", "results/pfeiffer-exome-analysis-results"
         );
         assertTrue(commandLine.hasOption("sample"));
         assertThat(commandLine.getOptionValue("sample"), equalTo(resource("exome-analysis.yml")));
         assertTrue(commandLine.hasOption("vcf"));
         assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
+        assertTrue(commandLine.hasOption("assembly"));
+        assertThat(commandLine.getOptionValue("assembly"), equalTo("hg19"));
         assertTrue(commandLine.hasOption("output-prefix"));
         assertThat(commandLine.getOptionValue("output-prefix"), equalTo("results/pfeiffer-exome-analysis-results"));
     }

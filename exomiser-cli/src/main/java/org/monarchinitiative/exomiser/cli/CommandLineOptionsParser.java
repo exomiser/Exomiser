@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,7 +71,7 @@ public class CommandLineOptionsParser {
 
         options.addOption(Option.builder()
                 .longOpt("vcf")
-                .desc("Path to sample VCF file.")
+                .desc("Path to sample VCF file. Also requires 'assembly' option to be defined.")
                 .hasArg()
                 .argName("file")
                 .build());
@@ -148,6 +149,17 @@ public class CommandLineOptionsParser {
 
         if (commandLine.hasOption("sample") && commandLine.hasOption("assembly") && !commandLine.hasOption("vcf")) {
             throw new CommandLineParseError("assembly present without vcf option");
+        }
+
+        if (commandLine.hasOption("vcf") && !commandLine.hasOption("assembly")) {
+            throw new CommandLineParseError("--assembly option required when specifying vcf!");
+        }
+        if (commandLine.hasOption("assembly")) {
+            try {
+                GenomeAssembly.parseAssembly(commandLine.getOptionValue("assembly"));
+            } catch (Exception e) {
+                throw new CommandLineParseError(e.getMessage());
+            }
         }
 
         if (!hasInputFileOption(commandLine)) {

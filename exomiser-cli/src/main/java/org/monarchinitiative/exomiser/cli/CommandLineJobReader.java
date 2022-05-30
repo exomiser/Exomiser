@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.JobReader;
 import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeReader;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.phenopackets.schema.v1.Family;
@@ -38,7 +39,6 @@ import org.phenopackets.schema.v1.core.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -139,6 +139,9 @@ public class CommandLineJobReader {
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
         }
+        // Make sure Exomiser will return some results! Adding defaults to the initial builder will result in potential
+        // duplicates of the default output file types.
+        ensureOutputSettingsSpecifyOutputFormat(jobBuilder);
         logger.debug("Submitting Exomiser job: {}", jobBuilder);
         return List.of(jobBuilder.build());
     }
@@ -153,11 +156,17 @@ public class CommandLineJobReader {
     private OutputProto.OutputOptions createDefaultOutputOptions() {
         return OutputProto.OutputOptions.newBuilder()
                 .setOutputPrefix("")
-                .addOutputFormats(OutputFormat.HTML.toString())
-                .addOutputFormats(OutputFormat.JSON.toString())
                 .setNumGenes(0)
                 .setOutputContributingVariantsOnly(false)
                 .build();
+    }
+
+    private void ensureOutputSettingsSpecifyOutputFormat(JobProto.Job.Builder jobBuilder) {
+        if (jobBuilder.getOutputOptions().getOutputFormatsList().isEmpty()) {
+            jobBuilder.getOutputOptionsBuilder()
+                    .addOutputFormats(OutputFormat.HTML.toString())
+                    .addOutputFormats(OutputFormat.JSON.toString());
+        }
     }
 
     private void handleSampleOption(String sampleOptionValue, JobProto.Job.Builder jobBuilder) {
@@ -183,10 +192,14 @@ public class CommandLineJobReader {
         }
     }
 
-    private void handleVcfAndAssemblyOptions(String vcfOptionValue, @Nullable String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
+    private void handleVcfAndAssemblyOptions(String vcfOptionValue, String assemblyOptionValue, JobProto.Job.Builder jobBuilder) {
         logger.debug("Handling VCF/assembly option {} {}", vcfOptionValue, assemblyOptionValue);
         Path vcfPath = Path.of(vcfOptionValue);
-        String assembly = assemblyOptionValue == null ? "GRCh37" : assemblyOptionValue;
+        if (assemblyOptionValue == null || assemblyOptionValue.isEmpty()) {
+            // Using the incorrect assembly would lead to *very* incorrect results.
+            throw new CommandLineParseError("assembly must be included when specifying vcf!");
+        }
+        String assembly = GenomeAssembly.parseAssembly(assemblyOptionValue).toGrcString();
         if (jobBuilder.hasPhenopacket()) {
             Phenopacket.Builder phenopacketBuilder = jobBuilder.getPhenopacketBuilder();
             if (phenopacketBuilder.getHtsFilesCount() != 0) {

@@ -535,7 +535,7 @@ class CommandLineJobReaderTest {
 
         // --sample src/test/resources/pfeiffer-phenopacket.json --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
         Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
-        HtsFile htsFile = HtsFile.newBuilder().setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF).setGenomeAssembly("hg19").build();
+        HtsFile htsFile = HtsFile.newBuilder().setUri(vcfPath.toUri().toString()).setHtsFormat(HtsFile.HtsFormat.VCF).setGenomeAssembly("GRCh37").build();
         JobProto.Job expected = JobProto.Job.newBuilder()
                 .setPhenopacket(PHENOPACKET.toBuilder().setHtsFiles(0, htsFile).build())
                 .setPreset(AnalysisProto.Preset.EXOME)
@@ -544,7 +544,7 @@ class CommandLineJobReaderTest {
 
         // --sample src/test/resources/pfeiffer-sample.json    --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
         JobProto.Job updateSampleJsonHg19AssemblyNoAnalysisOption = JobProto.Job.newBuilder()
-                .setSample(SAMPLE.toBuilder().setVcf(vcfPath.toString()).setGenomeAssembly("hg19").build())
+                .setSample(SAMPLE.toBuilder().setVcf(vcfPath.toString()).setGenomeAssembly("GRCh37").build())
                 .setPreset(AnalysisProto.Preset.EXOME)
                 .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
                 .build();
@@ -604,7 +604,8 @@ class CommandLineJobReaderTest {
     void readCliFamilyExomeWithVcfOption() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-family.yml",
-                "--vcf", "src/test/resources/Pfeiffer.vcf"
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "GRCh37"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -630,8 +631,9 @@ class CommandLineJobReaderTest {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-family.yml",
                 "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "GRCh37",
                 "--ped", "src/test/resources/pfeiffer-singleton.ped"
-        );
+                );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
         Path vcfPath = Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath();
@@ -659,6 +661,7 @@ class CommandLineJobReaderTest {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "hg19",
                 "--ped", "src/test/resources/pfeiffer-singleton.ped"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -782,6 +785,33 @@ class CommandLineJobReaderTest {
                 .setAnalysis(ANALYSIS)
                 .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
                 .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliLegacyAnalysisWithVcfOverrideRequiresAssembly() {
+        assertThrows(CommandLineParseError.class, ()-> CommandLineOptionsParser.parse(
+                "--analysis", "src/test/resources/pfeiffer-analysis-v8-12.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf"
+        ), "-assembly option required when specifying vcf!");
+    }
+
+    @Test
+    void readCliLegacyAnalysisWithVcfOverrideSetsNewAssembly() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--analysis", "src/test/resources/pfeiffer-analysis-v8-12.yml",
+                "--vcf", "src/test/resources/Pfeiffer.vcf",
+                "--assembly", "hg38"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        SampleProto.Sample updated = SampleProto.Sample.newBuilder()
+                .setVcf(Path.of("src/test/resources/Pfeiffer.vcf").toAbsolutePath().toString())
+                .setGenomeAssembly("GRCh38")
+                .build();
+
+        JobProto.Job expected = PFEIFFER_SAMPLE_JOB.toBuilder().mergeSample(updated).build();
 
         assertThat(jobs, equalTo(List.of(expected)));
     }
