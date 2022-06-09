@@ -44,18 +44,18 @@ The following shell script should work-
     # download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-\ |version|\-distribution.zip
     # download the data (this is ~80GB and will take a while). If you only require a single assembly, only download the relevant file.
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2202_phenotype.zip
 
     # unzip the distribution and data files - this will create a directory called 'exomiser-cli-|version|' in the current working directory
     unzip exomiser-cli-|version|-distribution.zip
-    unzip 2109_*.zip -d exomiser-cli-|version|/data
+    unzip 2202_*.zip -d exomiser-cli-|version|/data
 
     # Check the application.properties are pointing to the correct versions
-    # exomiser.hg19.data-version=2109
-    # exomiser.hg38.data-version=2109
-    # exomiser.phenotype.data-version=2109
+    # exomiser.hg19.data-version=2202
+    # exomiser.hg38.data-version=2202
+    # exomiser.phenotype.data-version=2202
 
     # run a test exome analysis
     cd exomiser-cli-|version|
@@ -137,8 +137,11 @@ CADD scores in an analysis, the ``pathogenicitySources`` should contain the ``CA
     pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, CADD]
 
 
-Alternative set-up
-~~~~~~~~~~~~~~~~~~
+Configuring the application.properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you have downloaded and unzipped all the data, you will need to edit the exomiser-cli-\ |version|\/application.properties
+file located in the main exomiser-cli directory. This file contains a lot of comments for optional data and assemblies.
 
 If you want to run Exomiser using data from a different release directory edit the line in ``application.properties``:
 
@@ -152,14 +155,29 @@ with
 
     exomiser.data-directory=/full/path/to/alternative/data/directory
 
+For example, assuming you unzipped the contents of the `2202_hg38.zip` data file into `/data/exomiser-data`:
 
-Configuring the application.properties
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. parsed-literal::
 
-Once you have downloaded and unzipped all the data, you will need to edit the exomiser-cli-\ |version|\/application.properties
-file located in the main exomiser-cli directory. This file contains a lot of comments for optional data and assemblies.
-Assuming the Exomiser data was located in the exomiser-cli-\ |version|\/data directory a minimal GRCh37/hg19 setup for
-exome analysis would only require the ``application.properties`` to contain this:
+    exomiser.data-directory=/data/exomiser-data
+
+where the contents of `exomiser-data` looks something like this:
+
+.. code-block:: bash
+
+    $ tree -L 1 /data/exomiser-data/
+        /data/exomiser-data/
+        ├── 2202_hg19
+        ├── 2202_hg38
+        ├── 2202_phenotype
+        ├── cadd
+        └── remm
+
+
+By default Exomiser will look for data located in the exomiser-cli-\ |version|\/data directory.
+
+After defining the a `exomiser.data-directory`, a minimal setup for exome analysis using GRCh37/hg19 would only require
+the ``application.properties`` to contain this:
 
 .. code-block:: yaml
 
