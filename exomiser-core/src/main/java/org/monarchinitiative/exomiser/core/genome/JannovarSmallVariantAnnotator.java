@@ -176,6 +176,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
+        AnnotationLocation annoLoc = annotation.getAnnoLoc();
         return TranscriptAnnotation.builder()
                 .variantEffect(getVariantEffectOrDefault(annotation.getMostPathogenicVarType(), VariantEffect.SEQUENCE_VARIANT))
                 .accession(TranscriptModelUtil.getTranscriptAccession(annotation.getTranscript()))
@@ -183,6 +184,9 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
                 .hgvsCdna(annotation.getCDSNTChangeStr())
                 .hgvsProtein(annotation.getProteinChangeStr(AminoAcidCode.THREE_LETTER))
+                .rankType(annoLoc == null ? AnnotationLocation.RankType.UNDEFINED : annoLoc.getRankType())
+                .rankTotal(annoLoc == null ? -1 : annoLoc.getTotalRank())
+                .rank(annoLoc == null ? -1 : annoLoc.getRank() + 1)
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))
                 .build();
     }
