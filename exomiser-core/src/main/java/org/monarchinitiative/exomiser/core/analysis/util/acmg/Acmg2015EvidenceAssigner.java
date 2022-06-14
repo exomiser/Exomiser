@@ -148,8 +148,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // Caveats:
         // •  Beware of genes where LOF is not a known disease mechanism (e.g., GFAP, MYH7)
         // •  Use caution interpreting LOF variants at the extreme 3′ end of a gene
-        // TODO: need exon structure of gene so can check if variant lies in or disrupts last exon
-        //    downgrade to strong
         // •  Use caution with splice variants that are predicted to lead to exon skipping but leave the remainder of the protein intact
         // •  Use caution in the presence of multiple transcripts
 
@@ -337,7 +335,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     /**
      * PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
      */
-    private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData, ModeOfInheritance modeOfInheritance, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
+    private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
         if (!frequencyData.hasEspData() && !frequencyData.hasExacData() && !frequencyData.hasDbSnpData()) {
             acmgEvidenceBuilder.add(PM2);
         }
@@ -382,8 +380,62 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * BP4 "Multiple lines of computational evidence suggest no impact on gene or gene product (conservation, evolutionary, splicing impact, etc.)"
      */
     private void assignPP3orBP4(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityData pathogenicityData) {
-        // See "Assessing performance of pathogenicity predictors using clinically relevant variant datasets"
-        //   http://dx.doi.org/10.1136/jmedgenet-2020-107003
+        // These approaches are broadly similar in recommending just using one predictor and REVEL is consistently
+        // seen to out-perform other predictors. In our testing we also found that the REVEL-only approach worked best.
+
+        // updated from "Evidence-based calibration of computational tools for missense variant pathogenicity
+        //   classification and ClinGen recommendations for clinical use of PP3/BP4 criteria"
+        //   https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
+        //
+        var revelScore = pathogenicityData.getPredictedScore(PathogenicitySource.REVEL);
+        if (revelScore != null) {
+            assignRevelBasedPP3BP4Classification(acmgEvidenceBuilder, revelScore);
+        } else {
+            // See "Assessing performance of pathogenicity predictors using clinically relevant variant datasets"
+            // http://dx.doi.org/10.1136/jmedgenet-2020-107003
+            assignEnsembleBasedPP3BP4Classification(acmgEvidenceBuilder, pathogenicityData);
+        }
+    }
+
+    /*
+     * Updated classification from "Evidence-based calibration of computational tools for missense variant pathogenicity
+     * classification and ClinGen recommendations for clinical use of PP3/BP4 criteria"
+     * https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
+     *
+     * This method provided much better
+     */
+    private void assignRevelBasedPP3BP4Classification(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityScore revelScore) {
+        var revel = revelScore.getRawScore();
+        // Taken from table 2 of https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
+        // P_Strong   P_Moderate   P_Supporting       B_Supporting   B_Moderate     B_Strong      B_Very Strong
+        // ≥ 0.932 [0.773, 0.932) [0.644, 0.773)    (0.183, 0.290] (0.016, 0.183] (0.003, 0.016] ≤ 0.003
+        // PATHOGENIC categories
+
+        if (revel >= 0.932f) {
+            acmgEvidenceBuilder.add(PP3, Evidence.STRONG);
+        } else if (revel < 0.932f && revel >= 0.773f) {
+            acmgEvidenceBuilder.add(PP3, Evidence.MODERATE);
+        } else if (revel < 0.773f && revel >= 0.644f) {
+            acmgEvidenceBuilder.add(PP3, Evidence.SUPPORTING);
+        }
+        // BENIGN categories
+        else if (revel > 0.183f && revel <= 0.290f) {
+            acmgEvidenceBuilder.add(BP4, Evidence.SUPPORTING);
+        } else if (revel > 0.016f && revel <= 0.183f) {
+            acmgEvidenceBuilder.add(BP4, Evidence.MODERATE);
+        } else if (revel > 0.003f && revel <= 0.016f) {
+            acmgEvidenceBuilder.add(BP4, Evidence.STRONG);
+        } else if (revel <= 0.003f) {
+            acmgEvidenceBuilder.add(BP4, Evidence.VERY_STRONG);
+        }
+    }
+
+    /*
+     * Ensemble-based approach suggested in
+     * See "Assessing performance of pathogenicity predictors using clinically relevant variant datasets"
+     * http://dx.doi.org/10.1136/jmedgenet-2020-107003
+     */
+    private void assignEnsembleBasedPP3BP4Classification(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityData pathogenicityData) {
         int numBenign = 0;
         int numPathogenic = 0;
         List<PathogenicityScore> predictedPathogenicityScores = pathogenicityData.getPredictedPathogenicityScores();

@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
+import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -83,7 +85,7 @@ class AcmgAssignmentCalculatorTest {
         AcmgEvidence acmgEvidence = AcmgEvidence.builder()
                 .add(AcmgCriterion.PVS1)
                 .add(AcmgCriterion.PM2)
-                .add(AcmgCriterion.PP3)
+                .add(AcmgCriterion.PP3, AcmgCriterion.Evidence.STRONG)
                 .add(AcmgCriterion.PP4)
                 .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.STRONG)
                 .build();
@@ -156,7 +158,7 @@ class AcmgAssignmentCalculatorTest {
 
         AcmgEvidence acmgEvidence = AcmgEvidence.builder()
                 .add(AcmgCriterion.BA1)
-                .add(AcmgCriterion.BP4)
+                .add(AcmgCriterion.BP4, AcmgCriterion.Evidence.VERY_STRONG)
                 .build();
         AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.BENIGN);
 
