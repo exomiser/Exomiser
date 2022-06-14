@@ -41,6 +41,7 @@ public final class GeneScore implements Comparable<GeneScore> {
 
     private final GeneIdentifier geneIdentifier;
     private final ModeOfInheritance modeOfInheritance;
+    private final double pValue;
     private final double combinedScore;
     private final double phenotypeScore;
     private final double variantScore;
@@ -51,6 +52,7 @@ public final class GeneScore implements Comparable<GeneScore> {
     private GeneScore(Builder builder) {
         this.geneIdentifier = builder.geneIdentifier;
         this.modeOfInheritance = builder.modeOfInheritance;
+        this.pValue = builder.pValue;
         this.combinedScore = builder.combinedScore;
         this.phenotypeScore = builder.phenotypeScore;
         this.variantScore = builder.variantScore;
@@ -65,6 +67,10 @@ public final class GeneScore implements Comparable<GeneScore> {
 
     public ModeOfInheritance getModeOfInheritance() {
         return modeOfInheritance;
+    }
+
+    public double pValue() {
+        return pValue;
     }
 
     public double getCombinedScore() {
@@ -196,6 +202,7 @@ public final class GeneScore implements Comparable<GeneScore> {
                 ", combinedScore=" + combinedScore +
                 ", phenotypeScore=" + phenotypeScore +
                 ", variantScore=" + variantScore +
+                ", pValue=" + pValue +
                 ", contributingVariants=" + contributingVariants +
                 '}';
     }
@@ -211,6 +218,7 @@ public final class GeneScore implements Comparable<GeneScore> {
     public static class Builder {
         private GeneIdentifier geneIdentifier = GeneIdentifier.builder().build();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
+        private double pValue = 1.0;
         private double combinedScore;
         private double phenotypeScore;
         private double variantScore;
@@ -225,6 +233,11 @@ public final class GeneScore implements Comparable<GeneScore> {
 
         public Builder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
             this.modeOfInheritance = modeOfInheritance;
+            return this;
+        }
+
+        public Builder pValue(double pValue) {
+            this.pValue = pValue;
             return this;
         }
 

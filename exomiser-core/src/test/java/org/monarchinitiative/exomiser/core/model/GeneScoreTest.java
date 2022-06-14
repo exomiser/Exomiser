@@ -69,6 +69,14 @@ public class GeneScoreTest {
     }
 
     @Test
+    public void getPvalue() {
+        GeneScore instance = GeneScore.builder()
+                .pValue(0.00001d)
+                .build();
+        assertThat(instance.pValue(), equalTo(0.00001d));
+    }
+
+    @Test
     public void getPhenotypeScore() {
         GeneScore instance = GeneScore.builder()
                 .phenotypeScore(1d)
@@ -158,6 +166,6 @@ public class GeneScoreTest {
                 .variantScore(1)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
-        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, contributingVariants=[]}"));
+        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, pValue=1.0, contributingVariants=[]}"));
     }
 }

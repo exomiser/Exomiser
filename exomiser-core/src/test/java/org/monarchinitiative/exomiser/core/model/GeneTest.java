@@ -729,4 +729,25 @@ public class GeneTest {
         instance.addPriorityResult(priorityResult);
         assertThat(instance.getAssociatedDiseases(), equalTo(List.of(pfeifferSyndrome)));
     }
+
+    @Test
+    public void testGetCompatibleGeneScores() {
+        Gene instance = TestFactory.newGeneFGFR2();
+        // Hmm... this is a bit of a WFT - why does this need to be set rather than computed from the variants?
+        //  ... because it gets set once by the InheritanceModeAnalyser after all the variants have been filtered
+        instance.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(instance.getCompatibleGeneScores().isEmpty(), is(true));
+
+        GeneScore adGeneScore = GeneScore.builder()
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .phenotypeScore(0.5d)
+                .variantScore(0.5d)
+                .combinedScore(0.5d)
+                .build();
+
+        instance.addGeneScore(adGeneScore);
+
+        assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(adGeneScore)));
+    }
 }

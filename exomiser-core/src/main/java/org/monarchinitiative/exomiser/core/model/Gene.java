@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -396,6 +397,10 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     public double getCombinedScore() {
         return topGeneScore.getCombinedScore();
+    }
+
+    public double pValue() {
+        return topGeneScore.pValue();
     }
 
     /**
