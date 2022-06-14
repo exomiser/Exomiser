@@ -77,6 +77,11 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     // https://www.ncbi.nlm.nih.gov/clinvar/variation/464/ - check in ClinVar VCF if there is MOI information for a classification
     public AcmgEvidence assignVariantAcmgEvidence(VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
+        // try strict ACMG assignments only if there are known disease-gene associations
+        if (knownDiseases.isEmpty()) {
+            return AcmgEvidence.empty();
+        }
+
         AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
 
         boolean hasCompatibleDiseaseMatches = !compatibleDiseaseMatches.isEmpty();

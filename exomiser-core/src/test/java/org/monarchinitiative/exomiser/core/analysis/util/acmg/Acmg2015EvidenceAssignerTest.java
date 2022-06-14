@@ -189,10 +189,25 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. missing frequency data - will trigger PM2
                 .frequencyData(FrequencyData.of())
                 .build();
+        // Requires variant to be in gene associated with a disorder in order that any ACMG criteria can be applied
+        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_RECESSIVE).diseaseType(Disease.DiseaseType.DISEASE).build();
+
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PM2).build()));
+    }
+
+    @Test
+    void testVariantMustBeInGeneWithKnownDiseaseAssociationForAcmgCriteriaToBeAssigned() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12345, "A", "G")
+                // n.b. missing frequency data - should trigger PM2
+                .frequencyData(FrequencyData.of())
+                .build();
+        // Requires variant to be in gene associated with a disorder in order that any ACMG criteria can be applied
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
 
-        AcmgEvidence expected = AcmgEvidence.builder().add(AcmgCriterion.PM2).build();
-        assertThat(acmgEvidence, equalTo(expected));
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
     }
 
     @Test
