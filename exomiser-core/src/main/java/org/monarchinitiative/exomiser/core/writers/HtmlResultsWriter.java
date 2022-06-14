@@ -55,6 +55,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 
@@ -134,6 +135,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         // One of UCSC, ENSEMBL or REFSEQ
         context.setVariable("transcriptDb", "ENSEMBL");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
+        context.setVariable("pValueFormatter", new DecimalFormat("0.0E0"));
         return context;
     }
 
