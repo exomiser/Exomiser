@@ -27,9 +27,11 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -50,5 +52,30 @@ public interface GeneScorer {
         });
         Collections.sort(genes);
         return genes;
+    }
+
+    static double calculateCombinedScore(double variantScore, double priorityScore, Set<PriorityType> prioritiesRun) {
+        if (variantScore == 0.0 && priorityScore == 0.0) {
+            return 0.0;
+        } else if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
+            return hiPhiveLogitScore(variantScore, priorityScore);
+        } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
+            return walkerLogitScore(variantScore, priorityScore);
+        } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
+            return phenixLogitScore(variantScore, priorityScore);
+        }
+        return (priorityScore + variantScore) / 2.0;
+    }
+
+    private static double hiPhiveLogitScore(double variantScore, double priorityScore) {
+        return 1.0 / (1.0 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
+    }
+
+    private static double walkerLogitScore(double variantScore, double priorityScore) {
+        return 1.0 / (1.0 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * variantScore)));
+    }
+
+    private static double phenixLogitScore(double variantScore, double priorityScore) {
+        return 1.0 / (1.0 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * variantScore)));
     }
 }

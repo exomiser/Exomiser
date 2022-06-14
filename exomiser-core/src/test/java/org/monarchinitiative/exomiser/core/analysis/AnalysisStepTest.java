@@ -101,4 +101,9 @@ public class AnalysisStepTest {
         assertThat(OMIM_PRIORITY.isVariantFilter(), is(false));
     }
 
+    @Test
+    public void testIsGenePrioritiser() {
+        assertThat(OMIM_PRIORITY.isGenePrioritiser(), is(true));
+    }
+
 }

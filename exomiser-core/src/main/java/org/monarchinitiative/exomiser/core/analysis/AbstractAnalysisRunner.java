@@ -60,7 +60,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
-    public AbstractAnalysisRunner(GenomeAnalysisService genomeAnalysisService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+    protected AbstractAnalysisRunner(GenomeAnalysisService genomeAnalysisService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.genomeAnalysisService = genomeAnalysisService;
 
         this.variantFilterRunner = variantFilterRunner;
@@ -143,7 +143,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Scoring genes");
         List<Gene> genes;
         List<VariantEvaluation> variants;
-        GeneScorer geneScorer = new RawScoreGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator);
+        // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
+        var prioritiser = analysis.getMainPrioritiser();
+        var combinedScorePvalueCalculator = prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(10_000, 50_000) : CombinedScorePvalueCalculator.of(10_000, prioritiser, sample.getHpoIds(), genomeAnalysisService.getKnownGenes());
+        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
         if (variantsLoaded) {
             genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes));
             variants = getFinalVariantList(variantEvaluations);
@@ -185,16 +188,20 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         List<VariantEvaluation> filteredVariants;
         VariantLogger variantLogger = new VariantLogger();
+
+        // this can be done using parallel which dramatically reduces runtime at the expense of RAM and
+        //  inability to scale past one job running on one machine
         try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-            filteredVariants = variantStream
-                    .peek(variantLogger.logLoadedAndPassedVariants())
-                    .filter(isObservedInProband(probandIdentifier))
-                    .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
-                    .map(flagWhiteListedVariants())
-                    .filter(isAssociatedWithKnownGene(allGenes))
-                    .filter(runVariantFilters(variantFilters, filterStats))
-                    .peek(variantLogger.countPassedVariant())
-                    .collect(toList());
+                    filteredVariants = variantStream
+//                        .parallel()
+                        .peek(variantLogger.logLoadedAndPassedVariants())
+                        .filter(isObservedInProband(probandIdentifier))
+                        .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
+                        .map(flagWhiteListedVariants())
+                        .filter(isAssociatedWithKnownGene(allGenes))
+                        .filter(runVariantFilters(variantFilters, filterStats))
+                        .peek(variantLogger.countPassedVariant())
+                        .collect(toList());
         }
         variantLogger.logResults();
         return filteredVariants;

@@ -48,6 +48,11 @@ public interface AnalysisStep {
     }
 
     @JsonIgnore
+    default boolean isGenePrioritiser() {
+        return this instanceof Prioritiser;
+    }
+
+    @JsonIgnore
     default boolean isOnlyGeneDependent() {
         if (isInheritanceModeDependent()) {
             //note that both InheritanceFilter and OMIMPriority operate solely on genes, yet have a dependence on filtered variants

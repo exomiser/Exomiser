@@ -351,6 +351,19 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return List.copyOf(geneScoreMap.values());
     }
 
+    /**
+     * Returns a list of GeneScores with inheritance modes compatible with the filtered variants compatible modes of
+     * inheritance. This will only return a (potentially) populated list once a GeneScorer has been applied to the Gene
+     * @since 13.1.0
+     * @return A list of {@link GeneScore} with a compatible mode of inheritance.
+     */
+    public List<GeneScore> getCompatibleGeneScores() {
+        return this.geneScoreMap.entrySet().stream()
+                .filter(entry -> this.inheritanceModes.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toUnmodifiableList());
+    }
+
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         return geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.builder()
