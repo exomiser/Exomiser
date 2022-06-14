@@ -25,14 +25,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence;
 
 import javax.annotation.Nullable;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class AcmgEvidence {
 
-    private static final AcmgEvidence EMPTY = new AcmgEvidence(new EnumMap<>(AcmgCriterion.class));
+    private static final AcmgEvidence EMPTY = new AcmgEvidence(Map.of());
 
     @JsonProperty
     private final Map<AcmgCriterion, Evidence> evidence;
@@ -47,7 +44,7 @@ public class AcmgEvidence {
     private int bp = 0;
 
     private AcmgEvidence(Map<AcmgCriterion, Evidence> evidence) {
-        this.evidence = evidence == null || evidence.isEmpty() ? new EnumMap<>(AcmgCriterion.class) : new EnumMap<>(evidence);
+        this.evidence = evidence == null || evidence.isEmpty() ? Map.of() : Collections.unmodifiableMap(new EnumMap<>(evidence));
         countCriteriaEvidence(this.evidence);
     }
 
@@ -118,6 +115,10 @@ public class AcmgEvidence {
 
     public boolean isEmpty() {
         return evidence.isEmpty();
+    }
+
+    public Map<AcmgCriterion, Evidence> evidence() {
+        return evidence;
     }
 
     public int pvs() {

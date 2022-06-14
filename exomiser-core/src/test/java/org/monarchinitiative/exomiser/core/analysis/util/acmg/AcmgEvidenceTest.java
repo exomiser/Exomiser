@@ -209,4 +209,13 @@ public class AcmgEvidenceTest {
         assertThat(instance.bs(), equalTo(0));
         assertThat(instance.bp(), equalTo(0));
     }
+
+    @Test
+    void testEvidence() {
+        AcmgEvidence instance = AcmgEvidence.builder()
+                .add(PVS1)
+                .add(PM1, Evidence.VERY_STRONG)
+                .build();
+        assertThat(instance.evidence(), equalTo(Map.of(PVS1, PVS1.evidence(), PM1, Evidence.VERY_STRONG)));
+    }
 }
