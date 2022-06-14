@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
@@ -99,7 +100,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
         // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-        assignPM2(acmgEvidenceBuilder, frequencyData, modeOfInheritance, compatibleDiseaseMatches);
+        assignPM2(acmgEvidenceBuilder, frequencyData);
         // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
         assignBA1(acmgEvidenceBuilder, frequencyData);
 
@@ -160,8 +161,26 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                 || compatibleWithDominant(modeOfInheritance) && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
         )
         ) {
-            acmgEvidenceBuilder.add(PVS1);
+            if (variantEvaluation.hasTranscriptAnnotations()) {
+                TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
+                if (predictedToLeadToNmd(transcriptAnnotation)) {
+                    acmgEvidenceBuilder.add(PVS1);
+                } else {
+                    // Not predicted to lead to NMD? Downgrade to STRONG
+                    acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
+                }
+            } else {
+                // shouldn't happen that there are no transcript annotations, but just in case...
+                acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
+            }
         }
+    }
+
+    private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
+        // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
+        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
+        boolean isSingleExonTranscript = transcriptAnnotation.getRankTotal() == 1;
+        return transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON && (notInLastExon || isSingleExonTranscript);
     }
 
     private boolean compatibleWithRecessive(ModeOfInheritance modeOfInheritance) {

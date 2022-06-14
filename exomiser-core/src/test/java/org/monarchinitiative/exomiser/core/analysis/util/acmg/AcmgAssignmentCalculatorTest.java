@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
-import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
@@ -59,9 +58,19 @@ class AcmgAssignmentCalculatorTest {
     @Test
     void calculatePathAcmgAssignments() {
         // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        TranscriptAnnotation startLostAnnotation = TranscriptAnnotation.builder()
+                .geneSymbol("PTEN")
+                .accession("ENST00000371953.7")
+                .variantEffect(VariantEffect.START_LOST)
+                .rankType(TranscriptAnnotation.RankType.EXON)
+                .rank(1)
+                .rankTotal(9)
+                .build();
+
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
                 .variantEffect(VariantEffect.START_LOST)
+                .annotations(List.of(startLostAnnotation))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .pathogenicityData(PathogenicityData.of(ClinVarData.builder()
                                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build(),

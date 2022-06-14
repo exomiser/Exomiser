@@ -65,7 +65,7 @@ class Acmg2015EvidenceAssignerTest {
         // requires variant to be on a transcript predicted to undergo NMD in a LoF-intolerant gene for full PVS1
         TranscriptAnnotation transcriptAnnotation = TranscriptAnnotation.builder()
                 .variantEffect(VariantEffect.START_LOST)
-                .rankType(AnnotationLocation.RankType.EXON)
+                .rankType(TranscriptAnnotation.RankType.EXON)
                 .rank(1)
                 .rankTotal(5)
                 .build();
@@ -105,10 +105,17 @@ class Acmg2015EvidenceAssignerTest {
     void testAssignsPVS1(Pedigree.Individual.Sex probandSex, InheritanceMode diseaseInheritanceMode, ModeOfInheritance modeOfInheritance, boolean expectPvs1) {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", probandSex));
         // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
+        TranscriptAnnotation transcriptAnnotation = TranscriptAnnotation.builder()
+                .variantEffect(VariantEffect.START_LOST)
+                .rankType(TranscriptAnnotation.RankType.EXON)
+                .rank(1)
+                .rankTotal(5)
+                .build();
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.START_LOST)
+                .annotations(List.of(transcriptAnnotation))
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(diseaseInheritanceMode).diseaseType(Disease.DiseaseType.DISEASE).build();
         List<Disease> knownDiseases = diseaseInheritanceMode.isCompatibleWith(modeOfInheritance) ? List.of(cowdenSyndrome) : List.of();
@@ -299,11 +306,22 @@ class Acmg2015EvidenceAssignerTest {
     }
 
     @Test
-    void testAssignsPM4_NotAssignedToPVS1() {
+    void testAssignsPM4_NotAssignedPM4WhenPVS1Present() {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+
+        TranscriptAnnotation startLostAnnotation = TranscriptAnnotation.builder()
+                .geneSymbol("PTEN")
+                .accession("ENST00000371953.7")
+                .variantEffect(VariantEffect.START_LOST)
+                .rankType(TranscriptAnnotation.RankType.EXON)
+                .rank(1)
+                .rankTotal(9)
+                .build();
+
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 // haploinsufficient gene
                 .geneSymbol("PTEN")
+                .annotations(List.of(startLostAnnotation)) // prevent PM4 as PVS1 already triggered
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.STOP_LOST)
                 .build();
