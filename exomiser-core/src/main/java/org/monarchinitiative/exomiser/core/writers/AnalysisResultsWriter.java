@@ -65,6 +65,19 @@ public class AnalysisResultsWriter {
             }
         }
 
+        // eventually most of this will be superfluous and only the analysisResults and outputSettings will be required,
+        // here we're using these output formats twice - once for the new unified output (here) and then the original
+        // multiple-file output later
+        if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_GENE)) {
+            ResultsWriter resultsWriter = new TsvGeneAllMoiResultsWriter();
+            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        }
+
+        if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_VARIANT)) {
+            ResultsWriter resultsWriter = new TsvVariantAllMoiResultsWriter();
+            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        }
+
         Analysis analysis = analysisResults.getAnalysis();
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
         if (inheritanceModeOptions.isEmpty()) {
