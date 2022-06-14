@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.*;
+import de.charite.compbio.jannovar.annotation.AnnotationLocation.RankType;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.hgvs.AminoAcidCode;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
@@ -184,11 +185,23 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
                 .hgvsCdna(annotation.getCDSNTChangeStr())
                 .hgvsProtein(annotation.getProteinChangeStr(AminoAcidCode.THREE_LETTER))
-                .rankType(annoLoc == null ? AnnotationLocation.RankType.UNDEFINED : annoLoc.getRankType())
+                .rankType(annoLoc == null ? TranscriptAnnotation.RankType.UNDEFINED : getRankType(annoLoc.getRankType()))
                 .rankTotal(annoLoc == null ? -1 : annoLoc.getTotalRank())
                 .rank(annoLoc == null ? -1 : annoLoc.getRank() + 1)
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))
                 .build();
+    }
+
+    private TranscriptAnnotation.RankType getRankType(RankType annoLocRankType) {
+        switch (annoLocRankType) {
+            case EXON:
+                return TranscriptAnnotation.RankType.EXON;
+            case INTRON:
+                return TranscriptAnnotation.RankType.INTRON;
+            case UNDEFINED:
+                return TranscriptAnnotation.RankType.UNDEFINED;
+        }
+        return TranscriptAnnotation.RankType.UNDEFINED;
     }
 
     private VariantEffect getVariantEffectOrDefault(VariantEffect annotatedEffect, VariantEffect defaultEffect) {

@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 
@@ -103,12 +102,12 @@ public class TranscriptAnnotationTest {
     @Test
     public void testExonRank() {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
-                .rankType(AnnotationLocation.RankType.EXON)
+                .rankType(TranscriptAnnotation.RankType.EXON)
                 .rank(2)
                 .rankTotal(5)
                 .build();
         // i.e. Exon 2 of 5
-        assertThat(annotation.getRankType(), equalTo(AnnotationLocation.RankType.EXON));
+        assertThat(annotation.getRankType(), equalTo(TranscriptAnnotation.RankType.EXON));
         assertThat(annotation.getRank(), equalTo(2));
         assertThat(annotation.getRankTotal(), equalTo(5));
     }

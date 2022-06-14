@@ -25,12 +25,14 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
-import static de.charite.compbio.jannovar.annotation.AnnotationLocation.*;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class TranscriptAnnotation {
+
+    public enum RankType {
+        EXON, INTRON, UNDEFINED
+    }
 
     private static final TranscriptAnnotation EMPTY = TranscriptAnnotation.builder().build();
 
