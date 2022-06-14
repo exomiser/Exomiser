@@ -56,7 +56,7 @@ public class TabixReaderAdaptor implements TabixDataSource {
      * DATA BEING RETURNED DUE TO CHROMOSOME NAMING DIFFERENCES.
      */
     @Override
-    public TabixReader.Iterator query(String query) {
+    public synchronized TabixReader.Iterator query(String query) {
         return tabixReader.query(query);
     }
 
@@ -65,7 +65,7 @@ public class TabixReaderAdaptor implements TabixDataSource {
      * the tabix file. Requires fully-closed start and end coordinates.
      */
     @Override
-    public TabixReader.Iterator query(String chromosome, int start, int end) {
+    public synchronized TabixReader.Iterator query(String chromosome, int start, int end) {
         String chr = chrIndex.get(chromosome);
         return tabixReader.query(tabixReader.chr2tid(chr), start - 1, end);
     }
