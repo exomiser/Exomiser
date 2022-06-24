@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -71,7 +70,7 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
             .withQuote(null)
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
-            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
+            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
     private final DecimalFormat formatter = new DecimalFormat(".####");
 
     public TsvVariantAllMoiResultsWriter() {
@@ -108,20 +107,18 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         List<Gene> filteredGenesForOutput = outputSettings.filterGenesForOutput(analysisResults.getGenes());
         Map<GeneIdentifier, Gene> genesById = filteredGenesForOutput.stream().collect(Collectors.toMap(Gene::getGeneIdentifier, Function.identity()));
         List<GeneScore> rankedGeneScores = this.calculateRankedGeneScores(outputSettings, filteredGenesForOutput);
-
+        boolean contributingVariantsOnly = outputSettings.outputContributingVariantsOnly();
         int rank = 0;
         for (GeneScore geneScore : rankedGeneScores) {
             ++rank;
-            logger.debug("{} {} {} {} {} {}", rank, geneScore.getGeneIdentifier().getGeneSymbol(), geneScore.getModeOfInheritance().getAbbreviation(), geneScore.getCombinedScore(), geneScore.getPhenotypeScore(), geneScore.getVariantScore());
+            ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
+            logger.debug("{} {} {} {} {} {}", rank, geneScore.getGeneIdentifier().getGeneSymbol(), modeOfInheritance.getAbbreviation(), geneScore.getCombinedScore(), geneScore.getPhenotypeScore(), geneScore.getVariantScore());
+            // a GeneScore only contains the contributing variants so can't be used directly to get the variants involved, hence the requirement for the Gene.
             List<VariantEvaluation> rankedVariants = genesById.get(geneScore.getGeneIdentifier())
                     .getVariantEvaluations().stream()
-                    .filter(variantEvaluation -> {
-                        if (geneScore.getModeOfInheritance() == ModeOfInheritance.ANY) {
-                            return !variantEvaluation.passedFilters();
-                        } else {
-                            return variantEvaluation.isCompatibleWith(geneScore.getModeOfInheritance());
-                        }
-                    })
+                    .filter(variantEvaluation -> !contributingVariantsOnly || variantEvaluation.contributesToGeneScoreUnderMode(modeOfInheritance))
+                    .filter(variantEvaluation -> variantEvaluation.isCompatibleWith(modeOfInheritance))
+                    .filter(variantEvaluation -> (geneScore.getCombinedScore() == 0) != variantEvaluation.passedFilters())
                     .sorted(VariantEvaluation::compareByRank)
                     .collect(Collectors.toList());
 
@@ -136,16 +133,22 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
     private List<GeneScore> calculateRankedGeneScores(OutputSettings outputSettings, List<Gene> filteredGenesForOutput) {
         Map<Boolean, List<GeneScore>> rankedAndUnrankedGeneScores = filteredGenesForOutput.stream()
                 .flatMap(gene -> {
-                    List<GeneScore> compatibleGeneScores = gene.getCompatibleGeneScores();
+                    List<GeneScore> compatibleGeneScores = new ArrayList<>(gene.getCompatibleGeneScores());
                     if (gene.getVariantEvaluations().stream().anyMatch(ve -> ve.getFilterStatus() == FilterStatus.FAILED)) {
-                        GeneScore geneScore = GeneScore.builder().geneIdentifier(gene.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY).combinedScore(gene.getCombinedScore()).phenotypeScore(gene.getPriorityScore()).variantScore(gene.getVariantScore()).build();
-                        return Stream.of(geneScore);
-                    } else {
-                        return compatibleGeneScores.stream();
+                        // create a failed gene score placeholder for when run in FULL mode
+                        GeneScore geneScore = GeneScore.builder()
+                                .geneIdentifier(gene.getGeneIdentifier())
+                                .modeOfInheritance(ModeOfInheritance.ANY)
+                                .combinedScore(0)
+                                .phenotypeScore(gene.getPriorityScore())
+                                .variantScore(0)
+                                .build();
+                        compatibleGeneScores.add(geneScore);
                     }
+                    return compatibleGeneScores.stream();
                 })
                 .sorted()
-                .collect(Collectors.partitioningBy(o -> o.getModeOfInheritance() != ModeOfInheritance.ANY));
+                .collect(Collectors.partitioningBy(o -> o.getCombinedScore() != 0));
         if (outputSettings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
             return rankedAndUnrankedGeneScores.get(true);
@@ -161,7 +164,7 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         List<Object> fields = new ArrayList<>();
         GeneIdentifier geneIdentifier = geneScore.getGeneIdentifier();
         ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
-        String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "NA" : modeOfInheritance.getAbbreviation();
+        String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
         List<AcmgAssignment> acmgAssignments = geneScore.getAcmgAssignments();
         Optional<AcmgAssignment> assignment = acmgAssignments.stream().filter(acmgAssignment -> acmgAssignment.variantEvaluation().equals(ve)).findFirst();
         fields.add(rank);
@@ -170,6 +173,7 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         fields.add(geneIdentifier.getGeneSymbol());
         fields.add(geneIdentifier.getEntrezId());
         fields.add(moiAbbreviation);
+        fields.add(geneScore.pValue());
         fields.add(geneScore.getCombinedScore());
         fields.add(geneScore.getPhenotypeScore());
         fields.add(geneScore.getVariantScore());
@@ -233,22 +237,6 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         return predictedPathogenicityScores.stream()
                 .map(pathScore -> pathScore.getSource() + "=" + pathScore.getScore())
                 .collect(Collectors.joining(","));
-    }
-
-    private String dotIfEmpty(String id) {
-        return id.isEmpty() ? "." : id;
-    }
-
-    private Object dotIfNull(Object o) {
-        return o == null ? "." : o;
-    }
-
-    private Object dotIfFrequencyNull(Frequency frequency) {
-        return frequency == null ? "." : frequency.getFrequency();
-    }
-
-    private Object getPathScore(PathogenicityScore score) {
-        return score == null ? "." : score.getScore();
     }
 
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
