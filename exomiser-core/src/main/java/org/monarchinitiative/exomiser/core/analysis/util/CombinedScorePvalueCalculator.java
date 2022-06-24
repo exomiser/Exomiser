@@ -65,6 +65,9 @@ public class CombinedScorePvalueCalculator {
     }
 
     double calculatePvalueFromCombinedScore(double combinedScore) {
+        if (combinedScore == 0) {
+            return 1d;
+        }
         int numHigherScores = 0;
         for (int i = 0; i < bootStrapNum; ++i) {
             int index = random.nextInt(phenoScoreCacheSize);

@@ -49,4 +49,10 @@ public class CombinedScorePvalueCalculatorTest {
         var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, phenotypicFeatures, genes);
         assertThat(instance.calculatePvalueFromCombinedScore(0.89), greaterThan(0.0));
     }
+
+    @Test
+    void testZeroValueCombinedScoreHasPvalueOfOne() {
+        var instance = CombinedScorePvalueCalculator.withRandomScores(100_000, 50_000);
+        assertThat(instance.calculatePvalueFromCombinedScore(0), equalTo(1.0));
+    }
 }
