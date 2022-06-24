@@ -54,7 +54,7 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
             .withQuote(null)
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
-            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "HUMAN_PHENO_SCORE", "MOUSE_PHENO_SCORE", "FISH_PHENO_SCORE", "WALKER_SCORE", "PHIVE_ALL_SPECIES_SCORE", "OMIM_SCORE", "MATCHES_CANDIDATE_GENE", "HUMAN_PHENO_EVIDENCE", "MOUSE_PHENO_EVIDENCE", "FISH_PHENO_EVIDENCE", "HUMAN_PPI_EVIDENCE", "MOUSE_PPI_EVIDENCE", "FISH_PPI_EVIDENCE");
+            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "HUMAN_PHENO_SCORE", "MOUSE_PHENO_SCORE", "FISH_PHENO_SCORE", "WALKER_SCORE", "PHIVE_ALL_SPECIES_SCORE", "OMIM_SCORE", "MATCHES_CANDIDATE_GENE", "HUMAN_PHENO_EVIDENCE", "MOUSE_PHENO_EVIDENCE", "FISH_PHENO_EVIDENCE", "HUMAN_PPI_EVIDENCE", "MOUSE_PPI_EVIDENCE", "FISH_PPI_EVIDENCE");
     private final NumberFormat decimalFormat;
 
     public TsvGeneAllMoiResultsWriter() {
@@ -69,7 +69,7 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
 
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.format)){
-            writeData(modeOfInheritance, analysisResults, outputSettings, printer);
+            writeData(analysisResults, outputSettings, printer);
         } catch (IOException e) {
             logger.error("Unable to write results to file {}", outFileName, e);
         }
@@ -81,7 +81,7 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         StringBuilder stringBuilder = new StringBuilder();
 
         try (CSVPrinter printer = new CSVPrinter(stringBuilder, this.format)) {
-            this.writeData(modeOfInheritance, analysisResults, outputSettings, printer);
+            this.writeData(analysisResults, outputSettings, printer);
         } catch (IOException e) {
             logger.error("Unable to write results to string {}", stringBuilder, e);
         }
@@ -89,7 +89,7 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         return stringBuilder.toString();
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings, CSVPrinter printer) throws IOException {
+    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, CSVPrinter printer) throws IOException {
         List<Gene> filteredGenesForOutput = outputSettings.filterGenesForOutput(analysisResults.getGenes());
         Map<GeneIdentifier, Gene> genesById = filteredGenesForOutput.stream()
                 .collect(Collectors.toMap(Gene::getGeneIdentifier, Function.identity()));
@@ -138,13 +138,14 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         }
         List<String> values = new ArrayList<>(16);
         ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
-        String moiAbbreviation = modeOfInheritance.getAbbreviation();
+        String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
         values.add(Integer.toString(rank));
         String geneSymbol = gene.getGeneSymbol();
         values.add(geneSymbol + "_" + moiAbbreviation);
         values.add(geneSymbol);
         values.add(Integer.toString(gene.getEntrezGeneID()));
         values.add(moiAbbreviation);
+        values.add(this.decimalFormat.format(geneScore.pValue()));
         values.add(this.decimalFormat.format(geneScore.getCombinedScore()));
         values.add(this.decimalFormat.format(geneScore.getPhenotypeScore()));
         values.add(this.decimalFormat.format(geneScore.getVariantScore()));

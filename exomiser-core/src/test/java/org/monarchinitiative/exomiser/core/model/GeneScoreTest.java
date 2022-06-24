@@ -29,7 +29,10 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -149,12 +152,14 @@ public class GeneScoreTest {
         GeneScore four = GeneScore.builder().combinedScore(0.25).geneIdentifier(second).build();
         GeneScore five = GeneScore.builder().combinedScore(0.25).geneIdentifier(third).build();
         GeneScore six = GeneScore.builder().combinedScore(0.125).geneIdentifier(third).build();
+        GeneScore seven = GeneScore.builder().combinedScore(0.0).phenotypeScore(0.6).geneIdentifier(second).build();
+        GeneScore eight = GeneScore.builder().combinedScore(0.0).phenotypeScore(0.5).geneIdentifier(first).build();
 
-        List<GeneScore> geneScores = Arrays.asList(two, three, six, one, five, four);
+        List<GeneScore> geneScores = Stream.of(two, three, six, one, five, four, eight, seven)
+                .sorted()
+                .collect(Collectors.toUnmodifiableList());
 
-        geneScores.sort(GeneScore::compareTo);
-
-        assertThat(geneScores, equalTo(List.of(one, two, three, four, five, six)));
+        assertThat(geneScores, equalTo(List.of(one, two, three, four, five, six, seven, eight)));
     }
 
     @Test

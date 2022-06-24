@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -153,27 +154,30 @@ public final class GeneScore implements Comparable<GeneScore> {
 
     /**
      * Compares two specified {@code GeneScore} objects. The natural ordering of these objects is the reverse numerical
-     * ordering of their {@code combinedScore} or if this value is equal to 0, the natural order of their {@code GeneSymbol}.
+     * ordering of their {@code combinedScore}, then reverse numerical ordering of {@code phenotypeScore}
+     * or if this value is equal to 0, the natural order of their {@code GeneSymbol}.
      *
      * @param s1 the fist score to be compared.
      * @param s2 the second score to be compared.
      * @return  a value less than {@code 0} if this {@code s1.combinedScore} is numerically greater than
      *          {@code s2.combinedScore}; and a value greater than {@code 0} if {@code s1.combinedScore} is numerically
      *          less than {@code s2.combinedScore}. Should {@code s1.combinedScore} be numerically equal to
-     *          {@code s2.combinedScore} the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
+     *          {@code s2.combinedScore} the scores will be compared reverse order of phenotypeScore or if equal
+     *          the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
      * @throws NullPointerException if an argument is null
      */
     public static int compare(GeneScore s1, GeneScore s2) {
-        double s1CombinedScore = s1.getCombinedScore();
-        double s2CombinedScore = s2.getCombinedScore();
-        if (s1CombinedScore < s2CombinedScore) {
-            return 1;
+        int result;
+        // n.b. these are *reversed* compared to their natural order
+        result = Double.compare(s2.combinedScore, s1.combinedScore);
+        if (result == 0) {
+            result = Double.compare(s2.phenotypeScore, s1.phenotypeScore);
         }
-        if (s1CombinedScore > s2CombinedScore) {
-            return -1;
+        if (result == 0) {
+            //if the scores are equal then return an alphabetised list based on gene symbol
+            result = GeneIdentifier.compare(s1.getGeneIdentifier(), s2.getGeneIdentifier());
         }
-        //if the scores are equal then return an alphabetised list based on gene symbol
-        return GeneIdentifier.compare(s1.getGeneIdentifier(), s2.getGeneIdentifier());
+        return result;
     }
 
     @Override
