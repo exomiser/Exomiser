@@ -311,7 +311,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         }
 
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : ppiEvidence) {
-            String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + geneModelPhenotypeMatch
+            String stringDbLink = "http://version10.string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + geneModelPhenotypeMatch
                     .getHumanGeneSymbol() + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
 
             switch (geneModelPhenotypeMatch.getOrganism()) {
