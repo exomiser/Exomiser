@@ -21,24 +21,11 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
@@ -47,40 +34,49 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
+
 public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneAllMoiResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
-    private final CSVFormat format = CSVFormat.newFormat('\t')
+    private final CSVFormat csvFormat = CSVFormat.newFormat('\t')
             .withQuote(null)
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
             .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "HUMAN_PHENO_SCORE", "MOUSE_PHENO_SCORE", "FISH_PHENO_SCORE", "WALKER_SCORE", "PHIVE_ALL_SPECIES_SCORE", "OMIM_SCORE", "MATCHES_CANDIDATE_GENE", "HUMAN_PHENO_EVIDENCE", "MOUSE_PHENO_EVIDENCE", "FISH_PHENO_EVIDENCE", "HUMAN_PPI_EVIDENCE", "MOUSE_PPI_EVIDENCE", "FISH_PPI_EVIDENCE");
-    private final NumberFormat decimalFormat;
+
+    private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
     public TsvGeneAllMoiResultsWriter() {
-        this.decimalFormat = NumberFormat.getInstance(Locale.UK);
-        this.decimalFormat.setMinimumFractionDigits(4);
-        this.decimalFormat.setMaximumFractionDigits(4);
+        Locale.setDefault(Locale.UK);
     }
 
     public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
         String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT, ModeOfInheritance.ANY);
-        Path outFile = Paths.get(outFileName);
+        Path outFile = Path.of(outFileName);
 
-        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.format)){
+        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.csvFormat)){
             writeData(analysisResults, outputSettings, printer);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Unable to write results to file {}", outFileName, e);
         }
 
-        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, ModeOfInheritance.ANY.getAbbreviation(), outFileName);
     }
 
     public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        try (CSVPrinter printer = new CSVPrinter(stringBuilder, this.format)) {
+        try (CSVPrinter printer = new CSVPrinter(stringBuilder, this.csvFormat)) {
             this.writeData(analysisResults, outputSettings, printer);
         } catch (IOException e) {
             logger.error("Unable to write results to string {}", stringBuilder, e);
@@ -89,21 +85,22 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         return stringBuilder.toString();
     }
 
-    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, CSVPrinter printer) throws IOException {
-        List<Gene> filteredGenesForOutput = outputSettings.filterGenesForOutput(analysisResults.getGenes());
-        Map<GeneIdentifier, Gene> genesById = filteredGenesForOutput.stream()
-                .collect(Collectors.toMap(Gene::getGeneIdentifier, Function.identity()));
-        List<GeneScore> rankedGeneScores = filteredGenesForOutput.stream()
-                .flatMap(gene -> gene.getCompatibleGeneScores().stream())
-                .sorted()
-                .collect(Collectors.toUnmodifiableList());
-        int rank = 1;
+    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, CSVPrinter printer) {
+        GeneScoreRanker geneScoreRanker = new GeneScoreRanker(analysisResults, outputSettings);
+        geneScoreRanker.rankedGenes()
+                .map(rankedGene -> makeGeneScoreRecord(rankedGene.rank(), rankedGene.gene(), rankedGene.geneScore()))
+                .forEach(printRecord(printer));
+    }
 
-        for (GeneScore geneScore : rankedGeneScores) {
-            List<String> geneRecord = this.makeGeneScoreRecord(rank++, genesById.get(geneScore.getGeneIdentifier()), geneScore);
-            printer.printRecord(geneRecord);
-        }
-
+    Consumer<Iterable<String>> printRecord(CSVPrinter printer) {
+        return strings -> {
+            try {
+                printer.printRecord(strings);
+            } catch (IOException e) {
+                // cross fingers and swallow?
+                throw new IllegalStateException(e);
+            }
+        };
     }
 
     private List<String> makeGeneScoreRecord(int rank, Gene gene, GeneScore geneScore) {
@@ -145,16 +142,16 @@ public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
         values.add(geneSymbol);
         values.add(Integer.toString(gene.getEntrezGeneID()));
         values.add(moiAbbreviation);
-        values.add(this.decimalFormat.format(geneScore.pValue()));
-        values.add(this.decimalFormat.format(geneScore.getCombinedScore()));
-        values.add(this.decimalFormat.format(geneScore.getPhenotypeScore()));
-        values.add(this.decimalFormat.format(geneScore.getVariantScore()));
-        values.add(this.decimalFormat.format(humanPhenScore));
-        values.add(this.decimalFormat.format(mousePhenScore));
-        values.add(this.decimalFormat.format(fishPhenScore));
-        values.add(this.decimalFormat.format(walkerScore));
-        values.add(this.decimalFormat.format(phiveAllSpeciesScore));
-        values.add(this.decimalFormat.format(omimScore));
+        values.add(decimalFormat.format(geneScore.pValue()));
+        values.add(decimalFormat.format(geneScore.getCombinedScore()));
+        values.add(decimalFormat.format(geneScore.getPhenotypeScore()));
+        values.add(decimalFormat.format(geneScore.getVariantScore()));
+        values.add(decimalFormat.format(humanPhenScore));
+        values.add(decimalFormat.format(mousePhenScore));
+        values.add(decimalFormat.format(fishPhenScore));
+        values.add(decimalFormat.format(walkerScore));
+        values.add(decimalFormat.format(phiveAllSpeciesScore));
+        values.add(decimalFormat.format(omimScore));
         values.add(Integer.toString(matchesCandidateGene));
         values.add(phenoEvidence);
         return values;
