@@ -20,11 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,7 +72,7 @@ class TestGeneFactory {
             .ucscId("uc031uto.3")
             .build();
 
-    private static final List<GeneIdentifier> GENE_IDENTIFIERS = ImmutableList.of(FGFR2_IDENTIFIER, SHH_IDENTIFIER, GNRHR2_IDENTIFIER, RBM8A_IDENTIFIER);
+    private static final List<GeneIdentifier> GENE_IDENTIFIERS = List.of(FGFR2_IDENTIFIER, SHH_IDENTIFIER, GNRHR2_IDENTIFIER, RBM8A_IDENTIFIER);
 
     private TestGeneFactory() {}
 
@@ -93,6 +91,6 @@ class TestGeneFactory {
      * @return a mutable list of newly instantiated Gene instances build from fully formed GeneIdentifiers.
      */
     static List<Gene> buildGenes() {
-        return Arrays.asList(new Gene(FGFR2_IDENTIFIER), new Gene(SHH_IDENTIFIER), new Gene(GNRHR2_IDENTIFIER), new Gene(RBM8A_IDENTIFIER));
+        return List.of(new Gene(FGFR2_IDENTIFIER), new Gene(SHH_IDENTIFIER), new Gene(GNRHR2_IDENTIFIER), new Gene(RBM8A_IDENTIFIER));
     }
 }
