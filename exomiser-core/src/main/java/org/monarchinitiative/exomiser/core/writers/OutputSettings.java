@@ -39,6 +39,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
 
@@ -103,9 +104,7 @@ public class OutputSettings {
      * @since 13.0.0
      */
     public List<Gene> filterGenesForOutput(List<Gene> genes) {
-        return genes.stream()
-                .filter(gene -> gene.getCombinedScore() >= minExomiserGeneScore)
-                .filter(withinNumberOfGenesToShow(numberOfGenesToShow))
+        return applyOutputSettings(genes)
                 .collect(toUnmodifiableList());
     }
 
@@ -118,11 +117,24 @@ public class OutputSettings {
      * @since 13.0.0
      */
     public List<Gene> filterPassedGenesForOutput(List<Gene> genes) {
-        return genes.stream()
+        return applyOutputSettings(genes)
                 .filter(Gene::passedFilters)
-                .filter(gene -> gene.getCombinedScore() >= minExomiserGeneScore)
-                .filter(withinNumberOfGenesToShow(numberOfGenesToShow))
                 .collect(toUnmodifiableList());
+    }
+
+    /**
+     * Filters the input genes for those meeting the criteria defined in the {@link OutputSettings}.
+     * This method DOES NOT filter the contributing variants and will return all genes irrespective of their PASS/FAIL
+     * status.
+     *
+     * @param genes Input list to filter
+     * @return A {@link Stream} of genes meeting the output options criteria.
+     * @since 13.1.0
+     */
+    public Stream<Gene> applyOutputSettings(List<Gene> genes) {
+        return genes.stream()
+                .filter(gene -> gene.getCombinedScore() >= minExomiserGeneScore)
+                .filter(withinNumberOfGenesToShow(numberOfGenesToShow));
     }
 
     private Predicate<Gene> withinNumberOfGenesToShow(int limit) {
