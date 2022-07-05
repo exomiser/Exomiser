@@ -29,6 +29,9 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -56,6 +59,8 @@ public class AnalysisResultsWriter {
 
     public static void writeToFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         logger.debug("Writing results...");
+        createOutputDirectoriesIfNotExists(outputSettings);
+
         Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
         for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
             if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {
@@ -69,28 +74,45 @@ public class AnalysisResultsWriter {
         // here we're using these output formats twice - once for the new unified output (here) and then the original
         // multiple-file output later
         if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_GENE)) {
+            logger.debug("Writing TSV_GENE results");
             ResultsWriter resultsWriter = new TsvGeneAllMoiResultsWriter();
             resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
         }
 
         if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_VARIANT)) {
+            logger.debug("Writing TSV_VARIANT results");
             ResultsWriter resultsWriter = new TsvVariantAllMoiResultsWriter();
+            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        }
+
+        if (outputFormatsForAnyMoi.contains(OutputFormat.VCF)) {
+            logger.debug("Writing VCF results");
+            ResultsWriter resultsWriter = new VcfAllMoiResultsWriter();
             resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
         }
 
         Analysis analysis = analysisResults.getAnalysis();
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
-        if (inheritanceModeOptions.isEmpty()) {
-            writeForInheritanceMode(ModeOfInheritance.ANY, outputFormatsForAnyMoi, analysisResults, outputSettings);
-        } else {
             for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
-                logger.debug("Writing {} results:", modeOfInheritance);
-                // Can't do this in parallel because theses are mutated each time for a different mode here.
-                // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
-                // without interfering with other writes for different modes. Check RAM requirements.
-                // Will only save a few seconds, so is not a rate-limiting step.
-                analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
-                writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysisResults, outputSettings);
+                if (modeOfInheritance != ModeOfInheritance.ANY) {
+                    logger.debug("Writing {} results:", modeOfInheritance);
+                    // Can't do this in parallel because theses are mutated each time for a different mode here.
+                    // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
+                    // without interfering with other writes for different modes. Check RAM requirements.
+                    // Will only save a few seconds, so is not a rate-limiting step.
+                    analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
+                    writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysisResults, outputSettings);
+                }
+            }
+    }
+
+    private static void createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {
+        Path outputDir = ResultsWriterUtils.resolveOutputDir(outputSettings.getOutputPrefix());
+        if (Files.notExists(outputDir)) {
+            try {
+                Files.createDirectories(outputDir);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to create Exomiser output path due to " + e.getMessage());
             }
         }
     }
