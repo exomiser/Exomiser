@@ -61,6 +61,11 @@ public class AnalysisResultsWriter {
         logger.debug("Writing results...");
         createOutputDirectoriesIfNotExists(outputSettings);
 
+        if (outputSettings.getOutputFormats().isEmpty()) {
+            ResultsWriter resultsWriter = new HtmlResultsWriter();
+            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        }
+
         Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
         for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
             if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {

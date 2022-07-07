@@ -87,7 +87,7 @@ public class ResultsWriterUtils {
             baseFileName = "exomiser";
         } else if (baseFileName.isEmpty()) {
             String vcfFileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
-            baseFileName = vcfFileName + "_exomiser";
+            baseFileName = vcfFileName + "-exomiser";
         }
         return resolveOutputDir(outputPrefix).normalize().resolve(baseFileName + moiAbbreviation + '.' + outputFormat.getFileExtension()).toString();
     }

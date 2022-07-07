@@ -190,7 +190,7 @@ class AnalysisResultsWriterTest {
     }
 
     @Test
-    void testWriteToFileDoesNotOutputSingleHtmlFileIfAbsentFromSettings() {
+    void testWriteToFileOutputsSingleHtmlFileIfNoneSpecified() {
         String outputPrefix = tempFile.toString();
 
         OutputSettings settings = OutputSettings.builder()
@@ -203,7 +203,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
-        assertThat(outputPath.toFile().exists(), is(false));
+        assertThat(outputPath.toFile().exists(), is(true));
     }
 
     @Test
