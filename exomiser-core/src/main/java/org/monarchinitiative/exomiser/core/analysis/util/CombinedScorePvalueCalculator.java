@@ -8,46 +8,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CombinedScorePvalueCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(CombinedScorePvalueCalculator.class);
 
-    private static final Random random = new Random();
+    private final int bootStrapValue;
+    private final int numFilteredGenes;
 
-    private final int bootStrapNum;
     private final double[] phenoScoreCache;
     private final int phenoScoreCacheSize;
     private final Set<PriorityType> priorityTypes;
 
-    CombinedScorePvalueCalculator(int bootStrapNum, PriorityType prioritiserType, double[] phenoScoreCache) {
-        this.bootStrapNum = bootStrapNum;
+    CombinedScorePvalueCalculator(int bootStrapValue, PriorityType prioritiserType, double[] phenoScoreCache, int numFilteredGenes) {
+        this.bootStrapValue = bootStrapValue;
         this.phenoScoreCache = phenoScoreCache;
         this.phenoScoreCacheSize = phenoScoreCache.length;
         this.priorityTypes = Set.of(prioritiserType);
+        this.numFilteredGenes = numFilteredGenes;
     }
 
     /**
      * Creates a {@link CombinedScorePvalueCalculator} with a randomly generated set of phenotype scores - the size of
      * which is specified by the user.
-     * @param bootStrapNum number of iterations of the bootstrap process.
+     * @param bootStrapValue number of iterations of the bootstrap process.
      * @param numScores number of scores to randomly generate
      * @return a {@link CombinedScorePvalueCalculator} instance
      * @since 13.1.0
      */
-    public static CombinedScorePvalueCalculator withRandomScores(int bootStrapNum, long numScores) {
+    public static CombinedScorePvalueCalculator withRandomScores(int bootStrapValue, long numScores, int numFilteredGenes) {
         logger.info("Setting up phenotype score cache on {} random scores", numScores);
-        var phenoScoreCache = random.doubles(numScores).toArray();
-        return new CombinedScorePvalueCalculator(bootStrapNum, PriorityType.NONE, phenoScoreCache);
+        var phenoScoreCache = ThreadLocalRandom.current().doubles(numScores).toArray();
+        return new CombinedScorePvalueCalculator(bootStrapValue, PriorityType.NONE, phenoScoreCache, numFilteredGenes);
     }
 
-    public static CombinedScorePvalueCalculator of(int bootStrapNum, Prioritiser<?> prioritiser, List<String> sampleHpoIds, List<Gene> unscoredGenes) {
+    public static CombinedScorePvalueCalculator of(int bootStrapValue, Prioritiser<?> prioritiser, List<String> sampleHpoIds, List<Gene> unscoredGenes, int numFilteredGenes) {
         Objects.requireNonNull(prioritiser);
         Objects.requireNonNull(sampleHpoIds);
         Objects.requireNonNull(unscoredGenes);
         logger.info("Setting up phenotype score cache on {} genes", unscoredGenes.size());
         var phenoScoreCache = generatePhenoScoreCache(prioritiser, sampleHpoIds, unscoredGenes);
-        return new CombinedScorePvalueCalculator(bootStrapNum, prioritiser.getPriorityType(), phenoScoreCache);
+        logger.info("Bootstrapping combined scores for {} filtered genes (bootstrap value = {})", numFilteredGenes, bootStrapValue);
+        return new CombinedScorePvalueCalculator(bootStrapValue, prioritiser.getPriorityType(), phenoScoreCache, numFilteredGenes);
     }
 
     private static double[] generatePhenoScoreCache(Prioritiser<?> prioritiser, List<String> hpoIds, List<Gene> genes) {
@@ -65,20 +68,23 @@ public class CombinedScorePvalueCalculator {
     }
 
     double calculatePvalueFromCombinedScore(double combinedScore) {
-        if (combinedScore == 0) {
+        if (combinedScore == 0 || phenoScoreCacheSize == 0) {
             return 1d;
         }
-        int numHigherScores = 0;
-        for (int i = 0; i < bootStrapNum; ++i) {
-            int index = random.nextInt(phenoScoreCacheSize);
-            double randomPhenoScore = phenoScoreCache[index];
-            double randomVariantScore = random.nextDouble();
-            double randomCombined = GeneScorer.calculateCombinedScore(randomVariantScore, randomPhenoScore, priorityTypes);
-            if (randomCombined > combinedScore) {
-                ++numHigherScores;
+        int numHigherScores = 1;
+        for (int i = 0; i < bootStrapValue; ++i) {
+            for (int j = 0; j < numFilteredGenes; j++) {
+                int index = ThreadLocalRandom.current().nextInt(phenoScoreCacheSize);
+                double randomPhenoScore = phenoScoreCache[index];
+                double randomVariantScore = ThreadLocalRandom.current().nextDouble();
+                double randomCombined = GeneScorer.calculateCombinedScore(randomVariantScore, randomPhenoScore, priorityTypes);
+                if (randomCombined >= combinedScore) {
+                    ++numHigherScores;
+                }
             }
         }
-        return (double) numHigherScores / (double) bootStrapNum;
+
+        return (double) numHigherScores / (bootStrapValue * numFilteredGenes);
     }
 
 }

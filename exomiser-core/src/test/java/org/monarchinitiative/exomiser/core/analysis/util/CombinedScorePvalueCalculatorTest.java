@@ -21,24 +21,24 @@ public class CombinedScorePvalueCalculatorTest {
 
     @Test
     public void testZeroValueInput() {
-        var instance = new CombinedScorePvalueCalculator(0, PriorityType.NONE, new double[]{});
-        assertThat(instance.calculatePvalueFromCombinedScore(0.5), equalTo(Double.NaN));
+        var instance = new CombinedScorePvalueCalculator(0, PriorityType.NONE, new double[]{}, 0);
+        assertThat(instance.calculatePvalueFromCombinedScore(0.5), equalTo(1.0));
     }
 
     @Test
     public void testWithRandomScoresConstructor() {
-        var instance = CombinedScorePvalueCalculator.withRandomScores(100_000, 50_000);
+        var instance = CombinedScorePvalueCalculator.withRandomScores(10_000, 35_000, 250);
 
-        assertThat(instance.calculatePvalueFromCombinedScore(1.0), equalTo(0.0));
+        assertThat(instance.calculatePvalueFromCombinedScore(1.0), closeTo(0.0, 0.001));
         assertThat(instance.calculatePvalueFromCombinedScore(0.5), closeTo(0.5, 0.01));
         assertThat(instance.calculatePvalueFromCombinedScore(0.0), equalTo(1.0));
 
-        assertThat(instance.calculatePvalueFromCombinedScore(0.012), closeTo(instance.calculatePvalueFromCombinedScore(0.012), 0.1));
-        assertThat(instance.calculatePvalueFromCombinedScore(0.112), closeTo(instance.calculatePvalueFromCombinedScore(0.112), 0.1));
-        assertThat(instance.calculatePvalueFromCombinedScore(0.25), closeTo(instance.calculatePvalueFromCombinedScore(0.25), 0.1));
-        assertThat(instance.calculatePvalueFromCombinedScore(0.566), closeTo(instance.calculatePvalueFromCombinedScore(0.566), 0.1));
-        assertThat(instance.calculatePvalueFromCombinedScore(0.756), closeTo(instance.calculatePvalueFromCombinedScore(0.756), 0.1));
-        assertThat(instance.calculatePvalueFromCombinedScore(0.99), closeTo(instance.calculatePvalueFromCombinedScore(0.99), 0.1));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.012), closeTo(instance.calculatePvalueFromCombinedScore(0.012), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.112), closeTo(instance.calculatePvalueFromCombinedScore(0.112), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.25), closeTo(instance.calculatePvalueFromCombinedScore(0.25), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.566), closeTo(instance.calculatePvalueFromCombinedScore(0.566), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.756), closeTo(instance.calculatePvalueFromCombinedScore(0.756), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(0.99), closeTo(instance.calculatePvalueFromCombinedScore(0.99), 0.001));
     }
 
     @Test
@@ -46,13 +46,13 @@ public class CombinedScorePvalueCalculatorTest {
         Prioritiser<?> prioritiser = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.testPriorityService());
         List<String> phenotypicFeatures = TestPriorityServiceFactory.pfeifferSyndromePhenotypes().stream().map(PhenotypeTerm::getId).collect(Collectors.toList());
         List<Gene> genes = TestFactory.buildGenes();
-        var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, phenotypicFeatures, genes);
+        var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, phenotypicFeatures, genes, genes.size());
         assertThat(instance.calculatePvalueFromCombinedScore(0.89), greaterThan(0.0));
     }
 
     @Test
     void testZeroValueCombinedScoreHasPvalueOfOne() {
-        var instance = CombinedScorePvalueCalculator.withRandomScores(100_000, 50_000);
+        var instance = CombinedScorePvalueCalculator.withRandomScores(10_000, 25_000, 200);
         assertThat(instance.calculatePvalueFromCombinedScore(0), equalTo(1.0));
     }
 }
