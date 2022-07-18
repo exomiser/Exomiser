@@ -62,6 +62,6 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
     @Override
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
-        return variants;
+        return List.copyOf(variants);
     }
 }

@@ -69,7 +69,8 @@ public class AnalysisResultsWriter {
         Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
         for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
             if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {
-                writeResultsToFileForMoiWithFormat(ModeOfInheritance.ANY, outputFormat, analysisResults, outputSettings);
+                ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
+                resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
             } else {
                 outputFormatsForAnyMoi.add(outputFormat);
             }
@@ -105,6 +106,7 @@ public class AnalysisResultsWriter {
                     // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
                     // without interfering with other writes for different modes. Check RAM requirements.
                     // Will only save a few seconds, so is not a rate-limiting step.
+                    // TODO: For removal in v14.0 - analysisResults.getGenes() will be immutable in v14.0.0
                     analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
                     writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysisResults, outputSettings);
                 }
