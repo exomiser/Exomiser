@@ -34,15 +34,13 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
@@ -141,19 +139,13 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         logger.info("Scoring genes");
-        List<Gene> genes;
-        List<VariantEvaluation> variants;
+        List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : List.copyOf(allGenes.values());
         // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
-        var prioritiser = analysis.getMainPrioritiser();
-        var combinedScorePvalueCalculator = prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(10_000, 50_000) : CombinedScorePvalueCalculator.of(10_000, prioritiser, sample.getHpoIds(), genomeAnalysisService.getKnownGenes());
+        CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
         GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
-        if (variantsLoaded) {
-            genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes));
-            variants = getFinalVariantList(variantEvaluations);
-        } else {
-            genes = geneScorer.scoreGenes(new ArrayList<>(allGenes.values()));
-            variants = Collections.emptyList();
-        }
+
+        List<Gene> genes = geneScorer.scoreGenes(genesToScore);
+        List<VariantEvaluation> variants = variantsLoaded ? getFinalVariantList(variantEvaluations) : List.of();
 
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
@@ -171,6 +163,13 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         long ms = duration.toMillis();
         logger.info("Finished analysis in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
         return analysisResults;
+    }
+
+    private CombinedScorePvalueCalculator buildCombinedScorePvalueCalculator(Sample sample, Analysis analysis, int numFilteredGenes) {
+        var prioritiser = analysis.getMainPrioritiser();
+        List<Gene> knownGenes = genomeAnalysisService.getKnownGenes();
+        int bootStrapValue = 2_000;
+        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(bootStrapValue, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(bootStrapValue, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
     }
 
     /**
@@ -294,7 +293,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return
      */
     protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
-        return allGenes.values().stream().filter(Gene::hasVariants).collect(toList());
+        return allGenes.values().stream().filter(Gene::hasVariants).collect(Collectors.toUnmodifiableList());
     }
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
