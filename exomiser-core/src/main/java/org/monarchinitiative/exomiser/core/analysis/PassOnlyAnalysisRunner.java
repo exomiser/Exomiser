@@ -32,8 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors;
 
 /**
  * @since 7.0.0
@@ -73,10 +72,10 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
+                .map(removeFailedVariants())
                 .filter(Gene::hasVariants)
                 .filter(Gene::passedFilters)
-                .map(removeFailedVariants())
-                .collect(toList());
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private UnaryOperator<Gene> removeFailedVariants() {
@@ -94,6 +93,6 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
         return variants.stream()
                 .filter(VariantEvaluation::passedFilters)
-                .collect(toList());
+                .collect(Collectors.toUnmodifiableList());
     }
 }
