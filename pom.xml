@@ -97,7 +97,7 @@
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>27.1-jre</guava.version>
         <protobuf.version>3.17.3</protobuf.version>
-        <spring-boot.version>2.6.2</spring-boot.version>
+        <spring-boot.version>2.6.9</spring-boot.version>
         <docker.base.image>
             gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
         </docker.base.image>
@@ -250,26 +250,6 @@
                 <!--                    <forkCount>0</forkCount>-->
                 <!--                </configuration>-->
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.pitest</groupId>-->
-            <!--                <artifactId>pitest-maven</artifactId>-->
-            <!--                <version>1.5.1</version>-->
-            <!--                <configuration>-->
-            <!--                    <targetClasses>-->
-            <!--                        <param>org.monarchinitiative.exomiser.core.*</param>-->
-            <!--                    </targetClasses>-->
-            <!--                    <targetTests>-->
-            <!--                        <param>org.monarchinitiative.exomiser.core*</param>-->
-            <!--                    </targetTests>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-            <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
-            <!--            <plugin>-->
-            <!--                    <groupId>org.sonarsource.scanner.maven</groupId>-->
-            <!--                    <artifactId>sonar-maven-plugin</artifactId>-->
-            <!--                    <version>3.7.0.1746</version>-->
-            <!--            </plugin>-->
-            <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
