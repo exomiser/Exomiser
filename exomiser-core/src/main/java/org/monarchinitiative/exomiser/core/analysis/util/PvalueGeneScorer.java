@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PvalueGeneScorer implements GeneScorer {
 
@@ -46,12 +47,17 @@ public class PvalueGeneScorer implements GeneScorer {
 
     @Override
     public List<Gene> scoreGenes(List<Gene> genes) {
-        for (Gene gene : genes) {
-            List<GeneScore> geneScores = scoreGene().apply(gene);
-            gene.addGeneScores(geneScores);
-        }
-        Collections.sort(genes);
-        return genes;
+        // TODO: v14.0.0 - return stream().toList() can't do this here as it breaks the sorting for the
+        //  MOI-dependent writers. These will be removed in v14.0.0.
+        return genes.stream()
+                .parallel()
+                .map(gene -> {
+                    List<GeneScore> geneScores = scoreGene().apply(gene);
+                    gene.addGeneScores(geneScores);
+                    return gene;
+                })
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     /**
