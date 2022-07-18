@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -69,7 +70,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "pValue", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     private final GeneIdentifier geneIdentifier;
@@ -412,6 +413,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return topGeneScore.getCombinedScore();
     }
 
+    @JsonGetter
     public double pValue() {
         return topGeneScore.pValue();
     }

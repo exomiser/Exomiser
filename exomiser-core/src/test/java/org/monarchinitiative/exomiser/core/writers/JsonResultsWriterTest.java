@@ -78,6 +78,7 @@ public class JsonResultsWriterTest {
                 .variantScore(1.0f)
                 .phenotypeScore(1.0f)
                 .combinedScore(1.0f)
+                .pValue(0.001)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .contributingVariants(List.of(contributingDominantAndRecessiveVariant)).build()
         );
@@ -91,6 +92,7 @@ public class JsonResultsWriterTest {
                 .variantScore(0.945f)
                 .phenotypeScore(1.0f)
                 .combinedScore(0.945f)
+                .pValue(0.0005)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .contributingVariants(List.of(contributingDominantAndRecessiveVariant, contributingRecessiveCompHetVariant)).build()
         );

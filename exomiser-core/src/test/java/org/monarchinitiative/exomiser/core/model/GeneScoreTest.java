@@ -28,8 +28,6 @@ import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -169,8 +167,9 @@ public class GeneScoreTest {
                 .combinedScore(1)
                 .phenotypeScore(1)
                 .variantScore(1)
+                .pValue(0.0001)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
-        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, pValue=1.0, contributingVariants=[]}"));
+        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, pValue=1.0E-4, contributingVariants=[]}"));
     }
 }

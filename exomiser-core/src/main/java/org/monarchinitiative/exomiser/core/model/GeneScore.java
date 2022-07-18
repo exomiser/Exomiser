@@ -20,12 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,10 +43,11 @@ public final class GeneScore implements Comparable<GeneScore> {
 
     private final GeneIdentifier geneIdentifier;
     private final ModeOfInheritance modeOfInheritance;
-    private final double pValue;
     private final double combinedScore;
     private final double phenotypeScore;
     private final double variantScore;
+    @JsonProperty
+    private final double pValue;
     private final List<VariantEvaluation> contributingVariants;
     private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
     private final List<AcmgAssignment> acmgAssignments;
