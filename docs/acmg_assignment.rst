@@ -32,7 +32,7 @@ PP3 / BP4
 ---------
 If REVEL is chosen as a pathogenicity predictor for missense variants, `PP3` and `BP4` are assigned using the modifiers
 according to table 2 of `Evidence-based calibration of computational tools for missense variant pathogenicity classification
- and ClinGen recommendations for clinical use of PP3/BP4 criteria <https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1>`_.
+and ClinGen recommendations for clinical use of PP3/BP4 criteria <https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1>`_.
 Note that this suggests the use of modifiers up to Strong in the case of pathogenic or Very Strong in the case of benign predictions.
 Otherwise, an ensemble-based approach will be used for other pathogenicity predictors as per the original 215 guidelines.
 It should be noted we found better performance using the REVEL-based approach when testing against the 100K genomes data.
@@ -96,7 +96,144 @@ a very high variant score irrespective of the predicted variant effect and alway
 Transcript Selection
 ====================
 
-Transcripts will be selected using the most deleterious predicted variant effect from Jannovar
-(`Jannovar: A Java Library for Exome Annotation <https://doi.org/10.1002/humu.22531>`_) according to the selected
-database. We recommend using the Ensembl transcript datasource as the Exomiser build uses the GENCODE basic set of
-transcripts. Future versions should use MANE transcripts.
+Transcripts will be selected using the most deleterious predicted variant effect from `Jannovar <https://doi.org/10.1002/humu.22531>`_
+according to the `transcript-source` property set in the `application.properties`. We recommend using the Ensembl
+transcript datasource as the Exomiser build uses the GENCODE basic set of transcripts. Future versions should use MANE transcripts.
+
+ACMG assignments will be reported for a variant on a transcript consistent with a particular mode of inheritance in
+conjunction with a disorder, the assigned criteria with any modifiers and the final classification e.g.
+
+.. parsed-literal::
+
+   1-12335-A-T, NC_000001.10:g.12335A>T, GENE1(ENST12345678):c.2346A>T:p.1234A>-, PATHOGENIC, [PVS1, PS1, PP4_Strong], Disease (OMIM:12345), AUTOSOMAL_DOMINANT
+
+
+.. code-block:: json
+
+        "acmgAssignments": [
+          {
+            "variantEvaluation": {
+              "genomeAssembly": "HG19",
+              "contigName": "10",
+              "start": 123256215,
+              "end": 123256215,
+              "ref": "T",
+              "alt": "G",
+              "type": "SNV",
+              "length": 1,
+              "phredScore": 100,
+              "variantEffect": "MISSENSE_VARIANT",
+              "whiteListed": true,
+              "filterStatus": "PASSED",
+              "contributesToGeneScore": true,
+              "variantScore": 1,
+              "frequencyScore": 1,
+              "pathogenicityScore": 1,
+              "predictedPathogenic": true,
+              "passedFilterTypes": [
+                "FAILED_VARIANT_FILTER",
+                "PATHOGENICITY_FILTER",
+                "FREQUENCY_FILTER",
+                "VARIANT_EFFECT_FILTER",
+                "INHERITANCE_FILTER"
+              ],
+              "frequencyData": {
+                "rsId": "rs121918506",
+                "score": 1
+              },
+              "pathogenicityData": {
+                "clinVarData": {
+                  "alleleId": "28333",
+                  "primaryInterpretation": "LIKELY_PATHOGENIC",
+                  "reviewStatus": "criteria provided, single submitter"
+                },
+                "score": 0.965,
+                "predictedPathogenicityScores": [
+                  {
+                    "source": "REVEL",
+                    "score": 0.965
+                  },
+                  {
+                    "source": "MVP",
+                    "score": 0.9517972
+                  }
+                ],
+                "mostPathogenicScore": {
+                  "source": "REVEL",
+                  "score": 0.965
+                }
+              },
+              "compatibleInheritanceModes": [
+                "AUTOSOMAL_DOMINANT"
+              ],
+              "contributingInheritanceModes": [
+                "AUTOSOMAL_DOMINANT"
+              ],
+              "transcriptAnnotations": [
+                {
+                  "variantEffect": "MISSENSE_VARIANT",
+                  "geneSymbol": "FGFR2",
+                  "accession": "ENST00000346997.2",
+                  "hgvsGenomic": "g.12278533A>C",
+                  "hgvsCdna": "c.1688A>C",
+                  "hgvsProtein": "p.(Glu563Ala)",
+                  "rankType": "EXON",
+                  "rank": 12,
+                  "rankTotal": 17
+                },
+                {
+                  "variantEffect": "MISSENSE_VARIANT",
+                  "geneSymbol": "FGFR2",
+                  "accession": "ENST00000351936.6",
+                  "hgvsGenomic": "g.12278533A>C",
+                  "hgvsCdna": "c.1688A>C",
+                  "hgvsProtein": "p.(Glu563Ala)",
+                  "rankType": "EXON",
+                  "rank": 13,
+                  "rankTotal": 18
+                }
+              ]
+            },
+            "geneIdentifier": {
+              "geneId": "ENSG00000066468",
+              "geneSymbol": "FGFR2",
+              "hgncId": "HGNC:3689",
+              "hgncSymbol": "FGFR2",
+              "entrezId": "2263",
+              "ensemblId": "ENSG00000066468",
+              "ucscId": "uc057wle.1"
+            },
+            "modeOfInheritance": "AUTOSOMAL_DOMINANT",
+            "disease": {
+              "diseaseId": "OMIM:123150",
+              "diseaseName": "Jackson-Weiss syndrome",
+              "associatedGeneId": 2263,
+              "diseaseType": "DISEASE",
+              "inheritanceMode": "AUTOSOMAL_DOMINANT",
+              "phenotypeIds": [
+                "HP:0000006",
+                "HP:0000272",
+                "HP:0001363",
+                "HP:0001783",
+                "HP:0004691",
+                "HP:0008080",
+                "HP:0008122",
+                "HP:0010055",
+                "HP:0010743",
+                "HP:0011800"
+              ],
+              "id": "OMIM:123150",
+              "associatedGeneSymbol": "FGFR2"
+            },
+            "acmgEvidence": {
+              "evidence": {
+                "PM2": "MODERATE",
+                "PP3": "STRONG",
+                "PP4": "SUPPORTING",
+                "PP5": "SUPPORTING"
+              }
+            },
+            "acmgClassification": "LIKELY_PATHOGENIC"
+          }
+        ]
+      }
