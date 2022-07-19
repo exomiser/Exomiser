@@ -7,7 +7,7 @@ ACMG Assignment
 Starting with version 13.1.0, Exomiser performs a partial categorisation of the variants contributing to the gene
 score for a mode of inheritance using the ACMG/AMP `Standards and guidelines for the interpretation of sequence
 variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association
- for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The scores are scored and combined according to the
+for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The scores are scored and combined according to the
 `UK ACGS 2020 guidelines <https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf>`_.
 Exomiser is capable of assigning the following ACMG categories. It is important to be aware that these scores are not a substitute
 for manual assignment by a qualified clinical geneticist or clinician - The scores displayed utilise the data found in
