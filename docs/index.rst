@@ -42,6 +42,7 @@ Variants are prioritised according to user-defined criteria on variant frequency
     :hidden:
 
     result_interpretation
+    acmg_assignment
 
 .. toctree::
     :caption: Publications
