@@ -491,6 +491,11 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             PolyPhenScore score = (PolyPhenScore) pathogenicityScore;
             return score.getScore() > PolyPhenScore.POLYPHEN_PROB_DAMAGING_THRESHOLD;
         }
+        if (pathogenicityScore instanceof CaddScore) {
+            CaddScore score = (CaddScore) pathogenicityScore;
+            // 95-99% most deleterious.
+            return score.getRawScore() >= 13.0f;
+        }
         return pathogenicityScore.getScore() > 0.5f;
     }
 
