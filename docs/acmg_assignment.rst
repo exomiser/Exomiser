@@ -7,14 +7,20 @@ ACMG Assignment
 Starting with version 13.1.0, Exomiser performs a partial categorisation of the variants contributing to the gene
 score for a mode of inheritance using the ACMG/AMP `Standards and guidelines for the interpretation of sequence
 variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association
-for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The scores are scored and combined according to the
+for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The criteria are assigned and combined according to the
 `UK ACGS 2020 guidelines <https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf>`_.
-Exomiser is capable of assigning the following ACMG categories. It is important to be aware that these scores are not a substitute
-for manual assignment by a qualified clinical geneticist or clinician - The scores displayed utilise the data found in
-the Exomiser database and are a subset of the possible criteria by which to assess a variant. Nonetheless, in our
-benchmarking on the returned cases from the 100K Genomes Project, variants in the top 5 with a P/LP classification had a
-much higher precision than those not classified as P/LP.
 
+It is important to be aware that these scores are not a substitute for manual assignment by a qualified clinical geneticist
+or clinician - The scores displayed utilise the data found in the Exomiser database and are a subset of the possible
+criteria by which to assess a variant. Nonetheless, in our benchmarking on the returned cases from the 100K Genomes Project,
+restricting to variants with these automated P/LP classifications increases precision (positive predictive value) markedly
+without excluding many real diagnoses. For example, on a cohort of 742 solved cases where the top 5 Exomiser candidates
+were considered, including the P/LP criteria increased precision 3.8-fold from 15% to 57% with only a small drop in the
+recall of the diagnoses from 94% to 83%. An even larger 5.7-fold increase of precision from 3% to 17% was observed when
+considering a larger cohort of 31k cases where only 17% had received a positive diagnosis (again with a modest drop in
+recall from 91% to 75%).
+
+Exomiser is capable of assigning the following ACMG categories:
 
 Computational and Predictive Data
 =================================
