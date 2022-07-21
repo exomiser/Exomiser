@@ -34,6 +34,7 @@ Variants are prioritised according to user-defined criteria on variant frequency
     running
     input_files_and_options
     advanced_analysis
+    sv_prioritisation
 
 .. toctree::
     :caption: Interpreting Results
