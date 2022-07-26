@@ -45,11 +45,11 @@ JSON
 
 The JSON file represents the most accurate representation of the data, as it is referenced internally by Exomiser. As
 such, we don't provide a schema for this, but it has been pretty stable and breaking changes will only occur with major
-version changes to the software. Minor additions are to be expected for minor releases, as per the `semver<semver.org>`_
+version changes to the software. Minor additions are to be expected for minor releases, as per the `semver <semver.org>`_
 specs.
 
-We recommend using `Python<https://docs.python.org/3/library/json.html?highlight=json#module-json>`_ or
-`JQ<https://stedolan.github.io/jq/>`_ to extract data from this file.
+We recommend using `Python <https://docs.python.org/3/library/json.html?highlight=json#module-json>`_ or
+`JQ <https://stedolan.github.io/jq/>`_ to extract data from this file.
 
 TSV GENES
 =========
