@@ -34,8 +34,9 @@ The new formats are detailed below:
 HTML
 ====
 
-.. figure:: .static/exomiser-html-description-1.svg
+.. figure:: images/exomiser-html-description-1.svg
 
+.. figure:: images/exomiser-html-description-2.svg
 
 JSON
 ====
