@@ -15,16 +15,43 @@ produced for the 100K genomes project, with some compatibility testing against `
 Prioritisation Overview
 =======================
 
+Assuming the recommended analysis steps are being used, Exomiser will broadly consider structural variants in a similar
+manner to sequence variants, with the major difference being that the precise size, position and sequence change is not
+known, especially for symbolic variants. Briefly, Exomiser performs these steps on each SV:
+
+- Predict variant effects based on overlapping transcripts
+- Assign variant to all genes for which it overlaps a transcript
+- Assign variant pathogenicity score according to variant effect and known similar ClinVar variants
+- Assign variant frequency score according to similar alleles in gnomAD-SV, DECIPHER, dbVar, DGV, GoNL
+
+Following these SV-specific steps, the variant is considered in the same way as a sequence variant and is filtered and
+prioritised accordingly. This allows compound heterozygous genotypes of structural and sequence variants to be considered
+during an analysis.
 
 Multiple Gene Overlaps
 ======================
 
-Similarity
-==========
+If a variant overlaps more than one gene, the variant will be associated with all of these genes and reported with the
+most severe variant effect it is predicted to have on each gene in the results.
 
-Frequency
-=========
+For example, if a variant 1-23456-78910-N-<DEL> completely deletes GENE:1 and deletes the first exon of GENE:2, the
+variant will be reported twice, once for each associated gene. The following pseudo-code tries to illustrate this.
 
-Pathogenicity
+.. code-block:: yaml
+
+    GENE1:
+        variants:
+            - 1-23456-78910-N-<DEL>
+                variantEffect: TRANSCRIPT_ABLATION
+    GENE2:
+        variants:
+            - 1-23456-78910-N-<DEL>
+                variantEffect: EXON_LOSS_VARIANT
+
+
+SV Similarity
 =============
 
+Given their imprecise nature, SVs are not looked-up in the database using precise coordinates, instead they are
+considered 'equal' if their genomic coordinates have a jaccard similarity of 0.8 and they constitute an equivalent broad
+type - gain, loss, me_gain, me_loss, inversion or complex.
