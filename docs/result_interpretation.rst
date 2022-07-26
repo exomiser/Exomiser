@@ -25,8 +25,8 @@ out to the files and formats specified in the output settings.
 Prior to 13.1.0 a TSV/VCF file for each mode of inheritance (MOI) was created, which led to misunderstandings and confusion
 about how to deal with the data from them. The filenames were of the general pattern `output-prefix_MOI.genes.tsv` e.g.
 `Pfeiffer-hiphive-exome-PASS_ONLY_AD.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.vcf`,
-`Pfeiffer-hiphive-exome-PASS_ONLY_AR.variants.tsv`... _THESE FILES ARE NOW DEPRECATED AND WILL NOT APPEAR IN THE NEXT
-VERSION_. Similarly the variants.tsv and vcf output formats have also been changed and will only feature a single, combined
+`Pfeiffer-hiphive-exome-PASS_ONLY_AR.variants.tsv`... **THESE FILES ARE NOW DEPRECATED AND WILL NOT APPEAR IN THE NEXT
+VERSION**. Similarly the variants.tsv and vcf output formats have also been changed and will only feature a single, combined
 output file of ranked genes/variants.
 
 The new formats are detailed below:
@@ -41,6 +41,13 @@ HTML
 JSON
 ====
 
+The JSON file represents the most accurate representation of the data, as it is referenced internally by Exomiser. As
+such, we don't provide a schema for this, but it has been pretty stable and breaking changes will only occur with major
+version changes to the software. Minor additions are to be expected for minor releases, as per the `semver<semver.org>`_
+specs.
+
+We recommend using `Python<https://docs.python.org/3/library/json.html?highlight=json#module-json>`_ or
+`JQ<https://stedolan.github.io/jq/>`_ to extract data from this file.
 
 TSV GENES
 =========
