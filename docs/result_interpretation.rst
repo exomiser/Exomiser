@@ -73,7 +73,7 @@ TSV VARIANTS
 
 In the variants.tsv file it is possible for a variant, like a gene, to appear multiple times, depending on the MOI it is
 compatible with. For example in the example below MUC6 has two variants ranked 7th under the AD model and two ranked 8th
-under an AR (compound heterozygous) model. In the AD case the `CONTRIBUTING_VARIANT` column indicates whether the variant
+under an AR (compound heterozygous) model. In the AD case the CONTRIBUTING_VARIANT column indicates whether the variant
 was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and EXOMISER_GENE_VARIANT_SCORE.
 
 .. code-block:: tsv
@@ -93,12 +93,12 @@ VCF
 
 In the VCF file it is possible for a variant, like a gene, to appear multiple times, depending on the MOI it is
 compatible with. For example in the example below MUC6 has two variants ranked 7th under the AD model and two ranked 8th
-under an AR (compound heterozygous) model. In the AD case the `CONTRIBUTING_VARIANT` column indicates whether the variant
-was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and EXOMISER_GENE_VARIANT_SCORE. The `INFO`
-field with the `ID=Exomiser` describes the internal format of this sub-field. Be aware that for multi-allelic sites,
-Exomiser will decompose and trim them for the proband sample and this is what will be displayed in the Exomiser `ID`
-sub-field e.g. `11-1018088-TG-T_AD`. The VCF file is tabix-indexed and exomiser ranked alleles can be extracted using
-`grep `. For example, to display the top 5 ranked variants `zgrep -E '\{[1-5]{1}\|' Pfeiffer-hiphive-exome-PASS_ONLY.vcf.gz`
+under an AR (compound heterozygous) model. In the AD case the CONTRIBUTING_VARIANT column indicates whether the variant
+was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and EXOMISER_GENE_VARIANT_SCORE. The ``INFO``
+field with the ``ID=Exomiser`` describes the internal format of this sub-field. Be aware that for multi-allelic sites,
+Exomiser will decompose and trim them for the proband sample and this is what will be displayed in the Exomiser ``ID``
+sub-field e.g. ``11-1018088-TG-T_AD``. The VCF file is tabix-indexed and exomiser ranked alleles can be extracted using
+``grep``. For example, to display the top 5 ranked variants ``zgrep -E '\{[1-5]{1}\|' Pfeiffer-hiphive-exome-PASS_ONLY.vcf.gz``
 
 .. code-block:: vcf
 
