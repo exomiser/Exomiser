@@ -45,8 +45,8 @@ JSON
 
 The JSON file represents the most accurate representation of the data, as it is referenced internally by Exomiser. As
 such, we don't provide a schema for this, but it has been pretty stable and breaking changes will only occur with major
-version changes to the software. Minor additions are to be expected for minor releases, as per the `semver <semver.org>`_
-specs.
+version changes to the software. Minor additions are to be expected for minor releases, as per the `SemVer <https://semver.org>`_
+specification.
 
 We recommend using `Python <https://docs.python.org/3/library/json.html?highlight=json#module-json>`_ or
 `JQ <https://stedolan.github.io/jq/>`_ to extract data from this file.
@@ -97,8 +97,7 @@ under an AR (compound heterozygous) model. In the AD case the CONTRIBUTING_VARIA
 was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and EXOMISER_GENE_VARIANT_SCORE. The ``INFO``
 field with the ``ID=Exomiser`` describes the internal format of this sub-field. Be aware that for multi-allelic sites,
 Exomiser will decompose and trim them for the proband sample and this is what will be displayed in the Exomiser ``ID``
-sub-field e.g. ``11-1018088-TG-T_AD``. The VCF file is tabix-indexed and exomiser ranked alleles can be extracted using
-``grep``. For example, to display the top 5 ranked variants ``zgrep -E '\{[1-5]{1}\|' Pfeiffer-hiphive-exome-PASS_ONLY.vcf.gz``
+sub-field e.g. ``11-1018088-TG-T_AD``.
 
 .. code-block:: vcf
 
@@ -110,3 +109,10 @@ sub-field e.g. ``11-1018088-TG-T_AD``. The VCF file is tabix-indexed and exomise
     11	1018093	.	G	GT	592.45	PASS	AC=1;AF=0.50;AN=2;BaseQRankSum=8.019;DP=157;Exomiser={7|11-1018093-G-GT_AD|MUC6|4588|AD|0.0096|0.7532|0.5030|0.9990|0.9989|0|0|frameshift_elongation|MUC6:ENST00000421673.2:c.4707dup:p.(Pro1570Thrfs*136)|NOT_AVAILABLE|||""},{8|11-1018093-G-GT_AR|MUC6|4588|AR|0.0096|0.7531|0.5030|0.9990|0.9989|1|0|frameshift_elongation|MUC6:ENST00000421673.2:c.4707dup:p.(Pro1570Thrfs*136)|UNCERTAIN_SIGNIFICANCE|||""};FS=28.574;HRun=1;HaplotypeScore=1267.6968;MQ=44.06;MQ0=4;MQRankSum=-5.166;QD=3.26;ReadPosRankSum=1.328;set=variant	GT:AD:DP:GQ:PL	0/1:140,42:157:99:631,0,4411
     6	132203615	.	G	A	922.98	PASS	AC=1;AF=0.50;AN=2;BaseQRankSum=-0.671;DP=94;Dels=0.00;Exomiser={2|6-132203615-G-A_AD|ENPP1|5167|AD|0.0049|0.8690|0.5773|0.9996|0.9996|1|0|splice_donor_variant|ENPP1:ENST00000360971.2:c.2230+1G>A:p.?|UNCERTAIN_SIGNIFICANCE|PVS1_Strong|OMIM:615522|"Cole disease"};FS=0.805;HRun=0;HaplotypeScore=3.5646;MQ=56.63;MQ0=0;MQRankSum=1.807;QD=9.82;ReadPosRankSum=-0.900;set=variant2	GT:AD:DP:GQ:PL	0/1:53,41:94:99:953,0,1075
 
+
+The VCF file is tabix-indexed and exomiser ranked alleles can be extracted using ``grep``. For example, to display the
+top 5 ranked variants, you would issue the command:
+
+.. code-block:: shell
+
+    zgrep -E '\{[1-5]{1}\|' Pfeiffer-hiphive-exome-PASS_ONLY.vcf.gz
