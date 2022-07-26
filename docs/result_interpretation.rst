@@ -26,10 +26,12 @@ Prior to 13.1.0 a TSV/VCF file for each mode of inheritance (MOI) was created, w
 about how to deal with the data from them. The filenames were of the general pattern `output-prefix_MOI.genes.tsv` e.g.
 `Pfeiffer-hiphive-exome-PASS_ONLY_AD.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.vcf`,
 `Pfeiffer-hiphive-exome-PASS_ONLY_AR.variants.tsv`... **THESE FILES ARE NOW DEPRECATED AND WILL NOT APPEAR IN THE NEXT
-VERSION**. Similarly the variants.tsv and vcf output formats have also been changed and will only feature a single, combined
-output file of ranked genes/variants.
+VERSION**. Similarly the `variants.tsv` and `vcf` output formats have also been changed and will only feature a single, combined
+output file of ranked genes/variants e.g. when supplying the `outputPrefix: Pfeiffer-hiphive-exome-PASS_ONLY` and
+`outputFormats: [TSV_VARIANT, TSV_GENE, VCF]`, the following files will be written out: `Pfeiffer-hiphive-exome-PASS_ONLY.variants.tsv`
+`Pfeiffer-hiphive-exome-PASS_ONLY.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY.vcf`
 
-The new formats are detailed below:
+These formats are detailed below.
 
 HTML
 ====
@@ -88,6 +90,15 @@ was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and 
 
 VCF
 ===
+
+In the VCF file it is possible for a variant, like a gene, to appear multiple times, depending on the MOI it is
+compatible with. For example in the example below MUC6 has two variants ranked 7th under the AD model and two ranked 8th
+under an AR (compound heterozygous) model. In the AD case the `CONTRIBUTING_VARIANT` column indicates whether the variant
+was (1) or wasn't (0) used for calculating the EXOMISER_GENE_COMBINED_SCORE and EXOMISER_GENE_VARIANT_SCORE. The `INFO`
+field with the `ID=Exomiser` describes the internal format of this sub-field. Be aware that for multi-allelic sites,
+Exomiser will decompose and trim them for the proband sample and this is what will be displayed in the Exomiser `ID`
+sub-field e.g. `11-1018088-TG-T_AD`. The VCF file is tabix-indexed and exomiser ranked alleles can be extracted using
+`grep `. For example, to display the top 5 ranked variants `zgrep -E '\{[1-5]{1}\|' Pfeiffer-hiphive-exome-PASS_ONLY.vcf.gz`
 
 .. code-block:: vcf
 
