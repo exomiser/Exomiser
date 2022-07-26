@@ -49,7 +49,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class SvPathogenicityDao implements PathogenicityDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(SvFrequencyDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(SvPathogenicityDao.class);
 
     private final DataSource svDataSource;
     private final double minSimilarity = 0.80;
@@ -152,7 +152,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
             int endMin = svDaoBoundaryCalculator.endMin();
             int endMax = svDaoBoundaryCalculator.endMax();
 
-            logger.debug("SELECT * FROM SV_FREQ WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
+            logger.debug("SELECT * FROM SV_PATH WHERE CHROMOSOME = {} AND START >= {} and START <= {} and \"end\" >= {} and \"end\" <= {};",
                     variant.contigId(),
                     startMin, startMax,
                     endMin, endMax
