@@ -1,5 +1,5 @@
 ===============================
-Analysis/Job file configuration
+Analysis/Job File Configuration
 ===============================
 
 Exomiser analyses are defined using a `yml format <http://yaml.org/>`_ configuration file(s). Examples can be found in

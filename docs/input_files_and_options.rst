@@ -1,7 +1,7 @@
 .. _inputandoptions:
 
 =======================
-Input files and options
+Input Files and Options
 =======================
 
 The Exomiser can be run via simply via a yaml analysis file. The extended cli capability was removed in version 10.0.0
