@@ -175,14 +175,14 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (isSymbolic()) {
             // can be searched for in gnomad like so:
             // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2_1
-            return contig().name() + '-' + start() + '-' + end() + '-' + ref() + '-' + alt() + ' ' + unitLength();
+            return contig().name() + '-' + start() + '-' + end() + '-' + ref() + '-' + alt();
         }
         // can be searched for in gnomad like so:
         // https://gnomad.broadinstitute.org/variant/X-31517201-T-C
         return contig().name() + '-' + start() + '-' + ref() + '-' + alt();
     }
 
-    private String unitLength() {
+    public String changeLengthString() {
         int length = Math.abs(changeLength());
         if (length < 1000) {
             return length + "bp";
@@ -532,6 +532,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return Objects.equals(this.ref(), other.ref()) && Objects.equals(this.alt(), other.alt());
     }
 
+    @Override
     public String toString() {
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {

@@ -275,8 +275,8 @@
                                 <span class="label label-danger"
                                       th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                             <b th:text=" ${variantEvaluation.variantType}"> SNV</b>
-                            <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
-                                chr10:g.123256215T>G [0/1]</b>
+                            <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">chr10:g.123256215T>G [0/1]</b>
+                            <b th:if="${variantEvaluation.isSymbolic()}"  th:text=" |${variantEvaluation.changeLengthString}|"> 10 Mb</b>
                             <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
                                       th:if="!${#strings.isEmpty(varId)}"
                                       th:switch="${#strings.substring(varId, 0, 2)}">
@@ -415,8 +415,8 @@
                     <div class="col-sm-12">
                         <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                         <b th:text=" ${variantEvaluation.variantType}"> SNV</b>
-                        <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
-                            chr10:g.123256215T>G [0/1]</b>
+                        <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G [0/1]</b>
+                        <b th:if="${variantEvaluation.isSymbolic()}"  th:text=" |${variantEvaluation.changeLengthString}|"> 10 Mb</b>
                         <th:block th:each="varId: ${variantEvaluation.frequencyData.rsId}"
                                   th:if="!${#strings.isEmpty(varId)}"
                                   th:switch="${#strings.substring(varId, 0, 2)}">
@@ -550,8 +550,8 @@
                 <div class="col-sm-12">
                     <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
                     <!-- This is odd - for some reason Thymeleaf cannot evaluate variantEvaluation.start() -->
-                    <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|">
-                        chr10:g.123256215T>G [0/1]</b>
+                    <b th:text=" |${variantEvaluation.toGnomad} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G [0/1]</b>
+                    <b th:if="${variantEvaluation.isSymbolic()}"  th:text=" |${variantEvaluation.changeLengthString}|"> 10 Mb</b>
                     <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
                               th:if="${#strings.startsWith(rsId,'rs')}">
                         <a th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${rsId}|}"

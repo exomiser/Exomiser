@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -876,7 +875,7 @@ public class VariantEvaluationTest {
     void testToGnomadSvIns() {
         VariantEvaluation sv = newBuilder(1, 100, 100, "A", "<INS>", 50)
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS> 50bp"));
+        assertThat(sv.toGnomad(), equalTo("1-100-100-A-<INS>"));
     }
 
     @ParameterizedTest
@@ -904,7 +903,7 @@ public class VariantEvaluationTest {
     })
     void lengthFormat(int changeLength, String expected) {
         VariantEvaluation sv = newBuilder(1, 100, 100, "A", "<INS>", changeLength).build();
-        assertThat(sv.toGnomad(), endsWith(expected));
+        assertThat(sv.changeLengthString(), equalTo(expected));
     }
 
     private String toGnomadWithLength(VariantEvaluation.Builder sv, int length) {
@@ -915,7 +914,7 @@ public class VariantEvaluationTest {
     void testToGnomadSvDel() {
         VariantEvaluation sv = newBuilder(1, 100, 150, "A", "<DEL>", -50)
                 .build();
-        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL> 50bp"));
+        assertThat(sv.toGnomad(), equalTo("1-100-150-A-<DEL>"));
     }
 
     @Test
