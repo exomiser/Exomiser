@@ -338,6 +338,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                         noFamilyHistoryOfDisease = false;
                     }
                     if ((ancestorGenotype.isHet() || ancestorGenotype.isHomAlt()) && (probandGenotype.isHet() || probandGenotype.isHomAlt())) {
+                        // See comment below about possible de novo
                         noFamilyHistoryOfAllele = false;
                     }
                 }
@@ -346,6 +347,13 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                 }
             }
         }
+    }
+
+    // n.b. this method is a little more obvious about what it expects compared to the test for noFamilyHistoryOfAllele in the PS2 method
+    // plus it doesn't assign a 0/1 or ./. genotypes in a parent as being a possible de novo in a 0/0 proband. This case shouldn't occur
+    // however, as Exomiser removes 0/0 proband variants.
+    private boolean possibleDeNovo(SampleGenotype ancestorGenotype, SampleGenotype probandGenotype) {
+        return (ancestorGenotype.isNoCall() || ancestorGenotype.isHomRef()) && (probandGenotype.isHet() || probandGenotype.isHomAlt());
     }
 
     /**
