@@ -1,5 +1,48 @@
 # The Exomiser - Core Library Changelog
 
+## 13.1.0 2022-07-29
+
+The three new features for this release is the autoated ACMG classification of small sequence variants, calculating
+p-values for the combined scores and providing new and more interpretable TSV and VCF output files.
+
+- Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
+- Added new combined score p-value
+- Added new TSV_GENE, TSV_VARIANT and VCF output files containing ranked genes/variants for all the assessed modes of
+  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files which
+  will be removed in the next major release__. See the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
+- New update online documentation! See https://exomiser.readthedocs.io/en/latest/
+
+API breaking changes:
+
+- None
+
+New APIs:
+
+- New `Analysis.getMainPrioritiser()`
+- New `AnalysisStep.isGenePrioritiser()`
+- New `Gene.getAssociatedDiseases()` method
+- New `Gene.getCompatibleGeneScores()`
+- New `Gene.pValue()` and `GeneScore.pValue()` methods
+- New `CombinedScorePvalueCalculator` class
+- New `acmg` package
+- New `GeneScore.getAcmgAssignments()`
+- New `GeneScore.Builder.acmgAssignments()` and `pValue()` setters
+- New `TranscriptAnnotation.rank()`, `getRankTotal()` and `getRankType()` for intron/exon numbering of variant position.
+- New `ExomiserConfigReporter` class for logging startup configuration
+- New `OutputSettings.applyOutputSettings()`
+- New `GeneScoreRanker` to help with new output writers
+- New `TsvGeneAllMoiResultsWriter`
+- New `TsvVariantAllMoiResultsWriter`
+- New `VcfAllMoiResultsWriter`
+
+ 
+Other changes:
+- Updated Spring Boot to version 2.6.9
+- Added automated docker build for CLI and web
+- Update HtmlResultsWriter to detect transcript data source
+- Fix broken StringDB links in HTML output
+
+
 ## 13.0.0 2021-09-21
 
 This release is primarily focussed on enabling simultaneous prioritisation of structural and non-structural variation
