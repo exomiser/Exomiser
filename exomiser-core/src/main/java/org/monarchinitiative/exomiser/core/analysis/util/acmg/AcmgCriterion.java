@@ -24,6 +24,9 @@ import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriteri
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Impact.BENIGN;
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Impact.PATHOGENIC;
 
+/**
+ * @since 13.1.0
+ */
 public enum AcmgCriterion {
 
     // PATHOGENIC - Table 3 of https://www.acmg.net/docs/Standards_Guidelines_for_the_Interpretation_of_Sequence_Variants.pdf

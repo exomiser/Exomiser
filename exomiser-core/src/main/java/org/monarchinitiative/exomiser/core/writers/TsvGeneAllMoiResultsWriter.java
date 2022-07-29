@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
+/**
+ * @since 13.1.0
+ */
 public class TsvGeneAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneAllMoiResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;

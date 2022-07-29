@@ -60,8 +60,8 @@ import static java.util.stream.Collectors.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
- * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF
- * Standard</a>
+ * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF Standard</a>
+ * @since 13.1.0
  */
 public class VcfAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(VcfAllMoiResultsWriter.class);

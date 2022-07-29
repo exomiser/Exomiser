@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
+/**
+ * @since 13.1.0
+ */
 public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 
     private final String probandId;

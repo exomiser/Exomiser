@@ -20,6 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
+/**
+ * @since 13.1.0
+ */
 public interface AcmgEvidenceClassifier {
 
     AcmgClassification classify(AcmgEvidence acmgEvidence);

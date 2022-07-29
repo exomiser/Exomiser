@@ -31,6 +31,9 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.Objects;
 
+/**
+ * @since 13.1.0
+ */
 public class AcmgAssignment {
 
     // MOI, Disease, Variant(s), transcript, AA change, AcmgCriteria...

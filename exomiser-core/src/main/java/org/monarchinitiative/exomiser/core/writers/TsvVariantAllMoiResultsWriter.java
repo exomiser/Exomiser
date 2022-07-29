@@ -60,6 +60,9 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.*;
 
+/**
+ * @since 13.1.0
+ */
 public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvVariantAllMoiResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_VARIANT;

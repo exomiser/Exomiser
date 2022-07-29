@@ -38,6 +38,9 @@ import java.util.Objects;
 // Although oe is a continuous value, we understand that it can be useful to use a threshold for certain applications.
 // In particular, for the interpretation of Mendelian diseases cases, we suggest using the upper bound of the oe CI < 0.35 as a threshold if needed.
 // Again, ideally oe should be used as a continuous value rather than a cutoff and evaluating the oe 90% CI is a must.
+/**
+ * @since 13.1.0
+ */
 public class GeneConstraint {
 
     private final String geneSymbol;

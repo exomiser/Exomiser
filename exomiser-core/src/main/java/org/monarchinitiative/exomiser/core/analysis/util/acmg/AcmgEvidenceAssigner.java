@@ -27,6 +27,9 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.List;
 
+/**
+ * @since 13.1.0
+ */
 public interface AcmgEvidenceAssigner {
 
     AcmgEvidence assignVariantAcmgEvidence(VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches);

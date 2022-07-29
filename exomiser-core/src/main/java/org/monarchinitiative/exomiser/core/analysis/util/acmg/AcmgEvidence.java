@@ -27,6 +27,9 @@ import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evid
 import javax.annotation.Nullable;
 import java.util.*;
 
+/**
+ * @since 13.1.0
+ */
 public class AcmgEvidence {
 
     private static final AcmgEvidence EMPTY = new AcmgEvidence(Map.of());

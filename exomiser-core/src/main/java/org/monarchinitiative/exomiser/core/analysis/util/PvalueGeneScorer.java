@@ -15,6 +15,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @since 13.1.0
+ */
 public class PvalueGeneScorer implements GeneScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(PvalueGeneScorer.class);

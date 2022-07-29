@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * @since 13.1.0
+ */
 public class CombinedScorePvalueCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(CombinedScorePvalueCalculator.class);

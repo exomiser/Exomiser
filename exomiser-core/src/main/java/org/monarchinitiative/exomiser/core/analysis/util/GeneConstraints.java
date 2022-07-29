@@ -30,6 +30,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * @since 13.1.0
+ */
 public class GeneConstraints {
 
     private static final Map<String, GeneConstraint> geneConstraints = GnomadGeneConstraintParser.readGeneConstraints("gnomad.v2.1.1.gene-constraints.tsv");

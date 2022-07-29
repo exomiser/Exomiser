@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @since 13.1.0
+ */
 public class AcmgAssignmentCalculator {
 
     private static final Disease EMPTY_DISEASE = Disease.builder().build();
