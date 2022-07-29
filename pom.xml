@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>13.1.0-RC2</version>
+    <version>13.1.0</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
