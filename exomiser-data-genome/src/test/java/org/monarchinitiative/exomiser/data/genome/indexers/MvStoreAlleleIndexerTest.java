@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,9 +25,7 @@ import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
-import org.junitpioneer.jupiter.TempDirectory.TempDir;
+import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
@@ -393,7 +391,6 @@ public class MvStoreAlleleIndexerTest {
 
 
     @Test
-    @ExtendWith(TempDirectory.class)
     public void processAndWriteToDisk(@TempDir Path tempDir) throws Exception {
         AlleleResource dbSnpResource = new DbSnpAlleleResource("test_first_ten_dbsnp", new URL("http://"), Paths.get("src/test/resources/test_first_ten_dbsnp.vcf.gz"));
 

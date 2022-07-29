@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>13.0.1</version>
+        <version>13.1.0</version>
     </parent>
 
     <properties>
@@ -139,6 +139,43 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>buildTar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <from>
+                        <image>${docker.base.image}</image>
+                        <platforms>
+                            <platform>
+                                <architecture>amd64</architecture>
+                                <os>linux</os>
+                            </platform>
+                        </platforms>
+                    </from>
+                    <to>
+                        <image>${project.artifactId}:${project.parent.version}</image>
+                        <tags>
+                            <tag>${project.parent.version}</tag>
+                            <tag>latest</tag>
+                        </tags>
+                    </to>
+                    <container>
+                        <volumes>
+                            <volume>/exomiser-data</volume>
+                            <volume>/exomiser</volume>
+                        </volumes>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -26,11 +26,13 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,8 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final ContributingAlleleCalculator contributingAlleleCalculator;
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
+    private final AcmgAssignmentCalculator acmgAssignmentCalculator;
+
     /**
      * @param probandId                Sample id of the proband in the VCF.
      * @param inheritanceModeAnnotator An {@code InheritanceModeAnnotator} for the pedigree related to the proband.
@@ -65,6 +69,19 @@ public class RawScoreGeneScorer implements GeneScorer {
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
         this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandId, inheritanceModeAnnotator.getPedigree());
+        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acgs2020Classifier();
+        this.acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, acmgEvidenceClassifier);
+    }
+
+    @Override
+    public List<Gene> scoreGenes(List<Gene> genes) {
+        for (Gene gene : genes) {
+            List<GeneScore> geneScores = scoreGene().apply(gene);
+            gene.addGeneScores(geneScores);
+        }
+        Collections.sort(genes);
+        return genes;
     }
 
     /**
@@ -110,8 +127,11 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .average()
                 .orElse(0);
 
-        double combinedScore = calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults()
-                .keySet());
+        double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults().keySet());
+
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
+
+        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -122,45 +142,10 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .contributingVariants(contributingVariants)
                 // TODO this would be a good place to put a contributingModel
                 //  i.e. from HiPhivePrioritiserResult see issue #363
-                // TODO add in/ use pLOF Haploinsufficieny/Triplosensitivity scores here too?
 //                .contributingModel()
-                .compatibleDiseaseMatches(priorityScore.getCompatibleDiseaseMatches())
+                .compatibleDiseaseMatches(compatibleDiseaseMatches)
+                .acmgAssignments(acmgAssignments)
                 .build();
     }
 
-    /**
-     * Calculate the combined score of this gene based on the relevance of the
-     * gene (priorityScore) and the predicted effects of the variants
-     * (variantScore).
-     * <p>
-     * Note that this method assumes we have already calculated the filter and variant scores.
-     */
-    private double calculateCombinedScore(double variantScore, double priorityScore, Set<PriorityType> prioritiesRun) {
-        if (variantScore == 0 && priorityScore == 0) {
-            return 0;
-        }
-        // its possible that all of these could have been run, but we'll just take the first. Ideally there should be a
-        // check somewhere else in the system to prevent more than one prioritiser being run.
-        if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
-            return hiPhiveLogitScore(variantScore, priorityScore);
-        } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
-            return walkerLogitScore(variantScore, priorityScore);
-        } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
-            return phenixLogitScore(variantScore, priorityScore);
-        }
-        return (priorityScore + variantScore) / 2d;
-    }
-
-    private double hiPhiveLogitScore(double variantScore, double priorityScore) {
-        return 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
-    }
-
-    private double walkerLogitScore(double variantScore, double priorityScore) {
-        //NB this is based on raw walker score
-        return 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * variantScore)));
-    }
-
-    private double phenixLogitScore(double variantScore, double priorityScore) {
-        return 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * variantScore)));
-    }
 }

@@ -37,8 +37,10 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,17 @@ public class ResultsWriterUtils {
         //Empty - this is a static class.
     }
 
+    public static Path resolveOutputDir(String outputPrefix) {
+        if (outputPrefix.isEmpty()) {
+            return Path.of(DEFAULT_OUTPUT_DIR);
+        }
+        Path outputPrefixPath = Path.of(outputPrefix);
+        if (Files.isDirectory(outputPrefixPath)) {
+            return outputPrefixPath;
+        }
+        return Objects.requireNonNullElse(outputPrefixPath.getParent(), Path.of(""));
+    }
+
     /**
      * Determines the correct file extension for a file given that was specified by the user, or a sensible default if not.
      *
@@ -69,18 +82,14 @@ public class ResultsWriterUtils {
      */
     public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat, ModeOfInheritance modeOfInheritance) {
         String moiAbbreviation = moiAbbreviation(modeOfInheritance);
-        if (outputPrefix.isEmpty() && vcfPath == null) {
-            String defaultOutputPrefix = String.format("%s/exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR);
-            logger.debug("Output prefix and VCF was unspecified. Will write out to: {}", defaultOutputPrefix);
-            return String.format("%s%s.%s", defaultOutputPrefix, moiAbbreviation, outputFormat.getFileExtension());
+        String baseFileName = Path.of(outputPrefix).getFileName().toString();
+        if (baseFileName.isEmpty() && vcfPath == null) {
+            baseFileName = "exomiser";
+        } else if (baseFileName.isEmpty()) {
+            String vcfFileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
+            baseFileName = vcfFileName + "-exomiser";
         }
-        if (outputPrefix.isEmpty()) {
-            String fileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
-            String defaultOutputPrefix = String.format("%s/%s_exomiser", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, fileName);
-            logger.debug("Output prefix was unspecified. Will write out to: {}", defaultOutputPrefix);
-            return String.format("%s%s.%s", defaultOutputPrefix, moiAbbreviation, outputFormat.getFileExtension());
-        }
-        return String.format("%s%s.%s", outputPrefix, moiAbbreviation, outputFormat.getFileExtension());
+        return resolveOutputDir(outputPrefix).normalize().resolve(baseFileName + moiAbbreviation + '.' + outputFormat.getFileExtension()).toString();
     }
 
     private static String moiAbbreviation(ModeOfInheritance modeOfInheritance) {
@@ -112,7 +121,7 @@ public class ResultsWriterUtils {
                 VariantEffect.INITIATOR_CODON_VARIANT, VariantEffect.SYNONYMOUS_VARIANT,
                 VariantEffect.FIVE_PRIME_UTR_TRUNCATION,
                 VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
-                VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
+                VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
                 VariantEffect.THREE_PRIME_UTR_TRUNCATION,
                 VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT,
                 VariantEffect.THREE_PRIME_UTR_EXON_VARIANT,

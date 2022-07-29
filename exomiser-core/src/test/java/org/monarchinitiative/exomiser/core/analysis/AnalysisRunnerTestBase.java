@@ -34,8 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -51,7 +49,7 @@ public abstract class AnalysisRunnerTestBase {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisRunnerTestBase.class);
 
-    protected final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
+    protected final Path vcfPath = Path.of("src/test/resources/smallTest.vcf");
     protected final List<String> hpoIds = List.of("HP:0000001");
 
     final GenomeAnalysisService genomeAnalysisService = TestFactory.buildDefaultHg19GenomeAnalysisService();
@@ -71,7 +69,7 @@ public abstract class AnalysisRunnerTestBase {
 
     Analysis makeAnalysis(AnalysisStep... analysisSteps) {
         return Analysis.builder()
-                .steps(Arrays.asList(analysisSteps))
+                .steps(List.of(analysisSteps))
                 .build();
     }
 

@@ -20,18 +20,21 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -67,7 +70,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "geneIdentifier", "combinedScore", "priorityScore", "variantScore", "pValue", "filterResults", "priorityResults", "compatibleInheritanceModes", "geneScores", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     private final GeneIdentifier geneIdentifier;
@@ -159,42 +162,6 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return variantEvaluations.size();
     }
 
-    /**
-     * Downrank gene because it has a large numbers of variants (under the
-     * assumption that such genes are unlikely to be be true disease genes,
-     * rather, by chance say 2 of 20 variants are score as highly pathogenic by
-     * polyphen, leading to a false positive call. This method downweights the
-     * {@link #variantScore} of this gene, which is the aggregate score for the
-     * variants.
-     *
-     * @param threshold Downweighting occurs for variants that have this number
-     * or more variants.
-     */
-//commented out as this was unused - use the GeneScorer for this sort of function.
-//    public void downWeightGeneWithManyVariants(int threshold) {
-//        if (this.variantList.size() < threshold) {
-//            return;
-//        }
-//        // Start with downweighting factor of 5%
-//        // For every additional variant, add half again to the factor
-//        int s = this.variantList.size();
-//        float factor = 0.05f;
-//        float downweight = 0f;
-//        while (s > threshold) {
-//            downweight += factor;
-//            factor *= 1.5;
-//            s--;
-//        }
-//        if (downweight > 1f) {
-//            downweight = 1f;
-//        }
-//        this.variantScore = this.variantScore * (1f - downweight);
-//        /*
-//         * filterscore is now at least zero
-//         */
-//
-//    }
-
     public boolean hasVariants() {
         return !variantEvaluations.isEmpty();
     }
@@ -203,18 +170,18 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * This function adds additional variants to the current gene. The variants
      * have been identified by parsing the VCF file.
      *
-     * @param var A Variant affecting the current gene.
+     * @param variantEvaluation A Variant affecting the current gene.
      */
-    public final void addVariant(VariantEvaluation var) {
-        Objects.requireNonNull(var);
-        addGeneFilterResultsToVariant(var);
-        variantEvaluations.add(var);
+    public final void addVariant(VariantEvaluation variantEvaluation) {
+        Objects.requireNonNull(variantEvaluation);
+        addGeneFilterResultsToVariant(variantEvaluation);
+        variantEvaluations.add(variantEvaluation);
     }
 
-    private void addGeneFilterResultsToVariant(VariantEvaluation var) {
+    private void addGeneFilterResultsToVariant(VariantEvaluation variantEvaluation) {
         for (FilterResult filterResult : filterResults.values()) {
             if (filterResult.getFilterType() != FilterType.INHERITANCE_FILTER) {
-                var.addFilterResult(filterResult);
+                variantEvaluation.addFilterResult(filterResult);
             }
         }
     }
@@ -246,7 +213,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public void setCompatibleInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
-        this.inheritanceModes = Sets.immutableEnumSet(inheritanceModes);
+        this.inheritanceModes = Collections.unmodifiableSet(EnumSet.copyOf(inheritanceModes));
     }
 
     /**
@@ -334,6 +301,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @since 13.0.0
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T extends PriorityResult> T getPriorityResult(Class<T> clazz) {
         for (PriorityResult priorityResult : priorityResultsMap.values()) {
             if (clazz.isInstance(priorityResult)) {
@@ -347,13 +315,17 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the map of {@code PriorityResult} objects that represent the
      * result of filtering
      */
-//    @JsonIgnore
     public Map<PriorityType, PriorityResult> getPriorityResults() {
         return priorityResultsMap;
     }
 
+    public List<Disease> getAssociatedDiseases() {
+        OmimPriorityResult omimPriorityResult = getPriorityResult(OmimPriorityResult.class);
+        // This is a bit silly. Known diseases should be added as part of Gene creation.
+        return omimPriorityResult == null ? List.of() : omimPriorityResult.getAssociatedDiseases();
+    }
+
     /**
-     *
      * @param geneScore
      * @throws NullPointerException if the argument is null
      * @since 10.0.0
@@ -364,6 +336,13 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
+    public synchronized void addGeneScores(Collection<GeneScore> geneScores) {
+        Objects.requireNonNull(geneScores);
+        for (GeneScore geneScore : geneScores) {
+            addGeneScore(geneScore);
+        }
+    }
+
     @JsonIgnore
     public GeneScore getTopGeneScore() {
         return topGeneScore;
@@ -371,6 +350,19 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     public List<GeneScore> getGeneScores() {
         return List.copyOf(geneScoreMap.values());
+    }
+
+    /**
+     * Returns a list of GeneScores with inheritance modes compatible with the filtered variants compatible modes of
+     * inheritance. This will only return a (potentially) populated list once a GeneScorer has been applied to the Gene
+     * @since 13.1.0
+     * @return A list of {@link GeneScore} with a compatible mode of inheritance.
+     */
+    public List<GeneScore> getCompatibleGeneScores() {
+        return this.geneScoreMap.entrySet().stream()
+                .filter(entry -> this.inheritanceModes.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
@@ -419,6 +411,11 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     public double getCombinedScore() {
         return topGeneScore.getCombinedScore();
+    }
+
+    @JsonGetter
+    public double pValue() {
+        return topGeneScore.pValue();
     }
 
     /**

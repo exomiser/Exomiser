@@ -264,6 +264,21 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testGetMaxFrequencyWhenNoData() {
+        assertThat(EMPTY_DATA.getMaxFrequency(), equalTo(null));
+    }
+
+    @Test
+    public void testGetMaxFrequencyWithData() {
+        Frequency maxFrequency = Frequency.of(GNOMAD_E_OTH, 89.5f);
+        Frequency minFrequency = Frequency.of(GNOMAD_G_AFR, 0.0002f);
+        Frequency midFrequency = Frequency.of(GNOMAD_E_AMR, 25.5f);
+        FrequencyData instance = FrequencyData.of(RS_ID, minFrequency, maxFrequency, midFrequency);
+        System.out.println(instance.getMaxFrequency());
+        assertThat(instance.getMaxFrequency(), equalTo(maxFrequency));
+    }
+
+    @Test
     public void testHasFrequencyOverPercentageValue() {
         float maxFreq = 0.05f;
         Frequency upper = Frequency.of(UNKNOWN, maxFreq);

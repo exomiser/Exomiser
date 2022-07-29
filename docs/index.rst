@@ -17,28 +17,38 @@ The functional annotation of variants is handled by the Jannovar library and use
 
 Variants are prioritised according to user-defined criteria on variant frequency, pathogenicity, quality, inheritance pattern, and model organism phenotype data. Predicted pathogenicity data is extracted from the dbNSFP resource. Variant frequency data is taken from the 1000 Genomes, ESP, TOPMed, UK10K, ExAC and gnomAD datasets. Subsets of these frequency and pathogenicity data can be defined to further tune the analysis. Cross-species phenotype comparisons come from our PhenoDigm tool powered by the OWLTools OWLSim algorithm.
 
-
 .. toctree::
-    :caption: Running the Exomiser
-    :name: running-it
-    :maxdepth: 2
+    :caption: Setup and Install
+    :name: setup
+    :maxdepth: 3
     :hidden:
 
     installation
-    getting_started
 
 .. toctree::
-    :caption: Interpretation of Results
-    :name: whats-it-all-mean
-    :maxdepth: 2
+    :caption: Running the Exomiser
+    :name: run
+    :maxdepth: 3
+    :hidden:
+
+    running
+    input_files_and_options
+    advanced_analysis
+    sv_prioritisation
+
+.. toctree::
+    :caption: Interpreting Results
+    :name: results
+    :maxdepth: 3
     :hidden:
 
     result_interpretation
+    acmg_assignment
 
 .. toctree::
     :caption: Publications
     :name: publications
-    :maxdepth: 1
+    :maxdepth: 3
     :hidden:
 
     publications

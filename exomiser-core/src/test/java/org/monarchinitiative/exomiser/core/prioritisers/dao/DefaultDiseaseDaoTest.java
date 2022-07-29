@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2019 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -63,12 +62,12 @@ public class DefaultDiseaseDaoTest {
 
     private final Disease disease = Disease.builder()
             .diseaseId("OMIM:101600")
-                .diseaseName("Craniofacial-skeletal-dermatologic dysplasia")
-                .associatedGeneId(2263)
-                .associatedGeneSymbol("FGFR2")
-                .diseaseType(Disease.DiseaseType.DISEASE)
-                .inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT)
-                .phenotypeIds(Arrays.asList("HP:0000174, HP:0000194, HP:0000218, HP:0000238, HP:0000244, HP:0000272, HP:0000303, HP:0000316, HP:0000322, HP:0000324, HP:0000327, HP:0000348, HP:0000431, HP:0000452, HP:0000453, HP:0000470, HP:0000486, HP:0000494, HP:0000508, HP:0000586, HP:0000678, HP:0001156, HP:0001249, HP:0002308, HP:0002676, HP:0002780, HP:0003041, HP:0003070, HP:0003196, HP:0003272, HP:0003307, HP:0003795, HP:0004209, HP:0004322, HP:0004440, HP:0005048, HP:0005280, HP:0005347, HP:0006101, HP:0006110, HP:0009602, HP:0009773, HP:0010055, HP:0010669, HP:0011304".split(", ")))
+            .diseaseName("Craniofacial-skeletal-dermatologic dysplasia")
+            .associatedGeneId(2263)
+            .associatedGeneSymbol("FGFR2")
+            .diseaseType(Disease.DiseaseType.DISEASE)
+            .inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT)
+            .phenotypeIds(List.of("HP:0000174, HP:0000194, HP:0000218, HP:0000238, HP:0000244, HP:0000272, HP:0000303, HP:0000316, HP:0000322, HP:0000324, HP:0000327, HP:0000348, HP:0000431, HP:0000452, HP:0000453, HP:0000470, HP:0000486, HP:0000494, HP:0000508, HP:0000586, HP:0000678, HP:0001156, HP:0001249, HP:0002308, HP:0002676, HP:0002780, HP:0003041, HP:0003070, HP:0003196, HP:0003272, HP:0003307, HP:0003795, HP:0004209, HP:0004322, HP:0004440, HP:0005048, HP:0005280, HP:0005347, HP:0006101, HP:0006110, HP:0009602, HP:0009773, HP:0010055, HP:0010669, HP:0011304".split(", ")))
             .build();
 
     @Test
@@ -124,7 +123,32 @@ public class DefaultDiseaseDaoTest {
                 .associatedGeneSymbol("GENE4")
                 .phenotypeIds(ImmutableList.of("HP:0000002"))
                 .build();
-        List<Disease> expected = Lists.newArrayList(disease) ;
+        List<Disease> expected = Lists.newArrayList(disease);
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(4444), equalTo(expected));
+    }
+
+    @Test
+    public void testMultipleDiseaseDataAssociatedWithGeneId() {
+        Disease disease1 = Disease.builder()
+                .diseaseId("OMIM:765432")
+                .diseaseName("Test multi-disease gene disease 1")
+                .diseaseType(Disease.DiseaseType.DISEASE)
+                .inheritanceMode(InheritanceMode.UNKNOWN)
+                .associatedGeneId(5555)
+                .associatedGeneSymbol("GENE5")
+                .phenotypeIds(ImmutableList.of("HP:0000003"))
+                .build();
+
+        Disease disease2 = Disease.builder()
+                .diseaseId("OMIM:765433")
+                .diseaseName("Test multi-disease gene disease 2")
+                .diseaseType(Disease.DiseaseType.DISEASE)
+                .inheritanceMode(InheritanceMode.UNKNOWN)
+                .associatedGeneId(5555)
+                .associatedGeneSymbol("GENE5")
+                .phenotypeIds(ImmutableList.of("HP:0000004"))
+                .build();
+
+        assertThat(instance.getDiseaseDataAssociatedWithGeneId(5555), equalTo(List.of(disease1, disease2)));
     }
 }

@@ -97,7 +97,7 @@ public class HgvsUtil {
             return getPrefix(variant) + (variant.start() + 1) + "del" + variant.ref()
                     .substring(variant.alt().length());
         }
-        int start = variant.startWithCoordinateSystem(CoordinateSystem.LEFT_OPEN) + length;
+        int start = variant.startWithCoordinateSystem(CoordinateSystem.zeroBased()) + length;
         int end = start + length - 1;
         // Need to adjust the start and end to report the DELETED section
         return getPrefix(variant) + start + "_" + end + "del" + variant.ref()

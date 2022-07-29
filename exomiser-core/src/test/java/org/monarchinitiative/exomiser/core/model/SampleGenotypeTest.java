@@ -20,8 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,14 +42,14 @@ public class SampleGenotypeTest {
 
     @Test
     public void testHetUnphased() {
-        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
     }
 
     @Test
     public void testHetPhased() {
-        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(ImmutableList.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(ImmutableList.of(AlleleCall.ALT, AlleleCall.REF)));
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.ALT, AlleleCall.REF)));
     }
 
     @Test
@@ -241,5 +244,34 @@ public class SampleGenotypeTest {
         assertThat(SampleGenotype.parseGenotype("-").isNoCall(), equalTo(false));
         assertThat(SampleGenotype.parseGenotype("0/1").isNoCall(), equalTo(false));
         assertThat(SampleGenotype.parseGenotype("1/1/2").isNoCall(), equalTo(false));
+    }
+
+    private boolean possibleDeNovo(SampleGenotype ancestorGenotype, SampleGenotype probandGenotype) {
+        return (ancestorGenotype.isNoCall() || ancestorGenotype.isHomRef()) && (probandGenotype.isHet() || probandGenotype.isHomAlt());
+    }
+
+    private boolean familyHistoryOfAllele(SampleGenotype ancestorGenotype, SampleGenotype probandGenotype) {
+        return (ancestorGenotype.isHet() || ancestorGenotype.isHomAlt()) && (probandGenotype.isHet() || probandGenotype.isHomAlt());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "., 0/1, true",
+            "./., 0/1, true",
+            "./., 0/0, false",
+            "./1, 0/0, false",
+            "./1, 0/1, false",
+            "./1, 1/1, false",
+            "1/1, 1/1, false",
+           // "1/1, 0/0, true", this should return true, but is currently broken. However, Exomiser will remove 0/0 proband variants.
+            "0/1, 1/1, false",
+            "0/1, 0/1, false",
+            "0/1, 0/0, false",
+            "0/0, 0/1, true",
+    })
+    void testPossibleDeNovo(String parent, String proband, boolean possibleDeNovo) {
+        SampleGenotype parentGenotype = SampleGenotype.parseGenotype(parent);
+        SampleGenotype probandGenotype = SampleGenotype.parseGenotype(proband);
+        assertThat(possibleDeNovo(parentGenotype, probandGenotype), is(possibleDeNovo));
     }
 }

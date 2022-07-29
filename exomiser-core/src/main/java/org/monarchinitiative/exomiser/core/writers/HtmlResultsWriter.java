@@ -43,6 +43,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 
@@ -132,8 +134,24 @@ public class HtmlResultsWriter implements ResultsWriter {
         // For the time being we're going to maintain the original behaviour (UCSC)
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
-        context.setVariable("transcriptDb", "ENSEMBL");
+        var transcriptDb = analysisResults.getContributingVariants().stream()
+                .flatMap(variantEvaluation -> variantEvaluation.getTranscriptAnnotations().stream())
+                .findFirst()
+                .map(TranscriptAnnotation::getAccession)
+                .map(value -> {
+                    if (value.startsWith("ENST")) {
+                        return "ENSEMBL";
+                    } else if (value.startsWith("uc")) {
+                        return "UCSC";
+                    } else if (value.startsWith("NM") || value.startsWith("NR") || value.startsWith("XM") || value.startsWith("XR")) {
+                        return "REFSEQ";
+                    }
+                    return "";
+                })
+                .orElse("ENSEMBL");
+        context.setVariable("transcriptDb", transcriptDb);
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
+        context.setVariable("pValueFormatter", new DecimalFormat("0.0E0"));
         return context;
     }
 

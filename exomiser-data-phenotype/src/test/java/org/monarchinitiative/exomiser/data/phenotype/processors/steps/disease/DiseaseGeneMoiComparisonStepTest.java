@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,7 @@
 package org.monarchinitiative.exomiser.data.phenotype.processors.steps.disease;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.junitpioneer.jupiter.TempDirectory;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.disease.DiseaseGeneMoiComparison;
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLineWriter;
@@ -35,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@ExtendWith(TempDirectory.class)
 class DiseaseGeneMoiComparisonStepTest {
 
     @Test

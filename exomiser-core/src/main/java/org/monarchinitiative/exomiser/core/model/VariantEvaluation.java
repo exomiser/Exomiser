@@ -84,6 +84,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     private final Set<ModeOfInheritance> contributingModes;
     private Set<ModeOfInheritance> compatibleInheritanceModes;
 
+
     private VariantEvaluation(Builder builder) {
         super(builder);
 
@@ -174,14 +175,14 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (isSymbolic()) {
             // can be searched for in gnomad like so:
             // https://gnomad.broadinstitute.org/region/4-65216746-65216746-G-<INS:ME:ALU>?dataset=gnomad_sv_r2_1
-            return contig().name() + '-' + start() + '-' + end() + '-' + ref() + '-' + alt() + ' ' + unitLength();
+            return contig().name() + '-' + start() + '-' + end() + '-' + ref() + '-' + alt();
         }
         // can be searched for in gnomad like so:
         // https://gnomad.broadinstitute.org/variant/X-31517201-T-C
         return contig().name() + '-' + start() + '-' + ref() + '-' + alt();
     }
 
-    private String unitLength() {
+    public String changeLengthString() {
         int length = Math.abs(changeLength());
         if (length < 1000) {
             return length + "bp";
@@ -531,16 +532,25 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return Objects.equals(this.ref(), other.ref()) && Objects.equals(this.alt(), other.alt());
     }
 
+    @Override
     public String toString() {
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
+
+    // TODO - Will Composition make Breakends work?
+    // VariantEvaluation implements Variant, VariantAnnotations,
+    //    Variant
+    //    VariantContext
+    //    VariantAnnotations
+    //    pass/fail filters & priorityResults...
+    // TODO: Delete AbstractVariant add variantAnnotations to Builder
 
     /**
      * @return
@@ -662,7 +672,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return this;
         }
 
-        Builder compatibleInheritanceModes(Set<ModeOfInheritance> compatibleInheritanceModes) {
+        public Builder compatibleInheritanceModes(Set<ModeOfInheritance> compatibleInheritanceModes) {
             this.compatibleInheritanceModes = Objects.requireNonNull(compatibleInheritanceModes);
             return this;
         }

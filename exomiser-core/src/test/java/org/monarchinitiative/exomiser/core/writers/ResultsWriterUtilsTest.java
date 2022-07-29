@@ -29,6 +29,8 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -57,31 +59,27 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class ResultsWriterUtilsTest {
 
     private static final String DEFAULT_OUTPUT_DIR = "results";
     private final Path vcfPath = Paths.get("wibble");
     
     @Mock
-    Gene passedGeneOne;
+    private Gene passedGeneOne;
     @Mock
-    Gene passedGeneTwo;
+    private Gene passedGeneTwo;
     @Mock
-    Gene failedGene;
+    private Gene failedGene;
     
-    @BeforeEach
-    public void before() {
+    public void registerMocks() {
         Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(failedGene.passedFilters()).thenReturn(Boolean.FALSE);
     }
 
     private List<Gene> getGenes() {
-        List<Gene> genes = new ArrayList<>();
-        genes.add(passedGeneOne);
-        genes.add(passedGeneTwo);
-        genes.add(failedGene);
+        List<Gene> genes = List.of(passedGeneOne, passedGeneTwo, failedGene);
+        registerMocks();
         return genes;
     }
 
@@ -94,7 +92,7 @@ public class ResultsWriterUtilsTest {
     @Test
     void testEmptyOutputPrefixUsesVcfFileName() {
         String result = ResultsWriterUtils.makeOutputFilename(Paths.get("/data/vcf/sample1_genome.vcf.gz"), "", OutputFormat.TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/sample1_genome_exomiser_AD.variants.tsv"));
+        assertThat(result, equalTo("results/sample1_genome-exomiser_AD.variants.tsv"));
     }
 
     @Test
@@ -102,7 +100,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
         OutputSettings settings = OutputSettings.builder().build();
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AD.genes.tsv"));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.genes.tsv"));
     }
 
     @Test
@@ -110,15 +108,14 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         OutputSettings settings = OutputSettings.builder().build();
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AR.vcf"));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.vcf"));
     }
 
     @Test
     public void testThatSpecifiedOutputFormatDoesNotOverwriteGivenOutputPrefixFileExtension() {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
-        OutputSettings settings = OutputSettings.builder().outputPrefix(outputPrefix).build();
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.X_DOMINANT);
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, outputPrefix, testedFormat, ModeOfInheritance.X_DOMINANT);
         assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml_XD.vcf"));
     }
     
@@ -127,40 +124,38 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.HTML;
         OutputSettings settings = OutputSettings.builder().build();
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html"));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
     }
     
     @Test
     public void testOutFileNameIsCombinationOfOutPrefixAndOutFormat() {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009";
-        OutputSettings settings = OutputSettings.builder().outputPrefix(outFilePrefix).build();
-        String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, outFilePrefix, outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
     }
 
     @Test
     public void testOutputFileNameModeOfInheritanceExtensions() {
         OutputFormat testedFormat = OutputFormat.HTML;
-        OutputSettings settings = OutputSettings.builder().build();
 
         String any = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.ANY);
-        assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser.html"));
+        assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AD.html"));
+        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.html"));
 
         String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_AR.html"));
+        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.html"));
 
         String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XD.html"));
+        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XD.html"));
 
         String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_RECESSIVE);
-        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_XR.html"));
+        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XR.html"));
 
         String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.MITOCHONDRIAL);
-        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble_exomiser_MT.html"));
+        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_MT.html"));
     }
 
     @Test
@@ -210,24 +205,29 @@ public class ResultsWriterUtilsTest {
 
     @Test
     public void testMaxPassedGenesWhereMaxGenesIsZero() {
-        List<Gene> allPassedGenes = new ArrayList<>();
-        allPassedGenes.add(passedGeneOne);
-        allPassedGenes.add(passedGeneTwo);
-        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 0), equalTo(allPassedGenes));
-    } 
-    
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 0), equalTo(List.of(passedGeneOne, passedGeneTwo)));
+    }
+
     @Test
     public void testMaxPassedGenesWhereMaxGenesIsOne() {
-        List<Gene> onePassed = new ArrayList<>();
-        onePassed.add(passedGeneOne);
-        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 1), equalTo(onePassed));
-    } 
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 1), equalTo(List.of(passedGeneOne)));
+    }
     @Test
     public void testMaxPassedGenesWhereMaxGenesIsGreaterThanInputSize() {
-        List<Gene> allPassedGenes = new ArrayList<>();
-        allPassedGenes.add(passedGeneOne);
-        allPassedGenes.add(passedGeneTwo);
-        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 100), equalTo(allPassedGenes));
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 100), equalTo(List.of(passedGeneOne, passedGeneTwo)));
     }
-    
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', " + DEFAULT_OUTPUT_DIR,
+            "wibble, ''",
+            "/, /",
+            "/tmp, /tmp",
+            "/tmp/wibble/hoopy/frood, /tmp/wibble/hoopy",
+            "wibble/hoopy/frood, wibble/hoopy",
+    })
+    void testResolveOutputDirEmptyPrefixReturnsDefaultOutput(String outputPrefix, String expectedDir) {
+        Path outputDir = ResultsWriterUtils.resolveOutputDir(outputPrefix);
+        assertThat(outputDir, equalTo(Path.of(expectedDir)));
+    }
 }

@@ -1,4 +1,39 @@
 # -*- coding: utf-8 -*-
+
+#  The Exomiser - A tool to annotate and prioritize genomic variants
+#
+#  Copyright (c) 2016-2022 Queen Mary University of London.
+#  Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Affero General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Affero General Public License for more details.
+#
+#  You should have received a copy of the GNU Affero General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#  The Exomiser - A tool to annotate and prioritize genomic variants
+#
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Affero General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Affero General Public License for more details.
+#
+#  You should have received a copy of the GNU Affero General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -20,13 +55,13 @@
 # -- Project information -----------------------------------------------------
 
 project = u'exomiser'
-copyright = u'2018, Jules Jacobsen, Damian Smedley, Peter Robinson'
+copyright = u'2021, Jules Jacobsen, Damian Smedley, Peter Robinson'
 author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
-version = u''
+version = u'13.1.0'
 # The full version, including alpha/beta/rc tags
-release = u'10.0.0'
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -76,6 +111,7 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_logo = '.static/exomiser-logo_white-banner.png'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -129,7 +165,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'exomiser.tex', u'exomiser Documentation',
+    (master_doc, 'exomiser.tex', u'Exomiser Documentation',
      u'Jules Jacobsen, Damian Smedley, Peter Robinson', 'manual'),
 ]
 
@@ -139,7 +175,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'exomiser', u'exomiser Documentation',
+    (master_doc, 'exomiser', u'Exomiser Documentation',
      [author], 1)
 ]
 

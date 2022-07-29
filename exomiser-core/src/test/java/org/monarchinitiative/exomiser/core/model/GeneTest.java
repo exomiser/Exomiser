@@ -25,6 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +35,9 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.writers.JsonVariantMixin;
+import org.monarchinitiative.svart.Variant;
 
 import java.util.*;
 
@@ -717,5 +723,43 @@ public class GeneTest {
     @Test
     public void testToString() {
         assertThat(instance.toString(), equalTo("Gene{geneSymbol='GENE1', entrezGeneId=1234567, compatibleWith=[], filterStatus=PASSED, failedFilterTypes=[], passedFilterTypes=[], combinedScore=0.0, phenotypeScore=0.0, variantScore=0.0, variants=0}"));
+    }
+
+    @Test
+    void testGetAssociatedDiseases() {
+        Gene instance = TestFactory.newGeneFGFR2();
+        assertThat(instance.getAssociatedDiseases().isEmpty(), is(true));
+        Disease pfeifferSyndrome = Disease.builder().diseaseId("OMIM:101600").diseaseName("Pfeiffer syndrome").build();
+        OmimPriorityResult priorityResult = new OmimPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 1.0, List.of(pfeifferSyndrome), Map.of());
+        instance.addPriorityResult(priorityResult);
+        assertThat(instance.getAssociatedDiseases(), equalTo(List.of(pfeifferSyndrome)));
+    }
+
+    @Test
+    public void testGetCompatibleGeneScores() throws Exception {
+        Gene instance = TestFactory.newGeneFGFR2();
+        // Hmm... this is a bit of a WFT - why does this need to be set rather than computed from the variants?
+        //  ... because it gets set once by the InheritanceModeAnalyser after all the variants have been filtered
+        instance.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(instance.getCompatibleGeneScores().isEmpty(), is(true));
+
+        GeneScore adGeneScore = GeneScore.builder()
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .phenotypeScore(0.5d)
+                .variantScore(0.5d)
+                .combinedScore(0.5d)
+                .pValue(0.0000001)
+                .build();
+
+        instance.addGeneScore(adGeneScore);
+
+        ObjectWriter objectWriter = new ObjectMapper()
+                .addMixIn(Variant.class, JsonVariantMixin.class)
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+                .writerWithDefaultPrettyPrinter();
+        System.out.println(objectWriter.writeValueAsString(instance));
+
+        assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(adGeneScore)));
     }
 }

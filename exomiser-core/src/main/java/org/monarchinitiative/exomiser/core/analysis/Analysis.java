@@ -36,12 +36,14 @@ import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -108,6 +110,17 @@ public class Analysis {
             }
         }
         return PriorityType.NONE;
+    }
+
+    @JsonIgnore
+    @Nullable
+    public Prioritiser<PriorityResult> getMainPrioritiser() {
+        for (AnalysisStep analysisStep : analysisSteps) {
+            if (analysisStep instanceof Prioritiser && !(analysisStep instanceof OmimPriority)) {
+                return (Prioritiser<PriorityResult>) analysisStep;
+            }
+        }
+        return null;
     }
 
     /**

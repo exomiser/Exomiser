@@ -187,6 +187,23 @@ public class AnalysisTest {
     }
 
     @Test
+    public void testGetMainPrioritiser() {
+        Prioritiser<? extends PriorityResult> prioritiser = new NoneTypePrioritiser();
+        Analysis instance = newBuilder()
+                .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
+                .addStep(prioritiser)
+                .build();
+        assertThat(instance.getMainPrioritiser(), equalTo(prioritiser));
+    }
+
+    @Test
+    public void testGetMainPrioritiserNoPrioritisersSet() {
+        Analysis instance = newBuilder()
+                .build();
+        assertThat(instance.getMainPrioritiser(), equalTo(null));
+    }
+
+    @Test
     public void testGetAnalysisStepsReturnsListOfStepsAdded() {
         List<AnalysisStep> steps = getAnalysisSteps();
 

@@ -1,5 +1,18 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 13.1.0 2022-07-29
+
+- Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
+- Added new combined score p-value
+- Added new TSV_GENE, TSV_VARIANT and VCF output files containing ranked genes/variants for all the assessed modes of
+  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files which
+  will be removed in the next major release__. See the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
+- New update online documentation! See https://exomiser.readthedocs.io/en/latest/
+- New Docker hub images for CLI and web on https://hub.docker.com/u/exomiser  
+- Added checks to ensure user specifies genome assembly if user specifies vcf path outside of phenopacket/analysis
+- Added `--output-prefix` option to enable output prefix directly on the command line
+- Updated examples to use the latest recommended settings as per preset derived from 100,000 genomes project
+
 ## 13.0.1 2021-11-23
 
 - Bug fix for issue where application fails to start when only specifying hg38 data in `application.properties`

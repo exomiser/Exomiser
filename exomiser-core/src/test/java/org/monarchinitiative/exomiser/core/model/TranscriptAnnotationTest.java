@@ -99,4 +99,16 @@ public class TranscriptAnnotationTest {
         assertThat(annotation.getDistanceFromNearestGene(), equalTo(value));
     }
 
+    @Test
+    public void testExonRank() {
+        TranscriptAnnotation annotation = TranscriptAnnotation.builder()
+                .rankType(TranscriptAnnotation.RankType.EXON)
+                .rank(2)
+                .rankTotal(5)
+                .build();
+        // i.e. Exon 2 of 5
+        assertThat(annotation.getRankType(), equalTo(TranscriptAnnotation.RankType.EXON));
+        assertThat(annotation.getRank(), equalTo(2));
+        assertThat(annotation.getRankTotal(), equalTo(5));
+    }
 }

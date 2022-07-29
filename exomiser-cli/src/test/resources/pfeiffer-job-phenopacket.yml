@@ -115,11 +115,11 @@ analysis:
     GNOMAD_G_OTH,
     GNOMAD_G_SAS
   ]
-  #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
-  #REMM is trained on non-coding regulatory regions
-  #*WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
-  #and updated their location in the application.properties. Exomiser will not run without this.
-  pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT]
+  # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+  # REMM is trained on non-coding regulatory regions
+  # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+  # and updated their location in the application.properties. Exomiser will not run without this.
+  pathogenicitySources: [ REVEL, MVP ]
   #this is the standard exomiser order.
   #all steps are optional
   steps: [
@@ -131,17 +131,17 @@ analysis:
     # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
     #intervalFilter: {bed: /full/path/to/bed_file.bed},
     #genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
-    #failedVariantFilter: {},
+      failedVariantFilter: { },
     #qualityFilter: {minQuality: 50.0},
-    variantEffectFilter: {
-      remove: [
-        FIVE_PRIME_UTR_EXON_VARIANT,
-        FIVE_PRIME_UTR_INTRON_VARIANT,
-        THREE_PRIME_UTR_EXON_VARIANT,
-        THREE_PRIME_UTR_INTRON_VARIANT,
-        NON_CODING_TRANSCRIPT_EXON_VARIANT,
-        UPSTREAM_GENE_VARIANT,
-        INTERGENIC_VARIANT,
+      variantEffectFilter: {
+        remove: [
+            FIVE_PRIME_UTR_EXON_VARIANT,
+            FIVE_PRIME_UTR_INTRON_VARIANT,
+            THREE_PRIME_UTR_EXON_VARIANT,
+            THREE_PRIME_UTR_INTRON_VARIANT,
+            NON_CODING_TRANSCRIPT_EXON_VARIANT,
+            UPSTREAM_GENE_VARIANT,
+            INTERGENIC_VARIANT,
         REGULATORY_REGION_VARIANT,
         CODING_TRANSCRIPT_INTRON_VARIANT,
         NON_CODING_TRANSCRIPT_INTRON_VARIANT,

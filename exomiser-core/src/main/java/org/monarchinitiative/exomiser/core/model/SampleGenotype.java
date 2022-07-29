@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -174,7 +173,7 @@ public class SampleGenotype {
     }
 
     public List<AlleleCall> getCalls() {
-        return ImmutableList.copyOf(alleleCalls);
+        return List.of(alleleCalls);
     }
 
     /**

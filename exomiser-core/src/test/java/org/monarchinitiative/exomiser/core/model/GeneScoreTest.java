@@ -22,10 +22,15 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,6 +70,14 @@ public class GeneScoreTest {
     }
 
     @Test
+    public void getPvalue() {
+        GeneScore instance = GeneScore.builder()
+                .pValue(0.00001d)
+                .build();
+        assertThat(instance.pValue(), equalTo(0.00001d));
+    }
+
+    @Test
     public void getPhenotypeScore() {
         GeneScore instance = GeneScore.builder()
                 .phenotypeScore(1d)
@@ -91,6 +104,16 @@ public class GeneScoreTest {
                 .contributingVariants(contributingVariants)
                 .build();
         assertThat(instance.getContributingVariants(), equalTo(contributingVariants));
+    }
+
+    @Test
+    void testAcmgAssignment() {
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(TestFactory.variantBuilder(1, 12335, "T", "C").build(), TestFactory.newGeneFGFR2().getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, Disease.builder().build(), AcmgEvidence.builder().build(), AcmgClassification.PATHOGENIC);
+
+        GeneScore instance = GeneScore.builder()
+                .acmgAssignments(List.of(acmgAssignment))
+                .build();
+        assertThat(instance.getAcmgAssignments(), equalTo(List.of(acmgAssignment)));
     }
 
     @Test
@@ -127,12 +150,14 @@ public class GeneScoreTest {
         GeneScore four = GeneScore.builder().combinedScore(0.25).geneIdentifier(second).build();
         GeneScore five = GeneScore.builder().combinedScore(0.25).geneIdentifier(third).build();
         GeneScore six = GeneScore.builder().combinedScore(0.125).geneIdentifier(third).build();
+        GeneScore seven = GeneScore.builder().combinedScore(0.0).phenotypeScore(0.6).geneIdentifier(second).build();
+        GeneScore eight = GeneScore.builder().combinedScore(0.0).phenotypeScore(0.5).geneIdentifier(first).build();
 
-        List<GeneScore> geneScores = Arrays.asList(two, three, six, one, five, four);
+        List<GeneScore> geneScores = Stream.of(two, three, six, one, five, four, eight, seven)
+                .sorted()
+                .collect(Collectors.toUnmodifiableList());
 
-        geneScores.sort(GeneScore::compareTo);
-
-        assertThat(geneScores, equalTo(List.of(one, two, three, four, five, six)));
+        assertThat(geneScores, equalTo(List.of(one, two, three, four, five, six, seven, eight)));
     }
 
     @Test
@@ -142,8 +167,9 @@ public class GeneScoreTest {
                 .combinedScore(1)
                 .phenotypeScore(1)
                 .variantScore(1)
+                .pValue(0.0001)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
-        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, contributingVariants=[]}"));
+        assertThat(instance.toString(), equalTo("GeneScore{geneIdentifier=GeneIdentifier{geneId='HGNC:12345', geneSymbol='TEST1', hgncId='', hgncSymbol='', entrezId='', ensemblId='', ucscId=''}, modeOfInheritance=AUTOSOMAL_DOMINANT, combinedScore=1.0, phenotypeScore=1.0, variantScore=1.0, pValue=1.0E-4, contributingVariants=[]}"));
     }
 }

@@ -38,10 +38,7 @@ import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -64,6 +61,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static org.monarchinitiative.exomiser.core.prioritisers.PriorityType.*;
@@ -314,12 +312,28 @@ public class SubmitJobController {
 
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleGenes, maxGenes);
         model.addAttribute("genes", passedGenes);
-        //this will change the links to the relevant resource.
+//this will change the links to the relevant resource.
         // For the time being we're going to maintain the original behaviour (UCSC)
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
-        model.addAttribute("transcriptDb", "UCSC");
+        var transcriptDb = analysisResults.getContributingVariants().stream()
+                .flatMap(variantEvaluation -> variantEvaluation.getTranscriptAnnotations().stream())
+                .findFirst()
+                .map(TranscriptAnnotation::getAccession)
+                .map(value -> {
+                    if (value.startsWith("ENST")) {
+                        return "ENSEMBL";
+                    } else if (value.startsWith("uc")) {
+                        return "UCSC";
+                    } else if (value.startsWith("NM") || value.startsWith("NR") || value.startsWith("XM") || value.startsWith("XR")) {
+                        return "REFSEQ";
+                    }
+                    return "";
+                })
+                .orElse("ENSEMBL");
+        model.addAttribute("transcriptDb", transcriptDb);
         model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
+        model.addAttribute("pValueFormatter", new DecimalFormat("0.0E0"));
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {

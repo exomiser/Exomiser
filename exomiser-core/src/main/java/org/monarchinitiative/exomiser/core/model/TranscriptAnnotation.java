@@ -22,12 +22,17 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class TranscriptAnnotation {
+
+    public enum RankType {
+        EXON, INTRON, UNDEFINED
+    }
 
     private static final TranscriptAnnotation EMPTY = TranscriptAnnotation.builder().build();
 
@@ -40,6 +45,13 @@ public class TranscriptAnnotation {
     private final String hgvsCdna;
     private final String hgvsProtein;
 
+    // exon / intron 'rank' e.g. lies in Exon (rank) 3 of (totalRank) 4
+    private final RankType rankType;
+    // 1-based intron/exon rank
+    private final int rank;
+    // total number of introns/exons for this transcript
+    private final int rankTotal;
+
     private final int distanceFromNearestGene;
 
     private TranscriptAnnotation(Builder builder) {
@@ -49,6 +61,9 @@ public class TranscriptAnnotation {
         this.hgvsGenomic = builder.hgvsGenomic;
         this.hgvsCdna = builder.hgvsCdna;
         this.hgvsProtein = builder.hgvsProtein;
+        this.rankType = builder.rankType;
+        this.rank = builder.rank;
+        this.rankTotal = builder.rankTotal;
         this.distanceFromNearestGene = builder.distanceFromNearestGene;
     }
 
@@ -80,6 +95,18 @@ public class TranscriptAnnotation {
         return hgvsProtein;
     }
 
+    public RankType getRankType() {
+        return rankType;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public int getRankTotal() {
+        return rankTotal;
+    }
+
     public int getDistanceFromNearestGene() {
         return distanceFromNearestGene;
     }
@@ -89,18 +116,12 @@ public class TranscriptAnnotation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TranscriptAnnotation that = (TranscriptAnnotation) o;
-        return distanceFromNearestGene == that.distanceFromNearestGene &&
-                variantEffect == that.variantEffect &&
-                Objects.equals(geneSymbol, that.geneSymbol) &&
-                Objects.equals(accession, that.accession) &&
-                Objects.equals(hgvsGenomic, that.hgvsGenomic) &&
-                Objects.equals(hgvsCdna, that.hgvsCdna) &&
-                Objects.equals(hgvsProtein, that.hgvsProtein);
+        return rank == that.rank && rankTotal == that.rankTotal && distanceFromNearestGene == that.distanceFromNearestGene && variantEffect == that.variantEffect && geneSymbol.equals(that.geneSymbol) && accession.equals(that.accession) && hgvsGenomic.equals(that.hgvsGenomic) && hgvsCdna.equals(that.hgvsCdna) && hgvsProtein.equals(that.hgvsProtein) && rankType == that.rankType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variantEffect, geneSymbol, accession, hgvsGenomic, hgvsCdna, hgvsProtein, distanceFromNearestGene);
+        return Objects.hash(variantEffect, geneSymbol, accession, hgvsGenomic, hgvsCdna, hgvsProtein, rankType, rank, rankTotal, distanceFromNearestGene);
     }
 
     @Override
@@ -112,6 +133,9 @@ public class TranscriptAnnotation {
                 ", hgvsGenomic='" + hgvsGenomic + '\'' +
                 ", hgvsCdna='" + hgvsCdna + '\'' +
                 ", hgvsProtein='" + hgvsProtein + '\'' +
+                ", rankType='" + rankType + '\'' +
+                ", rank='" + rank + '\'' +
+                ", rankTotal='" + rankTotal + '\'' +
                 ", distanceFromNearestGene=" + distanceFromNearestGene +
                 '}';
     }
@@ -131,9 +155,13 @@ public class TranscriptAnnotation {
         private String hgvsCdna = "";
         private String hgvsProtein = "";
 
+        private RankType rankType = RankType.UNDEFINED;
+        private int rank = -1;
+        private int rankTotal = -1;
+
         private int distanceFromNearestGene = Integer.MIN_VALUE;
 
-        public Builder variantEffect(VariantEffect variantEffect) {
+        public Builder variantEffect(@Nonnull VariantEffect variantEffect) {
             this.variantEffect = variantEffect;
             return this;
         }
@@ -160,6 +188,21 @@ public class TranscriptAnnotation {
 
         public Builder hgvsProtein(String hgvsProtein) {
             this.hgvsProtein = hgvsProtein;
+            return this;
+        }
+
+        public Builder rankType(RankType rankType) {
+            this.rankType = rankType;
+            return this;
+        }
+
+        public Builder rankTotal(int rankTotal) {
+            this.rankTotal = rankTotal;
+            return this;
+        }
+
+        public Builder rank(int rank) {
+            this.rank = rank;
             return this;
         }
 

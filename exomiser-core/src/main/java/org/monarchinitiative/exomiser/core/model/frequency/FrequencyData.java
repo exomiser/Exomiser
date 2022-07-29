@@ -261,6 +261,31 @@ public class FrequencyData {
     }
 
     /**
+     *
+     * @return The maximum {@link Frequency} or null
+     * @since 13.1.0
+     */
+    @JsonIgnore
+    @Nullable
+    public Frequency getMaxFrequency() {
+        if (this.size == 0) {
+            return null;
+        }
+        float max = 0.0f;
+        int maxSource = 0;
+
+        for(int i = 0; i < this.size; ++i) {
+            float value = this.values[i];
+            if (value > max) {
+                max = value;
+                maxSource = i;
+            }
+        }
+
+        return Frequency.of(this.sources[maxSource], max);
+    }
+
+    /**
      * @return returns a numerical value that is closer to one, the rarer
      * the variant is. If a variant is not entered in any of the data
      * sources, it returns one (highest score). Otherwise, it identifies the

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2020 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -77,8 +77,9 @@ public class MainConfig {
         String dataDirValue = env.getProperty("exomiser.data-directory");
         if (dataDirValue == null || dataDirValue.isEmpty()) {
             return findDefaultDataDir(exomiserHome);
+        } else {
+            logger.debug("Data source directory defined in properties as: {}", dataDirValue);
         }
-        logger.info("Data source directory defined in properties as: {}", dataDirValue);
         Path dataPath = exomiserHome.resolve(dataDirValue).toAbsolutePath();
         logger.info("Root data source directory set to: {}", dataPath);
         return dataPath;

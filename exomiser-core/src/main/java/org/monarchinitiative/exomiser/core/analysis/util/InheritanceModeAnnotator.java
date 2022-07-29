@@ -152,6 +152,8 @@ public class InheritanceModeAnnotator {
             FrequencyData frequencyData = variantEvaluation.getFrequencyData();
             if (frequencyData.getMaxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
                 compatibleVariants.add(variantEvaluation);
+            } else {
+                logger.debug("FAIL variant freq {} >= {} (maxFreq for MOI) {}", frequencyData.getMaxFreq(), maxFreqForMode, variantEvaluation);
             }
         }
         return compatibleVariants;
