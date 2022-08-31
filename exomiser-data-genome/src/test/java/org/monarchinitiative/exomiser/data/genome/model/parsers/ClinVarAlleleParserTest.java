@@ -180,6 +180,22 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
 
         assertParseLineEquals(line, ImmutableList.of(expected));
     }
+
+    @Test
+    public void testParseClinSigNoNumbers() {
+        String line = "3	39307162	25511	G	A	.	.	ALLELEID=36774;CLNHGVS=NC_000003.11:g.39307162G>A;CLNREVSTAT=no_interpretation_for_the_single_variant;CLNSIGINCL=8152:Pathogenic|_protective|_risk_factor";
+        Allele expected = new Allele(3, 39307162, "G", "A");
+        expected.setRsId("25511");
+        expected.setClinVarData(ClinVarData.builder()
+                .alleleId("36774")
+                .reviewStatus("no interpretation for the single variant")
+                .includedAlleles(ImmutableMap.of(
+                        "8152", ClinVarData.ClinSig.PATHOGENIC
+                ))
+                .build());
+
+        assertParseLineEquals(line, ImmutableList.of(expected));
+    }
     //CLNSIGINCL=424752:Pathogenic
     //CLNSIGINCL=15127:other|15128:other|15334:Pathogenic|15335:Pathogenic|15336:Pathogenic|15337:Pathogenic|15610:Pathogenic|15612:other
 

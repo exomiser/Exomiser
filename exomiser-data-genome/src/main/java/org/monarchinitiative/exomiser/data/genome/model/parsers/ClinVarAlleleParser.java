@@ -94,11 +94,13 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
     private Map<String,ClinSig> parseIncludedAlleles(String value) {
         //15127:other|15128:other|15334:Pathogenic|
-        Map<String,ClinSig> includedAlleles = new HashMap<>();
+        Map<String, ClinSig> includedAlleles = new HashMap<>();
         String[] incls = value.split("\\|");
         for (String inc : incls) {
             String[] fields = inc.split(":");
-            includedAlleles.put(fields[0], parseClinSig(fields[1]));
+            if (fields.length == 2) {
+                includedAlleles.put(fields[0], parseClinSig(fields[1]));
+            }
         }
         return includedAlleles;
     }
