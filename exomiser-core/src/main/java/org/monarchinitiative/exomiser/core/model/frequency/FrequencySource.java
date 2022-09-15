@@ -24,8 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import com.google.common.collect.Sets;
-
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -88,11 +87,13 @@ public enum FrequencySource {
     GONL("GoNL"),
     GNOMAD_SV("gnomAD_SV");
 
-    public static final Set<FrequencySource> ALL_ESP_SOURCES = Sets.immutableEnumSet(EnumSet.range(ESP_AFRICAN_AMERICAN, ESP_ALL));
+    public static final Set<FrequencySource> ALL_ESP_SOURCES = Collections.unmodifiableSet(EnumSet.range(ESP_AFRICAN_AMERICAN, ESP_ALL));
 
-    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Sets.immutableEnumSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
+    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Collections.unmodifiableSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
 
-    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Sets.immutableEnumSet(EnumSet.range(THOUSAND_GENOMES, GNOMAD_G_SAS));
+    public static final Set<FrequencySource> ALL_GNOMAD_SOURCES = Collections.unmodifiableSet(EnumSet.range(GNOMAD_E_AFR, GNOMAD_G_SAS));
+
+    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Collections.unmodifiableSet(EnumSet.range(THOUSAND_GENOMES, GNOMAD_G_SAS));
 
     private final String source;
 
@@ -104,4 +105,7 @@ public enum FrequencySource {
         return source;
     }
 
+    public boolean isGnomadSource() {
+        return ALL_GNOMAD_SOURCES.contains(this);
+    }
 }

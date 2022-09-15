@@ -371,7 +371,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
      */
     private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
-        if (!frequencyData.hasEspData() && !frequencyData.hasExacData() && !frequencyData.hasDbSnpData()) {
+        if (!frequencyData.hasEspData() && !frequencyData.hasGnomadData()) {
             acmgEvidenceBuilder.add(PM2);
         }
         // TODO: require disease incidence in carriers and penetrance to be able to calculate expected frequencies for AR

@@ -36,7 +36,7 @@ import java.util.*;
 public class FrequencyData {
 
     private static final String VCF_EMPTY_VALUE = ".";
-    private static final FrequencyData EMPTY_DATA = new FrequencyData("", Collections.emptyList());
+    private static final FrequencyData EMPTY_DATA = new FrequencyData("", List.of());
 
     private static final int NUM_FREQ_SOURCES = FrequencySource.values().length;
 
@@ -58,19 +58,19 @@ public class FrequencyData {
     }
 
     public static FrequencyData of(String rsId, Frequency frequency) {
-        return of(rsId, Collections.singletonList(frequency));
+        return of(rsId, List.of(frequency));
     }
 
     public static FrequencyData of(String rsId, Frequency... frequency) {
-        return of(rsId, Arrays.asList(frequency));
+        return of(rsId, List.of(frequency));
     }
 
     public static FrequencyData of(Frequency... frequency) {
-        return of(Arrays.asList(frequency));
+        return of(List.of(frequency));
     }
 
     public static FrequencyData of(Frequency frequency) {
-        return of(Collections.singletonList(frequency));
+        return of(List.of(frequency));
     }
 
     public static FrequencyData empty() {
@@ -178,12 +178,8 @@ public class FrequencyData {
     @JsonIgnore
     public boolean hasEspData() {
         for (FrequencySource dataSource : sources) {
-            switch (dataSource) {
-                case ESP_AFRICAN_AMERICAN:
-                case ESP_EUROPEAN_AMERICAN:
-                case ESP_ALL:
-                    return true;
-                default:
+            if (FrequencySource.ALL_ESP_SOURCES.contains(dataSource)){
+                return true;
             }
         }
         return false;
@@ -192,16 +188,18 @@ public class FrequencyData {
     @JsonIgnore
     public boolean hasExacData() {
         for (FrequencySource dataSource : sources) {
-            switch (dataSource) {
-                case EXAC_AFRICAN_INC_AFRICAN_AMERICAN:
-                case EXAC_AMERICAN:
-                case EXAC_EAST_ASIAN:
-                case EXAC_FINNISH:
-                case EXAC_NON_FINNISH_EUROPEAN:
-                case EXAC_OTHER:
-                case EXAC_SOUTH_ASIAN:
-                    return true;
-                default:
+            if (FrequencySource.ALL_EXAC_SOURCES.contains(dataSource)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @JsonIgnore
+    public boolean hasGnomadData() {
+        for (FrequencySource dataSource : sources) {
+            if (dataSource.isGnomadSource()) {
+                return true;
             }
         }
         return false;

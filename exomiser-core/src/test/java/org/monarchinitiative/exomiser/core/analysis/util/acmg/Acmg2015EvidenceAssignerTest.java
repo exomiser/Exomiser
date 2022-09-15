@@ -71,7 +71,7 @@ class Acmg2015EvidenceAssignerTest {
                 .build();
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.START_LOST)
                 .annotations(List.of(transcriptAnnotation))
                 .build();
@@ -113,7 +113,7 @@ class Acmg2015EvidenceAssignerTest {
                 .build();
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.START_LOST)
                 .annotations(List.of(transcriptAnnotation))
                 .build();
@@ -136,7 +136,7 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. PTEN is a haploinsufficient gene
                 .geneSymbol("PTEN")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 // n.b. missense variant - will not trigger PVS1
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(SampleGenotypes.of(
@@ -165,7 +165,7 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. PTEN is a haploinsufficient gene
                 .geneSymbol("PTEN")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 // n.b. missense variant - will not trigger PVS1
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(SampleGenotypes.of(
@@ -218,7 +218,7 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. PTEN is a haploinsufficient gene
                 .geneSymbol("PTEN")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 // n.b. missense variant - will not trigger PVS1
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(SampleGenotypes.of(
@@ -251,7 +251,7 @@ class Acmg2015EvidenceAssignerTest {
         // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89000000, "A", "G")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 .sampleGenotypes(SampleGenotypes.of(
                         SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
                 ))
@@ -280,7 +280,7 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. PTEN is a haploinsufficient gene
                 .geneSymbol("PTEN")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 // n.b. missense variant - will not trigger PVS1
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(SampleGenotypes.of(
@@ -312,7 +312,7 @@ class Acmg2015EvidenceAssignerTest {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("MUC6")
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.STOP_LOST)
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
@@ -337,7 +337,7 @@ class Acmg2015EvidenceAssignerTest {
                 // haploinsufficient gene
                 .geneSymbol("PTEN")
                 .annotations(List.of(startLostAnnotation)) // prevent PM4 as PVS1 already triggered
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.STOP_LOST)
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
@@ -353,7 +353,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 1.0f)
@@ -374,7 +374,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(pathogenicitySource, pathogenicityScore)))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .build();
@@ -390,7 +390,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
@@ -408,7 +408,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
@@ -427,7 +427,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 0.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 0.0f)
@@ -448,7 +448,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(pathogenicitySource, pathogenicityScore)))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .build();
@@ -463,7 +463,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 0.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 0.0f),
@@ -491,7 +491,7 @@ class Acmg2015EvidenceAssignerTest {
             Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
             VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                     .geneSymbol("PTEN")
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(
                             // REVEL, if present, should be used as the sole means of classifying the PP3/BP4
                             PathogenicityScore.of(PathogenicitySource.REVEL, revelScore),
@@ -514,7 +514,7 @@ class Acmg2015EvidenceAssignerTest {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
@@ -543,7 +543,7 @@ class Acmg2015EvidenceAssignerTest {
                     // n.b. PTEN is a haploinsufficient gene
                     .geneSymbol("PTEN")
                     // n.b. has frequency data - will not trigger PM2
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                     // n.b. missense variant - will not trigger PVS1
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(reviewStatus).build()))
@@ -573,7 +573,7 @@ class Acmg2015EvidenceAssignerTest {
                     // n.b. PTEN is a haploinsufficient gene
                     .geneSymbol("PTEN")
                     // n.b. has frequency data - will not trigger PM2
-                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, 1.42f)))
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 1.42f)))
                     // n.b. missense variant - will not trigger PVS1
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).reviewStatus(reviewStatus).build()))
@@ -594,7 +594,7 @@ class Acmg2015EvidenceAssignerTest {
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
                 // high allele freq - triggers BA1 assignment
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 5.0f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 5.0f)))
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
@@ -615,7 +615,7 @@ class Acmg2015EvidenceAssignerTest {
                 // n.b. PTEN is a haploinsufficient gene
                 .geneSymbol("PTEN")
                 // n.b. has frequency data - will not trigger PM2
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.1f)))
                 // n.b. missense variant - will not trigger PVS1
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .sampleGenotypes(SampleGenotypes.of(
