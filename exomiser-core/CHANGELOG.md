@@ -1,8 +1,21 @@
 # The Exomiser - Core Library Changelog
 
+## 14.0.0 202?-??-??
+
+This release **requires data version >= 2210** and **Java version >= 17** (the most recent LTS release).
+
+API breaking changes:
+
+
+New APIs:
+- New `AlleleData` class to encapsulate building AlleleProto.Frequency and AlleleProto.PathogenicityScore instances
+
+Other changes:
+- Updated Spring Boot to version 2.7.3
+ 
 ## 13.1.0 2022-07-29
 
-The three new features for this release is the autoated ACMG classification of small sequence variants, calculating
+The three new features for this release is the automated ACMG classification of small sequence variants, calculating
 p-values for the combined scores and providing new and more interpretable TSV and VCF output files.
 
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
