@@ -165,7 +165,9 @@ public class GenomeDatabaseBuildRunner {
     }
 
     private DataSource createDataSource(Path databasePath) {
-        String initSql = "MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;MV_STORE=FALSE;";
+        // adding DB_CLOSE_ON_EXIT=FALSE option required to prevent errors being thrown when using the shutdown_compact
+        // migration to reduce the database size when we're finished loading it.
+        String initSql = "MODE=PostgreSQL;CACHE_SIZE=65536;LOCK_MODE=0;DB_CLOSE_ON_EXIT=FALSE;";
         String url = String.format("jdbc:h2:file:%s;%s", databasePath.toAbsolutePath(), initSql);
         return DataSourceBuilder.create()
                 .type(HikariDataSource.class)
