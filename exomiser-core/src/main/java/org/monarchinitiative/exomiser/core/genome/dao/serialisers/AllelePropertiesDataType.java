@@ -20,14 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import org.h2.mvstore.DataUtils;
-import org.h2.mvstore.WriteBuffer;
+import com.google.protobuf.Parser;
 import org.h2.mvstore.type.DataType;
-import org.h2.util.Utils;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
-
-import java.nio.ByteBuffer;
 
 /**
  * Specialised {@link DataType} for (de)serialising {@link AlleleProperties} objects into and out of
@@ -35,51 +30,20 @@ import java.nio.ByteBuffer;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AllelePropertiesDataType implements DataType {
+public class AllelePropertiesDataType extends ProtobufDataType<AlleleProperties> {
 
     public static final AllelePropertiesDataType INSTANCE = new AllelePropertiesDataType();
 
-    @Override
-    public int compare(Object a, Object b) {
-        return -1;
+    private AllelePropertiesDataType() {
     }
 
     @Override
-    public int getMemory(Object obj) {
-        AlleleProperties props = (AlleleProperties) obj;
-        return props.getSerializedSize();
+    public AlleleProperties[] createStorage(int size) {
+        return new AlleleProperties[size];
     }
 
     @Override
-    public void read(ByteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            obj[i] = read(buff);
-        }
-    }
-
-    @Override
-    public AlleleProperties read(ByteBuffer buff) {
-        int len = DataUtils.readVarInt(buff);
-        byte[] data = Utils.newBytes(len);
-        buff.get(data);
-        try {
-            return AlleleProperties.parseFrom(data);
-        } catch (InvalidProtocolBufferException e) {
-            throw new InvalidAlleleProtoException(e);
-        }
-    }
-
-    @Override
-    public void write(WriteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            write(buff, obj[i]);
-        }
-    }
-
-    @Override
-    public void write(WriteBuffer buff, Object obj) {
-        AlleleProperties props = (AlleleProperties) obj;
-        byte[] data = props.toByteArray();
-        buff.putVarInt(data.length).put(data);
+    public Parser<AlleleProperties> messageParser() {
+        return AlleleProperties.parser();
     }
 }
