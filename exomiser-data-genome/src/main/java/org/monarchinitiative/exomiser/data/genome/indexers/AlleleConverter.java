@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
 import java.util.Map;
 
@@ -61,15 +60,10 @@ public class AlleleConverter {
     public static AlleleProperties toAlleleProperties(Allele allele) {
         AlleleProperties.Builder builder = AlleleProperties.newBuilder();
         builder.setRsId(allele.getRsId());
-        addAllelePropertyValues(builder, allele.getValues());
+        builder.addAllFrequencies(allele.getFrequencies());
+        builder.addAllPathogenicityScores(allele.getPathogenicityScores());
         addClinVarData(builder, allele);
         return builder.build();
-    }
-
-    private static void addAllelePropertyValues(AlleleProperties.Builder builder, Map<AlleleProperty, Float> values) {
-        for (Map.Entry<AlleleProperty, Float> entry : values.entrySet()) {
-            builder.putProperties(entry.getKey().toString(), entry.getValue());
-        }
     }
 
     private static void addClinVarData(AlleleProperties.Builder builder, Allele allele) {
@@ -94,39 +88,23 @@ public class AlleleConverter {
     }
 
     private static ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinSig) {
-        switch (clinSig){
-            case BENIGN:
-                return ClinVar.ClinSig.BENIGN;
-            case BENIGN_OR_LIKELY_BENIGN:
-                return ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
-            case LIKELY_BENIGN:
-                return ClinVar.ClinSig.LIKELY_BENIGN;
-            case UNCERTAIN_SIGNIFICANCE:
-                return ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
-            case LIKELY_PATHOGENIC:
-                return ClinVar.ClinSig.LIKELY_PATHOGENIC;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case PATHOGENIC:
-                return ClinVar.ClinSig.PATHOGENIC;
-            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
-                return ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case AFFECTS:
-                return ClinVar.ClinSig.AFFECTS;
-            case ASSOCIATION:
-                return ClinVar.ClinSig.ASSOCIATION;
-            case DRUG_RESPONSE:
-                return ClinVar.ClinSig.DRUG_RESPONSE;
-            case NOT_PROVIDED:
-                return ClinVar.ClinSig.NOT_PROVIDED;
-            case OTHER:
-                return ClinVar.ClinSig.OTHER;
-            case PROTECTIVE:
-                return ClinVar.ClinSig.PROTECTIVE;
-            case RISK_FACTOR:
-                return ClinVar.ClinSig.RISK_FACTOR;
-        }
-        throw new IllegalArgumentException(clinSig + " not a recognised value");
+        return switch (clinSig) {
+            case BENIGN -> ClinVar.ClinSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN -> ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN -> ClinVar.ClinSig.LIKELY_BENIGN;
+            case UNCERTAIN_SIGNIFICANCE -> ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case LIKELY_PATHOGENIC -> ClinVar.ClinSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS -> ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case AFFECTS -> ClinVar.ClinSig.AFFECTS;
+            case ASSOCIATION -> ClinVar.ClinSig.ASSOCIATION;
+            case DRUG_RESPONSE -> ClinVar.ClinSig.DRUG_RESPONSE;
+            case NOT_PROVIDED -> ClinVar.ClinSig.NOT_PROVIDED;
+            case OTHER -> ClinVar.ClinSig.OTHER;
+            case PROTECTIVE -> ClinVar.ClinSig.PROTECTIVE;
+            case RISK_FACTOR -> ClinVar.ClinSig.RISK_FACTOR;
+        };
     }
 
 }

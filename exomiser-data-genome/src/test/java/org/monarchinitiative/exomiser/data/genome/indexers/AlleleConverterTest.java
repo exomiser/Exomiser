@@ -23,11 +23,11 @@ package org.monarchinitiative.exomiser.data.genome.indexers;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
 import java.util.EnumSet;
 
@@ -39,21 +39,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class AlleleConverterTest {
 
+    private static final AlleleKey ALLELE_KEY = AlleleKey.newBuilder()
+            .setChr(1)
+            .setPosition(2345)
+            .setRef("A")
+            .setAlt("C")
+            .build();
+
     private static final ClinVarData CLINVAR_DATA = ClinVarData.builder()
             .alleleId("12334")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE))
             .reviewStatus("yada-yada")
             .includedAlleles(ImmutableMap.of("455645", ClinVarData.ClinSig.LIKELY_PATHOGENIC))
-            .build();
-
-    private static final Allele ALLELE = makeAllele();
-
-    private static final AlleleKey ALLELE_KEY = AlleleKey.newBuilder()
-            .setChr(1)
-            .setPosition(2345)
-            .setRef("A")
-            .setAlt("C")
             .build();
 
     private static final ClinVar PROTO_CLINVAR = ClinVar.newBuilder()
@@ -65,19 +63,32 @@ public class AlleleConverterTest {
             .putIncludedAlleles("455645", ClinVar.ClinSig.LIKELY_PATHOGENIC)
             .build();
 
+    private static final AlleleProto.Frequency EXAC_AFR_FREQUENCY = AlleleProto.Frequency.newBuilder()
+            .setFrequencySource(AlleleProto.FrequencySource.EXAC_AFR)
+            .setAc(1)
+            .setAn(50000)
+            .build();
+
+    private static final AlleleProto.PathogenicityScore POLYPHEN_SCORE = AlleleProto.PathogenicityScore.newBuilder()
+            .setPathogenicitySource(AlleleProto.PathogenicitySource.POLYPHEN)
+            .setScore(1f)
+            .build();
+
     private static final AlleleProperties ALLELE_PROPERTIES = AlleleProperties.newBuilder()
             .setRsId("rs678910")
-            .putProperties("EXAC_AFR", 0.00056f)
+            .addFrequencies(EXAC_AFR_FREQUENCY)
             .setClinVar(PROTO_CLINVAR)
             .build();
 
     private static Allele makeAllele() {
         Allele allele = new Allele(1, 2345, "A", "C");
         allele.setRsId("rs678910");
-        allele.getValues().put(AlleleProperty.EXAC_AFR, 0.00056f);
+        allele.addFrequency(EXAC_AFR_FREQUENCY);
         allele.setClinVarData(CLINVAR_DATA);
         return allele;
     }
+
+    private static final Allele ALLELE = makeAllele();
 
     @Test
     public void convertKey() {
@@ -91,12 +102,14 @@ public class AlleleConverterTest {
 
     @Test
     public void mergeProperties() {
-        AlleleProperties toMerge = AlleleProperties.newBuilder().putProperties("POLYPHEN", 1f).build();
+        AlleleProperties toMerge = AlleleProperties.newBuilder()
+                .addPathogenicityScores(POLYPHEN_SCORE)
+                .build();
 
         AlleleProperties expected = AlleleProperties.newBuilder()
                 .setRsId("rs678910")
-                .putProperties("EXAC_AFR", 0.00056f)
-                .putProperties("POLYPHEN", 1f)
+                .addFrequencies(EXAC_AFR_FREQUENCY)
+                .addPathogenicityScores(POLYPHEN_SCORE)
                 .setClinVar(PROTO_CLINVAR)
                 .build();
 
@@ -107,12 +120,13 @@ public class AlleleConverterTest {
     public void mergePropertiesUsesOriginalRsidWhenPresent() {
         AlleleProperties toMerge = AlleleProperties.newBuilder()
                 .setRsId("Shouldn't be present in merged")
-                .putProperties("POLYPHEN", 1f).build();
+                .addPathogenicityScores(POLYPHEN_SCORE)
+                .build();
 
         AlleleProperties expected = AlleleProperties.newBuilder()
                 .setRsId("rs678910")
-                .putProperties("EXAC_AFR", 0.00056f)
-                .putProperties("POLYPHEN", 1f)
+                .addFrequencies(EXAC_AFR_FREQUENCY)
+                .addPathogenicityScores(POLYPHEN_SCORE)
                 .setClinVar(PROTO_CLINVAR)
                 .build();
 
@@ -123,17 +137,18 @@ public class AlleleConverterTest {
     public void mergePropertiesUsesNewRsidIfOriginalAbsent() {
 
         AlleleProperties original = AlleleProperties.newBuilder()
-                .putProperties("EXAC_AFR", 0.00056f)
+                .addFrequencies(EXAC_AFR_FREQUENCY)
                 .build();
 
         AlleleProperties toMerge = AlleleProperties.newBuilder()
                 .setRsId("rs45789")
-                .putProperties("POLYPHEN", 1f).build();
+                .addPathogenicityScores(POLYPHEN_SCORE)
+                .build();
 
         AlleleProperties expected = AlleleProperties.newBuilder()
                 .setRsId("rs45789")
-                .putProperties("EXAC_AFR", 0.00056f)
-                .putProperties("POLYPHEN", 1f)
+                .addFrequencies(EXAC_AFR_FREQUENCY)
+                .addPathogenicityScores(POLYPHEN_SCORE)
                 .build();
 
         assertThat(AlleleConverter.mergeProperties(original, toMerge), equalTo(expected));
