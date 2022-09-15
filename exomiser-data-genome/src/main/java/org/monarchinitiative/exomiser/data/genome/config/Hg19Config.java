@@ -107,7 +107,7 @@ public class Hg19Config extends ResourceConfig {
         // TOPMed removed as this is now part of dbSNP
         alleleResources.put("dbsnp", dbSnpAlleleResource());
         alleleResources.put("uk10k", uk10kAlleleResource());
-        alleleResources.put("exac", exacAlleleResource());
+        // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
         alleleResources.put("clinvar", clinVarAlleleResource());
