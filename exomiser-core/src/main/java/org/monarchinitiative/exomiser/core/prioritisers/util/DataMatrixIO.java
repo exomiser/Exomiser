@@ -82,6 +82,7 @@ public class DataMatrixIO {
             columns.put(geneId, colVals);
         }
         mvStore.commit();
+        mvStore.compactMoveChunks();
         mvStore.close();
     }
 
