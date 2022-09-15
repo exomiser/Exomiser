@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +49,7 @@ public abstract class ExacAlleleParser extends VcfAlleleParser {
         return populationKeys;
     }
 
+    //;AC_AFR=1;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=0;AC_NFE=0;AC_OTH=0;AC_SAS=0;AC_Male=1;AC_Female=0;AN_AFR=2596;AN_AMR=2182;AN_ASJ=264;AN_EAS=2126;AN_FIN=170;AN_NFE=5270;AN_OTH=438;AN_SAS=2534;AN_Male=8378;AN_Female=7202;AF_AFR=3.85208e-04;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=0.00000e+00;AF_NFE=0.00000e+00;AF_OTH=0.00000e+00;AF_SAS=0.00000e+00;AC_raw=1;AN_raw=51438;AF_raw=1.94409e-05;GC_raw=25718,1,0;GC=7789,1,0;Hom_AFR=0;Hom_AMR=0;Hom_ASJ=0;Hom_EAS=0;Hom_FIN=0;Hom_NFE=0;Hom_OTH=0;Hom_SAS=0;Hom_Male=0;Hom_Female=0;Hom_raw=0;Hom=0;POPMAX=AFR;AC_POPMAX=1;AN_POPMAX=2596;AF_POPMAX=3.85208e-04;
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
         Map<String, String> alleleCounts = getAlleleCountsFromInfoField(info);
@@ -56,9 +57,8 @@ public abstract class ExacAlleleParser extends VcfAlleleParser {
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
             //AC = AlleleCount, AN = AlleleNumber, freq as percentage = (AC/AN) * 100
-
-            Map<AlleleProperty, Float> allelePopFreqs = calculateAllelePopulationFrequencies(alleleCounts, i);
-            allele.getValues().putAll(allelePopFreqs);
+            var frequencies = parseAllelePopulationFrequencies(alleleCounts, i);
+            allele.addAllFrequencies(frequencies);
         }
         return alleles;
     }
@@ -69,7 +69,7 @@ public abstract class ExacAlleleParser extends VcfAlleleParser {
         String[] infoFields = info.split(";");
         for (String infoField : infoFields) {
             // freq data for each population e.g. AC_FIN=0,0;AN_FIN=6600;AC_EAS=0,1;AN_EAS=8540 etc...
-            if (infoField.startsWith(ExacPopulationKey.ALLELE_COUNT_PREFIX) || infoField.startsWith(ExacPopulationKey.ALLELE_NUMBER_PREFIX)) {
+            if (infoField.startsWith(ExacPopulationKey.ALLELE_COUNT_PREFIX) || infoField.startsWith(ExacPopulationKey.ALLELE_NUMBER_PREFIX) || infoField.startsWith("Hom")) {
                 String[] exACData = infoField.split("=");
                 exACFreqs.put(exACData[0], exACData[1]);
             }
@@ -77,20 +77,24 @@ public abstract class ExacAlleleParser extends VcfAlleleParser {
         return exACFreqs;
     }
 
-    private Map<AlleleProperty, Float> calculateAllelePopulationFrequencies(Map<String, String> alleleCounts, int i) {
-        Map<AlleleProperty, Float> allelePopFreqs = new EnumMap<>(AlleleProperty.class);
+    private List<AlleleProto.Frequency> parseAllelePopulationFrequencies(Map<String, String> alleleCounts, int i) {
+        List<AlleleProto.Frequency> frequencies = new ArrayList<>();
         for (ExacPopulationKey population : populationKeys) {
-            int alleleCount = parseAlleleCount(alleleCounts.get(population.AC), i);
+            int alleleCount = parseAlleleCount(alleleCounts.get(population.acPop()), i);
             if (alleleCount != 0) {
-                int alleleNumber = Integer.parseInt(alleleCounts.get(population.AN));
-                float minorAlleleFrequency = frequencyAsPercentage(alleleCount, alleleNumber);
-                allelePopFreqs.put(population.alleleProperty, minorAlleleFrequency);
+                int alleleNumber = Integer.parseInt(alleleCounts.get(population.anPop()));
+                int homozygotes = parseAlleleCount(alleleCounts.get(population.homPop()), i);
+                var frequency = Allele.buildFrequency(population.frequencySource(), alleleCount, alleleNumber, homozygotes);
+                frequencies.add(frequency);
             }
         }
-        return allelePopFreqs;
+        return frequencies;
     }
 
     private int parseAlleleCount(String alleleCountValue, int altAllelePos) {
+        if (alleleCountValue == null) {
+            return 0;
+        }
         String alleleCount = alleleCountValue.split(",")[altAllelePos];
         return Integer.parseInt(alleleCount);
     }

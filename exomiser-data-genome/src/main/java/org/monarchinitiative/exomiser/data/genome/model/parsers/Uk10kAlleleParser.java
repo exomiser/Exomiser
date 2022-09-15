@@ -20,13 +20,11 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,35 +69,29 @@ public class Uk10kAlleleParser extends VcfAlleleParser {
      */
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        List<String> alleleFrequencies = parseAlleleFrequencies(info);
+        String[] infoFields = info.split(";");
+        int an = 0;
+        String[] acValues = new String[0];
+
+        for (String infoField : infoFields) {
+            if (infoField.startsWith("AN=")) {
+                String anValue = infoField.substring(3);
+                an = Integer.parseInt(anValue);
+            }
+            if (infoField.startsWith("AC=")) {
+                acValues = infoField.substring(3).split(",");
+            }
+        }
+        if (acValues.length != alleles.size()) {
+            logger.warn("Incorrect number of alleles present: {}", info);
+            return alleles;
+        }
 
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
-            if (!alleleFrequencies.isEmpty()) {
-                String af = alleleFrequencies.get(i);
-                if (!af.isEmpty() && !af.equals(".")) {
-                    Float freq = 100f * Float.valueOf(af);
-                    allele.addValue(AlleleProperty.UK10K, freq);
-                }
-            }
+            var frequency = Allele.buildFrequency(AlleleProto.FrequencySource.UK10K, Integer.parseInt(acValues[i]), an);
+            allele.addFrequency(frequency);
         }
-
         return alleles;
-    }
-
-    private List<String> parseAlleleFrequencies(String info) {
-        //##INFO=<ID=AF,Number=A,Type=Float,Description="Allele frequency in called genotypes">
-        String[] infoFields = info.split(";");
-        for (String infoField : infoFields) {
-            if (infoField.startsWith("AF=")) {
-                return parseFrequencyField(3, infoField);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    private List<String> parseFrequencyField(int keyLength, String infoField) {
-        String[] freqs = infoField.substring(keyLength).split(",");
-        return Arrays.asList(freqs);
     }
 }

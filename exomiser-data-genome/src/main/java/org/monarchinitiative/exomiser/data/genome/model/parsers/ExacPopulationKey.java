@@ -20,108 +20,62 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.List;
-import java.util.Objects;
 
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.*;
+import static org.monarchinitiative.exomiser.data.genome.model.parsers.ExacPopulationKey.Population.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExacPopulationKey {
+public record ExacPopulationKey(AlleleProto.FrequencySource frequencySource, String acPop, String anPop, String homPop) {
 
     public static final String ALLELE_COUNT_PREFIX = "AC";
     public static final String ALLELE_NUMBER_PREFIX = "AN";
 
-    private static final String AC_AFR = "AC_AFR";
-    private static final String AN_AFR = "AN_AFR";
-    private static final String AC_AMR = "AC_AMR";
-    private static final String AN_AMR = "AN_AMR";
-    private static final String AC_EAS = "AC_EAS";
-    private static final String AN_EAS = "AN_EAS";
-    private static final String AC_FIN = "AC_FIN";
-    private static final String AN_FIN = "AN_FIN";
-    private static final String AC_NFE = "AC_NFE";
-    private static final String AN_NFE = "AN_NFE";
-    private static final String AC_OTH = "AC_OTH";
-    private static final String AN_OTH = "AN_OTH";
-    private static final String AC_SAS = "AC_SAS";
-    private static final String AN_SAS = "AN_SAS";
-    //ASJ is a gnomAD only population
-    private static final String AC_ASJ = "AC_ASJ";
-    private static final String AN_ASJ = "AN_ASJ";
+    enum Population {
+        AFR, AMR, EAS, FIN, NFE, OTH, SAS, ASJ, AMI, MID
+    }
 
-    public static final List<ExacPopulationKey> EXAC_EXOMES = ImmutableList.of(
-            ExacPopulationKey.of(EXAC_AFR, AC_AFR, AN_AFR),
-            ExacPopulationKey.of(EXAC_AMR, AC_AMR, AN_AMR),
-            ExacPopulationKey.of(EXAC_EAS, AC_EAS, AN_EAS),
-            ExacPopulationKey.of(EXAC_FIN, AC_FIN, AN_FIN),
-            ExacPopulationKey.of(EXAC_NFE, AC_NFE, AN_NFE),
-            ExacPopulationKey.of(EXAC_OTH, AC_OTH, AN_OTH),
-            ExacPopulationKey.of(EXAC_SAS, AC_SAS, AN_SAS)
+    public static final List<ExacPopulationKey> EXAC_EXOMES = List.of(
+            ExacPopulationKey.of(EXAC_AFR, AFR),
+            ExacPopulationKey.of(EXAC_AMR, AMR),
+            ExacPopulationKey.of(EXAC_EAS, EAS),
+            ExacPopulationKey.of(EXAC_FIN, FIN),
+            ExacPopulationKey.of(EXAC_NFE, NFE),
+            ExacPopulationKey.of(EXAC_OTH, OTH),
+            ExacPopulationKey.of(EXAC_SAS, SAS)
     );
 
-    public static final List<ExacPopulationKey> GNOMAD_EXOMES = ImmutableList.of(
-            ExacPopulationKey.of(GNOMAD_E_AFR, AC_AFR, AN_AFR),
-            ExacPopulationKey.of(GNOMAD_E_AMR, AC_AMR, AN_AMR),
-            ExacPopulationKey.of(GNOMAD_E_ASJ, AC_ASJ, AN_ASJ),
-            ExacPopulationKey.of(GNOMAD_E_EAS, AC_EAS, AN_EAS),
-            ExacPopulationKey.of(GNOMAD_E_FIN, AC_FIN, AN_FIN),
-            ExacPopulationKey.of(GNOMAD_E_NFE, AC_NFE, AN_NFE),
-            ExacPopulationKey.of(GNOMAD_E_OTH, AC_OTH, AN_OTH),
-            ExacPopulationKey.of(GNOMAD_E_SAS, AC_SAS, AN_SAS)
+    public static final List<ExacPopulationKey> GNOMAD_EXOMES = List.of(
+            ExacPopulationKey.of(GNOMAD_E_AFR, AFR),
+            ExacPopulationKey.of(GNOMAD_E_AMR, AMR),
+            ExacPopulationKey.of(GNOMAD_E_ASJ, ASJ),
+            ExacPopulationKey.of(GNOMAD_E_EAS, EAS),
+            ExacPopulationKey.of(GNOMAD_E_FIN, FIN),
+            ExacPopulationKey.of(GNOMAD_E_NFE, NFE),
+            ExacPopulationKey.of(GNOMAD_E_OTH, OTH),
+            ExacPopulationKey.of(GNOMAD_E_SAS, SAS)
     );
 
-    public static final List<ExacPopulationKey> GNOMAD_GENOMES = ImmutableList.of(
-            ExacPopulationKey.of(GNOMAD_G_AFR, AC_AFR, AN_AFR),
-            ExacPopulationKey.of(GNOMAD_G_AMR, AC_AMR, AN_AMR),
-            ExacPopulationKey.of(GNOMAD_G_ASJ, AC_ASJ, AN_ASJ),
-            ExacPopulationKey.of(GNOMAD_G_EAS, AC_EAS, AN_EAS),
-            ExacPopulationKey.of(GNOMAD_G_FIN, AC_FIN, AN_FIN),
-            ExacPopulationKey.of(GNOMAD_G_NFE, AC_NFE, AN_NFE),
-            ExacPopulationKey.of(GNOMAD_G_OTH, AC_OTH, AN_OTH)
+    public static final List<ExacPopulationKey> GNOMAD_GENOMES = List.of(
+            ExacPopulationKey.of(GNOMAD_G_AFR, AFR),
+            ExacPopulationKey.of(GNOMAD_G_AMR, AMR),
+            ExacPopulationKey.of(GNOMAD_G_ASJ, ASJ),
+            ExacPopulationKey.of(GNOMAD_G_EAS, EAS),
+            ExacPopulationKey.of(GNOMAD_G_FIN, FIN),
+            ExacPopulationKey.of(GNOMAD_G_NFE, NFE),
+            ExacPopulationKey.of(GNOMAD_G_OTH, OTH)
             //there is no SAS in the gnomAD genomes set.
     );
 
-
-    public final AlleleProperty alleleProperty;
-    public final String AC;
-    public final String AN;
-
-    public static ExacPopulationKey of(AlleleProperty alleleProperty, String acKey, String anKey) {
-        return new ExacPopulationKey(alleleProperty, acKey, anKey);
+    static ExacPopulationKey of(AlleleProto.FrequencySource frequencySource, Population population) {
+        var acPop = ALLELE_COUNT_PREFIX + "_" + population;
+        var anPop = ALLELE_NUMBER_PREFIX + "_" + population;
+        var homPop = "Hom_" + population;
+        return new ExacPopulationKey(frequencySource, acPop, anPop, homPop);
     }
 
-    private ExacPopulationKey(AlleleProperty alleleProperty, String acKey, String anKey) {
-        this.alleleProperty = alleleProperty;
-        this.AC = acKey;
-        this.AN = anKey;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ExacPopulationKey that = (ExacPopulationKey) o;
-        return alleleProperty == that.alleleProperty &&
-                Objects.equals(AC, that.AC) &&
-                Objects.equals(AN, that.AN);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(alleleProperty, AC, AN);
-    }
-
-    @Override
-    public String toString() {
-        return "PopulationKey{" +
-                "alleleProperty=" + alleleProperty +
-                ", AC='" + AC + '\'' +
-                ", AN='" + AN + '\'' +
-                '}';
-    }
 }

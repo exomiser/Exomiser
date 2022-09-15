@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
@@ -35,6 +36,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Disabled("Obsolete, for now")
 public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAlleleParser> {
 
     @Override

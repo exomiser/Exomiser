@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -28,6 +28,6 @@ import com.google.common.collect.ImmutableSet;
 public class ExacExomeAlleleParser extends ExacAlleleParser {
 
     public ExacExomeAlleleParser() {
-        super(ExacPopulationKey.EXAC_EXOMES, ImmutableSet.of(".", "PASS"));
+        super(ExacPopulationKey.EXAC_EXOMES, Set.of(".", "PASS"));
     }
 }

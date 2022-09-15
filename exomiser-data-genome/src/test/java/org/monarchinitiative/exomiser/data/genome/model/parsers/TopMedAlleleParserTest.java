@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
@@ -34,6 +35,7 @@ import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.TO
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Disabled("Obsolete, for now")
 public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAlleleParser> {
 
     @Override

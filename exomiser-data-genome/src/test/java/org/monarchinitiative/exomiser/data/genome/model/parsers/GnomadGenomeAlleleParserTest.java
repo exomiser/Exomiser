@@ -23,9 +23,10 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
-import java.util.Collections;
+import java.util.List;
 
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.*;
+
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -41,7 +42,7 @@ public class GnomadGenomeAlleleParserTest extends AbstractAlleleParserTester<Gno
     public void parseLineFailAc0Snp() throws Exception {
         String line = "1\t51459\trs77426779\tG\tA\t3097.33\tAC0\tAC=3;AF=1.38530e-04;AN=21656;AC_AFR=0;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=1;AC_NFE=1;AC_OTH=1;AC_Male=1;AC_Female=2;AN_AFR=7226;AN_AMR=630;AN_ASJ=166;AN_EAS=1568;AN_FIN=1990;AN_NFE=9406;AN_OTH=670;AN_Male=12140;AN_Female=9516;AF_AFR=0.00000e+00;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=5.02513e-04;AF_NFE=1.06315e-04;AF_OTH=1.49254e-03;AF_Male=8.23723e-05;AF_Female=2.10172e-04;GC_AFR=3613,0,0;GC_AMR=315,0,0;GC_ASJ=83,0,0;GC_EAS=784,0,0;GC_FIN=994,1,0;GC_NFE=4702,1,0;GC_OTH=334,1,0;GC_Male=6069,1,0;GC_Female=4756,2,0;AC_raw=123;AN_raw=24640;AF_raw=4.99188e-03;GC_raw=12235,47,38;GC=10825,3,0;AC_POPMAX=1;AN_POPMAX=1990;AF_POPMAX=5.02513e-04";
 
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
 
@@ -51,11 +52,11 @@ public class GnomadGenomeAlleleParserTest extends AbstractAlleleParserTester<Gno
 
         Allele expected = new Allele(1, 51459, "G", "A");
         expected.setRsId("rs77426779");
-        expected.addValue(GNOMAD_G_FIN, 0.050251256281407f);
-        expected.addValue(GNOMAD_G_NFE, 0.0106315118009781f);
-        expected.addValue(GNOMAD_G_OTH, 0.1492537313432836f);
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_FIN, 1, 1990));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_NFE, 1, 9406));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_OTH, 1, 670));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -64,18 +65,18 @@ public class GnomadGenomeAlleleParserTest extends AbstractAlleleParserTester<Gno
 
         Allele expected = new Allele(1, 51459, "G", "A");
         expected.setRsId("rs77426779");
-        expected.addValue(GNOMAD_G_FIN, 0.050251256281407f);
-        expected.addValue(GNOMAD_G_NFE, 0.0106315118009781f);
-        expected.addValue(GNOMAD_G_OTH, 0.1492537313432836f);
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_FIN, 1, 1990));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_NFE, 1, 9406));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_OTH, 1, 670));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
     public void parseLineFailsMultipleFailSnpWithOverrideValues() {
         String line = "1\t51459\trs77426779\tG\tA\t3097.33\tRF;InbreedingCoeff;AC0\tAC=3;AF=1.38530e-04;AN=21656;AC_AFR=0;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=1;AC_NFE=1;AC_OTH=1;AC_Male=1;AC_Female=2;AN_AFR=7226;AN_AMR=630;AN_ASJ=166;AN_EAS=1568;AN_FIN=1990;AN_NFE=9406;AN_OTH=670;AN_Male=12140;AN_Female=9516;AF_AFR=0.00000e+00;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=5.02513e-04;AF_NFE=1.06315e-04;AF_OTH=1.49254e-03;AF_Male=8.23723e-05;AF_Female=2.10172e-04;GC_AFR=3613,0,0;GC_AMR=315,0,0;GC_ASJ=83,0,0;GC_EAS=784,0,0;GC_FIN=994,1,0;GC_NFE=4702,1,0;GC_OTH=334,1,0;GC_Male=6069,1,0;GC_Female=4756,2,0;AC_raw=123;AN_raw=24640;AF_raw=4.99188e-03;GC_raw=12235,47,38;GC=10825,3,0;AC_POPMAX=1;AN_POPMAX=1990;AF_POPMAX=5.02513e-04";
 
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
     @Test
@@ -84,9 +85,9 @@ public class GnomadGenomeAlleleParserTest extends AbstractAlleleParserTester<Gno
 
         Allele expected = new Allele(1, 51420, "C", "G");
         //AC_NFE=1/AN_NFE=8998 *100
-        expected.addValue(GNOMAD_G_NFE, 0.0111135807957324f);
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_NFE, 1, 8998));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -97,14 +98,14 @@ public class GnomadGenomeAlleleParserTest extends AbstractAlleleParserTester<Gno
         expected.setRsId("rs551871856");
 //        AC_AFR=4;AC_AMR=1;AC_ASJ=0;AC_EAS=2;AC_FIN=11;AC_NFE=124;AC_OTH=6
 //        AN_AFR=7762;AN_AMR=682;AN_ASJ=186;AN_EAS=1606;AN_FIN=2118;AN_NFE=10000;AN_OTH=708
-        expected.addValue(GNOMAD_G_AFR, 0.05153311f);
-        expected.addValue(GNOMAD_G_AMR, 0.14662756f);
-        expected.addValue(GNOMAD_G_EAS, 0.124533f);
-        expected.addValue(GNOMAD_G_FIN, 0.51935786f);
-        expected.addValue(GNOMAD_G_NFE, 1.24f);
-        expected.addValue(GNOMAD_G_OTH, 0.84745765f);
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_AFR, 4, 7762));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_AMR, 1, 682));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_EAS, 2, 1606));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_FIN, 11, 2118));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_NFE, 124, 10000));
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_G_OTH, 6, 708));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
 }

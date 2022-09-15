@@ -23,9 +23,9 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
-import java.util.Collections;
+import java.util.List;
 
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.GNOMAD_E_SAS;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.GNOMAD_E_SAS;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -41,7 +41,7 @@ public class GnomadExomeAlleleParserTest extends AbstractAlleleParserTester<Gnom
     public void parseLineFailAcSnp() throws Exception {
         String line = "1\t139019\t.\tG\tC\t2965.40\tAC0\tAC=0;AF=0.00000e+00;AN=132342;BaseQRankSum=-1.98000e-01;ClippingRankSum=9.22000e-01;DP=7253058;FS=0.00000e+00;InbreedingCoeff=-8.30000e-03;MQ=4.63500e+01;MQRankSum=1.98000e-01;QD=3.63000e+00;ReadPosRankSum=3.58000e-01;SOR=6.43000e-01;VQSLOD=-1.10200e-01;VQSR_culprit=QD;VQSR_NEGATIVE_TRAIN_SITE;GQ_HIST_ALT=0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|1;DP_HIST_ALT=0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0;AB_HIST_ALT=0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0;GQ_HIST_ALL=3189|1641|421|585|445|187|319|296|143|243|191|92|306|26|193|63|208|24|205|63825;DP_HIST_ALL=5211|1205|757|527|486|345|5343|21021|10849|3044|1126|884|949|938|1030|1068|1029|1069|1088|1328;AB_HIST_ALL=0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0;AC_AFR=0;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=0;AC_NFE=0;AC_OTH=0;AC_SAS=0;AC_Male=0;AC_Female=0;AN_AFR=6184;AN_AMR=23686;AN_ASJ=7998;AN_EAS=9934;AN_FIN=6008;AN_NFE=52508;AN_OTH=3638;AN_SAS=22386;AN_Male=72368;AN_Female=59974;AF_AFR=0.00000e+00;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=0.00000e+00;AF_NFE=0.00000e+00;AF_OTH=0.00000e+00;AF_SAS=0.00000e+00;AF_Male=0.00000e+00;AF_Female=0.00000e+00;GC_AFR=3092,0,0;GC_AMR=11843,0,0;GC_ASJ=3999,0,0;GC_EAS=4967,0,0;GC_FIN=3004,0,0;GC_NFE=26254,0,0;GC_OTH=1819,0,0;GC_SAS=11193,0,0;GC_Male=36184,0,0;GC_Female=29987,0,0;AC_raw=1;AN_raw=145204;AF_raw=6.88686e-06;GC_raw=72601,1,0;GC=66171,0,0;Hom_AFR=0;Hom_AMR=0;Hom_ASJ=0;Hom_EAS=0;Hom_FIN=0;Hom_NFE=0;Hom_OTH=0;Hom_SAS=0;Hom_Male=0;Hom_Female=0;Hom_raw=0;Hom=0;POPMAX=.;AC_POPMAX=.;AN_POPMAX=.;AF_POPMAX=.;DP_MEDIAN=710;DREF_MEDIAN=6.30957e-174;GQ_MEDIAN=99;AB_MEDIAN=1.67606e-01;AS_RF=1.54603e-01;AS_FilterStatus=AC0";
 
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
     @Test
@@ -57,9 +57,9 @@ public class GnomadExomeAlleleParserTest extends AbstractAlleleParserTester<Gnom
         // AC_NFE=0;AN_NFE=52528;
         // AC_OTH=0;AN_OTH=3638;
         // AC_SAS=1;AN_SAS=22386
-        expected.addValue(GNOMAD_E_SAS, 0.0044670776378093f);
+        expected.addFrequency(Allele.buildFrequency(GNOMAD_E_SAS, 1, 22386));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
 }

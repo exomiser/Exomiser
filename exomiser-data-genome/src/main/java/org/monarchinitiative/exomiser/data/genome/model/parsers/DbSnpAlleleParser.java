@@ -40,20 +40,22 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        Map<AlleleProperty, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
-
-        for (Map.Entry<AlleleProperty, List<String>> entry : minorAlleleFrequencies.entrySet()) {
-            AlleleProperty alleleProperty = entry.getKey();
-            List<String> alleleMafs = entry.getValue();
-            for (int i = 0; i < alleleMafs.size(); i++) {
-                String maf = alleleMafs.get(i);
-                if (!maf.equals(".")) {
-                    float freq = 100f * Float.parseFloat(maf);
-                    Allele allele = alleles.get(i);
-                    allele.addValue(alleleProperty, freq);
-                }
-            }
-        }
+        // https://github.com/exomiser/Exomiser/issues/442 - remove TopMed, 1000 Genomes frequencies
+        // This does make the dbSNP file a bit useless as only the allele and rsId are extracted from the file.
+//        Map<AlleleProperty, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
+//
+//        for (Map.Entry<AlleleProperty, List<String>> entry : minorAlleleFrequencies.entrySet()) {
+//            AlleleProperty alleleProperty = entry.getKey();
+//            List<String> alleleMafs = entry.getValue();
+//            for (int i = 0; i < alleleMafs.size(); i++) {
+//                String maf = alleleMafs.get(i);
+//                if (!maf.equals(".")) {
+//                    float freq = 100f * Float.parseFloat(maf);
+//                    Allele allele = alleles.get(i);
+//                    allele.addValue(alleleProperty, freq);
+//                }
+//            }
+//        }
         return alleles;
     }
 

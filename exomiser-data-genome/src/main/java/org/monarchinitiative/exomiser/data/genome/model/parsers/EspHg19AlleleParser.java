@@ -20,13 +20,11 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -38,17 +36,62 @@ public class EspHg19AlleleParser extends VcfAlleleParser {
         String[] infoFields = info.split(";");
 
         Map<AlleleProperty, Float> minorAlleleFrequencies = parseMinorAlleleFrequencies(infoFields);
-
+        // ##INFO=<ID=EA_AC,Number=.,Type=String,Description="European American Allele Count in the order of AltAlleles,RefAllele. For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+        // ##INFO=<ID=AA_AC,Number=.,Type=String,Description="African American Allele Count in the order of AltAlleles,RefAllele. For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+        // ##INFO=<ID=TAC,Number=.,Type=String,Description="Total Allele Count in the order of AltAlleles,RefAllele For INDELs, A1, A2, or An refers to the N-th alternate allele while R refers to the reference allele.">
+        List<AlleleProto.Frequency> eaFreqs = parseAlleleFrequencies("EA_AC", infoFields);
+        List<AlleleProto.Frequency> aaFreqs = parseAlleleFrequencies("AA_AC", infoFields);
+        List<AlleleProto.Frequency> allFreqs = parseAlleleFrequencies("TAC", infoFields);
+        // EA_AC=313,6535;AA_AC=14,3808;TAC=327,10343;MAF=4.5707,0.3663,3.0647;
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
-            allele.getValues().putAll(minorAlleleFrequencies);
+            if (eaFreqs.get(i).getAc() != 0) {
+                allele.addFrequency(eaFreqs.get(i));
+            }
+            if (aaFreqs.get(i).getAc() != 0) {
+                allele.addFrequency(aaFreqs.get(i));
+            }
+            if (allFreqs.get(i).getAc() != 0) {
+                allele.addFrequency(allFreqs.get(i));
+            }
         }
         return alleles;
+    }
+
+    private List<AlleleProto.Frequency> parseAlleleFrequencies(String key, String[] infoFields) {
+        for (String infoField : infoFields) {
+            if (infoField.startsWith(key)) {
+                // ##INFO=<ID=AA_AC,Number=.,Type=String,Description="African American Allele Count in the order of AltAlleles,RefAllele.
+                return parseAlleleFreqField(freqSource(key), infoField);
+            }
+        }
+        return List.of();
+    }
+
+    private AlleleProto.FrequencySource freqSource(String key) {
+        return switch (key) {
+            case "EA_AC" -> AlleleProto.FrequencySource.ESP_EA;
+            case "AA_AC" -> AlleleProto.FrequencySource.ESP_AA;
+            case "TAC" -> AlleleProto.FrequencySource.ESP_ALL;
+            default -> throw new IllegalArgumentException(key + ": is not a legal ESP INFO key");
+        };
+    }
+
+    private List<AlleleProto.Frequency> parseAlleleFreqField(AlleleProto.FrequencySource frequencySource, String infoField) {
+        String[] fields = infoField.split("=")[1].split(",");
+        int an = Integer.parseInt(fields[fields.length - 1]);
+        List<AlleleProto.Frequency> freqs = new ArrayList<>();
+        for (int i = 0; i < fields.length - 1; i++) {
+            int ac = Integer.parseInt(fields[i]);
+            freqs.add(Allele.buildFrequency(frequencySource, ac, an));
+        }
+        return freqs;
     }
 
     public Map<AlleleProperty, Float> parseMinorAlleleFrequencies(String[] infoFields) {
         for (String infoField : infoFields) {
             if (infoField.startsWith("MAF=")) {
+               // ##INFO=<ID=MAF,Number=.,Type=String,Description="Minor Allele Frequency in percent in the order of EA,AA,All">
                 return parseMafField(infoField);
             }
         }
