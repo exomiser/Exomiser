@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -404,7 +405,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
         }
 
         default AlleleProto.PathogenicityScore pathScore(float score) {
-            return Allele.buildPathScore(pathogenicitySource(), score);
+            return AlleleData.pathogenicityScoreOf(pathogenicitySource(), score);
         }
     }
 }

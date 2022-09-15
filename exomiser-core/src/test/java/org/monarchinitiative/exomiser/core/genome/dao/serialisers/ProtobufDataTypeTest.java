@@ -4,6 +4,7 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.List;
@@ -19,10 +20,10 @@ class ProtobufDataTypeTest {
     private static final AlleleProto.AlleleKey key3 = AlleleProto.AlleleKey.newBuilder().setChr(1).setPosition(2).setRef("A").setAlt("T").build();
     private static final AlleleProto.AlleleKey key4 = AlleleProto.AlleleKey.newBuilder().setChr(2).setPosition(2).setRef("A").setAlt("T").build();
 
-    private static final AlleleProto.AlleleProperties entry1 = AlleleProto.AlleleProperties.newBuilder().addPathogenicityScores(AlleleProto.PathogenicityScore.newBuilder().setPathogenicitySource(AlleleProto.PathogenicitySource.REVEL).setScore(1f)).build();
-    private static final AlleleProto.AlleleProperties entry2 = AlleleProto.AlleleProperties.newBuilder().addFrequencies(AlleleProto.Frequency.newBuilder().setFrequencySource(AlleleProto.FrequencySource.GNOMAD_E_AFR).setAc(1).setAn(20000)).build();
-    private static final AlleleProto.AlleleProperties entry3 = AlleleProto.AlleleProperties.newBuilder().addPathogenicityScores(AlleleProto.PathogenicityScore.newBuilder().setPathogenicitySource(AlleleProto.PathogenicitySource.MVP).setScore(0.8f)).build();
-    private static final AlleleProto.AlleleProperties entry4 = AlleleProto.AlleleProperties.newBuilder().addFrequencies(AlleleProto.Frequency.newBuilder().setFrequencySource(AlleleProto.FrequencySource.GNOMAD_E_AFR).setAc(1).setAn(20000)).build();
+    private static final AlleleProto.AlleleProperties entry1 = AlleleProto.AlleleProperties.newBuilder().addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.REVEL, 1f)).build();
+    private static final AlleleProto.AlleleProperties entry2 = AlleleProto.AlleleProperties.newBuilder().addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_AFR, 1, 20000)).build();
+    private static final AlleleProto.AlleleProperties entry3 = AlleleProto.AlleleProperties.newBuilder().addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MVP,0.8f)).build();
+    private static final AlleleProto.AlleleProperties entry4 = AlleleProto.AlleleProperties.newBuilder().addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_AMR, 2, 20000)).build();
 
     private static final Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entries = Map.of(key1, entry1, key2, entry2, key3, entry3, key4, entry4);
 

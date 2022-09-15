@@ -151,27 +151,6 @@ public class Allele implements Comparable<Allele> {
         return pathogenicityScores;
     }
 
-    public static AlleleProto.Frequency buildFrequency(AlleleProto.FrequencySource frequencySource, int ac, int an) {
-        if (ac > an) {
-            throw new IllegalArgumentException(frequencySource + "AC=" + ac + " must be less than or equal to AN=" + an);
-        }
-        return AlleleProto.Frequency.newBuilder().setFrequencySource(frequencySource).setAc(ac).setAn(an).build();
-    }
-
-    public static AlleleProto.Frequency buildFrequency(AlleleProto.FrequencySource frequencySource, int ac, int an, int hom) {
-        if (ac > an) {
-            throw new IllegalArgumentException(frequencySource + " AC=" + ac + " must be less than or equal to AN=" + an);
-        }
-        if (hom > ac) {
-            throw new IllegalArgumentException(frequencySource + " HOM=" + hom + " must be less than or equal to AC=" + ac);
-        }
-        return AlleleProto.Frequency.newBuilder().setFrequencySource(frequencySource).setAc(ac).setAn(an).setHom(hom).build();
-    }
-
-    public static AlleleProto.PathogenicityScore buildPathScore(AlleleProto.PathogenicitySource pathSource, float score) {
-        return AlleleProto.PathogenicityScore.newBuilder().setPathogenicitySource(pathSource).setScore(score).build();
-    }
-
     @Override
     public int compareTo(Allele other) {
         if (this.chr != other.chr) {

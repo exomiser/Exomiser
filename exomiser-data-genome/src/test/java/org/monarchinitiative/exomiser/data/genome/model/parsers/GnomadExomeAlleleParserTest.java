@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public class GnomadExomeAlleleParserTest extends AbstractAlleleParserTester<Gnom
         // AC_NFE=0;AN_NFE=52528;
         // AC_OTH=0;AN_OTH=3638;
         // AC_SAS=1;AN_SAS=22386
-        expected.addFrequency(Allele.buildFrequency(GNOMAD_E_SAS, 1, 22386));
+        expected.addFrequency(AlleleData.frequencyOf(GNOMAD_E_SAS, 1, 22386));
 
         assertParseLineEquals(line, List.of(expected));
     }

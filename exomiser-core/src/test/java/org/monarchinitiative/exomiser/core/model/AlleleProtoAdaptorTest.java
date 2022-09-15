@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -29,11 +28,13 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,14 +45,6 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class AlleleProtoAdaptorTest {
-
-    private AlleleProto.Frequency frequency(AlleleProto.FrequencySource frequencySource, int ac, int an) {
-        return AlleleProto.Frequency.newBuilder().setFrequencySource(frequencySource).setAc(ac).setAn(an).build();
-    }
-
-    private static AlleleProto.PathogenicityScore pathScore(AlleleProto.PathogenicitySource pathogenicitySource, float value) {
-        return AlleleProto.PathogenicityScore.newBuilder().setPathogenicitySource(pathogenicitySource).setScore(value).build();
-    }
 
     @Test
     public void generateAlleleKey() {
@@ -72,8 +65,8 @@ public class AlleleProtoAdaptorTest {
     public void testToFreqData() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
                 // 100f * (ac / (float) an);
-                .addFrequencies(frequency(AlleleProto.FrequencySource.KG, 4, 1000))
-                .addFrequencies(frequency(AlleleProto.FrequencySource.TOPMED, 200, 400000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 4, 1000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.TOPMED, 200, 400000))
                 .build();
         assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
                 equalTo(FrequencyData.of(
@@ -86,7 +79,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataSift() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.SIFT, 0.2f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.SIFT, 0.2f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(SIFT, 0.2f))));
     }
@@ -94,7 +87,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataPolyphen() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.POLYPHEN, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.POLYPHEN, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(POLYPHEN, 0.7f))));
     }
@@ -102,7 +95,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataMutationTaster() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.MUTATION_TASTER, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MUTATION_TASTER, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MUTATION_TASTER, 0.7f))));
     }
@@ -110,7 +103,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataRevel() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.REVEL, 0.2f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.REVEL, 0.2f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REVEL, 0.2f))));
     }
@@ -118,7 +111,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataMcap() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.M_CAP, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.M_CAP, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(M_CAP, 0.7f))));
     }
@@ -126,7 +119,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataMpc() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.MPC, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MPC, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MPC, 0.7f))));
     }
@@ -134,7 +127,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataMvp() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.MVP, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MVP, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MVP, 0.7f))));
     }
@@ -142,7 +135,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataPrimateAi() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.PRIMATE_AI, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.PRIMATE_AI, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(PRIMATE_AI, 0.7f))));
     }
@@ -150,7 +143,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataSpliceAi() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.SPLICE_AI, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.SPLICE_AI, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(SPLICE_AI, 0.7f))));
     }
@@ -158,7 +151,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataRemm() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.REMM, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.REMM, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(REMM, 0.7f))));
     }
@@ -166,7 +159,7 @@ public class AlleleProtoAdaptorTest {
     @Test
     public void testToPathDataCadd() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(pathScore(AlleleProto.PathogenicitySource.CADD, 0.7f))
+                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.CADD, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(CADD, 0.7f))));
     }
@@ -201,7 +194,7 @@ public class AlleleProtoAdaptorTest {
                         ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE,
                         ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN,
                         ClinVarData.ClinSig.BENIGN))
-                .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.ASSOCIATION))
+                .includedAlleles(Map.of("54321", ClinVarData.ClinSig.ASSOCIATION))
                 .reviewStatus("conflicting evidence")
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(expected)));

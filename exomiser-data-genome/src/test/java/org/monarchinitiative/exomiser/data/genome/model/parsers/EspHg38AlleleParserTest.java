@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.List;
@@ -66,9 +67,9 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
 
         Allele expected = new Allele(17, 156203, "G", "A");
         expected.setRsId("rs375149461");
-        expected.addFrequency(Allele.buildFrequency(ESP_EA, 20,3162));
-        expected.addFrequency(Allele.buildFrequency(ESP_AA, 1,1383));
-        expected.addFrequency(Allele.buildFrequency(ESP_ALL, 21,4545));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_EA, 20, 3162));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_AA, 1, 1383));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 21, 4545));
 
         assertParseLineEquals(line, List.of(expected));
     }

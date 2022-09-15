@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.List;
@@ -52,7 +53,8 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele expected = new Allele(1, 1154362, "C", "A");
         //EXAC_AFR AC_AFR=1/AN_AFR=9172 *100 Hom_AFR=0
-        expected.addFrequency(Allele.buildFrequency(EXAC_AFR, 1, 9172, 0));
+
+        expected.addFrequency(AlleleData.frequencyOf(EXAC_AFR, 1, 9172, 0));
 
         assertParseLineEquals(line, List.of(expected));
     }
@@ -63,8 +65,8 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele expected = new Allele(1, 1412742, "C", "T");
         expected.setRsId("rs112970587");
-        expected.addFrequency(Allele.buildFrequency(EXAC_NFE,2, 65506));
-        expected.addFrequency(Allele.buildFrequency(EXAC_OTH, 1, 882));
+        expected.addFrequency(AlleleData.frequencyOf(EXAC_NFE, 2, 65506));
+        expected.addFrequency(AlleleData.frequencyOf(EXAC_OTH, 1, 882));
 
         assertParseLineEquals(line, List.of(expected));
     }
@@ -75,14 +77,14 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele1 = new Allele(20, 1110696, "A", "G");
         //1/10002 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_AFR, 1, 10002));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_AFR, 1, 10002));
         //4/12608 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_SAS, 4, 12608));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_SAS, 4, 12608));
 
 
         Allele allele2 = new Allele(20, 1110696, "A", "T");
         //1/8540 *100
-        allele2.addFrequency(Allele.buildFrequency(EXAC_EAS, 1, 8540));
+        allele2.addFrequency(AlleleData.frequencyOf(EXAC_EAS, 1, 8540));
 
         assertParseLineEquals(line, List.of(allele1, allele2));
     }
@@ -94,15 +96,15 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
         Allele allele1 = new Allele(20, 1110696, "A", "G");
         allele1.setRsId("rs6040355");
         //1/10002 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_AFR, 1, 10002));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_AFR, 1, 10002));
         //4/12608 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_SAS, 4, 12608));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_SAS, 4, 12608));
 
 
         Allele allele2 = new Allele(20, 1110696, "A", "T");
         allele2.setRsId("rs6040355");
         //1/8540 *100
-        allele2.addFrequency(Allele.buildFrequency(EXAC_EAS, 1, 8540));
+        allele2.addFrequency(AlleleData.frequencyOf(EXAC_EAS, 1, 8540));
 
         assertParseLineEquals(line, List.of(allele1, allele2));
     }
@@ -114,14 +116,14 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
         Allele allele1 = new Allele(1, 17914164, "G", "A");
         allele1.setRsId("rs200118651");
         //EXAC_AFR 1/10002 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_AFR, 1, 10002));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_AFR, 1, 10002));
         //EXAC_SAS 4/12608 *100
-        allele1.addFrequency(Allele.buildFrequency(EXAC_SAS, 4, 12608));
+        allele1.addFrequency(AlleleData.frequencyOf(EXAC_SAS, 4, 12608));
 
         Allele allele2 = new Allele(1, 17914164, "G", "T");
         allele2.setRsId("rs200118651");
         //EXAC_EAS 1/8540 *100
-        allele2.addFrequency(Allele.buildFrequency(EXAC_EAS,1, 8540));
+        allele2.addFrequency(AlleleData.frequencyOf(EXAC_EAS, 1, 8540));
 
         assertParseLineEquals(line, List.of(allele1, allele2));
     }
@@ -139,9 +141,9 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele = new Allele(1, 32677658, "CT", "C");
         //1/11182 *100
-        allele.addFrequency(Allele.buildFrequency(EXAC_AMR, 1, 11182));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_AMR, 1, 11182));
         //1/64694 * 100
-        allele.addFrequency(Allele.buildFrequency(EXAC_NFE, 1, 64694));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_NFE, 1, 64694));
 
         assertParseLineEquals(line, List.of(allele));
     }
@@ -152,7 +154,7 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele = new Allele(1, 36208758, "T", "TCA");
         //1/8608 *100
-        allele.addFrequency(Allele.buildFrequency(EXAC_EAS, 1, 8608));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_EAS, 1, 8608));
 
         assertParseLineEquals(line, List.of(allele));
     }
@@ -163,9 +165,9 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele = new Allele(23, 21226476, "C", "T");
         //AC_NFE=18/AN_NFE=64412 * 100
-        allele.addFrequency(Allele.buildFrequency(EXAC_NFE, 18, 64412));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_NFE, 18, 64412));
         // AC_SAS=8/AN_SAS=13276/
-        allele.addFrequency(Allele.buildFrequency(EXAC_SAS, 8, 13276));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_SAS, 8, 13276));
 
         assertParseLineEquals(line, List.of(allele));
     }
@@ -176,7 +178,7 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele = new Allele(24, 39878935, "C", "T");
         //AC_NFE=1/AN_NFE=53612 * 100
-        allele.addFrequency(Allele.buildFrequency(EXAC_NFE, 1, 53612));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_NFE, 1, 53612));
 
         assertParseLineEquals(line, List.of(allele));
     }
@@ -187,7 +189,7 @@ public class ExacExomeAlleleParserTest extends AbstractAlleleParserTester<ExacEx
 
         Allele allele = new Allele(25, 38048436, "A", "G");
         //AC_NFE=2 AN_NFE=66718
-        allele.addFrequency(Allele.buildFrequency(EXAC_NFE, 2, 66718));
+        allele.addFrequency(AlleleData.frequencyOf(EXAC_NFE, 2, 66718));
 
         assertParseLineEquals(line, List.of(allele));
     }

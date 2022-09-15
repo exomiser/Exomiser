@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.Arrays;
@@ -102,7 +103,7 @@ public class AlleleTest {
     @Test
     public void testAddPathScore() {
         Allele instance = new Allele(1, 123456, "A", "C");
-        var pathScore = Allele.buildPathScore(AlleleProto.PathogenicitySource.REVEL, 1.0f);
+        var pathScore = AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.REVEL, 1.0f);
         instance.addPathogenicityScore(pathScore);
         assertThat(instance.getPathogenicityScores(), equalTo(List.of(pathScore)));
     }
@@ -117,11 +118,12 @@ public class AlleleTest {
     @Test
     void testToString() {
         Allele instance = new Allele(1, 123456, "A", "C");
-        instance.addFrequency(Allele.buildFrequency(AlleleProto.FrequencySource.GNOMAD_E_OTH, 2,20000));
-        instance.addFrequency(Allele.buildFrequency(AlleleProto.FrequencySource.GNOMAD_E_AMR, 2, 40000, 1));
-        instance.addPathogenicityScore(Allele.buildPathScore(AlleleProto.PathogenicitySource.REVEL, 1f));
-        instance.addPathogenicityScore(Allele.buildPathScore(AlleleProto.PathogenicitySource.MVP, 0.9f));
-        instance.addPathogenicityScore(Allele.buildPathScore(AlleleProto.PathogenicitySource.POLYPHEN, 0.8f));
+        instance.addFrequency(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_OTH, 2, 20000));
+
+        instance.addFrequency(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_AMR, 2, 40000, 1));
+        instance.addPathogenicityScore(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.REVEL, 1f));
+        instance.addPathogenicityScore(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MVP, 0.9f));
+        instance.addPathogenicityScore(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.POLYPHEN, 0.8f));
         assertThat(instance.toString(), equalTo("Allele{chr=1, pos=123456, ref='A', alt='C', rsId='', clinVarData='null', values={}', frequencies={GNOMAD_E_OTH=2|20000|0, GNOMAD_E_AMR=2|40000|1}, pathogenicityScores={REVEL=1.0, MVP=0.9, POLYPHEN=0.8}}"));
     }
 }

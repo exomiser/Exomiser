@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
@@ -83,7 +84,7 @@ public class EspHg19AlleleParser extends VcfAlleleParser {
         List<AlleleProto.Frequency> freqs = new ArrayList<>();
         for (int i = 0; i < fields.length - 1; i++) {
             int ac = Integer.parseInt(fields[i]);
-            freqs.add(Allele.buildFrequency(frequencySource, ac, an));
+            freqs.add(AlleleData.frequencyOf(frequencySource, ac, an));
         }
         return freqs;
     }

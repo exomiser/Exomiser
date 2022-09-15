@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -89,7 +90,7 @@ public class Uk10kAlleleParser extends VcfAlleleParser {
 
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
-            var frequency = Allele.buildFrequency(AlleleProto.FrequencySource.UK10K, Integer.parseInt(acValues[i]), an);
+            var frequency = AlleleData.frequencyOf(AlleleProto.FrequencySource.UK10K, Integer.parseInt(acValues[i]), an);
             allele.addFrequency(frequency);
         }
         return alleles;

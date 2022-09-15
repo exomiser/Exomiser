@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.List;
@@ -108,7 +109,7 @@ public class DbNsfpAlleleParserTest {
                 .sift("0.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(SIFT, 0f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(SIFT, 0f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -118,7 +119,7 @@ public class DbNsfpAlleleParserTest {
                 .sift("0.0;1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(SIFT, 0f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(SIFT, 0f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -128,7 +129,7 @@ public class DbNsfpAlleleParserTest {
                 .polyPhen2Hvar("1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(POLYPHEN, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(POLYPHEN, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -138,7 +139,7 @@ public class DbNsfpAlleleParserTest {
                 .polyPhen2Hvar("0.998;0.02;0.99")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(POLYPHEN, 0.998f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(POLYPHEN, 0.998f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -149,7 +150,7 @@ public class DbNsfpAlleleParserTest {
                 .mTasterPred("D")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MUTATION_TASTER, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MUTATION_TASTER, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -160,7 +161,7 @@ public class DbNsfpAlleleParserTest {
                 .mTasterPred("D;D")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MUTATION_TASTER, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MUTATION_TASTER, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -170,7 +171,7 @@ public class DbNsfpAlleleParserTest {
                 .revelScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(REVEL, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(REVEL, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -180,7 +181,7 @@ public class DbNsfpAlleleParserTest {
                 .mCapScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(M_CAP, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(M_CAP, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -190,7 +191,7 @@ public class DbNsfpAlleleParserTest {
                 .mpcScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MPC, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MPC, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -200,7 +201,7 @@ public class DbNsfpAlleleParserTest {
                 .mpcScore("1.0;0.5;0.1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MPC, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MPC, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -210,7 +211,7 @@ public class DbNsfpAlleleParserTest {
                 .mvpScore("1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MVP, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MVP, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -220,7 +221,7 @@ public class DbNsfpAlleleParserTest {
                 .mvpScore("1.0;0.5;0.1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(MVP, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MVP, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
@@ -230,7 +231,7 @@ public class DbNsfpAlleleParserTest {
                 .primateAiScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addPathogenicityScore(Allele.buildPathScore(PRIMATE_AI, 1f));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(PRIMATE_AI, 1f));
         assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 

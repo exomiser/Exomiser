@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -84,7 +85,8 @@ public abstract class ExacAlleleParser extends VcfAlleleParser {
             if (alleleCount != 0) {
                 int alleleNumber = Integer.parseInt(alleleCounts.get(population.anPop()));
                 int homozygotes = parseAlleleCount(alleleCounts.get(population.homPop()), i);
-                var frequency = Allele.buildFrequency(population.frequencySource(), alleleCount, alleleNumber, homozygotes);
+
+                var frequency = AlleleData.frequencyOf(population.frequencySource(), alleleCount, alleleNumber, homozygotes);
                 frequencies.add(frequency);
             }
         }

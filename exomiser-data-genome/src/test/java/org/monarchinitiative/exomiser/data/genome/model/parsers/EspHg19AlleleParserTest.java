@@ -21,9 +21,9 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
 import java.util.*;
 
@@ -47,8 +47,8 @@ public class EspHg19AlleleParserTest extends AbstractAlleleParserTester<EspHg19A
 
         Allele expected = new Allele(17, 26942314, "C", "G");
         expected.setRsId("rs371278753");
-        expected.addFrequency(Allele.buildFrequency(ESP_EA, 1,8599));
-        expected.addFrequency(Allele.buildFrequency(ESP_ALL, 1,13005));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_EA, 1, 8599));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 1, 13005));
 
         assertParseLineEquals(line, List.of(expected));
     }
@@ -58,8 +58,8 @@ public class EspHg19AlleleParserTest extends AbstractAlleleParserTester<EspHg19A
         String line = "17\t73725391\t.\tGA\tG\t.\tPASS\tDBSNP=.;EA_AC=0,8254;AA_AC=2,4262;TAC=2,12516;MAF=0.0,0.0469,0.016;GTS=A1A1,A1R,RR;EA_GTC=0,0,4127;AA_GTC=0,2,2130;GTC=0,2,6257;DP=92;GL=ITGB4;CP=1.0;CG=3.6;AA=.;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;FG=NM_001005731.1:frameshift,NM_001005619.1:frameshift,NM_000213.3:frameshift;HGVS_CDNA_VAR=NM_001005731.1:c.613del1,NM_001005619.1:c.613del1,NM_000213.3:c.613del1;HGVS_PROTEIN_VAR=NM_001005731.1:p.(N205Tfs*5),NM_001005619.1:p.(N205Tfs*5),NM_000213.3:p.(N205Tfs*5);CDS_SIZES=NM_001005731.1:5259,NM_001005619.1:5418,NM_000213.3:5469;GS=.,.,.;PH=.,.,.;EA_AGE=.;AA_AGE=.;GRCh38_POSITION=17:75729310";
 
         Allele expected = new Allele(17, 73725391, "GA", "G");
-        expected.addFrequency(Allele.buildFrequency(ESP_AA, 2,4262));
-        expected.addFrequency(Allele.buildFrequency(ESP_ALL, 2,12516));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_AA, 2, 4262));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 2, 12516));
 
         assertParseLineEquals(line, List.of(expected));
     }
@@ -79,9 +79,9 @@ public class EspHg19AlleleParserTest extends AbstractAlleleParserTester<EspHg19A
         assertThat(allele.getAlt(), equalTo("TA"));
 
         List<AlleleProto.Frequency> expectedFreqs = new ArrayList<>();
-        expectedFreqs.add(Allele.buildFrequency(ESP_EA, 2461,4262));
-        expectedFreqs.add(Allele.buildFrequency(ESP_AA, 1215,2089));
-        expectedFreqs.add(Allele.buildFrequency(ESP_ALL, 3676,6351));
+        expectedFreqs.add(AlleleData.frequencyOf(ESP_EA, 2461, 4262));
+        expectedFreqs.add(AlleleData.frequencyOf(ESP_AA, 1215, 2089));
+        expectedFreqs.add(AlleleData.frequencyOf(ESP_ALL, 3676, 6351));
 
         assertThat(allele.getFrequencies(), equalTo(expectedFreqs));
     }
