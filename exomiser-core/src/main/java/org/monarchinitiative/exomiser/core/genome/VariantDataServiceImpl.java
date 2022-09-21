@@ -27,7 +27,6 @@ import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
 import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
 import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -97,22 +96,16 @@ public class VariantDataServiceImpl implements VariantDataService {
         if (isStructural(variant)) {
             return svFrequencyDao.getFrequencyData(variant);
         }
-        // This could be run alongside the pathogenicities as they are all stored in the same datastore
-        FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
 
-        List<Frequency> allFrequencies = new ArrayList<>();
-        for (Frequency frequency : defaultFrequencyData.getKnownFrequencies()) {
-            if (frequencySources.contains(frequency.getSource())) {
-                allFrequencies.add(frequency);
-            }
-        }
+        return defaultFrequencyDao.getFrequencyData(variant)
+                .toBuilder()
+                .mergeFrequencyData(getLocalFrequencyData(variant, frequencySources))
+                .retainSources(frequencySources)
+                .build();
+    }
 
-        if (frequencySources.contains(FrequencySource.LOCAL)) {
-            FrequencyData localFrequencyData = localFrequencyDao.getFrequencyData(variant);
-            allFrequencies.addAll(localFrequencyData.getKnownFrequencies());
-        }
-
-        return FrequencyData.of(defaultFrequencyData.getRsId(), allFrequencies);
+    private FrequencyData getLocalFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
+        return frequencySources.contains(FrequencySource.LOCAL) ? localFrequencyDao.getFrequencyData(variant) : FrequencyData.empty();
     }
 
     // PacBio data contains lots of longer non-symbolic variants with an SVTYPE
