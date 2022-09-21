@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
@@ -66,22 +65,19 @@ public class AlleleProtoAdaptor {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return FrequencyData.empty();
         }
-        List<Frequency> frequencies = parseFrequencyData(alleleProperties.getFrequenciesList());
-        return FrequencyData.of(alleleProperties.getRsId(), frequencies);
+        FrequencyData.Builder frequencyDataBuilder = FrequencyData.builder()
+                .rsId(alleleProperties.getRsId());
+        parseFrequencyData(frequencyDataBuilder, alleleProperties.getFrequenciesList());
+        return frequencyDataBuilder.build();
     }
 
-    private static List<Frequency> parseFrequencyData(List<AlleleProto.Frequency> frequenciesList) {
-        var frequencies = new ArrayList<Frequency>(frequenciesList.size());
-        for (int i = 0; i < frequenciesList.size(); i++) {
-            AlleleProto.Frequency frequency = frequenciesList.get(i);
+    private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, List<AlleleProto.Frequency> frequenciesList) {
+        for (AlleleProto.Frequency frequency : frequenciesList) {
             var freqSource = toFreqSource(frequency.getFrequencySource());
             var freq = percentageFrequency(frequency.getAc(), frequency.getAn());
-            // TODO: MAKE FrequencyDataBuilder to prevent useless Frequency object creation
-            frequencies.add(Frequency.of(freqSource, freq));
-            // TODO! ADD HOM
             var hom = frequency.getHom();
+            frequencyDataBuilder.addFrequency(freqSource, freq, hom);
         }
-        return frequencies;
     }
 
     private static float percentageFrequency(int ac, int an) {
