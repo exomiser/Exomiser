@@ -23,3 +23,5 @@ INSERT INTO hp_mp_mappings SELECT *
                                         'mapping_id|hp_id|hp_term|mp_id|mp_term|simj|ic|score|lcs_id|lcs_term',
                                         'charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');
 
+CREATE INDEX hpmp_hp_id
+    ON hp_mp_mappings (hp_id);

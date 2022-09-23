@@ -23,3 +23,6 @@ SELECT *
 FROM CSVREAD('${import.path}/disease.pg',
              'disease_id|omim_gene_id|diseasename|gene_id|type|inheritance',
              'charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');
+
+CREATE INDEX dis_gene_disease
+    ON disease (gene_id, disease_id);

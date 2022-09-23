@@ -23,3 +23,5 @@ INSERT INTO hp_zp_mappings SELECT *
                                         'mapping_id|hp_id|hp_term|zp_id|zp_term|simj|ic|score|lcs_id|lcs_term',
                                         'charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');
 
+CREATE INDEX hpzp_hp_id
+    ON hp_zp_mappings (hp_id);

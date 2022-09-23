@@ -22,3 +22,12 @@ INSERT INTO human2fish_orthologs SELECT *
                                  FROM CSVREAD('${import.path}/human2fishOrthologs.pg',
                                               'zfin_gene_id|zfin_gene_symbol|human_gene_symbol|entrez_id',
                                               'charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');
+
+CREATE INDEX h2fo_zfin_gene_id
+    ON human2fish_orthologs (zfin_gene_id);
+
+CREATE INDEX h2fo_entrez_id
+    ON human2fish_orthologs (entrez_id);
+
+CREATE INDEX h2fo_human_gene_symbol
+    ON human2fish_orthologs (human_gene_symbol);
