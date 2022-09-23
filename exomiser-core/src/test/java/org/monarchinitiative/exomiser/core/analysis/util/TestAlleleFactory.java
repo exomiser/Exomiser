@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.*;
 import htsjdk.variant.variantcontext.Genotype;
@@ -135,26 +134,6 @@ public final class TestAlleleFactory {
         vcBuilder.log10PError(-0.1 * 0);
 
         return vcBuilder.make();
-    }
-
-    public static Pedigree buildPedigree(PedPerson... people) {
-        ImmutableList.Builder<PedPerson> individualBuilder = new ImmutableList.Builder<PedPerson>();
-        individualBuilder.addAll(Arrays.asList(people));
-
-        PedFileContents pedFileContents = new PedFileContents(new ImmutableList.Builder<String>().build(), individualBuilder
-                .build());
-
-        return buildPedigreeFromPedFile(pedFileContents);
-
-    }
-
-    public static Pedigree buildPedigreeFromPedFile(PedFileContents pedFileContents) {
-        final String name = pedFileContents.getIndividuals().get(0).getPedigree();
-        try {
-            return new Pedigree(name, new PedigreeExtractor(name, pedFileContents).run());
-        } catch (PedParseException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

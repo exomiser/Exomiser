@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import org.jblas.FloatMatrix;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
@@ -31,6 +30,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotype
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -138,7 +138,7 @@ public class HiPhiveProteinInteractionScorerTest {
         assertThat(closestPhenoMatchInNetwork.getQueryGeneId(), equalTo(queryGeneId));
         assertThat(closestPhenoMatchInNetwork.getMatchGeneId(), equalTo(bestModel.getEntrezGeneId()));
         assertThat(closestPhenoMatchInNetwork.getScore(), closeTo(0.57d, 0.001));
-        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(ImmutableList.of(bestModel)));
+        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(List.of(bestModel)));
     }
 
     @Test
@@ -162,7 +162,7 @@ public class HiPhiveProteinInteractionScorerTest {
         assertThat(closestPhenoMatchInNetwork.getQueryGeneId(), equalTo(queryGeneId));
         assertThat(closestPhenoMatchInNetwork.getMatchGeneId(), equalTo(model3.getEntrezGeneId()));
         assertThat(closestPhenoMatchInNetwork.getScore(), closeTo(0.563d, 0.001));
-        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(ImmutableList.of(model3)));
+        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(List.of(model3)));
     }
 
 }

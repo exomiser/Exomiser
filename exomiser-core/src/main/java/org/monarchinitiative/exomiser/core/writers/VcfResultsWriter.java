@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -46,7 +45,6 @@ import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -226,8 +224,8 @@ public class VcfResultsWriter implements ResultsWriter {
         return variantContextToEvaluations.asMap()
                 .values()
                 .stream()
-                .map(variantEvaluations -> updateRecord(Lists.newArrayList(variantEvaluations), gene, modeOfInheritance))
-                .collect(toList());
+                .map(variantEvaluations -> updateRecord(List.copyOf(variantEvaluations), gene, modeOfInheritance))
+                .toList();
     }
 
     private Multimap<String, VariantEvaluation> mapVariantEvaluationsToVariantContextString(List<VariantEvaluation> variantEvaluations) {

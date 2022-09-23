@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.phenotype.processors;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,8 +65,8 @@ class ResourceCheckerTest {
                 Resource.of("src/test/resources/data/frood")
         );
         ResourceChecker instance = ResourceChecker.check(resources);
-        assertThat(instance.getMissingResources(),
-                equalTo(List.of(
+        assertThat(Set.copyOf(instance.getMissingResources()),
+                equalTo(Set.of(
                         Resource.of("src/test/resources/data/hoopy"),
                         Resource.of("src/test/resources/data/frood")))
         );

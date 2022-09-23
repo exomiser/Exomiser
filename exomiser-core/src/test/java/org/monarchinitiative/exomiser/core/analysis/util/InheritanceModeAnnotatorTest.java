@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
@@ -80,10 +78,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -101,10 +99,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -122,11 +120,11 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.X_DOMINANT, ImmutableList.of(variant),
-                ModeOfInheritance.X_RECESSIVE, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.X_DOMINANT, List.of(variant),
+                ModeOfInheritance.X_RECESSIVE, List.of(variant)
         );
         assertThat(results, equalTo(expected));
     }
@@ -151,10 +149,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.X_DOMINANT, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.X_DOMINANT, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -182,10 +180,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual, sisterIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.X_RECESSIVE, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.X_RECESSIVE, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -203,10 +201,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Adam");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.MITOCHONDRIAL, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.MITOCHONDRIAL, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -232,10 +230,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(variant));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(variant));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.MITOCHONDRIAL, ImmutableList.of(variant)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.MITOCHONDRIAL, List.of(variant)
         );
 
         assertThat(results, equalTo(expected));
@@ -261,10 +259,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(alleleOne)
         );
 
         assertThat(results, equalTo(expected));
@@ -291,10 +289,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -320,10 +318,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleOne)
         );
 
         assertThat(results, equalTo(expected));
@@ -354,10 +352,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleOne)
         );
 
         assertThat(results, equalTo(expected));
@@ -376,11 +374,11 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleOne, alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -402,11 +400,11 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
         //Both alleles are potentially dominant, but they are deemed too common in the population to be causative of a rare disease
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_RECESSIVE, ImmutableList.of(alleleOne, alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -425,12 +423,12 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List
                 .of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleOne, alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -483,12 +481,11 @@ public class InheritanceModeAnnotatorTest {
 
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList
-                .of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -524,9 +521,9 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, Set<VariantEvaluation>> expected = ImmutableMap.of(
+        Map<SubModeOfInheritance, Set<VariantEvaluation>> expected = Map.of(
                 SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableSet.of(alleleOne, alleleTwo)
         );
 
@@ -563,11 +560,11 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
         //TODO Something's up with alt alleles with a 0/2 genotype - the 0/1 genotype shouldn't be HET in this case?
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, List.of(alleleOne, alleleTwo)
         );
 
         assertThat(results, equalTo(expected));
@@ -598,10 +595,10 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, fatherIndividual, brotherIndividual);
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -619,11 +616,11 @@ public class InheritanceModeAnnotatorTest {
         Pedigree pedigree = singleAffectedSample("Cain");
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults());
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleOne, alleleTwo),
-                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, ImmutableList.of(alleleOne, alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleOne, alleleTwo),
+                SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, List.of(alleleOne, alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -644,17 +641,17 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
-        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> maxMafMap = Map.of(
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
         );
         InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -674,17 +671,17 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
-        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> maxMafMap = Map.of(
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
         );
         InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -706,7 +703,7 @@ public class InheritanceModeAnnotatorTest {
 
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.empty());
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
         assertThat(results.isEmpty(), equalTo(true));
     }
@@ -726,13 +723,13 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
-        ImmutableMap<SubModeOfInheritance, Float> modeMaxMafs = ImmutableMap.of(SubModeOfInheritance.ANY, 2.0f);
+        Map<SubModeOfInheritance, Float> modeMaxMafs = Map.of(SubModeOfInheritance.ANY, 2.0f);
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.of(modeMaxMafs));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<SubModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceSubModes(List.of(alleleOne, alleleTwo));
 
-        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                SubModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo)
+        Map<SubModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                SubModeOfInheritance.ANY, List.of(alleleOne, alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }
@@ -752,7 +749,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
-        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> maxMafMap = Map.of(
                 SubModeOfInheritance.ANY, 2.0f,
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
@@ -760,11 +757,11 @@ public class InheritanceModeAnnotatorTest {
         InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.ANY, List.of(alleleOne, alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo)
                 );
         assertThat(results, equalTo(expected));
     }
@@ -788,7 +785,7 @@ public class InheritanceModeAnnotatorTest {
 
         Pedigree pedigree = singleAffectedSample("Cain");
 
-        ImmutableMap<SubModeOfInheritance, Float> maxMafMap = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> maxMafMap = Map.of(
                 SubModeOfInheritance.ANY, 2.0f,
                 //Set the max MAF to be under that of this allele - it should not be seen as being compatible with this mode
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, alleleOneMaxFreq - 0.1f
@@ -796,11 +793,11 @@ public class InheritanceModeAnnotatorTest {
         InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(maxMafMap);
         InheritanceModeAnnotator instance = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(ImmutableList.of(alleleOne, alleleTwo));
+        Map<ModeOfInheritance, List<VariantEvaluation>> results = instance.computeCompatibleInheritanceModes(List.of(alleleOne, alleleTwo));
 
-        Map<ModeOfInheritance, List<VariantEvaluation>> expected = ImmutableMap.of(
-                ModeOfInheritance.ANY, ImmutableList.of(alleleOne, alleleTwo),
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ImmutableList.of(alleleTwo)
+        Map<ModeOfInheritance, List<VariantEvaluation>> expected = Map.of(
+                ModeOfInheritance.ANY, List.of(alleleOne, alleleTwo),
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(alleleTwo)
         );
         assertThat(results, equalTo(expected));
     }

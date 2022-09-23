@@ -157,7 +157,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddEntrezGeneIdFilter() {
-        Set<String> entrezIds = Sets.newHashSet("FGFR1", "FGFR2");
+        Set<String> entrezIds = Set.of("FGFR1", "FGFR2");
         analysisBuilder.addGeneIdFilter(entrezIds);
         assertThat(buildAndGetSteps(), equalTo(singletonList(new GeneSymbolFilter(entrezIds))));
     }
@@ -259,7 +259,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddInheritanceModeFilter() {
-        analysisBuilder.inheritanceModes(InheritanceModeOptions.of(ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f)));
+        analysisBuilder.inheritanceModes(InheritanceModeOptions.of(Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f)));
         analysisBuilder.addInheritanceFilter();
         assertThat(buildAndGetSteps(), equalTo(singletonList(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT))));
     }

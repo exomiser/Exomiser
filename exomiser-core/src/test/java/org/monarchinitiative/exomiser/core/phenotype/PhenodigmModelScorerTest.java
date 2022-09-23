@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
@@ -118,7 +117,7 @@ public class PhenodigmModelScorerTest {
 
         ModelScorer<Model> instance = PhenodigmModelScorer.forSameSpecies(referenceOrganismPhenotypeMatcher);
 
-        List<String> twoExactPhenotypeMatches = ImmutableList.of("HP:0001156", "HP:0001363");
+        List<String> twoExactPhenotypeMatches = List.of("HP:0001156", "HP:0001363");
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
         ModelPhenotypeMatch<Model> result = instance.scoreModel(model);

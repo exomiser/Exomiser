@@ -40,11 +40,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -132,7 +130,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         if (!variantsLoaded && sample.hasVcf()) {
             try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-                variantEvaluations = variantStream.collect(toList());
+                variantEvaluations = variantStream.toList();
             }
             assignVariantsToGenes(variantEvaluations, allGenes);
             variantsLoaded = true;
@@ -168,7 +166,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private CombinedScorePvalueCalculator buildCombinedScorePvalueCalculator(Sample sample, Analysis analysis, int numFilteredGenes) {
         var prioritiser = analysis.getMainPrioritiser();
         List<Gene> knownGenes = genomeAnalysisService.getKnownGenes();
-        int bootStrapValue = 2_000;
+        int bootStrapValue = 1_000;
         return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(bootStrapValue, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(bootStrapValue, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
     }
 
@@ -200,7 +198,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                         .filter(isAssociatedWithKnownGene(allGenes))
                         .filter(runVariantFilters(variantFilters, filterStats))
                         .peek(variantLogger.countPassedVariant())
-                        .collect(toList());
+                        .toList();
         }
         variantLogger.logResults();
         return filteredVariants;
@@ -240,6 +238,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Predicate<VariantEvaluation> isObservedInProband(String probandId) {
+        //gnomAD high quality criteria: (GQ >= 20, DP >= 10, and have now added: allele balance > 0.2 for heterozygote genotypes)
         return variantEvaluation -> {
             SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously
@@ -293,7 +292,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return
      */
     protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
-        return allGenes.values().stream().filter(Gene::hasVariants).collect(Collectors.toUnmodifiableList());
+        return allGenes.values().stream().filter(Gene::hasVariants).toList();
     }
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
@@ -324,8 +323,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
 
-        if (analysisStep instanceof VariantFilter) {
-            VariantFilter filter = (VariantFilter) analysisStep;
+        if (analysisStep instanceof VariantFilter filter) {
             logger.info("Running VariantFilter: {}", filter);
             for (Gene gene : genes) {
                 variantFilterRunner.run(filter, gene.getVariantEvaluations());
@@ -333,15 +331,13 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
             return;
         }
 
-        if (analysisStep instanceof GeneFilter) {
-            GeneFilter filter = (GeneFilter) analysisStep;
+        if (analysisStep instanceof GeneFilter filter) {
             logger.info("Running GeneFilter: {}", filter);
             geneFilterRunner.run(filter, genes);
             return;
         }
 
-        if (analysisStep instanceof Prioritiser) {
-            Prioritiser<?> prioritiser = (Prioritiser<?>) analysisStep;
+        if (analysisStep instanceof Prioritiser<?> prioritiser) {
             logger.info("Running Prioritiser: {}", prioritiser);
             prioritiser.prioritizeGenes(hpoIds, genes);
         }

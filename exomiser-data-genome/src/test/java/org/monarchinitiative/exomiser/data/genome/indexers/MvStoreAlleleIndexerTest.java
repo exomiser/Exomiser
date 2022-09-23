@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
@@ -42,10 +40,7 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -102,7 +97,7 @@ public class MvStoreAlleleIndexerTest {
         MVStore mvStore = newMvStore();
 
         MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
-        assertThat(mvStore.getMapNames(), equalTo(Sets.newHashSet("alleles")));
+        assertThat(mvStore.getMapNames(), equalTo(Set.of("alleles")));
         assertThat(instance.count(), equalTo(0L));
     }
 
@@ -348,7 +343,7 @@ public class MvStoreAlleleIndexerTest {
                 .alleleId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
-                .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))
+                .includedAlleles(Map.of("54321", ClinVarData.ClinSig.PATHOGENIC))
                 .reviewStatus("conflicting interpretations")
                 .build();
         updateAllele.setClinVarData(alleleClinVarData);

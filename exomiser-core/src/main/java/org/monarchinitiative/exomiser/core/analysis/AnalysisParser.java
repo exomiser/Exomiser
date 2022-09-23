@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -62,7 +61,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static java.nio.file.Files.newInputStream;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @since 7.0.0
@@ -363,8 +361,7 @@ public class AnalysisParser {
             try {
                 return SubModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
-                        .collect(toList());
+                List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values()).toList();
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
@@ -373,8 +370,7 @@ public class AnalysisParser {
             try {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
-                        .collect(toList());
+                List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values()).toList();
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
@@ -460,7 +456,7 @@ public class AnalysisParser {
         private List<ChromosomalRegion> parseIntervalFilterOptions(Map<String, Object> options){
             if (options.containsKey("interval")) {
                 String interval = (String) options.get("interval");
-                return ImmutableList.of(GeneticInterval.parseString(interval));
+                return List.of(GeneticInterval.parseString(interval));
             }
             if (options.containsKey("intervals")) {
                 List<String> intervalStrings = (List<String>) options.get("intervals");
@@ -470,7 +466,7 @@ public class AnalysisParser {
             }
             if (options.containsKey("bed")) {
                 String bedPath = (String) options.get("bed");
-                return BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
+                return BedFiles.readChromosomalRegions(Paths.get(bedPath)).toList();
             }
             throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}", options);
         }

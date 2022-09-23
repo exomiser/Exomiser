@@ -48,15 +48,15 @@ public class GeneFactoryTest {
 
     @Test
     public void testCreateKnownGeneIds() {
-        Set<GeneIdentifier> expected = Sets.newHashSet(TestFactory.buildGeneIdentifiers());
+        Set<GeneIdentifier> expected = Set.copyOf(TestFactory.buildGeneIdentifiers());
         Set<GeneIdentifier> knownGeneIds = instance.getGeneIdentifiers();
         assertThat(knownGeneIds, equalTo(expected));
     }
 
     @Test
     public void testCreateKnownGenes() {
-        Set<Gene> expected = Sets.newHashSet(TestGeneFactory.buildGenes());
-        Set<Gene> knownGenes = Sets.newHashSet(instance.createKnownGenes());
+        Set<Gene> expected = Set.copyOf(TestGeneFactory.buildGenes());
+        Set<Gene> knownGenes = Set.copyOf(instance.createKnownGenes());
         assertThat(knownGenes, equalTo(expected));
     }
 

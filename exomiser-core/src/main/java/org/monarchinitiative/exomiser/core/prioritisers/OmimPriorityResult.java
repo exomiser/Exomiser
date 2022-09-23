@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
@@ -45,7 +44,7 @@ public class OmimPriorityResult extends AbstractPriorityResult {
 
     public OmimPriorityResult(int geneId, String geneSymbol, double score, List<Disease> diseases, Map<ModeOfInheritance, Double> scoresByMode) {
         super(PriorityType.OMIM_PRIORITY, geneId, geneSymbol, score);
-        this.diseases = ImmutableList.copyOf(diseases);
+        this.diseases = List.copyOf(diseases);
         this.scoresByMode = Maps.immutableEnumMap(scoresByMode);
     }
 

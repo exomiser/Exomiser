@@ -30,6 +30,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,7 +52,7 @@ public class AlleleConverterTest {
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE))
             .reviewStatus("yada-yada")
-            .includedAlleles(ImmutableMap.of("455645", ClinVarData.ClinSig.LIKELY_PATHOGENIC))
+            .includedAlleles(Map.of("455645", ClinVarData.ClinSig.LIKELY_PATHOGENIC))
             .build();
 
     private static final ClinVar PROTO_CLINVAR = ClinVar.newBuilder()

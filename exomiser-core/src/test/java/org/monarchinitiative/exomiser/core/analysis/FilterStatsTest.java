@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
@@ -102,14 +101,14 @@ class FilterStatsTest {
         assertThat(instance.getPassCountForFilter(FilterType.PATHOGENICITY_FILTER), equalTo(numPathPasses));
         assertThat(instance.getFailCountForFilter(FilterType.PATHOGENICITY_FILTER), equalTo(numPathFails));
 
-        assertThat(instance.getFilters(), equalTo(ImmutableList.of(FilterType.FREQUENCY_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.PATHOGENICITY_FILTER)));
+        assertThat(instance.getFilters(), equalTo(List.of(FilterType.FREQUENCY_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.PATHOGENICITY_FILTER)));
     }
 
     @Test
     void logsFiltersInOrderOfRunning() {
         FilterStats instance = new FilterStats();
 
-        List<FilterType> filters = ImmutableList.of(FilterType.PRIORITY_SCORE_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.QUALITY_FILTER, FilterType.FREQUENCY_FILTER, FilterType.PATHOGENICITY_FILTER, FilterType.INHERITANCE_FILTER);
+        List<FilterType> filters = List.of(FilterType.PRIORITY_SCORE_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.QUALITY_FILTER, FilterType.FREQUENCY_FILTER, FilterType.PATHOGENICITY_FILTER, FilterType.INHERITANCE_FILTER);
         filters.forEach(filterType -> new FilterRunner(filterType, 1, 1, instance).run());
 
         assertThat(instance.getFilters(), equalTo(filters));
@@ -119,7 +118,7 @@ class FilterStatsTest {
     void getFilterCountsReturnedInOrder() {
         FilterStats instance = new FilterStats();
 
-        List<FilterType> filters = ImmutableList.of(FilterType.PRIORITY_SCORE_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.QUALITY_FILTER, FilterType.FREQUENCY_FILTER, FilterType.PATHOGENICITY_FILTER, FilterType.INHERITANCE_FILTER);
+        List<FilterType> filters = List.of(FilterType.PRIORITY_SCORE_FILTER, FilterType.VARIANT_EFFECT_FILTER, FilterType.QUALITY_FILTER, FilterType.FREQUENCY_FILTER, FilterType.PATHOGENICITY_FILTER, FilterType.INHERITANCE_FILTER);
         filters.forEach(filterType -> new FilterRunner(filterType, 1, 2, instance).run());
 
         List<FilterStats.FilterCount> filterCounts = instance.getFilterCounts();
@@ -156,7 +155,7 @@ class FilterStatsTest {
             int numPathFails = 453;
             FilterRunner pathFilterRunner = new FilterRunner(FilterType.PATHOGENICITY_FILTER, numPathPasses, numPathFails, instance);
 
-            ImmutableList.of(freqFilterRunner, varEffFilterRunner, pathFilterRunner)
+            List.of(freqFilterRunner, varEffFilterRunner, pathFilterRunner)
                     .parallelStream()
                     .forEach(FilterRunner::run);
 
@@ -205,13 +204,13 @@ class FilterStatsTest {
             int threadThreeFails = 453;
             FilterRunner threadThreeFilter = new FilterRunner(FilterType.FREQUENCY_FILTER, threadThreePasses, threadThreeFails, instance);
 
-            ImmutableList.of(threadOneFilter, threadTwoFilter, threadThreeFilter)
+            List.of(threadOneFilter, threadTwoFilter, threadThreeFilter)
                     .parallelStream()
                     .forEach(FilterRunner::run);
 
             assertThat(instance.getPassCountForFilter(FilterType.FREQUENCY_FILTER), equalTo(threadOnePasses + threadTwoPasses + threadThreePasses));
             assertThat(instance.getFailCountForFilter(FilterType.FREQUENCY_FILTER), equalTo(threadOneFails + threadTwoFails + threadThreeFails));
-            assertThat(instance.getFilters(), equalTo(ImmutableList.of(FilterType.FREQUENCY_FILTER)));
+            assertThat(instance.getFilters(), equalTo(List.of(FilterType.FREQUENCY_FILTER)));
         }
     }
 

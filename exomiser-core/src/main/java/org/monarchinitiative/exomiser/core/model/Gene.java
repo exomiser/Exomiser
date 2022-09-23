@@ -34,9 +34,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * This class represents a Gene in which {@link Variant}
@@ -195,7 +193,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @JsonIgnore
     public List<VariantEvaluation> getPassedVariantEvaluations() {
-        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
+        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).toList();
     }
 
     @JsonIgnore
@@ -203,7 +201,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return variantEvaluations.stream()
                 .filter(VariantEvaluation::passedFilters)
                 .filter(variantEvaluation -> !variantEvaluation.contributesToGeneScore())
-                .collect(toList());
+                .toList();
     }
 
     @Override
@@ -362,7 +360,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return this.geneScoreMap.entrySet().stream()
                 .filter(entry -> this.inheritanceModes.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {

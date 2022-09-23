@@ -20,9 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -66,9 +63,9 @@ public class CrossSpeciesPhenotypeMatcherTest {
             .query(bigToe).match(crookedToe).lcs(toe).score(1.5).build();
 
     // Set-up
-    private final Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = ImmutableMap.of(
-            bigNose, Sets.newHashSet(bigNoseSelfMatch, noseMatch),
-            bigToe, Sets.newHashSet(bigToeSelfMatch, bigToeLogToeMatch, bigToeCrookedToeMatch)
+    private final Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = Map.of(
+            bigNose, Set.of(bigNoseSelfMatch, noseMatch),
+            bigToe, Set.of(bigToeSelfMatch, bigToeLogToeMatch, bigToeCrookedToeMatch)
     );
 
     private final QueryPhenotypeMatch queryPhenotypeMatch = new QueryPhenotypeMatch(Organism.HUMAN, phenotypeMatches);
@@ -105,8 +102,8 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     public void testGetBestForwardAndReciprocalMatches() throws Exception {
-        List<String> modelPhenotypes = ImmutableList.of(littleNose.getId(), longToe.getId());
-        List<PhenotypeMatch> expected = ImmutableList.of(noseMatch, bigToeLogToeMatch, noseMatch, bigToeLogToeMatch);
+        List<String> modelPhenotypes = List.of(littleNose.getId(), longToe.getId());
+        List<PhenotypeMatch> expected = List.of(noseMatch, bigToeLogToeMatch, noseMatch, bigToeLogToeMatch);
 //        expected.forEach(match -> System.out.printf("%s-%s=%f%n", match.getQueryPhenotypeId(), match.getMatchPhenotypeId(), match
 //                .getScore()));
         assertThat(instance.findBestForwardAndReverseMatches(modelPhenotypes), equalTo(expected));
@@ -119,34 +116,34 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     void testGetPhenodigmRawScoreImperfectMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(littleNose.getId(), longToe.getId());
+        List<String> modelPhenotypes = List.of(littleNose.getId(), longToe.getId());
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
-        List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(noseMatch, bigToeLogToeMatch);
+        List<PhenotypeMatch> bestPhenotypeMatches = List.of(noseMatch, bigToeLogToeMatch);
         PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(2.0, 6.0, modelPhenotypes, bestPhenotypeMatches);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     void testGetPhenodigmRawScorePerfectMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(bigNose.getId(), bigToe.getId());
+        List<String> modelPhenotypes = List.of(bigNose.getId(), bigToe.getId());
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
-        List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(bigNoseSelfMatch, bigToeSelfMatch);
+        List<PhenotypeMatch> bestPhenotypeMatches = List.of(bigNoseSelfMatch, bigToeSelfMatch);
         PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 16.0, modelPhenotypes, bestPhenotypeMatches);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     void testGetPhenodigmRawScoreMissingTermMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(bigNose.getId(), "HP:0000100");
+        List<String> modelPhenotypes = List.of(bigNose.getId(), "HP:0000100");
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
-        List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(bigNoseSelfMatch);
-        PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 8.0, ImmutableList.of(bigNose.getId()), bestPhenotypeMatches);
+        List<PhenotypeMatch> bestPhenotypeMatches = List.of(bigNoseSelfMatch);
+        PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 8.0, List.of(bigNose.getId()), bestPhenotypeMatches);
         assertThat(result, equalTo(expected));
     }
 }

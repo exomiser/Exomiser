@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -92,7 +90,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
         List<PathogenicityScore> pathogenicityScores = topMatches.stream()
                 .map(this::toPathScore)
-                .collect(toList());
+                .toList();
 
         return PathogenicityData.of(clinVarData, pathogenicityScores);
     }
@@ -104,18 +102,13 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private float mapClinSigToScore(ClinVarData.ClinSig primaryInterpretation) {
-        switch (primaryInterpretation) {
-            case PATHOGENIC:
-                return 1.0f;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return 0.9f;
-            case LIKELY_PATHOGENIC:
-                return 0.8f;
-            case UNCERTAIN_SIGNIFICANCE:
-                return 0.6f;
-            default:
-                return 0f;
-        }
+        return switch (primaryInterpretation) {
+            case PATHOGENIC -> 1.0f;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> 0.9f;
+            case LIKELY_PATHOGENIC -> 0.8f;
+            case UNCERTAIN_SIGNIFICANCE -> 0.6f;
+            default -> 0f;
+        };
     }
 
     private List<SvResult> runQuery(Variant variant) {

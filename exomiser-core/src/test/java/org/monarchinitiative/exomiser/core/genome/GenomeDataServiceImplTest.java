@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,7 +75,7 @@ public class GenomeDataServiceImplTest {
 
     @Test
     public void serviceReturnsRegulatoryFeatures() {
-        List<RegulatoryFeature> regulatoryFeatures = ImmutableList.of(new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER));
+        List<RegulatoryFeature> regulatoryFeatures = List.of(new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER));
         Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatures()).thenReturn(regulatoryFeatures);
 
         List<RegulatoryFeature> result = instance.getRegulatoryFeatures();
@@ -85,7 +84,7 @@ public class GenomeDataServiceImplTest {
 
     @Test
     public void serviceReturnsTopologicalDomains() {
-        List<TopologicalDomain> tads = ImmutableList.of(new TopologicalDomain(1, 1, 2, Collections.emptyMap()));
+        List<TopologicalDomain> tads = List.of(new TopologicalDomain(1, 1, 2, Collections.emptyMap()));
         Mockito.when(mockTadDao.getAllTads()).thenReturn(tads);
 
         List<TopologicalDomain> topologicalDomains = instance.getTopologicallyAssociatedDomains();

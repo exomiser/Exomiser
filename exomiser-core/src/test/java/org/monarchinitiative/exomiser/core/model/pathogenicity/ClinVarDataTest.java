@@ -55,7 +55,7 @@ public class ClinVarDataTest {
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
         String reviewStatus = "multiple_submitters,_no_conflict";
-        Map<String, ClinSig> included = ImmutableMap.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
                 .alleleId(alleleId)
                 .primaryInterpretation(clinSig)
@@ -77,7 +77,7 @@ public class ClinVarDataTest {
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
         String reviewStatus = "multiple_submitters,_no_conflict";
-        Map<String, ClinSig> included = ImmutableMap.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
                 .alleleId(alleleId)
                 .primaryInterpretation(clinSig)

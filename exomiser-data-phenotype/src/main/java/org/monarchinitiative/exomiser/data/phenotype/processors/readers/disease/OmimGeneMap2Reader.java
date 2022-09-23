@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.disease;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
@@ -84,7 +83,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
             e.printStackTrace();
         }
         logger.info("Extracted {} OMIM disease-gene associations from {}", diseases.size(), geneMap2Resource.getResourcePath());
-        return ImmutableList.copyOf(diseases);
+        return List.copyOf(diseases);
     }
 
     protected List<DiseaseGene> parseLine(Map<String, InheritanceMode> diseaseInheritanceCache, String line) {

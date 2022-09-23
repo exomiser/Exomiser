@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.groups;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.processors.steps.disease.DiseaseGeneMoiComparisonStep;
 import org.monarchinitiative.exomiser.data.phenotype.processors.steps.disease.DiseaseGeneStep;
@@ -47,7 +46,7 @@ public class DiseaseProcessingGroup implements ProcessingGroup {
     private final EntrezIdGeneSymbolStep entrezIdGeneSymbolStep;
 
     public DiseaseProcessingGroup(List<Resource> diseaseResources, DiseasePhenotypeStep diseasePhenotypeStep, DiseaseGeneStep diseaseGeneStep, DiseaseGeneMoiComparisonStep diseaseGeneMoiComparisonStep, EntrezIdGeneSymbolStep entrezIdGeneSymbolStep) {
-        this.resources = ImmutableList.copyOf(diseaseResources);
+        this.resources = List.copyOf(diseaseResources);
         diseaseResources.forEach(resource -> logger.debug("Using {}", resource));
 
         this.diseasePhenotypeStep = diseasePhenotypeStep;

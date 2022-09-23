@@ -34,7 +34,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 
@@ -66,7 +65,7 @@ public class HgncParser {
         List<String> columnHeaders = streamFile(hgncCompleteSetTxtPath)
                 .limit(1)
                 .flatMap(line -> Arrays.stream(line.split("\t")))
-                .collect(toList());
+                .toList();
 
         return IntStream.range(0, columnHeaders.size())
                 .boxed()

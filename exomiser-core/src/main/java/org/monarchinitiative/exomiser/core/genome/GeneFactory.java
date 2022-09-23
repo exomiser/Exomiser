@@ -65,7 +65,7 @@ public class GeneFactory {
                 // We're assuming the GeneIdentifier includes Entrez ids here. They should be present.
                 // If not the entire analysis will fail.
                 .map(Gene::new)
-                .collect(toList());
+                .collect(toList()); // MUST BE MUTABLE
         logger.debug("Created {} known genes.", knownGenes.size());
         return knownGenes;
     }

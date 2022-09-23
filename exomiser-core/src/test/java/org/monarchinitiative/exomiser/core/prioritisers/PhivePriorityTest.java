@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -29,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,7 +39,7 @@ public class PhivePriorityTest {
 
     //TODO: add these to the TestService as GeneIdentifiers
     private List<Gene> getGenes() {
-        return Lists.newArrayList(
+        return List.of(
                 new Gene("FGFR2", 2263),
                 new Gene("ROR2", 4920),
                 new Gene("FREM2", 341640),
@@ -75,7 +73,7 @@ public class PhivePriorityTest {
     public void testPrioritizeGenes() {
         List<Gene> genes = getGenes();
 
-        List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
+        List<String> hpoIds= List.of("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
         phivePriority.prioritizeGenes(hpoIds, genes);
 
@@ -83,7 +81,7 @@ public class PhivePriorityTest {
                 .flatMap(gene -> gene.getPriorityResults().values().stream())
                 .map(priorityResult -> (PhivePriorityResult) priorityResult)
                 .sorted()
-                .collect(toList());
+                .toList();
 
         assertThat(results.size(), equalTo(genes.size()));
 
@@ -95,12 +93,12 @@ public class PhivePriorityTest {
     public void testPrioritise() {
         List<Gene> genes = getGenes();
 
-        List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
+        List<String> hpoIds= List.of("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
 
         List<PhivePriorityResult> results = phivePriority.prioritise(hpoIds, genes)
                 .sorted()
-                .collect(toList());
+                .toList();
 
         assertThat(results.size(), equalTo(genes.size()));
 

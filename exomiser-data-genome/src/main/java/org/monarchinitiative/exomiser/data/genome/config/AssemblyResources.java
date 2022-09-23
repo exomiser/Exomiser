@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -68,12 +67,12 @@ public class AssemblyResources {
 
     public List<AlleleResource> getUserDefinedResources(List<String> optionValues) {
         if (optionValues.isEmpty()) {
-            return new ArrayList<>(alleleResources.values());
+            return List.copyOf(alleleResources.values());
         }
         return optionValues.stream()
                 .filter(alleleResources::containsKey)
                 .map(alleleResources::get)
-                .collect(toList());
+                .toList();
     }
 
     public List<SvResource> getSvResources() {

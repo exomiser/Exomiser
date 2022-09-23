@@ -182,7 +182,7 @@ public class VariantFactoryImplTest {
 //        assertThat(variantEvaluation.getGeneId(), equalTo(""));
 //        assertThat(variantEvaluation.getGeneSymbol(), equalTo("."));
 //        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
-//        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(ImmutableMap.of("Sample", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT))));
+//        assertThat(variantEvaluation.getSampleGenotypes(), equalTo(Map.of("Sample", SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT))));
     }
 
     /**

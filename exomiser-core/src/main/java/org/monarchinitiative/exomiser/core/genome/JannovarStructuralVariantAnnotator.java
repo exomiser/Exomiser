@@ -43,7 +43,6 @@ import java.util.Set;
 
 import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -96,7 +95,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         return annotationsByGeneSymbol.values()
                 .stream()
                 .map(geneSvAnnotations -> toStructuralVariantAnnotation(variant, geneSvAnnotations))
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     private VariantAnnotation toStructuralVariantAnnotation(Variant variant, List<SVAnnotation> svAnnotations) {

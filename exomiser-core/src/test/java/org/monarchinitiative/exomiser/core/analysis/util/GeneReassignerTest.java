@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
@@ -408,7 +407,7 @@ public class GeneReassignerTest {
                 .build();
 
         VariantEvaluation variant = variantBuilderInTadWithEffect(tad, VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT, gene2)
-                .annotations(ImmutableList.of(upstream, downstream, fusionProteinAnnotation))
+                .annotations(List.of(upstream, downstream, fusionProteinAnnotation))
                 .build();
 
 //        logVariantInfo(variant);
@@ -418,7 +417,7 @@ public class GeneReassignerTest {
 //        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene1));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
-        assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream)));
+        assertThat(reassigned.getTranscriptAnnotations(), equalTo(List.of(upstream)));
     }
 
     @Test
@@ -477,7 +476,7 @@ public class GeneReassignerTest {
                 .variantContext(buildVariantContext(1, 1000, "A", "T"))
                 .geneSymbol(GNRHR2.getGeneSymbol())
                 .geneId(GNRHR2.getGeneId())
-                .annotations(ImmutableList.of(
+                .annotations(List.of(
                         TranscriptAnnotation.builder()
                                 .geneSymbol(GNRHR2.getGeneSymbol())
                                 .variantEffect(VariantEffect.INTERGENIC_VARIANT)
@@ -525,7 +524,7 @@ public class GeneReassignerTest {
                 .build();
 
         VariantEvaluation variant = variantBuilderInTadWithEffect(tad, VariantEffect.UPSTREAM_GENE_VARIANT, gene2)
-                .annotations(ImmutableList.of(upstream))
+                .annotations(List.of(upstream))
                 .build();
 
 //        logVariantInfo(variant);
@@ -535,7 +534,7 @@ public class GeneReassignerTest {
 //        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene2));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
-        assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream)));
+        assertThat(reassigned.getTranscriptAnnotations(), equalTo(List.of(upstream)));
     }
 
     @Test
@@ -562,7 +561,7 @@ public class GeneReassignerTest {
                 .build();
 
         VariantEvaluation variant = variantBuilderInTadWithEffect(tad, VariantEffect.UPSTREAM_GENE_VARIANT, gene1)
-                .annotations(ImmutableList.of(upstream, downstream, intergenic))
+                .annotations(List.of(upstream, downstream, intergenic))
                 .build();
 
 //        logVariantInfo(variant);
@@ -572,7 +571,7 @@ public class GeneReassignerTest {
 //        logVariantInfo(reassigned);
         assertThat(reassigned, isAssignedTo(gene1));
         assertThat(reassigned.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
-        assertThat(reassigned.getTranscriptAnnotations(), equalTo(ImmutableList.of(upstream, downstream, intergenic)));
+        assertThat(reassigned.getTranscriptAnnotations(), equalTo(List.of(upstream, downstream, intergenic)));
     }
 
     private void logVariantInfo(VariantEvaluation variant) {

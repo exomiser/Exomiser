@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
 /**
@@ -49,7 +48,7 @@ public class IncompletePenetranceAlleleCalculator {
     public List<VariantEvaluation> findCompatibleVariants(List<VariantEvaluation> variantEvaluations) {
         return variantEvaluations.stream()
                 .filter(inAllAffected())
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     private Predicate<VariantEvaluation> inAllAffected() {

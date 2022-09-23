@@ -25,9 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +39,8 @@ import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyD
 import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -69,20 +68,20 @@ public class OntologyServiceImplTest {
     private final PhenotypeTerm cleftHelix = PhenotypeTerm.of("HP:0009902", "Cleft helix");
     private final PhenotypeTerm thinEarHelix = PhenotypeTerm.of("HP:0009905", "Thin ear helix");
 
-    private final Set<PhenotypeTerm> hpoTerms = ImmutableSet.of(fingerJointHyperExtensibility, conjunctivalNodule, cleftHelix, thinEarHelix);
-    private final Set<PhenotypeTerm> mpoTerms = Collections.emptySet();
-    private final Set<PhenotypeTerm> zpoTerms = Collections.emptySet();
+    private final Set<PhenotypeTerm> hpoTerms = Set.of(fingerJointHyperExtensibility, conjunctivalNodule, cleftHelix, thinEarHelix);
+    private final Set<PhenotypeTerm> mpoTerms = Set.of();
+    private final Set<PhenotypeTerm> zpoTerms = Set.of();
 
     @BeforeEach
     public void setUp() {
         Mockito.when(mockHpoDao.getAllTerms()).thenReturn(hpoTerms);
-        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Set.of());
 
         Mockito.when(mockMpoDao.getAllTerms()).thenReturn(mpoTerms);
-        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Set.of());
 
         Mockito.when(mockZpoDao.getAllTerms()).thenReturn(zpoTerms);
-        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
+        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Set.of());
 
         instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
     }
@@ -131,12 +130,12 @@ public class OntologyServiceImplTest {
     void testReturnsSameHpoIdsWhenGivenObsoleteIdsAndAltHpIdsNotAvailable() {
 
         Mockito.when(mockHpoDao.getIdToPhenotypeTerms())
-                .thenReturn(ImmutableMap.of());
+                .thenReturn(Map.of());
 
         instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
 
-        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", "HP:0000000")), equalTo(ImmutableList.of("HP:0009902", "HP:0000000")));
-        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", "HP:0009905", "HP:0000000")), equalTo(ImmutableList.of("HP:0009902", "HP:0009905", "HP:0000000")));
+        assertThat(instance.getCurrentHpoIds(List.of("HP:0009902", "HP:0000000")), equalTo(List.of("HP:0009902", "HP:0000000")));
+        assertThat(instance.getCurrentHpoIds(List.of("HP:0009902", "HP:0009905", "HP:0000000")), equalTo(List.of("HP:0009902", "HP:0009905", "HP:0000000")));
     }
 
     @Test
@@ -145,16 +144,16 @@ public class OntologyServiceImplTest {
         String obsoleteThinEarHelixId = "HP:0000000";
         String currentThinEarHelixId = "HP:0009905";
         Mockito.when(mockHpoDao.getIdToPhenotypeTerms())
-                .thenReturn(ImmutableMap.of(
+                .thenReturn(Map.of(
                 "HP:0009902", cleftHelix,
                         currentThinEarHelixId, thinEarHelix,
                         obsoleteThinEarHelixId, thinEarHelix
         ));
         instance = new OntologyServiceImpl(mockHpoDao, mockMpoDao, mockZpoDao);
 
-        ImmutableList<String> expected = ImmutableList.of("HP:0009902", currentThinEarHelixId);
+        List<String> expected = List.of("HP:0009902", currentThinEarHelixId);
 
-        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", obsoleteThinEarHelixId)), equalTo(expected));
-        assertThat(instance.getCurrentHpoIds(ImmutableList.of("HP:0009902", currentThinEarHelixId, obsoleteThinEarHelixId)), equalTo(expected));
+        assertThat(instance.getCurrentHpoIds(List.of("HP:0009902", obsoleteThinEarHelixId)), equalTo(expected));
+        assertThat(instance.getCurrentHpoIds(List.of("HP:0009902", currentThinEarHelixId, obsoleteThinEarHelixId)), equalTo(expected));
     }
 }

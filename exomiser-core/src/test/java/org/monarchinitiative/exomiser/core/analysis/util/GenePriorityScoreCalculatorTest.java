@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -53,7 +51,7 @@ public class GenePriorityScoreCalculatorTest {
 
     private Gene newGeneCompatibleWith(ModeOfInheritance... modes) {
         Gene gene = TestFactory.newGeneFGFR2();
-        gene.setCompatibleInheritanceModes(ImmutableSet.copyOf(modes));
+        gene.setCompatibleInheritanceModes(Set.of(modes));
         return gene;
     }
 
@@ -74,14 +72,14 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     private List<Disease> diseasesCompatibleWith(InheritanceMode... inheritanceModes) {
-        ImmutableList.Builder<Disease> diseaseListBuilder = ImmutableList.builder();
+        List<Disease> diseaseListBuilder = new ArrayList<>();
         for (InheritanceMode inheritanceMode : inheritanceModes) {
             Disease disease = Disease.builder()
                     .inheritanceMode(inheritanceMode)
                     .build();
             diseaseListBuilder.add(disease);
         }
-        return diseaseListBuilder.build();
+        return List.copyOf(diseaseListBuilder);
     }
 
     @Test

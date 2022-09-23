@@ -30,7 +30,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
@@ -75,7 +74,7 @@ public class Analysis {
         this.inheritanceModeOptions = builder.inheritanceModeOptions;
         this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
         this.pathogenicitySources = Sets.immutableEnumSet(builder.pathogenicitySources);
-        this.analysisSteps = ImmutableList.copyOf(builder.analysisSteps);
+        this.analysisSteps = List.copyOf(builder.analysisSteps);
     }
 
     public AnalysisMode getAnalysisMode() {

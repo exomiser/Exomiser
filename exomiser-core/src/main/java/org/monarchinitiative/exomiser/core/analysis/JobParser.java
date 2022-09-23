@@ -46,7 +46,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static java.util.stream.Collectors.toList;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.valueOf;
 
 /**
@@ -295,7 +294,7 @@ public class JobParser {
         }
         if (!intervalFilter.getBed().isEmpty()) {
             String bedPath = intervalFilter.getBed();
-            return BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
+            return BedFiles.readChromosomalRegions(Paths.get(bedPath)).toList();
         }
         throw new IllegalArgumentException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}");
     }

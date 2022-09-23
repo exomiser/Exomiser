@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -66,11 +65,11 @@ public class FilterReportFactory {
 
         List<Filter> filters = getFiltersFromAnalysis(analysis);
 
-        return filters.stream().map(filter -> makeFilterReport(filter, analysisResults)).collect(Collectors.toList());
+        return filters.stream().map(filter -> makeFilterReport(filter, analysisResults)).toList();
     }
 
     private List<Filter> getFiltersFromAnalysis(Analysis analysis) {
-        return analysis.getAnalysisSteps().stream().filter(Filter.class::isInstance).map(step -> (Filter) step).collect(Collectors.toList());
+            return analysis.getAnalysisSteps().stream().filter(Filter.class::isInstance).map(Filter.class::cast).toList();
     }
 
     /**
@@ -85,26 +84,25 @@ public class FilterReportFactory {
     protected FilterReport makeFilterReport(Filter filter, AnalysisResults analysisResults) {
         FilterType filterType = filter.getFilterType();
         Filter baseFilter = unWrapVariantFilterDataProvider(filter);
-        switch (filterType) {
-            case VARIANT_EFFECT_FILTER:
-                return makeTargetFilterReport((VariantEffectFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case KNOWN_VARIANT_FILTER:
-                return makeKnownVariantFilterReport((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case FREQUENCY_FILTER:
-                return makeFrequencyFilterReport((FrequencyFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case QUALITY_FILTER:
-                return makeQualityFilterReport((QualityFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case PATHOGENICITY_FILTER:
-                return makePathogenicityFilterReport((PathogenicityFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case INTERVAL_FILTER:
-                return makeIntervalFilterReport((IntervalFilter) baseFilter, analysisResults.getVariantEvaluations());
-            case INHERITANCE_FILTER:
-                return makeInheritanceFilterReport((InheritanceFilter) baseFilter, analysisResults.getGenes());
-            case PRIORITY_SCORE_FILTER:
-                return makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, analysisResults.getGenes());
-            default:
-                return makeVariantFilterReport(filter, analysisResults.getVariantEvaluations());
-        }
+        return switch (filterType) {
+            case VARIANT_EFFECT_FILTER ->
+                    makeTargetFilterReport((VariantEffectFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case KNOWN_VARIANT_FILTER ->
+                    makeKnownVariantFilterReport((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case FREQUENCY_FILTER ->
+                    makeFrequencyFilterReport((FrequencyFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case QUALITY_FILTER ->
+                    makeQualityFilterReport((QualityFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case PATHOGENICITY_FILTER ->
+                    makePathogenicityFilterReport((PathogenicityFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case INTERVAL_FILTER ->
+                    makeIntervalFilterReport((IntervalFilter) baseFilter, analysisResults.getVariantEvaluations());
+            case INHERITANCE_FILTER ->
+                    makeInheritanceFilterReport((InheritanceFilter) baseFilter, analysisResults.getGenes());
+            case PRIORITY_SCORE_FILTER ->
+                    makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, analysisResults.getGenes());
+            default -> makeVariantFilterReport(filter, analysisResults.getVariantEvaluations());
+        };
     }
     
     private Filter unWrapVariantFilterDataProvider(Filter filter) {
@@ -208,7 +206,7 @@ public class FilterReportFactory {
             messages.add(formatRegion(finalRegion));
         }
 
-        return makeVariantFilterReport(filter, variantEvaluations, messages);
+        return makeVariantFilterReport(filter, variantEvaluations, List.copyOf(messages));
     }
 
     private String formatRegion(ChromosomalRegion region) {
@@ -222,14 +220,14 @@ public class FilterReportFactory {
                 .map(ModeOfInheritance::toString)
                 .collect(Collectors.joining(", "));
 
-        List<String> messages = ImmutableList.of(String.format("Genes filtered for compatibility with %s inheritance.", inheritanceModes));
+        List<String> messages = List.of(String.format("Genes filtered for compatibility with %s inheritance.", inheritanceModes));
 
         return makeGeneFilterReport(filter, genes, messages);
     }
 
     private FilterReport makePriorityScoreFilterReport(PriorityScoreFilter filter, List<Gene> genes) {
 
-        List<String> messages = ImmutableList.of(String.format("Genes filtered for minimum %s score of %s",
+        List<String> messages = List.of(String.format("Genes filtered for minimum %s score of %s",
                 filter.getPriorityType(), filter.getMinPriorityScore()));
 
         return makeGeneFilterReport(filter, genes, messages);

@@ -47,7 +47,7 @@ class Product6DiseaseGeneXmlReaderTest {
 
         Product6DiseaseGeneXmlReader instance = new Product6DiseaseGeneXmlReader(mimToGeneReader, product6XmlResource);
         ListMultimap<String, DiseaseGene> allDiseases = instance.read();
-        allDiseases.forEach((diseaseId, gene) -> {
+        allDiseases.asMap().forEach((diseaseId, gene) -> {
               System.out.println(diseaseId + " - " + gene);
         });
     }
@@ -63,7 +63,7 @@ class Product6DiseaseGeneXmlReaderTest {
         Product6DiseaseGeneXmlReader instance = new Product6DiseaseGeneXmlReader(mimToGeneReader, product6XmlResource);
 
         ListMultimap<String, DiseaseGene> allDiseases = instance.read();
-        allDiseases.forEach((diseaseId, gene) -> {
+        allDiseases.asMap().forEach((diseaseId, gene) -> {
             System.out.println(diseaseId + " - " + gene);
         });
     }

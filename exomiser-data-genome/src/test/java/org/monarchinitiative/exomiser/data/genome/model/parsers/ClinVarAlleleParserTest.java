@@ -20,13 +20,13 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -44,7 +44,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	UNWANTED=0.003;FIELDS=these_should_not_produce_anything";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .alleleId("12345")
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .alleleId("12345")
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .reviewStatus("practice_guideline")
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .reviewStatus("criteria_provided,_single_submitter")
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -113,7 +113,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .primaryInterpretation(ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN)
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.OTHER, ClinVarData.ClinSig.ASSOCIATION))
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -138,7 +138,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .primaryInterpretation(ClinVarData.ClinSig.NOT_PROVIDED)
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
 
@@ -151,7 +151,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .reviewStatus("criteria_provided,_conflicting_interpretations")
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -160,10 +160,10 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
                 .alleleId("12345")
-                .includedAlleles(ImmutableMap.of("424752", ClinVarData.ClinSig.PATHOGENIC))
+                .includedAlleles(Map.of("424752", ClinVarData.ClinSig.PATHOGENIC))
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -172,13 +172,13 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
                 .alleleId("12345")
-                .includedAlleles(ImmutableMap.of(
+                .includedAlleles(Map.of(
                         "424752", ClinVarData.ClinSig.PATHOGENIC,
                         "15612", ClinVarData.ClinSig.OTHER
                 ))
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 
     @Test
@@ -189,12 +189,12 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         expected.setClinVarData(ClinVarData.builder()
                 .alleleId("36774")
                 .reviewStatus("no interpretation for the single variant")
-                .includedAlleles(ImmutableMap.of(
+                .includedAlleles(Map.of(
                         "8152", ClinVarData.ClinSig.PATHOGENIC
                 ))
                 .build());
 
-        assertParseLineEquals(line, ImmutableList.of(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
     //CLNSIGINCL=424752:Pathogenic
     //CLNSIGINCL=15127:other|15128:other|15334:Pathogenic|15335:Pathogenic|15336:Pathogenic|15337:Pathogenic|15610:Pathogenic|15612:other

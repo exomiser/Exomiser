@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Utility class for validating {@link Pedigree} objects against the proband sample identifier and the sample
@@ -104,7 +103,7 @@ public class PedigreeSampleValidator {
         List<String> familyNames = pedigree.getIndividuals().stream()
                 .map(Individual::getFamilyId)
                 .distinct()
-                .collect(toList());
+                .toList();
         if (familyNames.size() > 1) {
             String message = "Pedigree must contain only one family, found " + familyNames.size() + ": " + familyNames + ". Please provide a pedigree containing only the proband family matching supplied HPO terms.";
             logger.error(message);

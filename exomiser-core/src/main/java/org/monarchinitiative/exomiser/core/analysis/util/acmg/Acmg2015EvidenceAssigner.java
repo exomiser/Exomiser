@@ -38,7 +38,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
@@ -490,20 +489,16 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     }
 
     private boolean isPathogenic(PathogenicityScore pathogenicityScore) {
-        if (pathogenicityScore instanceof SiftScore) {
-            SiftScore score = (SiftScore) pathogenicityScore;
+        if (pathogenicityScore instanceof SiftScore score) {
             return score.getRawScore() < SiftScore.SIFT_THRESHOLD;
         }
-        if (pathogenicityScore instanceof MutationTasterScore) {
-            MutationTasterScore score = (MutationTasterScore) pathogenicityScore;
+        if (pathogenicityScore instanceof MutationTasterScore score) {
             return score.getScore() > MutationTasterScore.MTASTER_THRESHOLD;
         }
-        if (pathogenicityScore instanceof PolyPhenScore) {
-            PolyPhenScore score = (PolyPhenScore) pathogenicityScore;
+        if (pathogenicityScore instanceof PolyPhenScore score) {
             return score.getScore() > PolyPhenScore.POLYPHEN_PROB_DAMAGING_THRESHOLD;
         }
-        if (pathogenicityScore instanceof CaddScore) {
-            CaddScore score = (CaddScore) pathogenicityScore;
+        if (pathogenicityScore instanceof CaddScore score) {
             // 95-99% most deleterious.
             return score.getRawScore() >= 13.0f;
         }
@@ -542,7 +537,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                     .filter(Individual::isAffected)
                     .filter(individual -> !individual.getId().equals(probandId))
                     .filter(individual -> individual.getFamilyId().equals(proband.getFamilyId()))
-                    .collect(Collectors.toList());
+                    .toList();
             boolean segregatesWithAffectedInFamily = true;
             SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             if (!affectedFamilyMembers.isEmpty()) {

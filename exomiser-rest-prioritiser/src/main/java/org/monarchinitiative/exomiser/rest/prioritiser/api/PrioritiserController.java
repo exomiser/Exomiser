@@ -40,8 +40,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -134,13 +132,13 @@ public class PrioritiserController {
         // OmimPrioritiser uses some properties of Gene
         return genesIds.stream()
                 .map(id -> new Gene(geneIdentifiers.getOrDefault(id, unrecognisedGeneIdentifier(id))))
-                .collect(toImmutableList());
+                .toList();
     }
 
     private List<Gene> allGenes() {
         return geneIdentifiers.values().parallelStream()
                 .map(Gene::new)
-                .collect(toImmutableList());
+                .toList();
     }
 
     private GeneIdentifier unrecognisedGeneIdentifier(Integer id) {
@@ -156,9 +154,9 @@ public class PrioritiserController {
 
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {
-            return resultsStream.collect(toImmutableList());
+            return resultsStream.collect(Collectors.toUnmodifiableList());
         }
-        return resultsStream.limit(limit).collect(toImmutableList());
+        return resultsStream.limit(limit).collect(Collectors.toUnmodifiableList());
     }
 
 }

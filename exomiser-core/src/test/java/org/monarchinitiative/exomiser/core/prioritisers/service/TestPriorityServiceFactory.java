@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
@@ -57,14 +56,14 @@ public class TestPriorityServiceFactory {
     private static final PriorityService TEST_SERVICE = setUpPriorityService();
     private static final PriorityService STUB_SERVICE = setUpStubPriorityService();
 
-    private static final List<PhenotypeTerm> PFEIFFER_PHENOTYPES = ImmutableList.of(
+    private static final List<PhenotypeTerm> PFEIFFER_PHENOTYPES = List.of(
             PhenotypeTerm.of("HP:0010055", "Broad hallux"),
             PhenotypeTerm.of("HP:0001363", "Craniosynostosis"),
             PhenotypeTerm.of("HP:0001156", "Brachydactyly syndrome"),
             PhenotypeTerm.of("HP:0011304", "Broad thumb")
     );
 
-    private static final List<PhenotypeTerm> TARS_PHENOTYPES = ImmutableList.of(
+    private static final List<PhenotypeTerm> TARS_PHENOTYPES = List.of(
             PhenotypeTerm.of("HP:0007370", "Aplasia/Hypoplasia of the corpus callosum"),
             PhenotypeTerm.of("HP:0001873", "Thrombocytopenia"),
             PhenotypeTerm.of("HP:0004977", "Bilateral radial aplasia"),

@@ -44,10 +44,10 @@ public class OboOntology {
         this.dataVersion = dataVersion;
         this.currentOntologyTerms = ontologyTerms.stream()
                 .filter(ontologyTerm -> !ontologyTerm.isObsolete())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         this.obsoleteOntologyTerms = ontologyTerms.stream()
                 .filter(OboOntologyTerm::isObsolete)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         this.obsoleteIdToCurrentTerms = makeObsoleteTerms(currentOntologyTerms, obsoleteOntologyTerms);
     }
 

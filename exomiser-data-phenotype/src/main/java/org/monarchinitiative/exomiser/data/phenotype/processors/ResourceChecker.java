@@ -20,15 +20,16 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -48,7 +49,7 @@ public class ResourceChecker {
 
         Map<Resource, State> resourceStates = resources.stream()
                 .distinct()
-                .collect(ImmutableMap.toImmutableMap(Function.identity(), checkState()));
+                .collect(Collectors.toUnmodifiableMap(Function.identity(), checkState()));
 
         return new ResourceChecker(resourceStates);
     }
@@ -79,6 +80,6 @@ public class ResourceChecker {
         return resourceStates.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(State.ABSENT))
                 .map(Map.Entry::getKey)
-                .collect(ImmutableList.toImmutableList());
+                .toList();
     }
 }

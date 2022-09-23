@@ -34,12 +34,9 @@ import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * The results of an Exomiser Analysis run.
@@ -142,8 +139,7 @@ public class AnalysisResults {
      */
     @JsonIgnore
     public List<GeneScore> getGeneScores() {
-        return sortedGeneScoresWithContributingVariants()
-                .collect(toList());
+        return sortedGeneScoresWithContributingVariants().toList();
     }
 
     /**
@@ -159,8 +155,7 @@ public class AnalysisResults {
      */
     @JsonIgnore
     public List<GeneScore> getGeneScoresForMode(ModeOfInheritance modeOfInheritance) {
-        return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance)
-                .collect(toList());
+        return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance).toList();
     }
 
     /**
@@ -172,7 +167,7 @@ public class AnalysisResults {
         return sortedGeneScoresWithContributingVariants()
                 .map(GeneScore::getContributingVariants)
                 .flatMap(Collection::stream)
-                .collect(toList());
+                .toList();
     }
 
     /**
@@ -185,7 +180,7 @@ public class AnalysisResults {
                 .map(GeneScore::getContributingVariants)
                 .flatMap(Collection::stream)
                 .sorted()
-                .collect(toList());
+                .toList();
     }
 
     private Stream<GeneScore> sortedGeneScoresWithContributingVariants() {
@@ -207,7 +202,7 @@ public class AnalysisResults {
 
     @JsonIgnore
     public List<VariantEvaluation> getUnAnnotatedVariantEvaluations() {
-        return variantEvaluations.stream().filter(varEval -> !varEval.hasTranscriptAnnotations()).collect(toList());
+        return variantEvaluations.stream().filter(varEval -> !varEval.hasTranscriptAnnotations()).toList();
     }
 
     @Override
@@ -245,10 +240,10 @@ public class AnalysisResults {
         private Sample sample = Sample.builder().build();
         private Analysis analysis = Analysis.builder().build();
 
-        private List<String> sampleNames = Collections.emptyList();
+        private List<String> sampleNames = List.of();
 
-        private List<VariantEvaluation> variantEvaluations = Collections.emptyList();
-        private List<Gene> genes = Collections.emptyList();
+        private List<VariantEvaluation> variantEvaluations = List.of();
+        private List<Gene> genes = List.of();
 
 
         public Builder sample(Sample sample) {

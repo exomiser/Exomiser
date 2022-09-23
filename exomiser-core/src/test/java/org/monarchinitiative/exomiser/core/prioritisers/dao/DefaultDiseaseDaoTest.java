@@ -25,9 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
@@ -72,13 +69,13 @@ public class DefaultDiseaseDaoTest {
 
     @Test
     public void testGetHpoIdsForDiseaseId() {
-        Set<String> omim101600HpoIds = Sets.newTreeSet(disease.getPhenotypeIds());
+        Set<String> omim101600HpoIds = Set.copyOf(disease.getPhenotypeIds());
         assertThat(instance.getHpoIdsForDiseaseId("OMIM:101600"), equalTo(omim101600HpoIds));
     }
 
     @Test
     public void testGetDiseaseDataAssociatedWithGeneId() {
-        List<Disease> expected = Lists.newArrayList(disease) ;
+        List<Disease> expected = List.of(disease) ;
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(2263), equalTo(expected));
     }
 
@@ -91,9 +88,9 @@ public class DefaultDiseaseDaoTest {
                 .inheritanceMode(InheritanceMode.UNKNOWN)
                 .associatedGeneId(2222)
                 .associatedGeneSymbol("GENE2")
-                .phenotypeIds(ImmutableList.of("HP:0000001"))
+                .phenotypeIds(List.of("HP:0000001"))
                 .build();
-        List<Disease> expected = Lists.newArrayList(cnv) ;
+        List<Disease> expected = List.of(cnv) ;
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(2222), equalTo(expected));
     }
 
@@ -106,9 +103,9 @@ public class DefaultDiseaseDaoTest {
                 .inheritanceMode(InheritanceMode.UNKNOWN)
                 .associatedGeneId(3333)
                 .associatedGeneSymbol("GENE3")
-                .phenotypeIds(ImmutableList.of("HP:0000002"))
+                .phenotypeIds(List.of("HP:0000002"))
                 .build();
-        List<Disease> expected = Lists.newArrayList(disease) ;
+        List<Disease> expected = List.of(disease) ;
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(3333), equalTo(expected));
     }
 
@@ -121,9 +118,9 @@ public class DefaultDiseaseDaoTest {
                 .inheritanceMode(InheritanceMode.UNKNOWN)
                 .associatedGeneId(4444)
                 .associatedGeneSymbol("GENE4")
-                .phenotypeIds(ImmutableList.of("HP:0000002"))
+                .phenotypeIds(List.of("HP:0000002"))
                 .build();
-        List<Disease> expected = Lists.newArrayList(disease);
+        List<Disease> expected = List.of(disease);
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(4444), equalTo(expected));
     }
 
@@ -136,7 +133,7 @@ public class DefaultDiseaseDaoTest {
                 .inheritanceMode(InheritanceMode.UNKNOWN)
                 .associatedGeneId(5555)
                 .associatedGeneSymbol("GENE5")
-                .phenotypeIds(ImmutableList.of("HP:0000003"))
+                .phenotypeIds(List.of("HP:0000003"))
                 .build();
 
         Disease disease2 = Disease.builder()
@@ -146,7 +143,7 @@ public class DefaultDiseaseDaoTest {
                 .inheritanceMode(InheritanceMode.UNKNOWN)
                 .associatedGeneId(5555)
                 .associatedGeneSymbol("GENE5")
-                .phenotypeIds(ImmutableList.of("HP:0000004"))
+                .phenotypeIds(List.of("HP:0000004"))
                 .build();
 
         assertThat(instance.getDiseaseDataAssociatedWithGeneId(5555), equalTo(List.of(disease1, disease2)));

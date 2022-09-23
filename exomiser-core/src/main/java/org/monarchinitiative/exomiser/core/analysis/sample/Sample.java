@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
@@ -72,7 +71,7 @@ public class Sample {
         this.age = builder.age;
         this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
         this.pedigree = builder.pedigree;
-        this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
+        this.hpoIds = List.copyOf(builder.hpoIds);
     }
 
     private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
@@ -173,7 +172,7 @@ public class Sample {
         private Age age = Age.unknown();
         private Sex sex = Sex.UNKNOWN;
         private Pedigree pedigree = Pedigree.empty();
-        private List<String> hpoIds = ImmutableList.of();
+        private List<String> hpoIds = List.of();
 
         public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
             this.genomeAssembly = Objects.requireNonNull(genomeAssembly);

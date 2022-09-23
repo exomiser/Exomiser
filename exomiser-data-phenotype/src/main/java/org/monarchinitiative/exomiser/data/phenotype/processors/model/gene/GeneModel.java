@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -81,7 +80,7 @@ public class GeneModel implements OutputLine {
         int maxAllowableIdentifiers = maxColumnSize / (identifierLength + 1);
         if (modelPhenotypeIds.size() > maxAllowableIdentifiers) {
             logger.warn("Truncating {}-{} phenotypes from {} to {} in order to fit max column size of {}", modelId, geneSymbol, modelPhenotypeIds.size(), maxAllowableIdentifiers, maxColumnSize);
-            return modelPhenotypeIds.stream().limit(maxAllowableIdentifiers).collect(Collectors.toList());
+            return modelPhenotypeIds.stream().limit(maxAllowableIdentifiers).toList();
         }
         return modelPhenotypeIds;
     }

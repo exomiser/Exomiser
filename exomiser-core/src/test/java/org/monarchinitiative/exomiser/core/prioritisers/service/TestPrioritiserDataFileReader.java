@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import com.google.common.collect.Lists;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
@@ -115,14 +114,14 @@ public class TestPrioritiserDataFileReader {
     }
 
     private static List<String> getOntologyTerms(String field) {
-        return Lists.newArrayList(field.split(","));
+        return List.of(field.split(","));
     }
 
     public static List<PhenotypeMatch> readOntologyMatchData(String ontologyMatchFile) {
         return readLines(ontologyMatchFile)
                 .filter(line -> !line.startsWith(COMMENT_LINE_PREFIX))
                 .map(lineToPhenotypeMatch())
-                .collect(toList());
+                .toList();
     }
 
     private static Function<String, PhenotypeMatch> lineToPhenotypeMatch() {

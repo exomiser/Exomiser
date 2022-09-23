@@ -37,7 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * Main logic for building the exomiser hg37 genome data distribution.
@@ -167,7 +166,7 @@ public class BuildRunner implements ApplicationRunner {
     private void buildVariantData(BuildInfo buildInfo, Path outPath, List<AlleleResource> userDefinedAlleleResources) {
         logger.info("Downloading variant resources - {}", userDefinedAlleleResources.stream()
                 .map(AlleleResource::getName)
-                .collect(toList()));
+                .toList());
         userDefinedAlleleResources.parallelStream().forEach(ResourceDownloader::download);
         logger.info("Building variant database...");
         VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);
@@ -209,6 +208,6 @@ public class BuildRunner implements ApplicationRunner {
         }
         return optionValues.stream()
                 .map(TranscriptSource::parseValue)
-                .collect(toList());
+                .toList();
     }
 }

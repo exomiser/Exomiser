@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -71,6 +70,6 @@ public class DiseasePhenotypeReader implements ResourceReader<List<DiseasePhenot
         return disease2PhenotypeMap.entrySet()
                 .stream()
                 .map(entry -> new DiseasePhenotype(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

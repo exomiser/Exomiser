@@ -20,13 +20,13 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,7 +73,7 @@ public class OboOntologyParser {
     }
 
     private static List<OboOntologyTerm> parseOntologyTerms(Path oboFile) {
-        ImmutableList.Builder<OboOntologyTerm> ontologyTerms = new ImmutableList.Builder<>();
+        List<OboOntologyTerm> ontologyTerms = new ArrayList<>();
 
         try(BufferedReader bufferedReader = Files.newBufferedReader(oboFile)) {
             // [Term]
@@ -123,7 +123,7 @@ public class OboOntologyParser {
             throw new OboOntologyParseException("Error parsing OBO file " + oboFile, ex);
         }
 
-        return ontologyTerms.build();
+        return List.copyOf(ontologyTerms);
     }
 
     private static class OboOntologyParseException extends RuntimeException {

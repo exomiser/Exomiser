@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -63,7 +62,7 @@ public class MpoResourceReader implements ResourceReader<List<OboOntologyTerm>> 
         List<OboOntologyTerm> zpTerms = allTerms.stream()
                 // there are a few terms with identifiers such as 'after', 'during', 'occurs_in'
                 .filter(oboOntologyTerm -> oboOntologyTerm.getId().startsWith("MP:"))
-                .collect(Collectors.toList());
+                .toList();
 
         logger.info("Read {} MP terms", zpTerms.size());
         return zpTerms;

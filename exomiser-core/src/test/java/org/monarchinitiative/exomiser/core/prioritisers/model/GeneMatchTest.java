@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
@@ -57,9 +56,8 @@ public class GeneMatchTest {
 
     @Test
     public void bestMatchModels() throws Exception {
-        GeneModelPhenotypeMatch geneModelPhenotypeMatch = new GeneModelPhenotypeMatch(0, new GeneOrthologModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Collections
-                .emptyList()), Collections.emptyList());
-        List<GeneModelPhenotypeMatch> models = Lists.newArrayList(geneModelPhenotypeMatch);
+        GeneModelPhenotypeMatch geneModelPhenotypeMatch = new GeneModelPhenotypeMatch(0, new GeneOrthologModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", List.of()), List.of());
+        List<GeneModelPhenotypeMatch> models = List.of(geneModelPhenotypeMatch);
         instance = GeneMatch.builder().bestMatchModels(models).build();
         assertThat(instance.getBestMatchModels(), equalTo(models));
     }

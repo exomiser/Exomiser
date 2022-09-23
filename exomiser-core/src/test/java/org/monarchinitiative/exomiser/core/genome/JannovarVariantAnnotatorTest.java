@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
@@ -193,7 +192,7 @@ public class JannovarVariantAnnotatorTest {
         //Create new annotator with the regulatory regions
         VariantAnnotator annotatorWithRegulatoryRegions = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(),
                 TestFactory.buildDefaultJannovarData(),
-                ChromosomalRegionIndex.of(ImmutableList.of(enhancer, tfBindingSite))
+                ChromosomalRegionIndex.of(List.of(enhancer, tfBindingSite))
         );
 
         //Annotate the original positions using the new annotator...

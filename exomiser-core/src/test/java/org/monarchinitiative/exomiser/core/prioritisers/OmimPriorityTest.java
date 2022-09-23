@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -43,7 +42,7 @@ public class OmimPriorityTest {
     private final OmimPriority instance = new OmimPriority(priorityService);
 
     private List<Gene> getGenes() {
-        return Lists.newArrayList(
+        return List.of(
                 new Gene("FGFR2", 2263),
                 new Gene("ROR2", 4920),
                 new Gene("FREM2", 341640),
@@ -76,9 +75,9 @@ public class OmimPriorityTest {
 
     @Test
     public void prioritizeGenesUnrecognisedGene() {
-        List<Gene> genes = Lists.newArrayList(new Gene("Wibble", 999999999));
+        List<Gene> genes = List.of(new Gene("Wibble", 999999999));
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
 
         genes.forEach(gene -> {
             OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
@@ -91,7 +90,7 @@ public class OmimPriorityTest {
     @Test
     public void prioritizeGenesNoInheritanceModes() {
         List<Gene> genes = getGenes();
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
         genes.forEach(gene -> {
             OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 //            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getCompatibleInheritanceModes(), result);
@@ -104,7 +103,7 @@ public class OmimPriorityTest {
     public void prioritizeGenesNoAssociatedDiseases() {
         //ZNF738 has no associated conditions.
         Gene gene = new Gene("ZNF738", 148203);
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
         instance.prioritizeGenes(Collections.emptyList(), genes);
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
@@ -119,9 +118,9 @@ public class OmimPriorityTest {
         // We're going to simulate this matching the recessive one.
         Gene gene = new Gene("ROR2", 4920);
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
@@ -141,9 +140,9 @@ public class OmimPriorityTest {
         // We're going to simulate this matching the dominant one.
         Gene gene = new Gene("ROR2", 4920);
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
@@ -163,9 +162,9 @@ public class OmimPriorityTest {
         // We're going to simulate this matching the dominant one.
         Gene gene = new Gene("ROR2", 4920);
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
@@ -184,9 +183,9 @@ public class OmimPriorityTest {
         //ROR2 has two associated conditions, one recessive, the other dominant.
         // We're going to simulate this matching the dominant one.
         Gene gene = new Gene("ROR2", 4920);
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
 
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 
@@ -201,9 +200,9 @@ public class OmimPriorityTest {
         //FREM2 has only one associated condition (recessive). We're going to simulate this not matching.
         Gene gene = new Gene("FREM2", 341640);
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        List<Gene> genes = Lists.newArrayList(gene);
+        List<Gene> genes = List.of(gene);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes);
+        instance.prioritizeGenes(List.of(), genes);
 
         OmimPriorityResult result = (OmimPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
 

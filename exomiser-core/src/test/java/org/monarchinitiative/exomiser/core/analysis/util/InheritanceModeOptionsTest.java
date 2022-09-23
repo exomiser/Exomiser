@@ -189,7 +189,7 @@ public class InheritanceModeOptionsTest {
 
     @Test
     public void acceptsAnyValue() {
-        Map<SubModeOfInheritance, Float> withAny = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> withAny = Map.of(
                 SubModeOfInheritance.ANY, 100f
         );
         InheritanceModeOptions instance = InheritanceModeOptions.of(withAny);
@@ -199,28 +199,28 @@ public class InheritanceModeOptionsTest {
     @Test
     public void throwsExceptionWithNonPercentageValue() {
         //check upper bounds
-        Map<SubModeOfInheritance, Float> tooHigh = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
+        Map<SubModeOfInheritance, Float> tooHigh = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 101f);
         assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooHigh));
 
         //check lower bounds
-        Map<SubModeOfInheritance, Float> tooLow = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
+        Map<SubModeOfInheritance, Float> tooLow = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, -1f);
         assertThrows(IllegalArgumentException.class, () -> InheritanceModeOptions.of(tooLow));
     }
 
     @Test
     public void testMaxAndMinValues() {
         //check max
-        Map<SubModeOfInheritance, Float> max = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 100f);
+        Map<SubModeOfInheritance, Float> max = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 100f);
         InheritanceModeOptions.of(max);
 
         //check min
-        Map<SubModeOfInheritance, Float> min = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0f);
+        Map<SubModeOfInheritance, Float> min = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0f);
         InheritanceModeOptions.of(min);
     }
 
     @Test
     public void userDefinedFrequencyCutoffs() {
-        Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
+        Map<SubModeOfInheritance, Float> userDefinedThresholds = Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
         //should we allow this to happen? If people don't define the COMP_HET and HOM_ALT then the recessive modes won't
         InheritanceModeOptions instance = InheritanceModeOptions.of(userDefinedThresholds);
 
@@ -235,14 +235,14 @@ public class InheritanceModeOptionsTest {
         assertThat(InheritanceModeOptions.empty().getMaxFreq(), equalTo(InheritanceModeOptions.MAX_FREQ));
         assertThat(InheritanceModeOptions.defaults().getMaxFreq(), equalTo(2.0f));
 
-        Map<SubModeOfInheritance, Float> userDefinedThresholds = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
+        Map<SubModeOfInheritance, Float> userDefinedThresholds = Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 1f);
         InheritanceModeOptions userDefined = InheritanceModeOptions.of(userDefinedThresholds);
         assertThat(userDefined.getMaxFreq(), equalTo(1f));
     }
 
     @Test
     void getMaxFreqsEmpty() {
-        assertThat(InheritanceModeOptions.empty().getMaxFreqs(), equalTo(ImmutableMap.of()));
+        assertThat(InheritanceModeOptions.empty().getMaxFreqs(), equalTo(Map.of()));
     }
 
     @Test

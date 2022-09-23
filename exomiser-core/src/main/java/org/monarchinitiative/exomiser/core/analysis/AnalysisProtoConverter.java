@@ -39,9 +39,9 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
         return AnalysisProto.Analysis.newBuilder()
                 .setAnalysisMode(analysis.getAnalysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
                 .putAllInheritanceModes(analysis.getInheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
-                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).collect(Collectors.toList()))
-                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).collect(Collectors.toList()))
-                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).collect(Collectors.toList()))
+                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).toList())
+                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).toList())
+                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
                 .build();
     }
 
@@ -63,7 +63,7 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
             VariantEffectFilter variantEffectFilter = (VariantEffectFilter) analysisStep;
             return stepBuilder
                     .setVariantEffectFilter(FiltersProto.VariantEffectFilter.newBuilder()
-                            .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).collect(Collectors.toList())))
+                            .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).toList()))
                     .build();
         }
         if (analysisStep instanceof FrequencyFilter) {
@@ -98,7 +98,7 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
             IntervalFilter intervalFilter = (IntervalFilter) analysisStep;
             return stepBuilder
                     .setIntervalFilter(FiltersProto.IntervalFilter.newBuilder()
-                            .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).collect(Collectors.toList())))
+                            .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).toList()))
                     .build();
         }
         if (analysisStep instanceof GeneSymbolFilter) {

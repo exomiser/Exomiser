@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -139,10 +138,10 @@ public class GeneReassigner {
         Gene geneTwo = allGenes.get(transcriptAnnotationTwo.getGeneSymbol());
 
         if (isNotNullPassesFiltersAndHasNonZeroScore(geneOne) && prioritiserScore(geneOne) > prioritiserScore(geneTwo)) {
-            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneOne, transcriptAnnotationOne.getVariantEffect(), ImmutableList
+            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneOne, transcriptAnnotationOne.getVariantEffect(), List
                     .of(transcriptAnnotationOne));
         } else if (isNotNullPassesFiltersAndHasNonZeroScore(geneTwo)) {
-            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneTwo, transcriptAnnotationTwo.getVariantEffect(), ImmutableList
+            return buildVariantEvaluationAssignedToGene(variantEvaluation, geneTwo, transcriptAnnotationTwo.getVariantEffect(), List
                     .of(transcriptAnnotationTwo));
         }
         // do nothing - there will be two transcripts associated still, but there is no phenotypic evidence for the genes
@@ -217,7 +216,7 @@ public class GeneReassigner {
     }
 
     private List<TranscriptAnnotation> getTranscriptAnnotationsForGene(Gene gene, List<TranscriptAnnotation> transcriptAnnotations) {
-        ImmutableList.Builder<TranscriptAnnotation> topTranscriptsBuilder = new ImmutableList.Builder<>();
+        List<TranscriptAnnotation> topTranscriptsBuilder = new ArrayList<>();
         for (int i = 0; i < transcriptAnnotations.size(); i++) {
             TranscriptAnnotation transcriptAnnotation = transcriptAnnotations.get(i);
             if (transcriptAnnotation.getVariantEffect() != null && transcriptAnnotation.getGeneSymbol()
@@ -225,7 +224,7 @@ public class GeneReassigner {
                 topTranscriptsBuilder.add(transcriptAnnotation);
             }
         }
-        return topTranscriptsBuilder.build();
+        return List.copyOf(topTranscriptsBuilder);
     }
 
     private VariantEvaluation buildVariantEvaluationAssignedToGene(VariantEvaluation variantEvaluation, Gene gene, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {

@@ -20,9 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.phenotype.service;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 
@@ -55,7 +53,7 @@ public class TestOntologyService implements OntologyService {
 
     @Override
     public Set<PhenotypeTerm> getHpoTerms() {
-        return ImmutableSet.copyOf(hpIdPhenotypeTerms.values());
+        return Set.copyOf(hpIdPhenotypeTerms.values());
     }
 
     @Override
@@ -71,19 +69,19 @@ public class TestOntologyService implements OntologyService {
     @Override
     public Set<PhenotypeMatch> getHpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
         List<PhenotypeMatch> matches = humanHumanMappings.get(hpoTerm);
-        return (matches == null) ? Collections.emptySet() : Sets.newHashSet(matches);
+        return (matches == null) ? Collections.emptySet() : Set.copyOf(matches);
     }
 
     @Override
     public Set<PhenotypeMatch> getMpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
         List<PhenotypeMatch> matches = humanMouseMappings.get(hpoTerm);
-        return (matches == null) ? Collections.emptySet() : Sets.newHashSet(matches);
+        return (matches == null) ? Collections.emptySet() : Set.copyOf(matches);
     }
 
     @Override
     public Set<PhenotypeMatch> getZpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
         List<PhenotypeMatch> matches = humanFishMappings.get(hpoTerm);
-        return (matches == null) ? Collections.emptySet() : Sets.newHashSet(matches);
+        return (matches == null) ? Collections.emptySet() : Set.copyOf(matches);
     }
 
     @Override
@@ -96,7 +94,7 @@ public class TestOntologyService implements OntologyService {
         return hpoIds.stream()
                 .map(hpoId -> obsoleteToCurrentTerms.getOrDefault(hpoId, hpoId))
                 .distinct()
-                .collect(ImmutableList.toImmutableList());
+                .toList();
     }
 
     public static Builder builder() {

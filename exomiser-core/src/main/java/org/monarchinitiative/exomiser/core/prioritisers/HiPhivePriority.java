@@ -41,7 +41,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
 /**
@@ -212,7 +211,7 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
                 .map(modelScorer::scoreModel)
                 // TODO why have a GeneModelPhenotypeMatch? It's simply a ModelPhenotypeMatch<GeneModel>
                 .map(GeneModelPhenotypeMatch::new)
-                .collect(toUnmodifiableList());
+                .toList();
 
         Duration duration = Duration.between(timeStart, Instant.now());
         logger.debug("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());

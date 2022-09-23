@@ -40,7 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Service for retrieving phenotype data from the database for use by the
@@ -141,6 +140,6 @@ public class OntologyServiceImpl implements OntologyService {
         return hpoIds.stream()
                 .map(hpoIdChecker::getCurrentId)
                 .distinct()
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

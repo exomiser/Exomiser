@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
 
 public class VariantEffectCounter {
 
@@ -51,10 +50,10 @@ public class VariantEffectCounter {
                     VariantEffect variantEffect = entry.getKey();
                     List<Integer> counts = IntStream.of(entry.getValue())
                             .boxed()
-                            .collect(toList());
+                            .toList();
                     return new VariantEffectCount(variantEffect, counts);
                 })
-                .collect(toList());
+                .toList();
     }
 
     private Map<VariantEffect, int[]> countVariantEffects(int numSamples, List<VariantEvaluation> variantEvaluations) {
@@ -91,6 +90,6 @@ public class VariantEffectCounter {
     public List<VariantEffectCount> getVariantEffectCounts(Set<VariantEffect> variantEffects) {
         return variantEffectCounts.stream()
                 .filter(variantEffectCount -> variantEffects.contains(variantEffectCount.getVariantType()))
-                .collect(toList());
+                .toList();
     }
 }

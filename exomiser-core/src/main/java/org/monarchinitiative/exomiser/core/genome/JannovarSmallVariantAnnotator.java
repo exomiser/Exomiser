@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -87,7 +86,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
                     .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(variant, variantGeneAnnotations))
-                    .collect(toUnmodifiableList());
+                    .toList();
         }
         return List.of(buildVariantAlleleAnnotation(variant, variantAnnotations));
     }

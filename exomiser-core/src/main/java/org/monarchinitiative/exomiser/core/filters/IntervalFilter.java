@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * VariantFilter variants according to a linkage interval. For instance, if the
@@ -92,7 +91,7 @@ public class IntervalFilter implements VariantFilter {
         return geneticIntervals.stream()
                 .distinct()
                 .sorted(ChromosomalRegion::compare)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     /**

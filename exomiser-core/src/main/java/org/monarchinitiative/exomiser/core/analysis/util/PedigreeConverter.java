@@ -26,6 +26,7 @@ import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -66,25 +67,19 @@ class PedigreeConverter {
     }
 
     private static Sex mapSex(Pedigree.Individual.Sex sex) {
-        switch (sex) {
-            case MALE:
-                return Sex.MALE;
-            case FEMALE:
-                return Sex.FEMALE;
-            default:
-                return Sex.UNKNOWN;
-        }
+        return switch (sex) {
+            case MALE -> Sex.MALE;
+            case FEMALE -> Sex.FEMALE;
+            default -> Sex.UNKNOWN;
+        };
     }
 
     private static Disease mapDisease(Pedigree.Individual.Status status) {
-        switch (status) {
-            case AFFECTED:
-                return Disease.AFFECTED;
-            case UNAFFECTED:
-                return Disease.UNAFFECTED;
-            default:
-                return Disease.UNKNOWN;
-        }
+        return switch (status) {
+            case AFFECTED -> Disease.AFFECTED;
+            case UNAFFECTED -> Disease.UNAFFECTED;
+            default -> Disease.UNKNOWN;
+        };
     }
 
     private static de.charite.compbio.jannovar.pedigree.Pedigree buildJannovarPedigree(ImmutableList<PedPerson> people) {

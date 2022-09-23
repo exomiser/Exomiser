@@ -276,7 +276,7 @@ public class HiPhivePriorityTest {
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
         Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
         expectedScores.put("FGFR2", List.of(0.8322044875087917, 0.8039423769154914, 0.0, 0.0, 1.0));
-//        expectedScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
+//        expectedScores.put("ROR2", List.of(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
         expectedScores.put("ROR2", List.of(0.8400025551155774, 0.67969784909320351, 0.0, 0.0, 0.0));
         expectedScores.put("FREM2", List.of(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
         expectedScores.put("ZNF738", List.of(0.0, 0.0, 0.0, 0.0, 0.0));

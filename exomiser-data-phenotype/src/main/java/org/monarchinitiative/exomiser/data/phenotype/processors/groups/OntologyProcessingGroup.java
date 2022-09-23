@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
@@ -103,7 +101,7 @@ public class OntologyProcessingGroup implements ProcessingGroup {
         hpWriter.write(hpTerms);
         List<AltToCurrentId> altToCurrentIds = hpOntology.getIdToTerms().entrySet().stream()
                 .map(entry -> new AltToCurrentId(entry.getKey(), entry.getValue().getId()))
-                .collect(toList());
+                .toList();
         // alt_id : current_id
         hpAltIdWriter.write(altToCurrentIds);
         hpHpPhenodigmProcessor.process(hpTerms, hpTerms);

@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
 import de.charite.compbio.jannovar.impl.intervals.IntervalEndExtractor;
 import org.monarchinitiative.svart.CoordinateSystem;
@@ -44,7 +43,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
-    private static final ChromosomalRegionIndex<?> EMPTY = new ChromosomalRegionIndex<>(ImmutableMap.of());
+    private static final ChromosomalRegionIndex<?> EMPTY = new ChromosomalRegionIndex<>(Map.of());
 
     private static final Logger logger = LoggerFactory.getLogger(ChromosomalRegionIndex.class);
 

@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
@@ -163,7 +162,7 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScores() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = List.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
 
         List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
         assertThat(result, equalTo(expResult));
@@ -172,7 +171,7 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScoresIsImmutable() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = List.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         //try and add another score to the instance post-construction
         instance.getPredictedPathogenicityScores().add(SIFT_PASS);
         

@@ -25,8 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
@@ -265,7 +263,7 @@ public class AnalysisParserTest {
                         + "        AUTOSOMAL_DOMINANT: 1.0 \n"
                         + "}\n"
                         + "    ");
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0f);
+        Map<SubModeOfInheritance, Float> options = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0f);
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
@@ -280,7 +278,7 @@ public class AnalysisParserTest {
                         + "}\n"
                         + "    ");
 
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> options = Map.of(
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f,
                 SubModeOfInheritance.ANY, 0.1f
         );
@@ -354,7 +352,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStepIntervalFilterFromList() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {intervals: ['chr10:122892600-122892700', 'chr10:122892900-122893000']}"));
-        List<ChromosomalRegion> expectedIntervals = ImmutableList.of(
+        List<ChromosomalRegion> expectedIntervals = List.of(
                 new GeneticInterval(10, 122892600, 122892700),
                 new GeneticInterval(10, 122892900, 122893000)
         );

@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -60,11 +59,11 @@ public class QueryPhenotypeMatchTest {
     private final PhenotypeMatch bigToeCrookedToeMatch = PhenotypeMatch.builder()
             .query(bigToe).match(crookedToe).lcs(toe).ic(1.0).simj(1.0).score(1.5).build();
 
-    private final Set<PhenotypeMatch> bestMatches = Sets.newHashSet(perfectNoseMatch, bestToeMatch);
+    private final Set<PhenotypeMatch> bestMatches = Set.of(perfectNoseMatch, bestToeMatch);
 
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> queryPhenotypeMatches = ImmutableMap.of(
-            bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch),
-            bigToe, Sets.newHashSet(bestToeMatch, bigToeCrookedToeMatch)
+            bigNose, Set.of(perfectNoseMatch, noseMatch),
+            bigToe, Set.of(bestToeMatch, bigToeCrookedToeMatch)
     );
 
     private final QueryPhenotypeMatch instance = new QueryPhenotypeMatch(Organism.HUMAN, queryPhenotypeMatches);
@@ -75,7 +74,7 @@ public class QueryPhenotypeMatchTest {
         noPhenotypeMatches.put(noMatchTerm, Collections.emptySet());
         QueryPhenotypeMatch noMatchModel = new QueryPhenotypeMatch(Organism.HUMAN, noPhenotypeMatches);
 
-        assertThat(noMatchModel.getBestPhenotypeMatches(), equalTo(Collections.emptySet()));
+        assertThat(noMatchModel.getBestPhenotypeMatches(), equalTo(Set.of()));
         assertThat(noMatchModel.getOrganism(), equalTo(Organism.HUMAN));
         assertThat(noMatchModel.getBestAvgScore(), equalTo(0.0));
         assertThat(noMatchModel.getMaxMatchScore(), equalTo(0.0));
@@ -84,11 +83,11 @@ public class QueryPhenotypeMatchTest {
     @Test
     public void testWithSomeEmptyPhenotypeMatches() {
         Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = new LinkedHashMap<>();
-        phenotypeMatches.put(bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch));
-        phenotypeMatches.put(noMatchTerm, Collections.emptySet());
+        phenotypeMatches.put(bigNose, Set.of(perfectNoseMatch, noseMatch));
+        phenotypeMatches.put(noMatchTerm, Set.of());
         QueryPhenotypeMatch matchModel = new QueryPhenotypeMatch(Organism.HUMAN, phenotypeMatches);
 
-        assertThat(matchModel.getBestPhenotypeMatches(), equalTo(Sets.newHashSet(perfectNoseMatch)));
+        assertThat(matchModel.getBestPhenotypeMatches(), equalTo(Set.of(perfectNoseMatch)));
         assertThat(matchModel.getOrganism(), equalTo(Organism.HUMAN));
         assertThat(matchModel.getBestAvgScore(), equalTo(2d));
         assertThat(matchModel.getMaxMatchScore(), equalTo(4d));
@@ -106,7 +105,7 @@ public class QueryPhenotypeMatchTest {
 
     @Test
     public void testGetQueryTerms() {
-        assertThat(instance.getQueryTerms(), equalTo(Arrays.asList(bigNose, bigToe)));
+        assertThat(instance.getQueryTerms(), equalTo(List.of(bigNose, bigToe)));
     }
 
     @Test
@@ -121,7 +120,7 @@ public class QueryPhenotypeMatchTest {
 
     @Test
     public void testGetTheoreticalMaxMatchScoreNoMatches() {
-        QueryPhenotypeMatch noMatchesInstance = new QueryPhenotypeMatch(Organism.HUMAN, Collections.emptyMap());
+        QueryPhenotypeMatch noMatchesInstance = new QueryPhenotypeMatch(Organism.HUMAN, Map.of());
         assertThat(noMatchesInstance.getMaxMatchScore(), equalTo(0d));
     }
 
@@ -133,7 +132,7 @@ public class QueryPhenotypeMatchTest {
 
     @Test
     public void testGetBestAverageScoreNoMatches() {
-        QueryPhenotypeMatch noMatchesInstance = new QueryPhenotypeMatch(Organism.HUMAN, Collections.emptyMap());
+        QueryPhenotypeMatch noMatchesInstance = new QueryPhenotypeMatch(Organism.HUMAN, Map.of());
         assertThat(noMatchesInstance.getBestAvgScore(), equalTo(0d));
     }
 

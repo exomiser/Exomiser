@@ -60,7 +60,7 @@ class FilterStats {
     }
 
     public List<FilterType> getFilters() {
-        return new ArrayList<>(filtersRun);
+        return List.copyOf(filtersRun);
     }
 
     /**
@@ -76,7 +76,7 @@ class FilterStats {
     public List<FilterCount> getFilterCounts() {
         return filtersRun.stream()
                 .map(filterType -> new FilterCount(filterType, filterCounters.get(filterType)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

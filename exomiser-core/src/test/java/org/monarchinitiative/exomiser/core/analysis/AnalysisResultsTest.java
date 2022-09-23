@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
@@ -72,7 +71,7 @@ public class AnalysisResultsTest {
 
     @Test
     public void testCanSetAndGetSampleNames() {
-        List<String> sampleNames = ImmutableList.of("David");
+        List<String> sampleNames = List.of("David");
 
         AnalysisResults instance = AnalysisResults.builder()
                 .sampleNames(sampleNames)
@@ -114,7 +113,7 @@ public class AnalysisResultsTest {
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .combinedScore(1f)
-                .contributingVariants(ImmutableList.of(top))
+                .contributingVariants(List.of(top))
                 .build();
 
         VariantEvaluation bottom = TestFactory.variantBuilder(10, 23456, "A", "T").build();
@@ -122,7 +121,7 @@ public class AnalysisResultsTest {
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .combinedScore(0.50f)
-                .contributingVariants(ImmutableList.of(bottom))
+                .contributingVariants(List.of(bottom))
                 .build();
 
         fgfr2Gene.addGeneScore(first);
@@ -134,20 +133,20 @@ public class AnalysisResultsTest {
                 .geneIdentifier(rbm8aGene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .combinedScore(0.75f)
-                .contributingVariants(ImmutableList.of(middle))
+                .contributingVariants(List.of(middle))
                 .build();
         rbm8aGene.addGeneScore(second);
 
         //no gene score for SHH
         Gene shhGene = TestFactory.newGeneSHH();
 
-        List<Gene> genes = ImmutableList.of(fgfr2Gene, rbm8aGene, shhGene);
+        List<Gene> genes = List.of(fgfr2Gene, rbm8aGene, shhGene);
 
         AnalysisResults instance = AnalysisResults.builder()
                 .genes(genes)
                 .build();
 
-        List<GeneScore> expected = ImmutableList.of(first, second, third);
+        List<GeneScore> expected = List.of(first, second, third);
         assertThat(instance.getGeneScores(), equalTo(expected));
     }
 
@@ -159,7 +158,7 @@ public class AnalysisResultsTest {
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .combinedScore(1f)
-                .contributingVariants(ImmutableList.of(top))
+                .contributingVariants(List.of(top))
                 .build();
 
         VariantEvaluation bottom = TestFactory.variantBuilder(10, 23456, "A", "T").build();
@@ -167,7 +166,7 @@ public class AnalysisResultsTest {
                 .geneIdentifier(fgfr2Gene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .combinedScore(0.50f)
-                .contributingVariants(ImmutableList.of(bottom))
+                .contributingVariants(List.of(bottom))
                 .build();
 
         fgfr2Gene.addGeneScore(firstAD);
@@ -179,21 +178,21 @@ public class AnalysisResultsTest {
                 .geneIdentifier(rbm8aGene.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .combinedScore(0.75f)
-                .contributingVariants(ImmutableList.of(middle))
+                .contributingVariants(List.of(middle))
                 .build();
         rbm8aGene.addGeneScore(secondAD);
 
         //no gene score for SHH
         Gene shhGene = TestFactory.newGeneSHH();
 
-        List<Gene> genes = ImmutableList.of(fgfr2Gene, rbm8aGene, shhGene);
+        List<Gene> genes = List.of(fgfr2Gene, rbm8aGene, shhGene);
 
         AnalysisResults instance = AnalysisResults.builder()
                 .genes(genes)
                 .build();
 
-        assertThat(instance.getGeneScoresForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(ImmutableList.of(firstAD, secondAD)));
-        assertThat(instance.getGeneScoresForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(ImmutableList.of(thirdAR)));
+        assertThat(instance.getGeneScoresForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(List.of(firstAD, secondAD)));
+        assertThat(instance.getGeneScoresForMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), equalTo(List.of(thirdAR)));
     }
 
     @Test
@@ -204,7 +203,7 @@ public class AnalysisResultsTest {
 
         VariantEvaluation unAnnotatedVariantEvaluation = TestFactory.variantBuilder(7, 155604800, "C", "CTT").build();
 
-        List<VariantEvaluation> allVariantEvaluations = ImmutableList.of(annotatedVariantEvaluation, unAnnotatedVariantEvaluation);
+        List<VariantEvaluation> allVariantEvaluations = List.of(annotatedVariantEvaluation, unAnnotatedVariantEvaluation);
 
         AnalysisResults instance = AnalysisResults.builder()
                 .variantEvaluations(allVariantEvaluations)
@@ -236,7 +235,7 @@ public class AnalysisResultsTest {
         AnalysisResults instance = AnalysisResults.builder().sample(sample).build();
         AnalysisResults other = AnalysisResults.builder()
                 .sample(sample)
-                .sampleNames(ImmutableList.of("Fred", "Wilma"))
+                .sampleNames(List.of("Fred", "Wilma"))
                 .build();
         assertThat(instance, not(equalTo(other)));
     }

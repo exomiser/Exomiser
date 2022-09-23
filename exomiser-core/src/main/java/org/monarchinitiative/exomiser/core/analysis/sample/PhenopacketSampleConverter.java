@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.phenopackets.schema.v1.Family;
@@ -107,7 +106,7 @@ class PhenopacketSampleConverter {
                 .filter(phenotypicFeature -> !phenotypicFeature.getNegated())
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
-                .collect(ImmutableList.toImmutableList());
+                .toList();
     }
 
     private static Age extractAge(Phenopacket phenopacket) {

@@ -72,7 +72,7 @@ public class CommandLineJobReader {
         if (userOptions.equals(Set.of("analysis-batch"))) {
             Path analysisBatchFile = Path.of(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
-            return analysisScripts.stream().map(JobReader::readJob).collect(Collectors.toList());
+            return analysisScripts.stream().map(JobReader::readJob).toList();
         }
         // new batch option which will parse each line as a cli command
         if (userOptions.equals(Set.of("batch"))) {

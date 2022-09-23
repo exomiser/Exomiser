@@ -28,8 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
 /**
  * Service for generating the best phenotypic matches for a given set of HPO terms against human, mouse or fish
  * ontologies. The matches are produced from Phenodigm data which computed the scores using OwlSim. 
@@ -76,20 +74,15 @@ public class PhenotypeMatchService {
         return hpoIds.stream()
                 .map(ontologyService::getPhenotypeTermForHpoId)
                 .filter(Objects::nonNull)
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
-        switch (species) {
-            case HUMAN:
-                return ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
-            case MOUSE:
-                return ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
-            case FISH:
-                return ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
-            default:
-                return Collections.emptySet();
-        }
+        return switch (species) {
+            case HUMAN -> ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
+            case MOUSE -> ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
+            case FISH -> ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
+        };
     }
 
 }

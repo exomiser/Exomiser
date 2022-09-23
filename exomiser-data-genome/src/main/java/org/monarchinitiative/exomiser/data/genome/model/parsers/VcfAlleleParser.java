@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.svart.Strand;
@@ -41,7 +40,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
     private static final Logger logger = LoggerFactory.getLogger(VcfAlleleParser.class);
     private final VariantTrimmer variantTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
 
-    protected Set<String> allowedFilterValues = ImmutableSet.of(".", "PASS");
+    protected Set<String> allowedFilterValues = Set.of(".", "PASS");
 
     public List<Allele> parseLine(String line) {
         if (line.startsWith("#")) {

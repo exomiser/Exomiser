@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -264,7 +263,7 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         Allele allele2 = new Allele(1, 9974103, "A", "T");
         allele2.setRsId("rs527824753");
 
-        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+        assertParseLineEquals(line, List.of(allele1, allele2));
     }
 
     @Test
@@ -279,7 +278,7 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         allele2.setRsId("rs527824753");
         allele2.addValue(AlleleProperty.KG, 0.03994f);
 
-        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+        assertParseLineEquals(line, List.of(allele1, allele2));
     }
 
     @Test
@@ -298,7 +297,7 @@ public class DbSnpAlleleParserTest extends AbstractAlleleParserTester<DbSnpAllel
         allele2.setRsId("rs527824753");
         allele2.addValue(AlleleProperty.TOPMED, 0.005575f);
 
-        assertParseLineEquals(line, ImmutableList.of(allele1, allele2));
+        assertParseLineEquals(line, List.of(allele1, allele2));
     }
 
 

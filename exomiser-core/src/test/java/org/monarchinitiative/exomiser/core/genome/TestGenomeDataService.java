@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
@@ -40,10 +38,10 @@ public class TestGenomeDataService implements GenomeDataService {
     private final List<TopologicalDomain> expectedTopologicalDomains;
 
     private TestGenomeDataService(Builder builder) {
-        this.genes = ImmutableList.copyOf(builder.genes);
-        this.geneIdentifiers = ImmutableSet.copyOf(builder.geneIdentifiers);
-        this.expectedRegulatoryRegions = ImmutableList.copyOf(builder.expectedRegulatoryRegions);
-        this.expectedTopologicalDomains = ImmutableList.copyOf(builder.expectedTopologicalDomains);
+        this.genes = List.copyOf(builder.genes);
+        this.geneIdentifiers = Set.copyOf(builder.geneIdentifiers);
+        this.expectedRegulatoryRegions = List.copyOf(builder.expectedRegulatoryRegions);
+        this.expectedTopologicalDomains = List.copyOf(builder.expectedTopologicalDomains);
     }
 
     @Override
