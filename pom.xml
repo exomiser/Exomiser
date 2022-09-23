@@ -97,7 +97,7 @@
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.18.2</protobuf.version>
-        <spring-boot.version>2.7.3</spring-boot.version>
+        <spring-boot.version>2.7.4</spring-boot.version>
         <docker.base.image>
             gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
         </docker.base.image>
