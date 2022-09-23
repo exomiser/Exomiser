@@ -114,28 +114,20 @@ public class PedFiles {
     }
 
     private static Individual.Sex parseSex(String token) {
-        switch (token) {
-            case "1":
-                return Individual.Sex.MALE;
-            case "2":
-                return Individual.Sex.FEMALE;
-            default:
-                return Individual.Sex.UNKNOWN;
-        }
+        return switch (token) {
+            case "1" -> Individual.Sex.MALE;
+            case "2" -> Individual.Sex.FEMALE;
+            default -> Individual.Sex.UNKNOWN;
+        };
     }
 
     private static Individual.Status parseStatus(String token) {
-        switch (token) {
-            case "-9":
-            case "0":
-                return Individual.Status.UNKNOWN;
-            case "1":
-                return Individual.Status.UNAFFECTED;
-            case "2":
-                return Individual.Status.AFFECTED;
-            default:
-                throw new PedFilesParseException(String.format("Individual status must be one of -9 0, 1, 2. Found '%s'", token));
-        }
+        return switch (token) {
+            case "-9", "0" -> Individual.Status.UNKNOWN;
+            case "1" -> Individual.Status.UNAFFECTED;
+            case "2" -> Individual.Status.AFFECTED;
+            default -> throw new PedFilesParseException(String.format("Individual status must be one of -9 0, 1, 2. Found '%s'", token));
+        };
     }
 
 

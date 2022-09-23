@@ -220,16 +220,11 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
         //under some modes a variant should not pass, but others it will, so we need to check this here
         //otherwise when running FULL or SPARSE modes alleles will be reported as having passed under the wrong MOI
-        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
-            case FAILED:
-                Set<FilterType> failedFilterTypes = variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance);
-                return formatFailedFilters(failedFilterTypes);
-            case PASSED:
-                return "PASS";
-            case UNFILTERED:
-            default:
-                return ".";
-        }
+        return switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
+            case FAILED -> formatFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance));
+            case PASSED -> "PASS";
+            case UNFILTERED -> ".";
+        };
     }
 
     private String formatFailedFilters(Set<FilterType> failedFilters) {

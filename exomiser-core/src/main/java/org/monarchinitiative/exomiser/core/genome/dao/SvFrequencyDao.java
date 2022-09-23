@@ -109,20 +109,14 @@ public class SvFrequencyDao implements FrequencyDao {
     }
 
     private FrequencySource frequencySource(SvResult first) {
-        switch (first.source) {
-            case "GNOMAD-SV":
-                return FrequencySource.GNOMAD_SV;
-            case "DBVAR":
-                return FrequencySource.DBVAR;
-            case "DGV":
-                return FrequencySource.DGV;
-            case "GONL":
-                return FrequencySource.GONL;
-            case "DECIPHER":
-                return FrequencySource.DECIPHER;
-            default:
-                return FrequencySource.UNKNOWN;
-        }
+        return switch (first.source) {
+            case "GNOMAD-SV" -> FrequencySource.GNOMAD_SV;
+            case "DBVAR" -> FrequencySource.DBVAR;
+            case "DGV" -> FrequencySource.DGV;
+            case "GONL" -> FrequencySource.GONL;
+            case "DECIPHER" -> FrequencySource.DECIPHER;
+            default -> FrequencySource.UNKNOWN;
+        };
     }
 
     private List<SvResult> runQuery(Variant variant) {

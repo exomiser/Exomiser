@@ -85,45 +85,26 @@ public final class VariantEffectPathogenicityScore {
     }
 
     public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
-        switch (variantEffect) {
-            case SEQUENCE_VARIANT:
-                return NON_PATHOGENIC_SCORE;
-            case MISSENSE_VARIANT:
-                return DEFAULT_MISSENSE_SCORE;
-            case SYNONYMOUS_VARIANT:
-                return SYNONYMOUS_SCORE;
-            case FRAMESHIFT_ELONGATION:
-            case FRAMESHIFT_TRUNCATION:
-            case FRAMESHIFT_VARIANT:
-                return FRAMESHIFT_SCORE;
-            case MNV:
-            case FEATURE_TRUNCATION:
-            case DISRUPTIVE_INFRAME_DELETION:
-            case DISRUPTIVE_INFRAME_INSERTION:
-            case INFRAME_DELETION:
-            case INFRAME_INSERTION:
-            case INTERNAL_FEATURE_ELONGATION:
-            case COMPLEX_SUBSTITUTION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case SPLICE_ACCEPTOR_VARIANT:
-            case SPLICE_DONOR_VARIANT:
-                return SPLICE_DONOR_ACCEPTOR_SCORE;
-            case SPLICE_REGION_VARIANT:
-                return SPLICE_REGION_SCORE;
-            case START_LOST:
-                return STARTLOSS_SCORE;
-            case STOP_LOST:
-                return STOPLOSS_SCORE;
-            case STOP_GAINED:
-                return NONSENSE_SCORE;
-            case INVERSION:
+        return switch (variantEffect) {
+            case SEQUENCE_VARIANT -> NON_PATHOGENIC_SCORE;
+            case MISSENSE_VARIANT -> DEFAULT_MISSENSE_SCORE;
+            case SYNONYMOUS_VARIANT -> SYNONYMOUS_SCORE;
+            case FRAMESHIFT_ELONGATION, FRAMESHIFT_TRUNCATION, FRAMESHIFT_VARIANT -> FRAMESHIFT_SCORE;
+            case MNV, FEATURE_TRUNCATION, DISRUPTIVE_INFRAME_DELETION, DISRUPTIVE_INFRAME_INSERTION, INFRAME_DELETION, INFRAME_INSERTION, INTERNAL_FEATURE_ELONGATION, COMPLEX_SUBSTITUTION ->
+                    NONFRAMESHIFT_INDEL_SCORE;
+            case SPLICE_ACCEPTOR_VARIANT, SPLICE_DONOR_VARIANT -> SPLICE_DONOR_ACCEPTOR_SCORE;
+            case SPLICE_REGION_VARIANT -> SPLICE_REGION_SCORE;
+            case START_LOST -> STARTLOSS_SCORE;
+            case STOP_LOST -> STOPLOSS_SCORE;
+            case STOP_GAINED -> NONSENSE_SCORE;
+            case INVERSION ->
                 // down-ranking this from HIGH to MODERATE as we're not certain of the impact unless it affects the
                 // transcript e.g. transcript ablation if the inversion happens in the middle of a gene.
-                return INVERSION_SCORE;
-            default:
+                    INVERSION_SCORE;
+            default ->
                 // Hopefully shouldn't get to here, but in case we do...
-                return defaultImpactScore(variantEffect.getImpact());
-        }
+                    defaultImpactScore(variantEffect.getImpact());
+        };
     }
 
     private static float defaultImpactScore(PutativeImpact putativeImpact) {

@@ -115,6 +115,7 @@ public class ClinVarDataTest {
         assertThat(isSecondaryAssociationRiskFactorOrOther(ClinSig.RISK_FACTOR), is(true));
         assertThat(isSecondaryAssociationRiskFactorOrOther(ClinSig.PROTECTIVE), is(true));
         assertThat(isSecondaryAssociationRiskFactorOrOther(ClinSig.AFFECTS), is(true));
+        assertThat(isSecondaryAssociationRiskFactorOrOther(ClinSig.DRUG_RESPONSE, ClinSig.RISK_FACTOR), is(true));
     }
 
     private boolean isSecondaryAssociationRiskFactorOrOther(ClinSig... secondaryInterpretations) {

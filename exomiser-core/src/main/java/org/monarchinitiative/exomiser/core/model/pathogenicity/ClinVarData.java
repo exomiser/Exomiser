@@ -156,16 +156,12 @@ public class ClinVarData {
      */
     @JsonIgnore
     public boolean isSecondaryAssociationRiskFactorOrOther() {
-        for (ClinVarData.ClinSig secondaryClinSig : secondaryInterpretations) {
+        for (ClinSig secondaryClinSig : secondaryInterpretations) {
             switch (secondaryClinSig) {
-                case AFFECTS:
-                case OTHER:
-                case ASSOCIATION:
-                case RISK_FACTOR:
-                case PROTECTIVE:
+                case AFFECTS, OTHER, ASSOCIATION, RISK_FACTOR, PROTECTIVE:
                     return true;
                 default:
-                    return false;
+                    continue;
             }
         }
         return false;
@@ -187,19 +183,13 @@ public class ClinVarData {
      * @since 13.0.0
      */
     public int starRating() {
-        switch (reviewStatus) {
-            case "criteria provided, single submitter":
-            case "criteria provided, conflicting interpretations":
-                return 1;
-            case "criteria provided, multiple submitters, no conflicts":
-                return 2;
-            case "reviewed by expert panel":
-                return 3;
-            case "practice guideline":
-                return 4;
-            default:
-                return 0;
-        }
+        return switch (reviewStatus) {
+            case "criteria provided, single submitter", "criteria provided, conflicting interpretations" -> 1;
+            case "criteria provided, multiple submitters, no conflicts" -> 2;
+            case "reviewed by expert panel" -> 3;
+            case "practice guideline" -> 4;
+            default -> 0;
+        };
     }
 
     @Override

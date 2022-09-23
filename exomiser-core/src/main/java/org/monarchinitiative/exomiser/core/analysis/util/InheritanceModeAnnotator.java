@@ -196,29 +196,20 @@ public class InheritanceModeAnnotator {
     }
 
     private int toCall(AlleleCall alleleCall) {
-        switch (alleleCall) {
-            case REF:
-                return Genotype.REF_CALL;
-            case ALT:
-                return 1;
-            case OTHER_ALT:
-                return 2;
-            case NO_CALL:
-            default:
-                return Genotype.NO_CALL;
-        }
+        return switch (alleleCall) {
+            case REF -> Genotype.REF_CALL;
+            case ALT -> 1;
+            case OTHER_ALT -> 2;
+            case NO_CALL -> Genotype.NO_CALL;
+        };
     }
 
     private ChromosomeType toChromosomeType(int chromosome) {
-        switch (chromosome) {
-            case 23:
-                return ChromosomeType.X_CHROMOSOMAL;
-            case 24:
-                return ChromosomeType.Y_CHROMOSOMAL;
-            case 25:
-                return ChromosomeType.MITOCHONDRIAL;
-            default:
-                return ChromosomeType.AUTOSOMAL;
-        }
+        return switch (chromosome) {
+            case 23 -> ChromosomeType.X_CHROMOSOMAL;
+            case 24 -> ChromosomeType.Y_CHROMOSOMAL;
+            case 25 -> ChromosomeType.MITOCHONDRIAL;
+            default -> ChromosomeType.AUTOSOMAL;
+        };
     }
 }

@@ -64,28 +64,19 @@ public class JannovarVariantConverter {
         int endCiUpper = endCi.upperBound();
 
         VariantType svSubType = variant.variantType().subType();
-        switch (svSubType) {
-            case DEL:
-                return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DEL_ME:
-                return new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP:
-                return new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP_TANDEM:
-                return new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case INS:
-                return new SVInsertion(start, startCiLower, startCiUpper);
-            case INS_ME:
-                return new SVMobileElementInsertion(start, startCiLower, startCiUpper);
-            case INV:
-                return new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case CNV:
-                return new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case BND:
-                return new SVBreakend(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper, variant.ref(), variant.alt(), SVBreakend.Side.LEFT_END);
-            default:
-                return new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-        }
+        return switch (svSubType) {
+            case DEL -> new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DEL_ME -> new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP -> new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP_TANDEM -> new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case INS -> new SVInsertion(start, startCiLower, startCiUpper);
+            case INS_ME -> new SVMobileElementInsertion(start, startCiLower, startCiUpper);
+            case INV -> new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case CNV -> new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case BND ->
+                    new SVBreakend(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper, variant.ref(), variant.alt(), SVBreakend.Side.LEFT_END);
+            default -> new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+        };
     }
 
     private GenomicRegion variantOrRightBreakend(Variant variant) {

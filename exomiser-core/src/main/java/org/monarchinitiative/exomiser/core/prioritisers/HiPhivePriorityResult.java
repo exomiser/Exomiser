@@ -225,17 +225,14 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence.values()) {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
             switch (geneModelPhenotypeMatch.getOrganism()) {
-                case HUMAN:
+                case HUMAN -> {
                     GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
                     humanBuilder.append(geneDiseaseModel.getDiseaseTerm())
                             .append(" (").append(geneDiseaseModel.getDiseaseId()).append("): ");
                     makeBestPhenotypeMatchText(humanBuilder, bestMatchesForModel);
-                    break;
-                case MOUSE:
-                    makeBestPhenotypeMatchText(mouseBuilder, bestMatchesForModel);
-                    break;
-                case FISH:
-                    makeBestPhenotypeMatchText(fishBuilder, bestMatchesForModel);
+                }
+                case MOUSE -> makeBestPhenotypeMatchText(mouseBuilder, bestMatchesForModel);
+                case FISH -> makeBestPhenotypeMatchText(fishBuilder, bestMatchesForModel);
             }
         }
 
@@ -247,21 +244,22 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
             String proximityToGeneSymbol = "Proximity to " + geneModelPhenotypeMatch.getHumanGeneSymbol() + " ";
             switch (geneModelPhenotypeMatch.getOrganism()) {
-                case HUMAN:
+                case HUMAN -> {
                     GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
                     humanPPIBuilder.append(proximityToGeneSymbol)
                             .append("associated with ")
                             .append(geneDiseaseModel.getDiseaseTerm())
                             .append(" (").append(geneDiseaseModel.getDiseaseId()).append("): ");
                     makeBestPhenotypeMatchText(humanPPIBuilder, bestMatchesForModel);
-                    break;
-                case MOUSE:
+                }
+                case MOUSE -> {
                     mousePPIBuilder.append(proximityToGeneSymbol);
                     makeBestPhenotypeMatchText(mousePPIBuilder, bestMatchesForModel);
-                    break;
-                case FISH:
+                }
+                case FISH -> {
                     fishPPIBuilder.append(proximityToGeneSymbol);
                     makeBestPhenotypeMatchText(fishPPIBuilder, bestMatchesForModel);
+                }
             }
         }
         String human = humanBuilder.toString();
@@ -290,20 +288,18 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence.values()) {
             switch (geneModelPhenotypeMatch.getOrganism()) {
-                case HUMAN:
+                case HUMAN -> {
                     GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
                     String diseaseLink = makeDiseaseLink(geneDiseaseModel.getDiseaseId(), geneDiseaseModel.getDiseaseTerm());
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to %s associated with %s.</dt>", geneModelPhenotypeMatch
                             .getScore(), diseaseLink, geneModelPhenotypeMatch.getHumanGeneSymbol()));
-                    break;
-                case MOUSE:
-                    stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
-                            .getScore(), geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
-                    break;
-                case FISH:
-                    stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
-                            .getScore(), geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
-                    break;
+                }
+                case MOUSE ->
+                        stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
+                                .getScore(), geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
+                case FISH ->
+                        stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
+                                .getScore(), geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
             }
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
             makeBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);

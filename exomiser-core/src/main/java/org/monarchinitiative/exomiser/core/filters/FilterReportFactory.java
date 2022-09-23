@@ -106,8 +106,7 @@ public class FilterReportFactory {
     }
     
     private Filter unWrapVariantFilterDataProvider(Filter filter) {
-        if (filter instanceof VariantFilterDataProvider) {
-            VariantFilterDataProvider decorator = (VariantFilterDataProvider) filter;
+        if (filter instanceof VariantFilterDataProvider decorator) {
             return decorator.getDecoratedFilter();
         }
         return filter;

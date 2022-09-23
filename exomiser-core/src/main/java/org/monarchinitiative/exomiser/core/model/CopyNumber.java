@@ -42,22 +42,15 @@ public class CopyNumber {
     }
 
     public static CopyNumber of(int copyNumber) {
-        switch (copyNumber) {
-            case -1:
-                return EMPTY;
-            case 0:
-                return CN0;
-            case 1:
-                return CN1;
-            case 2:
-                return WT;
-            case 3:
-                return CN3;
-            case 4:
-                return CN4;
-            default:
-                return new CopyNumber(copyNumber);
-        }
+        return switch (copyNumber) {
+            case -1 -> EMPTY;
+            case 0 -> CN0;
+            case 1 -> CN1;
+            case 2 -> WT;
+            case 3 -> CN3;
+            case 4 -> CN4;
+            default -> new CopyNumber(copyNumber);
+        };
     }
 
     public static CopyNumber empty() {

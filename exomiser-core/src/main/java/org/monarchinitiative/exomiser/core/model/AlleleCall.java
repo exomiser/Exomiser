@@ -39,17 +39,12 @@ public enum AlleleCall {
     ALT;
 
     public String toVcfString() {
-        switch(this){
-            case REF:
-                return "0";
-            case ALT:
-                return "1";
-            case OTHER_ALT:
-                return "-";
-            case NO_CALL:
-            default:
-                return ".";
-        }
+        return switch (this) {
+            case REF -> "0";
+            case ALT -> "1";
+            case OTHER_ALT -> "-";
+            case NO_CALL -> ".";
+        };
     }
 
     public static AlleleCall parseAlleleCall(String call) {
@@ -61,14 +56,11 @@ public enum AlleleCall {
         }
         try {
             int callInt = Integer.parseInt(call);
-            switch (callInt) {
-                case 0:
-                    return REF;
-                case 1:
-                    return ALT;
-                default:
-                    return OTHER_ALT;
-            }
+            return switch (callInt) {
+                case 0 -> REF;
+                case 1 -> ALT;
+                default -> OTHER_ALT;
+            };
         } catch (NumberFormatException e) {
             // oops! swallow
         }

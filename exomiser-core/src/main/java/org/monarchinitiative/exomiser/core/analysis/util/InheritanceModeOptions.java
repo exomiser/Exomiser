@@ -79,26 +79,21 @@ public class InheritanceModeOptions {
         Map<SubModeOfInheritance, Float> translated = new EnumMap<>(SubModeOfInheritance.class);
         for (ModeOfInheritance mode : modesOfInheritance) {
             switch (mode) {
-                case AUTOSOMAL_DOMINANT:
-                    translated.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_DOMINANT));
-                    break;
-                case AUTOSOMAL_RECESSIVE:
+                case AUTOSOMAL_DOMINANT ->
+                        translated.put(SubModeOfInheritance.AUTOSOMAL_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_DOMINANT));
+                case AUTOSOMAL_RECESSIVE -> {
                     translated.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET));
                     translated.put(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT, DEFAULT_FREQ.get(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_HOM_ALT));
-                    break;
-                case X_DOMINANT:
-                    translated.put(SubModeOfInheritance.X_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.X_DOMINANT));
-                    break;
-                case X_RECESSIVE:
+                }
+                case X_DOMINANT ->
+                        translated.put(SubModeOfInheritance.X_DOMINANT, DEFAULT_FREQ.get(SubModeOfInheritance.X_DOMINANT));
+                case X_RECESSIVE -> {
                     translated.put(SubModeOfInheritance.X_RECESSIVE_COMP_HET, DEFAULT_FREQ.get(SubModeOfInheritance.X_RECESSIVE_COMP_HET));
                     translated.put(SubModeOfInheritance.X_RECESSIVE_HOM_ALT, DEFAULT_FREQ.get(SubModeOfInheritance.X_RECESSIVE_HOM_ALT));
-                    break;
-                case MITOCHONDRIAL:
-                    translated.put(SubModeOfInheritance.MITOCHONDRIAL, DEFAULT_FREQ.get(SubModeOfInheritance.MITOCHONDRIAL));
-                    break;
-                case ANY:
-                    translated.put(SubModeOfInheritance.ANY, 2.0f);
-                    break;
+                }
+                case MITOCHONDRIAL ->
+                        translated.put(SubModeOfInheritance.MITOCHONDRIAL, DEFAULT_FREQ.get(SubModeOfInheritance.MITOCHONDRIAL));
+                case ANY -> translated.put(SubModeOfInheritance.ANY, 2.0f);
             }
         }
         return new InheritanceModeOptions(translated);
@@ -136,27 +131,15 @@ public class InheritanceModeOptions {
             SubModeOfInheritance subMode = entry.getKey();
             Float freq = entry.getValue();
             switch (subMode) {
-                case AUTOSOMAL_DOMINANT:
-                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, freq);
-                    break;
-                case AUTOSOMAL_RECESSIVE_COMP_HET:
-                    maxFreqs.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, freq);
-                    break;
-                case X_DOMINANT:
-                    maxFreqs.put(ModeOfInheritance.X_DOMINANT, freq);
-                    break;
-                case X_RECESSIVE_COMP_HET:
-                    maxFreqs.put(ModeOfInheritance.X_RECESSIVE, freq);
-                    break;
-                case MITOCHONDRIAL:
-                    maxFreqs.put(ModeOfInheritance.MITOCHONDRIAL, freq);
-                    break;
-                case ANY:
-                    maxFreqs.put(ModeOfInheritance.ANY, freq);
-                    break;
-                default:
+                case AUTOSOMAL_DOMINANT -> maxFreqs.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, freq);
+                case AUTOSOMAL_RECESSIVE_COMP_HET -> maxFreqs.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, freq);
+                case X_DOMINANT -> maxFreqs.put(ModeOfInheritance.X_DOMINANT, freq);
+                case X_RECESSIVE_COMP_HET -> maxFreqs.put(ModeOfInheritance.X_RECESSIVE, freq);
+                case MITOCHONDRIAL -> maxFreqs.put(ModeOfInheritance.MITOCHONDRIAL, freq);
+                case ANY -> maxFreqs.put(ModeOfInheritance.ANY, freq);
+                default -> {
                     //don't add the value
-                    break;
+                }
             }
         }
         return Maps.immutableEnumMap(maxFreqs);

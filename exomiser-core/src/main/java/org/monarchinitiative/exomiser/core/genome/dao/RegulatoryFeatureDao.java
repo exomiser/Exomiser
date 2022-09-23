@@ -86,23 +86,15 @@ public class RegulatoryFeatureDao {
     // enhancers can have long-range effects within a TAD, promoters are shorter range (to my knowledge),
     // open chromatin has what effect on expression?
     private RegulatoryFeature.FeatureType convertToFeatureType(String featureType) {
-        switch(featureType) {
-            case "Enhancer":
-                return RegulatoryFeature.FeatureType.ENHANCER;
-            case "TF binding site":
-                return RegulatoryFeature.FeatureType.TF_BINDING_SITE;
-            case "Promoter":
-                return RegulatoryFeature.FeatureType.PROMOTER;
-            case "Promoter Flanking Region":
-                return RegulatoryFeature.FeatureType.PROMOTER_FLANKING_REGION;
-            case "CTCF Binding Site":
-                return RegulatoryFeature.FeatureType.CTCF_BINDING_SITE;
-            case "Open chromatin":
-                return RegulatoryFeature.FeatureType.OPEN_CHROMATIN;
-            case "FANTOM permissive":
-                return RegulatoryFeature.FeatureType.FANTOM_PERMISSIVE;
-            default:
-                return RegulatoryFeature.FeatureType.UNKNOWN;
-        }
+        return switch (featureType) {
+            case "Enhancer" -> RegulatoryFeature.FeatureType.ENHANCER;
+            case "TF binding site" -> RegulatoryFeature.FeatureType.TF_BINDING_SITE;
+            case "Promoter" -> RegulatoryFeature.FeatureType.PROMOTER;
+            case "Promoter Flanking Region" -> RegulatoryFeature.FeatureType.PROMOTER_FLANKING_REGION;
+            case "CTCF Binding Site" -> RegulatoryFeature.FeatureType.CTCF_BINDING_SITE;
+            case "Open chromatin" -> RegulatoryFeature.FeatureType.OPEN_CHROMATIN;
+            case "FANTOM permissive" -> RegulatoryFeature.FeatureType.FANTOM_PERMISSIVE;
+            default -> RegulatoryFeature.FeatureType.UNKNOWN;
+        };
     }
 }

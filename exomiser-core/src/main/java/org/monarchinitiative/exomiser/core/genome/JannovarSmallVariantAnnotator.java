@@ -192,15 +192,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private TranscriptAnnotation.RankType getRankType(RankType annoLocRankType) {
-        switch (annoLocRankType) {
-            case EXON:
-                return TranscriptAnnotation.RankType.EXON;
-            case INTRON:
-                return TranscriptAnnotation.RankType.INTRON;
-            case UNDEFINED:
-                return TranscriptAnnotation.RankType.UNDEFINED;
-        }
-        return TranscriptAnnotation.RankType.UNDEFINED;
+        return switch (annoLocRankType) {
+            case EXON -> TranscriptAnnotation.RankType.EXON;
+            case INTRON -> TranscriptAnnotation.RankType.INTRON;
+            case UNDEFINED -> TranscriptAnnotation.RankType.UNDEFINED;
+        };
     }
 
     private VariantEffect getVariantEffectOrDefault(VariantEffect annotatedEffect, VariantEffect defaultEffect) {

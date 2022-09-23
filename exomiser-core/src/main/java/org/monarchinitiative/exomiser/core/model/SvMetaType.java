@@ -26,42 +26,16 @@ public enum SvMetaType {
     GAIN, GAIN_ME, LOSS, LOSS_ME, INVERSION, COMPLEX, CNV, NEUTRAL;
 
     private static SvMetaType toMetaType(VariantType variantType) {
-        switch (variantType) {
-            case DEL:
-            case CNV_LOSS:
-            case CNV_LOH:
-                return LOSS;
-            case DEL_ME:
-            case DEL_ME_ALU:
-            case DEL_ME_LINE1:
-            case DEL_ME_SVA:
-            case DEL_ME_HERV:
-                return LOSS_ME;
-            case INS:
-            case DUP:
-            case DUP_TANDEM:
-            case DUP_INV_BEFORE:
-            case DUP_INV_AFTER:
-            case CNV_GAIN:
-            case STR:
-                return GAIN;
-            case INS_ME:
-            case INS_ME_ALU:
-            case INS_ME_LINE1:
-            case INS_ME_SVA:
-            case INS_ME_HERV:
-                return GAIN_ME;
-            case INV:
-                return INVERSION;
-            case CNV:
-                return CNV;
-            case BND:
-            case CNV_COMPLEX:
-            case TRA:
-                return COMPLEX;
-            default:
-                return NEUTRAL;
-        }
+        return switch (variantType) {
+            case DEL, CNV_LOSS, CNV_LOH -> LOSS;
+            case DEL_ME, DEL_ME_ALU, DEL_ME_LINE1, DEL_ME_SVA, DEL_ME_HERV -> LOSS_ME;
+            case INS, DUP, DUP_TANDEM, DUP_INV_BEFORE, DUP_INV_AFTER, CNV_GAIN, STR -> GAIN;
+            case INS_ME, INS_ME_ALU, INS_ME_LINE1, INS_ME_SVA, INS_ME_HERV -> GAIN_ME;
+            case INV -> INVERSION;
+            case CNV -> CNV;
+            case BND, CNV_COMPLEX, TRA -> COMPLEX;
+            default -> NEUTRAL;
+        };
     }
 
     public static boolean isEquivalent(VariantType a, VariantType b) {

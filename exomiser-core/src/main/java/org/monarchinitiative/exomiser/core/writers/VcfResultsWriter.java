@@ -274,16 +274,9 @@ public class VcfResultsWriter implements ResultsWriter {
      */
     private void updateFilterField(VariantContextBuilder builder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance) {
         switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
-            case FAILED:
-                builder.filters(makeFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance)));
-                break;
-            case PASSED:
-                builder.filter("PASS");
-                break;
-            case UNFILTERED:
-            default:
-                builder.filter(".");
-                break;
+            case FAILED -> builder.filters(makeFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance)));
+            case PASSED -> builder.filter("PASS");
+            case UNFILTERED -> builder.filter(".");
         }
     }
 

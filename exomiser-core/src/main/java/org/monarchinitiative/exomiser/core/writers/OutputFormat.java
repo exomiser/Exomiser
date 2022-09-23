@@ -57,13 +57,9 @@ public enum OutputFormat {
 
     public static OutputFormat parseFormat(String value) {
         switch (value.trim().toUpperCase()) {
-            case "TSV_GENE":
-            case "TAB-GENE":
-            case "TSV-GENE":
+            case "TSV_GENE", "TAB-GENE", "TSV-GENE":
                 return OutputFormat.TSV_GENE;
-            case "TSV_VARIANT":
-            case "TAB-VARIANT":
-            case "TSV-VARIANT":
+            case "TSV_VARIANT", "TAB-VARIANT", "TSV-VARIANT":
                 return OutputFormat.TSV_VARIANT;
             case "VCF":
                 return OutputFormat.VCF;

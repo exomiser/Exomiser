@@ -66,38 +66,24 @@ public class AcmgEvidence {
             Evidence evidenceStrength = entry.getValue();
             if (acmgCriterion.isPathogenic()) {
                 switch (evidenceStrength) {
-                    case VERY_STRONG:
-                        pvs++;
-                        break;
-                    case STRONG:
-                        ps++;
-                        break;
-                    case MODERATE:
-                        pm++;
-                        break;
-                    case SUPPORTING:
-                        pp++;
-                        break;
-                    default:
+                    case VERY_STRONG -> pvs++;
+                    case STRONG -> ps++;
+                    case MODERATE -> pm++;
+                    case SUPPORTING -> pp++;
+                    default -> {
                         // do nothing
-                        break;
+                    }
                 }
             }
 
             if (acmgCriterion.isBenign()) {
                 switch (evidenceStrength) {
-                    case STAND_ALONE:
-                        ba++;
-                        break;
-                    case STRONG:
-                        bs++;
-                        break;
-                    case SUPPORTING:
-                        bp++;
-                        break;
-                    default:
+                    case STAND_ALONE -> ba++;
+                    case STRONG -> bs++;
+                    case SUPPORTING -> bp++;
+                    default -> {
                         // do nothing
-                        break;
+                    }
                 }
             }
         }

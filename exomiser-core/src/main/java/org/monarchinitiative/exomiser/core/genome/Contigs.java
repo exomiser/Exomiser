@@ -107,15 +107,11 @@ public class Contigs {
             // Exomiser uses '0' to represent unplaced contigs
             throw new IllegalArgumentException("Unsupported chromosome number: " + chr);
         }
-        switch (chr) {
-            case 23:
-                return "X";
-            case 24:
-                return "Y";
-            case 25:
-                return "MT";
-            default:
-                return Integer.toString(chr);
-        }
+        return switch (chr) {
+            case 23 -> "X";
+            case 24 -> "Y";
+            case 25 -> "MT";
+            default -> Integer.toString(chr);
+        };
     }
 }

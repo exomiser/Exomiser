@@ -68,15 +68,11 @@ class PhenopacketPedigreeConverter {
     }
 
     private static Individual.Status toExomiserStatus(AffectedStatus affectedStatus) {
-        switch (affectedStatus) {
-            case AFFECTED:
-                return Individual.Status.AFFECTED;
-            case UNAFFECTED:
-                return Individual.Status.UNAFFECTED;
-            case MISSING:
-            default:
-                return Individual.Status.UNKNOWN;
-        }
+        return switch (affectedStatus) {
+            case AFFECTED -> Individual.Status.AFFECTED;
+            case UNAFFECTED -> Individual.Status.UNAFFECTED;
+            case UNRECOGNIZED, MISSING -> Individual.Status.UNKNOWN;
+        };
     }
 
     public static org.phenopackets.schema.v1.core.Pedigree toPhenopacketPedigree(Pedigree pedigree) {
@@ -101,40 +97,27 @@ class PhenopacketPedigreeConverter {
     }
 
     private static AffectedStatus toPhenopacketStatus(Individual.Status status) {
-        switch (status) {
-            case UNAFFECTED:
-                return AffectedStatus.UNAFFECTED;
-            case AFFECTED:
-                return AffectedStatus.AFFECTED;
-            case UNKNOWN:
-            default:
-                return AffectedStatus.MISSING;
-        }
+        return switch (status) {
+            case UNAFFECTED -> AffectedStatus.UNAFFECTED;
+            case AFFECTED -> AffectedStatus.AFFECTED;
+            case UNKNOWN -> AffectedStatus.MISSING;
+        };
     }
 
     public static Sex toPhenopacketSex(Individual.Sex sex) {
-        switch (sex) {
-            case FEMALE:
-                return Sex.FEMALE;
-            case MALE:
-                return Sex.MALE;
-            case UNKNOWN:
-            default:
-                return Sex.UNKNOWN_SEX;
-        }
+        return switch (sex) {
+            case FEMALE -> Sex.FEMALE;
+            case MALE -> Sex.MALE;
+            case UNKNOWN -> Sex.UNKNOWN_SEX;
+        };
     }
 
     public static Individual.Sex toExomiserSex(Sex sex) {
-        switch (sex) {
-            case FEMALE:
-                return Individual.Sex.FEMALE;
-            case MALE:
-                return Individual.Sex.MALE;
-            case OTHER_SEX:
-            case UNKNOWN_SEX:
-            default:
-                return Individual.Sex.UNKNOWN;
-        }
+        return switch (sex) {
+            case FEMALE -> Individual.Sex.FEMALE;
+            case MALE -> Individual.Sex.MALE;
+            case OTHER_SEX, UNKNOWN_SEX, UNRECOGNIZED -> Individual.Sex.UNKNOWN;
+        };
     }
 
 }

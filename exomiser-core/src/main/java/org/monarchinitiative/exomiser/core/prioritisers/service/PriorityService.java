@@ -75,31 +75,23 @@ public class PriorityService {
     }
 
     public PhenotypeMatcher getPhenotypeMatcherForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
-        switch (organism) {
-            case HUMAN:
-                return phenotypeMatchService.getHumanPhenotypeMatcherForTerms(queryHpoPhenotypes);
-            case MOUSE:
-                return phenotypeMatchService.getMousePhenotypeMatcherForTerms(queryHpoPhenotypes);
-            case FISH:
-                return phenotypeMatchService.getFishPhenotypeMatcherForTerms(queryHpoPhenotypes);
-            default:
-                throw new IllegalArgumentException("Organism" + organism + "not valid");
-        }
+        return switch (organism) {
+            case HUMAN -> phenotypeMatchService.getHumanPhenotypeMatcherForTerms(queryHpoPhenotypes);
+            case MOUSE -> phenotypeMatchService.getMousePhenotypeMatcherForTerms(queryHpoPhenotypes);
+            case FISH -> phenotypeMatchService.getFishPhenotypeMatcherForTerms(queryHpoPhenotypes);
+            default -> throw new IllegalArgumentException("Organism" + organism + "not valid");
+        };
     }
 
     @Cacheable(value = "models", key = "#species", cacheResolver = "modelCacheResolver")
     public List<GeneModel> getModelsForOrganism(Organism species) {
         logger.debug("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
-        switch (species) {
-            case HUMAN:
-                return modelService.getHumanGeneDiseaseModels();
-            case MOUSE:
-                return modelService.getMouseGeneOrthologModels();
-            case FISH:
-                return modelService.getFishGeneOrthologModels();
-            default:
-                return Collections.emptyList();
-        }
+        return switch (species) {
+            case HUMAN -> modelService.getHumanGeneDiseaseModels();
+            case MOUSE -> modelService.getMouseGeneOrthologModels();
+            case FISH -> modelService.getFishGeneOrthologModels();
+            default -> List.of();
+        };
     }
 
     public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {

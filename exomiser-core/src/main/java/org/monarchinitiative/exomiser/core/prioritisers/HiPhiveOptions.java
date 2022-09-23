@@ -261,20 +261,12 @@ public class HiPhiveOptions {
                 for (String input : runParameters.split(",")) {
                     String param = input.trim();
                     switch (param) {
-                        case "ppi":
-                            this.runPpi = true;
-                            break;
-                        case "human":
-                            this.runHuman = true;
-                            break;
-                        case "mouse":
-                            this.runMouse = true;
-                            break;
-                        case "fish":
-                            this.runFish = true;
-                            break;
-                        default:
-                            throw new InvalidRunParameterException(String.format("'%s' is not a valid parameter.", param));
+                        case "ppi" -> this.runPpi = true;
+                        case "human" -> this.runHuman = true;
+                        case "mouse" -> this.runMouse = true;
+                        case "fish" -> this.runFish = true;
+                        default ->
+                                throw new InvalidRunParameterException(String.format("'%s' is not a valid parameter.", param));
                     }
                 }
             }

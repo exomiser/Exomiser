@@ -201,16 +201,11 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
     }
 
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
-        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
-            case FAILED:
-                Set<FilterType> failedFilterTypes = variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance);
-                return this.formatFailedFilters(failedFilterTypes);
-            case PASSED:
-                return "PASS";
-            case UNFILTERED:
-            default:
-                return ".";
-        }
+        return switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
+            case FAILED -> formatFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance));
+            case PASSED -> "PASS";
+            case UNFILTERED -> ".";
+        };
     }
 
     private String formatFailedFilters(Set<FilterType> failedFilters) {
