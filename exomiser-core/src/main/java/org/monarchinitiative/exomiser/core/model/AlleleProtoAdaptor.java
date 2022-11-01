@@ -84,6 +84,8 @@ public class AlleleProtoAdaptor {
 
     private static FrequencySource toFreqSource(AlleleProto.FrequencySource frequencySource) {
         return switch (frequencySource) {
+            case LOCAL -> LOCAL;
+
             case KG -> THOUSAND_GENOMES;
             case TOPMED -> TOPMED;
             case UK10K -> UK10K;
