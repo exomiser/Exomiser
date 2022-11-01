@@ -56,6 +56,10 @@ public class CombinedScorePvalueCalculator {
         return new CombinedScorePvalueCalculator(bootStrapValue, prioritiser.getPriorityType(), phenoScoreCache, numFilteredGenes);
     }
 
+    public static CombinedScorePvalueCalculator noOpCombinedScorePvalueCalculator() {
+        return NoOpPvalueScorer.instance();
+    }
+
     private static double[] generatePhenoScoreCache(Prioritiser<?> prioritiser, List<String> hpoIds, List<Gene> genes) {
         prioritiser.prioritizeGenes(hpoIds, genes);
         PriorityType priorityType = prioritiser.getPriorityType();
@@ -90,4 +94,21 @@ public class CombinedScorePvalueCalculator {
         return (double) numHigherScores / (bootStrapValue * numFilteredGenes);
     }
 
+    private static class NoOpPvalueScorer extends CombinedScorePvalueCalculator {
+
+        private static final NoOpPvalueScorer INSTANCE = new NoOpPvalueScorer(0, PriorityType.NONE, new double[0], 0);
+
+        private NoOpPvalueScorer(int bootStrapValue, PriorityType prioritiserType, double[] phenoScoreCache, int numFilteredGenes) {
+            super(bootStrapValue, prioritiserType, phenoScoreCache, numFilteredGenes);
+        }
+
+        private static NoOpPvalueScorer instance() {
+            return INSTANCE;
+        }
+
+        @Override
+        double calculatePvalueFromCombinedScore(double combinedScore) {
+            return 0;
+        }
+    }
 }
