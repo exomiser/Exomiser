@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
@@ -35,6 +36,7 @@ import org.monarchinitiative.svart.Variant;
 import java.util.*;
 
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
+import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.GNOMAD_G_SAS;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.CLINVAR;
 
@@ -74,14 +76,10 @@ public class AlleleProtoAdaptor {
     private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, List<AlleleProto.Frequency> frequenciesList) {
         for (AlleleProto.Frequency frequency : frequenciesList) {
             var freqSource = toFreqSource(frequency.getFrequencySource());
-            var freq = percentageFrequency(frequency.getAc(), frequency.getAn());
+            var freq = Frequency.percentageFrequency(frequency.getAc(), frequency.getAn());
             var hom = frequency.getHom();
             frequencyDataBuilder.addFrequency(freqSource, freq, hom);
         }
-    }
-
-    private static float percentageFrequency(int ac, int an) {
-        return 100f * (ac / (float) an);
     }
 
     private static FrequencySource toFreqSource(AlleleProto.FrequencySource frequencySource) {
@@ -89,16 +87,10 @@ public class AlleleProtoAdaptor {
             case KG -> THOUSAND_GENOMES;
             case TOPMED -> TOPMED;
             case UK10K -> UK10K;
-            case ESP_EA -> ESP_EUROPEAN_AMERICAN;
-            case ESP_AA -> ESP_AFRICAN_AMERICAN;
+
+            case ESP_EA -> ESP_EA;
+            case ESP_AA -> ESP_AA;
             case ESP_ALL -> ESP_ALL;
-            case EXAC_AFR -> EXAC_AFRICAN_INC_AFRICAN_AMERICAN;
-            case EXAC_AMR -> EXAC_AMERICAN;
-            case EXAC_EAS -> EXAC_EAST_ASIAN;
-            case EXAC_FIN -> EXAC_FINNISH;
-            case EXAC_NFE -> EXAC_NON_FINNISH_EUROPEAN;
-            case EXAC_OTH -> EXAC_OTHER;
-            case EXAC_SAS -> EXAC_SOUTH_ASIAN;
 
             case GNOMAD_E_AFR -> GNOMAD_E_AFR;
             case GNOMAD_E_AMR -> GNOMAD_E_AMR;
@@ -108,15 +100,31 @@ public class AlleleProtoAdaptor {
             case GNOMAD_E_NFE -> GNOMAD_E_NFE;
             case GNOMAD_E_OTH -> GNOMAD_E_OTH;
             case GNOMAD_E_SAS -> GNOMAD_E_SAS;
-            // TODO add new gnomad v2/3 populations (MID, AMI)
 
             case GNOMAD_G_AFR -> GNOMAD_G_AFR;
+            case GNOMAD_G_AMI -> GNOMAD_G_AMI;
             case GNOMAD_G_AMR -> GNOMAD_G_AMR;
             case GNOMAD_G_ASJ -> GNOMAD_G_ASJ;
             case GNOMAD_G_EAS -> GNOMAD_G_EAS;
             case GNOMAD_G_FIN -> GNOMAD_G_FIN;
+            case GNOMAD_G_MID -> GNOMAD_G_MID;
             case GNOMAD_G_NFE -> GNOMAD_G_NFE;
             case GNOMAD_G_OTH -> GNOMAD_G_OTH;
+            case GNOMAD_G_SAS -> GNOMAD_G_SAS;
+
+            case ALFA_AFA -> ALFA_AFA;
+            case ALFA_AFR -> ALFA_AFR;
+            case ALFA_AFO -> ALFA_AFO;
+            case ALFA_EUR -> ALFA_EUR;
+            case ALFA_LAC -> ALFA_LAC;
+            case ALFA_LEN -> ALFA_LEN;
+            case ALFA_EAS -> ALFA_EAS;
+            case ALFA_SAS -> ALFA_SAS;
+            case ALFA_ASN -> ALFA_ASN;
+            case ALFA_OAS -> ALFA_OAS;
+            case ALFA_OTR -> ALFA_OTR;
+            case ALFA_TOT -> ALFA_TOT;
+
             case UNSPECIFIED_FREQUENCY_SOURCE, UNRECOGNIZED -> UNKNOWN;
         };
     }

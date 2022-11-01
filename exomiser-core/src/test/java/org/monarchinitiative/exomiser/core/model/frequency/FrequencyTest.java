@@ -60,7 +60,7 @@ public class FrequencyTest {
     @Test
     public void testFrequencyIsOverThreshold() {
         float threshold = 2.0f;
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 4.0f);
+        Frequency instance = Frequency.of(ESP_AA, 4.0f);
         
         assertThat(instance.isOverThreshold(threshold), is(true));
     }
@@ -68,7 +68,7 @@ public class FrequencyTest {
     @Test
     public void testFrequencyIsNotOverThreshold() {
         float threshold = 2.0f;
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 1.0f);
+        Frequency instance = Frequency.of(ESP_AA, 1.0f);
         
         assertThat(instance.isOverThreshold(threshold), is(false));
     }
@@ -76,7 +76,7 @@ public class FrequencyTest {
     @Test
     public void testNotEqualToOtherFrequencyOfDifferentSource() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 1.0f);
+        Frequency instance = Frequency.of(ESP_AA, 1.0f);
         assertThat(instance, not(equalTo(other)));
     }
     

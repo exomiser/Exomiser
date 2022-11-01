@@ -193,7 +193,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                 // "DBSNP_FREQUENCY",
                 FrequencySource.THOUSAND_GENOMES,
                 // "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
-                FrequencySource.ESP_EUROPEAN_AMERICAN, FrequencySource.ESP_AFRICAN_AMERICAN,
+                FrequencySource.ESP_EA, FrequencySource.ESP_AA,
                 // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
                 FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, FrequencySource.EXAC_AMERICAN, FrequencySource.EXAC_EAST_ASIAN, FrequencySource.EXAC_FINNISH, FrequencySource.EXAC_NON_FINNISH_EUROPEAN, FrequencySource.EXAC_SOUTH_ASIAN, FrequencySource.EXAC_OTHER};
         for (FrequencySource source : experimentalFrequencySources) {

@@ -60,7 +60,7 @@ class AnalysisPresetBuilder {
     }
 
     private static final EnumSet<FrequencySource> DEFAULT_FREQUENCY_SOURCES = EnumSet.of(
-            FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.ESP_ALL, FrequencySource.ESP_EUROPEAN_AMERICAN,
+            FrequencySource.ESP_AA, FrequencySource.ESP_ALL, FrequencySource.ESP_EA,
             FrequencySource.THOUSAND_GENOMES,
             FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, FrequencySource.EXAC_AMERICAN,
             FrequencySource.EXAC_EAST_ASIAN, FrequencySource.EXAC_FINNISH,
@@ -101,7 +101,7 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP, REMM))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP, REMM, SPLICE_AI))
                 .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
                 .addPriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.5f)// will remove a lot of the weak PPI hits
                 .addFailedVariantFilter()
@@ -118,7 +118,7 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP, SPLICE_AI))
                 .addVariantEffectFilter(EnumSet.of(
                         VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
                         VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,

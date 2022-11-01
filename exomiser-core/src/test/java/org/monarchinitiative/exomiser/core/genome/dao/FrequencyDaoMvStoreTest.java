@@ -93,7 +93,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         assertThat(instance.getFrequencyData(variant),
                 equalTo(FrequencyData.of("rs54321",
                         Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.4f),
-                        Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.05f))));
+                        Frequency.of(FrequencySource.ESP_AA, 0.05f))));
     }
 
 }

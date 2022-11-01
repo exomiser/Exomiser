@@ -58,24 +58,28 @@ public class Frequency {
         return value > threshold;
     }
 
+    /**
+     * Returns the frequency of ac/an as a percentage value.
+     *
+     * @param ac    Allele Count - the number of observed alleles.
+     * @param an    Allele Number - size of the population in which the AC was observed.
+     * @return the frequency of ac/an as a percentage value in the range 0..100
+     */
+    public static float percentageFrequency(int ac, int an) {
+        return 100f * (ac / (float) an);
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(value, source);
+        return Objects.hash(source, value);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Frequency)) {
-            return false;
-        }
-        Frequency frequency1 = (Frequency) o;
-        if (source != frequency1.source) {
-            return false;
-        }
-        return Float.compare(frequency1.value, value) == 0;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Frequency frequency = (Frequency) o;
+        return Float.compare(frequency.value, value) == 0 && source == frequency.source;
     }
 
     @Override

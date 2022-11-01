@@ -49,8 +49,8 @@ public class FrequencyDataTest {
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
 
     private static final Frequency ESP_ALL_PASS = Frequency.of(ESP_ALL, PASS_FREQ);
-    private static final Frequency ESP_AA_PASS = Frequency.of(ESP_AFRICAN_AMERICAN, PASS_FREQ);
-    private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EUROPEAN_AMERICAN, PASS_FREQ);
+    private static final Frequency ESP_AA_PASS = Frequency.of(ESP_AA, PASS_FREQ);
+    private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EA, PASS_FREQ);
     private static final Frequency DBSNP_PASS = Frequency.of(THOUSAND_GENOMES, PASS_FREQ);
 
     private static final String RS_ID = "rs12335";
@@ -124,12 +124,12 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetEspEaMaf() {
-        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_EUROPEAN_AMERICAN), equalTo(ESP_EA_PASS));
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_EA), equalTo(ESP_EA_PASS));
     }
 
     @Test
     public void testGetEspAaMaf() {
-        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_AFRICAN_AMERICAN), equalTo(ESP_AA_PASS));
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_AA), equalTo(ESP_AA_PASS));
     }
 
     @Test

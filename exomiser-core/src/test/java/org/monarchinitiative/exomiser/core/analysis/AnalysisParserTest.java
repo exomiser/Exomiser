@@ -83,7 +83,7 @@ public class AnalysisParserTest {
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
-        frequencySources = EnumSet.of(FrequencySource.THOUSAND_GENOMES, FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
+        frequencySources = EnumSet.of(FrequencySource.THOUSAND_GENOMES, FrequencySource.ESP_AA, FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
         pathogenicitySources = EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER);
     }
 

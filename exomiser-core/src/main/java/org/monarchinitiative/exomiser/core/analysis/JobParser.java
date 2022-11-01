@@ -211,6 +211,14 @@ public class JobParser {
         // so no need to do so here.
         Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
         for (String source : frequencySourcesList) {
+            // legacy long-form ESP names
+            if (source.startsWith("ESP")) {
+                source = switch (source) {
+                    case "ESP_AFRICAN_AMERICAN" -> "ESP_AA";
+                    case "ESP_EUROPEAN_AMERICAN" -> "ESP_EA";
+                    default -> source;
+                };
+            }
             frequencySources.add(FrequencySource.valueOf(source));
         }
         return frequencySources;

@@ -112,7 +112,7 @@ class AcmgAssignmentCalculatorTest {
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.5f)))
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.ESP_AA, 0.5f)))
                 .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 0.5f)))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER), FilterResult.pass(FilterType.PATHOGENICITY_FILTER))

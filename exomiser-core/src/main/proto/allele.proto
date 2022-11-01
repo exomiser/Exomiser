@@ -27,7 +27,6 @@ message Frequency {
     int32 ac = 3; // 1 byte (Varint)
     int32 an = 4; // 1-3 bytes (Varint - 2^24 = 16777216 max)
     int32 hom = 5; // 1 byte
-//    string dataSource = 7; // ? bytes
 }
     // "GNOMAD_G_EAS" = 12 bytes + float = 4 bytes = 16 bytes
     //
@@ -50,8 +49,6 @@ message Frequency {
 //    reserved "foo", "bar";
 //   }
 
-
-
 enum FrequencySource {
     UNSPECIFIED_FREQUENCY_SOURCE = 0;
     KG = 1;
@@ -62,46 +59,57 @@ enum FrequencySource {
     ESP_AA = 5;
     ESP_ALL = 6;
 
-    EXAC_AFR = 7;
-    EXAC_AMR = 8;
-    EXAC_EAS = 9;
-    EXAC_FIN = 10;
-    EXAC_NFE = 11;
-    EXAC_OTH = 12;
-    EXAC_SAS = 13;
+    LOCAL = 7;
+    reserved 8 to 15; // non-gnomAD sources
 
-    GNOMAD_E_AFR = 14;
-    GNOMAD_E_AMR = 15;
-    GNOMAD_E_ASJ = 16;
-    GNOMAD_E_EAS = 17;
-    GNOMAD_E_FIN = 18;
-    GNOMAD_E_NFE = 19;
-    GNOMAD_E_OTH = 20;
-    GNOMAD_E_SAS = 21;
+//  EXAC removed as were merged into GNOMAD
+//    EXAC_AFR = 7;
+//    EXAC_AMR = 8;
+//    EXAC_EAS = 9;
+//    EXAC_FIN = 10;
+//    EXAC_NFE = 11;
+//    EXAC_OTH = 12;
+//    EXAC_SAS = 13;
 
-    GNOMAD_G_AFR = 22;
-    GNOMAD_G_AMR = 23;
-    GNOMAD_G_ASJ = 24;
-    GNOMAD_G_EAS = 25;
-    GNOMAD_G_FIN = 26;
-    GNOMAD_G_NFE = 27;
-    GNOMAD_G_OTH = 28;
-}
+    //reserved 16-35 GNOMAD_E
+    GNOMAD_E_AFR = 16;
+    GNOMAD_E_AMR = 17;
+    GNOMAD_E_ASJ = 18;
+    GNOMAD_E_EAS = 19;
+    GNOMAD_E_FIN = 20;
+    GNOMAD_E_NFE = 21;
+    GNOMAD_E_OTH = 22;
+    GNOMAD_E_SAS = 23;
+    reserved 24 to 35; // for GNOMAD_E
 
-enum Population {
-    ALL = 0;
-    AFR = 1;
-    AMI = 2;
-    AMR = 3;
-    ASJ = 4;
-    EAS = 5;
-    FIN = 6;
-    NFE = 7;
-    MID = 8;
-    SAS = 9;
-    OTH = 10;
-    // Extra ALFA populations
-    EUR = 11;
+    //reserved 36-55 GNOMAD_G
+    GNOMAD_G_AFR = 36;
+    GNOMAD_G_AMR = 37;
+    GNOMAD_G_ASJ = 38;
+    GNOMAD_G_EAS = 39;
+    GNOMAD_G_FIN = 40;
+    GNOMAD_G_NFE = 41;
+    GNOMAD_G_OTH = 42;
+    GNOMAD_G_SAS= 43;
+    GNOMAD_G_AMI= 44;
+    GNOMAD_G_MID= 45;
+    reserved 46 to 55; // for GNOMAD_G
+
+    // reserved 68-75 for ALFA
+    ALFA_AFO = 56;
+    ALFA_AFA = 57;
+    ALFA_AFR = 58;
+    ALFA_EUR = 59;
+    ALFA_LAC = 60;
+    ALFA_LEN = 61;
+    ALFA_SAS = 62;
+    ALFA_EAS = 63;
+    ALFA_ASN = 64;
+    ALFA_OAS = 65;
+    ALFA_OTR = 66;
+    ALFA_TOT = 67;
+    reserved 68 to 75; // for ALFA
+
 }
 
 message PathogenicityScore {

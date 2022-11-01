@@ -564,6 +564,14 @@ public class AnalysisParser {
             List<FrequencySource> sources = new ArrayList<>();
             for (String source : frequencySources) {
                 try {
+                    // legacy long-form ESP names
+                    if (source.startsWith("ESP")) {
+                        source = switch (source) {
+                            case "ESP_AFRICAN_AMERICAN" -> "ESP_AA";
+                            case "ESP_EUROPEAN_AMERICAN" -> "ESP_EA";
+                            default -> source;
+                        };
+                    }
                     FrequencySource frequencySource = FrequencySource.valueOf(source);
                     sources.add(frequencySource);
                 } catch (IllegalArgumentException ex) {
