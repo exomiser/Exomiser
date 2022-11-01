@@ -233,8 +233,8 @@ class CommandLineJobReaderTest {
                     FrequencySource.TOPMED,
                     FrequencySource.UK10K,
 
-                    FrequencySource.ESP_AFRICAN_AMERICAN,
-                    FrequencySource.ESP_EUROPEAN_AMERICAN,
+                    FrequencySource.ESP_AA,
+                    FrequencySource.ESP_EA,
                     FrequencySource.ESP_ALL,
 
                     FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
