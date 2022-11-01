@@ -74,19 +74,21 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Cacheable(value = "diseases")
     @Override
     public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
-        String query = "SELECT" +
-                " gene_id AS entrez_id" +
-                ", symbol AS human_gene_symbol" +
-                ", d.disease_id AS disease_id" +
-                ", d.diseasename AS disease_name" +
-                ", d.type AS disease_type" +
-                ", d.inheritance AS inheritance_code" +
-                ", hp_id AS pheno_ids " +
-                "FROM entrez2sym e, disease_hp dhp, disease d " +
-                "WHERE dhp.disease_id = d.disease_id " +
-                "AND e.entrezid = d.gene_id " +
-                "AND d.type in ('D', 'C', 'S', '?')" +
-                "AND d.gene_id = ?";
+        String query = """
+                        SELECT
+                         gene_id AS entrez_id
+                        , symbol AS human_gene_symbol
+                        , d.disease_id AS disease_id
+                        , d.diseasename AS disease_name
+                        , d.type AS disease_type
+                        , d.inheritance AS inheritance_code
+                        , hp_id AS pheno_ids
+                        FROM entrez2sym e, disease_hp dhp, disease d
+                        WHERE dhp.disease_id = d.disease_id
+                        AND e.entrezid = d.gene_id 
+                        AND d.type in ('D', 'C', 'S', '?') 
+                        AND d.gene_id = ?
+                        """;
         return jdbcTemplate.query(query, diseaseRowMapper, geneId);
     }
 

@@ -100,8 +100,7 @@ public class Analysis {
     @JsonIgnore
     public PriorityType getMainPrioritiserType() {
         for (AnalysisStep analysisStep : analysisSteps) {
-            if (analysisStep instanceof Prioritiser) {
-                Prioritiser<? extends PriorityResult> prioritiser = (Prioritiser<? extends PriorityResult>) analysisStep;
+            if (analysisStep instanceof Prioritiser<? extends PriorityResult> prioritiser) {
                 //OMIM, if combined with other prioritisers isn't the main one.
                 if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
                     return prioritiser.getPriorityType();

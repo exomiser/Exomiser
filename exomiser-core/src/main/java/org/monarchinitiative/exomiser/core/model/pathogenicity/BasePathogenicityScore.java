@@ -66,8 +66,7 @@ class BasePathogenicityScore implements PathogenicityScore {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BasePathogenicityScore)) return false;
-        BasePathogenicityScore that = (BasePathogenicityScore) o;
+        if (!(o instanceof BasePathogenicityScore that)) return false;
         return Float.compare(that.score, score) == 0 &&
                 source == that.source;
     }
