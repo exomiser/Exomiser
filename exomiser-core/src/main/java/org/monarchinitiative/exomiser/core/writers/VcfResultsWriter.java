@@ -134,8 +134,6 @@ public class VcfResultsWriter implements ResultsWriter {
         GeneScoreRanker geneScoreRanker = new GeneScoreRanker(analysisResults, outputSettings);
         geneScoreRanker.rankedVariants().forEach(rankedVariant -> {
             VariantEvaluation ve = rankedVariant.variantEvaluation();
-            System.out.println(ve);
-            System.out.println(ve.getVariantContext());
             String alleleInfo = this.buildVariantRecord(rankedVariant.rank(), ve, rankedVariant.geneScore());
             if (variantContextAlleleInfoMap.containsKey(ve.getVariantContext())) {
                 variantContextAlleleInfoMap.get(ve.getVariantContext()).add(alleleInfo);
