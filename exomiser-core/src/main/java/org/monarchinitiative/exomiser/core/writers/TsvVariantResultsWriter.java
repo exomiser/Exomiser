@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2022 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,205 +21,186 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import htsjdk.variant.variantcontext.VariantContext;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.filters.FilterType;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneScore;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.function.Consumer;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
+import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
+import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.*;
 
 /**
- * @author Max Schubach <max.schubach@charite.de>
+ * @since 13.1.0
  */
 public class TsvVariantResultsWriter implements ResultsWriter {
-
     private static final Logger logger = LoggerFactory.getLogger(TsvVariantResultsWriter.class);
-
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_VARIANT;
-
-    private final CSVFormat format = CSVFormat
-            .newFormat('\t')
+    private final CSVFormat csvFormat = CSVFormat.newFormat('\t')
             .withQuote(null)
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
-            .withHeader("#CHROM", "POS", "REF", "ALT", "QUAL", "FILTER", "GENOTYPE", "COVERAGE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_GENE",
-                    "CADD(>0.483)", "POLYPHEN(>0.956|>0.446)", "MUTATIONTASTER(>0.94)", "SIFT(<0.06)", "REMM",
-                    "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
-                    "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
-                    "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE", "CONTRIBUTING_VARIANT");
-
-    private final DecimalFormat formatter = new DecimalFormat(".####");
+            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
+    private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
     public TsvVariantResultsWriter() {
         Locale.setDefault(Locale.UK);
     }
 
-    @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
-        Path outFile = Paths.get(outFileName);
-        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(modeOfInheritance, analysisResults, outputSettings, printer);
-        } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFileName, ex);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT);
+        Path outFile = Path.of(outFileName);
+
+        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.csvFormat)) {
+            this.writeData(analysisResults, outputSettings, printer);
+        } catch (Exception var12) {
+            logger.error("Unable to write results to file {}", outFileName, var12);
         }
-        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+
+        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFileName);
     }
 
-    @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder output = new StringBuilder();
-        try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(modeOfInheritance, analysisResults, outputSettings, printer);
-        } catch (IOException ex) {
-            logger.error("Unable to write results to string {}", output, ex);
+
+        try (CSVPrinter printer = new CSVPrinter(output, this.csvFormat)) {
+            this.writeData(analysisResults, outputSettings, printer);
+        } catch (Exception var10) {
+            logger.error("Unable to write results to string {}", output, var10);
         }
+
         return output.toString();
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults,
-                           OutputSettings outputSettings, CSVPrinter printer) throws IOException {
-        List<Gene> passedGenes = outputSettings.filterGenesForOutput(analysisResults.getGenes());
-        if (outputSettings.outputContributingVariantsOnly()) {
-            logger.debug("Writing out only CONTRIBUTING variants");
-            for (Gene gene : passedGenes) {
-                if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                    writeOnlyContributingVariantsOfGene(modeOfInheritance, gene, printer);
-                }
+    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, CSVPrinter printer) {
+        GeneScoreRanker geneScoreRanker = new GeneScoreRanker(analysisResults, outputSettings);
+        geneScoreRanker.rankedVariants()
+                .map(rankedVariant -> buildVariantRecord(rankedVariant.rank(), rankedVariant.variantEvaluation(), rankedVariant.geneScore()))
+                .forEach(printRecord(printer));
+    }
+
+    Consumer<Iterable<Object>> printRecord(CSVPrinter printer) {
+        return list -> {
+            try {
+                printer.printRecord(list);
+            } catch (IOException e) {
+                // cross fingers and swallow?
+                throw new IllegalStateException(e);
             }
-        } else {
-            for (Gene gene : passedGenes) {
-                writeAllVariantsOfGene(modeOfInheritance, gene, printer);
-            }
-        }
+        };
     }
 
-    private void writeOnlyContributingVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
-        GeneScore geneScore = gene.getGeneScoreForMode(modeOfInheritance);
-        for (VariantEvaluation ve : geneScore.getContributingVariants()) {
-            List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
-            printer.printRecord(record);
-        }
-    }
-
-    private void writeAllVariantsOfGene(ModeOfInheritance modeOfInheritance, Gene gene, CSVPrinter printer) throws IOException {
-        for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-            //don't check that the variant is compatible under a particular mode of inheritance as otherwise a failing variant won't appear in the output.
-            List<Object> record = buildVariantRecord(modeOfInheritance, ve, gene);
-            printer.printRecord(record);
-        }
-    }
-
-    private List<Object> buildVariantRecord(ModeOfInheritance modeOfInheritance, VariantEvaluation ve, Gene gene) {
-        List<Object> record = new ArrayList<>();
-        VariantContext variantContext = ve.getVariantContext();
-        // CHROM
-        record.add(ve.contigName());
-        // POS
-        record.add(ve.start());
-        // REF
-        record.add(ve.ref());
-        // ALT
-        record.add(ve.alt());
-        // QUAL
-        record.add(formatter.format(ve.getPhredScore()));
-        // FILTER
-        record.add(makeFiltersField(modeOfInheritance, ve));
-        // GENOTYPE
-        record.add(ve.getGenotypeString());
-        // COVERAGE
-        record.add(variantContext.getCommonInfo().getAttributeAsString("DP", "0"));
-        // FUNCTIONAL_CLASS
-        record.add(ve.getVariantEffect().getSequenceOntologyTerm());
-        // HGVS
-        record.add(getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
-        // EXOMISER_GENE
-        record.add(dotIfEmpty(ve.getGeneSymbol()));
+    private List<Object> buildVariantRecord(int rank, VariantEvaluation ve, GeneScore geneScore) {
+        List<Object> fields = new ArrayList<>(csvFormat.getHeader().length);
+        GeneIdentifier geneIdentifier = geneScore.getGeneIdentifier();
+        ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
+        String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
+        List<AcmgAssignment> acmgAssignments = geneScore.getAcmgAssignments();
+        Optional<AcmgAssignment> assignment = acmgAssignments.stream().filter(acmgAssignment -> acmgAssignment.variantEvaluation().equals(ve)).findFirst();
+        fields.add(rank);
+        String gnomadString = ve.toGnomad();
+        fields.add(gnomadString + "_" + moiAbbreviation);
+        fields.add(geneIdentifier.getGeneSymbol());
+        fields.add(geneIdentifier.getEntrezId());
+        fields.add(moiAbbreviation);
+        fields.add(decimalFormat.format(geneScore.pValue()));
+        fields.add(decimalFormat.format(geneScore.getCombinedScore()));
+        fields.add(decimalFormat.format(geneScore.getPhenotypeScore()));
+        fields.add(decimalFormat.format(geneScore.getVariantScore()));
+        fields.add(decimalFormat.format(ve.getVariantScore()));
+        fields.add(ve.contributesToGeneScoreUnderMode(modeOfInheritance) ? "1" : "0");
+        fields.add(ve.isWhiteListed() ? "1" : "0");
+        fields.add(ve.id());
+        FrequencyData frequencyData = ve.getFrequencyData();
+        fields.add(frequencyData.getRsId());
+        fields.add(ve.contigName());
+        fields.add(ve.start());
+        fields.add(ve.end());
+        fields.add(ve.ref());
+        fields.add(ve.alt());
+        fields.add(ve.changeLength());
+        fields.add(this.decimalFormat.format(ve.getPhredScore()));
+        fields.add(this.makeFiltersField(modeOfInheritance, ve));
+        fields.add(ve.getGenotypeString());
+        fields.add(ve.getVariantEffect().getSequenceOntologyTerm());
+        fields.add(this.getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
+        fields.add(assignment.map(AcmgAssignment::acmgClassification).orElse(AcmgClassification.NOT_AVAILABLE));
+        fields.add(assignment.map(acmgAssignment -> toVcfAcmgInfo(acmgAssignment.acmgEvidence())).orElse(""));
+        fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
+        fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName()).orElse(""));
         PathogenicityData pathogenicityData = ve.getPathogenicityData();
-        // CADD
-        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.CADD)));
-        // POLYPHEN
-        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.POLYPHEN)));
-        // MUTATIONTASTER
-        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.MUTATION_TASTER)));
-        // SIFT
-        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.SIFT)));
-        // REMM
-        record.add(getPathScore(pathogenicityData.getPredictedScore(PathogenicitySource.REMM)));
-        // "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
-        // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
-        addFrequencyData(ve.getFrequencyData(), record);
-        // EXOMISER_VARIANT_SCORE
-        record.add(dotIfNull(ve.getVariantScore()));
-        // EXOMISER_GENE_PHENO_SCORE
-        record.add(dotIfNull(gene.getPriorityScoreForMode(modeOfInheritance)));
-        // EXOMISER_GENE_VARIANT_SCORE
-        record.add(dotIfNull(gene.getVariantScoreForMode(modeOfInheritance)));
-        // EXOMISER_GENE_COMBINED_SCORE
-        record.add(dotIfNull(gene.getCombinedScoreForMode(modeOfInheritance)));
-        // EXOMISER_CONTRIBUTES_TO_SCORE
-        record.add(ve.contributesToGeneScoreUnderMode(modeOfInheritance) ? "CONTRIBUTING_VARIANT" : ".");
-        return record;
+        ClinVarData clinVarData = pathogenicityData.getClinVarData();
+        fields.add(clinVarData.getAlleleId());
+        fields.add(clinVarData.getPrimaryInterpretation());
+        fields.add(clinVarData.starRating());
+        GeneConstraint geneConstraint = GeneConstraints.geneContraint(geneIdentifier.getGeneSymbol());
+        fields.add(geneConstraint == null ? "" : geneConstraint.loeuf());
+        fields.add(geneConstraint == null ? "" : geneConstraint.loeufLower());
+        fields.add(geneConstraint == null ? "" : geneConstraint.loeufUpper());
+        Frequency maxFreq = frequencyData.getMaxFrequency();
+        fields.add(maxFreq == null ? "" : maxFreq.getSource());
+        fields.add(maxFreq == null ? "" : maxFreq.getFrequency());
+        fields.add(toVcfFreqInfo(frequencyData.getKnownFrequencies()));
+        PathogenicityScore maxPath = pathogenicityData.getMostPathogenicScore();
+        fields.add(maxPath == null ? "" : maxPath.getSource());
+        fields.add(maxPath == null ? "" : maxPath.getScore());
+        fields.add(toVcfPathInfo(pathogenicityData.getPredictedPathogenicityScores()));
+        return fields;
     }
 
-    private void addFrequencyData(FrequencyData frequencyData, List<Object> record) {
-        // DBSNP_ID
-        record.add(dotIfEmpty(frequencyData.getRsId()));
-        // MAX_FREQUENCY
-        record.add(dotIfNull(frequencyData.getMaxFreq()));
-        // Don't change the order of these - it's necessary for the data to end up in the correct column
-        FrequencySource[] experimentalFrequencySources = {
-                // "DBSNP_FREQUENCY",
-                FrequencySource.THOUSAND_GENOMES,
-                // "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
-                FrequencySource.ESP_EA, FrequencySource.ESP_AA,
-                // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
-                FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, FrequencySource.EXAC_AMERICAN, FrequencySource.EXAC_EAST_ASIAN, FrequencySource.EXAC_FINNISH, FrequencySource.EXAC_NON_FINNISH_EUROPEAN, FrequencySource.EXAC_SOUTH_ASIAN, FrequencySource.EXAC_OTHER};
-        for (FrequencySource source : experimentalFrequencySources) {
-            record.add(dotIfFrequencyNull(frequencyData.getFrequencyForSource(source)));
-        }
+    private String toVcfAcmgInfo(AcmgEvidence acmgEvidence) {
+        return acmgEvidence.evidence().entrySet().stream()
+                .map(entry -> {
+                    AcmgCriterion acmgCriterion = entry.getKey();
+                    AcmgCriterion.Evidence evidence = entry.getValue();
+                    return (acmgCriterion.evidence() == evidence) ? acmgCriterion.toString() : acmgCriterion + "_" + evidence.displayString();
+                })
+                .collect(joining(","));
+    }
+    private String toVcfFreqInfo(List<Frequency> frequencies) {
+        return frequencies.stream()
+                .map(frequency -> frequency.getSource() + "=" + frequency.getFrequency())
+                .collect(joining(","));
     }
 
-    private String dotIfEmpty(String id) {
-        return id.isEmpty() ? "." : id;
-    }
-
-    private Object dotIfNull(Object o) {
-        return o == null ? "." : o;
-    }
-
-    private Object dotIfFrequencyNull(Frequency frequency) {
-        return frequency == null ? "." : frequency.getFrequency();
-    }
-
-    private Object getPathScore(PathogenicityScore score) {
-        return score == null ? "." : score.getScore();
+    private String toVcfPathInfo(List<PathogenicityScore> predictedPathogenicityScores) {
+        return predictedPathogenicityScores.stream()
+                .map(pathScore -> pathScore.getSource() + "=" + pathScore.getScore())
+                .collect(joining(","));
     }
 
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
-        //under some modes a variant should not pass, but others it will, so we need to check this here
-        //otherwise when running FULL or SPARSE modes alleles will be reported as having passed under the wrong MOI
         return switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
             case FAILED -> formatFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance));
             case PASSED -> "PASS";
@@ -235,23 +216,18 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         return stringJoiner.toString();
     }
 
-    /**
-     * @return An annotation for a single transcript, representing one of the
-     * annotations with the most pathogenic annotation.
-     */
     private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
         if (annotations.isEmpty()) {
-            return "?";
+            return "";
+        } else {
+            TranscriptAnnotation anno = annotations.get(0);
+            StringJoiner stringJoiner = new StringJoiner(":");
+            stringJoiner.add(anno.getGeneSymbol());
+            stringJoiner.add(anno.getAccession());
+            stringJoiner.add(anno.getHgvsCdna());
+            stringJoiner.add(anno.getHgvsProtein());
+            return stringJoiner.toString();
         }
-
-        TranscriptAnnotation anno = annotations.get(0);
-
-        StringJoiner stringJoiner = new StringJoiner(":");
-        stringJoiner.add(anno.getGeneSymbol());
-        stringJoiner.add(anno.getAccession());
-        stringJoiner.add(anno.getHgvsCdna());
-        stringJoiner.add(anno.getHgvsProtein());
-        return stringJoiner.toString();
     }
 
 }

@@ -163,7 +163,7 @@ public class JsonResultsWriterTest {
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, outputSettings);
+        String result = instance.writeString(analysisResults, outputSettings);
         System.out.println(result);
         String expected = readFromFile("src/test/resources/writers/contributing_only_autosomal_dominant_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
@@ -181,7 +181,7 @@ public class JsonResultsWriterTest {
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        String result = instance.writeString(analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
@@ -197,7 +197,7 @@ public class JsonResultsWriterTest {
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(false).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        String result = instance.writeString(analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/full_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
@@ -214,7 +214,7 @@ public class JsonResultsWriterTest {
 
         JsonResultsWriter instance = new JsonResultsWriter();
         //we have no MITOCHONDRIAL matches in the results set
-        String result = instance.writeString(ModeOfInheritance.MITOCHONDRIAL, analysisResults, outputSettings);
+        String result = instance.writeString(analysisResults, outputSettings);
         String expected = "[]";
         JSONAssert.assertEquals(expected, result, true);
     }
@@ -230,7 +230,7 @@ public class JsonResultsWriterTest {
         OutputSettings outputSettings = this.settingsBuilder.outputContributingVariantsOnly(true).build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        String result = instance.writeString(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        String result = instance.writeString(analysisResults, outputSettings);
         String expected = readFromFile("src/test/resources/writers/contributing_only_any_moi_test.json");
         JSONAssert.assertEquals(expected, result, true);
     }
@@ -248,17 +248,17 @@ public class JsonResultsWriterTest {
         OutputSettings outputSettings = settingsBuilder.outputPrefix(outPath + "testWrite").build();
 
         JsonResultsWriter instance = new JsonResultsWriter();
-        instance.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        instance.writeFile(analysisResults, outputSettings);
         Path anyOutputPath = Paths.get(outPath + "testWrite.json");
         assertThat(anyOutputPath.toFile().exists(), is(true));
         assertThat(anyOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysisResults, outputSettings);
+        instance.writeFile(analysisResults, outputSettings);
         Path arOutputPath = Paths.get(outPath + "testWrite_AR.json");
         assertThat(arOutputPath.toFile().exists(), is(true));
         assertThat(arOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, outputSettings);
+        instance.writeFile(analysisResults, outputSettings);
         Path adOutputPath = Paths.get(outPath + "testWrite_AD.json");
         assertThat(adOutputPath.toFile().exists(), is(true));
         assertThat(adOutputPath.toFile().delete(), is(true));

@@ -77,11 +77,9 @@ public class ResultsWriterUtils {
      * @param vcfPath
      * @param outputPrefix
      * @param outputFormat
-     * @param modeOfInheritance
      * @return A filename based on either the user input, or one generated from the sample.
      */
-    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat, ModeOfInheritance modeOfInheritance) {
-        String moiAbbreviation = moiAbbreviation(modeOfInheritance);
+    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat) {
         String baseFileName = Path.of(outputPrefix).getFileName().toString();
         if (baseFileName.isEmpty() && vcfPath == null) {
             baseFileName = "exomiser";
@@ -89,12 +87,7 @@ public class ResultsWriterUtils {
             String vcfFileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
             baseFileName = vcfFileName + "-exomiser";
         }
-        return resolveOutputDir(outputPrefix).normalize().resolve(baseFileName + moiAbbreviation + '.' + outputFormat.getFileExtension()).toString();
-    }
-
-    private static String moiAbbreviation(ModeOfInheritance modeOfInheritance) {
-        String moiAbbreviation = modeOfInheritance.getAbbreviation();
-        return moiAbbreviation == null ? "" : "_" + moiAbbreviation;
+        return resolveOutputDir(outputPrefix).normalize().resolve(baseFileName + '.' + outputFormat.getFileExtension()).toString();
     }
 
     /**

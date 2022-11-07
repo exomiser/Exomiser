@@ -70,7 +70,7 @@ public class TsvVariantResultsWriterTest {
     private static final String EXOMISER_SCORES_HEADER =
             "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\tCONTRIBUTING_VARIANT\n";
 
-    private static final String HEADER = VARIANT_DETAILS_HEADER + PATHOGENICITY_SCORES_HEADER + FREQUENCY_DATA_HEADER + EXOMISER_SCORES_HEADER;
+    private static final String HEADER = "#RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_VARIANT_SCORE\tCONTRIBUTING_VARIANT\tWHITELIST_VARIANT\tVCF_ID\tRS_ID\tCONTIG\tSTART\tEND\tREF\tALT\tCHANGE_LENGTH\tQUAL\tFILTER\tGENOTYPE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_ACMG_CLASSIFICATION\tEXOMISER_ACMG_EVIDENCE\tEXOMISER_ACMG_DISEASE_ID\tEXOMISER_ACMG_DISEASE_NAME\tCLINVAR_ALLELE_ID\tCLINVAR_PRIMARY_INTERPRETATION\tCLINVAR_STAR_RATING\tGENE_CONSTRAINT_LOEUF\tGENE_CONSTRAINT_LOEUF_LOWER\tGENE_CONSTRAINT_LOEUF_UPPER\tMAX_FREQ_SOURCE\tMAX_FREQ\tALL_FREQ\tMAX_PATH_SOURCE\tMAX_PATH\tALL_PATH\\n";
 
     private static final String FAIL_VARIANT_DETAILS = "7\t155604800\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
     private static final String PASS_VARIANT_DETAILS = "10\t123256214\tA\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)\tFGFR2";
@@ -136,12 +136,12 @@ public class TsvVariantResultsWriterTest {
         String outPrefix = tempFolder.resolve("testWrite").toString();
 
         OutputSettings settings = settingsBuilder.outputPrefix(outPrefix).build();
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_RECESSIVE, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path arOutputPath = tempFolder.resolve("testWrite_AR.variants.tsv");
         assertThat(arOutputPath.toFile().exists(), is(true));
         assertThat(arOutputPath.toFile().delete(), is(true));
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path adOutputPath = tempFolder.resolve("testWrite_AD.variants.tsv");
         assertThat(adOutputPath.toFile().exists(), is(true));
         assertThat(adOutputPath.toFile().delete(), is(true));
@@ -153,7 +153,7 @@ public class TsvVariantResultsWriterTest {
     public void testWriteStringUnderAnyInheritanceModeContainsAllVariants() {
         OutputSettings settings = settingsBuilder.build();
 
-        String outString = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String outString = instance.writeString(analysisResults, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
@@ -190,7 +190,7 @@ public class TsvVariantResultsWriterTest {
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, results, settings);
+        String outString = instance.writeString(results, settings);
         String expected = HEADER
                 + CONTRIBUTING_VARIANT_LINE;
         assertThat(outString, equalTo(expected));
@@ -226,7 +226,7 @@ public class TsvVariantResultsWriterTest {
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_RECESSIVE, results, settings);
+        String outString = instance.writeString(results, settings);
         String expected = HEADER;
         assertThat(outString, equalTo(expected));
     }
@@ -248,7 +248,7 @@ public class TsvVariantResultsWriterTest {
                 .genes(Collections.singletonList(fgfr2))
                 .build();
 
-        String outString = instance.writeString(ModeOfInheritance.AUTOSOMAL_DOMINANT, results, settings);
+        String outString = instance.writeString(results, settings);
         String expected = HEADER +
                 CONTRIBUTING_VARIANT_LINE;
         assertThat(outString, equalTo(expected));

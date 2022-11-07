@@ -26,7 +26,6 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
 /**
@@ -36,22 +35,20 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 public interface ResultsWriter {
     
     /**
-     * Writes the result data out to the file specified in the ExomiserSettings object for the specified mode of inheritance.
+     * Writes the result data out to the file specified in the ExomiserSettings object.
      *
-     * @param modeOfInheritance
      * @param analysisResults
      * @param settings
      */
-    void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings);
+    void writeFile(AnalysisResults analysisResults, OutputSettings settings);
 
     /**
-     * Writes the result data out to a String for the specified mode of inheritance.
+     * Writes the result data out to a String.
      *
-     * @param modeOfInheritance
      * @param analysisResults
      * @param settings
      * @return The string value of the analysis results for the given inheritance model
      */
-    String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings);
+    String writeString(AnalysisResults analysisResults, OutputSettings settings);
 
 }

@@ -16,6 +16,11 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
+/**
+ * Utility class for ranking Gene and VariantEvaluation objects for use by ResultsWriters.
+ *
+ * @since 13.1.0
+ */
 class GeneScoreRanker {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneScoreRanker.class);
@@ -93,95 +98,19 @@ class GeneScoreRanker {
         });
     }
 
-    static class RankedGene {
-        private final int rank;
-        private final Gene gene;
-        private final GeneScore geneScore;
+    record RankedGene(int rank, Gene gene, GeneScore geneScore) {
 
-        public RankedGene(int rank, Gene gene, GeneScore geneScore) {
-            this.rank = rank;
-            this.gene = Objects.requireNonNull(gene);
-            this.geneScore = Objects.requireNonNull(geneScore);
-        }
-
-        public int rank() {
-            return rank;
-        }
-
-        public Gene gene() {
-            return gene;
-        }
-
-        public GeneScore geneScore() {
-            return geneScore;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RankedGene that = (RankedGene) o;
-            return rank == that.rank && gene.equals(that.gene) && geneScore.equals(that.geneScore);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(rank, gene, geneScore);
-        }
-
-        @Override
-        public String toString() {
-            return "RankedGene{" +
-                    "rank=" + rank +
-                    ", gene=" + gene +
-                    ", geneScore=" + geneScore +
-                    '}';
+        RankedGene {
+            Objects.requireNonNull(gene);
+            Objects.requireNonNull(geneScore);
         }
     }
 
-    static class RankedVariant {
-        private final int rank;
-        private final VariantEvaluation variantEvaluation;
-        private final GeneScore geneScore;
+    record RankedVariant(int rank, VariantEvaluation variantEvaluation, GeneScore geneScore) {
 
-        public RankedVariant(int rank, VariantEvaluation variantEvaluation, GeneScore geneScore) {
-            this.rank = rank;
-            this.variantEvaluation = Objects.requireNonNull(variantEvaluation);
-            this.geneScore = Objects.requireNonNull(geneScore);
-        }
-
-        public int rank() {
-            return rank;
-        }
-
-        public VariantEvaluation variantEvaluation() {
-            return variantEvaluation;
-        }
-
-        public GeneScore geneScore() {
-            return geneScore;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RankedVariant that = (RankedVariant) o;
-            return rank == that.rank && variantEvaluation.equals(that.variantEvaluation) && geneScore.equals(that.geneScore);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(rank, variantEvaluation, geneScore);
-        }
-
-        @Override
-        public String toString() {
-            return "RankedVariant{" +
-                    "rank=" + rank +
-                    ", variantEvaluation=" + variantEvaluation +
-                    ", geneScore=" + geneScore +
-                    '}';
+        RankedVariant {
+            Objects.requireNonNull(variantEvaluation);
+            Objects.requireNonNull(geneScore);
         }
     }
 }

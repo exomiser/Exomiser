@@ -74,39 +74,6 @@ class AnalysisResultsWriterTest {
     }
 
     @Test
-    void testWriteToFileOutputsAllModesOfInheritanceForEachFormat() {
-        String outputPrefix = tempFile.toString();
-
-        OutputSettings settings = OutputSettings.builder()
-                .outputPrefix(outputPrefix)
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.HTML, OutputFormat.VCF))
-                .build();
-
-        Sample sample = Sample.builder()
-                .vcfPath(Paths.get("src/test/resources/Pfeiffer.vcf"))
-                .build();
-
-        Analysis analysis = Analysis.builder()
-                .inheritanceModeOptions(InheritanceModeOptions.defaults())
-                .build();
-        AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
-
-        //HTML writer is a special case where it presents a combined view of the results
-        Path htmlOutputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
-        assertThat(htmlOutputPath.toFile().exists(), is(true));
-        assertThat(htmlOutputPath.toFile().delete(), is(true));
-
-        //The other writers only write the MOI compatible genes/variants
-        for (OutputFormat outputFormat : Arrays.asList(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF)) {
-            for (String moi : Arrays.asList("AD", "AR", "XR", "XD", "MT")) {
-                Path outputPath = Paths.get(String.format("%s_%s.%s", outputPrefix, moi, outputFormat.getFileExtension()));
-                assertThat(outputPath.toFile().exists(), is(true));
-                assertThat(outputPath.toFile().delete(), is(true));
-            }
-        }
-    }
-
-    @Test
     void testWriteToFileOutputsAllModesOfInheritanceForEachFormatWhenInheritanceModeIsUndefined() {
         String outputPrefix = tempFile.toString();
 

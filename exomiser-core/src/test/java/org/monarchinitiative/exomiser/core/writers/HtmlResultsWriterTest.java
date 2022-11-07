@@ -129,8 +129,8 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(outputPrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
-        Path testOutFile = Paths.get(outputPrefix + "_AD.html");
+        instance.writeFile(analysisResults, settings);
+        Path testOutFile = Paths.get(outputPrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
     }
@@ -148,9 +148,9 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(testOutFilePrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
 
-        Path testOutFile = Paths.get(testOutFilePrefix + "_AD.html");
+        Path testOutFile = Paths.get(testOutFilePrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
     }
@@ -167,7 +167,7 @@ public class HtmlResultsWriterTest {
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(ModeOfInheritance.ANY, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
 
         List<String> lines = Files.readAllLines(testOutFile);
@@ -194,7 +194,7 @@ public class HtmlResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String output = instance.writeString(analysisResults, settings);
         assertFalse(output.isEmpty());
     }
 
@@ -220,7 +220,7 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String output = instance.writeString(analysisResults, settings);
         assertTrue(output.contains("Exomiser Analysis Results for"));
         assertTrue(output.contains("FGFR2"));
         assertTrue(output.contains("SHH"));

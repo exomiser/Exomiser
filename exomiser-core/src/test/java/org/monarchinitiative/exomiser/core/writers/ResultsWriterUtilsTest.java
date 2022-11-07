@@ -85,45 +85,45 @@ public class ResultsWriterUtilsTest {
 
     @Test
     void testNullVcfAndEmptyOutputPrefixUsesVcfFileName() {
-        String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/exomiser_AD.json"));
+        String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON);
+        assertThat(result, equalTo("results/exomiser.json"));
     }
 
     @Test
     void testEmptyOutputPrefixUsesVcfFileName() {
-        String result = ResultsWriterUtils.makeOutputFilename(Paths.get("/data/vcf/sample1_genome.vcf.gz"), "", OutputFormat.TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/sample1_genome-exomiser_AD.variants.tsv"));
+        String result = ResultsWriterUtils.makeOutputFilename(Paths.get("/data/vcf/sample1_genome.vcf.gz"), "", OutputFormat.TSV_VARIANT);
+        assertThat(result, equalTo("results/sample1_genome-exomiser.variants.tsv"));
     }
 
     @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
         OutputSettings settings = OutputSettings.builder().build();
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.genes.tsv"));
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.genes.tsv"));
     }
 
     @Test
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
         OutputSettings settings = OutputSettings.builder().build();
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.vcf"));
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.vcf"));
     }
 
     @Test
     public void testThatSpecifiedOutputFormatDoesNotOverwriteGivenOutputPrefixFileExtension() {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, outputPrefix, testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml_XD.vcf"));
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, outputPrefix, testedFormat);
+        assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml.vcf"));
     }
     
     @Test
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
         OutputSettings settings = OutputSettings.builder().build();
-        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.ANY);
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
     }
     
@@ -131,31 +131,16 @@ public class ResultsWriterUtilsTest {
     public void testOutFileNameIsCombinationOfOutPrefixAndOutFormat() {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009";
-        String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, outFilePrefix, outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
+        String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, outFilePrefix, outFormat);
+        assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009.genes.tsv"));
     }
 
     @Test
-    public void testOutputFileNameModeOfInheritanceExtensions() {
+    public void testHtmlOutputFileName() {
         OutputFormat testedFormat = OutputFormat.HTML;
 
-        String any = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.ANY);
+        String any = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat);
         assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
-
-        String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.html"));
-
-        String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.html"));
-
-        String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XD.html"));
-
-        String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_RECESSIVE);
-        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XR.html"));
-
-        String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.MITOCHONDRIAL);
-        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_MT.html"));
     }
 
     @Test
