@@ -54,8 +54,6 @@ public abstract class AbstractIndexer<T> implements Indexer<T> {
                 this.count());
     }
 
-    public abstract long count();
-
     private static class ProgressLogger<T> {
 
         private final AtomicLong counter;

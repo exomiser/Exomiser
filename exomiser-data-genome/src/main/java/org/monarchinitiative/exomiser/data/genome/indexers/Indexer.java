@@ -38,4 +38,5 @@ public interface Indexer<T> extends Closeable {
 
     void write(T type);
 
+    long count();
 }
