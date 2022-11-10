@@ -117,21 +117,38 @@ public class AlleleConverterTest {
     }
 
     @Test
-    public void mergePropertiesAppendsFrequencies() {
+    public void mergePropertiesDoesntDuplicateFrequencies() {
         AlleleProperties toMerge = AlleleProperties.newBuilder()
-                .addPathogenicityScores(POLYPHEN_SCORE)
                 .addFrequencies(GNOMAD_E_AFR_FREQUENCY)
                 .build();
 
         AlleleProperties expected = AlleleProperties.newBuilder()
                 .setRsId("rs678910")
-                .addFrequencies(GNOMAD_E_AFR_FREQUENCY) // not ideal
+                .addFrequencies(GNOMAD_E_AFR_FREQUENCY)
+                .setClinVar(PROTO_CLINVAR)
+                .build();
+
+        assertThat(AlleleConverter.mergeProperties(ALLELE_PROPERTIES, toMerge), equalTo(expected));
+    }
+
+    @Test
+    public void mergePropertiesIncludesNonDuplicatedPathScores() {
+        AlleleProperties original = ALLELE_PROPERTIES.toBuilder()
+                .addPathogenicityScores(POLYPHEN_SCORE)
+                .build();
+
+        AlleleProperties toMerge = AlleleProperties.newBuilder()
+                .addPathogenicityScores(POLYPHEN_SCORE)
+                .build();
+
+        AlleleProperties expected = AlleleProperties.newBuilder()
+                .setRsId("rs678910")
                 .addFrequencies(GNOMAD_E_AFR_FREQUENCY)
                 .addPathogenicityScores(POLYPHEN_SCORE)
                 .setClinVar(PROTO_CLINVAR)
                 .build();
 
-        assertThat(AlleleConverter.mergeProperties(ALLELE_PROPERTIES, toMerge), equalTo(expected));
+        assertThat(AlleleConverter.mergeProperties(original, toMerge), equalTo(expected));
     }
 
     @Test
