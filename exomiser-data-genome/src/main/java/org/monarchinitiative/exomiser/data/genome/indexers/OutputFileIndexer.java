@@ -38,21 +38,23 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
     private static final Logger logger = LoggerFactory.getLogger(OutputFileIndexer.class);
 
     private final AtomicLong count = new AtomicLong(0);
-    private final BufferedWriter bufferedWriter;
+    private BufferedWriter bufferedWriter = null;
     private final Path outFilePath;
 
     public OutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
-        logger.info("Writing to {}", outFilePath);
-        try {
-            this.bufferedWriter = Files.newBufferedWriter(outFilePath);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
-        }
+        logger.debug("Writing to {}", outFilePath);
     }
 
     @Override
     public void write(T type) {
+        if (bufferedWriter == null) {
+            try {
+                this.bufferedWriter = Files.newBufferedWriter(outFilePath);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
+            }
+        }
         try {
             bufferedWriter.write(type.toOutputLine());
             bufferedWriter.newLine();
