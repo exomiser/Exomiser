@@ -20,11 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome;
 
-import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.MvStoreAlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -33,6 +29,7 @@ import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -48,34 +45,33 @@ public class VariantDatabaseBuildRunner {
     private final Path buildPath;
     private final BuildInfo buildInfo;
     private final List<AlleleResource> alleleResources;
+    private final Path processedDir;
 
-    public VariantDatabaseBuildRunner(BuildInfo buildInfo, Path buildPath, List<AlleleResource> alleleResources) {
+    public VariantDatabaseBuildRunner(BuildInfo buildInfo, Path buildPath, List<AlleleResource> alleleResources, Path processedDir) {
         this.buildPath = buildPath;
         this.buildInfo = buildInfo;
         this.alleleResources = alleleResources;
+        this.processedDir = processedDir;
     }
 
     public void run() {
-        MVStore mvStore = new MVStore.Builder()
-                .fileName(buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString())
-                .compress()
-                .open();
-        // this is key to keep the size of the store down when building otherwise it gets enormous
-        mvStore.setVersionsToKeep(0);
-        // This is threadsafe and can be run in parallel. However, the throughput is significantly slower,
-        // to the extent that the overall time is the same, at least on my machine (4 cores) it is.
-        // This holds true both using parallelStream and a fixed thread pool executor with only 2 threads.
-        Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore);
-        alleleResources.forEach(alleleIndexer::index);
+        // process all alleleResources into separate .mv stores in the buildDir/processed directory
+        for (AlleleResource alleleResource : alleleResources) {
+            processResource(alleleResource, processedDir.resolve(buildInfo.getVersion() + "_" + alleleResource.getName() + ".mv.db"));
+        }
+    }
 
-        MVMap<AlleleKey, AlleleProperties> alleleMVMap = MvStoreUtil.openAlleleMVMap(mvStore);
-        logger.info("Written {} alleles to store", alleleMVMap.size());
-
-        // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
-        logger.info("Compacting store...");
-        mvStore.compactMoveChunks();
-
-        logger.info("Closing store");
-        mvStore.close();
+    private void processResource(AlleleResource alleleResource, Path processedResource) {
+        try (MVStore mvStore = VariantMvStores.openMvStore(processedResource);
+             Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore)) {
+            alleleIndexer.index(alleleResource);
+            logger.info("Written {} alleles to {} store", alleleIndexer.count(), alleleResource.getName());
+            // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
+            logger.info("Compacting {} store...", alleleResource.getName());
+            mvStore.compactMoveChunks();
+            logger.info("Closing {} store", alleleResource.getName());
+        } catch (IOException e) {
+            throw new IllegalStateException("Error processing resource " + alleleResource.getName(), e);
+        }
     }
 }

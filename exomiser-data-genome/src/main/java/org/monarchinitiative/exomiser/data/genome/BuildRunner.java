@@ -39,7 +39,7 @@ import java.util.*;
 
 
 /**
- * Main logic for building the exomiser hg37 genome data distribution.
+ * Main logic for building the exomiser genome data distribution.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -53,7 +53,9 @@ public class BuildRunner implements ApplicationRunner {
     public static final String BUILD_CLINVAR = "clinvar";
     public static final String BUILD_VARIANT_DB = "variants";
     public static final String BUILD_GENOME_DB = "genome";
-
+    private static final String MERGE_ONLY = "merge-only";
+    private static final String PROCESS_ONLY = "process-only";
+    // e.g. --build-dir=/data/exomiser-build/2210 --assembly=hg38 --version=2210 --variants=clinvar,gnomad-genome --just-merge
     private final Path buildDir;
     private final AssemblyResources hg19Resources;
     private final AssemblyResources hg38Resources;
@@ -71,7 +73,7 @@ public class BuildRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         logger.info("Running {}", args.getOptionNames());
-        args.getOptionNames().forEach(name -> logger.debug("{}: {}", name, args.getOptionValues(name)));
+        args.getOptionNames().forEach(name -> logger.info("{}: {}", name, args.getOptionValues(name)));
 
         // --assembly=hg19
         // --version=1711
@@ -79,7 +81,16 @@ public class BuildRunner implements ApplicationRunner {
         // AND OPTIONALLY
         // --variants
         // OR
-        // --variants=exac,gnomad-exome,dbsnp...
+        // --variants=uk10k,gnomad-exome,dbnsfp.. [--merge-only || --process-only]
+        //  merge-only will merge any existing mv stores into the final variants store
+        //  process-only will produce a separate mv store file for each processed variant resource but not merge them
+        //  These steps are used for creating the initial stores which can be updated and merged independently to create
+        //  the new variants mv.db. The rationale being that the source files (mostly VCF) are usually tens or hundreds
+        //  of GB which rarely, if ever get updated from which we only want a few fields that once processed can be
+        //  stored in a .mv.db file for a fraction of the disk space and is a lot quicker to further process.
+        //  Typically, for a data release only clinvar will have changed, so it's much quicker to process that and add it
+        //  as the final 'layer' on top of all the other pre-merged data-sources e.g.:
+        // --variants=clinvar (assuming the base {assembly}/variants/processed/{assembly}_variants.mv.db file is present to merge into)
         // --transcripts
         // OR
         // --transcripts=ensembl,ucsc
@@ -113,7 +124,7 @@ public class BuildRunner implements ApplicationRunner {
             logger.info("BUILDING ALLL THIe THINGS!");
             buildTranscriptData(buildInfo, outPath, List.of(TranscriptSource.values()));
             buildClinVarData(buildInfo, outPath, alleleResources.get("clinvar"));
-            buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()));
+            buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()), assemblyResources.variantProcessedPath());
             buildGenomeData(buildInfo, outPath, assemblyResources);
         }
 
@@ -128,10 +139,18 @@ public class BuildRunner implements ApplicationRunner {
             buildClinVarData(buildInfo, outPath, clinVarResource);
         }
 
-        if (args.containsOption(BUILD_VARIANT_DB)) {
+        // --build-dir=/data/exomiser-build/2210 --assembly=hg38 --version=2210 --variants=gnomad-mito,alfa [--merge-only || --process-only]
+        if (args.containsOption(MERGE_ONLY)) {
+            mergeVariantData(buildInfo, outPath, assemblyResources.variantProcessedPath());
+        } else if (args.containsOption(BUILD_VARIANT_DB)) {
             List<String> optionValues = parseOptionValues(args.getOptionValues(BUILD_VARIANT_DB));
             List<AlleleResource> userDefinedAlleleResources = assemblyResources.getUserDefinedResources(optionValues);
-            buildVariantData(buildInfo, outPath, userDefinedAlleleResources);
+            buildVariantData(buildInfo, outPath, userDefinedAlleleResources, assemblyResources.variantProcessedPath());
+            // --build-dir=/data/exomiser-build/2210 --assembly=hg38 --version=2210 --variants=gnomad-mito,alfa --process-only
+            if (!args.containsOption(PROCESS_ONLY)) {
+                // --build-dir=/data/exomiser-build/2210 --assembly=hg38 --version=2210 --variants=gnomad-mito,alfa
+                mergeVariantData(buildInfo, outPath, assemblyResources.variantProcessedPath());
+            }
         }
 
         if (args.containsOption(BUILD_GENOME_DB)) {
@@ -163,14 +182,20 @@ public class BuildRunner implements ApplicationRunner {
         clinVarWhiteListBuildRunner.run();
     }
 
-    private void buildVariantData(BuildInfo buildInfo, Path outPath, List<AlleleResource> userDefinedAlleleResources) {
+    private void buildVariantData(BuildInfo buildInfo, Path outPath, List<AlleleResource> userDefinedAlleleResources, Path processedPath) {
         logger.info("Downloading variant resources - {}", userDefinedAlleleResources.stream()
                 .map(AlleleResource::getName)
                 .toList());
         userDefinedAlleleResources.parallelStream().forEach(ResourceDownloader::download);
         logger.info("Building variant database...");
-        VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources);
+        VariantDatabaseBuildRunner variantDatabaseBuildRunner = new VariantDatabaseBuildRunner(buildInfo, outPath, userDefinedAlleleResources, processedPath);
         variantDatabaseBuildRunner.run();
+    }
+
+    private void mergeVariantData(BuildInfo buildInfo, Path outPath, Path variantProcessedPath) {
+        logger.info("Merging variant stores...");
+        VariantStoreMergeRunner variantStoreMergeRunner = new VariantStoreMergeRunner(buildInfo, outPath, variantProcessedPath);
+        variantStoreMergeRunner.run();
     }
 
     private void buildGenomeData(BuildInfo buildInfo, Path outPath, AssemblyResources assemblyResources) {
