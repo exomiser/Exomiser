@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,21 +32,13 @@ import java.util.Map;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AssemblyResources {
-
-    private final GenomeAssembly genomeAssembly;
-    private final Path genomeDataPath;
-    private final Path genomeProcessedPath;
-    private final Map<String, AlleleResource> alleleResources;
-    private final List<SvResource> svResources;
-
-    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Path genomeProcessedPath, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
-        this.genomeAssembly = genomeAssembly;
-        this.genomeDataPath = genomeDataPath;
-        this.genomeProcessedPath = genomeProcessedPath;
-        this.alleleResources = alleleResources;
-        this.svResources = svResources;
-    }
+public record AssemblyResources (GenomeAssembly genomeAssembly,
+                                 Path genomeDataPath,
+                                 Path genomeProcessedPath,
+                                 List<SvResource> svResources,
+                                 Path variantDataPath,
+                                 Path variantProcessedPath,
+                                 Map<String, AlleleResource> alleleResources) {
 
     public GenomeAssembly getGenomeAssembly() {
         return genomeAssembly;

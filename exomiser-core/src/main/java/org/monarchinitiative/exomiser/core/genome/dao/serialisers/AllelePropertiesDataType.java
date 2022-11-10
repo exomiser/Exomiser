@@ -38,6 +38,14 @@ public class AllelePropertiesDataType extends ProtobufDataType<AlleleProperties>
     }
 
     @Override
+    public int compare(AlleleProperties a, AlleleProperties b) {
+        if (a.equals(b)) {
+            return 0;
+        }
+        throw new UnsupportedOperationException("Unable to compare " + a + " with " + b);
+    }
+
+    @Override
     public AlleleProperties[] createStorage(int size) {
         return new AlleleProperties[size];
     }

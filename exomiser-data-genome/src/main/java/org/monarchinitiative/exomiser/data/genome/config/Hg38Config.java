@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.config;
 
-import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.indexers.DbVarDeDupOutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
@@ -44,6 +43,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ import java.util.Map;
 @Configuration
 public class Hg38Config extends ResourceConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
+    private static final Logger logger = LoggerFactory.getLogger(Hg38Config.class);
 
     private final Environment environment;
 
@@ -64,18 +65,26 @@ public class Hg38Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
-        Path genomeDataPath = genomeDataPath();
-        Path genomeProcessPath = genomeProcessPath();
-        Map<String, AlleleResource> alleleResources = hg38AlleleResources();
+        Path genomeDataPath = genomeDataDir();
+        Path genomeProcessPath = genomeProcessedDir();
         List<SvResource> svResources = hg38SvResources(genomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, alleleResources, svResources);
+        Map<String, AlleleResource> alleleResources = hg38AlleleResources();
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, svResources, variantDataDir(), variantProcessedDir(), alleleResources);
     }
 
-    public Path genomeDataPath() {
+    public Path variantDataDir() {
+        return getPathForProperty("hg38.variant-dir");
+    }
+
+    public Path variantProcessedDir() {
+        return getPathForProperty("hg38.variant-processed-dir");
+    }
+
+    public Path genomeDataDir() {
         return getPathForProperty("hg38.genome-dir");
     }
 
-    public Path genomeProcessPath() {
+    public Path genomeProcessedDir() {
         return getPathForProperty("hg38.genome-processed-dir");
     }
 
@@ -88,7 +97,7 @@ public class Hg38Config extends ResourceConfig {
         Path path = Path.of(property);
         if (!Files.exists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -98,19 +107,25 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public Map<String, AlleleResource> hg38AlleleResources() {
-        ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
+        // create variant data directories
+        variantDataDir();
+        variantProcessedDir();
+
+        Map<String, AlleleResource> alleleResources = new LinkedHashMap<>();
 
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed removed as this is now part of dbSNP
-        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        alleleResources.put("alfa", alfaAlleleResource());
+        // TOPMed removed as this is now part of gnomAD v2.1
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
         // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
         alleleResources.put("clinvar", clinVarAlleleResource());
 
-        return alleleResources.build();
+        return Collections.unmodifiableMap(alleleResources);
     }
 
     public DbSnpAlleleResource dbSnpAlleleResource() {
@@ -123,10 +138,6 @@ public class Hg38Config extends ResourceConfig {
 
     public EspHg38AlleleResource espAlleleResource() {
         return alleleResource(EspHg38AlleleResource.class, "hg38.esp");
-    }
-
-    public ExacExomeAlleleResource exacAlleleResource() {
-        return alleleResource(ExacExomeAlleleResource.class, "hg38.exac");
     }
 
     public AlleleResource dbnsfpAlleleResource() {
@@ -148,12 +159,20 @@ public class Hg38Config extends ResourceConfig {
         return alleleResource(Uk10kAlleleResource.class, "hg38.uk10k");
     }
 
-    public GnomadGenomeAlleleResource gnomadGenomeAlleleResource() {
-        return alleleResource(GnomadGenomeAlleleResource.class, "hg38.gnomad-genome");
+    public Gnomad3GenomeAlleleResource gnomadGenomeAlleleResource() {
+        return alleleResource(Gnomad3GenomeAlleleResource.class, "hg38.gnomad-genome");
     }
 
     public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
         return alleleResource(GnomadExomeAlleleResource.class, "hg38.gnomad-exome");
+    }
+
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg38.gnomad-mito");
+    }
+
+    public AlfaAlleleResource alfaAlleleResource() {
+        return alleleResource(AlfaAlleleResource.class, "hg38.alfa");
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
@@ -172,7 +191,7 @@ public class Hg38Config extends ResourceConfig {
         try {
             return new ClinVarSvResource("hg38.clinvar-sv",
                     new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
-                    new FileArchive(genomeDataPath().resolve("variant_summary.txt.gz")),
+                    new FileArchive(genomeDataDir().resolve("variant_summary.txt.gz")),
                     new ClinVarSvParser(GenomeAssembly.HG38),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("clinvar-sv.pg")));
         } catch (IOException e) {
@@ -184,7 +203,7 @@ public class Hg38Config extends ResourceConfig {
         try {
             return new DbVarSvResource("hg38.dbvar",
                     new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh38/vcf/GRCh38.variant_call.all.vcf.gz"),
-                    new TabixArchive(genomeDataPath().resolve("GRCh38.variant_call.all.vcf.gz")),
+                    new TabixArchive(genomeDataDir().resolve("GRCh38.variant_call.all.vcf.gz")),
                     new DbVarFreqParser(),
                     new DbVarDeDupOutputFileIndexer(genomeProcessPath.resolve("dbvar-sv.pg")));
         } catch (IOException e) {
@@ -231,7 +250,7 @@ public class Hg38Config extends ResourceConfig {
         try {
             return new DgvSvResource("hg38.dgv-sv",
                     new URL("http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2020-02-25.txt"),
-                    new FileArchive(genomeDataPath().resolve("dgv-hg38-variants-2020-02-25.txt")),
+                    new FileArchive(genomeDataDir().resolve("dgv-hg38-variants-2020-02-25.txt")),
                     new DgvSvFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("dgv-sv.pg")));
         } catch (IOException e) {
@@ -243,7 +262,7 @@ public class Hg38Config extends ResourceConfig {
         try {
             return new DecipherSvResource("hg38.decipher-sv",
                     new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch38.txt.gz"),
-                    new FileArchive(genomeDataPath().resolve("decipher_population_cnv_grch38.txt.gz")),
+                    new FileArchive(genomeDataDir().resolve("decipher_population_cnv_grch38.txt.gz")),
                     new DecipherSvFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("decipher-sv.pg")));
         } catch (IOException e) {

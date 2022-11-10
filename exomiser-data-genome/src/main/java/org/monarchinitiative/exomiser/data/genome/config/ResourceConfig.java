@@ -26,7 +26,6 @@ import org.springframework.core.env.Environment;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -45,13 +44,13 @@ public class ResourceConfig {
             return clazz.getConstructor(String.class, URL.class, Path.class)
                     .newInstance(namespacePrefix, resourceProperties.getResourceUrl(), resourceProperties.getResourcePath());
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Failed to create allele resource for " + namespacePrefix, e);
         }
     }
 
     protected ResourceProperties getResourceProperties(String namespacePrefix) {
         String fileName = environment.getProperty(namespacePrefix + ".file-name");
-        Path fileDir = Paths.get(environment.getProperty(namespacePrefix + ".file-dir"));
+        Path fileDir = Path.of(environment.getProperty(namespacePrefix + ".file-dir"));
         String fileUrl = environment.getProperty(namespacePrefix + ".file-url");
         return new ResourceProperties(fileName, fileDir, fileUrl);
     }

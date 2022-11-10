@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class Hg38ConfigTest {
         AssemblyResources assemblyResources = instance.hg38AssemblyResources();
         assertThat(assemblyResources.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
         assertFalse(assemblyResources.getAlleleResources().isEmpty());
-        assertThat(assemblyResources.getGenomeDataPath(), equalTo(instance.genomeDataPath()));
+        assertThat(assemblyResources.getGenomeDataPath(), equalTo(instance.genomeDataDir()));
     }
 
     @Test
@@ -64,7 +65,9 @@ public class Hg38ConfigTest {
 
         alleleResources.put("gnomad-genome", instance.gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", instance.gnomadExomeAlleleResource());
-        alleleResources.put("dbsnp", instance.dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", instance.gnomadMitoAlleleResource());
+        alleleResources.put("alfa", instance.alfaAlleleResource());
+//        alleleResources.put("dbsnp", instance.dbSnpAlleleResource());
         alleleResources.put("uk10k", instance.uk10kAlleleResource());
         // exac removed as this is part of gnomad
         alleleResources.put("esp", instance.espAlleleResource());
@@ -111,24 +114,13 @@ public class Hg38ConfigTest {
     }
 
     @Test
-    public void exacAlleleResource() throws Exception {
-        AlleleResource alleleResource = instance.exacAlleleResource();
-
-        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg38/variants/ExAC.0.3.GRCh38.vcf.gz"));
-        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
-        ExacExomeAlleleParser exacAlleleParser = (ExacExomeAlleleParser) alleleResource.getParser();
-        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.EXAC_EXOMES));
-        assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
-    }
-
-    @Test
     public void gnomadGenomeAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.gnomadGenomeAlleleResource();
 
-        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg38/variants/gnomad.genomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz"));
-        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
-        GnomadGenomeAlleleParser exacAlleleParser = (GnomadGenomeAlleleParser) alleleResource.getParser();
-        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_GENOMES));
+        Archive expectedArchive = new DirectoryArchive(Path.of("src/test/resources/hg38/variants/gnomad-genomes-3-1-2"), "", "bgz");
+        assertThat(alleleResource.getParser(), instanceOf(Gnomad3GenomeAlleleParser.class));
+        Gnomad3GenomeAlleleParser exacAlleleParser = (Gnomad3GenomeAlleleParser) alleleResource.getParser();
+        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(GnomadPopulationKey.GNOMAD_V3_1_GENOMES));
         assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
@@ -137,9 +129,9 @@ public class Hg38ConfigTest {
         AlleleResource alleleResource = instance.gnomadExomeAlleleResource();
 
         Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg38/variants/gnomad.exomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz"));
-        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
-        GnomadExomeAlleleParser exacAlleleParser = (GnomadExomeAlleleParser) alleleResource.getParser();
-        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_EXOMES));
+        assertThat(alleleResource.getParser(), instanceOf(GnomadAlleleParser.class));
+        Gnomad2ExomeAlleleParser exacAlleleParser = (Gnomad2ExomeAlleleParser) alleleResource.getParser();
+        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(GnomadPopulationKey.GNOMAD_V2_1_EXOMES));
         assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 

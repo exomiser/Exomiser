@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.config;
 
-import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.indexers.DbVarDeDupOutputFileIndexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.OutputFileIndexer;
@@ -41,6 +40,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,17 +68,25 @@ public class Hg19Config extends ResourceConfig {
     @Bean
     public AssemblyResources hg19AssemblyResources() {
         Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
-        Path genomePath = genomeDataPath();
-        Path hg19GenomeProcessPath = genomeProcessPath();
-        List<SvResource> hg19SvResources = hg19SvResources(hg19GenomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG19, genomePath, hg19GenomeProcessPath, hg19AlleleResources, hg19SvResources);
+        Path genomePath = genomeDataDir();
+        Path genomeProcessPath = genomeProcessedDir();
+        List<SvResource> hg19SvResources = hg19SvResources(genomeProcessPath);
+        return new AssemblyResources(GenomeAssembly.HG19, genomePath, genomeProcessPath, hg19SvResources, variantDataDir(), variantProcessedDir(), hg19AlleleResources);
     }
 
-    public Path genomeDataPath() {
+    public Path variantDataDir() {
+        return getPathForProperty("hg19.variant-dir");
+    }
+
+    public Path variantProcessedDir() {
+        return getPathForProperty("hg19.variant-processed-dir");
+    }
+
+    public Path genomeDataDir() {
         return getPathForProperty("hg19.genome-dir");
     }
 
-    public Path genomeProcessPath() {
+    public Path genomeProcessedDir() {
         return getPathForProperty("hg19.genome-processed-dir");
     }
 
@@ -90,7 +99,7 @@ public class Hg19Config extends ResourceConfig {
         Path path = Path.of(property);
         if (!Files.exists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -100,19 +109,24 @@ public class Hg19Config extends ResourceConfig {
     }
 
     public Map<String, AlleleResource> hg19AlleleResources() {
-        ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
+        // create variant data directories
+        variantDataDir();
+        variantProcessedDir();
+
+        Map<String, AlleleResource> alleleResources = new LinkedHashMap<>();
 
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed removed as this is now part of dbSNP
-        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        // TOPMed removed as this is now part of gnomAD v2.1
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
         // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
         alleleResources.put("clinvar", clinVarAlleleResource());
 
-        return alleleResources.build();
+        return Collections.unmodifiableMap(alleleResources);
     }
 
     public DbSnpAlleleResource dbSnpAlleleResource() {
@@ -125,10 +139,6 @@ public class Hg19Config extends ResourceConfig {
 
     public EspHg19AlleleResource espAlleleResource() {
         return alleleResource(EspHg19AlleleResource.class, "hg19.esp");
-    }
-
-    public ExacExomeAlleleResource exacAlleleResource() {
-        return alleleResource(ExacExomeAlleleResource.class, "hg19.exac");
     }
 
     public AlleleResource dbnsfpAlleleResource() {
@@ -158,6 +168,10 @@ public class Hg19Config extends ResourceConfig {
         return alleleResource(GnomadExomeAlleleResource.class, "hg19.gnomad-exome");
     }
 
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg19.gnomad-mito");
+    }
+
     private List<SvResource> hg19SvResources(Path genomeProcessPath) {
         return List.of(
                 clinvarSvResource(genomeProcessPath),
@@ -174,7 +188,7 @@ public class Hg19Config extends ResourceConfig {
         try {
             return new ClinVarSvResource("hg19.clinvar-sv",
                     new URL("https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"),
-                    new FileArchive(genomeDataPath().resolve("variant_summary.txt.gz")),
+                    new FileArchive(genomeDataDir().resolve("variant_summary.txt.gz")),
                     new ClinVarSvParser(GenomeAssembly.HG19),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("clinvar-sv.pg")));
         } catch (IOException e) {
@@ -186,7 +200,7 @@ public class Hg19Config extends ResourceConfig {
         try {
             return new DbVarSvResource("hg19.dbvar",
                     new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_assembly/GRCh37/vcf/GRCh37.variant_call.all.vcf.gz"),
-                    new TabixArchive(genomeDataPath().resolve("GRCh37.variant_call.all.vcf.gz")),
+                    new TabixArchive(genomeDataDir().resolve("GRCh37.variant_call.all.vcf.gz")),
                     new DbVarFreqParser(),
                     new DbVarDeDupOutputFileIndexer(genomeProcessPath.resolve("dbvar-sv.pg")));
         } catch (IOException e) {
@@ -200,7 +214,7 @@ public class Hg19Config extends ResourceConfig {
             //
             return new GnomadSvResource("hg19.gnomad-sv",
                     new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
-                    new TabixArchive(genomeDataPath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
+                    new TabixArchive(genomeDataDir().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
                     new GnomadSvVcfFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("gnomad-sv.pg")));
         } catch (IOException e) {
@@ -212,7 +226,7 @@ public class Hg19Config extends ResourceConfig {
         try {
             return new GonlSvResource("hg19.gonl",
                     new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
-                    new FileArchive(genomeDataPath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
+                    new FileArchive(genomeDataDir().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
                     new GonlSvFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("gonl-sv.pg")));
         } catch (IOException e) {
@@ -224,7 +238,7 @@ public class Hg19Config extends ResourceConfig {
         try {
             return new DgvSvResource("hg19.dgv-sv",
                     new URL("http://dgv.tcag.ca/dgv/docs/GRCh37_hg19_variants_2020-02-25.txt"),
-                    new FileArchive(genomeDataPath().resolve("dgv-hg19-variants-2020-02-25.txt")),
+                    new FileArchive(genomeDataDir().resolve("dgv-hg19-variants-2020-02-25.txt")),
                     new DgvSvFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("dgv-sv.pg")));
         } catch (IOException e) {
@@ -236,7 +250,7 @@ public class Hg19Config extends ResourceConfig {
         try {
             return new DecipherSvResource("hg19.decipher-sv",
                     new URL("https://www.deciphergenomics.org/files/downloads/population_cnv_grch37.txt.gz"),
-                    new FileArchive(genomeDataPath().resolve("decipher_population_cnv_grch37.txt.gz")),
+                    new FileArchive(genomeDataDir().resolve("decipher_population_cnv_grch37.txt.gz")),
                     new DecipherSvFreqParser(),
                     new OutputFileIndexer<>(genomeProcessPath.resolve("decipher-sv.pg")));
         } catch (IOException e) {
