@@ -27,60 +27,87 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Parser for the ExAC/GnomAD data sets. The data we want from these are almost identical, with variation only in the
- * output values and slight differences in the population fields. These differences are encoded in the {@link ExacPopulationKey}
+ * output values and slight differences in the population fields. These differences are encoded in the {@link GnomadPopulationKey}
  * class.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class ExacAlleleParser extends VcfAlleleParser {
+public abstract class GnomadAlleleParser extends VcfAlleleParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExacAlleleParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(GnomadAlleleParser.class);
 
-    private final List<ExacPopulationKey> populationKeys;
+    private final List<GnomadPopulationKey> populationKeys;
+    private final Set<String> requiredKeys;
 
-    public ExacAlleleParser(List<ExacPopulationKey> populationKeys, Set<String> allowedFilterValues) {
+    public GnomadAlleleParser(List<GnomadPopulationKey> populationKeys) {
+        this(populationKeys, Set.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
+    }
+
+    public GnomadAlleleParser(List<GnomadPopulationKey> populationKeys, Set<String> allowedFilterValues) {
         this.populationKeys = populationKeys;
+        this.requiredKeys = populationKeys.stream()
+                .flatMap(popKey -> Stream.of(popKey.acPop(), popKey.anPop(), popKey.homPop()))
+                .collect(Collectors.toUnmodifiableSet());
         this.allowedFilterValues = allowedFilterValues;
     }
 
-    public List<ExacPopulationKey> getPopulationKeys() {
+    public List<GnomadPopulationKey> getPopulationKeys() {
         return populationKeys;
     }
 
     //;AC_AFR=1;AC_AMR=0;AC_ASJ=0;AC_EAS=0;AC_FIN=0;AC_NFE=0;AC_OTH=0;AC_SAS=0;AC_Male=1;AC_Female=0;AN_AFR=2596;AN_AMR=2182;AN_ASJ=264;AN_EAS=2126;AN_FIN=170;AN_NFE=5270;AN_OTH=438;AN_SAS=2534;AN_Male=8378;AN_Female=7202;AF_AFR=3.85208e-04;AF_AMR=0.00000e+00;AF_ASJ=0.00000e+00;AF_EAS=0.00000e+00;AF_FIN=0.00000e+00;AF_NFE=0.00000e+00;AF_OTH=0.00000e+00;AF_SAS=0.00000e+00;AC_raw=1;AN_raw=51438;AF_raw=1.94409e-05;GC_raw=25718,1,0;GC=7789,1,0;Hom_AFR=0;Hom_AMR=0;Hom_ASJ=0;Hom_EAS=0;Hom_FIN=0;Hom_NFE=0;Hom_OTH=0;Hom_SAS=0;Hom_Male=0;Hom_Female=0;Hom_raw=0;Hom=0;POPMAX=AFR;AC_POPMAX=1;AN_POPMAX=2596;AF_POPMAX=3.85208e-04;
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        Map<String, String> alleleCounts = getAlleleCountsFromInfoField(info);
+        Map<String, String> alleleCounts = mapInfoFields(info);
+        if (alleleCounts.isEmpty()) {
+            throw new IllegalStateException("Is this a gnomAD file? Unable to find any expected keys " + requiredKeys);
+        }
+        for (GnomadPopulationKey population : populationKeys) {
+            if (!alleleCounts.containsKey(population.anPop()) && alleleCounts.containsKey(population.anPop().toUpperCase())) {
+                throw new IllegalArgumentException("Incorrect gnomAD format - looks like you're trying to parse a v2.0 format file. Expected keys of format '" + population.anPop() + "' but got '" + population.anPop().toUpperCase() + "'. Try providing a gnomAD v2.1 - v3.1 file.");
+            }
+        }
 
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
             //AC = AlleleCount, AN = AlleleNumber, freq as percentage = (AC/AN) * 100
             var frequencies = parseAllelePopulationFrequencies(alleleCounts, i);
             allele.addAllFrequencies(frequencies);
+            // TODO: for gnomAD_3.1
+            //  ##INFO=<ID=splice_ai_max_ds,Number=1,Type=Float,Description="Illumina's SpliceAI max delta score; interpreted as the probability of the variant being splice-altering.">
+//            var spliceAi = parseSpliceAiScore(alleleCounts, i);
+//            allele.addPathogenicityScore(spliceAi);
         }
         return alleles;
     }
 
     //this is the slowest part of this.
-    private Map<String, String> getAlleleCountsFromInfoField(String info) {
-        Map<String, String> exACFreqs = new HashMap<>();
-        String[] infoFields = info.split(";");
-        for (String infoField : infoFields) {
-            // freq data for each population e.g. AC_FIN=0,0;AN_FIN=6600;AC_EAS=0,1;AN_EAS=8540 etc...
-            if (infoField.startsWith(ExacPopulationKey.ALLELE_COUNT_PREFIX) || infoField.startsWith(ExacPopulationKey.ALLELE_NUMBER_PREFIX) || infoField.startsWith("Hom")) {
-                String[] exACData = infoField.split("=");
-                exACFreqs.put(exACData[0], exACData[1]);
+    private Map<String, String> mapInfoFields(String infoField) {
+        Map<String, String> result = new HashMap<>(requiredKeys.size());
+        int keysFound = 0;
+        int start = 0;
+        for (int end; (end = infoField.indexOf(';', start)) != -1;) {
+            String key = infoField.substring(start, infoField.indexOf("=", start));
+            if (requiredKeys.contains(key)) {
+                result.put(key, infoField.substring(start + key.length() + 1, end));
+            }
+            start = end + 1;
+            // stop looking if we have everything as string splitting is super-slow.
+            if (keysFound == requiredKeys.size()) {
+                return result;
             }
         }
-        return exACFreqs;
+        return result;
     }
 
     private List<AlleleProto.Frequency> parseAllelePopulationFrequencies(Map<String, String> alleleCounts, int i) {
         List<AlleleProto.Frequency> frequencies = new ArrayList<>();
-        for (ExacPopulationKey population : populationKeys) {
+        for (GnomadPopulationKey population : populationKeys) {
             int alleleCount = parseAlleleCount(alleleCounts.get(population.acPop()), i);
             if (alleleCount != 0) {
                 int alleleNumber = Integer.parseInt(alleleCounts.get(population.anPop()));

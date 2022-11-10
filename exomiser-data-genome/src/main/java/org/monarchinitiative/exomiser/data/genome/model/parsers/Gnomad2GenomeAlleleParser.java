@@ -18,19 +18,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.model.resource;
+package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import org.monarchinitiative.exomiser.data.genome.model.parsers.ExacExomeAlleleParser;
-
-import java.net.URL;
-import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExacExomeAlleleResource extends TabixAlleleResource {
+public class Gnomad2GenomeAlleleParser extends GnomadAlleleParser {
 
-    public ExacExomeAlleleResource(String name, URL resourceUrl, Path resourcePath) {
-        super(name, resourceUrl, resourcePath, new ExacExomeAlleleParser());
+    public Gnomad2GenomeAlleleParser() {
+        // See header file for gnomAD genomes data - we're keeping all but the AC0 fails
+        super(GnomadPopulationKey.GNOMAD_V2_1_GENOMES, Set.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
     }
 }

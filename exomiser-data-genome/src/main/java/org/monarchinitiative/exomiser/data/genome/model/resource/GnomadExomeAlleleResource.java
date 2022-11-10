@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.resource;
 
-import org.monarchinitiative.exomiser.data.genome.model.parsers.GnomadExomeAlleleParser;
+import org.monarchinitiative.exomiser.data.genome.model.parsers.Gnomad2ExomeAlleleParser;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -31,6 +31,6 @@ import java.nio.file.Path;
 public class GnomadExomeAlleleResource extends TabixAlleleResource {
 
     public GnomadExomeAlleleResource(String name, URL resourceUrl, Path resourcePath) {
-        super(name, resourceUrl, resourcePath, new GnomadExomeAlleleParser());
+        super(name, resourceUrl, resourcePath, new Gnomad2ExomeAlleleParser());
     }
 }

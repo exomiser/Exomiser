@@ -25,10 +25,9 @@ import java.util.Set;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GnomadGenomeAlleleParser extends ExacAlleleParser {
+public class Gnomad2ExomeAlleleParser extends GnomadAlleleParser {
 
-    public GnomadGenomeAlleleParser() {
-        // See header file for gnomAD genomes data - we're keeping all but the AC0 fails
-        super(ExacPopulationKey.GNOMAD_GENOMES, Set.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
+    public Gnomad2ExomeAlleleParser() {
+        super(GnomadPopulationKey.GNOMAD_V2_1_EXOMES, Set.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
     }
 }
