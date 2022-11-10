@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.archive;
 
+import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.vfs2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +118,10 @@ abstract class ArchiveFileReader {
         // hack for dbNSFP4 - most resources are plain text inside an archive
         if (fileObject.getName().getExtension().equals("gz")) {
             return new GZIPInputStream(fileContent.getInputStream());
+        }
+        // required for gnomad-genomes-v3 tar file containing vcf.bgz files
+        if (fileObject.getName().getExtension().equals("bgz")) {
+            return new BlockCompressedInputStream(fileContent.getInputStream());
         }
         return fileContent.getInputStream();
     }
