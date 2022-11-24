@@ -27,10 +27,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,23 +114,20 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         int matchesCandidateGene = 0;
 
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
-            PriorityType type = prioritiserResult.getPriorityType();
-            if (type == PriorityType.HIPHIVE_PRIORITY) {
-                HiPhivePriorityResult phenoScore = (HiPhivePriorityResult) prioritiserResult;
-                phiveAllSpeciesScore = phenoScore.getScore();
-                humanPhenScore = phenoScore.getHumanScore();
-                mousePhenScore = phenoScore.getMouseScore();
-                fishPhenScore = phenoScore.getFishScore();
-                walkerScore = phenoScore.getPpiScore();
-                phenoEvidence = phenoScore.getPhenotypeEvidenceText();
-                if (phenoScore.isCandidateGeneMatch()) {
+            if (prioritiserResult instanceof HiPhivePriorityResult hiPhiveResult) {
+                phiveAllSpeciesScore = hiPhiveResult.getScore();
+                humanPhenScore = hiPhiveResult.getHumanScore();
+                mousePhenScore = hiPhiveResult.getMouseScore();
+                fishPhenScore = hiPhiveResult.getFishScore();
+                walkerScore = hiPhiveResult.getPpiScore();
+                phenoEvidence = hiPhiveResult.getPhenotypeEvidenceText();
+                if (hiPhiveResult.isCandidateGeneMatch()) {
                     matchesCandidateGene = 1;
                 }
-            } else if (type == PriorityType.OMIM_PRIORITY) {
-                OmimPriorityResult omimPriorityResult = (OmimPriorityResult) prioritiserResult;
-                omimScore = omimPriorityResult.getScoreForMode(geneScore.getModeOfInheritance());
-            } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
-                walkerScore = prioritiserResult.getScore();
+            } else if (prioritiserResult instanceof OmimPriorityResult omimResult) {
+                omimScore = omimResult.getScoreForMode(geneScore.getModeOfInheritance());
+            } else if (prioritiserResult instanceof ExomeWalkerPriorityResult walkerResult) {
+                walkerScore = walkerResult.getScore();
             }
         }
         List<String> values = new ArrayList<>(16);

@@ -205,7 +205,7 @@ public class VcfResultsWriter implements ResultsWriter {
         fields.add(String.valueOf(rank));
         String gnomadString = ve.toGnomad();
         fields.add(gnomadString + "_" + moiAbbreviation);
-        fields.add(geneIdentifier.getGeneSymbol());
+        fields.add(geneIdentifier.getGeneSymbol().replace(" ", "_"));
         fields.add(geneIdentifier.getEntrezId());
         fields.add(moiAbbreviation);
         fields.add(decimalFormat.format(geneScore.pValue()));
