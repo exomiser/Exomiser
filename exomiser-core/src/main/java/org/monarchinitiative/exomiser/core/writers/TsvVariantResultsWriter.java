@@ -66,8 +66,8 @@ import static java.util.stream.Collectors.*;
 public class TsvVariantResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvVariantResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_VARIANT;
-    private final CSVFormat csvFormat = CSVFormat.newFormat('\t')
-            .withQuote(null)
+    public static final CSVFormat EXOMISER_VARIANTS_TSV_FORMAT = CSVFormat.newFormat('\t')
+            .withSkipHeaderRecord()
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
             .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
@@ -82,7 +82,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Path.of(outFileName);
 
-        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.csvFormat)) {
+        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), EXOMISER_VARIANTS_TSV_FORMAT)) {
             this.writeData(analysisResults, outputSettings, printer);
         } catch (Exception var12) {
             logger.error("Unable to write results to file {}", outFileName, var12);
@@ -94,7 +94,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     public String writeString(AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder output = new StringBuilder();
 
-        try (CSVPrinter printer = new CSVPrinter(output, this.csvFormat)) {
+        try (CSVPrinter printer = new CSVPrinter(output, EXOMISER_VARIANTS_TSV_FORMAT)) {
             this.writeData(analysisResults, outputSettings, printer);
         } catch (Exception var10) {
             logger.error("Unable to write results to string {}", output, var10);
@@ -122,7 +122,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private List<Object> buildVariantRecord(int rank, VariantEvaluation ve, GeneScore geneScore) {
-        List<Object> fields = new ArrayList<>(csvFormat.getHeader().length);
+        List<Object> fields = new ArrayList<>(EXOMISER_VARIANTS_TSV_FORMAT.getHeader().length);
         GeneIdentifier geneIdentifier = geneScore.getGeneIdentifier();
         ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
         String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();

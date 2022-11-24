@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.codehaus.groovy.ast.expr.UnaryMinusExpression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,7 +39,12 @@ import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVcfReader;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 
@@ -71,7 +77,7 @@ public class VcfResultsWriterTest {
             ##INFO=<ID=Exomiser,Number=.,Type=String,Description="A pipe-separated set of values for the proband allele(s) from the record with one per compatible MOI following the format: {RANK|ID|GENE_SYMBOL|ENTREZ_GENE_ID|MOI|P-VALUE|EXOMISER_GENE_COMBINED_SCORE|EXOMISER_GENE_PHENO_SCORE|EXOMISER_GENE_VARIANT_SCORE|EXOMISER_VARIANT_SCORE|CONTRIBUTING_VARIANT|WHITELIST_VARIANT|FUNCTIONAL_CLASS|HGVS|EXOMISER_ACMG_CLASSIFICATION|EXOMISER_ACMG_EVIDENCE|EXOMISER_ACMG_DISEASE_ID|EXOMISER_ACMG_DISEASE_NAME}">
             """;
 
-    private static final String CHR_7_CONTIG_HEADER = "##contig=<ID=10,length=135534747,assembly=GRCh37.p13>\n";
+    private static final String CHR_7_CONTIG_HEADER = "##contig=<ID=7,length=159138663,assembly=GRCh37.p13>\n";
 
     private static final String CHR_10_CONTIG_HEADER = "##contig=<ID=10,length=135534747,assembly=GRCh37.p13>\n";
 
@@ -107,8 +113,8 @@ public class VcfResultsWriterTest {
     private VariantEvaluation fgfr2ContributingVariant;
     private VariantEvaluation shhIndelVariant;
 
-    private Gene fgfr2Gene;
-    private Gene shhGene;
+    Gene fgfr2Gene = setUpFgfr2Gene();
+    Gene shhGene = setUpShhGene();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -120,26 +126,29 @@ public class VcfResultsWriterTest {
         setUpShhGene();
     }
 
-    private void setUpShhGene() {
+    private Gene setUpShhGene() {
+
         shhIndelVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CTT", SampleGenotype.het(), 30, 1.0);
 
-        shhGene = TestFactory.newGeneSHH();
+        Gene shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariant);
         shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        return shhGene;
     }
 
-    private void setUpFgfr2Gene() {
+    private Gene setUpFgfr2Gene() {
         fgfr2PassMissenseVariant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
         fgfr2PassMissenseVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
         fgfr2PassMissenseVariant.contributesToGeneScoreUnderMode(ModeOfInheritance.ANY);
         fgfr2ContributingVariant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
         fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
         fgfr2ContributingVariant.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        fgfr2Gene = TestFactory.newGeneFGFR2();
+        Gene fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
         fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         GeneScore geneScore = GeneScore.builder().combinedScore(1f).phenotypeScore(1f).variantScore(fgfr2ContributingVariant.getVariantScore()).geneIdentifier(fgfr2Gene.getGeneIdentifier()).contributingVariants(List.of(fgfr2ContributingVariant)).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build();
         fgfr2Gene.addGeneScore(geneScore);
+        return fgfr2Gene;
     }
 
     private AnalysisResults buildAnalysisResults(Sample sample, Analysis analysis, Gene... genes) {
@@ -157,7 +166,7 @@ public class VcfResultsWriterTest {
                 .sample(sample)
                 .analysis(analysis)
                 .build();
-        assertThat(instance.writeString(analysisResults, settings), equalTo(METADATA_HEADER));
+        assertThat(instance.writeString(analysisResults, settings), equalTo(METADATA_HEADER + SAMPLE_HEADER));
     }
 
     /* test writing out unannotated variants */
@@ -178,23 +187,76 @@ public class VcfResultsWriterTest {
                 .build();
 
         String vcf = instance.writeString(analysisResults, settings);
-        final String expected = METADATA_HEADER
+        final String expected = METADATA_HEADER + SAMPLE_HEADER
                 + "5\t11\t.\tC\tT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
         assertThat(vcf, equalTo(expected));
     }
 
+    private AnalysisResults buildAnalysisResults() {
+
+        VariantEvaluation fgfr2PassMissenseVariant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
+        fgfr2PassMissenseVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        fgfr2PassMissenseVariant.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_G_AFR, 0.05f)));
+        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        VariantEvaluation fgfr2ContributingVariant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
+        fgfr2ContributingVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 0.95f)));
+        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+
+        Gene fgfr2Gene = TestFactory.newGeneFGFR2();
+        fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
+        fgfr2Gene.addVariant(fgfr2ContributingVariant);
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        GeneScore geneScore = GeneScore.builder()
+                .combinedScore(1f)
+                .phenotypeScore(1f)
+                .variantScore(fgfr2ContributingVariant.getVariantScore())
+                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
+                .contributingVariants(List.of(fgfr2ContributingVariant))
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        fgfr2Gene.addGeneScore(geneScore);
+        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        Gene shhGene = buildShhGene();
+
+        Sample sample = Sample.builder()
+                .vcfPath(Paths.get("src/test/resources/minimal.vcf"))
+                .build();
+
+        return AnalysisResults.builder()
+                .genes(List.of(fgfr2Gene, shhGene))
+                .sample(sample)
+                .build();
+    }
+
+    private static Gene buildShhGene() {
+        Gene shhGene = TestFactory.newGeneSHH();
+        VariantEvaluation shhFailedVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CT", SampleGenotype.het(), 30, 1.0);
+        shhFailedVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
+        shhGene.addVariant(shhFailedVariant);
+        return shhGene;
+    }
+
     /* test writing out annotated variants in two genes */
     @Test
     public void testWriteAnnotatedVariantsNoFiltersApplied() {
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene, shhGene);
-        fgfr2Gene.addVariant(fgfr2ContributingVariant);
+
+        AnalysisResults analysisResults = buildAnalysisResults();
 
         String vcf = instance.writeString(analysisResults, settings);
         final String expected = METADATA_HEADER
-                + "10\t123256214\t.\tA\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89\tGT:RD\t0/1:30\n"
-                + "10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=1.0\tGT:RD\t0/1:30\n"
-                + "7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarScore=1.0\tGT:RD\t0/1:30\n";
+                + """
+                     ##contig=<ID=7,length=159138663,assembly=GRCh37.p13>
+                     ##contig=<ID=10,length=135534747,assembly=GRCh37.p13>
+                     #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample
+                     7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={2|7-155604800-C-CT_ANY|SHH|6469|ANY|1.0000|0.0000|0.0000|0.0000|1.0000|0|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
+                     10\t123256214\t.\tA\tG\t2.20\tPASS\tExomiser={1|10-123256214-A-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.5958|0|0|missense_variant|FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
+                     10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
+                     """;
         assertThat(vcf, equalTo(expected));
     }
 
@@ -212,15 +274,17 @@ public class VcfResultsWriterTest {
                 .build();
 
         Gene gene = new Gene(incorrectGeneSymbol);
-        gene.addVariant(shhIndelVariant);
+        VariantEvaluation shhFailedVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CT", SampleGenotype.het(), 30, 1.0);
+        shhFailedVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
+        gene.addVariant(shhFailedVariant);
         gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
 
         String vcf = instance.writeString(analysisResults, settings);
-        final String expected = METADATA_HEADER
-                + "7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarScore=1.0\tGT:RD\t0/1:30\n";
+        final String expected = METADATA_HEADER + CHR_7_CONTIG_HEADER + SAMPLE_HEADER
+                + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_ANY|SHH_alpha_spaces|6469|ANY|1.0000|0.0000|0.0000|0.0000|1.0000|0|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -411,8 +475,8 @@ public class VcfResultsWriterTest {
         String expected = METADATA_HEADER
                 + "##contig=<ID=1,length=249250621,assembly=GRCh37.p13>\n"
                 + SAMPLE_HEADER
-                + "1\t120612040\t.\tT\tTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\\tGT:RD\\t0/1:30\n"
-                + "1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCTCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\\tGT:RD\t1/1:30\n"
+                + "1\t120612040\t.\tT\tTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n"
+                + "1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCTCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\tGT:RD\t1/1:30\n"
                 ;
 //                + "1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0\tGT:RD\t0/1:30\n"
 //                + "1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0\tGT:RD\t1/1:30\n";

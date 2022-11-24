@@ -26,11 +26,9 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -39,16 +37,17 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
-import org.monarchinitiative.exomiser.core.writers.OutputSettings.Builder;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -62,196 +61,91 @@ public class TsvVariantResultsWriterTest {
 
     private final TsvVariantResultsWriter instance = new TsvVariantResultsWriter();
 
-    private static final String VARIANT_DETAILS_HEADER = "#CHROM\tPOS\tREF\tALT\tQUAL\tFILTER\tGENOTYPE\tCOVERAGE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_GENE\t";
-    private static final String PATHOGENICITY_SCORES_HEADER = "CADD(>0.483)\tPOLYPHEN(>0.956|>0.446)\tMUTATIONTASTER(>0.94)\tSIFT(<0.06)\tREMM\t";
-    private static final String FREQUENCY_DATA_HEADER = "DBSNP_ID\tMAX_FREQUENCY\tDBSNP_FREQUENCY\t"
-            + "EVS_EA_FREQUENCY\tEVS_AA_FREQUENCY\t"
-            + "EXAC_AFR_FREQ\tEXAC_AMR_FREQ\tEXAC_EAS_FREQ\tEXAC_FIN_FREQ\tEXAC_NFE_FREQ\tEXAC_SAS_FREQ\tEXAC_OTH_FREQ\t";
-    private static final String EXOMISER_SCORES_HEADER =
-            "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\tCONTRIBUTING_VARIANT\n";
+    private static final String HEADER = "#RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_VARIANT_SCORE\tCONTRIBUTING_VARIANT\tWHITELIST_VARIANT\tVCF_ID\tRS_ID\tCONTIG\tSTART\tEND\tREF\tALT\tCHANGE_LENGTH\tQUAL\tFILTER\tGENOTYPE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_ACMG_CLASSIFICATION\tEXOMISER_ACMG_EVIDENCE\tEXOMISER_ACMG_DISEASE_ID\tEXOMISER_ACMG_DISEASE_NAME\tCLINVAR_ALLELE_ID\tCLINVAR_PRIMARY_INTERPRETATION\tCLINVAR_STAR_RATING\tGENE_CONSTRAINT_LOEUF\tGENE_CONSTRAINT_LOEUF_LOWER\tGENE_CONSTRAINT_LOEUF_UPPER\tMAX_FREQ_SOURCE\tMAX_FREQ\tALL_FREQ\tMAX_PATH_SOURCE\tMAX_PATH\tALL_PATH\n";
 
-    private static final String HEADER = "#RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_VARIANT_SCORE\tCONTRIBUTING_VARIANT\tWHITELIST_VARIANT\tVCF_ID\tRS_ID\tCONTIG\tSTART\tEND\tREF\tALT\tCHANGE_LENGTH\tQUAL\tFILTER\tGENOTYPE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_ACMG_CLASSIFICATION\tEXOMISER_ACMG_EVIDENCE\tEXOMISER_ACMG_DISEASE_ID\tEXOMISER_ACMG_DISEASE_NAME\tCLINVAR_ALLELE_ID\tCLINVAR_PRIMARY_INTERPRETATION\tCLINVAR_STAR_RATING\tGENE_CONSTRAINT_LOEUF\tGENE_CONSTRAINT_LOEUF_LOWER\tGENE_CONSTRAINT_LOEUF_UPPER\tMAX_FREQ_SOURCE\tMAX_FREQ\tALL_FREQ\tMAX_PATH_SOURCE\tMAX_PATH\tALL_PATH\\n";
+    private AnalysisResults buildAnalysisResults() {
 
-    private static final String FAIL_VARIANT_DETAILS = "7\t155604800\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
-    private static final String PASS_VARIANT_DETAILS = "10\t123256214\tA\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)\tFGFR2";
-    private static final String CONTRIBUTING_VARIANT_DETAILS = "10\t123256215\tT\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)\tFGFR2";
+        VariantEvaluation fgfr2PassMissenseVariant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
+        fgfr2PassMissenseVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        fgfr2PassMissenseVariant.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_G_AFR, 0.05f)));
+        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-    private static final String NO_PATH_SCORES = "\t.\t.\t.\t.\t.";
-    private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";
-    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
-    private static final String PASS_VARIANT_EXOMISER_SCORES = "\t0.89\t0.0\t0.0\t0.0";
-    private static final String CONTRIBUTING_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
+        VariantEvaluation fgfr2ContributingVariant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
+        fgfr2ContributingVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        fgfr2ContributingVariant.setPathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 0.95f)));
+        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-    private static final String CONTRIBUTING_VARIANT_FIELD = "\tCONTRIBUTING_VARIANT";
-    private static final String NON_CONTRIBUTING_VARIANT_FIELD = "\t.";
+        Gene fgfr2Gene = TestFactory.newGeneFGFR2();
+        fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
+        fgfr2Gene.addVariant(fgfr2ContributingVariant);
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        GeneScore geneScore = GeneScore.builder()
+                .combinedScore(1f)
+                .phenotypeScore(1f)
+                .variantScore(fgfr2ContributingVariant.getVariantScore())
+                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
+                .contributingVariants(List.of(fgfr2ContributingVariant))
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        fgfr2Gene.addGeneScore(geneScore);
+        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-    private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD + "\n";
-    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t0.89\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD + "\n";
-    private static final String CONTRIBUTING_VARIANT_LINE = CONTRIBUTING_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + CONTRIBUTING_VARIANT_EXOMISER_SCORES + CONTRIBUTING_VARIANT_FIELD + "\n";
+        Gene shhGene = TestFactory.newGeneSHH();
+        VariantEvaluation shhFailedVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CT", SampleGenotype.het(), 30, 1.0);
+        shhFailedVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
+        shhGene.addVariant(shhFailedVariant);
 
-    private final Builder settingsBuilder = OutputSettings.builder()
-            .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
-    private final Analysis analysis = Analysis.builder().build();
-    private final Sample sample = Sample.builder().build();
-    private AnalysisResults analysisResults;
-
-    @BeforeEach
-    public void before() {
-        Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.addVariant(makePassVariant());
-
-        Gene shh = TestFactory.newGeneSHH();
-        shh.addVariant(makeFailVariant());
-
-        analysisResults = AnalysisResults.builder()
-                .sample(sample)
-                .analysis(analysis)
-                .genes(Arrays.asList(fgfr2, shh))
+        return AnalysisResults.builder()
+                .genes(List.of(fgfr2Gene, shhGene))
                 .build();
     }
 
-    private VariantEvaluation makeFailVariant() {
-        VariantEvaluation variant = TestVariantFactory.buildVariant(7, 155604800, "C", "CTT", SampleGenotype.het(), 30, 1.0);
-        variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
-        return variant;
-    }
-
-    private VariantEvaluation makePassVariant() {
-        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
-        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
-        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(0.89f)));
-        return variant;
-    }
-
-    private VariantEvaluation makeContributingVariant() {
-        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
-        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
-        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.of(1f)));
-        return variant;
-    }
-
     @Test
-    public void testWriteProducesFileWithCorrectName() throws Exception {
-        Path tempFolder = Files.createTempDirectory("exomiser_test");
+    public void testWriteProducesFileWithCorrectName(@TempDir Path tempFolder) {
+        AnalysisResults analysisResults = buildAnalysisResults();
+
         String outPrefix = tempFolder.resolve("testWrite").toString();
-
-        OutputSettings settings = settingsBuilder.outputPrefix(outPrefix).build();
-        instance.writeFile(analysisResults, settings);
-        Path arOutputPath = tempFolder.resolve("testWrite_AR.variants.tsv");
-        assertThat(arOutputPath.toFile().exists(), is(true));
-        assertThat(arOutputPath.toFile().delete(), is(true));
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).outputPrefix(outPrefix).build();
 
         instance.writeFile(analysisResults, settings);
-        Path adOutputPath = tempFolder.resolve("testWrite_AD.variants.tsv");
-        assertThat(adOutputPath.toFile().exists(), is(true));
-        assertThat(adOutputPath.toFile().delete(), is(true));
 
-        Files.delete(tempFolder);
+        Path outputPath = tempFolder.resolve("testWrite.variants.tsv");
+        assertThat(Files.exists(outputPath), is(true));
     }
 
     @Test
-    public void testWriteStringUnderAnyInheritanceModeContainsAllVariants() {
-        OutputSettings settings = settingsBuilder.build();
+    public void testWriteStringContainsAllVariants() {
+        AnalysisResults analysisResults = buildAnalysisResults();
 
-        String outString = instance.writeString(analysisResults, settings);
-        String expected = HEADER
-                + PASS_VARIANT_LINE
-                + FAIL_VARIANT_LINE;
-        assertThat(outString, equalTo(expected));
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT))
+                .build();
+
+        String expected = HEADER +
+                """
+                1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27				REVEL	0.95	REVEL=0.95
+                1	10-123256214-A-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.5958	0	0			10	123256214	123256214	A	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27	GNOMAD_G_AFR	0.05	GNOMAD_G_AFR=0.05\t\t\t	
+                2	7-155604800-C-CT_ANY	SHH	6469	ANY	1.0000	0.0000	0.0000	0.0000	1.0000	0	0			7	155604800	155604800	C	CT	1	1.0000	var-effect	0/1	frameshift_variant	SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)	NOT_AVAILABLE					NOT_PROVIDED	0	0.0	0.0	0.242\t\t\t\t\t\t
+                """;
+        assertThat(instance.writeString(analysisResults, settings), equalTo(expected));
     }
 
     @Test
     public void testWriteContributingVariantsOnlyStringContainsOnlyContributingVariants() {
-        OutputSettings settings = settingsBuilder.outputContributingVariantsOnly(true).build();
+        AnalysisResults results = buildAnalysisResults();
 
-        Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        VariantEvaluation passVariant = makePassVariant();
-        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2.addVariant(passVariant);
-
-        VariantEvaluation contributingVariant = makeContributingVariant();
-        contributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        contributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-
-        GeneScore geneScore = GeneScore.builder()
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
-                .contributingVariants(List.of(contributingVariant))
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT))
+                .outputContributingVariantsOnly(true)
                 .build();
 
-        fgfr2.addVariant(contributingVariant);
-        fgfr2.addGeneScore(geneScore);
-
-        AnalysisResults results = AnalysisResults.builder()
-                .sample(sample)
-                .analysis(analysis)
-                .genes(Collections.singletonList(fgfr2))
-                .build();
-
-        String outString = instance.writeString(results, settings);
-        String expected = HEADER
-                + CONTRIBUTING_VARIANT_LINE;
-        assertThat(outString, equalTo(expected));
+        String expected =
+                HEADER +
+                """
+                1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27				REVEL	0.95	REVEL=0.95
+                """;
+        assertThat(instance.writeString(results, settings), equalTo(expected));
     }
-
-    @Test
-    public void testWriteContributingVariantsOnlyStringIsEmptyForIncompatibleMode() {
-        OutputSettings settings = settingsBuilder.outputContributingVariantsOnly(true).build();
-
-        Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        VariantEvaluation passVariant = makePassVariant();
-        passVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2.addVariant(passVariant);
-
-        VariantEvaluation contributingVariant = makeContributingVariant();
-        contributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        contributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-
-        GeneScore geneScore = GeneScore.builder()
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
-                .contributingVariants(List.of(contributingVariant))
-                .build();
-
-        fgfr2.addVariant(contributingVariant);
-        fgfr2.addGeneScore(geneScore);
-
-        AnalysisResults results = AnalysisResults.builder()
-                .sample(sample)
-                .analysis(analysis)
-                .genes(Collections.singletonList(fgfr2))
-                .build();
-
-        String outString = instance.writeString(results, settings);
-        String expected = HEADER;
-        assertThat(outString, equalTo(expected));
-    }
-
-    @Test
-    public void testContributingVariantIsIndicated() {
-        OutputSettings settings = settingsBuilder.build();
-        Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        VariantEvaluation contributing = makeContributingVariant();
-        contributing.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        contributing.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        fgfr2.addVariant(contributing);
-
-        AnalysisResults results = AnalysisResults.builder()
-                .sample(sample)
-                .analysis(analysis)
-                .genes(Collections.singletonList(fgfr2))
-                .build();
-
-        String outString = instance.writeString(results, settings);
-        String expected = HEADER +
-                CONTRIBUTING_VARIANT_LINE;
-        assertThat(outString, equalTo(expected));
-    }
-
 }
