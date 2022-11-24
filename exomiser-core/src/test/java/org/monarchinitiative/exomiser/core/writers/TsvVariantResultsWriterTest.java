@@ -103,22 +103,17 @@ public class TsvVariantResultsWriterTest {
 
 
     @Test
-    public void testWriteProducesFileWithCorrectName() throws Exception {
-        Path tempFolder = Files.createTempDirectory("exomiser_test");
+    public void testWriteProducesFileWithCorrectName(@TempDir Path tempFolder) {
+        AnalysisResults analysisResults = buildAnalysisResults();
+
         String outPrefix = tempFolder.resolve("testWrite").toString();
-
-        OutputSettings settings = settingsBuilder.outputPrefix(outPrefix).build();
-        instance.writeFile(analysisResults, settings);
-        Path arOutputPath = tempFolder.resolve("testWrite_AR.variants.tsv");
-        assertThat(arOutputPath.toFile().exists(), is(true));
-        assertThat(arOutputPath.toFile().delete(), is(true));
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).outputPrefix(outPrefix).build();
 
         instance.writeFile(analysisResults, settings);
-        Path adOutputPath = tempFolder.resolve("testWrite_AD.variants.tsv");
-        assertThat(adOutputPath.toFile().exists(), is(true));
-        assertThat(adOutputPath.toFile().delete(), is(true));
 
-        Files.delete(tempFolder);
+        Path outputPath = tempFolder.resolve("testWrite.variants.tsv");
+        assertThat(Files.exists(outputPath), is(true));
     }
 
     @Test
