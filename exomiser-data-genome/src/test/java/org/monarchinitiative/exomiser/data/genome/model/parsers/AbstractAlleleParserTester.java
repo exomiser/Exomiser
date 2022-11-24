@@ -42,7 +42,10 @@ public abstract class AbstractAlleleParserTester<T extends AlleleParser> {
 
     public void assertParseLineEquals(String line, List<Allele> expectedAlleles) {
         List<Allele> alleles = parseLine(line);
+        assertParseResultsEquals(alleles, expectedAlleles);
+    }
 
+    public static void assertParseResultsEquals(List<Allele> alleles, List<Allele> expectedAlleles) {
         assertThat(alleles.size(), equalTo(expectedAlleles.size()));
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
@@ -51,6 +54,8 @@ public abstract class AbstractAlleleParserTester<T extends AlleleParser> {
             assertThat(allele.getRsId(), equalTo(expected.getRsId()));
             assertThat(allele.getClinVarData(), equalTo(expected.getClinVarData()));
             assertThat(allele.getValues(), equalTo(expected.getValues()));
+            assertThat(allele.getFrequencies(), equalTo(expected.getFrequencies()));
+            assertThat(allele.getPathogenicityScores(), equalTo(expected.getPathogenicityScores()));
         }
     }
 
