@@ -101,6 +101,7 @@ public class TsvVariantResultsWriterTest {
                 .build();
     }
 
+
     @Test
     public void testWriteProducesFileWithCorrectName() throws Exception {
         Path tempFolder = Files.createTempDirectory("exomiser_test");
