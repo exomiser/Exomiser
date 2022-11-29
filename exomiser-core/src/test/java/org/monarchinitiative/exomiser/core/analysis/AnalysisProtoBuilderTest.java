@@ -68,6 +68,10 @@ class AnalysisProtoBuilderTest {
                 .setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.getDefaultInstance())
                 .build();
 
+        AnalysisProto.AnalysisStep blacklistFilter = AnalysisProto.AnalysisStep.newBuilder()
+                .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.getDefaultInstance())
+                .build();
+
         PriorityType priorityType = PriorityType.PHIVE_PRIORITY;
         float minPriorityScore = 0.501f;
 
@@ -93,6 +97,7 @@ class AnalysisProtoBuilderTest {
                 .addPhivePrioritiser()
                 .addPriorityScoreFilter(priorityType, minPriorityScore)
                 .addRegulatoryFeatureFilter()
+                .addGeneblacklistFilter()
                 .addFrequencyFilter(frequencyCutOff)
                 .addInheritanceFilter()
                 .build();
@@ -119,6 +124,7 @@ class AnalysisProtoBuilderTest {
                 phivePrioritiser,
                 priorityScoreFilter,
                 regulatoryFeatureFilter,
+                blacklistFilter,
                 frequencyFilter,
                 inheritanceFilter
         )));

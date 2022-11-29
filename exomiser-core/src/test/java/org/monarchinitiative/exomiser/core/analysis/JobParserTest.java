@@ -44,9 +44,9 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -453,6 +453,16 @@ class JobParserTest {
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
 
         assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))))));
+    }
+
+    @Test
+    public void testGeneBlacklistFilter() {
+        AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
+                .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
+                .build();
+        Analysis analysis = initialiseAnalysisWithStep(analysisStep);
+
+        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneBlacklistFilter())));
     }
 
     @Test
