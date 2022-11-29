@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.cli;
 
-import org.apache.commons.cli.CommandLine;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.cli.command.*;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
@@ -50,11 +50,18 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        CommandLine commandLine = CommandLineOptionsParser.parse(args);
-        CommandLineJobReader jobReader = new CommandLineJobReader();
-        List<JobProto.Job> jobs = jobReader.readJobs(commandLine);
+//        CommandLine commandLine = CommandLineOptionsParser.parse(args);
+//        CommandLineJobReader jobReader = new CommandLineJobReader();
+//        List<JobProto.Job> jobs = jobReader.readJobs(commandLine);
+
+        // this should be in a fit state to run without all the try... catch boilerplate as that was already run in Main
+        List<JobProto.Job> jobs = CommandLineParser.parseArgs(new ExomiserCommands(), args).stream()
+                .flatMap(JobParserCommand.parseJobStream())
+                .toList();
+
         logger.info("Exomiser running...");
         runJobs(jobs);
+        logger.info("Exomising finished - Bye!");
     }
 
     private void runJobs(List<JobProto.Job> jobs) {

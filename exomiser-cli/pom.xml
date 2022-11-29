@@ -51,6 +51,11 @@
             <artifactId>commons-cli</artifactId>
             <version>1.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.0</version>
+        </dependency>
         <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>

@@ -19,7 +19,7 @@
  */
 package org.monarchinitiative.exomiser.cli;
 
-import org.apache.commons.cli.CommandLine;
+import org.monarchinitiative.exomiser.cli.command.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -42,17 +42,21 @@ public class Main {
     public static void main(String[] args) {
         // Parse the input to check for help etc. in order to fail fast before launching the context.
         // This does mean the input needs parsing twice - once here and again in the application CommandLineRunner.
-        CommandLine commandLine = CommandLineOptionsParser.parse(args);
-        if (commandLine.hasOption("help") || commandLine.getOptions().length == 0) {
-            CommandLineOptionsParser.printHelp();
-            System.exit(0);
-        }
+        // It also means that this is a lot more manual splitting the parsing and running of commands
 
-        // all ok so far - try launching the app
-        Locale.setDefault(Locale.UK);
-        SpringApplication.run(Main.class, args).close();
+        // help and version commands will return an empty Optional
+        CommandLineParser.<ExomiserCommand>parseArgs(new ExomiserCommands(), args).ifPresent(exomiserCommand -> {
+            if (exomiserCommand instanceof DiffReanalysisCommand diffReanalysisCommand) {
+                // don't start the Spring context to run Exomiser here as it's not needed and takes several seconds
+                System.exit(diffReanalysisCommand.call());
+            } else {
+                // all ok so far - try launching the app
+                Locale.setDefault(Locale.UK);
+                System.exit(SpringApplication.exit(SpringApplication.run(Main.class, args)));
+            }
+        });
 
-        logger.info("Exomising finished - Bye!");
+        System.exit(0);
     }
 
 }
