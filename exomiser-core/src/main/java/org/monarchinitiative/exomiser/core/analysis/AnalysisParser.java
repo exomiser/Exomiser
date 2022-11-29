@@ -430,6 +430,8 @@ public class AnalysisParser {
                     return makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
                 case "regulatoryFeatureFilter":
                     return analysisBuilder.addRegulatoryFeatureFilter();
+                case "geneBlacklistFilter":
+                    return makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
                 case "omimPrioritiser":
                     return analysisBuilder.addOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -635,6 +637,10 @@ public class AnalysisParser {
                 return analysisBuilder;
             }
             return analysisBuilder.addInheritanceFilter();
+        }
+
+        private AnalysisBuilder makeGeneBlacklistFilter(Map<String, String> options, AnalysisBuilder analysisBuilder) {
+            return analysisBuilder.addGeneblacklistFilter();
         }
 
         private AnalysisBuilder makeHiPhivePrioritiser(Map<String, String> options, AnalysisBuilder analysisBuilder) {
