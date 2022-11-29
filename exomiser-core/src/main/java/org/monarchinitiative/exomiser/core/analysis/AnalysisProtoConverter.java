@@ -107,6 +107,13 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setGenePanelFilter(FiltersProto.GenePanelFilter.newBuilder().addAllGeneSymbols(geneSymbolFilter.getGeneSymbols()))
                     .build();
         }
+
+        if (analysisStep instanceof GeneBlacklistFilter geneBlacklistFilter) {
+           return stepBuilder
+                   .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
+                   .build();
+        }
+
         if (analysisStep instanceof InheritanceFilter) {
             return stepBuilder
                     .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder().build())

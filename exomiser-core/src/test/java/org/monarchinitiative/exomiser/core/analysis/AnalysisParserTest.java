@@ -488,6 +488,13 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisGeneBlacklistfilter(){
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("geneBlacklistFilter: {}"));
+        analysisSteps.add(new GeneBlacklistFilter());
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
     public void testParseAnalysisStepInheritanceFilterDefinedMode() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("inheritanceFilter: {}"));
         analysisSteps.add(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.X_DOMINANT, ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.MITOCHONDRIAL));

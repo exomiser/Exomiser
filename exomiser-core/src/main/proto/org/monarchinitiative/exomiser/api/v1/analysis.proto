@@ -65,6 +65,7 @@ message AnalysisStep {
         PathogenicityFilter pathogenicity_filter = 8;
         KnownVariantFilter known_variant_filter = 9;
         InheritanceFilter inheritance_filter = 10;
+        GeneBlacklistFilter gene_blacklist_filter = 17;
         // prioritisers
         OmimPrioritiser omim_prioritiser = 11;
         HiPhivePrioritiser hi_phive_prioritiser = 12;

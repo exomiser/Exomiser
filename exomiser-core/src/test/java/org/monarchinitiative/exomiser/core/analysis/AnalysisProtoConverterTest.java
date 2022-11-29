@@ -73,6 +73,7 @@ class AnalysisProtoConverterTest {
     @Test
     void testToProtoExomeAnalysisSteps() {
         Analysis analysis = Analysis.builder()
+                .addStep((new GeneBlacklistFilter()))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
                 .addStep(new InheritanceFilter())
@@ -81,6 +82,7 @@ class AnalysisProtoConverterTest {
                 .build();
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
         AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()))
@@ -97,6 +99,7 @@ class AnalysisProtoConverterTest {
                 .addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))
                 .addStep(new FailedVariantFilter())
                 .addStep(new RegulatoryFeatureFilter())
+                .addStep(new GeneBlacklistFilter())
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
                 .addStep(new InheritanceFilter())
@@ -108,6 +111,7 @@ class AnalysisProtoConverterTest {
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder().setPriorityType("HIPHIVE_PRIORITY").setMinPriorityScore(0.501f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFailedVariantFilter(FiltersProto.FailedVariantFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()))

@@ -39,8 +39,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.*;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -268,6 +267,7 @@ public class AnalysisBuilderTest {
         EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         float frequencyCutOff = 2f;
         FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
+        GeneBlacklistFilter geneBlacklistFilter = new GeneBlacklistFilter();
 
         PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser();
 
@@ -284,7 +284,8 @@ public class AnalysisBuilderTest {
                 .addPhivePrioritiser()
                 .addPriorityScoreFilter(priorityType, minPriorityScore)
                 .addRegulatoryFeatureFilter()
-                .addFrequencyFilter(frequencyCutOff);
+                .addFrequencyFilter(frequencyCutOff)
+                .addGeneblacklistFilter();
 
         Analysis analysis = analysisBuilder.build();
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
@@ -295,8 +296,9 @@ public class AnalysisBuilderTest {
         assertThat(analysis.getAnalysisSteps(), hasItem(frequencyFilter));
         assertThat(analysis.getAnalysisSteps(), hasItem(phivePrioritiser));
         assertThat(analysis.getAnalysisSteps(), hasItem(regulatoryFeatureFilter));
+        assertThat(analysis.getAnalysisSteps(), hasItem(geneBlacklistFilter));
         //check that the order of analysis steps is preserved
-        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(phivePrioritiser, priorityScoreFilter, regulatoryFeatureFilter, frequencyFilter)));
+        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(phivePrioritiser, priorityScoreFilter, regulatoryFeatureFilter, frequencyFilter, geneBlacklistFilter)));
     }
 
     @Test
@@ -391,4 +393,12 @@ public class AnalysisBuilderTest {
 
         assertThat(analysisSteps(), equalTo(singletonList(filter)));
     }
+
+    @Test
+    public void testCanAddGeneblacklistFilter() {
+        AnalysisStep blacklistfilter = new GeneBlacklistFilter();
+        analysisBuilder.addAnalysisStep(blacklistfilter);
+        assertThat(analysisSteps(), equalTo(List.of(blacklistfilter)));
+    }
+
 }

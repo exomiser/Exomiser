@@ -268,6 +268,8 @@ public class JobParser {
             analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
         } else if (protoAnalysisStep.hasInheritanceFilter()) {
             analysisBuilder.addInheritanceFilter();
+        } else if (protoAnalysisStep.hasGeneBlacklistFilter()) {
+            analysisBuilder.addGeneblacklistFilter();
         } else if (protoAnalysisStep.hasPriorityScoreFilter()) {
             PriorityType priorityType = parsePriorityType(protoAnalysisStep.getPriorityScoreFilter());
             float minPriorityScore = parseMinPriorityScore(protoAnalysisStep.getPriorityScoreFilter());
