@@ -4,12 +4,14 @@
 #is being run from or the full system path. It will run any combination of exomiser commands listed using -h or --help.
 #
 # Original format exomiser analysis containing all the sample and analysis information
---analysis test-analysis-exome.yml
+--analysis examples/test-analysis-exome.yml
+# New preset exome analysis using a v1 phenopacket to submit the phenotype information
+--sample examples/pfeiffer-phenopacket.yml
 # New preset exome analysis using a v1 phenopacket to submit the phenotype information and adding/overriding the VCF input
---preset exome --sample pfeiffer-phenopacket.yml --vcf Pfeiffer.vcf.gz
+--preset exome --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 # Using the default analysis (exome) with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
---sample pfeiffer-phenopacket.yml --vcf Pfeiffer.vcf.gz
+--sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 # Using a user-defined analysis with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
---analysis preset-exome-analysis.yml --sample pfeiffer-phenopacket.yml --vcf Pfeiffer.vcf.gz
+--analysis examples/preset-exome-analysis.yml --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 # Using a user-defined analysis with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
---analysis preset-exome-analysis.yml --sample pfeiffer-phenopacket.yml --vcf Pfeiffer.vcf.gz --output output-options.yml
+--analysis examples/preset-exome-analysis.yml --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19 --output examples/output-options.yml

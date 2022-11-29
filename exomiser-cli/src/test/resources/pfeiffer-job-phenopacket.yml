@@ -47,13 +47,7 @@ phenopacket:
         iriPrefix: 'http://purl.obolibrary.org/obo/HP_'
     phenopacketSchemaVersion: 1.0
 analysis:
-  #FULL or PASS_ONLY
   analysisMode: PASS_ONLY
-  # In cases where you do not want any cut-offs applied an empty map should be used e.g. inheritanceModes: {}
-  # These are the default settings, with values representing the maximum minor allele frequency in percent (%) permitted for an
-  # allele to be considered as a causative candidate under that mode of inheritance.
-  # If you just want to analyse a sample under a single inheritance mode, delete/comment-out the others. For AUTOSOMAL_RECESSIVE
-  # or X_RECESSIVE ensure *both* relevant HOM_ALT and COMP_HET modes are present.
   inheritanceModes: {
     AUTOSOMAL_DOMINANT: 0.1,
     AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
@@ -63,34 +57,12 @@ analysis:
     X_RECESSIVE_HOM_ALT: 0.1,
     MITOCHONDRIAL: 0.2
   }
-  #Possible frequencySources:
-  #Thousand Genomes project http://www.1000genomes.org/
-  #   THOUSAND_GENOMES,
-  #ESP project http://evs.gs.washington.edu/EVS/
-  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-  #ExAC project http://exac.broadinstitute.org/about
-  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-  #   EXAC_OTHER
-  #Possible frequencySources:
-  #Thousand Genomes project - http://www.1000genomes.org/ (THOUSAND_GENOMES)
-  #TOPMed - https://www.nhlbi.nih.gov/science/precision-medicine-activities (TOPMED)
-  #UK10K - http://www.uk10k.org/ (UK10K)
-  #ESP project - http://evs.gs.washington.edu/EVS/ (ESP_)
-  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-  #ExAC project http://exac.broadinstitute.org/about (EXAC_)
-  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-  #   EXAC_OTHER
-  #gnomAD - http://gnomad.broadinstitute.org/ (GNOMAD_E, GNOMAD_G)
   frequencySources: [
     THOUSAND_GENOMES,
     TOPMED,
     UK10K,
 
-    ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+    ESP_AA, ESP_EA, ESP_ALL,
 
     EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
     EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
@@ -115,10 +87,6 @@ analysis:
     GNOMAD_G_OTH,
     GNOMAD_G_SAS
   ]
-  # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
-  # REMM is trained on non-coding regulatory regions
-  # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
-  # and updated their location in the application.properties. Exomiser will not run without this.
   pathogenicitySources: [ REVEL, MVP ]
   #this is the standard exomiser order.
   #all steps are optional
