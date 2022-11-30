@@ -169,30 +169,6 @@ public class VcfResultsWriterTest {
         assertThat(instance.writeString(analysisResults, settings), equalTo(METADATA_HEADER + SAMPLE_HEADER));
     }
 
-    /* test writing out unannotated variants */
-    @Test
-    public void testWriteUnannotatedVariants() {
-        TestVcfReader testVcfReader = TestVcfReader.forSamples("Sample");
-        VariantEvaluation unAnnotatedVariantEvaluation1 = TestFactory.variantBuilder(5, 11, "C", "T")
-                .variantContext(testVcfReader.readVariantContext("5 11 . C T 1 PASS . GT 0/1"))
-                .build();
-        VariantEvaluation unAnnotatedVariantEvaluation2 = TestFactory.variantBuilder(5, 14, "T", "TG")
-                .variantContext(testVcfReader.readVariantContext("5 14 . T TG 1 PASS . GT 0/1"))
-                .build();
-
-        AnalysisResults analysisResults = AnalysisResults.builder()
-                .sample(sample)
-                .analysis(analysis)
-                .variantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2))
-                .build();
-
-        String vcf = instance.writeString(analysisResults, settings);
-        final String expected = METADATA_HEADER + SAMPLE_HEADER
-                + "5\t11\t.\tC\tT\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
-                + "5\t14\t.\tT\tTG\t1\t.\tExWarn=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
-        assertThat(vcf, equalTo(expected));
-    }
-
     private AnalysisResults buildAnalysisResults() {
 
         VariantEvaluation fgfr2PassMissenseVariant = TestVariantFactory.buildVariant(10, 123256214, "A", "G", SampleGenotype.het(), 30, 2.2);
@@ -288,55 +264,9 @@ public class VcfResultsWriterTest {
         assertThat(vcf, equalTo(expected));
     }
 
-    /* test writing out a variant PASSing all filters */
-    @Test
-    public void testWritePassVariants() {
-        fgfr2PassMissenseVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        fgfr2ContributingVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        GeneScore geneScore = GeneScore.builder()
-                // combined score required for anything to be writen out!
-                .combinedScore(1d)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
-                .contributingVariants(List.of(fgfr2ContributingVariant))
-                .build();
-
-        fgfr2Gene.addVariant(fgfr2ContributingVariant);
-        fgfr2Gene.addGeneScore(geneScore);
-        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene);
-
-        String vcf = instance.writeString(analysisResults, settings);
-        String expected = METADATA_HEADER + CHR_10_CONTIG_HEADER + SAMPLE_HEADER + CHR10_FGFR2_PASS_VARIANT + CHR10_FGFR2_CONTRIBUTING_VARIANT;
-        assertThat(vcf, equalTo(expected));
-    }
-
     @Test
     public void testWritePassVariantsToFile(@TempDir Path tempDir) throws IOException {
-        fgfr2PassMissenseVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        fgfr2ContributingVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        GeneScore geneScore = GeneScore.builder()
-                // combined score required for anything to be writen out!
-                .combinedScore(1d)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
-                .contributingVariants(List.of(fgfr2ContributingVariant))
-                .build();
-
-        fgfr2Gene.addVariant(fgfr2ContributingVariant);
-        fgfr2Gene.addGeneScore(geneScore);
-        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene);
+        AnalysisResults analysisResults = buildAnalysisResults();
 
         Path vcfOutFilePrefix = tempDir.resolve("test-vcf-writer");
         OutputSettings outputSettings = OutputSettings.builder()
@@ -349,79 +279,17 @@ public class VcfResultsWriterTest {
         assertThat(Files.exists(vcfOutFile), equalTo(true));
 
         List<String> expected = new ArrayList<>(List.of(METADATA_HEADER.split("\n")));
+        expected.add(CHR_7_CONTIG_HEADER.trim());
         expected.add(CHR_10_CONTIG_HEADER.trim());
         expected.add(SAMPLE_HEADER.trim());
-        expected.add(CHR10_FGFR2_PASS_VARIANT.trim());
-        expected.add(CHR10_FGFR2_CONTRIBUTING_VARIANT.trim());
+        expected.add("7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={2|7-155604800-C-CT_ANY|SHH|6469|ANY|1.0000|0.0000|0.0000|0.0000|1.0000|0|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30");
+        expected.add("10\t123256214\t.\tA\tG\t2.20\tPASS\tExomiser={1|10-123256214-A-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.5958|0|0|missense_variant|FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30");
+        expected.add("10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30");
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(vcfOutFile.toFile()))))) {
             List<String> actual = br.lines().toList();
             assertThat(actual, equalTo(expected));
         }
-    }
-
-    /* test writing out a variant failing the target filter */
-    @Test
-    public void testWriteFailTargetVariant() {
-        EnumSet<ModeOfInheritance> autosomalDominantCompatible = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        fgfr2PassMissenseVariant.addFilterResult(FAIL_TARGET_RESULT);
-        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(autosomalDominantCompatible);
-        fgfr2Gene.setCompatibleInheritanceModes(autosomalDominantCompatible);
-
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene);
-
-        String vcfAD = instance.writeString(analysisResults, settings);
-        assertThat(vcfAD, equalTo(failedFgfr2VariantWithFilterField("var-effect")));
-
-        String vcfAR = instance.writeString(analysisResults, settings);
-        assertThat(vcfAR, equalTo(failedFgfr2VariantWithFilterField("inheritance;var-effect")));
-    }
-
-    private String failedFgfr2VariantWithFilterField(String filterFieldAD) {
-        return METADATA_HEADER
-                + "10\t123256214\t.\tA\tG\t2.20\t" + filterFieldAD + "\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarScore=0.89\tGT:RD\t0/1:30\n";
-    }
-
-    @Test
-    public void testWriteContributingVariantsOnlyContainsOnlyContributingVariantLine() {
-
-        shhIndelVariant.addFilterResult(FAIL_TARGET_RESULT);
-        shhIndelVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        fgfr2PassMissenseVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        fgfr2ContributingVariant.addFilterResult(PASS_TARGET_RESULT);
-        fgfr2ContributingVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2ContributingVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        GeneScore geneScore = GeneScore.builder()
-                // combined score required for anything to be writen out!
-                .combinedScore(1d)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
-                .contributingVariants(List.of(fgfr2ContributingVariant))
-                .build();
-
-        //TODO: check the logic here - are we dealing with GeneScores or Genes?
-        // According to a helpful comment in GeneScoreRanker:
-        // "a GeneScore only contains the contributing variants so can't be used directly to get the variants involved,
-        //  hence the requirement for the Gene."
-        // Perhaps it might be worth the GeneScorer assigning all other compatible variants to the GeneScore too?
-
-        fgfr2Gene.addVariant(fgfr2ContributingVariant);
-        fgfr2Gene.addGeneScore(geneScore);
-        fgfr2Gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, fgfr2Gene, shhGene);
-
-        OutputSettings outputContributingVariantsOnly = OutputSettings.builder()
-                .outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outputContributingVariantsOnly(true)
-                .build();
-
-        String output = instance.writeString(analysisResults, outputContributingVariantsOnly);
-        String expected = METADATA_HEADER + CHR_10_CONTIG_HEADER + SAMPLE_HEADER + CHR10_FGFR2_CONTRIBUTING_VARIANT;
-        assertThat(output, equalTo(expected));
     }
 
     @Test
@@ -445,43 +313,6 @@ public class VcfResultsWriterTest {
         String output = instance.writeString(analysisResults, outputPassVariantsOnlySettings);
         assertThat(output, equalTo(METADATA_HEADER + SAMPLE_HEADER));
     }
-    
-    @Test
-    public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
-        VariantEvaluation alt1 = TestVariantFactory.buildVariant(1, 120612040, "T", "TCCGCCG", SampleGenotype.het(), 30, 258.62);
-        alt1.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        alt1.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-
-        VariantEvaluation alt2 = TestVariantFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", SampleGenotype.homAlt(), 30, 258.62);
-        alt2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        alt2.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-
-        Gene gene = new Gene("TEST", 12345);
-        gene.addVariant(alt1);
-        gene.addVariant(alt2);
-        gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-
-        GeneScore geneScore = GeneScore.builder()
-                .combinedScore(1d)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(gene.getGeneIdentifier())
-                .contributingVariants(List.of(alt1, alt2))
-                .build();
-        gene.addGeneScore(geneScore);
-
-        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
-
-        String output = instance.writeString(analysisResults, settings);
-        String expected = METADATA_HEADER
-                + "##contig=<ID=1,length=249250621,assembly=GRCh37.p13>\n"
-                + SAMPLE_HEADER
-                + "1\t120612040\t.\tT\tTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n"
-                + "1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\tPASS\tExomiser={1|1-120612040-T-TCCTCCGCCG_AD|TEST|12345|AD|1.0000|1.0000|0.0000|0.0000|0.0000|1|0|intergenic_variant|RBM8A:uc001ent.2::|NOT_AVAILABLE|||\"\"}\tGT:RD\t1/1:30\n"
-                ;
-//                + "1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0\tGT:RD\t0/1:30\n"
-//                + "1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarScore=0.0\tGT:RD\t1/1:30\n";
-        assertThat(output, equalTo(expected));
-    }
 
     @Test
     public void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
@@ -493,11 +324,16 @@ public class VcfResultsWriterTest {
                 //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
                 //variant score is 0.95 - contributes to score
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
+                .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .contributingModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .compatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .build();
 
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);
+        altAlleleTwo.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
+        altAlleleTwo.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        altAlleleTwo.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Gene gene = new Gene(GeneIdentifier.builder()
                 .geneSymbol(altAlleleOne.getGeneSymbol())
@@ -507,12 +343,22 @@ public class VcfResultsWriterTest {
         gene.addVariant(altAlleleTwo);
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
+        GeneScore geneScore = GeneScore.builder()
+                .combinedScore(1d)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .geneIdentifier(gene.getGeneIdentifier())
+                .contributingVariants(List.of(altAlleleOne, altAlleleTwo))
+                .build();
+        gene.addGeneScore(geneScore);
+
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
 
         String output = instance.writeString(analysisResults, settings);
-        //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = METADATA_HEADER + CHR_10_CONTIG_HEADER + SAMPLE_HEADER
-                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarScore=1.0,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+                + "10\t123256215\t.\tT\tG,A\t100\tPASS\tExomiser=" +
+                "{1|10-123256215-T-G_AD|FGFR2||AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||\"\"}," +
+                "{1|10-123256215-T-A_AD|FGFR2||AD|1.0000|1.0000|0.0000|0.0000|0.6000|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>T:p.(Glu565Val)|NOT_AVAILABLE|||\"\"};" +
+                "GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
     }
 }
