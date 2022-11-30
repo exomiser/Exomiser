@@ -2,6 +2,7 @@
 
 ## 14.0.0 
 
+- Minimum Java version is now set to __Java 17__
 - __BREAKING CHANGE!__ Added new CLI. Please read the `--help` options carefully as there have been breaking changes to allow for clarity
   between desired sub-commands which wasn't possible before.
 - Added new gene blacklist filter to remove variants from genes which show high variability in healthy populations.
