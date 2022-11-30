@@ -10,6 +10,13 @@
 - Added new `--output-format` option to enable specifying the desired output options directly from the CLI.
 - __BREAKING CHANGE!__ Removed old MOI-specific TSV and VCF output formats so that there will now only be one output file for each specified
   format. 
+- __BREAKING CHANGE!__ New database version and schema. Unfortunately, the old databases are no longer compatible with  
+  this version and older binaries (i.e. exomiser-cli-13.1.0 and lower) will not be able to read data versions greater 
+  than 2209. While this is annoying, the newer data are *significantly* smaller - e.g. the 2209_hg19 data was 41 GB when
+  zipped and 63 GB unpacked. In comparison, the newer data is 10 GB when zipped and 14 GB unpacked. This includes the latest
+  gnomAD versions (2.1) which includes the 1000 genomes, ExAC and TopMED data, so these have been removed as separate sources
+  from the database. The latest hg38 data also includes gnomAD v2.1 (exome liftover) and v3 (genomes) and NCBI ALFA allele
+  frequencies and SpliceAI scores derived from the gnomAD v3 data. All these newer data sources will be used automatically. 
 
 ## 13.1.0 2022-07-29
 
