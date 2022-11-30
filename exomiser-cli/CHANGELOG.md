@@ -1,5 +1,16 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 14.0.0 
+
+- __BREAKING CHANGE!__ Added new CLI. Please read the `--help` options carefully as there have been breaking changes to allow for clarity
+  between desired sub-commands which wasn't possible before.
+- Added new gene blacklist filter to remove variants from genes which show high variability in healthy populations.
+  To use this, add `geneBlacklistFilter: {}` before the `frequencyFilter: {}` in your analysis script. This is added by
+  default to the presets.
+- Added new `--output-format` option to enable specifying the desired output options directly from the CLI.
+- __BREAKING CHANGE!__ Removed old MOI-specific TSV and VCF output formats so that there will now only be one output file for each specified
+  format. 
+
 ## 13.1.0 2022-07-29
 
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
