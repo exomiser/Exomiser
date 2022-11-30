@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,9 +42,22 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 
 public class AnalysisPresetBuilderTest {
 
-    private static final Set<FrequencySource> FREQUENCY_SOURCES = FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.stream()
-            .filter(frequencySource -> frequencySource != FrequencySource.GNOMAD_E_ASJ && frequencySource != FrequencySource.GNOMAD_G_ASJ)
-            .collect(Collectors.toSet());
+    private static final Set<FrequencySource> FREQUENCY_SOURCES = EnumSet.noneOf(FrequencySource.class);
+    static {
+        FREQUENCY_SOURCES.add(FrequencySource.UK10K);
+        FREQUENCY_SOURCES.addAll(FrequencySource.ALL_ESP_SOURCES);
+        FREQUENCY_SOURCES.addAll(FrequencySource.ALL_GNOMAD_SOURCES.stream()
+                .filter(AnalysisPresetBuilderTest::isNotSmallPopulation)
+                .toList());
+        FREQUENCY_SOURCES.addAll(FrequencySource.ALL_ALFA_SOURCES);
+    }
+
+    private static boolean isNotSmallPopulation(FrequencySource frequencySource) {
+        return switch (frequencySource) {
+            case GNOMAD_E_ASJ, GNOMAD_G_ASJ, GNOMAD_G_AMI, GNOMAD_G_MID -> false;
+            default -> true;
+        };
+    }
 
     private final AnalysisPresetBuilder instance = new AnalysisPresetBuilder(new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService()), new NoneTypePriorityFactoryStub(), TestOntologyService.builder().build());
@@ -55,7 +69,7 @@ public class AnalysisPresetBuilderTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP)));
+        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, SPLICE_AI)));
         assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
                 equalTo(List.of(
                         VariantEffectFilter.class,
@@ -66,7 +80,6 @@ public class AnalysisPresetBuilderTest {
                         OmimPriority.class,
                         HiPhivePriority.class
                 )));
-        System.out.println(analysis.getAnalysisSteps());
     }
 
     @Test
@@ -75,7 +88,7 @@ public class AnalysisPresetBuilderTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM)));
+        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM, SPLICE_AI)));
         assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
                 equalTo(List.of(
                         HiPhivePriority.class,

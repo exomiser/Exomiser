@@ -34,6 +34,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
+import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
@@ -60,20 +61,21 @@ class AnalysisPresetBuilder {
     }
 
     private static final EnumSet<FrequencySource> DEFAULT_FREQUENCY_SOURCES = EnumSet.of(
-            FrequencySource.ESP_AA, FrequencySource.ESP_ALL, FrequencySource.ESP_EA,
-            FrequencySource.THOUSAND_GENOMES,
-            FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, FrequencySource.EXAC_AMERICAN,
-            FrequencySource.EXAC_EAST_ASIAN, FrequencySource.EXAC_FINNISH,
-            FrequencySource.EXAC_NON_FINNISH_EUROPEAN, FrequencySource.EXAC_SOUTH_ASIAN, FrequencySource.EXAC_OTHER,
-            FrequencySource.UK10K, FrequencySource.TOPMED,
-            FrequencySource.GNOMAD_E_AFR, FrequencySource.GNOMAD_E_AMR,
-            //FrequencySource.GNOMAD_E_ASJ,
-            FrequencySource.GNOMAD_E_EAS, FrequencySource.GNOMAD_E_FIN,
-            FrequencySource.GNOMAD_E_NFE, FrequencySource.GNOMAD_E_OTH, FrequencySource.GNOMAD_E_SAS,
-            FrequencySource.GNOMAD_G_AFR, FrequencySource.GNOMAD_G_AMR,
-            //FrequencySource.GNOMAD_G_ASJ,
-            FrequencySource.GNOMAD_G_EAS, FrequencySource.GNOMAD_G_FIN,
-            FrequencySource.GNOMAD_G_NFE, FrequencySource.GNOMAD_G_OTH, FrequencySource.GNOMAD_G_SAS
+            ESP_AA, ESP_ALL, ESP_EA,
+            UK10K,
+            //GNOMAD_E_ASJ,
+            GNOMAD_E_AFR, GNOMAD_E_AMR,
+            GNOMAD_E_EAS, GNOMAD_E_FIN,
+            GNOMAD_E_NFE, GNOMAD_E_OTH, GNOMAD_E_SAS,
+            //Excluded due to population size:
+            // GNOMAD_G_ASJ, GNOMAD_G_AMI, GNOMAD_G_MID
+            GNOMAD_G_AFR, GNOMAD_G_AMR,
+            GNOMAD_G_EAS, GNOMAD_G_FIN,
+            GNOMAD_G_NFE, GNOMAD_G_OTH, GNOMAD_G_SAS,
+            ALFA_AFA, ALFA_AFO, ALFA_AFR,
+            ALFA_EUR, ALFA_LAC, ALFA_LEN,
+            ALFA_SAS, ALFA_EAS, ALFA_ASN,
+            ALFA_OAS, ALFA_OTR, ALFA_TOT
     );
 
     private static final HiPhiveOptions HI_PHIVE_OPTIONS = HiPhiveOptions.builder()

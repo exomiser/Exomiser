@@ -108,6 +108,8 @@ public enum FrequencySource {
 
     public static final Set<FrequencySource> ALL_GNOMAD_SOURCES = Collections.unmodifiableSet(EnumSet.range(GNOMAD_E_AFR, GNOMAD_G_SAS));
 
+    public static final Set<FrequencySource> ALL_ALFA_SOURCES = Collections.unmodifiableSet(EnumSet.range(ALFA_AFO, ALFA_TOT));
+
     public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Collections.unmodifiableSet(EnumSet.range(THOUSAND_GENOMES, ALFA_TOT));
 
     private final String source;
