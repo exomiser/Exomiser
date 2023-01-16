@@ -123,22 +123,15 @@ public class VariantContextConverter {
         // seems petty, but this can save ~200MB RAM and tens of thousands of object allocations
         // on the 4.5 million variant POMP sample.
         if (bases.length == 1) {
-            switch (bases[0]) {
-                case 'A':
-                    return A;
-                case 'T':
-                    return T;
-                case 'G':
-                    return G;
-                case 'C':
-                    return C;
-                case '.':
-                    return NO_CALL;
-                case 'N':
-                    return N;
-                default:
-                    return N;
-            }
+            return switch (bases[0]) {
+                case 'A' -> A;
+                case 'T' -> T;
+                case 'G' -> G;
+                case 'C' -> C;
+                case '.' -> NO_CALL;
+                case 'N' -> N;
+                default -> N;
+            };
         }
         return new String(bases);
     }
