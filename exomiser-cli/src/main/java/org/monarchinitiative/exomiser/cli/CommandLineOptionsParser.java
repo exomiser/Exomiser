@@ -117,6 +117,14 @@ public class CommandLineOptionsParser {
                 .hasArg()
                 .argName("string")
                 .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-format")
+                .desc("A list of comma separated output format(s) e.g. HTML or HTML,JSON. Valid options include [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly, JSON is the most detailed. (default = HTML,JSON)")
+                .hasArgs()
+                .valueSeparator(',')
+                .argName("string")
+                .build());
     }
 
     private CommandLineOptionsParser() {
