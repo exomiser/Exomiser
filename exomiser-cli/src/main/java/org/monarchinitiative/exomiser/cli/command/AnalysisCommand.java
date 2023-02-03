@@ -12,6 +12,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeRe
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
+import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
@@ -19,10 +20,15 @@ import org.phenopackets.schema.v1.core.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.ITypeConverter;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static picocli.CommandLine.*;
 
@@ -39,54 +45,79 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
     @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help and exit")
     private boolean help;
 
-    @ArgGroup(exclusive = false, order = 1, multiplicity = "1", heading = "Analysis options:%nRequires at least an analysis or a sample to be specified for an analysis to be run. If only specifying the sample, an exome analysis using the default settings will be run (equivalent to specifying --preset exome).%n")
-    AnalysisOptions analysisOptions;
+    // sample || analysis || (sample && analysis) || (sample && preset)
+    @ArgGroup(exclusive = false, order = 1, heading = "Sample input options:%n", multiplicity = "1")
+    SampleOptions sampleOptions = new SampleOptions();
 
-    @Option(names = "--preset",
-            description = "The Exomiser analysis preset for the input sample. One of 'exome', 'genome' or 'phenotype-only'. (default = exome)",
-            converter = PresetConverter.class
-    )
-    Preset preset = Preset.UNRECOGNIZED;
+    @ArgGroup(exclusive = true, order = 2, heading = "Analysis options:%nRequires at least an analysis or a sample to be specified for an analysis to be run. If only specifying the sample, an exome analysis using the default settings will be run (equivalent to specifying --preset exome).%n")
+    AnalysisOptions analysisOptions = new AnalysisOptions();
 
-    @Option(names = "--ped", order = 4, description = "Path to sample PED file. Required for multi-sample VCF files, " +
-            "unless included in the sample. The sample option needs to be encoded as a phenopacket-schema `Family` message " +
-            "for the PED file to be omitted. See " + PHENOPACKET_SCHEMA_URL + "/family.html")
-    Path pedPath;
+    @ArgGroup(exclusive = false, order = 3, heading = "Output options:%n")
+    OutputOptions outputOptions = new OutputOptions();
 
-    @ArgGroup(exclusive = false, order = 3, heading = "VCF input options:%n")
-    VcfOptions vcfOptions;
+    static class AnalysisOptions implements InputFileOptions {
 
-    @Option(names = "--output", description = "Path to outputOptions file. This should be in JSON or YAML format.")
-    Path outputOptionsPath;
+        @Option(names = "--preset",
+                description = "The Exomiser analysis preset for the input sample. One of 'exome', 'genome' or 'phenotype-only'. (default = exome)",
+                converter = PresetConverter.class
+        )
+        Preset preset = Preset.UNRECOGNIZED;
 
-    @Option(names = "--output-prefix", description = "Path/filename without an extension to be prepended to the output file format options.")
-    Path outputPrefixPath;
-
-    @Option(names = "--output-format", description = "A list of comma separated output format(s) e.g. HTML or HTML,JSON." +
-            " Valid options include [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly," +
-            " JSON is the most detailed. (default = HTML,JSON)", split = ",")
-    List<OutputProto.OutputFormat> outputFormats;
-
-
-    static class AnalysisOptions {
-        @Option(names = "--analysis", description = "Path to analysis script file. This should be in YAML format.", hidden = true)
+        @Option(names = "--analysis", description = "Path to analysis script file. This should be in YAML format.")
         Path analysisPath;
 
-        @Option(names = "--sample", description = "Path to sample or phenopacket file. This should be in JSON or YAML " +
-                "format. See " + PHENOPACKET_SCHEMA_URL + "/phenopacket.html for details. Exomiser " +
-                "only requires the `subject` and `phenotypicFeatures` fields of the phenopacket to be present.")
-        Path samplePath;
+        @Override
+        public Map<String, Path> inputOptionPaths() {
+            return analysisPath == null ? Map.of() : Map.of("--analysis", analysisPath);
+        }
 
         @Override
         public String toString() {
             return "AnalysisOptions{" +
                     "analysisPath=" + analysisPath +
-                    ", samplePath=" + samplePath +
+                    ", preset=" + preset +
                     '}';
         }
     }
 
-    static class VcfOptions {
+    static class SampleOptions implements InputFileOptions {
+
+        @Option(names = "--sample", required = true, description = "Path to sample or phenopacket file. This should be in JSON or YAML " +
+                "format. See " + PHENOPACKET_SCHEMA_URL + "/phenopacket.html for details. Exomiser " +
+                "only requires the `subject` and `phenotypicFeatures` fields of the phenopacket to be present.")
+        Path samplePath;
+
+        @ArgGroup(exclusive = false)
+        VcfOptions vcfOptions = new VcfOptions();
+
+        @Option(names = "--ped", order = 3, description = "Path to sample PED file. Required for multi-sample VCF files, " +
+                "unless included in the sample. The sample option needs to be encoded as a phenopacket-schema `Family` message " +
+                "for the PED file to be omitted. See " + PHENOPACKET_SCHEMA_URL + "/family.html")
+        Path pedPath;
+
+        @Override
+        public Map<String, Path> inputOptionPaths() {
+            Map<String, Path> tempMap = new HashMap<>();
+            tempMap.put("--sample", samplePath);
+            tempMap.put("--ped", pedPath);
+            tempMap.putAll(vcfOptions.inputOptionPaths());
+
+            return tempMap.entrySet().stream()
+                    .filter(entry -> entry.getValue() != null)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        @Override
+        public String toString() {
+            return "SampleOptions{" +
+                    "samplePath=" + samplePath +
+                    ", vcfOptions=" + vcfOptions +
+                    ", pedPath=" + pedPath +
+                    '}';
+        }
+    }
+
+    static class VcfOptions implements InputFileOptions {
 
         @Option(names = "--vcf", description = "Path to sample VCF file. Also requires 'assembly' option to be defined.", required = true)
         Path vcfPath;
@@ -94,6 +125,11 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         @Option(names = "--assembly", description = "Genome assembly of sample VCF file. Either 'GRCh37' or 'GRCh38'.", required = true,
                 converter = GenomeAssemblyConverter.class)
         GenomeAssembly assembly;
+
+        @Override
+        public Map<String, Path> inputOptionPaths() {
+            return vcfPath == null ? Map.of() : Map.of("--vcf", vcfPath);
+        }
 
         @Override
         public String toString() {
@@ -104,18 +140,61 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         }
     }
 
+    // Analysis options (analysis / preset)
+    // Sample Options (sample, vcf, assembly, ped)
+    // Output Options (output-options, output-directory, output-filename, output-formats)
+
+    static class OutputOptions implements InputFileOptions {
+
+        @Option(names = "--output-options", description = "Path to outputOptions file. This should be in JSON or YAML format.")
+        Path outputOptionsPath;
+
+        @Option(names = "--output-directory", description = "Directory where the output files should be written.")
+        Path outputDirectory;
+
+        @Option(names = "--output-file-name", description = "Filename prefix for the output files. Will be generated from " +
+                "the input VCF filename if not specified", converter = OutputFileNameConverter.class)
+        String outputFileName;
+
+        @Option(names = "--output-format", description = "A list of comma separated output format(s) e.g. HTML or HTML,JSON." +
+                " Valid options include [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly," +
+                " JSON is the most detailed. (default = HTML,JSON)", split = ",")
+        List<OutputProto.OutputFormat> outputFormats;
+
+        @Override
+        public Map<String, Path> inputOptionPaths() {
+            return outputOptionsPath == null ? Map.of() : Map.of("--output-options", outputOptionsPath);
+        }
+
+        @Override
+        public String toString() {
+            return "OutputOptions{" +
+                    "outputOptionsPath=" + outputOptionsPath +
+                    ", outputDirectory=" + outputDirectory +
+                    ", outputFileName='" + outputFileName + '\'' +
+                    ", outputFormats=" + outputFormats +
+                    '}';
+        }
+    }
+
+    private interface InputFileOptions {
+
+        Map<String, Path> inputOptionPaths();
+
+    }
+
     @Override
     public String toString() {
         return "AnalysisCommand{" +
-                "analysisOptions=" + analysisOptions +
-                ", preset=" + preset +
-                ", vcfOptions=" + vcfOptions +
-                ", pedPath=" + pedPath +
+                "sampleOptions=" + sampleOptions +
+                ", analysisOptions=" + analysisOptions +
+                ", outputOptions=" + outputOptions +
                 '}';
     }
 
     public List<JobProto.Job> parseJobs() {
-        if (analysisOptions.analysisPath != null && analysisOptions.samplePath == null) {
+        logger.debug("Parsing job for {}", this);
+        if (analysisOptions.analysisPath != null && sampleOptions.samplePath == null) {
             if (Files.notExists(analysisOptions.analysisPath)) {
                 throw new IllegalArgumentException("Analysis file not found: " + analysisOptions.analysisPath);
             }
@@ -126,14 +205,14 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         // Legal options are:
         // "sample"
         // "sample", "analysis"
-        // "sample", "analysis", "output"
+        // "sample", "analysis", "output-options"
         // "sample", "preset"
-        // "sample", "preset", "output"
-        // "sample", "output"
-        // "sample", "vcf", "output"
-        // "sample", "vcf", "ped", "output"
-        // "sample", "vcf", "ped", "output", "output-prefix"
-        if (analysisOptions.samplePath != null) {
+        // "sample", "preset", "output-options"
+        // "sample", "output-options"
+        // "sample", "vcf", "output-options"
+        // "sample", "vcf", "ped", "output-options"
+        // "sample", "vcf", "ped", "output-options", "output-file-name", "output-directory
+        if (sampleOptions.samplePath != null) {
             return handleMultipleUserOptions();
         }
         throw new CommandLineParseError("No sample specified!");
@@ -147,29 +226,33 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         if (analysisOptions.analysisPath != null) {
             handleAnalysisOption(analysisOptions.analysisPath, jobBuilder);
         }
-        if (analysisOptions.samplePath != null) {
-            handleSampleOption(analysisOptions.samplePath, jobBuilder);
+        if (sampleOptions.samplePath != null) {
+            handleSampleOption(sampleOptions.samplePath, jobBuilder);
         }
-        if (preset != Preset.UNRECOGNIZED) {
-            handlePresetOption(preset, jobBuilder);
-        } else if (analysisOptions.analysisPath == null && preset == Preset.UNRECOGNIZED) {
+        if (analysisOptions.preset != Preset.UNRECOGNIZED) {
+            handlePresetOption(analysisOptions.preset, jobBuilder);
+        } else if (analysisOptions.analysisPath == null && analysisOptions.preset == Preset.UNRECOGNIZED) {
             handlePresetOption(Preset.EXOME, jobBuilder);
         }
-        if (outputOptionsPath != null) {
-            handleOutputOption(outputOptionsPath, jobBuilder);
+        if (outputOptions.outputOptionsPath != null) {
+            handleOutputOption(outputOptions.outputOptionsPath, jobBuilder);
         }
-        if (outputFormats != null) {
-            handleOutputFormatOption(outputFormats, jobBuilder);
+        // override any existing output options with the CLI-specified ones
+        if (outputOptions.outputDirectory != null) {
+            handleOutputDirectoryOption(outputOptions.outputDirectory, jobBuilder);
+        }
+        if (outputOptions.outputFileName != null) {
+            handleOutputFileNameOption(outputOptions.outputFileName, jobBuilder);
+        }
+        if (outputOptions.outputFormats != null) {
+            handleOutputFormatOption(outputOptions.outputFormats, jobBuilder);
         }
         // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
-        if (vcfOptions != null) {
-            handleVcfAndAssemblyOptions(vcfOptions, jobBuilder);
+        if (sampleOptions.vcfOptions.vcfPath != null) {
+            handleVcfAndAssemblyOptions(sampleOptions.vcfOptions, jobBuilder);
         }
-        if (pedPath != null) {
-            handlePedOption(pedPath, jobBuilder);
-        }
-        if (outputPrefixPath != null) {
-            handleOutputPrefixOption(outputPrefixPath, jobBuilder);
+        if (sampleOptions.pedPath != null) {
+            handlePedOption(sampleOptions.pedPath, jobBuilder);
         }
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
@@ -190,7 +273,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
 
     private OutputProto.OutputOptions createDefaultOutputOptions() {
         return OutputProto.OutputOptions.newBuilder()
-                .setOutputPrefix("")
+                .setOutputDirectory(OutputSettings.DEFAULT_OUTPUT_DIR.toString())
                 .setNumGenes(0)
                 .setOutputContributingVariantsOnly(false)
                 .build();
@@ -205,7 +288,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
     }
 
     private void handleSampleOption(Path samplePath, JobProto.Job.Builder jobBuilder) {
-        chekExistsOrThrowError(samplePath);
+        checkExistsOrThrowError(samplePath);
         // This could be a Sample a Phenopacket or a Family
         JobProto.Job sampleJob = readSampleJob(samplePath);
         jobBuilder.mergeFrom(sampleJob);
@@ -213,7 +296,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
 
     private void
     handleAnalysisOption(Path analysisPath, JobProto.Job.Builder jobBuilder) {
-        chekExistsOrThrowError(analysisPath);
+        checkExistsOrThrowError(analysisPath);
         boolean isLegacyAnalysis = false;
         try {
             JobProto.Job job = JobReader.readJob(analysisPath);
@@ -231,7 +314,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
     private void handleVcfAndAssemblyOptions(VcfOptions vcfOptions, JobProto.Job.Builder jobBuilder) {
         logger.debug("Handling VCF/assembly option {} {}", vcfOptions.vcfPath, vcfOptions.assembly);
         Path vcfPath = vcfOptions.vcfPath;
-        chekExistsOrThrowError(vcfPath);
+        checkExistsOrThrowError(vcfPath);
 
         String assembly = vcfOptions.assembly.toGrcString();
         if (jobBuilder.hasPhenopacket()) {
@@ -263,7 +346,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
 
     private void handlePedOption(Path pedPath, JobProto.Job.Builder jobBuilder) {
         logger.debug("Got a PED option {}", pedPath);
-        chekExistsOrThrowError(pedPath);
+        checkExistsOrThrowError(pedPath);
 
         if (jobBuilder.hasPhenopacket()) {
             // upgrade to family
@@ -286,7 +369,7 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         }
     }
 
-    private static void chekExistsOrThrowError(Path path) {
+    private static void checkExistsOrThrowError(Path path) {
         if (Files.notExists(path)){
             throw new CommandLineParseError(String.format("Specified file '%s' not found", path));
         }
@@ -297,25 +380,41 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
     }
 
     private void handleOutputOption(Path outputOptionPath, JobProto.Job.Builder jobBuilder) {
-//        Path outputOptionPath = Path.of(outputOptionValue);
-        chekExistsOrThrowError(outputOptionPath);
+        logger.debug("Handling output-options from {}", outputOptionPath);
+        checkExistsOrThrowError(outputOptionPath);
 
         jobBuilder.setOutputOptions(readOutputOptions(outputOptionPath));
     }
 
-    private void handleOutputPrefixOption(Path outputPrefixOptionPath, JobProto.Job.Builder jobBuilder) {
-//        Path outputPrefixOptionPath = Path.of(outputPrefixOptionValue);
-        logger.debug("Setting output-prefix to {}", outputPrefixOptionPath);
+    private void handleOutputPrefixOption(String outputPrefixOption, JobProto.Job.Builder jobBuilder) {
+        logger.debug("Setting output-prefix to {}", outputPrefixOption);
         OutputProto.OutputOptions.Builder builder = jobBuilder
                 .getOutputOptions().toBuilder()
-                .setOutputPrefix(outputPrefixOptionPath.toString());
+                .setOutputPrefix(outputPrefixOption);
+        jobBuilder.setOutputOptions(builder);
+    }
+
+    private void handleOutputDirectoryOption(Path outputDirectory, JobProto.Job.Builder jobBuilder) {
+        logger.debug("Setting output-directory to {}", outputDirectory);
+        OutputProto.OutputOptions.Builder builder = jobBuilder
+                .getOutputOptions().toBuilder()
+                .setOutputDirectory(outputDirectory.toString());
+        jobBuilder.setOutputOptions(builder);
+    }
+
+    private void handleOutputFileNameOption(String outputFileName, JobProto.Job.Builder jobBuilder) {
+        logger.debug("Setting output-file-name to {}", outputFileName);
+        OutputProto.OutputOptions.Builder builder = jobBuilder
+                .getOutputOptions().toBuilder()
+                .setOutputFileName(outputFileName);
         jobBuilder.setOutputOptions(builder);
     }
 
     private void handleOutputFormatOption(List<OutputProto.OutputFormat> formats, JobProto.Job.Builder jobBuilder) {
-        logger.debug("Setting output-prefix to {}", formats);
+        logger.debug("Setting output-format to {}", formats);
         OutputProto.OutputOptions.Builder builder = jobBuilder
                 .getOutputOptions().toBuilder()
+                .clearOutputFormats()
                 .addAllOutputFormats(formats.stream().map(String::valueOf).toList());
         jobBuilder.setOutputOptions(builder);
     }
@@ -392,8 +491,19 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
         }
     }
 
+    static class OutputFileNameConverter implements ITypeConverter<String> {
+        @Override
+        public String convert(String value) throws Exception {
+            if (value.contains(System.getProperty("file.separator"))) {
+                throw new IllegalArgumentException("output-file-name option should not contain a filesystem separator: " + value);
+            }
+            return value;
+        }
+    }
+
+
     public void validate() {
-        if (analysisOptions.analysisPath != null && preset != Preset.UNRECOGNIZED) {
+        if (analysisOptions.analysisPath != null && analysisOptions.preset != Preset.UNRECOGNIZED) {
             throw new CommandLineParseError("preset and analysis options are mutually exclusive");
         }
 //        if (commandLine.hasOption("analysis") && commandLine.hasOption("preset")) {
@@ -418,7 +528,18 @@ public final class AnalysisCommand implements JobParserCommand, ExomiserCommand 
 //        if (!hasInputFileOption(commandLine)) {
 //            throw new CommandLineParseError("Missing an input file option!");
 //        }
+        if (analysisOptions.analysisPath == null && sampleOptions.samplePath == null) {
+            throw new CommandLineParseError("Missing an input file option!");
+        }
 //        //check file paths exist before launching.
+        Stream.of(sampleOptions.inputOptionPaths(), analysisOptions.inputOptionPaths(), outputOptions.inputOptionPaths())
+                .flatMap(stringPathMap -> stringPathMap.entrySet().stream())
+                .filter(optionPath -> optionPath.getValue() != null)
+                .forEach(optionPath -> {
+                    if (Files.notExists(optionPath.getValue())) {
+                        throw new CommandLineParseError(String.format("%s file '%s' not found", optionPath.getKey(), optionPath.getValue()));
+                    }
+                });
 //        checkFilesExist(commandLine);
     }
 }

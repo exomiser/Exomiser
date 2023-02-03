@@ -1,9 +1,7 @@
 package org.monarchinitiative.exomiser.cli.command;
 
-import org.apache.commons.cli.CommandLine;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
-import org.monarchinitiative.exomiser.cli.CommandLineOptionsParser;
 import org.monarchinitiative.exomiser.cli.CommandLineParseError;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
@@ -124,7 +122,7 @@ class AnalysisCommandTest {
     void parseSample() {
         var instance = parseArgs(
                 "--sample", resource("exome-analysis.yml"));
-        assertThat(instance.analysisOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
     }
 
     @Test
@@ -133,25 +131,54 @@ class AnalysisCommandTest {
                 "--sample", resource("exome-analysis.yml"),
                 "--vcf", resource("Pfeiffer.vcf"),
                 "--assembly", "hg19");
-        assertThat(instance.analysisOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
-        AnalysisCommand.VcfOptions vcfOptions = instance.vcfOptions;
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        AnalysisCommand.VcfOptions vcfOptions = instance.sampleOptions.vcfOptions;
         assertThat(vcfOptions.vcfPath, equalTo(resourcePath("Pfeiffer.vcf")));
         assertThat(vcfOptions.assembly, equalTo(GenomeAssembly.HG19));
     }
 
     @Test
-    void parseSampleVcfAndOutputPrefix() {
+    void parseIllegalOutputFileName() {
+        AnalysisCommand analysisCommand = new AnalysisCommand();
+        String samplePath = resource("exome-analysis.yml");
+        String vcfPath = resource("Pfeiffer.vcf");
+        assertThrows(CommandLineParseError.class, () -> CommandLineParser.parseArgs(analysisCommand,
+                        "--sample", samplePath,
+                        "--vcf", vcfPath,
+                        "--assembly", "hg19",
+                        "--output-file-name", "results/pfeiffer-exome-analysis-results"
+                )
+        , "output-file-name option should not contain a filesystem separator: results/pfeiffer-exome-analysis-results");
+    }
+
+    @Test
+    void parseOutputOptionsPath() {
         var instance = parseArgs(
                 "--sample", resource("exome-analysis.yml"),
-                "--vcf", resource("Pfeiffer.vcf"),
-                "--assembly", "hg19",
-                "--output-prefix", "results/pfeiffer-exome-analysis-results"
+                "--output-options", resource("output-options.yml")
         );
-        assertThat(instance.analysisOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
-        AnalysisCommand.VcfOptions vcfOptions = instance.vcfOptions;
-        assertThat(vcfOptions.vcfPath, equalTo(resourcePath("Pfeiffer.vcf")));
-        assertThat(vcfOptions.assembly, equalTo(GenomeAssembly.HG19));
-        assertThat(instance.outputPrefixPath, equalTo(Path.of("results/pfeiffer-exome-analysis-results")));
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        assertThat(instance.outputOptions.outputOptionsPath, equalTo(resourcePath("output-options.yml")));
+    }
+
+    @Test
+    void parseOutputDirectory() {
+        var instance = parseArgs(
+                "--sample", resource("exome-analysis.yml"),
+                "--output-directory", "some/custom/out-directory"
+        );
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        assertThat(instance.outputOptions.outputDirectory, equalTo(Path.of("some/custom/out-directory")));
+    }
+
+    @Test
+    void parseOutputFileName() {
+        var instance = parseArgs(
+                "--sample", resource("exome-analysis.yml"),
+                "--output-file-name", "custom-filename"
+        );
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        assertThat(instance.outputOptions.outputFileName, equalTo("custom-filename"));
     }
 
     @Test
@@ -160,8 +187,8 @@ class AnalysisCommandTest {
                 "--sample", resource("exome-analysis.yml"),
                 "--output-format", "TSV_VARIANT,TSV_GENE"
         );
-        assertThat(instance.analysisOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
-        assertThat(instance.outputFormats, equalTo(List.of(OutputProto.OutputFormat.TSV_VARIANT, OutputProto.OutputFormat.TSV_GENE)));
+        assertThat(instance.sampleOptions.samplePath, equalTo(resourcePath("exome-analysis.yml")));
+        assertThat(instance.outputOptions.outputFormats, equalTo(List.of(OutputProto.OutputFormat.TSV_VARIANT, OutputProto.OutputFormat.TSV_GENE)));
     }
 
     @Test
