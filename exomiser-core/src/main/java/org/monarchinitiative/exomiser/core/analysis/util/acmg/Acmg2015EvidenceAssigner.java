@@ -103,6 +103,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 //            assignPM6(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, contributingVariants, hasCompatibleDiseaseMatches);
             // BS4 "Lack of segregation in affected members of a family"
             assignBS4(acmgEvidenceBuilder, variantEvaluation, proband);
+            // PP1 "Cosegregation with disease in multiple affected family members in a gene definitively known to cause the disease"
         }
 
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
