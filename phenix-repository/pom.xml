@@ -38,6 +38,7 @@
                             <packaging>jar</packaging>
                             <file>${project.basedir}/lib/javautil-0.0.1.jar</file>
                             <generatePom>true</generatePom>
+                            <createChecksum>true</createChecksum>
                         </configuration>
                     </execution>
                     <execution>
@@ -53,6 +54,7 @@
                             <packaging>jar</packaging>
                             <file>${project.basedir}/lib/ontologizer-0.0.1.jar</file>
                             <generatePom>true</generatePom>
+                            <createChecksum>true</createChecksum>
                         </configuration>
                     </execution>
                 </executions>
