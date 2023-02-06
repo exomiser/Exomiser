@@ -72,6 +72,7 @@
     </ciManagement>
 
     <modules>
+        <module>phenix-repository</module>
         <module>exomiser-core</module>
         <module>exomiser-spring-boot-autoconfigure</module>
         <module>exomiser-spring-boot-starter</module>
