@@ -180,6 +180,29 @@ class CommandLineOptionsParserTest {
     }
 
     @Test
+    void parseIllegalOutputOptionsCombo() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-prefix", "results/Pfeiffer",
+                "--output-directory", "results"
+        ), "output-prefix option is exclusive to output-directory and output-file-name options");
+
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-prefix", "results/Pfeiffer",
+                "--output-file-name", "Pfeiffer"
+        ), "output-prefix option is exclusive to output-directory and output-file-name options");
+
+        assertThrows(IllegalArgumentException.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-file-name", "results/Pfeiffer"
+        ), "output-file-name option should not contain a filesystem separator: results/Pfeiffer");
+    }
+
+    @Test
     void parseOutput() {
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse("--output", "output/path"),
                 "Missing an input file option!");
