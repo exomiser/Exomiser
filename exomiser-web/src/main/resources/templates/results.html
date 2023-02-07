@@ -132,10 +132,10 @@
                             <b th:if="${variantEvaluation.isSymbolic()}"  th:text=" |${variantEvaluation.changeLengthString}|"> 10 Mb</b>
                             <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
+                                   th:href="@{|https://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
                                 </a>
                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
+                                   th:href="@{|https://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
                             </b>
                         </div>
                     </div>
@@ -327,13 +327,13 @@
                                 <div class="col-sm-3">
                                     <h4 th:switch="${transcriptDb}" th:with="geneIdentifier=${gene.getGeneIdentifier()}">
                                         <b><a th:case="'UCSC'"
-                                              th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
+                                              th:href="@{|https://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
                                               th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a></b>
                                         <a th:case="'ENSEMBL'"
-                                           th:href="@{http://grch37.ensembl.org/Homo_sapiens/Gene/Summary(g=${geneIdentifier.getEnsemblId()})}"
+                                           th:href="@{https://grch37.ensembl.org/Homo_sapiens/Gene/Summary(g=${geneIdentifier.getEnsemblId()})}"
                                            th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
                                         <a th:case="*"
-                                           th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
+                                           th:href="@{|https://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
                                            th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
                                     </h4>
                                 </div>
@@ -360,7 +360,7 @@
                                 <div class="col-sm-12">
                                     <th:block th:each="priorityResult: ${gene.priorityResults}"
                                               th:utext="${priorityResult.value.HTMLCode}">
-                                        <a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a>
+                                        <a href="https://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a>
                                     </th:block>
                                 </div>
                             </div>
@@ -534,10 +534,10 @@
                                                 <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
                                                     th:switch="${transcriptDb}">
                                                     <a th:case="'UCSC'"
-                                                       th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                                       th:href="@{https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
                                                        th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
                                                     <a th:case="'ENSEMBL'"
-                                                       th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                                       th:href="@{https://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
                                                        th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
                                                     <a th:case="'REFSEQ'"
                                                        th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
@@ -671,10 +671,10 @@
                                             <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
                                                 th:switch="${transcriptDb}">
                                                 <a th:case="'UCSC'"
-                                                   th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                                   th:href="@{https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
                                                    th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
                                                 <a th:case="'ENSEMBL'"
-                                                   th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                                   th:href="@{https://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
                                                    th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
                                                 <a th:case="'REFSEQ'"
                                                    th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
