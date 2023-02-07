@@ -20,22 +20,27 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.variantcontext.VariantContextComparator;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.svart.Contig;
+import org.monarchinitiative.svart.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,79 +48,47 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 /**
  * Generate results in VCF format using HTS-JDK.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
- * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF
- * Standard</a>
+ * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF Standard</a>
+ * @since 13.1.0
  */
 public class VcfResultsWriter implements ResultsWriter {
-
-    private enum ExomiserVcfInfoField {
-
-        GENE_SYMBOL("ExGeneSymbol", VCFHeaderLineType.String, "Exomiser gene symbol"),
-        GENE_ID("ExGeneSymbId", VCFHeaderLineType.String, "Exomiser gene id"),
-        GENE_COMBINED_SCORE("ExGeneSCombi", VCFHeaderLineType.Float, "Exomiser gene combined score"),
-        GENE_PHENO_SCORE("ExGeneSPheno", VCFHeaderLineType.Float, "Exomiser gene phenotype score"),
-        GENE_VARIANT_SCORE("ExGeneSVar", VCFHeaderLineType.Float, "Exomiser gene variant score"),
-        VARIANT_SCORE("ExVarScore", VCFHeaderLineType.Float, "Exomiser variant score"),
-        VARIANT_EFFECT("ExVarEff", VCFHeaderLineType.String, "Exomiser variant effect"),
-        ALLELE_CONTRIBUTES("ExContribAltAllele", VCFHeaderLineType.Flag, "Exomiser alt allele id contributing to score"),
-        WARNING("ExWarn", VCFHeaderLineType.String, "Exomiser warning");
-
-        private final String id;
-        private final VCFHeaderLineType vcfHeaderLineType;
-        private final String description;
-
-        ExomiserVcfInfoField(String id, VCFHeaderLineType vcfHeaderLineType, String description) {
-            this.id = id;
-            this.vcfHeaderLineType = vcfHeaderLineType;
-            this.description = description;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public VCFHeaderLineType getVcfHeaderLineType() {
-            return vcfHeaderLineType;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        VCFHeaderLine getVcfHeaderLine() {
-            return new VCFInfoHeaderLine(id, VCFHeaderLineCount.A, vcfHeaderLineType, description);
-        }
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(VcfResultsWriter.class);
+
+    private static final String EXOMISER_INFO_KEY = "Exomiser";
+    private static final String INFO_FORMAT = "{RANK|ID|GENE_SYMBOL|ENTREZ_GENE_ID|MOI|P-VALUE|EXOMISER_GENE_COMBINED_SCORE|EXOMISER_GENE_PHENO_SCORE|EXOMISER_GENE_VARIANT_SCORE|EXOMISER_VARIANT_SCORE|CONTRIBUTING_VARIANT|WHITELIST_VARIANT|FUNCTIONAL_CLASS|HGVS|EXOMISER_ACMG_CLASSIFICATION|EXOMISER_ACMG_EVIDENCE|EXOMISER_ACMG_DISEASE_ID|EXOMISER_ACMG_DISEASE_NAME}";
+
+    private static final VCFHeaderLine EXOMISER_VCF_HEADER_METADATA_LINE = new VCFInfoHeaderLine(EXOMISER_INFO_KEY,
+            VCFHeaderLineCount.UNBOUNDED,
+            VCFHeaderLineType.String,
+            "A pipe-separated set of values for the proband allele(s) from the record with one per compatible MOI following the format: " + INFO_FORMAT
+    );
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.VCF;
 
-    private final NumberFormat numberFormat;
+    private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
     /**
      * Initialize the object, given the original {@link VCFFileReader} from the
      * input.
      */
     public VcfResultsWriter() {
-        numberFormat = NumberFormat.getInstance(Locale.UK);
-        numberFormat.setMinimumFractionDigits(1);
-        numberFormat.setMaximumFractionDigits(4);
+        Locale.setDefault(Locale.UK);
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
         Sample sample = analysisResults.getSample();
         Path vcfPath = sample.getVcfPath();
@@ -123,18 +96,16 @@ public class VcfResultsWriter implements ResultsWriter {
             logger.info("Skipping writing VCF results as no input VCF has been defined");
             return;
         }
-        String outFileName = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
-        Path outFile = Paths.get(outFileName);
-        VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
-        try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputPath(outFile).build()) {
-            writer.writeHeader(vcfHeader);
-            writeData(modeOfInheritance, analysisResults, settings, writer);
+        Path outFileName = settings.makeOutputFilePath(vcfPath, OUTPUT_FORMAT);
+        Path outPath = Paths.get(outFileName + ".gz");
+        try (VariantContextWriter writer = variantContextWriterBuilder().setOutputPath(outPath).build()) {
+            writeData(analysisResults, settings, vcfPath, writer);
         }
-        logger.debug("{} {} results written to file {}.", OUTPUT_FORMAT, modeOfInheritance.getAbbreviation(), outFileName);
+        logger.debug("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         Sample sample = analysisResults.getSample();
         Path vcfPath = sample.getVcfPath();
         if (vcfPath == null) {
@@ -143,211 +114,137 @@ public class VcfResultsWriter implements ResultsWriter {
         }
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        VCFHeader vcfHeader = readAndUpdateVcfHeader(vcfPath);
-        try (VariantContextWriter writer = newNonIndexingVariantContextWriterBuilder().setOutputStream(baos).build()) {
-            writer.writeHeader(vcfHeader);
-            writeData(modeOfInheritance, analysisResults, settings, writer);
+        // don't try to write the string as a BGZipped output.
+        try (VariantContextWriter writer = variantContextWriterBuilder().modifyOption(Options.INDEX_ON_THE_FLY, false).setOutputStream(baos).build()) {
+            writeData(analysisResults, settings, vcfPath, writer);
         }
         logger.debug("{} results written to string buffer", OUTPUT_FORMAT);
         return baos.toString(StandardCharsets.UTF_8);
     }
 
-    private VCFHeader readAndUpdateVcfHeader(Path vcfPath) {
-        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
-        // add INFO descriptions
-        for (ExomiserVcfInfoField infoField : ExomiserVcfInfoField.values()) {
-            vcfHeader.addMetaDataLine(infoField.getVcfHeaderLine());
-        }
-        // add FILTER descriptions
-        for (FilterType ft : FilterType.values()) {
-            vcfHeader.addMetaDataLine(new VCFFilterHeaderLine(ft.vcfValue(), ft.shortName()));
-        }
-        return vcfHeader;
-    }
-
-    private VariantContextWriterBuilder newNonIndexingVariantContextWriterBuilder() {
+    private VariantContextWriterBuilder variantContextWriterBuilder() {
         return new VariantContextWriterBuilder()
-                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-                .unsetOption(Options.INDEX_ON_THE_FLY);
+                .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER);
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings, VariantContextWriter writer) {
-        writeUnannotatedVariants(modeOfInheritance, analysisResults, writer);
-        List<Gene> passedGenes = outputSettings.filterGenesForOutput(analysisResults.getGenes());
-        // actually write the data and close writer again
-        if (outputSettings.outputContributingVariantsOnly()) {
-            logger.debug("Writing out only CONTRIBUTING variants");
-            writeOnlyContributingData(modeOfInheritance, passedGenes, writer);
-        } else {
-            writeAllSampleData(modeOfInheritance, passedGenes, writer);
-        }
-    }
+    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, Path vcfPath, VariantContextWriter writer){
+        // n.b. identity is key here as VariantContext doesn't override equals() or hashCode() so don't change the implementation of this map
+        Map<VariantContext, List<String>> variantContextAlleleInfoMap = new IdentityHashMap<>();
 
-    private void writeUnannotatedVariants(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, VariantContextWriter writer) {
-        List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, null, analysisResults.getUnAnnotatedVariantEvaluations());
-        updatedRecords.forEach(writer::add);
-    }
-
-    private void writeOnlyContributingData(ModeOfInheritance modeOfInheritance, List<Gene> genes, VariantContextWriter writer) {
-        for (Gene gene : genes) {
-            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                List<VariantEvaluation> compatibleVariants = gene.getGeneScoreForMode(modeOfInheritance).getContributingVariants();
-                List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, compatibleVariants);
-                updatedRecords.forEach(writer::add);
+        GeneScoreRanker geneScoreRanker = new GeneScoreRanker(analysisResults, outputSettings);
+        geneScoreRanker.rankedVariants().forEach(rankedVariant -> {
+            VariantEvaluation ve = rankedVariant.variantEvaluation();
+            String alleleInfo = this.buildVariantRecord(rankedVariant.rank(), ve, rankedVariant.geneScore());
+            if (variantContextAlleleInfoMap.containsKey(ve.getVariantContext())) {
+                variantContextAlleleInfoMap.get(ve.getVariantContext()).add(alleleInfo);
+            } else {
+                var alleleInfoList = new ArrayList<String>();
+                alleleInfoList.add(alleleInfo);
+                variantContextAlleleInfoMap.put(ve.getVariantContext(), alleleInfoList);
             }
+        });
+
+        VCFHeader vcfHeader = VcfFiles.readVcfHeader(vcfPath);
+        vcfHeader.addMetaDataLine(EXOMISER_VCF_HEADER_METADATA_LINE);
+
+        SAMSequenceDictionary samSequenceDictionary = vcfHeader.getSequenceDictionary();
+        if (samSequenceDictionary == null) {
+            Map<GeneIdentifier, Gene> genesById = geneScoreRanker.mapGenesByGeneIdentifier();
+            var genomicAssembly = genesById.values().stream()
+                    .filter(Gene::hasVariants)
+                    .flatMap(gene -> gene.getVariantEvaluations().stream())
+                    .findFirst()
+                    .map(Variant::getGenomeAssembly)
+                    .orElse(GenomeAssembly.UNKNOWN)
+                    .genomicAssembly();
+            samSequenceDictionary = createSamSequenceDictionary(genomicAssembly, variantContextAlleleInfoMap.keySet());
+            vcfHeader.setSequenceDictionary(samSequenceDictionary);
         }
-    }
+        writer.writeHeader(vcfHeader);
 
-    /**
-     * Write the <code>analysisResults</code> as VCF to <code>writer</code>.
-     * <p>
-     * <code>writer</code> is already completely initialized, including all
-     * headers, so data is written out directly for each
-     * {@link VariantEvaluation} in <code>analysisResults</code>.
-     *
-     * @param genes  data set to write out
-     * @param writer writer to write to
-     */
-    private void writeAllSampleData(ModeOfInheritance modeOfInheritance, List<Gene> genes, VariantContextWriter writer) {
-        for (Gene gene : genes) {
-            logger.debug("updating variant records for gene {}", gene);
-            List<VariantContext> updatedRecords = updateGeneVariantRecords(modeOfInheritance, gene, gene.getVariantEvaluations());
-            updatedRecords.forEach(writer::add);
+        if (variantContextAlleleInfoMap.isEmpty() || samSequenceDictionary.isEmpty()) {
+            // don't try sorting and writing as the VariantContextComparator will throw an error
+            // with no contigs in the samSequenceDictionary
+            return;
         }
+
+        variantContextAlleleInfoMap.entrySet().stream()
+                .map(entry -> new VariantContextBuilder(entry.getKey())
+                        .attribute(EXOMISER_INFO_KEY, String.join(",", entry.getValue()))
+                        .make())
+                .sorted(new VariantContextComparator(samSequenceDictionary))
+                .forEach(writer::add);
     }
 
-    //this needs a MultiMap<VariantContext, VariantEvaluation> (see InheritanceModeAnalyser for this)
-    private List<VariantContext> updateGeneVariantRecords(ModeOfInheritance modeOfInheritance, Gene gene, List<VariantEvaluation> variants) {
-        if (variants.isEmpty()) {
-            return Collections.emptyList();
-        }
-//        maybe check if the variant is multi-allelic first?
-        Multimap<String, VariantEvaluation> variantContextToEvaluations = mapVariantEvaluationsToVariantContextString(variants);
-        return variantContextToEvaluations.asMap()
-                .values()
-                .stream()
-                .map(variantEvaluations -> updateRecord(Lists.newArrayList(variantEvaluations), gene, modeOfInheritance))
-                .collect(toList());
+    private SAMSequenceDictionary createSamSequenceDictionary(GenomicAssembly genomicAssembly, Set<VariantContext> variantContexts) {
+        var unknownContigId = new AtomicInteger(genomicAssembly.contigs().size());
+        var contigs = variantContexts.stream()
+                .map(VariantContext::getContig)
+                .distinct()
+                .map(contigName -> {
+                    // it's possible that there are other non-canonical contigs, in which case we'll make some new ids for the sequence index
+                    Contig contig = genomicAssembly.contigByName(contigName);
+                    SAMSequenceRecord samSequenceRecord = new SAMSequenceRecord(contigName, contig.length());
+                    samSequenceRecord.setSequenceIndex(contig.isUnknown() ? unknownContigId.incrementAndGet() : contig.id());
+                    samSequenceRecord.setAssembly(genomicAssembly.name());
+                    samSequenceRecord.setAlternativeSequenceName(contig.isUnknown() ? List.of() : List.of(contig.ucscName(), contig.name(), contig.genBankAccession()));
+                    return samSequenceRecord;
+                })
+                .sorted(Comparator.comparingInt(SAMSequenceRecord::getSequenceIndex))
+                .collect(toUnmodifiableList());
+        return new SAMSequenceDictionary(contigs);
     }
 
-    private Multimap<String, VariantEvaluation> mapVariantEvaluationsToVariantContextString(List<VariantEvaluation> variantEvaluations) {
-        //using ArrayListMultimap is important as the order of the values (alleles) must be preserved so that they match the order listed in the ALT field
-        ArrayListMultimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            geneVariants.put(variantContextKeyValue(variantEvaluation.getVariantContext()), variantEvaluation);
-        }
-        return geneVariants;
+    private String buildVariantRecord(int rank, VariantEvaluation ve, GeneScore geneScore) {
+        List<String> fields = new ArrayList<>();
+        GeneIdentifier geneIdentifier = geneScore.getGeneIdentifier();
+        ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
+        String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
+        List<AcmgAssignment> acmgAssignments = geneScore.getAcmgAssignments();
+        Optional<AcmgAssignment> assignment = acmgAssignments.stream().filter(acmgAssignment -> acmgAssignment.variantEvaluation().equals(ve)).findFirst();
+        fields.add(String.valueOf(rank));
+        String gnomadString = ve.toGnomad();
+        fields.add(gnomadString + "_" + moiAbbreviation);
+        fields.add(geneIdentifier.getGeneSymbol().replace(" ", "_"));
+        fields.add(geneIdentifier.getEntrezId());
+        fields.add(moiAbbreviation);
+        fields.add(decimalFormat.format(geneScore.pValue()));
+        fields.add(decimalFormat.format(geneScore.getCombinedScore()));
+        fields.add(decimalFormat.format(geneScore.getPhenotypeScore()));
+        fields.add(decimalFormat.format(geneScore.getVariantScore()));
+        fields.add(decimalFormat.format(ve.getVariantScore()));
+        fields.add(ve.contributesToGeneScoreUnderMode(modeOfInheritance) ? "1" : "0");
+        fields.add(ve.isWhiteListed() ? "1" : "0");
+        fields.add(ve.getVariantEffect().getSequenceOntologyTerm());
+        fields.add(this.getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
+        fields.add(assignment.map(AcmgAssignment::acmgClassification).orElse(AcmgClassification.NOT_AVAILABLE).toString());
+        fields.add(assignment.map(acmgAssignment -> toVcfAcmgInfo(acmgAssignment.acmgEvidence())).orElse(""));
+        fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
+        fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName()).orElse("") + '"');
+        return "{"+ String.join("|", fields) + "}";
     }
 
-    /**
-     * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
-     * Also simply using toString isn't an option as the compatible variants are different instances and have had their
-     * genotype strings changed. This method solves these problems.
-     */
-    private String variantContextKeyValue(VariantContext variantContext) {
-        //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF
-        // chr10-123256215-T*-[G, A]
-        // chr5-11-AC*-[AT]
-        return new StringJoiner("-")
-                .add(variantContext.getContig())
-                .add(String.valueOf(variantContext.getStart()))
-                .add(variantContext.getReference().toString())
-                .add(variantContext.getAlternateAlleles().toString())
-                .toString();
+    private String toVcfAcmgInfo(AcmgEvidence acmgEvidence) {
+        return acmgEvidence.evidence().entrySet().stream()
+                .map(entry -> {
+                    AcmgCriterion acmgCriterion = entry.getKey();
+                    AcmgCriterion.Evidence evidence = entry.getValue();
+                    return (acmgCriterion.evidence() == evidence) ? acmgCriterion.toString() : acmgCriterion + "_" + evidence.displayString();
+                })
+                .collect(Collectors.joining(","));
     }
 
-    private VariantContext updateRecord(List<VariantEvaluation> variantEvaluations, Gene gene, ModeOfInheritance modeOfInheritance) {
-        // create a new VariantContextBuilder, based on the original line
-        // n.b. variantContexts with alternative alleles will be shared between
-        // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle
-        VariantEvaluation variantEvaluation = variantEvaluations.get(0);
-
-        VariantContext variantContext = variantEvaluation.getVariantContext();
-        VariantContextBuilder builder = new VariantContextBuilder(variantContext);
-        // update filter and info fields and write out to writer.
-        updateFilterField(builder, variantEvaluation, modeOfInheritance);
-        updateInfoField(builder, variantEvaluations, gene, modeOfInheritance);
-        return builder.make();
-    }
-
-    /**
-     * Update the FILTER field of <code>builder</code> given the
-     * {@link VariantEvaluation}.
-     */
-    private void updateFilterField(VariantContextBuilder builder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance) {
-        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
-            case FAILED:
-                builder.filters(makeFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance)));
-                break;
-            case PASSED:
-                builder.filter("PASS");
-                break;
-            case UNFILTERED:
-            default:
-                builder.filter(".");
-                break;
-        }
-    }
-
-    /**
-     * Write all failed filter types from <code>failedFilterTypes</code> into
-     * <code>builder</code>.
-     */
-    private Set<String> makeFailedFilters(Set<FilterType> failedFilterTypes) {
-        return failedFilterTypes.stream().map(FilterType::vcfValue).collect(toSet());
-    }
-
-    /**
-     * Update the INFO field of <code>builder</code> given the
-     * {@link VariantEvaluation} and <code>gene</code>.
-     */
-    private void updateInfoField(VariantContextBuilder builder, List<VariantEvaluation> variantEvaluations, Gene gene, ModeOfInheritance modeOfInheritance) {
-        if (!variantEvaluations.isEmpty() && gene != null) {
-            builder.attribute(ExomiserVcfInfoField.GENE_SYMBOL.getId(), gene.getGeneSymbol().replace(" ", "_"));
-            builder.attribute(ExomiserVcfInfoField.GENE_ID.getId(), gene.getGeneId());
-            builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), numberFormat.format(gene.getCombinedScoreForMode(modeOfInheritance)));
-            builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), numberFormat.format(gene.getPriorityScoreForMode(modeOfInheritance)));
-            builder.attribute(ExomiserVcfInfoField.GENE_VARIANT_SCORE.getId(), numberFormat.format(gene.getVariantScoreForMode(modeOfInheritance)));
-            //variant scores need a list of VariantEvaluations so as to concatenate the fields in Allele order
-            builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations));
-            builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
-            for (VariantEvaluation variantEvaluation : variantEvaluations) {
-                if (variantEvaluation.contributesToGeneScoreUnderMode(modeOfInheritance)) {
-                    builder.attribute(ExomiserVcfInfoField.ALLELE_CONTRIBUTES.getId(), variantEvaluation.getAltAlleleId());
-                }
-            }
+    private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
+        if (annotations.isEmpty()) {
+            return "";
         } else {
-            builder.attribute(ExomiserVcfInfoField.WARNING.getId(), "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
+            TranscriptAnnotation anno = annotations.get(0);
+            StringJoiner stringJoiner = new StringJoiner(":");
+            stringJoiner.add(anno.getGeneSymbol());
+            stringJoiner.add(anno.getAccession());
+            stringJoiner.add(anno.getHgvsCdna());
+            stringJoiner.add(anno.getHgvsProtein());
+            return stringJoiner.toString();
         }
     }
-
-    private String buildVariantScore(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.size() == 1) {
-            return numberFormat.format(variantEvaluations.get(0).getVariantScore());
-        }
-        StringJoiner variantScoreBuilder = new StringJoiner(",");
-        variantEvaluations.forEach(varEval -> variantScoreBuilder.add(numberFormat.format(varEval.getVariantScore())));
-        return variantScoreBuilder.toString();
-    }
-
-    private String buildVariantEffects(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.size() == 1) {
-            return String.valueOf(getSequenceOntologyTerm(variantEvaluations.get(0)));
-        }
-        StringBuilder variantEfectBuilder = new StringBuilder();
-        variantEfectBuilder.append(getSequenceOntologyTerm(variantEvaluations.get(0)));
-        for (int i = 1; i < variantEvaluations.size(); i++) {
-            variantEfectBuilder.append(',').append(getSequenceOntologyTerm(variantEvaluations.get(i)));
-        }
-        return variantEfectBuilder.toString();
-    }
-
-    private String getSequenceOntologyTerm(VariantEvaluation variantEvaluation) {
-        return variantEvaluation.getVariantEffect().getSequenceOntologyTerm();
-    }
-
-    private String getContributingVariantFlag(VariantEvaluation variantEvaluation) {
-        return variantEvaluation.contributesToGeneScore() ? ExomiserVcfInfoField.ALLELE_CONTRIBUTES.getId() : ".";
-    }
-
 }

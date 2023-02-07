@@ -26,7 +26,6 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,8 +33,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
@@ -47,12 +44,12 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.writers.OutputFormat.TSV_VARIANT;
 
 /**
  *
@@ -86,13 +83,36 @@ public class ResultsWriterUtilsTest {
     @Test
     void testNullVcfAndEmptyOutputPrefixUsesVcfFileName() {
         String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/exomiser_AD.json"));
+        assertThat(result, equalTo("results/exomiser.json"));
     }
 
     @Test
     void testEmptyOutputPrefixUsesVcfFileName() {
         String result = ResultsWriterUtils.makeOutputFilename(Paths.get("/data/vcf/sample1_genome.vcf.gz"), "", OutputFormat.TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/sample1_genome-exomiser_AD.variants.tsv"));
+        assertThat(result, equalTo("results/sample1_genome-exomiser.variants.tsv"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', /data/vcf/sample1_genome.vcf.gz, " + DEFAULT_OUTPUT_DIR + "/sample1_genome-exomiser",
+            "wibble, /data/vcf/sample1_genome.vcf.gz, wibble",
+            "/, /data/vcf/sample1_genome.vcf.gz, /sample1_genome-exomiser",
+            "/tmp, /data/vcf/sample1_genome.vcf.gz, /tmp",
+            "/tmp/, /data/vcf/sample1_genome.vcf.gz, /tmp/sample1_genome-exomiser",
+            "/tmp/., /data/vcf/sample1_genome.vcf.gz, /tmp/sample1_genome-exomiser",
+            "/tmp/.., /data/vcf/sample1_genome.vcf.gz, /sample1_genome-exomiser",
+            "/tmp, '', /tmp",
+            "/tmp/, '', /tmp/exomiser",
+            "/tmp/wibble/hoopy/frood, /data/vcf/sample1_genome.vcf.gz, /tmp/wibble/hoopy/frood",
+            "/tmp/wibble/hoopy/frood/, /data/vcf/sample1_genome.vcf.gz, /tmp/wibble/hoopy/frood/sample1_genome-exomiser",
+            "wibble/hoopy/frood, '', wibble/hoopy/frood",
+            "wibble/hoopy/frood, /data/vcf/sample1_genome.vcf.gz, wibble/hoopy/frood",
+            "wibble/hoopy/frood/, '', wibble/hoopy/frood/exomiser",
+            "wibble/hoopy/frood/, /data/vcf/sample1_genome.vcf.gz, wibble/hoopy/frood/sample1_genome-exomiser",
+    })
+    void testDirectoryOutputPrefixUsesVcfFileName(String outputPrefix, String vcfPath, String expected) {
+        String result = ResultsWriterUtils.makeOutputFilename(vcfPath.isEmpty() ? null : Path.of(vcfPath), outputPrefix, TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(result, equalTo(expected + "." + TSV_VARIANT.getFileExtension()));
     }
 
     @Test
@@ -100,7 +120,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
         OutputSettings settings = OutputSettings.builder().build();
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.genes.tsv"));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.genes.tsv"));
     }
 
     @Test
@@ -108,7 +128,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         OutputSettings settings = OutputSettings.builder().build();
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.vcf"));
+        assertThat(result, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.vcf"));
     }
 
     @Test
@@ -116,7 +136,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, outputPrefix, testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml_XD.vcf"));
+        assertThat(result, equalTo("/user/jules/exomes/analysis/slartibartfast.xml.vcf"));
     }
     
     @Test
@@ -132,7 +152,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009";
         String actual = ResultsWriterUtils.makeOutputFilename(vcfPath, outFilePrefix, outFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009_AD.genes.tsv"));
+        assertThat(actual, equalTo("user/subdir/geno/vcf/F0000009/F0000009.genes.tsv"));
     }
 
     @Test
@@ -143,19 +163,19 @@ public class ResultsWriterUtilsTest {
         assertThat(any, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String autoDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AD.html"));
+        assertThat(autoDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String autoRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_AR.html"));
+        assertThat(autoRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String xDom = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_DOMINANT);
-        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XD.html"));
+        assertThat(xDom, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String xRec = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.X_RECESSIVE);
-        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_XR.html"));
+        assertThat(xRec, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
 
         String mito = ResultsWriterUtils.makeOutputFilename(vcfPath, "", testedFormat, ModeOfInheritance.MITOCHONDRIAL);
-        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser_MT.html"));
+        assertThat(mito, equalTo(DEFAULT_OUTPUT_DIR + "/wibble-exomiser.html"));
     }
 
     @Test
@@ -222,9 +242,16 @@ public class ResultsWriterUtilsTest {
             "'', " + DEFAULT_OUTPUT_DIR,
             "wibble, ''",
             "/, /",
-            "/tmp, /tmp",
+            "/tmp, /",
+            "/tmp/, /tmp",
             "/tmp/wibble/hoopy/frood, /tmp/wibble/hoopy",
+            "/tmp/wibble/hoopy/frood/, /tmp/wibble/hoopy/frood",
             "wibble/hoopy/frood, wibble/hoopy",
+            "wibble/hoopy/frood/, wibble/hoopy/frood",
+            "~/wibble/hoopy/frood, ~/wibble/hoopy",
+            "~/wibble/hoopy/frood/, ~/wibble/hoopy/frood",
+            "/home/hhx640/exomiser-results/, /home/hhx640/exomiser-results",
+            "/home/hhx640/exomiser-results, /home/hhx640",
     })
     void testResolveOutputDirEmptyPrefixReturnsDefaultOutput(String outputPrefix, String expectedDir) {
         Path outputDir = ResultsWriterUtils.resolveOutputDir(outputPrefix);

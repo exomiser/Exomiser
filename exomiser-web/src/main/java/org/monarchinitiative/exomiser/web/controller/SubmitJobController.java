@@ -49,9 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
@@ -166,6 +164,21 @@ public class SubmitJobController {
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
     }
+
+    // TODO: use
+    //  @ExceptionHandler, @ControllerAdvice, and ProblemDetail for better error handling on user-side
+    //   add spring.mvc.problemdetails.enabled=true
+//    @ControllerAdvice
+//    static class ExceptionHandlerControllerAdvice {
+//        @ExceptionHandler(IllegalArgumentException.class)
+//        @ResponseStatus(HttpStatus.BAD_REQUEST)
+//        public ProblemDetail onException(Exception e) {
+//            Throwable mostSpecificCause = NestedExceptionUtils.getMostSpecificCause(e);
+//
+//            return ProblemDetail....
+//        }
+//
+//    }
 
     private Sample buildSample(Path vcfPath, Path pedPath, String proband, List<String> phenotypes) {
         return Sample.builder()

@@ -77,28 +77,27 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
-        Path outFile = Paths.get(outFileName);
+        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            Context context = buildContext(modeOfInheritance, analysisResults, settings);
+            Context context = buildContext(analysisResults, settings);
             templateEngine.process("results", context, writer);
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFile, ex);
         }
-        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
-        Context context = buildContext(modeOfInheritance, analysisResults, settings);
+        Context context = buildContext(analysisResults, settings);
         return templateEngine.process("results", context);
     }
 
-    private Context buildContext(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    private Context buildContext(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Context context = new Context();
 
         Analysis analysis = analysisResults.getAnalysis();
@@ -126,7 +125,6 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
 
-        context.setVariable("modeOfInheritance", modeOfInheritance);
         List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.getGenes());
         context.setVariable("genes", filteredGenes);
 

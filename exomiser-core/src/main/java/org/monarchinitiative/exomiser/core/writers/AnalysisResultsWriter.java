@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.Collections;
 
 /**
  * Facade for handling writing out {@link org.monarchinitiative.exomiser.core.analysis.AnalysisResults}
@@ -43,6 +44,7 @@ import java.util.Set;
 public class AnalysisResultsWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisResultsWriter.class);
+    private static final Set<OutputFormat> DEFAULT_OUTPUT_FORMATS = Collections.unmodifiableSet(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON));
 
     private AnalysisResultsWriter() {
     }
@@ -58,80 +60,30 @@ public class AnalysisResultsWriter {
     }
 
     public static void writeToFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
-        logger.debug("Writing results...");
-        createOutputDirectoriesIfNotExists(outputSettings);
+        Path outputDir = createOutputDirectoriesIfNotExists(outputSettings);
+        logger.debug("Writing results to directory {}", outputDir);
 
-        if (outputSettings.getOutputFormats().isEmpty()) {
-            ResultsWriter resultsWriter = new HtmlResultsWriter();
-            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
+        var outputFormats = outputSettings.getOutputFormats().isEmpty()
+                ? DEFAULT_OUTPUT_FORMATS
+                : outputSettings.getOutputFormats();
+
+        for (OutputFormat outputFormat : outputFormats) {
+            var resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
+            logger.debug("Writing {} results", outputFormat);
+            resultsWriter.writeFile(analysisResults, outputSettings);
         }
-
-        Set<OutputFormat> outputFormatsForAnyMoi = EnumSet.noneOf(OutputFormat.class);
-        for (OutputFormat outputFormat : outputSettings.getOutputFormats()) {
-            if (outputFormat == OutputFormat.HTML || outputFormat == OutputFormat.JSON) {
-                ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
-                resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
-            } else {
-                outputFormatsForAnyMoi.add(outputFormat);
-            }
-        }
-
-        // eventually most of this will be superfluous and only the analysisResults and outputSettings will be required,
-        // here we're using these output formats twice - once for the new unified output (here) and then the original
-        // multiple-file output later
-        if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_GENE)) {
-            logger.debug("Writing TSV_GENE results");
-            ResultsWriter resultsWriter = new TsvGeneAllMoiResultsWriter();
-            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
-        }
-
-        if (outputFormatsForAnyMoi.contains(OutputFormat.TSV_VARIANT)) {
-            logger.debug("Writing TSV_VARIANT results");
-            ResultsWriter resultsWriter = new TsvVariantAllMoiResultsWriter();
-            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
-        }
-
-        if (outputFormatsForAnyMoi.contains(OutputFormat.VCF)) {
-            logger.debug("Writing VCF results");
-            ResultsWriter resultsWriter = new VcfAllMoiResultsWriter();
-            resultsWriter.writeFile(ModeOfInheritance.ANY, analysisResults, outputSettings);
-        }
-
-        Analysis analysis = analysisResults.getAnalysis();
-        InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
-            for (ModeOfInheritance modeOfInheritance : inheritanceModeOptions.getDefinedModes()) {
-                if (modeOfInheritance != ModeOfInheritance.ANY) {
-                    logger.debug("Writing {} results:", modeOfInheritance);
-                    // Can't do this in parallel because theses are mutated each time for a different mode here.
-                    // AnalysisResults could return a view for a ModeOfInheritance which can be called by the Writer
-                    // without interfering with other writes for different modes. Check RAM requirements.
-                    // Will only save a few seconds, so is not a rate-limiting step.
-                    // TODO: For removal in v14.0 - analysisResults.getGenes() will be immutable in v14.0.0
-                    analysisResults.getGenes().sort(Gene.comparingScoreForInheritanceMode(modeOfInheritance));
-                    writeForInheritanceMode(modeOfInheritance, outputFormatsForAnyMoi, analysisResults, outputSettings);
-                }
-            }
     }
 
-    private static void createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {
-        Path outputDir = ResultsWriterUtils.resolveOutputDir(outputSettings.getOutputPrefix());
+    private static Path createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {
+        Path outputDir = outputSettings.getOutputDirectory();
         if (Files.notExists(outputDir)) {
             try {
-                Files.createDirectories(outputDir);
+                return Files.createDirectories(outputDir);
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to create Exomiser output path due to " + e.getMessage());
             }
         }
+        return outputDir;
     }
 
-    private static void writeForInheritanceMode(ModeOfInheritance modeOfInheritance, Set<OutputFormat> outputFormats, AnalysisResults analysisResults, OutputSettings outputSettings) {
-        for (OutputFormat outFormat : outputFormats) {
-            writeResultsToFileForMoiWithFormat(modeOfInheritance, outFormat, analysisResults, outputSettings);
-        }
-    }
-
-    private static void writeResultsToFileForMoiWithFormat(ModeOfInheritance modeOfInheritance, OutputFormat outputFormat, AnalysisResults analysisResults, OutputSettings outputSettings) {
-        ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
-        resultsWriter.writeFile(modeOfInheritance, analysisResults, outputSettings);
-    }
 }
