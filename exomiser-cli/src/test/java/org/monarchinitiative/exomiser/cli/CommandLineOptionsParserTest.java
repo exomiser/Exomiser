@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.cli;
 import org.apache.commons.cli.CommandLine;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -170,7 +169,7 @@ class CommandLineOptionsParserTest {
                 "--assembly", "hg19",
                 "--output-format", "TSV_GENE,JSON,HTML,TSV_VARIANT");
         assertTrue(commandLine.hasOption("output-format"));
-        assertThat(Arrays.asList(commandLine.getOptionValues("output-format")), containsInAnyOrder("TSV_GENE", "JSON", "HTML", "TSV_VARIANT"));
+        assertThat(List.of(commandLine.getOptionValues("output-format")), containsInAnyOrder("TSV_GENE", "JSON", "HTML", "TSV_VARIANT"));
     }
 
     @Test
