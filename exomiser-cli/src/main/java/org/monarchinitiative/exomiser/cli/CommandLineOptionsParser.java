@@ -113,7 +113,22 @@ public class CommandLineOptionsParser {
 
         options.addOption(Option.builder()
                 .longOpt("output-prefix")
-                .desc("Path/filename without an extension to be prepended to the output file format options.")
+                .desc("Path/filename without an extension to be prepended to the output file format options." +
+                        " This option is EXCLUSIVE to the output-directory and output-file-name options. DEPRECATED! Use --output-directory and/or --output-file-name instead.")
+                .hasArg()
+                .argName("string")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-directory")
+                .desc("Directory where the output files should be written. This option is EXCLUSIVE to the output-prefix option.")
+                .hasArg()
+                .argName("path")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-file-name")
+                .desc("Filename prefix for the output files. Will be generated from the input VCF filename if not specified. This option is EXCLUSIVE to the output-prefix option.")
                 .hasArg()
                 .argName("string")
                 .build());
@@ -169,7 +184,15 @@ public class CommandLineOptionsParser {
                 throw new CommandLineParseError(e.getMessage());
             }
         }
-
+        if (commandLine.hasOption("output-prefix") && (commandLine.hasOption("output-directory") || commandLine.hasOption("output-file-name"))) {
+            throw new CommandLineParseError("output-prefix option is exclusive to output-directory and output-file-name options");
+        }
+        if (commandLine.hasOption("output-file-name")) {
+            String value = commandLine.getOptionValue("output-file-name");
+            if (value.contains(System.getProperty("file.separator"))) {
+                throw new IllegalArgumentException("output-file-name option should not contain a filesystem separator: " + value);
+            }
+        }
         if (!hasInputFileOption(commandLine)) {
             throw new CommandLineParseError("Missing an input file option!");
         }

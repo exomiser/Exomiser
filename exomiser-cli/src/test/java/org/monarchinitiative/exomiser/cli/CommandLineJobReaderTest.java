@@ -38,6 +38,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeRe
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
+import org.monarchinitiative.exomiser.core.writers.OutputSettingsProtoConverter;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
@@ -820,6 +821,90 @@ class CommandLineJobReaderTest {
                 .setOutputOptions(DEFAULT_OUTPUT_OPTIONS)
                 .build();
 
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleAnalysisWithOutputPrefixOption() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-prefix", "some/custom/output-directory/pfeiffer"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET)
+                .setAnalysis(ANALYSIS)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS.toBuilder().setOutputPrefix("some/custom/output-directory/pfeiffer"))
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleAnalysisWithOutputDirectoryAndFileNameOptions() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-directory", "some/custom/output-directory",
+                "--output-file-name", "pfeiffer"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET)
+                .setAnalysis(ANALYSIS)
+                .setOutputOptions(DEFAULT_OUTPUT_OPTIONS.toBuilder()
+                        .clearOutputPrefix()
+                        .setOutputDirectory("some/custom/output-directory")
+                        .setOutputFileName("pfeiffer"))
+                .build();
+
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleOutputWithPhenopacketOutputDirectoryOverridesYamlOptions() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--output-directory", "some/custom/output-directory",
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(OUTPUT.toBuilder()
+                        .clearOutputPrefix()
+                        .setOutputDirectory("some/custom/output-directory"))
+                .build();
+
+        System.out.println(expected.getOutputOptions());
+        System.out.println(new OutputSettingsProtoConverter().toDomain(expected.getOutputOptions()));
+        assertThat(jobs, equalTo(List.of(expected)));
+    }
+
+    @Test
+    void readCliSampleOutputWithPhenopacketOutputFileNameOverridesYamlOptions() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--output-file-name", "custom-filename",
+                "--output", "src/test/resources/pfeiffer-output-options.yml"
+        );
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+
+        JobProto.Job expected = JobProto.Job.newBuilder()
+                .setPhenopacket(PHENOPACKET)
+                .setPreset(AnalysisProto.Preset.EXOME)
+                .setOutputOptions(OUTPUT.toBuilder()
+                        .clearOutputPrefix()
+                        .setOutputFileName("custom-filename"))
+                .build();
+
+        System.out.println(expected.getOutputOptions());
+        System.out.println(new OutputSettingsProtoConverter().toDomain(expected.getOutputOptions()));
         assertThat(jobs, equalTo(List.of(expected)));
     }
 

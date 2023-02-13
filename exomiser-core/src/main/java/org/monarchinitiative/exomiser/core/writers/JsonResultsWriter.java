@@ -55,34 +55,31 @@ public class JsonResultsWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.JSON;
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT, modeOfInheritance);
-        Path outFile = Paths.get(outFileName);
+        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
         ObjectWriter objectWriter = new ObjectMapper()
                 .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(modeOfInheritance, analysisResults, settings, objectWriter, bufferedWriter);
+            writeData(analysisResults, settings, objectWriter, bufferedWriter);
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFile, ex);
         }
-        logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
-                .getAbbreviation(), outFileName);
+        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         ObjectWriter objectWriter = new ObjectMapper()
                 .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {
-            writeData(modeOfInheritance, analysisResults, settings, objectWriter, stringWriter);
+            writeData(analysisResults, settings, objectWriter, stringWriter);
             stringWriter.flush();
-            logger.info("{} {} results written to string", OUTPUT_FORMAT, (modeOfInheritance.getAbbreviation() == null) ? "ALL" : modeOfInheritance
-                    .getAbbreviation());
+            logger.info("{} results written to string", OUTPUT_FORMAT);
             return stringWriter.toString();
         } catch (IOException ex) {
             logger.error("Unable to write results to json.", ex);
@@ -90,58 +87,38 @@ public class JsonResultsWriter implements ResultsWriter {
         return "";
     }
 
-    private void writeData(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings, ObjectWriter objectWriter, Writer writer) throws IOException {
-        List<Gene> compatibleGenes = getCompatibleGenesForMoi(modeOfInheritance, analysisResults.getGenes());
+    private void writeData(AnalysisResults analysisResults, OutputSettings settings, ObjectWriter objectWriter, Writer writer) throws IOException {
+        List<Gene> compatibleGenes = analysisResults.getGenes();
         if (settings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
-            List<Gene> passedGenes = makePassedGenes(modeOfInheritance, compatibleGenes);
+            List<Gene> passedGenes = makePassedGenes(compatibleGenes);
             objectWriter.writeValue(writer, settings.filterGenesForOutput(passedGenes));
         } else {
             objectWriter.writeValue(writer, settings.filterGenesForOutput(compatibleGenes));
         }
     }
 
-    private List<Gene> getCompatibleGenesForMoi(ModeOfInheritance modeOfInheritance, List<Gene> genes) {
-        if (modeOfInheritance == ModeOfInheritance.ANY) {
-            return genes;
-        }
-        return genes.stream()
-                .filter(gene -> gene.isCompatibleWith(modeOfInheritance))
-                .collect(toList());
-    }
-
-    private List<Gene> makePassedGenes(ModeOfInheritance modeOfInheritance, List<Gene> compatibleGenes) {
+    private List<Gene> makePassedGenes(List<Gene> compatibleGenes) {
         List<Gene> passedGenes = new ArrayList<>();
         for (Gene gene : compatibleGenes) {
-            if (gene.passedFilters() && gene.isCompatibleWith(modeOfInheritance)) {
-                Gene makePassOnlyGene = makeContributingOnlyGene(modeOfInheritance, gene);
+            if (gene.passedFilters()) {
+                Gene makePassOnlyGene = makeContributingOnlyGene(gene);
                 passedGenes.add(makePassOnlyGene);
             }
         }
         return passedGenes;
     }
 
-    private Gene makeContributingOnlyGene(ModeOfInheritance modeOfInheritance, Gene gene) {
+    private Gene makeContributingOnlyGene(Gene gene) {
         Gene contributingOnlyGene = new Gene(gene.getGeneIdentifier());
         contributingOnlyGene.setCompatibleInheritanceModes(gene.getCompatibleInheritanceModes());
         gene.getPriorityResults().values().forEach(contributingOnlyGene::addPriorityResult);
-
-        if (modeOfInheritance == ModeOfInheritance.ANY) {
-            gene.getVariantEvaluations().stream()
-                    .filter(VariantEvaluation::contributesToGeneScore)
-                    .forEach(contributingOnlyGene::addVariant);
-            gene.getGeneScores()
-                    .forEach(contributingOnlyGene::addGeneScore);
-            return contributingOnlyGene;
-        } else {
-            gene.getVariantEvaluations().stream()
-                    .filter(ve -> ve.contributesToGeneScoreUnderMode(modeOfInheritance))
-                    .forEach(contributingOnlyGene::addVariant);
-            gene.getGeneScores().stream()
-                    .filter(geneScore -> geneScore.getModeOfInheritance() == modeOfInheritance)
-                    .forEach(contributingOnlyGene::addGeneScore);
-            return contributingOnlyGene;
-        }
+        gene.getVariantEvaluations().stream()
+                .filter(VariantEvaluation::contributesToGeneScore)
+                .forEach(contributingOnlyGene::addVariant);
+        gene.getGeneScores()
+                .forEach(contributingOnlyGene::addGeneScore);
+        return contributingOnlyGene;
     }
 
 }

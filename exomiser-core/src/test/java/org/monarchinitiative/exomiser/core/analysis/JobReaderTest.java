@@ -75,6 +75,8 @@ class JobReaderTest {
                 "  analysisMode: FULL\n" +
                 "outputOptions:\n" +
                 "  outputPrefix: results/Pfeiffer-hiphive-exome\n" +
+                "  outputDirectory: results\n" +
+                "  outputFileName: Pfeiffer-hiphive-exome\n" +
                 "  #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)\n" +
                 "  outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]";
 
@@ -91,6 +93,8 @@ class JobReaderTest {
 
         OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
                 .setOutputPrefix("results/Pfeiffer-hiphive-exome")
+                .setOutputDirectory("results")
+                .setOutputFileName("Pfeiffer-hiphive-exome")
                 .addAllOutputFormats(List.of("HTML", "JSON", "TSV_GENE", "TSV_VARIANT", "VCF"))
                 .build();
 

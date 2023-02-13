@@ -1,6 +1,8 @@
 # Exomiser specific bits
 /exomiser-db/data/
 distribute.sh
+# ontologizer and javautil are not on maven central
+!phenix-repository/lib/*.jar
 
 #Java stuff
 *.class

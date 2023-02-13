@@ -138,7 +138,14 @@ public class CommandLineJobReader {
             handlePedOption(commandLine.getOptionValue("ped"), jobBuilder);
         }
         if (userOptions.contains("output-prefix")) {
+            logger.warn("output-prefix option is now DEPRECATED in favour of the output-directory and output-file-name options and will be removed in the next major version.");
             handleOutputPrefixOption(commandLine.getOptionValue("output-prefix"), jobBuilder);
+        }
+        if (userOptions.contains("output-directory")) {
+            handleOutputDirectoryOption(commandLine.getOptionValue("output-directory"), jobBuilder);
+        }
+        if (userOptions.contains("output-file-name")) {
+            handleOutputFileNameOption(commandLine.getOptionValue("output-file-name"), jobBuilder);
         }
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
@@ -289,6 +296,28 @@ public class CommandLineJobReader {
         OutputProto.OutputOptions.Builder builder = jobBuilder
                 .getOutputOptions().toBuilder()
                 .setOutputPrefix(outputPrefixOptionPath.toString());
+        jobBuilder.setOutputOptions(builder);
+    }
+
+    private void handleOutputDirectoryOption(String outputDirectoryOptionValue, JobProto.Job.Builder jobBuilder) {
+        Path outputDirectoryOptionPath = Path.of(outputDirectoryOptionValue);
+        logger.debug("Setting output-directory to {}", outputDirectoryOptionPath);
+        OutputProto.OutputOptions.Builder builder = jobBuilder
+                .getOutputOptions().toBuilder()
+                .clearOutputPrefix()
+                .setOutputDirectory(outputDirectoryOptionPath.toString());
+        jobBuilder.setOutputOptions(builder);
+    }
+
+    private void handleOutputFileNameOption(String outputFileNameOptionValue, JobProto.Job.Builder jobBuilder) {
+        if (outputFileNameOptionValue.contains(System.getProperty("file.separator"))) {
+            throw new IllegalArgumentException("output-file-name option should not contain a filesystem separator: " + outputFileNameOptionValue);
+        }
+        logger.debug("Setting output-file-name to {}", outputFileNameOptionValue);
+        OutputProto.OutputOptions.Builder builder = jobBuilder
+                .getOutputOptions().toBuilder()
+                .clearOutputPrefix()
+                .setOutputFileName(outputFileNameOptionValue);
         jobBuilder.setOutputOptions(builder);
     }
 

@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -132,18 +131,18 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         if (!variantsLoaded && sample.hasVcf()) {
             try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-                variantEvaluations = variantStream.collect(toList());
+                variantEvaluations = variantStream.collect(Collectors.toUnmodifiableList());
             }
             assignVariantsToGenes(variantEvaluations, allGenes);
             variantsLoaded = true;
         }
 
-        logger.info("Scoring genes");
         List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : List.copyOf(allGenes.values());
         // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
         CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
         GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
 
+        logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
         List<VariantEvaluation> variants = variantsLoaded ? getFinalVariantList(variantEvaluations) : List.of();
 
@@ -168,8 +167,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private CombinedScorePvalueCalculator buildCombinedScorePvalueCalculator(Sample sample, Analysis analysis, int numFilteredGenes) {
         var prioritiser = analysis.getMainPrioritiser();
         List<Gene> knownGenes = genomeAnalysisService.getKnownGenes();
-        int bootStrapValue = 2_000;
-        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(bootStrapValue, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(bootStrapValue, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
+        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(0, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(0, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
     }
 
     /**
@@ -200,7 +198,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                         .filter(isAssociatedWithKnownGene(allGenes))
                         .filter(runVariantFilters(variantFilters, filterStats))
                         .peek(variantLogger.countPassedVariant())
-                        .collect(toList());
+                        .collect(Collectors.toUnmodifiableList());
         }
         variantLogger.logResults();
         return filteredVariants;
@@ -240,6 +238,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Predicate<VariantEvaluation> isObservedInProband(String probandId) {
+        // gnomAD high quality criteria: (GQ >= 20, DP >= 10, and have now added: allele balance > 0.2 for heterozygote genotypes)
         return variantEvaluation -> {
             SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously

@@ -63,6 +63,7 @@ import static java.util.stream.Collectors.*;
  * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF Standard</a>
  * @since 13.1.0
  */
+@Deprecated(forRemoval = true)
 public class VcfAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(VcfAllMoiResultsWriter.class);
 
@@ -86,7 +87,7 @@ public class VcfAllMoiResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
         Sample sample = analysisResults.getSample();
         Path vcfPath = sample.getVcfPath();
@@ -94,7 +95,7 @@ public class VcfAllMoiResultsWriter implements ResultsWriter {
             logger.info("Skipping writing VCF results as no input VCF has been defined");
             return;
         }
-        String outFileName = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), OUTPUT_FORMAT, ModeOfInheritance.ANY);
+        Path outFileName = settings.makeOutputFilePath(vcfPath, OUTPUT_FORMAT);
         Path outPath = Paths.get(outFileName + ".gz");
         try (VariantContextWriter writer = variantContextWriterBuilder().setOutputPath(outPath).build()) {
             writeData(analysisResults, settings, vcfPath, writer);
@@ -103,7 +104,7 @@ public class VcfAllMoiResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         Sample sample = analysisResults.getSample();
         Path vcfPath = sample.getVcfPath();
         if (vcfPath == null) {

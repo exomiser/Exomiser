@@ -52,6 +52,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -657,7 +658,8 @@ public class AnalysisParserTest {
         OutputSettings expected = OutputSettings.builder()
                 .outputContributingVariantsOnly(false)
                 .numberOfGenesToShow(0)
-                .outputPrefix("results/Pfeiffer-hiphive")
+                .outputDirectory(Path.of("results"))
+                .outputFileName("Pfeiffer-hiphive")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.HTML))
                 .build();
         assertThat(outputSettings, equalTo(expected));
