@@ -125,6 +125,10 @@ public class CommandLineJobReader {
             if ("output".equals(option)) {
                 handleOutputOption(optionValue, jobBuilder);
             }
+            if ("output-format".equals((option))) {
+                String[] outputFormatStrings = optionValue.split(",");
+                handleOutputFormat(outputFormatStrings, jobBuilder);
+            }
         }
         // post-process these optional commands for cases where the user wants to override/add a different VCF or PED
         if (userOptions.contains("vcf")) {
@@ -166,6 +170,25 @@ public class CommandLineJobReader {
                 .setNumGenes(0)
                 .setOutputContributingVariantsOnly(false)
                 .build();
+    }
+
+    private void handleOutputFormat(String[] outputFormatStrings, JobProto.Job.Builder jobBuilder) {
+        // override any settings from an analysis file referring to other output_formats
+        OutputProto.OutputOptions.Builder optionsBuilder = jobBuilder.getOutputOptionsBuilder();
+        optionsBuilder.clearOutputFormats();
+        for (String outputFormatString : outputFormatStrings) {
+            outputFormatString = outputFormatString.toUpperCase();
+            // Try to match the output format string with an OutputFormat enum constant
+            OutputFormat outputFormat = null;
+            try {
+                outputFormat = OutputFormat.valueOf(outputFormatString);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Unknown output format: " + outputFormatString + "has been cleared from the list");
+            }
+            if (outputFormat != null) {
+                jobBuilder.getOutputOptionsBuilder().addOutputFormats(outputFormat.name());
+            }
+        }
     }
 
     private void ensureOutputSettingsSpecifyOutputFormat(JobProto.Job.Builder jobBuilder) {

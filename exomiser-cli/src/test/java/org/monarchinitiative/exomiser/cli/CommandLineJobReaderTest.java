@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Timestamp;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.apache.commons.cli.CommandLine;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
@@ -49,6 +50,7 @@ import java.util.List;
 import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.MVP;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.REVEL;
@@ -294,6 +296,38 @@ class CommandLineJobReaderTest {
             .setAnalysis(ANALYSIS)
             .setOutputOptions(OUTPUT)
             .build();
+
+    @Test
+    void testOutputFormatOptionToOverwriteAnalysis() {
+        // the test-analysis-exome.yml file contains all output_options and gets overwritten with HTML
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml", "--output-format", "HTML");
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+        for (JobProto.Job job: jobs) {
+            List<String> formats = job.getOutputOptions().getOutputFormatsList();
+            assertThat(formats, equalTo(List.of("HTML")));
+        }
+    }
+
+    @Test
+    void testGivenNoOutputFormatDoesNotOverrideAnalysisWithDefaultOutputFormat() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml");
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+        for (JobProto.Job job: jobs) {
+            List<String> formats = job.getOutputOptions().getOutputFormatsList();
+            assertThat(formats, containsInAnyOrder("HTML", "TSV_GENE", "JSON", "TSV_VARIANT", "VCF") );
+        }
+    }
+
+    @Test
+    void testIllegalOutputFormatArguments() {
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml", "--output-format", "HTML,FOO,BAR");
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+        for (JobProto.Job job: jobs) {
+            List<String> formats = job.getOutputOptions().getOutputFormatsList();
+            assertThat(formats, containsInAnyOrder("HTML"));
+            assertThat(formats, Matchers.not(containsInAnyOrder("FOO", "BAR")));
+        }
+    }
 
     @Test
     void readIllegalAnalysisOutputNoSampleCombination() {

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -159,6 +159,17 @@ class CommandLineOptionsParserTest {
         assertThat(commandLine.getOptionValue("vcf"), equalTo(resource("Pfeiffer.vcf")));
         assertTrue(commandLine.hasOption("assembly"));
         assertThat(commandLine.getOptionValue("assembly"), equalTo("hg19"));
+    }
+
+    @Test
+    void parseOutputFormat() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", resource("exome-analysis.yml"),
+                "--vcf", resource("Pfeiffer.vcf"),
+                "--assembly", "hg19",
+                "--output-format", "TSV_GENE,JSON,HTML,TSV_VARIANT");
+        assertTrue(commandLine.hasOption("output-format"));
+        assertThat(List.of(commandLine.getOptionValues("output-format")), containsInAnyOrder("TSV_GENE", "JSON", "HTML", "TSV_VARIANT"));
     }
 
     @Test
