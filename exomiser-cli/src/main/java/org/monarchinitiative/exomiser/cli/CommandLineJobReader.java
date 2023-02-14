@@ -40,9 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -125,8 +123,8 @@ public class CommandLineJobReader {
             if ("output".equals(option)) {
                 handleOutputOption(optionValue, jobBuilder);
             }
-            if ("output-format".equals((option))) {
-                String[] outputFormatStrings = optionValue.split(",");
+            if ("output-format".equals(option)) {
+                String[] outputFormatStrings = commandLine.getOptionValues(option);
                 handleOutputFormat(outputFormatStrings, jobBuilder);
             }
         }
@@ -176,19 +174,16 @@ public class CommandLineJobReader {
         // override any settings from an analysis file referring to other output_formats
         OutputProto.OutputOptions.Builder optionsBuilder = jobBuilder.getOutputOptionsBuilder();
         optionsBuilder.clearOutputFormats();
+        Set<String> outputFormats = new LinkedHashSet<>();
         for (String outputFormatString : outputFormatStrings) {
-            outputFormatString = outputFormatString.toUpperCase();
-            // Try to match the output format string with an OutputFormat enum constant
-            OutputFormat outputFormat = null;
             try {
-                outputFormat = OutputFormat.valueOf(outputFormatString);
+                OutputFormat outputFormat = OutputFormat.valueOf(outputFormatString);
+                outputFormats.add(outputFormat.toString());
             } catch (IllegalArgumentException e) {
-                logger.warn("Unknown output format: " + outputFormatString + "has been cleared from the list");
-            }
-            if (outputFormat != null) {
-                jobBuilder.getOutputOptionsBuilder().addOutputFormats(outputFormat.name());
+                throw new IllegalArgumentException("Unknown output format: '" + outputFormatString + "'. Valid formats are " + List.of(OutputFormat.values()));
             }
         }
+        optionsBuilder.addAllOutputFormats(outputFormats);
     }
 
     private void ensureOutputSettingsSpecifyOutputFormat(JobProto.Job.Builder jobBuilder) {

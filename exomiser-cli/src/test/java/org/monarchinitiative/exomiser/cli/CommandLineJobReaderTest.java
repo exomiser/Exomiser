@@ -309,6 +309,17 @@ class CommandLineJobReaderTest {
     }
 
     @Test
+    void testMultipleOutputFormatOptionsOverwriteAnalysis() {
+        // the test-analysis-exome.yml file contains all output_options and gets overwritten with HTML
+        CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml", "--output-format", "TSV_GENE,TSV_VARIANT,VCF");
+        List<JobProto.Job> jobs = instance.readJobs(commandLine);
+        for (JobProto.Job job: jobs) {
+            List<String> formats = job.getOutputOptions().getOutputFormatsList();
+            assertThat(formats, equalTo(List.of("TSV_GENE","TSV_VARIANT", "VCF")));
+        }
+    }
+
+    @Test
     void testGivenNoOutputFormatDoesNotOverrideAnalysisWithDefaultOutputFormat() {
         CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml");
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
@@ -321,12 +332,8 @@ class CommandLineJobReaderTest {
     @Test
     void testIllegalOutputFormatArguments() {
         CommandLine commandLine = CommandLineOptionsParser.parse("--analysis", "src/test/resources/test-analysis-exome.yml", "--output-format", "HTML,FOO,BAR");
-        List<JobProto.Job> jobs = instance.readJobs(commandLine);
-        for (JobProto.Job job: jobs) {
-            List<String> formats = job.getOutputOptions().getOutputFormatsList();
-            assertThat(formats, containsInAnyOrder("HTML"));
-            assertThat(formats, Matchers.not(containsInAnyOrder("FOO", "BAR")));
-        }
+        Throwable error = assertThrows(IllegalArgumentException.class, () -> instance.readJobs(commandLine));
+        assertThat(error.getMessage(), equalTo("Unknown output format: 'FOO'. Valid formats are [HTML, VCF, TSV_GENE, TSV_VARIANT, JSON]"));
     }
 
     @Test
