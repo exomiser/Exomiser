@@ -8,7 +8,7 @@
     - [Usage](#usage)
     - [Troubleshooting](#troubleshooting)
     - [Running Exomiser with Docker](#working-with-docker)
-        - [Working with the Docker bash images](#working-with-the-docker-bash-images)
+        - [Working with the Docker bash images](#working-with-the-docker-bash-image)
         - [Working with the distroless image (no shell)](#working-with-the-distroless-image)
 
 # <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
@@ -185,16 +185,32 @@ This shouldn't be an issue with more recent linux distributions.
 ## <a id="working-with-docker"></a>Running Exomiser with Docker 
 
 ### Selecting the correct profile
-We offer different docker image builds for different system architectures.
-You can select out of `docker:distroless/amd64` (no shell) and `docker:bash` (with shell) profiles. When building from
-`docker:bash` it will automatically pull the correct digest for your systems architecture.
-By default, no docker image will be built:
+By default, unless specified, the build process will not include the creation of a Docker image.
+If you choose to have a Docker container, you can select out of the `docker:distroless` (no shell) 
+and `docker:bash` (with shell) profiles.
+As part of our Docker image creation process, we use multi-arch builds to ensure that our images 
+are compatible with a variety of system architectures. This means that you can choose any available 
+image without worrying about compatibility issues, as each image will automatically take the correct 
+digest for your system architecture.
+
+To help you choose the appropriate image for your system, we provide a list of supported architectures
+for each Docker image in the following table:
+
+
+| profileID           | architecture           |
+|---------------------|------------------------|
+| `docker:distroless` | arm64, amd64           |
+| `docker:bash`       | arm64, arm64/v8, amd64 |
+
+If you dont need a docker image we recommend building the exomiser-cli with the following commnad,
+which does not include any docker image build:
 
 ```shell
 mvn clean install
 ```
 
-Otherwise, you may provide an own docker repository `repositoryName` (e.g. dockerhub username) to push the image directly to your repository. Afterwards you can use the image by pulling it 
+Otherwise, you may provide an own docker repository `repositoryName` (e.g. dockerhub username) to push the image directly 
+to your repository. Afterwards you can use the image by pulling it 
 from the docker hub.
 You would need to specify them during the building process of Maven, like this:
 
@@ -206,21 +222,12 @@ Keep in mind that if you run into an authentication issue, you may want to updat
 authenticate `https://index.docker.io/v1/`. To do so you want to give it your base64-encoded docker credentials.
 
 
-| profileID                 | architecture           |
-|---------------------------|------------------------|
-| `docker:distroless/amd64` | distroless/amd64       |
-| `docker:bash`             | arm64, arm64/v8, amd64 |
-
-
-
-
-
 Docker images are build using [jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#quickstart)
 which does not require a Docker daemon to be running/installed in order to build an image. 
 
 
 ```shell
-$ docker load -i ${docker.repository}/exomiser-cli:distroless-latest
+$ docker pull ${docker.repository}/exomiser-cli:bash-latest
 $ docker images
 REPOSITORY                       TAG              IMAGE ID      CREATED         SIZE
 ${docker.repository}/exomiser-cli           latest           c12b1878a8f3  52 years ago    273 MB
@@ -228,7 +235,7 @@ ${docker.repository}/exomiser-cli           ${project.version} c12b1878a8f3  52 
 ```
 
 -----
-### <a id="working-with-the-docker-bash-images"></a>Working with the docker bash images
+### <a id="working-with-the-docker-bash-image"></a>Working with the docker bash images
 
 Running the image with the following command will open the shell and create volumes with
 links to the exomiser data and connects the results to your local machine. `/results` should be an empty directory, 
@@ -238,7 +245,8 @@ where Exomiser will write the results into.
 ```shell
 docker run -v "/path/to/exomiser-data:/exomiser-data" \
  -v "/path/to/exomiser/exomiser-config/:/exomiser" \
- -v "/path/to/exomiser/results:/results"  
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  
 ```
 
 Here the contents of `/path/to/exomiser/exomiser-config` is simply the `application.properties` file and the example files
@@ -272,16 +280,6 @@ or using Spring configuration arguments instead of the `application.properties`:
  --exomiser.hg19.data-version=${genome.data.version} \
  --exomiser.phenotype.data-version=${phenotype.data.version}
 ```
-
-To run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
-supply an `application.properties` file or environmental variables to point to the data required _e.g._
-
-Keep in mind to update your `application.properties` to point the data to the location
-inside the container, like:
-
-```application.properties
-exomiser.data-directory=/exomiser-data
-```
 -----
 ### <a id="working-with-the-distroless-image"></a>Working with the distroless image (no shell)
 
@@ -291,10 +289,35 @@ If you choose to run the distroless image use the following command:
  docker run -v "/path/to/exomiser-data:/exomiser-data" \
  -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
  -v "/path/to/exomiser/results:/results"  \
- localhost/exomiser-cli:${project.version}  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
+ --analysis /exomiser/test-analysis-exome.yml  \
+ --spring.config.location=/exomiser/application.properties
+```
+
+or using Spring configuration arguments instead of the `application.properties`:
+
+```shell
+ docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
  --analysis /exomiser/test-analysis-exome.yml  \
  # minimal requirements for an hg19 exome sample
  --exomiser.data-directory=/exomiser-data \
  --exomiser.hg19.data-version=${genotype.data.version} \
  --exomiser.phenotype.data-version=${phenotype.data.version}
 ```
+-----
+
+In both cases, to run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
+supply an `application.properties` file or environmental variables to point to the data required _e.g._
+
+Keep in mind to update your `application.properties` to point the data to the location
+inside the container, like:
+
+
+```application.properties
+exomiser.data-directory=/exomiser-data
+```
+
+
