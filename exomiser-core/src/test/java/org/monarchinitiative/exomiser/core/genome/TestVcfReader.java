@@ -105,7 +105,7 @@ public final class TestVcfReader implements VcfReader {
      * @return a VariantContext for the line provided.
      */
     public VariantContext readVariantContext(String line) {
-        return vcfCodec.decode(line.replaceAll("[ ]+", "\t").trim());
+        return vcfCodec.decode(line.replaceAll("\\s+", "\t").trim());
     }
 
     public static Builder builder() {
