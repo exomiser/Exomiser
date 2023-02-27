@@ -142,8 +142,8 @@ public class CommandLineJobReader {
         if (userOptions.contains("output-directory")) {
             handleOutputDirectoryOption(commandLine.getOptionValue("output-directory"), jobBuilder);
         }
-        if (userOptions.contains("output-file-name")) {
-            handleOutputFileNameOption(commandLine.getOptionValue("output-file-name"), jobBuilder);
+        if (userOptions.contains("output-filename")) {
+            handleOutputFileNameOption(commandLine.getOptionValue("output-filename"), jobBuilder);
         }
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new CommandLineParseError("No sample specified!");
@@ -306,9 +306,9 @@ public class CommandLineJobReader {
 
     private void handleOutputFileNameOption(String outputFileNameOptionValue, JobProto.Job.Builder jobBuilder) {
         if (outputFileNameOptionValue.contains(System.getProperty("file.separator"))) {
-            throw new IllegalArgumentException("output-file-name option should not contain a filesystem separator: " + outputFileNameOptionValue);
+            throw new IllegalArgumentException("output-filename option should not contain a filesystem separator: " + outputFileNameOptionValue);
         }
-        logger.debug("Setting output-file-name to {}", outputFileNameOptionValue);
+        logger.debug("Setting output-filename to {}", outputFileNameOptionValue);
         OutputProto.OutputOptions.Builder builder = jobBuilder
                 .getOutputOptions().toBuilder()
                 .clearOutputPrefix()

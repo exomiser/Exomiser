@@ -197,20 +197,20 @@ class CommandLineOptionsParserTest {
                 "--analysis", "src/test/resources/exome-analysis.yml",
                 "--output-prefix", "results/Pfeiffer",
                 "--output-directory", "results"
-        ), "output-prefix option is exclusive to output-directory and output-file-name options");
+        ), "output-prefix option is exclusive to output-directory and output-filename options");
 
         assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--analysis", "src/test/resources/exome-analysis.yml",
                 "--output-prefix", "results/Pfeiffer",
-                "--output-file-name", "Pfeiffer"
-        ), "output-prefix option is exclusive to output-directory and output-file-name options");
+                "--output-filename", "Pfeiffer"
+        ), "output-prefix option is exclusive to output-directory and output-filename options");
 
         assertThrows(IllegalArgumentException.class, () -> CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--analysis", "src/test/resources/exome-analysis.yml",
-                "--output-file-name", "results/Pfeiffer"
-        ), "output-file-name option should not contain a filesystem separator: results/Pfeiffer");
+                "--output-filename", "results/Pfeiffer"
+        ), "output-filename option should not contain a filesystem separator: results/Pfeiffer");
     }
 
     @Test

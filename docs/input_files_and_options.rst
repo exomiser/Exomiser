@@ -24,15 +24,8 @@ the full path to the phenopacket file:
 
 
 Should the phenopacket either not specify a VCF file or specifies a file on another filesystem, the VCF file path can be
-provided/overridden using the ``vcf`` switch:
-
-.. parsed-literal::
-
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json --vcf path/to/genome.vcf
-
-
-Exomiser will assume that the vcf file was called using the default assembly (GRCh37 / hg19) but this can be specified
-using the ``assembly`` switch:
+provided/overridden using the ``vcf`` option. This option requires that the genome assembly the VCF file was called against
+is also specified using the ``assembly`` option:
 
 .. parsed-literal::
 
@@ -116,7 +109,7 @@ filenames will match the input VCF filename. For example
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz
+    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --assembly hg19
 
 Would result in two files being output with the filename 'manuel_exomiser' and the '.json' and '.html' extensions:
 
@@ -127,22 +120,21 @@ Would result in two files being output with the filename 'manuel_exomiser' and t
 
 
 Users requiring more control over their output can use either the ``outputOptions`` section of an analysis file or a
-specific output options yaml file. An example of this can be found in the exomiser-cli-|version|/examples/output-options.yml
+specific :ref:`outputoptions` yaml file. An example of this can be found in the exomiser-cli-|version|/examples/output-options.yml
 file:
 
 .. code-block:: yaml
 
     ---
     outputContributingVariantsOnly: false
-    #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
+    # numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
     numGenes: 10
     minExomiserGeneScore: 0.7
-    #outputPrefix options: specify the path/filename without an extension and this will be added
-    # according to the outputFormats option. If unspecified this will default to the following:
-    # {exomiserDir}/results/input-vcf-name-exomiser-results.html
-    # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis
-    outputPrefix: /results/NA12345/NA12345
-    #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    # outputDirectory: (optional) (default: '{exomiserDir}/results/')
+    outputDirectory: results/
+    # outputFileName: (optional) (default: 'input-vcf-name-exomiser')
+	outputFileName: NA12345-exomiser-results
+    # out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
     outputFormats: [HTML, JSON, TSV_GENE]
 
 
@@ -152,6 +144,8 @@ This file is passed to Exomiser using the ``--output`` switch:
 
     java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --output path/to/output-options.yml
 
+
+The output filename, directory and format can also be specified directly on the CLI (see the --help command for details).
 
 Batch
 =====

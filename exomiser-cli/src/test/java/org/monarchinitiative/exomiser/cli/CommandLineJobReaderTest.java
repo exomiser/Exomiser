@@ -855,7 +855,7 @@ class CommandLineJobReaderTest {
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
                 "--analysis", "src/test/resources/exome-analysis.yml",
                 "--output-directory", "some/custom/output-directory",
-                "--output-file-name", "pfeiffer"
+                "--output-filename", "pfeiffer"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);
 
@@ -897,7 +897,7 @@ class CommandLineJobReaderTest {
     void readCliSampleOutputWithPhenopacketOutputFileNameOverridesYamlOptions() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
-                "--output-file-name", "custom-filename",
+                "--output-filename", "custom-filename",
                 "--output", "src/test/resources/pfeiffer-output-options.yml"
         );
         List<JobProto.Job> jobs = instance.readJobs(commandLine);

@@ -567,7 +567,8 @@ When specified as part of a command-line argument, the file should be a properly
     outputContributingVariantsOnly: true
     numGenes: 20
     minExomiserGeneScore: 0.7
-    outputPrefix: /analyses/sample-12345/sample-12345
+    outputDirectory: /analyses/sample-12345/
+    outputFileName: sample-12345
     outputFormats: [HTML, JSON]
 
 
@@ -580,7 +581,8 @@ When included as part of an exomiser :ref:`job<job>` the fields are inlined in t
         outputContributingVariantsOnly: true
         numGenes: 20
         minExomiserGeneScore: 0.7
-        outputPrefix: /analyses/sample-12345/sample-12345
+        outputDirectory: /analyses/sample-12345/
+        outputFileName: sample-12345
         outputFormats: [HTML, JSON]
 
 
@@ -608,6 +610,29 @@ Specify the path/filename without an extension and this will be added according 
 :ref:`outputFormats<outputformats>` option. If unspecified this will default to the following:
 ``{exomiserDir}/results/input-vcf-name-exomiser-results.html``. Alternatively, specify a fully qualified path
 only. e.g. ``/home/jules/exomes/analysis``.
+**DEPRECATED** - replaced by explicit ``outputDirectory`` and ``outputFileName`` options. Users are strongly advised to
+migrate any existing scripts to use the new options (below), as this will be removed in a future version.
+
+
+.. _outputdirectory:
+
+outputDirectory:
+--------------
+Optional path indicating where the output files for the analysis should be written. Will attempt to create any missing
+directories. Using this without the ``outputFileName`` option will result in a default filename being used which will be
+output to the specified directory.
+Default value: {runDirectory}/results
+
+
+.. _outputfilename:
+
+outputFileName:
+--------------
+Optional filename prefix to be used for the output files. Can be combined with the ``outputDirectory`` option to specify
+a custom location and filename. Used alone will result in files with the specified filename being written to the default
+results directory.
+Default value: {input-vcf-filename}-exomiser
+
 
 .. _outputformats:
 
@@ -617,4 +642,4 @@ Array to define the output formats. can be ``[TSV-GENE]``, ``[TSV-VARIANT]``, ``
 combination like ``[TSV-GENE, TSV-VARIANT, VCF]``. JSON is the most informative output option and suitable for use in
 downstream computational analyses or manually queried using something like `jq <https://stedolan.github.io/jq/>`_. The
 HTML output is most suitable for manual inspection / human use.
-Default is ``[JSON, HTML]``.
+Default value: ``[JSON, HTML]``.
