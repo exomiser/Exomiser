@@ -1,5 +1,16 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 13.2.0 2023-02-28
+
+ - New multi-architecture docker images with and without bash [#471](https://github.com/exomiser/Exomiser/issues/470)
+ - Deprecated of `output-prefix` CLI option (will be removed in next major version) [#469](https://github.com/exomiser/Exomiser/issues/469)
+ - Added `output-directory` and `output-filename` CLI options to replace `output-prefix` [#469](https://github.com/exomiser/Exomiser/issues/469)
+ - Added `output-format` CLI option [#471](https://github.com/exomiser/Exomiser/issues/471)
+ - Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
+ - Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running a phenotype only prioritisation.
+ - Fixed broken links to OMIM in the phenotypic similarity section of the HTML output [#465](https://github.com/exomiser/Exomiser/issues/465)
+ - Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
+
 ## 13.1.0 2022-07-29
 
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.

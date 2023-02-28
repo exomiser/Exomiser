@@ -22,14 +22,11 @@ a `GeneScore` which features filtered variants located in that gene compatible w
 the filtering steps Exomiser ranks these GeneScores according to descending combined score. The results are then written
 out to the files and formats specified in the output settings.
 
-Prior to 13.1.0 a TSV/VCF file for each mode of inheritance (MOI) was created, which led to misunderstandings and confusion
-about how to deal with the data from them. The filenames were of the general pattern `output-prefix_MOI.genes.tsv` e.g.
-`Pfeiffer-hiphive-exome-PASS_ONLY_AD.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY_AR.vcf`,
-`Pfeiffer-hiphive-exome-PASS_ONLY_AR.variants.tsv`... **THESE FILES ARE NOW DEPRECATED AND WILL NOT APPEAR IN THE NEXT
-VERSION**. Similarly the `variants.tsv` and `vcf` output formats have also been changed and will only feature a single, combined
-output file of ranked genes/variants e.g. when supplying the `outputPrefix: Pfeiffer-hiphive-exome-PASS_ONLY` and
-`outputFormats: [TSV_VARIANT, TSV_GENE, VCF]`, the following files will be written out: `Pfeiffer-hiphive-exome-PASS_ONLY.variants.tsv`
-`Pfeiffer-hiphive-exome-PASS_ONLY.genes.tsv`, `Pfeiffer-hiphive-exome-PASS_ONLY.vcf`
+As of release 13.2.0 the output files only feature a single, combined output file of ranked genes/variants e.g.
+when supplying the output options (via an output-options.yaml file) `outputFileName: Pfeiffer-hiphive-exome-PASS_ONLY`
+and `outputFormats: [TSV_VARIANT, TSV_GENE, VCF]`, the following files will be written out:
+`Pfeiffer-hiphive-exome-PASS_ONLY.variants.tsv` `Pfeiffer-hiphive-exome-PASS_ONLY.genes.tsv`,
+`Pfeiffer-hiphive-exome-PASS_ONLY.vcf`
 
 These formats are detailed below.
 

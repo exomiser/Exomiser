@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>13.1.0</version>
+        <version>13.2.0</version>
     </parent>
 
     <artifactId>exomiser-spring-boot-test</artifactId>

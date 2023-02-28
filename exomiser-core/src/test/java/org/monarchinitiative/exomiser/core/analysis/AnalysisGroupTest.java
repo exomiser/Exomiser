@@ -99,4 +99,24 @@ class AnalysisGroupTest {
         List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
         assertThat(analysisStepGroups, equalTo(expected));
     }
+
+    @Test
+    void testIsVariantFilterGroup() {
+        assertThat(AnalysisGroup.of(new FrequencyFilter(2f), new PathogenicityFilter(true)).isVariantFilterGroup(), equalTo(true));
+        // inheritance mode dependent
+        assertThat(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).isVariantFilterGroup(), equalTo(false));
+        // gene only dependent
+        assertThat(AnalysisGroup.of(new NoneTypePrioritiser()).isVariantFilterGroup(), equalTo(false));
+    }
+
+    @Test
+    void testHasPrioritiserStep() {
+        AnalysisStep filterStep = new PathogenicityFilter(true);
+        assertThat(AnalysisGroup.of(filterStep).hasPrioritiserStep(), equalTo(false));
+
+        AnalysisStep prioritiserStep = new NoneTypePrioritiser();
+        assertThat(AnalysisGroup.of(prioritiserStep).hasPrioritiserStep(), equalTo(true));
+
+        assertThat(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).hasPrioritiserStep(), equalTo(true));
+    }
 }

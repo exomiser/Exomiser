@@ -63,6 +63,7 @@ import static java.util.stream.Collectors.*;
 /**
  * @since 13.1.0
  */
+@Deprecated(forRemoval = true)
 public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvVariantAllMoiResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_VARIANT;
@@ -77,7 +78,7 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         Locale.setDefault(Locale.UK);
     }
 
-    public void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
         String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT, ModeOfInheritance.ANY);
         Path outFile = Path.of(outFileName);
@@ -91,7 +92,7 @@ public class TsvVariantAllMoiResultsWriter implements ResultsWriter {
         logger.debug("{} {} results written to file {}", OUTPUT_FORMAT, ModeOfInheritance.ANY.getAbbreviation(), outFileName);
     }
 
-    public String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings outputSettings) {
+    public String writeString(AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder output = new StringBuilder();
 
         try (CSVPrinter printer = new CSVPrinter(output, this.csvFormat)) {

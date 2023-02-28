@@ -53,6 +53,9 @@ class AnalysisSampleValidator {
     public static void validate(Sample sample, Analysis analysis) throws IllegalStateException {
         Objects.requireNonNull(sample);
         Objects.requireNonNull(analysis);
+        if (analysis.getAnalysisSteps().isEmpty()) {
+            throw new IllegalStateException("No analysis steps specified!");
+        }
         // TODO: decide if VCF only filtering is OK
         // Guard against people running the new analysis.yml which has no sample information.
         // As of 13.0.0 it is possible to run a phenotype-only prioritisation, so we're only checking that the analysis

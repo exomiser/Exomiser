@@ -21,6 +21,7 @@
 
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml" />
+    <logger name="org.monarchinitiative.exomiser.core.genome.VariantFactoryImpl" level="ERROR"/>
     <logger name="org.springframework" level="ERROR"/>
     <logger name="org.thymeleaf" level="ERROR"/>
 </configuration>

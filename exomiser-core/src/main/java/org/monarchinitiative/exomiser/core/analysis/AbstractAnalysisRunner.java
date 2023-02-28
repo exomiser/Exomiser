@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -70,36 +69,39 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         // This is a critical step. It will validate that all the relevant information is present for the specified steps.
         AnalysisSampleValidator.validate(sample, analysis);
 
-        logger.info("Starting analysis");
-        logger.info("Using genome assembly {}", sample.getGenomeAssembly());
+        logger.info("Validating sample input data");
         // all the sample-related bits, might be worth encapsulating
         Path vcfPath = sample.getVcfPath();
         VcfReader vcfReader = vcfPath == null ? new NoOpVcfReader() : new VcfFileReader(vcfPath);
         // n.b. this next block will safely handle a null VCF file
-        logger.info("Checking proband and pedigree for VCF {}", vcfPath);
-        List<String> sampleNames = vcfReader.readSampleIdentifiers();
         VariantFactory variantFactory = new VariantFactoryImpl(genomeAnalysisService.getVariantAnnotator(), vcfReader);
 
+        List<String> sampleNames = vcfReader.readSampleIdentifiers();
         String probandIdentifier = SampleIdentifiers.checkProbandIdentifier(sample.getProbandSampleName(), sampleNames);
         Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.getPedigree(), probandIdentifier, sampleNames);
         InheritanceModeOptions inheritanceModeOptions = analysis.getInheritanceModeOptions();
 
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(validatedPedigree, inheritanceModeOptions);
 
-        //now run the analysis on the sample
-        int vcfGenotypePosition = SampleIdentifiers.samplePosition(probandIdentifier, sampleNames);
-        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandIdentifier, vcfGenotypePosition, sampleNames);
+        // now run the analysis on the sample
+        if (sample.hasVcf()) {
+            int vcfGenotypePosition = SampleIdentifiers.samplePosition(probandIdentifier, sampleNames);
+            logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}. Using coordinates for genome assembly {}.", probandIdentifier, vcfGenotypePosition, sampleNames, sample.getGenomeAssembly());
+        } else {
+            logger.info("Running analysis for proband {} without VCF", probandIdentifier);
+        }
         Instant timeStart = Instant.now();
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
         FilterStats filterStats = new FilterStats();
 
-        // TODO: there needs to be some logic to distinguish samples with (vfc only || hpo + vcf || hpo only) alternatively,
-        //  just expose the hpo-only analysis in the cli
-        // TODO: might also be easier to work with returning a list of Genes from this which may/may not contain variants.
+        // How Exomiser uses the input sample data will depend on the analysis steps provided. These are grouped by
+        // function (variant filter, gene filter, prioritiser) as an AnalysisGroup. Only a variant filter step/group
+        // will trigger the VCF to be loaded and analysed.
         boolean variantsLoaded = false;
         List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
+        logWarningIfSubOptimalAnalysisSumbitted(analysisStepGroups);
         for (AnalysisGroup analysisGroup : analysisStepGroups) {
             // This is admittedly pretty confusing code and I'm sorry. It's easiest to follow if you turn on debugging.
             // The analysis steps are run in groups of VARIANT_FILTER, GENE_ONLY_DEPENDENT or INHERITANCE_MODE_DEPENDENT
@@ -124,32 +126,17 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     filterStat.getFilterType(), filterStat.getPassCount(), filterStat.getFailCount()));
         }
 
-        //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
-        //the results might be a bit meaningless.
-        //See issue #129 This is an excellent place to put the output of a gene phenotype score only run.
-        //i.e. stream in the variants, annotate them (assign a gene symbol) then write out that variant with the calculated GENE_PHENO_SCORE (prioritiser scores).
-        //this would fit well with a lot of people's pipelines where they only want the phenotype score as they are using VEP or ANNOVAR for variant analysis.
-
-        if (!variantsLoaded && sample.hasVcf()) {
-            try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-                variantEvaluations = variantStream.collect(toList());
-            }
-            assignVariantsToGenes(variantEvaluations, allGenes);
-            variantsLoaded = true;
-        }
-
-        logger.info("Scoring genes");
-        List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : List.copyOf(allGenes.values());
+        // If no variant steps have been run and there is a VCF present, don't load it here - See issues #129, #478
+        List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : allGenes.values().stream().filter(genesToScore()).collect(Collectors.toUnmodifiableList());
         // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
         CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
         GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
 
+        logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
         List<VariantEvaluation> variants = variantsLoaded ? getFinalVariantList(variantEvaluations) : List.of();
 
-        logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
-
-        logger.info("Creating analysis results from VCF {}", sample.getVcfPath());
+        logger.info("Analysed sample {} with {} genes containing {} filtered variants", probandIdentifier, genes.size(), variants.size());
         AnalysisResults analysisResults = AnalysisResults.builder()
                 // TODO: add FilterStats? - would make HTML output more meaningful
                 .sample(sample)
@@ -165,11 +152,29 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return analysisResults;
     }
 
+    private void logWarningIfSubOptimalAnalysisSumbitted(List<AnalysisGroup> analysisStepGroups) {
+        boolean hasPrioritiserStep = false;
+        boolean hasVariantFilterStep = false;
+        for (AnalysisGroup analysisGroup : analysisStepGroups) {
+            if (analysisGroup.isVariantFilterGroup()) {
+                hasVariantFilterStep = true;
+            }
+            if (analysisGroup.hasPrioritiserStep()) {
+                hasPrioritiserStep = true;
+            }
+        }
+        if (!hasPrioritiserStep) {
+            logger.warn("RUNNING AN ANALYSIS WITHOUT ANY PHENOTYPE PRIORITISATION WILL LEAD TO SUB-OPTIMAL RESULTS!");
+        }
+        if (!hasVariantFilterStep) {
+            logger.warn("RUNNING AN ANALYSIS WITHOUT ANY VARIANT FILTERING WILL LEAD TO SUB-OPTIMAL RESULTS!");
+        }
+    }
+
     private CombinedScorePvalueCalculator buildCombinedScorePvalueCalculator(Sample sample, Analysis analysis, int numFilteredGenes) {
         var prioritiser = analysis.getMainPrioritiser();
         List<Gene> knownGenes = genomeAnalysisService.getKnownGenes();
-        int bootStrapValue = 2_000;
-        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(bootStrapValue, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(bootStrapValue, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
+        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(0, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(0, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
     }
 
     /**
@@ -200,7 +205,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                         .filter(isAssociatedWithKnownGene(allGenes))
                         .filter(runVariantFilters(variantFilters, filterStats))
                         .peek(variantLogger.countPassedVariant())
-                        .collect(toList());
+                        .collect(Collectors.toUnmodifiableList());
         }
         variantLogger.logResults();
         return filteredVariants;
@@ -240,6 +245,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Predicate<VariantEvaluation> isObservedInProband(String probandId) {
+        // gnomAD high quality criteria: (GQ >= 20, DP >= 10, and have now added: allele balance > 0.2 for heterozygote genotypes)
         return variantEvaluation -> {
             SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             // Getting a SampleGenotype.empty() really shouldn't happen, as the samples and pedigree should have been checked previously
@@ -276,6 +282,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return
      */
     abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters, FilterStats filterStats);
+
+    protected abstract Predicate<Gene> genesToScore();
 
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {

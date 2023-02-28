@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>13.1.0</version>
+    <version>13.2.0</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -72,6 +72,7 @@
     </ciManagement>
 
     <modules>
+        <module>phenix-repository</module>
         <module>exomiser-core</module>
         <module>exomiser-spring-boot-autoconfigure</module>
         <module>exomiser-spring-boot-starter</module>
@@ -96,20 +97,17 @@
         <svart.version>1.0.2</svart.version>
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
-        <protobuf.version>3.18.2</protobuf.version>
-        <spring-boot.version>2.6.9</spring-boot.version>
+        <protobuf.version>3.21.12</protobuf.version>
+        <spring-boot.version>2.7.7</spring-boot.version>
         <docker.base.image>
             gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
         </docker.base.image>
+        <docker.registry>docker.io</docker.registry>
+        <docker.repository>exomiser</docker.repository>
+        <!--    These properties are use for the README.md  -->
+        <genome.data.version>2302</genome.data.version>
+        <phenotype.data.version>2302</phenotype.data.version>
     </properties>
- 
-    <repositories>
-        <repository>
-            <!-- Required for ontologizer and javautil dependency in Phenix. Consider upgrading to Phenol -->
-            <id>sonumina</id>
-            <url>http://sonumina.de/maven</url>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -155,6 +153,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.200</version>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <!--        <dependency>-->
@@ -268,24 +267,10 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>post-unit-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <!-- Sets the path to the file which contains the execution data. -->
-                            <dataFile>target/jacoco.exec</dataFile>
-                            <!-- Sets the output directory for the code coverage report. -->
-                            <!-- will default to target/site/jacoco which is used by sonar -->
-                            <!-- <outputDirectory>target/jacoco-reports</outputDirectory> -->
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

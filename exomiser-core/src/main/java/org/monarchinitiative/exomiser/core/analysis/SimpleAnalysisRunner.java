@@ -64,4 +64,9 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
         return List.copyOf(variants);
     }
+
+    @Override
+    protected Predicate<Gene> genesToScore() {
+        return gene -> true;
+    }
 }

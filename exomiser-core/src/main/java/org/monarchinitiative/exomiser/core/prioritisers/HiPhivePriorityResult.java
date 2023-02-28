@@ -370,7 +370,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         String databaseName = databaseNameAndIdentifier[0];
         String id = databaseNameAndIdentifier[1];
         if (databaseName.equals("OMIM")) {
-            return "<a href=\"http://www.omim.org/" + id + "\">" + diseaseTerm + "</a>";
+            return "<a href=\"http://www.omim.org/entry/" + id + "\">" + diseaseTerm + "</a>";
         } else {
             return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id + "\">" + diseaseTerm + "</a>";
         }

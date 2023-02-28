@@ -36,6 +36,7 @@ import org.monarchinitiative.exomiser.core.genome.VcfReader;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
@@ -57,20 +58,12 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     private final PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(genomeAnalysisService);
 
     @Test
-    public void testRunAnalysisNoFiltersNoPrioritisers() {
+    public void testRunAnalysisNoFiltersNoPrioritisersThrowsException() {
         Sample sample = vcfOnlySample;
         Analysis analysis = makeAnalysis();
 
-        AnalysisResults analysisResults = instance.run(sample, analysis);
-
-        printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
-        for (Gene gene : analysisResults.getGenes()) {
-            assertThat(gene.passedFilters(), is(true));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
-            }
-        }
+        var exception = assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
+        assertThat(exception.getMessage(), equalTo("No analysis steps specified!"));
     }
 
     @Test
@@ -192,19 +185,10 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .vcfPath(vcfPath)
                 .probandSampleName("mickyMouse")
                 .build();
-        Analysis analysis = Analysis.builder()
-                .build();
-        assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
-    }
+        Analysis analysis = makeAnalysis(new QualityFilter(120), new NoneTypePrioritiser());
 
-    @Test
-    public void testRunAnalysisWhenProbandSampleNameIsNotSpecifiedAndHaveSingleSampleVcf() {
-        Sample sample = Sample.builder()
-                .vcfPath(vcfPath)
-                .build();
-        Analysis analysis = Analysis.builder()
-                .build();
-        instance.run(sample, analysis);
+        var exception = assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
+        assertThat(exception.getMessage(), equalTo("Proband sample name 'mickyMouse' is not found in the VCF sample. Expected one of [manuel]. Please check your sample and analysis files match."));
     }
 
     @Test
@@ -213,9 +197,10 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .probandSampleName("mickyMouse")
                 .build();
-        Analysis analysis = Analysis.builder()
-                .build();
-        assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
+        Analysis analysis = makeAnalysis(new QualityFilter(120), new NoneTypePrioritiser());
+
+        var exception = assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
+        assertThat(exception.getMessage(), equalTo("Proband sample name 'mickyMouse' is not found in the VCF sample. Expected one of [Seth, Adam, Eva]. Please check your sample and analysis files match."));
     }
 
     @Test
@@ -277,6 +262,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.hasVariants(), equalTo(false));
         System.out.println(passedGene.getGeneScores());    }
 
     @Test

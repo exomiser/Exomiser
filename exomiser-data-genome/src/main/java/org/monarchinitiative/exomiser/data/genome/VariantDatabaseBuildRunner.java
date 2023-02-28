@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.MVStoreTool;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
@@ -33,6 +34,7 @@ import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -56,8 +58,9 @@ public class VariantDatabaseBuildRunner {
     }
 
     public void run() {
+        String fileName = buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString();
         MVStore mvStore = new MVStore.Builder()
-                .fileName(buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString())
+                .fileName(fileName)
                 .compress()
                 .open();
         // this is key to keep the size of the store down when building otherwise it gets enormous
@@ -65,17 +68,17 @@ public class VariantDatabaseBuildRunner {
         // This is threadsafe and can be run in parallel. However, the throughput is significantly slower,
         // to the extent that the overall time is the same, at least on my machine (4 cores) it is.
         // This holds true both using parallelStream and a fixed thread pool executor with only 2 threads.
-        Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore);
-        alleleResources.forEach(alleleIndexer::index);
+        try (Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore)) {
+            alleleResources.forEach(alleleIndexer::index);
+        } catch (IOException e ) {
+            throw new IllegalStateException("Error writing to MVStore " + fileName, e);
+        }
 
         MVMap<AlleleKey, AlleleProperties> alleleMVMap = MvStoreUtil.openAlleleMVMap(mvStore);
         logger.info("Written {} alleles to store", alleleMVMap.size());
 
         // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
         logger.info("Compacting store...");
-        mvStore.compactMoveChunks();
-
-        logger.info("Closing store");
-        mvStore.close();
+        MVStoreTool.compact(fileName, true);
     }
 }

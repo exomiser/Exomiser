@@ -130,7 +130,7 @@ public class HtmlResultsWriterTest {
                 .build();
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
-        Path testOutFile = Paths.get(outputPrefix + "_AD.html");
+        Path testOutFile = Paths.get(outputPrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
     }
@@ -150,7 +150,7 @@ public class HtmlResultsWriterTest {
 
         instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
 
-        Path testOutFile = Paths.get(testOutFilePrefix + "_AD.html");
+        Path testOutFile = Paths.get(testOutFilePrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
     }
