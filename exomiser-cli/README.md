@@ -8,8 +8,8 @@
     - [Usage](#usage)
     - [Troubleshooting](#troubleshooting)
     - [Running Exomiser with Docker](#working-with-docker)
-        - [Working with the Docker bash images](#working-with-the-docker-bash-image)
         - [Working with the distroless image (no shell)](#working-with-the-distroless-image)
+        - [Working with the Docker bash images](#working-with-the-docker-bash-image)
 
 # <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
@@ -184,6 +184,10 @@ This shouldn't be an issue with more recent linux distributions.
 ------
 ## <a id="working-with-docker"></a>Running Exomiser with Docker 
 
+Pre-built docker images can be found on [docker hub](https://hub.docker.com/repository/docker/exomiser/exomiser-cli). 
+Here you can find images built for most common architectures as a [distroless](#working-with-the-distroless-image) image
+or with a [bash](#working-with-the-docker-bash-image) shell.
+
 ### Selecting the correct profile
 The build process will not create a Docker image by default, unless specified. However, if you choose to create a Docker
 container, you may select either the `docker:distroless` (no shell) or `docker:bash` (with shell) profiles.
@@ -223,18 +227,60 @@ which does not require a Docker daemon to be running/installed in order to build
 
 
 ```shell
-$ docker pull ${docker.repository}/exomiser-cli:bash-latest
+$ docker pull ${docker.registry}/${docker.repository}/exomiser-cli:${project.version}
 $ docker images
 REPOSITORY                       TAG              IMAGE ID      CREATED         SIZE
-${docker.repository}/exomiser-cli           latest           c12b1878a8f3  52 years ago    273 MB
-${docker.repository}/exomiser-cli           ${project.version} c12b1878a8f3  52 years ago    273 MB
+${docker.repository}/exomiser-cli           latest           f39698e3f36b  53 years ago   274 MB
+${docker.repository}/exomiser-cli           ${project.version} f39698e3f36b  53 years ago   274 MB
+```
+
+### <a id="working-with-the-distroless-image"></a>Working with the distroless image (no shell)
+
+Distroless images are the default image and come without a shell. These are can be pulled using 
+`docker pull ${docker.registry}/${docker.repository}/exomiser-cli:latest` or better `docker pull ${docker.registry}/${docker.repository}/exomiser-cli:${project.version}`
+
+If you choose to run the distroless image use the following command:
+
+```shell
+ docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
+ --analysis /exomiser/test-analysis-exome.yml  \
+ --spring.config.location=/exomiser/application.properties
+```
+
+or using Spring configuration arguments instead of the `application.properties`:
+
+```shell
+ docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
+ --analysis /exomiser/test-analysis-exome.yml  \
+ # minimal requirements for an hg19 exome sample
+ --exomiser.data-directory=/exomiser-data \
+ --exomiser.hg19.data-version=${genome.data.version} \
+ --exomiser.phenotype.data-version=${phenotype.data.version}
+```
+-----
+
+In both cases, to run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
+supply an `application.properties` file or environmental variables to point to the data required _e.g._
+
+Keep in mind to update your `application.properties` to point the data to the location
+inside the container, like:
+
+
+```application.properties
+exomiser.data-directory=/exomiser-data
 ```
 
 -----
 ### <a id="working-with-the-docker-bash-image"></a>Working with the docker bash images
 
 Running the image with the following command will open the shell and create volumes with
-links to the exomiser data and connects the results to your local machine. `/results` should be an empty directory, 
+links to the exomiser data and connects the results to your local machine. `/results` should be an empty directory,
 where Exomiser will write the results into.
 
 
@@ -242,7 +288,7 @@ where Exomiser will write the results into.
 docker run -v "/path/to/exomiser-data:/exomiser-data" \
  -v "/path/to/exomiser/exomiser-config/:/exomiser" \
  -v "/path/to/exomiser/results:/results"  \
- ${docker.repository}/exomiser-cli:${project.version}  
+ ${docker.repository}/exomiser-cli:${project.version}-bash  
 ```
 
 Here the contents of `/path/to/exomiser/exomiser-config` is simply the `application.properties` file and the example files
@@ -277,43 +323,3 @@ or using Spring configuration arguments instead of the `application.properties`:
  --exomiser.phenotype.data-version=${phenotype.data.version}
 ```
 -----
-### <a id="working-with-the-distroless-image"></a>Working with the distroless image (no shell)
-
-If you choose to run the distroless image use the following command:
-
-```shell
- docker run -v "/path/to/exomiser-data:/exomiser-data" \
- -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
- -v "/path/to/exomiser/results:/results"  \
- ${docker.repository}/exomiser-cli:${project.version}  \
- --analysis /exomiser/test-analysis-exome.yml  \
- --spring.config.location=/exomiser/application.properties
-```
-
-or using Spring configuration arguments instead of the `application.properties`:
-
-```shell
- docker run -v "/path/to/exomiser-data:/exomiser-data" \
- -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
- -v "/path/to/exomiser/results:/results"  \
- ${docker.repository}/exomiser-cli:${project.version}  \
- --analysis /exomiser/test-analysis-exome.yml  \
- # minimal requirements for an hg19 exome sample
- --exomiser.data-directory=/exomiser-data \
- --exomiser.hg19.data-version=${genotype.data.version} \
- --exomiser.phenotype.data-version=${phenotype.data.version}
-```
------
-
-In both cases, to run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
-supply an `application.properties` file or environmental variables to point to the data required _e.g._
-
-Keep in mind to update your `application.properties` to point the data to the location
-inside the container, like:
-
-
-```application.properties
-exomiser.data-directory=/exomiser-data
-```
-
-
