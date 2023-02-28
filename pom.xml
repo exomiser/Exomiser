@@ -102,6 +102,11 @@
         <docker.base.image>
             gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
         </docker.base.image>
+        <docker.registry>docker.io</docker.registry>
+        <docker.repository>exomiser</docker.repository>
+        <!--    These properties are use for the README.md  -->
+        <genome.data.version>2302</genome.data.version>
+        <phenotype.data.version>2302</phenotype.data.version>
     </properties>
 
     <dependencyManagement>
