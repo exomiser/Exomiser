@@ -1,8 +1,38 @@
 # The Exomiser - Core Library Changelog
 
+## 13.2.0 2023-02-28
+
+- Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
+- Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running a phenotype only prioritisation.
+- Fixed broken links to OMIM in the phenotypic similarity section of the HTML output [#465](https://github.com/exomiser/Exomiser/issues/465)
+- Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
+- Fixed broken build due to missing sonumina repository and related artefacts [#460](https://github.com/exomiser/Exomiser/issues/460)
+
+
+API breaking changes:
+
+- None
+
+
+New APIs:
+
+- New `OutputSettings.getOutputDirectory()`
+- New `OutputSettings.getOutputFileName()`
+
+
+Deprecated methods:
+
+- `OutputSettings.getOutputPrefix()` deprecated in favour of new `OutputSettings.getOutputDirectory()` and `OutputSettings.getOutputFileName()` methods
+
+
+Other changes:
+
+- Update Spring boot 2.6.9 -> 2.7.7
+
+
 ## 13.1.0 2022-07-29
 
-The three new features for this release is the autoated ACMG classification of small sequence variants, calculating
+The three new features for this release is the automated ACMG classification of small sequence variants, calculating
 p-values for the combined scores and providing new and more interpretable TSV and VCF output files.
 
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
