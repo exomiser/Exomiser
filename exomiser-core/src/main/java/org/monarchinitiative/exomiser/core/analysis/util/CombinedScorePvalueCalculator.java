@@ -64,9 +64,9 @@ public class CombinedScorePvalueCalculator {
         Objects.requireNonNull(prioritiser);
         Objects.requireNonNull(sampleHpoIds);
         Objects.requireNonNull(unscoredGenes);
-        logger.info("Setting up phenotype score cache on {} genes", unscoredGenes.size());
+        logger.debug("Setting up phenotype score cache on {} genes", unscoredGenes.size());
         var phenoScoreCache = generatePhenoScoreCache(prioritiser, sampleHpoIds, unscoredGenes);
-        logger.info("Creating bootstrapped combined scores...");
+        logger.debug("Creating bootstrapped combined scores...");
         return new CombinedScorePvalueCalculator(prioritiser.getPriorityType(), phenoScoreCache);
     }
 
