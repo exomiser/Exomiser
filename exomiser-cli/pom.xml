@@ -239,19 +239,17 @@
                                     </from>
                                     <to>
                                         <image>
-                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}
+                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}-bash
                                         </image>
                                         <tags>
-                                            <tag>bash-latest</tag>
-                                            <tag>bash-${project.parent.version}</tag>
+                                            <tag>latest-bash</tag>
+                                            <tag>${project.parent.version}-bash</tag>
                                         </tags>
                                     </to>
                                     <container>
-                                        <!--                       <format>OCI</format>-->
                                         <entrypoint>
                                             <arg>/bin/bash</arg>
                                         </entrypoint>
-                                        <!--                        <format>OCI</format>-->
                                         <volumes>
                                             <volume>/exomiser-data</volume>
                                             <volume>/exomiser</volume>
@@ -314,13 +312,12 @@
                                             ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}
                                         </image>
                                         <tags>
-                                            <tag>distroless-latest</tag>
-                                            <tag>distroless-${project.parent.version}</tag>
+                                            <tag>latest</tag>
+                                            <tag>latest-distroless</tag>
+                                            <tag>${project.parent.version}-distroless</tag>
                                         </tags>
                                     </to>
                                     <container>
-                                        <!--                                    <mainClass>org.monarchinitiative.exomiser.cli.ExomiserCli</mainClass>-->
-                                        <!--                        <format>OCI</format>-->
                                         <volumes>
                                             <volume>/exomiser-data</volume>
                                             <volume>/exomiser</volume>
