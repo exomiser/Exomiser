@@ -12,7 +12,7 @@
 
     <artifactId>phenix-repository</artifactId>
     <packaging>pom</packaging>
-    <description>Provides local jar artifacts for use by the phenix priortiser. These are not available on maven central</description>
+    <description>Provides local jar artifacts for use by the phenix prioritiser. These are not available on maven central</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
