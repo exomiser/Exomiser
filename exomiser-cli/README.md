@@ -103,7 +103,7 @@ with
 
 ## Running from alternate directory
 
-If you're running the exomiser from a different directory to the one the ```exomiser-cli-${project.version}.jar``` is located you'll need to add the command 
+If you're running the Exomiser from a different directory to the one the ```exomiser-cli-${project.version}.jar``` is located you'll need to add the command 
 
     --spring.config.location=/full/path/to/your/exomiser-cli/directory
     
@@ -185,16 +185,13 @@ This shouldn't be an issue with more recent linux distributions.
 ## <a id="working-with-docker"></a>Running Exomiser with Docker 
 
 ### Selecting the correct profile
-By default, unless specified, the build process will not include the creation of a Docker image.
-If you choose to have a Docker container, you can select out of the `docker:distroless` (no shell) 
-and `docker:bash` (with shell) profiles.
-As part of our Docker image creation process, we use multi-arch builds to ensure that our images 
-are compatible with a variety of system architectures. This means that you can choose any available 
-image without worrying about compatibility issues, as each image will automatically take the correct 
-digest for your system architecture.
+The build process will not create a Docker image by default, unless specified. However, if you choose to create a Docker
+container, you may select either the `docker:distroless` (no shell) or `docker:bash` (with shell) profiles.
 
-To help you choose the appropriate image for your system, we provide a list of supported architectures
-for each Docker image in the following table:
+We employ multi-arch builds as part of our Docker image creation process to ensure compatibility with a wide range of 
+system architectures.
+To assist you in selecting the appropriate image for your system, we provide a table below that lists the supported 
+architectures for each Docker image.
 
 
 | profileID           | architecture           |
@@ -202,25 +199,24 @@ for each Docker image in the following table:
 | `docker:distroless` | arm64, amd64           |
 | `docker:bash`       | arm64, arm64/v8, amd64 |
 
-If you dont need a docker image we recommend building the exomiser-cli with the following commnad,
-which does not include any docker image build:
+If a Docker image is not required, we suggest using the following command to build the exomiser-cli without:
 
 ```shell
 mvn clean install
 ```
 
-Otherwise, you may provide an own docker repository `repositoryName` (e.g. dockerhub username) to push the image directly 
-to your repository. Afterwards you can use the image by pulling it 
-from the docker hub.
-You would need to specify them during the building process of Maven, like this:
+Alternatively, you may provide a Docker `repositoryName` (e.g. dockerhub username) to push the image directly 
+to your repository. Afterwards you can access the image by pulling it 
+from the Docker hub.
+To properly specify repository settings during the Maven building process, use the following example:
 
 ```shell
 mvn clean install -P <profileID> -Ddocker.repository=<repositoryName>
 ```
 
-Keep in mind that if you run into an authentication issue, you may want to update your `.docker/config.json` to
-authenticate `https://index.docker.io/v1/`. To do so you want to give it your base64-encoded docker credentials.
-
+It is important to note that if an authentication issue arises, it may be necessary to update the `.docker/config.json` 
+file to include authentication for `https://index.docker.io/v1/`. 
+This can be done by providing your base64-encoded Docker credentials.
 
 Docker images are build using [jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#quickstart)
 which does not require a Docker daemon to be running/installed in order to build an image. 
