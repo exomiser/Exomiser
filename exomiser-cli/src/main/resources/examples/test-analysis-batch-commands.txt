@@ -17,4 +17,4 @@
 --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf --assembly GRCh37 --preset genome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-genome-preset
 --sample examples/pfeiffer-phenopacket.yml --preset phenotype-only --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-phenotype-only-preset
 --sample examples/pfeiffer-phenopacket.yml --preset exome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-exome-preset
---sample examples/pfeiffer-phenopacket.yml --preset exome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-exome-preset --output-directory examples/pfeiffer-exome
+--sample examples/pfeiffer-phenopacket.yml --preset exome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-exome-preset --output-directory results/pfeiffer-exome
