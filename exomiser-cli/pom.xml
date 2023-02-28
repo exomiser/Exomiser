@@ -201,15 +201,13 @@
         <profile>
             <id>docker:bash</id>
             <properties>
-                <docker.base.image>eclipse-temurin:17.0.6_10-jre
-                </docker.base.image>
+                <docker.base.image>eclipse-temurin:17.0.6_10-jre</docker.base.image>
             </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
-                        <version>3.3.0</version>
                         <executions>
                             <execution>
                                 <id>build-docker-image</id>
@@ -273,17 +271,11 @@
         </profile>
         <profile>
             <id>docker:distroless</id>
-            <properties>
-                <docker.base.image>
-                    gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
-                </docker.base.image>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
-                        <version>3.3.0</version>
                         <executions>
                             <execution>
                                 <id>build-docker-image</id>

@@ -100,7 +100,7 @@
         <protobuf.version>3.21.12</protobuf.version>
         <spring-boot.version>2.7.7</spring-boot.version>
         <docker.base.image>
-            gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
+            gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
@@ -223,6 +223,15 @@
     </dependencies>
     
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <!-- n.b. the wrapper plugin is completely broken and will only work on Maven 3.7.0+ -->
