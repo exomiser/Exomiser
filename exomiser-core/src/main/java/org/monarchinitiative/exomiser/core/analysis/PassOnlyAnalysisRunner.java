@@ -95,4 +95,9 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                 .filter(VariantEvaluation::passedFilters)
                 .collect(Collectors.toUnmodifiableList());
     }
+
+    @Override
+    protected Predicate<Gene> genesToScore() {
+        return Gene::passedFilters;
+    }
 }

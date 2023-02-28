@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -38,6 +37,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -47,37 +47,12 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     private final SimpleAnalysisRunner instance = new SimpleAnalysisRunner(genomeAnalysisService);
 
     @Test
-    public void runEmptyAnalysisReturnsAllGenes() {
+    public void runEmptyAnalysisThrowsException() {
         Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder().build();
-        // TODO: shouldn't this return an empty result?
-        AnalysisResults analysisResults = instance.run(sample, analysis);
 
-        printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(4));
-        for (Gene gene : analysisResults.getGenes()) {
-            assertThat(gene.passedFilters(), is(true));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
-            }
-        }
-    }
-
-    @Test
-    public void runEmptyAnalysisVcfOnlySample() {
-        Sample sample = vcfOnlySample;
-        Analysis analysis = Analysis.builder().build();
-        // TODO: shouldn't this return an empty result?
-        AnalysisResults analysisResults = instance.run(sample, analysis);
-
-        printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
-        for (Gene gene : analysisResults.getGenes()) {
-            assertThat(gene.passedFilters(), is(true));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
-            }
-        }
+        var exception = assertThrows(IllegalStateException.class, () -> instance.run(sample, analysis));
+        assertThat(exception.getMessage(), equalTo("No analysis steps specified!"));
     }
 
     @Test
@@ -250,34 +225,31 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.getGenes().size(), equalTo(4));
 
         Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
-        Gene gnrh2 = results.get("GNRHR2");
-        assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
-        assertThat(gnrh2Variant1.passedFilters(), is(false));
-        assertThat(gnrh2Variant1.getFilterStatus(), equalTo(FilterStatus.FAILED));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
-
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
-        assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
+        assertThat(rbm8a.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
+        assertThat(rbm8a.hasVariants(), equalTo(false));
         assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
-        assertThat(rbm8Variant1.passedFilters(), is(true));
-        assertThat(rbm8Variant1.getFilterStatus(), equalTo(FilterStatus.PASSED));
-        assertThat(rbm8Variant1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
-        
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
-        assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getFilterStatus(), equalTo(FilterStatus.PASSED));
-        assertThat(rbm8Variant2.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));    }
+        Gene gnrh2 = results.get("GNRHR2");
+        assertThat(gnrh2.passedFilters(), is(false));
+        assertThat(gnrh2.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+        assertThat(gnrh2.hasVariants(), equalTo(false));
+
+        Gene fgfr2 = results.get("FGFR2");
+        assertThat(fgfr2.passedFilters(), is(false));
+        assertThat(fgfr2.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+        assertThat(fgfr2.hasVariants(), equalTo(false));
+
+        Gene shh = results.get("SHH");
+        assertThat(shh.passedFilters(), is(false));
+        assertThat(shh.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+        assertThat(shh.hasVariants(), equalTo(false));
+    }
 
     @Test
     public void runAnalysisPrioritiserPriorityScoreFilterVariantFilter() {

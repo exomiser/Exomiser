@@ -98,11 +98,18 @@ public class GeneScoreRankerTest {
                 .build();
 
 
+        // genes without a variant can have an MOI other than 'ANY'
         var gnrhr2 = TestFactory.newGeneGNRHR2();
+        var passedVariant = VariantEvaluation.builder()
+                .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
+                .build();
+        gnrhr2.addVariant(passedVariant);
         var secondGeneScore = GeneScore.builder()
                 .combinedScore(0.9)
                 .geneIdentifier(gnrhr2.getGeneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .contributingVariants(List.of(passedVariant))
                 .build();
         gnrhr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         gnrhr2.addGeneScore(secondGeneScore);
