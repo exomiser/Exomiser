@@ -205,14 +205,13 @@ class CommandLineJobReaderTest {
             .build();
 
     private static final OutputProto.OutputOptions OUTPUT = OutputProto.OutputOptions.newBuilder()
-            .setOutputPrefix("results/Pfeiffer-hiphive-exome")
+            .setOutputFileName("Pfeiffer-hiphive-exome")
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
             .addAllOutputFormats(List.of("HTML", "JSON", "TSV_GENE", "TSV_VARIANT", "VCF"))
             .build();
 
     private static final OutputProto.OutputOptions DEFAULT_OUTPUT_OPTIONS = OutputProto.OutputOptions.newBuilder()
-            .setOutputPrefix("")
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
             .addAllOutputFormats(List.of("HTML", "JSON"))
