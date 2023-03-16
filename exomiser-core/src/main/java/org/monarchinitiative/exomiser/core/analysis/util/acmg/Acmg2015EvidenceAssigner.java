@@ -433,15 +433,15 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     }
 
     /*
-     * Updated classification from "Evidence-based calibration of computational tools for missense variant pathogenicity
-     * classification and ClinGen recommendations for clinical use of PP3/BP4 criteria"
-     * https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
+     * Updated classification from "Calibration of computational tools for missense variant pathogenicity classification
+     * and ClinGen recommendations for PP3/BP4 criteria"
+     * https://doi.org/10.1016/j.ajhg.2022.10.013 (PMID: 36413997)
      *
      * This method provided much better
      */
     private void assignRevelBasedPP3BP4Classification(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityScore revelScore) {
         var revel = revelScore.getRawScore();
-        // Taken from table 2 of https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
+        // Taken from table 2 of https://doi.org/10.1016/j.ajhg.2022.10.013
         // P_Strong   P_Moderate   P_Supporting       B_Supporting   B_Moderate     B_Strong      B_Very Strong
         // ≥ 0.932 [0.773, 0.932) [0.644, 0.773)    (0.183, 0.290] (0.016, 0.183] (0.003, 0.016] ≤ 0.003
         // PATHOGENIC categories
