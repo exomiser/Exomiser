@@ -100,7 +100,7 @@
         <protobuf.version>3.21.12</protobuf.version>
         <spring-boot.version>2.7.7</spring-boot.version>
         <docker.base.image>
-            gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
+            gcr.io/distroless/java17-debian11@sha256:7c035b36d792b1a067d7a9eb86b444b9c42ba8e885b6d537860437dc30df0306
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
