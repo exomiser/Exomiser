@@ -32,10 +32,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
-import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
-import org.monarchinitiative.svart.Strand;
+import org.monarchinitiative.svart.*;
 
 import java.util.*;
 
@@ -378,6 +375,31 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         }
         float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        if (this.isSymbolic()) {
+            // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
+            //                                     |             element contains v
+            // class | v contains t | v overlaps t | Coding or splice | UTR   | Intronic | Promoter
+            // -----|--------------|---------------|------------------|-------|----------|---------
+            // DEL  |     1         |     1         | {0.8, 1}         | 0≤(g)≤1 | 0 | 0.4
+            // DUP  |     1         |     0         | {0.8, 1}         | 0≤(g)≤1 | 0 | 0.4
+            // INV  |     0         |     1         | 1                | 0≤(g)≤1 | 0 | 0.4
+            // INS  |     -         |     -         | {0.2, 0.9}       | 0≤(g)≤1 | 0 | 0.4
+
+            // for UTR score = min((2* variant.length()/utr.length()), 1)
+            // unfortunately, we don't have the transcript data anymore by the time we get here so this needs to be
+            // pushed-down into the VariantAnnotator.
+            // CODING_SEQUENCE_VARIANT is usually only a MODIFIER type but is used by Jannovar to indicate an SV
+            // overlapping the CDS, so we need to up the weight here.
+            if (variantEffect == VariantEffect.CODING_SEQUENCE_VARIANT) {
+                // For INS might also be worth using the min((2* variant.length()/cds.length()), 1) score too?
+                variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.2f : 0.8f;
+            } else if (variantEffect.isSplicing()) {
+                variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.9f : 1.0f;
+            }
+            // do not apply any scoring to INV as Jannovar uses this as a blanket annotation for any overlap of the
+            // transcript, even if it only occurs in an intron or UTR, so we can't give this an outright score of 1.
+            // This is the reason the variantEffectScore was downgraded from 1 to 0.6.
+        }
         if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
             // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
