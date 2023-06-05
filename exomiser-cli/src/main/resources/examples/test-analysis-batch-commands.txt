@@ -1,17 +1,20 @@
-#This is an example analysis batch file to be run using the --analysis-batch command
+# This is an example analysis batch file to be run using the --analysis-batch command
 #
-#Each line should specify the path of a single analysis file, either relative to the directory the exomiser
-#is being run from or the full system path. It will run any combination of exomiser commands listed using -h or --help.
+# Each line should specify the path of a single analysis file, either relative to the directory the exomiser
+# is being run from or the full system path. It will run any combination of exomiser commands listed using -h or --help.
 #
 # Original format exomiser analysis containing all the sample and analysis information
 --analysis examples/test-analysis-exome.yml
-# New preset exome analysis using a v1 phenopacket to submit the phenotype information
---sample examples/pfeiffer-phenopacket.yml
 # New preset exome analysis using a v1 phenopacket to submit the phenotype information and adding/overriding the VCF input
---preset exome --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
+--sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19 --preset exome
 # Using the default analysis (exome) with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
 --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 # Using a user-defined analysis with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
 --analysis examples/preset-exome-analysis.yml --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 # Using a user-defined analysis with a v1 phenopacket containing the phenotype information and adding/overriding the VCF input
---analysis examples/preset-exome-analysis.yml --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19 --output examples/output-options.yml
+--analysis examples/preset-exome-analysis.yml --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz  --assembly hg19 --output examples/output-options.yml
+--sample examples/pfeiffer-phenopacket.yml --analysis examples/preset-exome-analysis.yml --vcf examples/Pfeiffer.vcf --assembly hg19 --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-preset-exome-analysis
+--sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf --assembly GRCh37 --preset genome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-genome-preset
+--sample examples/pfeiffer-phenopacket.yml --preset phenotype-only --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-phenotype-only-preset
+--sample examples/pfeiffer-phenopacket.yml --preset exome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-exome-preset
+--sample examples/pfeiffer-phenopacket.yml --preset exome --output-format HTML,JSON,TSV_GENE,TSV_VARIANT --output-filename pfeiffer-exome-preset --output-directory results/pfeiffer-exome

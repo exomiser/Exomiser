@@ -111,8 +111,31 @@ public class CommandLineOptionsParser {
 
         options.addOption(Option.builder()
                 .longOpt("output-prefix")
-                .desc("Path/filename without an extension to be prepended to the output file format options.")
+                .desc("Path/filename without an extension to be prepended to the output file format options." +
+                        " This option is EXCLUSIVE to the output-directory and output-filename options. DEPRECATED! Use --output-directory and/or --output-filename instead.")
                 .hasArg()
+                .argName("string")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-directory")
+                .desc("Directory where the output files should be written. This option is EXCLUSIVE to the output-prefix option.")
+                .hasArg()
+                .argName("path")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-filename")
+                .desc("Filename prefix for the output files. Will be generated from the input VCF filename if not specified. This option is EXCLUSIVE to the output-prefix option.")
+                .hasArg()
+                .argName("string")
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("output-format")
+                .desc("A list of comma separated output format(s) e.g. HTML or HTML,JSON. Valid options include [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly, JSON is the most detailed. (default = HTML,JSON)")
+                .hasArgs()
+                .valueSeparator(',')
                 .argName("string")
                 .build());
     }
@@ -159,7 +182,15 @@ public class CommandLineOptionsParser {
                 throw new CommandLineParseError(e.getMessage());
             }
         }
-
+        if (commandLine.hasOption("output-prefix") && (commandLine.hasOption("output-directory") || commandLine.hasOption("output-filename"))) {
+            throw new CommandLineParseError("output-prefix option is exclusive to output-directory and output-filename options");
+        }
+        if (commandLine.hasOption("output-filename")) {
+            String value = commandLine.getOptionValue("output-filename");
+            if (value.contains(System.getProperty("file.separator"))) {
+                throw new IllegalArgumentException("output-filename option should not contain a filesystem separator: " + value);
+            }
+        }
         if (!hasInputFileOption(commandLine)) {
             throw new CommandLineParseError("Missing an input file option!");
         }

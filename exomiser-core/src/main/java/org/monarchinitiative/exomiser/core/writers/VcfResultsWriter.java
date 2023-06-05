@@ -96,7 +96,7 @@ public class VcfResultsWriter implements ResultsWriter {
             logger.info("Skipping writing VCF results as no input VCF has been defined");
             return;
         }
-        String outFileName = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), OUTPUT_FORMAT);
+        Path outFileName = settings.makeOutputFilePath(vcfPath, OUTPUT_FORMAT);
         Path outPath = Paths.get(outFileName + ".gz");
         try (VariantContextWriter writer = variantContextWriterBuilder().setOutputPath(outPath).build()) {
             writeData(analysisResults, settings, vcfPath, writer);
@@ -191,7 +191,7 @@ public class VcfResultsWriter implements ResultsWriter {
                     return samSequenceRecord;
                 })
                 .sorted(Comparator.comparingInt(SAMSequenceRecord::getSequenceIndex))
-                .toList();
+                .collect(toUnmodifiableList());
         return new SAMSequenceDictionary(contigs);
     }
 

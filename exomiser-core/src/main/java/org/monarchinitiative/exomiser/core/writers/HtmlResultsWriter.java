@@ -80,15 +80,14 @@ public class HtmlResultsWriter implements ResultsWriter {
     public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
-        Path outFile = Paths.get(outFileName);
+        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             Context context = buildContext(analysisResults, settings);
             templateEngine.process("results", context, writer);
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFile, ex);
         }
-        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} ALL results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
     @Override

@@ -51,6 +51,7 @@ public class Sample {
     private final Sex sex;
     private final Pedigree pedigree;
     private final List<String> hpoIds;
+    // change hpoIds to phenotypicFeatures - see
 
     public static Sample from(Family family) {
         return PhenopacketConverter.toSample(family);

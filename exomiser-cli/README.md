@@ -1,14 +1,27 @@
-# The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
+## Table of Contents
+- [The Exomiser](#the-exomiser)
+    - [Software and Hardware requirements](#software-requirements)
+    - [Installation](#installation)
+        - [Windows](#windows)
+        - [Linux](#linux)
+    - [Genomiser data files](#genomiser-data-files)
+    - [Usage](#usage)
+    - [Troubleshooting](#troubleshooting)
+    - [Running Exomiser with Docker](#working-with-docker)
+        - [Working with the distroless image (no shell)](#working-with-the-distroless-image)
+        - [Working with the Docker bash images](#working-with-the-docker-bash-image)
+
+# <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
 The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
- 
+
 To perform an analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO
 terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also
 provided. See [Usage](#usage) section for info on running an analysis.
 
 Further information can be found in the [online documentation](https://exomiser.readthedocs.io/en/latest/).
 
-## Software and Hardware requirements
+## <a id="software-requirements"></a>  Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
  - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
  - Any 64-bit operating system
@@ -18,40 +31,40 @@ Further information can be found in the [online documentation](https://exomiser.
   networked database (optional).
  - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
 
-## Installation
+## <a id="installation"></a>Installation
 
-### Windows
+### <a id="windows"><a/>Windows
 
 1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues
    extracting the zip files.
 2. Download the data and distribution files from ```https://data.monarchinitiative.org/exomiser/latest```
 3. Extract the distribution files by right-clicking exomiser-cli-${project.version}-distribution.zip and selecting
    7-Zip > Extract Here
-4. Extract the data files (e.g. 1711_phenotype.zip, 1711_hg19.zip) by right-clicking the archive and selecting 7-Zip >
+4. Extract the data files (e.g. ${phenotype.data.version}_phenotype.zip, ${genome.data.version}_hg19.zip) by right-clicking the archive and selecting 7-Zip >
    Extract files... 4.1 Extract the files to the exomiser data directory. By default exomiser expects this to
    be ```exomiser-cli-${project.version}/data```, but this can be changed in the ```application.properties```
 5. cd exomiser-cli-${project.version}
 6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
 
-### Linux
+### <a id="linux"></a>Linux
 
 The following shell script should work-
 
     # download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-${project.version}-distribution.zip
     # download the data (this is ~20GB and will take a while)
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2109_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/${genome.data.version}_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/${genome.data.version}_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/${phenotype.data.version}_phenotype.zip
 
     # unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    unzip 2109_*.zip -d exomiser-cli-${project.version}/data
+    unzip ${genome.data.version}_*.zip -d exomiser-cli-${project.version}/data
 
     # Check the application.properties are pointing to the correct versions:
-    #  exomiser.hg19.data-version=2109
-    #  exomiser.hg38.data-version=2109
-    #  exomiser.phenotype.data-version=2109
+    #  exomiser.hg19.data-version=${genome.data.version}
+    #  exomiser.hg38.data-version=${genome.data.version}
+    #  exomiser.phenotype.data-version=${phenotype.data.version}
     
     # run a test exome analysis
     cd exomiser-cli-${project.version}
@@ -59,7 +72,7 @@ The following shell script should work-
 
 This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
 
-## Genomiser data files
+## <a id="genomiser-data-files"></a>Genomiser data files
 
 In order to run the Genomiser you will also need to download the REMM data file
 from [here](https://zenodo.org/record/4768448). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz
@@ -90,12 +103,12 @@ with
 
 ## Running from alternate directory
 
-If you're running the exomiser from a different directory to the one the ```exomiser-cli-${project.version}.jar``` is located you'll need to add the command 
+If you're running the Exomiser from a different directory to the one the ```exomiser-cli-${project.version}.jar``` is located you'll need to add the command 
 
     --spring.config.location=/full/path/to/your/exomiser-cli/directory
     
 to the end of your command-line arguments. *n.b.* the ```spring.config.location``` command *must be the last argument in the input commands*  
-## <a name="usage"></a>Usage
+## <a id="usage"></a>Usage
 
 The Exomiser can be run via simply via a yaml analysis file. The extended cli capability was removed in version 10.0.0 as this was less capable than the yaml scripts and only supported hg19 exome analysis.
 
@@ -125,7 +138,7 @@ If you're running the exomiser from a different directory to the one the jar fil
 
     java -jar exomiser-cli-${project.version}.jar --help
 
-## Troubleshooting
+## <a id="troubleshooting"></a>Troubleshooting
 
 ### java.lang.UnsupportedClassVersionError:
 
@@ -168,58 +181,145 @@ and can be checked by typing:
 
 This shouldn't be an issue with more recent linux distributions.
 
-## Docker images with jib
+------
+## <a id="working-with-docker"></a>Running Exomiser with Docker 
 
-Docker images are build using [jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#quickstart)
-which does not require a Docker daemon to be running/installed in order to build an image. Tar images are built by
-default and are found in the `target` directory.
+Pre-built docker images can be found on [docker hub](https://hub.docker.com/repository/docker/exomiser/exomiser-cli). 
+Here you can find images built for most common architectures as a [distroless](#working-with-the-distroless-image) image
+or with a [bash](#working-with-the-docker-bash-image) shell.
 
-Tar images can be installed locally like so and will create a Docker image:
+### Selecting the correct profile
+The build process will not create a Docker image by default, unless specified. However, if you choose to create a Docker
+container, you may select either the `docker:distroless` (no shell) or `docker:bash` (with shell) profiles.
+
+We employ multi-arch builds as part of our Docker image creation process to ensure compatibility with a wide range of 
+system architectures.
+To assist you in selecting the appropriate image for your system, we provide a table below that lists the supported 
+architectures for each Docker image.
+
+
+| profileID           | architecture           |
+|---------------------|------------------------|
+| `docker:distroless` | arm64, amd64           |
+| `docker:bash`       | arm64, arm64/v8, amd64 |
+
+If a Docker image is not required, we suggest using the following command to build the exomiser-cli without:
 
 ```shell
-$ docker load --input  Exomiser/exomiser-cli/target/jib-image.tar
-$ docker image list
-REPOSITORY                       TAG              IMAGE ID      CREATED         SIZE
-localhost/exomiser-cli           latest           c12b1878a8f3  52 years ago    273 MB
-localhost/exomiser-cli           ${project.version} c12b1878a8f3  52 years ago    273 MB
+mvn clean install
 ```
 
-To run the image you will need the standard exomiser directory layout to mount as separate volumes as in the cli and
-supply an `application.properties` file or environmental variables to point to the data required _e.g._
+Alternatively, you may provide a Docker `repositoryName` (e.g. dockerhub username) to push the image directly 
+to your repository. Afterwards you can access the image by pulling it 
+from the Docker hub.
+To properly specify repository settings during the Maven building process, use the following example:
 
 ```shell
-docker run -v "/data/exomiser-data:/exomiser-data" \
- -v "/opt/exomiser/exomiser-config/:/exomiser"  \
- -v "/opt/exomiser/exomiser-cli-${project.version}/results:/results"  \
- localhost/exomiser-cli:${project.version}  \
+mvn clean install -P <profileID> -Ddocker.repository=<repositoryName>
+```
+
+It is important to note that if an authentication issue arises, it may be necessary to update the `.docker/config.json` 
+file to include authentication for `https://index.docker.io/v1/`. 
+This can be done by providing your base64-encoded Docker credentials.
+
+Docker images are build using [jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#quickstart)
+which does not require a Docker daemon to be running/installed in order to build an image. 
+
+
+```shell
+$ docker pull ${docker.registry}/${docker.repository}/exomiser-cli:${project.version}
+$ docker images
+REPOSITORY                       TAG              IMAGE ID      CREATED         SIZE
+${docker.repository}/exomiser-cli           latest           f39698e3f36b  53 years ago   274 MB
+${docker.repository}/exomiser-cli           ${project.version} f39698e3f36b  53 years ago   274 MB
+```
+
+### <a id="working-with-the-distroless-image"></a>Working with the distroless image (no shell)
+
+Distroless images are the default image and come without a shell. These are can be pulled using 
+`docker pull ${docker.registry}/${docker.repository}/exomiser-cli:latest` or better `docker pull ${docker.registry}/${docker.repository}/exomiser-cli:${project.version}`
+
+If you choose to run the distroless image use the following command:
+
+```shell
+ docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
  --analysis /exomiser/test-analysis-exome.yml  \
- --vcf /exomiser/Pfeiffer.vcf.gz  \
  --spring.config.location=/exomiser/application.properties
 ```
 
 or using Spring configuration arguments instead of the `application.properties`:
 
 ```shell
-docker run -v "/data/exomiser-data:/exomiser-data" \
- -v "/opt/exomiser/exomiser-config/:/exomiser"  \
- -v "/opt/exomiser/exomiser-cli-${project.version}/results:/results"  \
- localhost/exomiser-cli:${project.version}  \
+ docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}  \
  --analysis /exomiser/test-analysis-exome.yml  \
- --vcf /exomiser/Pfeiffer.vcf.gz  \
  # minimal requirements for an hg19 exome sample
  --exomiser.data-directory=/exomiser-data \
- --exomiser.hg19.data-version=2109 \
- --exomiser.phenotype.data-version=2109
+ --exomiser.hg19.data-version=${genome.data.version} \
+ --exomiser.phenotype.data-version=${phenotype.data.version}
+```
+-----
+
+In both cases, to run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
+supply an `application.properties` file or environmental variables to point to the data required _e.g._
+
+Keep in mind to update your `application.properties` to point the data to the location
+inside the container, like:
+
+
+```application.properties
+exomiser.data-directory=/exomiser-data
 ```
 
-Here the contents of `/opt/exomiser/exomiser-config` is simply the `application.properties` file and the example files
+-----
+### <a id="working-with-the-docker-bash-image"></a>Working with the docker bash images
+
+Running the image with the following command will open the shell and create volumes with
+links to the exomiser data and connects the results to your local machine. `/results` should be an empty directory,
+where Exomiser will write the results into.
+
+
+```shell
+docker run -v "/path/to/exomiser-data:/exomiser-data" \
+ -v "/path/to/exomiser/exomiser-config/:/exomiser" \
+ -v "/path/to/exomiser/results:/results"  \
+ ${docker.repository}/exomiser-cli:${project.version}-bash  
+```
+
+Here the contents of `/path/to/exomiser/exomiser-config` is simply the `application.properties` file and the example files
 to test all is working correctly.
 
 ```shell
-$ tree /opt/exomiser/exomiser-config/
+$ tree /path/to/exomiser/exomiser-config/
 exomiser-config/
 ├── application.properties
 ├── Pfeiffer.vcf.gz
 ├── Pfeiffer.vcf.gz.tbi
 └── test-analysis-exome.yml
 ```
+
+#### Running Exomiser from the bash shell
+After running the following commands Exomiser will be started from the containers shell.
+
+```shell
+ source enable_exomiser.sh
+ bash enable_exomiser.sh
+ exomiser --analysis /exomiser/test-analysis-exome.yml \
+ --spring.config.location=/exomiser/application.properties
+```
+
+or using Spring configuration arguments instead of the `application.properties`:
+
+```shell
+ exomiser --analysis /exomiser/test-analysis-exome.yml  \
+ # minimal requirements for an hg19 exome sample
+ --exomiser.data-directory=/exomiser-data \
+ --exomiser.hg19.data-version=${genome.data.version} \
+ --exomiser.phenotype.data-version=${phenotype.data.version}
+```
+-----

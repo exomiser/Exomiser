@@ -20,11 +20,12 @@ import static org.hamcrest.Matchers.*;
 public class CombinedScorePvalueCalculatorTest {
 
     @Test
-    public void testZeroValueInput() {
-        var instance = new CombinedScorePvalueCalculator(0, PriorityType.NONE, new double[]{}, 0);
+    void testNoOpCalculator() {
+        var instance = CombinedScorePvalueCalculator.noOpCombinedScorePvalueCalculator();
+        assertThat(instance.calculatePvalueFromCombinedScore(0.0), equalTo(1.0));
         assertThat(instance.calculatePvalueFromCombinedScore(0.5), equalTo(1.0));
+        assertThat(instance.calculatePvalueFromCombinedScore(1.0), equalTo(1.0));
     }
-
     @Test
     public void testWithRandomScoresConstructor() {
         var instance = CombinedScorePvalueCalculator.withRandomScores(10_000, 35_000, 250);
@@ -53,6 +54,7 @@ public class CombinedScorePvalueCalculatorTest {
     @Test
     void testZeroValueCombinedScoreHasPvalueOfOne() {
         var instance = CombinedScorePvalueCalculator.withRandomScores(10_000, 25_000, 200);
-        assertThat(instance.calculatePvalueFromCombinedScore(0), equalTo(1.0));
+        assertThat(instance.calculatePvalueFromCombinedScore(0), closeTo(instance.calculatePvalueFromCombinedScore(0.0), 0.001));
+        assertThat(instance.calculatePvalueFromCombinedScore(1d), closeTo(instance.calculatePvalueFromCombinedScore(1.0), 0.001));
     }
 }

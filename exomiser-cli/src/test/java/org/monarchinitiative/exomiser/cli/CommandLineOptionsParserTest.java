@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -162,6 +162,17 @@ class CommandLineOptionsParserTest {
     }
 
     @Test
+    void parseOutputFormat() {
+        CommandLine commandLine = CommandLineOptionsParser.parse(
+                "--sample", resource("exome-analysis.yml"),
+                "--vcf", resource("Pfeiffer.vcf"),
+                "--assembly", "hg19",
+                "--output-format", "TSV_GENE,JSON,HTML,TSV_VARIANT");
+        assertTrue(commandLine.hasOption("output-format"));
+        assertThat(List.of(commandLine.getOptionValues("output-format")), containsInAnyOrder("TSV_GENE", "JSON", "HTML", "TSV_VARIANT"));
+    }
+
+    @Test
     void parseSampleVcfAndOutputPrefix() {
         CommandLine commandLine = CommandLineOptionsParser.parse(
                 "--sample", resource("exome-analysis.yml"),
@@ -177,6 +188,29 @@ class CommandLineOptionsParserTest {
         assertThat(commandLine.getOptionValue("assembly"), equalTo("hg19"));
         assertTrue(commandLine.hasOption("output-prefix"));
         assertThat(commandLine.getOptionValue("output-prefix"), equalTo("results/pfeiffer-exome-analysis-results"));
+    }
+
+    @Test
+    void parseIllegalOutputOptionsCombo() {
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-prefix", "results/Pfeiffer",
+                "--output-directory", "results"
+        ), "output-prefix option is exclusive to output-directory and output-filename options");
+
+        assertThrows(CommandLineParseError.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-prefix", "results/Pfeiffer",
+                "--output-filename", "Pfeiffer"
+        ), "output-prefix option is exclusive to output-directory and output-filename options");
+
+        assertThrows(IllegalArgumentException.class, () -> CommandLineOptionsParser.parse(
+                "--sample", "src/test/resources/pfeiffer-phenopacket.yml",
+                "--analysis", "src/test/resources/exome-analysis.yml",
+                "--output-filename", "results/Pfeiffer"
+        ), "output-filename option should not contain a filesystem separator: results/Pfeiffer");
     }
 
     @Test

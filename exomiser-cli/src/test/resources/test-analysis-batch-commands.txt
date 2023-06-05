@@ -5,5 +5,5 @@
 --sample src/test/resources/pfeiffer-phenopacket.json
 --sample src/test/resources/pfeiffer-phenopacket.json --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
 --sample src/test/resources/pfeiffer-sample.json --vcf src/test/resources/Pfeiffer.vcf --assembly hg19
---sample src/test/resources/pfeiffer-sample.yml --vcf src/test/resources/Pfeiffer.vcf --assembly GRCh37 --preset GENOME
+--sample src/test/resources/pfeiffer-sample.yml --vcf src/test/resources/Pfeiffer.vcf --assembly GRCh37 --preset genome
 --analysis src/test/resources/pfeiffer-analysis-v8-12.yml

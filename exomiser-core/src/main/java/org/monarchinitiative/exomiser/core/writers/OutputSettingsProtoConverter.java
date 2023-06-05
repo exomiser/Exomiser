@@ -23,7 +23,10 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.proto.ProtoConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 /**
@@ -34,10 +37,13 @@ import java.util.stream.Collectors;
  */
 public class OutputSettingsProtoConverter implements ProtoConverter<OutputSettings, OutputProto.OutputOptions> {
 
+    private static final Logger logger = LoggerFactory.getLogger(OutputSettingsProtoConverter.class);
+
     @Override
     public OutputProto.OutputOptions toProto(OutputSettings outputOptions) {
         return OutputProto.OutputOptions.newBuilder()
-                .setOutputPrefix(outputOptions.getOutputPrefix())
+                .setOutputFileName(outputOptions.getOutputFileName())
+                .setOutputDirectory(outputOptions.getOutputDirectory().toString())
                 .setNumGenes(outputOptions.getNumberOfGenesToShow())
                 .setMinExomiserGeneScore(outputOptions.getMinExomiserGeneScore())
                 .setOutputContributingVariantsOnly(outputOptions.outputContributingVariantsOnly())
@@ -51,8 +57,23 @@ public class OutputSettingsProtoConverter implements ProtoConverter<OutputSettin
 
     @Override
     public OutputSettings toDomain(OutputProto.OutputOptions outputOptions) {
+        if (!outputOptions.getOutputPrefix().isEmpty()) {
+            logger.warn("Deprecated use of outputPrefix option. Please use the outputDirectory and/or outputFileName options instead.");
+            return OutputSettings.builder()
+                    .outputPrefix(outputOptions.getOutputPrefix())
+                    .numberOfGenesToShow(outputOptions.getNumGenes())
+                    .minExomiserGeneScore(outputOptions.getMinExomiserGeneScore())
+                    .outputContributingVariantsOnly(outputOptions.getOutputContributingVariantsOnly())
+                    .outputFormats(outputOptions
+                            .getOutputFormatsList().stream()
+                            .map(OutputFormat::parseFormat)
+                            .collect(Sets.toImmutableEnumSet()))
+                    .build();
+        }
+        // these need to be seperated otherwise the outputDirectory and outputFileName will override the outputPrefix
         return OutputSettings.builder()
-                .outputPrefix(outputOptions.getOutputPrefix())
+                .outputDirectory(outputOptions.getOutputDirectory().isEmpty() ? OutputSettings.DEFAULT_OUTPUT_DIR : Path.of(outputOptions.getOutputDirectory()))
+                .outputFileName(outputOptions.getOutputFileName())
                 .numberOfGenesToShow(outputOptions.getNumGenes())
                 .minExomiserGeneScore(outputOptions.getMinExomiserGeneScore())
                 .outputContributingVariantsOnly(outputOptions.getOutputContributingVariantsOnly())

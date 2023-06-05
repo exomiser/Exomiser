@@ -18,6 +18,8 @@ message OutputOptions {
     bool outputContributingVariantsOnly = 1;
     int32 numGenes = 2;
     float minExomiserGeneScore = 3;
-    string outputPrefix = 4;
+    string outputPrefix = 4 [deprecated = true];
     repeated string outputFormats = 5;
+    string outputFileName = 6;
+    string outputDirectory = 7;
 }

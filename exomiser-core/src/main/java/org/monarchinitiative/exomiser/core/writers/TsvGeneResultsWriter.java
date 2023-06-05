@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2022 Queen Mary University of London.
+ * Copyright (c) 2016-2023 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,8 +45,10 @@ import java.util.function.Consumer;
  * @since 13.1.0
  */
 public class TsvGeneResultsWriter implements ResultsWriter {
+
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
+
     private final CSVFormat csvFormat = CSVFormat.newFormat('\t')
             .withQuote(null)
             .withRecordSeparator("\n")
@@ -59,25 +61,26 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         Locale.setDefault(Locale.UK);
     }
 
+    @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT);
-        Path outFile = Path.of(outFileName);
+        Path outFile = outputSettings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
 
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.csvFormat)){
             writeData(analysisResults, outputSettings, printer);
         } catch (Exception e) {
-            logger.error("Unable to write results to file {}", outFileName, e);
+            logger.error("Unable to write results to file {}", outFile, e);
         }
 
-        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
+    @Override
     public String writeString(AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder stringBuilder = new StringBuilder();
 
         try (CSVPrinter printer = new CSVPrinter(stringBuilder, this.csvFormat)) {
-            this.writeData(analysisResults, outputSettings, printer);
+            writeData(analysisResults, outputSettings, printer);
         } catch (IOException e) {
             logger.error("Unable to write results to string {}", stringBuilder, e);
         }
@@ -114,7 +117,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         int matchesCandidateGene = 0;
 
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
-            if (prioritiserResult instanceof HiPhivePriorityResult hiPhiveResult) {
+            if (prioritiserResult instanceof HiPhivePriorityResult) {
+                HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) prioritiserResult;
                 phiveAllSpeciesScore = hiPhiveResult.getScore();
                 humanPhenScore = hiPhiveResult.getHumanScore();
                 mousePhenScore = hiPhiveResult.getMouseScore();
@@ -124,9 +128,11 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 if (hiPhiveResult.isCandidateGeneMatch()) {
                     matchesCandidateGene = 1;
                 }
-            } else if (prioritiserResult instanceof OmimPriorityResult omimResult) {
+            } else if (prioritiserResult instanceof OmimPriorityResult) {
+                OmimPriorityResult omimResult = (OmimPriorityResult) prioritiserResult;
                 omimScore = omimResult.getScoreForMode(geneScore.getModeOfInheritance());
-            } else if (prioritiserResult instanceof ExomeWalkerPriorityResult walkerResult) {
+            } else if (prioritiserResult instanceof ExomeWalkerPriorityResult) {
+                ExomeWalkerPriorityResult walkerResult = (ExomeWalkerPriorityResult) prioritiserResult;
                 walkerScore = walkerResult.getScore();
             }
         }

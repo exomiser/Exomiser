@@ -26,6 +26,7 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
 /**
@@ -35,20 +36,49 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 public interface ResultsWriter {
     
     /**
-     * Writes the result data out to the file specified in the ExomiserSettings object.
+     * Writes the result data out to the file specified in the OutputSettings object for the specified mode of inheritance.
      *
+     * @param modeOfInheritance
      * @param analysisResults
      * @param settings
+     * @deprecated Use the {@link ResultsWriter#writeFile(AnalysisResults, OutputSettings)} method instead.
      */
-    void writeFile(AnalysisResults analysisResults, OutputSettings settings);
+    @Deprecated(forRemoval = true)
+    default void writeFile(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        writeFile(analysisResults, settings);
+    }
 
     /**
-     * Writes the result data out to a String.
+     * Writes the result data out to the file specified in the OutputSettings object.
      *
+     * @param analysisResults
+     * @param outputSettings
+     * @since 13.2.0
+     */
+    void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings);
+
+    /**
+     * Writes the result data out to a String for the specified mode of inheritance.
+     *
+     * @param modeOfInheritance
      * @param analysisResults
      * @param settings
      * @return The string value of the analysis results for the given inheritance model
+     * @deprecated use the {@link ResultsWriter#writeString(AnalysisResults, OutputSettings)} method instead.
      */
-    String writeString(AnalysisResults analysisResults, OutputSettings settings);
+    @Deprecated(forRemoval = true)
+    default String writeString(ModeOfInheritance modeOfInheritance, AnalysisResults analysisResults, OutputSettings settings) {
+        return writeString(analysisResults, settings);
+    }
+
+    /**
+     * Writes the result data out to a String, using the criteria provided by the {@link OutputSettings}.
+     *
+     * @param analysisResults
+     * @param outputSettings
+     * @return The string value of the analysis results for the given outputSettings.
+     * @since 13.2.0
+     */
+    String writeString(AnalysisResults analysisResults, OutputSettings outputSettings);
 
 }

@@ -1,0 +1,8 @@
+##fileformat=VCFv4.1
+##Another comment line.
+##description=This file contains a few variants that are meant for testing. The variants overlap or are close to the transcripts defined in the TestVariantFactory.
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	manuel
+1	123256213	.	CA	CC	100.15	PASS	GENE=RBM8A	GT:DP	1/1:33
+1	145508800	rs12345678	T	C	123.15	PASS	GENE=RBM8A	GT:DP	1/1:33
+1	145510000	rs23456789	G	A	260.15	PASS	GENE=GNRHR2	GT:DP	0/1:21
+10	123256215	.	T	G	100	PASS	GENE=FGFR2;INHERITANCE=AD;MIM=101600	GT:DS:GL	1|0:2.000:-5.00,-1.10,-0.04

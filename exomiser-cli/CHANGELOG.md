@@ -1,6 +1,6 @@
 # The Exomiser Command Line Executable - Changelog
 
-## 14.0.0 
+## 14.0.0
 
 - Minimum Java version is now set to __Java 17__
 - __BREAKING CHANGE!__ Added new CLI. Please read the `--help` options carefully as there have been breaking changes to allow for clarity
@@ -10,14 +10,25 @@
   default to the presets.
 - Added new `--output-format` option to enable specifying the desired output options directly from the CLI.
 - __BREAKING CHANGE!__ Removed old MOI-specific TSV and VCF output formats so that there will now only be one output file for each specified
-  format. 
+  format.
 - __BREAKING CHANGE!__ New database version and schema. Unfortunately, the old databases are no longer compatible with  
-  this version and older binaries (i.e. exomiser-cli-13.1.0 and lower) will not be able to read data versions greater 
+  this version and older binaries (i.e. exomiser-cli-13.1.0 and lower) will not be able to read data versions greater
   than 2209. While this is annoying, the newer data are *significantly* smaller - e.g. the 2209_hg19 data was 41 GB when
   zipped and 63 GB unpacked. In comparison, the newer data is 10 GB when zipped and 14 GB unpacked. This includes the latest
   gnomAD versions (2.1) which includes the 1000 genomes, ExAC and TopMED data, so these have been removed as separate sources
   from the database. The latest hg38 data also includes gnomAD v2.1 (exome liftover) and v3 (genomes) and NCBI ALFA allele
-  frequencies and SpliceAI scores derived from the gnomAD v3 data. All these newer data sources will be used automatically. 
+  frequencies and SpliceAI scores derived from the gnomAD v3 data. All these newer data sources will be used automatically.
+
+## 13.2.0 2023-02-28
+
+ - New multi-architecture docker images with and without bash [#471](https://github.com/exomiser/Exomiser/issues/470)
+ - Deprecated of `output-prefix` CLI option (will be removed in next major version) [#469](https://github.com/exomiser/Exomiser/issues/469)
+ - Added `output-directory` and `output-filename` CLI options to replace `output-prefix` [#469](https://github.com/exomiser/Exomiser/issues/469)
+ - Added `output-format` CLI option [#471](https://github.com/exomiser/Exomiser/issues/471)
+ - Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
+ - Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running a phenotype only prioritisation.
+ - Fixed broken links to OMIM in the phenotypic similarity section of the HTML output [#465](https://github.com/exomiser/Exomiser/issues/465)
+ - Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
 
 ## 13.1.0 2022-07-29
 

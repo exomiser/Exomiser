@@ -68,7 +68,9 @@
             <version>1.2.3</version>
         </dependency>
         <!--Phenix dependencies:-->
-        <!-- possibly could be replaced by org.monarchinitiative.phenol-->
+        <!-- possibly could be replaced by org.monarchinitiative.phenol. If these artefacts are missing from the
+        local .m2 repo they can be installed using the phenix-repository module. This should however happen in the
+        mvn:validate phase and never need to be touched -->
         <dependency>
             <groupId>de.sonumina</groupId>
             <artifactId>javautil</artifactId>
@@ -77,7 +79,7 @@
         <dependency>
             <groupId>ontologizer</groupId>
             <artifactId>ontologizer</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
         <dependency>
@@ -122,7 +124,6 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <type>jar</type>
         </dependency>
         <!--Test dependencies-->
         <dependency>

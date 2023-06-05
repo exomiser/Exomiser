@@ -34,6 +34,8 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -42,7 +44,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class AnalysisSampleValidatorTest {
 
     @Test
-    void getMainPrioritiserType() {
+    void throwsExceptionWhereNoAnalysisStepsSpecified() {
+        Sample sample = Sample.builder()
+                .build();
+        Analysis analysis = Analysis.builder()
+                .build();
+
+        Exception exception = assertThrows(IllegalStateException.class, () ->
+                AnalysisSampleValidator.validate(sample, analysis)
+        );
+        assertThat(exception.getMessage(), equalTo("No analysis steps specified!"));
     }
 
     @Test
@@ -107,10 +118,10 @@ class AnalysisSampleValidatorTest {
         Analysis analysis = Analysis.builder()
                 .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
-        assertThrows(IllegalStateException.class, () ->
-                        AnalysisSampleValidator.validate(sampleWithVcf(), analysis),
-                "HPO IDs not defined. Define some sample phenotypes before adding prioritiser: PhivePriority"
+        Exception exception = assertThrows(IllegalStateException.class, () ->
+                        AnalysisSampleValidator.validate(sampleWithVcf(), analysis)
         );
+        assertThat(exception.getMessage(), equalTo("HPO IDs not defined. Define some sample phenotypes before adding prioritiser: PhivePriority"));
     }
 
     @Test

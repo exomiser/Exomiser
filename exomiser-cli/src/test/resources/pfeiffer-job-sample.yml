@@ -113,10 +113,9 @@ outputOptions:
   outputContributingVariantsOnly: false
   #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results
   numGenes: 0
-  #outputPrefix options: specify the path/filename without an extension and this will be added
-  # according to the outputFormats option. If unspecified this will default to the following:
-  # {exomiserDir}/results/input-vcf-name-exomiser-results.html
-  # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis
-  outputPrefix: results/Pfeiffer-hiphive-exome
+  # Path to the desired output directory. Will default to the 'results' subdirectory of the exomiser install directory
+  #outputDirectory: results
+  # Filename for the output files. Will default to {input-vcf-filename}-exomiser
+  outputFileName: Pfeiffer-hiphive-exome
   #out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
   outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]

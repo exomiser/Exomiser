@@ -62,9 +62,8 @@
             <artifactId>caffeine</artifactId>
         </dependency>
     </dependencies>
- 
     <build>
-        <resources>          
+        <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
@@ -76,7 +75,7 @@
                     <exclude>vcf/*</exclude>
                 </excludes>
             </resource>
-        </resources> 
+        </resources>
         <plugins>
             <!-- Make an executable jar and specify the main class and classpath -->
             <plugin>
@@ -88,7 +87,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <!-- set useUniqueVersions=false in order that the 
+                            <!-- set useUniqueVersions=false in order that the
                             classpath has the SNAPSHOT instead of the build number prefixed to the dependency -->
                             <useUniqueVersions>false</useUniqueVersions>
                             <mainClass>org.monarchinitiative.exomiser.cli.Main</mainClass>
@@ -118,7 +117,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Specify the resources which need to be made accessible to the user-->              
+            <!-- Specify the resources which need to be made accessible to the user-->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
@@ -200,39 +199,133 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>buildTar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <from>
-                        <!-- https://console.cloud.google.com/gcr/images/distroless/global/java17-debian11:latest-amd64 or latest-arm64 -->
-                        <image>${docker.base.image}</image>
-                    </from>
-                    <to>
-                        <image>${project.artifactId}:${project.parent.version}</image>
-                        <tags>
-                            <tag>latest</tag>
-                        </tags>
-                    </to>
-                    <container>
-                        <!--                        <format>OCI</format>-->
-                        <volumes>
-                            <volume>/exomiser-data</volume>
-                            <volume>/exomiser</volume>
-                            <volume>/results</volume>
-                        </volumes>
-                    </container>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>docker:bash</id>
+            <properties>
+                <docker.base.image>eclipse-temurin:17.0.6_10-jre</docker.base.image>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <from>
+                                        <image>
+                                            ${docker.base.image}
+                                        </image>
+                                        <platforms>
+                                            <platform>
+                                                <os>linux</os>
+                                                <architecture>arm64</architecture>
+                                            </platform>
+                                            <platform>
+                                                <os>linux</os>
+                                                <architecture>arm</architecture>
+                                            </platform>
+                                            <platform>
+                                                <os>linux</os>
+                                                <architecture>amd64</architecture>
+                                            </platform>
+                                        </platforms>
+                                    </from>
+                                    <to>
+                                        <image>
+                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}-bash
+                                        </image>
+                                        <tags>
+                                            <tag>latest-bash</tag>
+                                            <tag>${project.parent.version}-bash</tag>
+                                        </tags>
+                                    </to>
+                                    <container>
+                                        <entrypoint>
+                                            <arg>/bin/bash</arg>
+                                        </entrypoint>
+                                        <volumes>
+                                            <volume>/exomiser-data</volume>
+                                            <volume>/exomiser</volume>
+                                            <volume>/results</volume>
+                                        </volumes>
+                                    </container>
+                                    <extraDirectories>
+                                        <permissions>
+                                            <permission>
+                                                <file>/entrypoint.sh</file>
+                                                <mode>755</mode>
+                                            </permission>
+                                        </permissions>
+                                    </extraDirectories>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>docker:distroless</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <from>
+                                        <image>
+                                            ${docker.base.image}
+                                        </image>
+                                        <platforms>
+                                            <platform>
+                                                <os>linux</os>
+                                                <architecture>arm64</architecture>
+                                            </platform>
+                                            <platform>
+                                                <os>linux</os>
+                                                <architecture>amd64</architecture>
+                                            </platform>
+                                        </platforms>
+                                    </from>
+                                    <to>
+                                        <image>
+                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}
+                                        </image>
+                                        <tags>
+                                            <tag>latest</tag>
+                                            <tag>latest-distroless</tag>
+                                            <tag>${project.parent.version}-distroless</tag>
+                                        </tags>
+                                    </to>
+                                    <container>
+                                        <volumes>
+                                            <volume>/exomiser-data</volume>
+                                            <volume>/exomiser</volume>
+                                            <volume>/results</volume>
+                                        </volumes>
+                                    </container>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

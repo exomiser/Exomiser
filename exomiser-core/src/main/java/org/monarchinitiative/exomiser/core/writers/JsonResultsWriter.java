@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -41,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -54,10 +56,8 @@ public class JsonResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
-        logger.debug("Writing JSON results");
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
-        Path outFile = Paths.get(outFileName);
+        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
         ObjectWriter objectWriter = new ObjectMapper()
                 .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
@@ -65,9 +65,9 @@ public class JsonResultsWriter implements ResultsWriter {
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             writeData(analysisResults, settings, objectWriter, bufferedWriter);
         } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFileName, ex);
+            logger.error("Unable to write results to file {}", outFile, ex);
         }
-        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
     @Override

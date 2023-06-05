@@ -106,6 +106,10 @@ class AnalysisGroup {
         return !analysisSteps.isEmpty() && analysisSteps.get(0).isVariantFilter();
     }
 
+    boolean hasPrioritiserStep() {
+        return analysisSteps.stream().anyMatch(AnalysisStep::isGenePrioritiser);
+    }
+
     public List<AnalysisStep> getAnalysisSteps() {
         return analysisSteps;
     }

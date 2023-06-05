@@ -175,12 +175,12 @@ class AnalysisResultsWriterTest {
 
     @Test
     void testWriteToFileWithOutputOptions() {
-        String outputPrefix = tempFile.toString();
 
         List<String> outputFormats = Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).collect(Collectors.toList());
 
         OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
-                .setOutputPrefix(outputPrefix)
+                .setOutputDirectory(tempFile.getParent().toString())
+                .setOutputFileName(tempFile.getFileName().toString())
                 .addAllOutputFormats(outputFormats)
                 .build();
 
@@ -196,9 +196,9 @@ class AnalysisResultsWriterTest {
 
         for (OutputFormat outputFormat : OutputFormat.values()) {
             String fileExtension = outputFormat.getFileExtension();
-            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
-            assertThat(outputPath.toFile().exists(), is(true));
-            assertThat(outputPath.toFile().delete(), is(true));
+            Path outputPath = Paths.get(String.format("%s.%s", tempFile, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
+            assertThat(outputPath.toString(), outputPath.toFile().exists(), is(true));
+            assertThat(outputPath.toString(), outputPath.toFile().delete(), is(true));
         }
     }
 }

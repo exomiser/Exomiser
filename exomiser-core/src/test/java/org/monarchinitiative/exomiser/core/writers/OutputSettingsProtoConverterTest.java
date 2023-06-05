@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 
+import java.nio.file.Path;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,7 +39,8 @@ class OutputSettingsProtoConverterTest {
     private final OutputProto.OutputOptions proto = OutputProto.OutputOptions.newBuilder()
             .setOutputContributingVariantsOnly(true)
             .setNumGenes(10)
-            .setOutputPrefix("frood")
+            .setOutputFileName("frood")
+            .setOutputDirectory("hoopy")
             .addOutputFormats(OutputFormat.HTML.toString())
             .addOutputFormats(OutputFormat.JSON.toString())
             .build();
@@ -46,7 +48,9 @@ class OutputSettingsProtoConverterTest {
     private final OutputSettings domain = OutputSettings.builder()
             .outputContributingVariantsOnly(true)
             .numberOfGenesToShow(10)
-            .outputPrefix("frood")
+            .outputPrefix("hoopy/frood")
+            .outputFileName("frood")
+            .outputDirectory(Path.of("hoopy"))
             .outputFormats(Set.of(OutputFormat.HTML, OutputFormat.JSON))
             .build();
 
@@ -58,5 +62,26 @@ class OutputSettingsProtoConverterTest {
     @Test
     void toDomain() {
         assertThat(instance.toDomain(proto), equalTo(domain));
+    }
+
+    @Test
+    void toDomainWhereNoDirectoryIsSetReturnsDefaultDir() {
+        OutputProto.OutputOptions emptyOutputDir = OutputProto.OutputOptions.newBuilder()
+                .setOutputContributingVariantsOnly(true)
+                .setNumGenes(10)
+                .setOutputDirectory("")
+                .setOutputFileName("frood")
+                .addOutputFormats(OutputFormat.HTML.toString())
+                .addOutputFormats(OutputFormat.JSON.toString())
+                .build();
+
+        OutputSettings domain = OutputSettings.builder()
+                .outputContributingVariantsOnly(true)
+                .numberOfGenesToShow(10)
+                .outputDirectory(OutputSettings.DEFAULT_OUTPUT_DIR)
+                .outputFileName("frood")
+                .outputFormats(Set.of(OutputFormat.HTML, OutputFormat.JSON))
+                .build();
+        assertThat(instance.toDomain(emptyOutputDir), equalTo(domain));
     }
 }

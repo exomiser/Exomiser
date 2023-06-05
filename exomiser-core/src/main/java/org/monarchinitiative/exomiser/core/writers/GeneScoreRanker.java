@@ -56,6 +56,11 @@ class GeneScoreRanker {
                                 .variantScore(0)
                                 .build();
                         compatibleGeneScores.add(geneScore);
+                    } else if (!gene.hasVariants() && compatibleGeneScores.isEmpty()) {
+                        // in the case of a phenotype-only analysis there wil be no variants loaded which will result in
+                        // an empty genes.tsv file. To avoid this, we want to add the ANY MOI score. The combined score
+                        // will only be zero for genes where both the phenotypeScore and variantScore are zero.
+                        compatibleGeneScores.add(gene.getGeneScoreForMode(ModeOfInheritance.ANY));
                     }
                     return compatibleGeneScores.stream();
                 })

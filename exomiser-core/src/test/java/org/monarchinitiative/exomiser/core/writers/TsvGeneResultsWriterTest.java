@@ -29,19 +29,17 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -64,10 +62,12 @@ public class TsvGeneResultsWriterTest {
 //        fgfr2.addPriorityResult(new HiPhivePriorityResult());
         fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1d, List.of(), Map.of()));
         fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
+        fgfr2.addVariant(TestVariantFactory.buildVariant(10, 12345, "G", "T", SampleGenotype.het(), 24, 300.0));
 
         Gene rbm8a = TestFactory.newGeneRBM8A();
         rbm8a.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
+        rbm8a.addVariant(TestVariantFactory.buildVariant(1, 12345, "G", "T", SampleGenotype.het(), 24, 300.0));
 
         analysisResults = AnalysisResults.builder()
                 .genes(Arrays.asList(fgfr2, rbm8a))
@@ -76,10 +76,9 @@ public class TsvGeneResultsWriterTest {
 
     @Test
     public void testWrite(@TempDir Path tempDir) throws Exception {
-        String outPrefix = tempDir.resolve("testWrite").toString();
-
         OutputSettings settings = OutputSettings.builder()
-                .outputPrefix(outPrefix)
+                .outputDirectory(tempDir)
+                .outputFileName("testWrite")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
 
@@ -95,14 +94,39 @@ public class TsvGeneResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
         String actual = instance.writeString(analysisResults, settings);
-        
+
         String expected =
-                """
-                #RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tHUMAN_PHENO_SCORE\tMOUSE_PHENO_SCORE\tFISH_PHENO_SCORE\tWALKER_SCORE\tPHIVE_ALL_SPECIES_SCORE\tOMIM_SCORE\tMATCHES_CANDIDATE_GENE\tHUMAN_PHENO_EVIDENCE\tMOUSE_PHENO_EVIDENCE\tFISH_PHENO_EVIDENCE\tHUMAN_PPI_EVIDENCE\tMOUSE_PPI_EVIDENCE\tFISH_PPI_EVIDENCE
-                1\tFGFR2_AD\tFGFR2\t2263\tAD\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t1.0000\t0\t
-                1\tRBM8A_AD\tRBM8A\t9939\tAD\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0\t                                         
-                """;
-        System.out.println(actual);
+                "#RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tHUMAN_PHENO_SCORE\tMOUSE_PHENO_SCORE\tFISH_PHENO_SCORE\tWALKER_SCORE\tPHIVE_ALL_SPECIES_SCORE\tOMIM_SCORE\tMATCHES_CANDIDATE_GENE\tHUMAN_PHENO_EVIDENCE\tMOUSE_PHENO_EVIDENCE\tFISH_PHENO_EVIDENCE\tHUMAN_PPI_EVIDENCE\tMOUSE_PPI_EVIDENCE\tFISH_PPI_EVIDENCE\n" +
+        "1\tFGFR2_AD\tFGFR2\t2263\tAD\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t1.0000\t0\t\n" +
+        "1\tRBM8A_AD\tRBM8A\t9939\tAD\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0\t\n";
+        assertThat(actual, equalTo(expected));
+    }
+
+    @Test
+    public void testWritePhenotypeOnlyAnalysis() {
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
+                .build();
+
+        Gene fgfr2 = TestFactory.newGeneFGFR2();
+        fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1d, List.of(), Map.of()));
+        fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
+                .combinedScore(0.12).phenotypeScore(1.0).variantScore(0).build());
+
+        Gene rbm8a = TestFactory.newGeneRBM8A();
+        rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
+                .combinedScore(0).phenotypeScore(0).variantScore(0).build());
+
+        var analysisResults = AnalysisResults.builder()
+                .genes(Arrays.asList(fgfr2, rbm8a))
+                .build();
+
+        String actual = instance.writeString(analysisResults, settings);
+
+        String expected =
+                "#RANK\tID\tGENE_SYMBOL\tENTREZ_GENE_ID\tMOI\tP-VALUE\tEXOMISER_GENE_COMBINED_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tHUMAN_PHENO_SCORE\tMOUSE_PHENO_SCORE\tFISH_PHENO_SCORE\tWALKER_SCORE\tPHIVE_ALL_SPECIES_SCORE\tOMIM_SCORE\tMATCHES_CANDIDATE_GENE\tHUMAN_PHENO_EVIDENCE\tMOUSE_PHENO_EVIDENCE\tFISH_PHENO_EVIDENCE\tHUMAN_PPI_EVIDENCE\tMOUSE_PPI_EVIDENCE\tFISH_PPI_EVIDENCE\n" +
+                "1\tFGFR2_ANY\tFGFR2\t2263\tANY\t1.0000\t0.1200\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t1.0000\t0\t\n" +
+                "2\tRBM8A_ANY\tRBM8A\t9939\tANY\t1.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0.0000\t0\t\n";
         assertThat(actual, equalTo(expected));
     }
 

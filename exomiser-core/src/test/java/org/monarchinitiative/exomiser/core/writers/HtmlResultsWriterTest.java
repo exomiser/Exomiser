@@ -129,7 +129,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(outputPrefix)
                 .build();
 
-        instance.writeFile(analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
         Path testOutFile = Paths.get(outputPrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
@@ -148,7 +148,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(testOutFilePrefix)
                 .build();
 
-        instance.writeFile(analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
@@ -167,7 +167,7 @@ public class HtmlResultsWriterTest {
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysisResults, settings);
+        instance.writeFile(ModeOfInheritance.ANY, analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
 
         List<String> lines = Files.readAllLines(testOutFile);
@@ -194,7 +194,7 @@ public class HtmlResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
         assertFalse(output.isEmpty());
     }
 
@@ -220,7 +220,7 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(analysisResults, settings);
+        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
         assertTrue(output.contains("Exomiser Analysis Results for"));
         assertTrue(output.contains("FGFR2"));
         assertTrue(output.contains("SHH"));

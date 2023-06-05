@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2022 Queen Mary University of London.
+ * Copyright (c) 2016-2023 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -64,6 +64,7 @@ import static java.util.stream.Collectors.*;
  * @since 13.1.0
  */
 public class TsvVariantResultsWriter implements ResultsWriter {
+
     private static final Logger logger = LoggerFactory.getLogger(TsvVariantResultsWriter.class);
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_VARIANT;
     public static final CSVFormat EXOMISER_VARIANTS_TSV_FORMAT = CSVFormat.newFormat('\t')
@@ -71,26 +72,28 @@ public class TsvVariantResultsWriter implements ResultsWriter {
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
             .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
+
     private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
     public TsvVariantResultsWriter() {
         Locale.setDefault(Locale.UK);
     }
 
+    @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.getSample();
-        String outFileName = ResultsWriterUtils.makeOutputFilename(sample.getVcfPath(), outputSettings.getOutputPrefix(), OUTPUT_FORMAT);
-        Path outFile = Path.of(outFileName);
+        Path outFile = outputSettings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
 
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), EXOMISER_VARIANTS_TSV_FORMAT)) {
             this.writeData(analysisResults, outputSettings, printer);
-        } catch (Exception var12) {
-            logger.error("Unable to write results to file {}", outFileName, var12);
+        } catch (IOException ex) {
+            logger.error("Unable to write results to file {}", outFile, ex);
         }
 
-        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFileName);
+        logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
+    @Override
     public String writeString(AnalysisResults analysisResults, OutputSettings outputSettings) {
         StringBuilder output = new StringBuilder();
 
@@ -201,11 +204,18 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
-        return switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
-            case FAILED -> formatFailedFilters(variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance));
-            case PASSED -> "PASS";
-            case UNFILTERED -> ".";
-        };
+        //under some modes a variant should not pass, but others it will, so we need to check this here
+        //otherwise when running FULL or SPARSE modes alleles will be reported as having passed under the wrong MOI
+        switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
+            case FAILED:
+                Set<FilterType> failedFilterTypes = variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance);
+                return formatFailedFilters(failedFilterTypes);
+            case PASSED:
+                return "PASS";
+            case UNFILTERED:
+            default:
+                return ".";
+        }
     }
 
     private String formatFailedFilters(Set<FilterType> failedFilters) {
@@ -216,18 +226,22 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         return stringJoiner.toString();
     }
 
+    /**
+     * @return An annotation for a single transcript, representing one of the
+     * annotations with the most pathogenic annotation.
+     */
     private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
         if (annotations.isEmpty()) {
             return "";
-        } else {
-            TranscriptAnnotation anno = annotations.get(0);
-            StringJoiner stringJoiner = new StringJoiner(":");
-            stringJoiner.add(anno.getGeneSymbol());
-            stringJoiner.add(anno.getAccession());
-            stringJoiner.add(anno.getHgvsCdna());
-            stringJoiner.add(anno.getHgvsProtein());
-            return stringJoiner.toString();
         }
+        TranscriptAnnotation anno = annotations.get(0);
+
+        StringJoiner stringJoiner = new StringJoiner(":");
+        stringJoiner.add(anno.getGeneSymbol());
+        stringJoiner.add(anno.getAccession());
+        stringJoiner.add(anno.getHgvsCdna());
+        stringJoiner.add(anno.getHgvsProtein());
+        return stringJoiner.toString();
     }
 
 }

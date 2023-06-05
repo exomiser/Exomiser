@@ -100,7 +100,7 @@
         <protobuf.version>3.21.12</protobuf.version>
         <spring-boot.version>2.7.7</spring-boot.version>
         <docker.base.image>
-            gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
+            gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
@@ -275,24 +275,10 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>post-unit-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <!-- Sets the path to the file which contains the execution data. -->
-                            <dataFile>target/jacoco.exec</dataFile>
-                            <!-- Sets the output directory for the code coverage report. -->
-                            <!-- will default to target/site/jacoco which is used by sonar -->
-                            <!-- <outputDirectory>target/jacoco-reports</outputDirectory> -->
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

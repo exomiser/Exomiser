@@ -24,7 +24,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.variant.vcf.VCFFileReader;
-import org.codehaus.groovy.ast.expr.UnaryMinusExpression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +35,6 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
-import org.monarchinitiative.exomiser.core.genome.TestVcfReader;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -56,8 +54,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -72,10 +70,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class VcfResultsWriterTest {
 
-    private final static String METADATA_HEADER = """
-            ##fileformat=VCFv4.2
-            ##INFO=<ID=Exomiser,Number=.,Type=String,Description="A pipe-separated set of values for the proband allele(s) from the record with one per compatible MOI following the format: {RANK|ID|GENE_SYMBOL|ENTREZ_GENE_ID|MOI|P-VALUE|EXOMISER_GENE_COMBINED_SCORE|EXOMISER_GENE_PHENO_SCORE|EXOMISER_GENE_VARIANT_SCORE|EXOMISER_VARIANT_SCORE|CONTRIBUTING_VARIANT|WHITELIST_VARIANT|FUNCTIONAL_CLASS|HGVS|EXOMISER_ACMG_CLASSIFICATION|EXOMISER_ACMG_EVIDENCE|EXOMISER_ACMG_DISEASE_ID|EXOMISER_ACMG_DISEASE_NAME}">
-            """;
+    private final static String METADATA_HEADER = "##fileformat=VCFv4.2\n" +
+                                                  "##INFO=<ID=Exomiser,Number=.,Type=String,Description=\"A pipe-separated set of values for the proband allele(s) from the record with one per compatible MOI following the format: {RANK|ID|GENE_SYMBOL|ENTREZ_GENE_ID|MOI|P-VALUE|EXOMISER_GENE_COMBINED_SCORE|EXOMISER_GENE_PHENO_SCORE|EXOMISER_GENE_VARIANT_SCORE|EXOMISER_VARIANT_SCORE|CONTRIBUTING_VARIANT|WHITELIST_VARIANT|FUNCTIONAL_CLASS|HGVS|EXOMISER_ACMG_CLASSIFICATION|EXOMISER_ACMG_EVIDENCE|EXOMISER_ACMG_DISEASE_ID|EXOMISER_ACMG_DISEASE_NAME}\">\n";
 
     private static final String CHR_7_CONTIG_HEADER = "##contig=<ID=7,length=159138663,assembly=GRCh37.p13>\n";
 
@@ -225,14 +221,12 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysisResults, settings);
         final String expected = METADATA_HEADER
-                + """
-                     ##contig=<ID=7,length=159138663,assembly=GRCh37.p13>
-                     ##contig=<ID=10,length=135534747,assembly=GRCh37.p13>
-                     #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample
-                     7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={2|7-155604800-C-CT_ANY|SHH|6469|ANY|1.0000|0.0000|0.0000|0.0000|1.0000|0|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
-                     10\t123256214\t.\tA\tG\t2.20\tPASS\tExomiser={1|10-123256214-A-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.5958|0|0|missense_variant|FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
-                     10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||""}\tGT:RD\t0/1:30
-                     """;
+                                + "##contig=<ID=7,length=159138663,assembly=GRCh37.p13>\n" +
+                                "##contig=<ID=10,length=135534747,assembly=GRCh37.p13>\n" +
+                                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n" +
+                                "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={2|7-155604800-C-CT_ANY|SHH|6469|ANY|1.0000|0.0000|0.0000|0.0000|1.0000|0|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n" +
+                                "10\t123256214\t.\tA\tG\t2.20\tPASS\tExomiser={1|10-123256214-A-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.5958|0|0|missense_variant|FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n" +
+                                "10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -287,7 +281,7 @@ public class VcfResultsWriterTest {
         expected.add("10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30");
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(vcfOutFile.toFile()))))) {
-            List<String> actual = br.lines().toList();
+            List<String> actual = br.lines().collect(Collectors.toUnmodifiableList());
             assertThat(actual, equalTo(expected));
         }
     }
@@ -318,7 +312,7 @@ public class VcfResultsWriterTest {
     public void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory(vcfPath);
-        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations().toList();
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations().collect(Collectors.toUnmodifiableList());
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
         VariantEvaluation altAlleleOne = variants.get(3).toBuilder()
                 //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
