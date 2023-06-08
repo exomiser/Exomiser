@@ -50,35 +50,34 @@ public class VariantDatabaseBuildRunner {
     private final Path buildPath;
     private final BuildInfo buildInfo;
     private final List<AlleleResource> alleleResources;
+    private final Path processedDir;
 
-    public VariantDatabaseBuildRunner(BuildInfo buildInfo, Path buildPath, List<AlleleResource> alleleResources) {
+    public VariantDatabaseBuildRunner(BuildInfo buildInfo, Path buildPath, List<AlleleResource> alleleResources, Path processedDir) {
         this.buildPath = buildPath;
         this.buildInfo = buildInfo;
         this.alleleResources = alleleResources;
+        this.processedDir = processedDir;
     }
 
     public void run() {
-        String fileName = buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString();
-        MVStore mvStore = new MVStore.Builder()
-                .fileName(fileName)
-                .compress()
-                .open();
-        // this is key to keep the size of the store down when building otherwise it gets enormous
-        mvStore.setVersionsToKeep(0);
-        // This is threadsafe and can be run in parallel. However, the throughput is significantly slower,
-        // to the extent that the overall time is the same, at least on my machine (4 cores) it is.
-        // This holds true both using parallelStream and a fixed thread pool executor with only 2 threads.
-        try (Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore)) {
-            alleleResources.forEach(alleleIndexer::index);
-        } catch (IOException e ) {
-            throw new IllegalStateException("Error writing to MVStore " + fileName, e);
+        // process all alleleResources into separate .mv stores in the buildDir/processed directory
+        for (AlleleResource alleleResource : alleleResources) {
+            processResource(alleleResource, processedDir.resolve(buildInfo.getVersion() + "_" + alleleResource.getName() + ".mv.db"));
         }
+    }
 
-        MVMap<AlleleKey, AlleleProperties> alleleMVMap = MvStoreUtil.openAlleleMVMap(mvStore);
-        logger.info("Written {} alleles to store", alleleMVMap.size());
-
+    private void processResource(AlleleResource alleleResource, Path processedResource) {
+        try (MVStore mvStore = VariantMvStores.openMvStore(processedResource);
+             Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore)) {
+            alleleIndexer.index(alleleResource);
+            logger.info("Written {} alleles to {} store", alleleIndexer.count(), alleleResource.getName());
+            mvStore.compactMoveChunks();
+            logger.info("Closing {} store", alleleResource.getName());
+        } catch (IOException e) {
+            throw new IllegalStateException("Error processing resource " + alleleResource.getName(), e);
+        }
         // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
-        logger.info("Compacting store...");
-        MVStoreTool.compact(fileName, true);
+        logger.info("Compacting {} store...", alleleResource.getName());
+        MVStoreTool.compact(processedResource.toString(), true);
     }
 }
