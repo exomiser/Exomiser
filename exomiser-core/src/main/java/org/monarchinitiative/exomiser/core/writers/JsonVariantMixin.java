@@ -22,16 +22,16 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.VariantType;
 
 /**
  * Jackson Mixin (http://www.cowtowncoder.com/blog/archives/2009/08/entry_305.html) class to add JSON serialisation to
- * svart {@link Variant} fields.
+ * svart {@link GenomicVariant} fields.
  *
  * @since 13.0.0
  */
-public interface JsonVariantMixin extends Variant {
+public interface JsonVariantMixin extends GenomicVariant {
 
     @JsonProperty("contigName")
     @Override

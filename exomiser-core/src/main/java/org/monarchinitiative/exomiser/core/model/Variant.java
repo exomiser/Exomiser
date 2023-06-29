@@ -27,13 +27,14 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.svart.GenomicVariant;
 
 /**
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public interface Variant extends org.monarchinitiative.svart.Variant, VariantAnnotations {
+public interface Variant extends GenomicVariant, VariantAnnotations {
 
     default GenomeAssembly getGenomeAssembly() {
         return GenomeAssembly.assemblyOfContig(contig());

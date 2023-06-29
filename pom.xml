@@ -85,7 +85,7 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -94,7 +94,7 @@
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.30</jannovar.version>
-        <svart.version>1.0.2</svart.version>
+        <svart.version>2.0.0-RC5</svart.version>
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.21.12</protobuf.version>

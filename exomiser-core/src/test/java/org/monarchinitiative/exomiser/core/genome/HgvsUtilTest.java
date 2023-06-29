@@ -21,10 +21,10 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +45,7 @@ class HgvsUtilTest {
         Variant variant = TestFactory.variantBuilder(1, 18, "AT", "A").build();
         // n.b. VCF used 1-based whereas HGVS is 0-based
         // a deletion of the T at position g.19 in the sequence AGAA_T_CACA to AGAA___CACA
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19delT"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19del"));
     }
 
     @Test
@@ -53,7 +53,7 @@ class HgvsUtilTest {
         Variant variant = TestFactory.variantBuilder(19, 23844937, "CA", "C").build();
         // https://www.ncbi.nlm.nih.gov/snp/rs1359868666
         // https://gnomad.broadinstitute.org/variant/19-23844937-CA-C
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000019.9:g.23844938delA"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000019.9:g.23844938del"));
     }
 
     @Test
@@ -61,7 +61,7 @@ class HgvsUtilTest {
         Variant variant = TestFactory.variantBuilder(1, 17, "ATCA", "A").build();
         // n.b. VCF used 1-based whereas HGVS is 0-based
         // a deletion of nucleotides g.19 to g.21 in the sequence AGAA_TCA_CA to AGAA___CA
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19_21delTCA"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000001.10:g.19_21del"));
     }
 
     @Test
@@ -69,7 +69,7 @@ class HgvsUtilTest {
         Variant variant = TestFactory.variantBuilder(14, 23371269, "GCA", "G").build();
         // https://www.ncbi.nlm.nih.gov/snp/rs762848810
         // https://gnomad.broadinstitute.org/variant/14-23371269-GCA-G
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000014.8:g.23371270_23371271delCA"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000014.8:g.23371270_23371271del"));
     }
 
     @Test
@@ -81,10 +81,6 @@ class HgvsUtilTest {
     @Test
     void toHgvsSvInversion() {
         Variant variant = TestFactory.variantBuilder(10, 20, 100, "T", "<INV>", 0).build();
-//        Variant variant = TestFactory.variantBuilder(10, 20, "T", "<INV>")
-//                .end(100)
-//                .variantType(VariantType.INV)
-//                .build();
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100inv"));
     }
 
@@ -123,27 +119,29 @@ class HgvsUtilTest {
     @Test
     void toHgvsSvIns() {
         Variant variant = TestFactory.variantBuilder(10, 20, 100, "T", "<INS>", 80).build();
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100ins"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100insN[80]"));
     }
 
     @Test
     void toHgvsSnvDupSingle() {
         Variant variant = TestFactory.variantBuilder(10, 20, "T", "TT").build();
         // the duplication of a T at position c.20 in the sequence AGAAG_T_AGAGG to AGAAG_TT_AGAGG
-        // NOTE: it is allowed to describe the variant as c.20dupT
+        // NOTE: the recommendation is not to describe the variant as NM_004006.2:c.20dupT, i.e. describe the duplicated
+        // nucleotide sequence. This description is longer, it contains redundant information and chances to make an
+        // error increases (e.g. NM_004006.2:c.20dupG).
         // NOTE: it is not allowed to describe the variant as g.19_20insT (see prioritisation)
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20dupT"));
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20dup"));
     }
 
     @Test
     void toHgvsSnvDupMultiple() {
-        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED,Position.of(20), "T", "TTT");
-        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_21dupTT"));
+        GenomicVariant variant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(10), Strand.POSITIVE, CoordinateSystem.ONE_BASED, 20, "T", "TTT");
+        assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_21dup"));
     }
 
     @Test
     void toHgvsSvDup() {
-        Variant variant = Variant.of(GenomeAssembly.HG19.getContigById(10),  "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(20), Position.of(100), "T", "<DUP>", 80);
+        GenomicVariant variant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(10),  Strand.POSITIVE, CoordinateSystem.ONE_BASED, 20, 100, "T", "<DUP>", 80);
         assertThat(HgvsUtil.toHgvsGenomic(variant), equalTo("NC_000010.10:g.20_100dup"));
     }
 

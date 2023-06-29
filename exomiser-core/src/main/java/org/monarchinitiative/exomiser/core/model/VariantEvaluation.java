@@ -33,8 +33,8 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Coordinates;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
 
 import java.util.*;
@@ -107,8 +107,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.pathogenicityData = builder.pathogenicityData;
     }
 
-    private VariantEvaluation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
-        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
+    private VariantEvaluation(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
         this.variantContext = variantContext;
         this.altAlleleId = altAlleleId;
         this.phredScore = phredScore;
@@ -124,8 +124,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @Override
-    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return new VariantEvaluation(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
+    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        return new VariantEvaluation(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
     }
 
     private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
@@ -484,7 +484,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        return org.monarchinitiative.svart.Variant.compare(this, other);
+        return GenomicVariant.compare(this, other);
     }
 
     public static class RankBasedComparator implements Comparator<VariantEvaluation> {
@@ -503,7 +503,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (thisScore != otherScore) {
             return -Float.compare(thisScore, otherScore);
         }
-        return org.monarchinitiative.svart.Variant.compare(some, other);
+        return GenomicVariant.compare(some, other);
     }
 
     @Override
@@ -544,8 +544,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
-    // TODO - Will Composition make Breakends work?
-    // VariantEvaluation implements Variant, VariantAnnotations,
+    // TODO: Will Composition make Breakends work?
+    //  VariantEvaluation implements Variant, VariantAnnotations,
     //    Variant
     //    VariantContext
     //    VariantAnnotations
@@ -557,7 +557,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @since 13.0.0
      */
     public VariantEvaluation.Builder toBuilder() {
-        return new Builder().with(this)
+        return new Builder().variant(this)
                 // VariantContext-derived fields
                 .variantContext(this.variantContext)
                 .altAlleleId(this.altAlleleId)
@@ -581,7 +581,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @since 13.0.0
      */
     public static VariantEvaluation.Builder with(Variant variant) {
-        return new Builder().with(variant);
+        return new Builder().variant(variant);
     }
 
     public static Builder builder() {

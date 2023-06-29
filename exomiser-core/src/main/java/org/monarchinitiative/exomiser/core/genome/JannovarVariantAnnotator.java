@@ -24,7 +24,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +86,7 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
      * @since 13.0.0
      */
     @Override
-    public List<VariantAnnotation> annotate(Variant variant) {
+    public List<VariantAnnotation> annotate(GenomicVariant variant) {
         if (variant == null) {
             return List.of();
         }

@@ -238,15 +238,15 @@ public class SvFrequencyDao implements FrequencyDao {
         return changeLength;
     }
 
-    static class SvResult extends BaseVariant<SvResult> {
+    static class SvResult extends BaseGenomicVariant<SvResult> {
 
         private final String source;
         private final int ac;
         private final int an;
         private final float af;
 
-        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, int ac, int an) {
-            super(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength);
+        private SvResult(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String source, int ac, int an) {
+            super(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
             this.source = source;
             this.ac = ac;
             this.an = an;
@@ -255,13 +255,12 @@ public class SvFrequencyDao implements FrequencyDao {
 
         static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String id, String source, int ac, int an) {
             String alt = '<' + variantType.toString().replace("_", ":") + '>';
-//            System.out.printf("contig=%s, id=%s, start=%d, end=%d, changeLength=%d, %s, %s, ac=%d, af=%f%n", contig.name(), id, start, end, changeLength, variantType, source, ac, af);
-            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, changeLength, source, ac, an);
+            return new SvResult(contig, ".".equals(id) ? "" : id, Strand.POSITIVE, Coordinates.oneBased(start, end), "", alt, changeLength, source, ac, an);
         }
 
         @Override
-        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, source, ac, an);
+        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+            return new SvResult(contig, id, strand, coordinates, ref, alt, changeLength, source, ac, an);
         }
 
         @Override

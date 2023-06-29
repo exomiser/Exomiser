@@ -31,7 +31,7 @@ import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(Variant variant) {
+    public List<VariantAnnotation> annotate(GenomicVariant variant) {
         if (variant == null || variant.isBreakend()) {
             // TODO: re-enable breakends!
             return List.of();
@@ -82,7 +82,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         return buildVariantAnnotations(svAnnotations, variant);
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, Variant variant) {
+    private List<VariantAnnotation> buildVariantAnnotations(SVAnnotations svAnnotations, GenomicVariant variant) {
         if (!svAnnotations.hasAnnotation()) {
             return List.of(EMPTY_STRUCTURAL_ANNOTATION);
         }
@@ -96,10 +96,10 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         return annotationsByGeneSymbol.values()
                 .stream()
                 .map(geneSvAnnotations -> toStructuralVariantAnnotation(variant, geneSvAnnotations))
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
-    private VariantAnnotation toStructuralVariantAnnotation(Variant variant, List<SVAnnotation> svAnnotations) {
+    private VariantAnnotation toStructuralVariantAnnotation(GenomicVariant variant, List<SVAnnotation> svAnnotations) {
         svAnnotations.sort(SVAnnotation::compareTo);
         SVAnnotation highestImpactAnnotation = svAnnotations.isEmpty() ? null : svAnnotations.get(0);
         //Attention! highestImpactAnnotation can be null
@@ -148,7 +148,7 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
-    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, Variant variant) {
+    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, GenomicVariant variant) {
         //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
         // TODO do we need a regulatoryRegionIndex.hasRegionOverlapping(chr, start, end)
         if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionOverlappingVariant(variant)) {
