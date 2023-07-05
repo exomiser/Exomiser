@@ -58,17 +58,17 @@ public class PhenotypeTermTest {
     @Test
     void willAcceptNullLabel() {
         PhenotypeTerm instance = PhenotypeTerm.of("id", null);
-        assertThat(instance.getLabel(), equalTo(""));
+        assertThat(instance.label(), equalTo(""));
     }
 
     @Test
     public void testGetId() {
-        assertThat(instance.getId(), equalTo(id));
+        assertThat(instance.id(), equalTo(id));
     }
 
     @Test
     public void testGetTerm() {
-        assertThat(instance.getLabel(), equalTo(label));
+        assertThat(instance.label(), equalTo(label));
     }
 
     @Test
@@ -101,16 +101,7 @@ public class PhenotypeTermTest {
     @Test
     public void testOf() {
         assertThat(PhenotypeTerm.of("id", "label"), equalTo(PhenotypeTerm.of("id", "label")));
-        assertThat(PhenotypeTerm.of("id", "label").isPresent(), is(true));
-        assertThat(PhenotypeTerm.of("id", "label").notPresent(), is(false));
         assertThat(PhenotypeTerm.of("otherId", "otherLabel"), not(equalTo(PhenotypeTerm.of("id", "label"))));
     }
 
-    @Test
-    public void testNotOf() {
-        assertThat(PhenotypeTerm.notOf("id", "label"), equalTo(PhenotypeTerm.notOf("id", "label")));
-        assertThat(PhenotypeTerm.notOf("id", "label"), not(equalTo(PhenotypeTerm.of("id", "label"))));
-        assertThat(PhenotypeTerm.notOf("id", "label").isPresent(), is(false));
-        assertThat(PhenotypeTerm.notOf("id", "label").notPresent(), is(true));
-    }
 }

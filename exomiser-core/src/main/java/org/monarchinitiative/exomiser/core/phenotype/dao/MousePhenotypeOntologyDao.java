@@ -78,7 +78,7 @@ public class MousePhenotypeOntologyDao implements OntologyDao {
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement ps = PreparedStatementSetter.prepareStatement(connection, mappingQuery, setter -> setter
-                        .setString(1, hpoTerm.getId()));
+                        .setString(1, hpoTerm.id()));
                 ResultSet rs = ps.executeQuery()) {
 
             return OntologyDaoResultSetProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);

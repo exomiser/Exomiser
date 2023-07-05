@@ -7,7 +7,6 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
@@ -45,7 +44,7 @@ public class CombinedScorePvalueCalculatorTest {
     @Test
     public void testStaticConstructor() {
         Prioritiser<?> prioritiser = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.testPriorityService());
-        List<String> phenotypicFeatures = TestPriorityServiceFactory.pfeifferSyndromePhenotypes().stream().map(PhenotypeTerm::getId).collect(Collectors.toList());
+        List<String> phenotypicFeatures = TestPriorityServiceFactory.pfeifferSyndromePhenotypes().stream().map(PhenotypeTerm::id).collect(Collectors.toList());
         List<Gene> genes = TestFactory.buildGenes();
         var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, phenotypicFeatures, genes, genes.size());
         assertThat(instance.calculatePvalueFromCombinedScore(0.89), greaterThan(0.0));

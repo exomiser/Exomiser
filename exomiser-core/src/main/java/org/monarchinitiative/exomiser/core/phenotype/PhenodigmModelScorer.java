@@ -116,11 +116,11 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
             PhenotypeTerm queryTerm = entry.getKey();
             Set<PhenotypeMatch> matches = entry.getValue();
             if (matches.isEmpty()) {
-                logger.debug("{}-NOT MATCHED", queryTerm.getId());
+                logger.debug("{}-NOT MATCHED", queryTerm.id());
             } else {
                 matches.stream()
                         .max(Comparator.comparingDouble(PhenotypeMatch::getScore))
-                        .ifPresent(bestMatch -> logger.debug("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
+                        .ifPresent(bestMatch -> logger.debug("{}-{}={}", queryTerm.id(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
             }
         }
         QueryPhenotypeMatch organismQueryPhenotypeMatch = organismPhenotypeMatcher.getQueryPhenotypeMatch();

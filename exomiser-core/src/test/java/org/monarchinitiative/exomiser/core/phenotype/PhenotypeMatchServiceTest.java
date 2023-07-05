@@ -45,7 +45,7 @@ public class PhenotypeMatchServiceTest {
         PhenotypeMatchService instance = new PhenotypeMatchService(ontologyService);
         List<String> hpoIds = TestPriorityServiceFactory.pfeifferSyndromePhenotypes()
                 .stream()
-                .map(PhenotypeTerm::getId)
+                .map(PhenotypeTerm::id)
                 .collect(toList());
 
         List<PhenotypeTerm> queryTerms = instance.makePhenotypeTermsFromHpoIds(hpoIds);

@@ -119,7 +119,7 @@ public class OntologyServiceImplTest {
 
     @Test
     public void testReturnsPhenotypeTermForGivenHpoId() {
-        assertThat(instance.getPhenotypeTermForHpoId(fingerJointHyperExtensibility.getId()), equalTo(fingerJointHyperExtensibility));
+        assertThat(instance.getPhenotypeTermForHpoId(fingerJointHyperExtensibility.id()), equalTo(fingerJointHyperExtensibility));
     }
 
     @Test

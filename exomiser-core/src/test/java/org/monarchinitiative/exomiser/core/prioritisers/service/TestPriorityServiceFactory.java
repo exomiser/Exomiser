@@ -119,10 +119,10 @@ public class TestPriorityServiceFactory {
         Map<String, PhenotypeTerm> hpPhenotypesTerms = hpHpMappings.stream()
                 .map(PhenotypeMatch::getQueryPhenotype)
                 .distinct()
-                .collect(Collectors.toConcurrentMap(PhenotypeTerm::getId, Function.identity()));
+                .collect(Collectors.toConcurrentMap(PhenotypeTerm::id, Function.identity()));
 
         logger.info("This data links {} phenotypes:", hpPhenotypesTerms.size());
-        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.getId(), term.getLabel()));
+        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.id(), term.label()));
 
         logger.info("Via cross-species phenotype mappings:");
         logger.info("    hp-hp: " + hpHpMappings.size());

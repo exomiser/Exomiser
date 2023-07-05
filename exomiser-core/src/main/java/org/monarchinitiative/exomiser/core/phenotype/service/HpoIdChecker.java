@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class HpoIdChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(HpoIdChecker.class);
-    private static final Pattern HPO_ID_PATTERN = Pattern.compile("HP:[0-9]{7}");
+    private static final Pattern HPO_ID_PATTERN = Pattern.compile("HP:\\d{7}");
 
     private final Map<String, PhenotypeTerm> termIdToTerms;
 
@@ -67,7 +67,7 @@ public class HpoIdChecker {
      */
     public String getCurrentId(String hpoId) {
         PhenotypeTerm term = getCurrentTerm(hpoId);
-        return term == null ? hpoId : term.getId();
+        return term == null ? hpoId : term.id();
     }
 
     /**
@@ -90,11 +90,11 @@ public class HpoIdChecker {
             logger.warn("Input {} - unable to find current id. Returning input {}", hpoId, hpoId);
             return null;
         }
-        if (hpoId.equals(term.getId())) {
-            logger.debug("Input is current - {} ({})", hpoId, term.getLabel());
+        if (hpoId.equals(term.id())) {
+            logger.debug("Input is current - {} ({})", hpoId, term.label());
             return term;
         } else {
-            logger.info("Input term {} is obsolete. Replaced by {} ({})", hpoId, term.getId(), term.getLabel());
+            logger.info("Input term {} is obsolete. Replaced by {} ({})", hpoId, term.id(), term.label());
             return term;
         }
     }

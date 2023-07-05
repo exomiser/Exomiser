@@ -89,7 +89,7 @@ public class PhenodigmModelScorerTest {
         PhenotypeTerm noMatchTerm = PhenotypeTerm.of("HP:000000", "No term");
         //The model should have no phenotypes in common with the query set.
         assertThat(queryTerms.contains(noMatchTerm), is(false));
-        Model model = new GeneDiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.getId()));
+        Model model = new GeneDiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.id()));
         ModelPhenotypeMatch<Model> result = instance.scoreModel(model);
 
         assertThat(result.getScore(), equalTo(0.0));

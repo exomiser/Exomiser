@@ -64,7 +64,7 @@ public class PhenotypeMatchTest {
 
     @Test
     public void testGetQueryPhenotypeId() {
-        assertThat(instance.getQueryPhenotypeId(), equalTo(queryPhenotype.getId()));
+        assertThat(instance.getQueryPhenotypeId(), equalTo(queryPhenotype.id()));
     }
     
     @Test
@@ -80,7 +80,7 @@ public class PhenotypeMatchTest {
 
     @Test
     public void testGetMatchPhenotypeId() {
-        assertThat(instance.getMatchPhenotypeId(), equalTo(matchPhenotype.getId()));
+        assertThat(instance.getMatchPhenotypeId(), equalTo(matchPhenotype.id()));
     }
     
     @Test

@@ -25,8 +25,6 @@
 package org.monarchinitiative.exomiser.core.phenotype;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
@@ -34,58 +32,16 @@ import java.util.Objects;
  * Represents a phenotype term from a phenotype ontology - e.g. the HPO, MPO, ZPO... 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class PhenotypeTerm implements Comparable<PhenotypeTerm> {
+public record PhenotypeTerm(String id, String label) implements Comparable<PhenotypeTerm> {
 
-    private enum Status {
-        PRESENT, NOT_PRESENT
-    }
-
-    private final String id;
-    private final String label;
-
-    @JsonIgnore
-    private final Status status;
-
-    private PhenotypeTerm(String id, String label, Status status) {
-        Objects.requireNonNull(id, "Term id cannot be null");
-        this.id = id;
+    public PhenotypeTerm(String id, String label) {
+        this.id = Objects.requireNonNull(id, "Term id cannot be null");
         this.label = label == null ?  "" : label;
-        this.status = status;
     }
 
-    @JsonProperty
-    public String getId() {
-        return id;
-    }
-
-    @JsonProperty
-    public String getLabel() {
-        return label;
-    }
-
-    @JsonIgnore
-    public boolean isPresent() {
-        return status == Status.PRESENT;
-    }
-
-    @JsonIgnore
-    public boolean notPresent() {
-        return status == Status.NOT_PRESENT;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PhenotypeTerm)) return false;
-        PhenotypeTerm that = (PhenotypeTerm) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(label, that.label) &&
-                status == that.status;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, label, status);
+    @JsonCreator
+    public static PhenotypeTerm of(String id, String label) {
+        return new PhenotypeTerm(id, label);
     }
 
     @Override
@@ -95,16 +51,7 @@ public final class PhenotypeTerm implements Comparable<PhenotypeTerm> {
 
     @Override
     public String toString() {
-        return "PhenotypeTerm{" + "id=" + id + ", label=" + label + ", present=" + isPresent() +'}';
-    }
-
-    @JsonCreator
-    public static PhenotypeTerm of(String id, String label) {
-        return new PhenotypeTerm(id, label, Status.PRESENT);
-    }
-
-    public static PhenotypeTerm notOf(String id, String label) {
-        return new PhenotypeTerm(id, label, Status.NOT_PRESENT);
+        return "PhenotypeTerm{" + "id=" + id + ", label=" + label + '}';
     }
 
 }

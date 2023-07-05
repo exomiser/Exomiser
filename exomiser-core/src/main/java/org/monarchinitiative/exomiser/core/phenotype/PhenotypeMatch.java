@@ -60,7 +60,7 @@ public final class PhenotypeMatch {
 
     @JsonIgnore
     public String getQueryPhenotypeId() {
-        return (queryPhenotype == null) ? "null" : queryPhenotype.getId();
+        return (queryPhenotype == null) ? "null" : queryPhenotype.id();
     }
     
     @JsonProperty("query")
@@ -70,7 +70,7 @@ public final class PhenotypeMatch {
 
     @JsonIgnore
     public String getMatchPhenotypeId() {
-        return (matchPhenotype == null) ? "null" : matchPhenotype.getId();
+        return (matchPhenotype == null) ? "null" : matchPhenotype.id();
     }
     
     @JsonProperty("match")
