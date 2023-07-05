@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -99,8 +100,9 @@ public class PrioritiserController {
                 .getPrioritiserParams());
         List<Gene> genes = makeGenesFromIdentifiers(prioritiserRequest.getGenes());
 
-        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, prioritiserRequest.getPhenotypes(), genes, prioritiserRequest
-                .getLimit());
+        List<PriorityResult> results = runLimitAndCollectResults((Prioritiser<PriorityResult>) prioritiser, prioritiserRequest.getPhenotypes(), genes, prioritiserRequest
+                .getLimit())
+                .toList();
 
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);
@@ -110,16 +112,18 @@ public class PrioritiserController {
 
     private Prioritiser<? extends PriorityResult> parsePrioritiser(String prioritiserName, String prioritiserParams) {
         switch (prioritiserName) {
-            case "phenix":
+            case "phenix" -> {
                 return priorityFactory.makePhenixPrioritiser();
-            case "phive":
+            }
+            case "phive" -> {
                 return priorityFactory.makePhivePrioritiser();
-            case "hiphive":
-            default:
+            }
+            default -> {
                 HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
                         .runParams(prioritiserParams)
                         .build();
                 return priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions);
+            }
         }
     }
 
@@ -134,31 +138,31 @@ public class PrioritiserController {
         // OmimPrioritiser uses some properties of Gene
         return genesIds.stream()
                 .map(id -> new Gene(geneIdentifiers.getOrDefault(id, unrecognisedGeneIdentifier(id))))
-                .collect(toImmutableList());
+                .toList();
     }
 
     private List<Gene> allGenes() {
         return geneIdentifiers.values().parallelStream()
                 .map(Gene::new)
-                .collect(toImmutableList());
+                .toList();
     }
 
     private GeneIdentifier unrecognisedGeneIdentifier(Integer id) {
         return GeneIdentifier.builder().geneSymbol("GENE:" + id).build();
     }
 
-    private <T extends PriorityResult> List<PriorityResult> runLimitAndCollectResults(Prioritiser<T> prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
+    private Stream<PriorityResult> runLimitAndCollectResults(Prioritiser<PriorityResult> prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
         Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(Collectors.toSet());
-
-        Stream<T> resultsStream = prioritiser.prioritise(phenotypes, genes)
+        Sample sample = Sample.builder().hpoIds(phenotypes).build();
+        Stream<PriorityResult> resultsStream = prioritiser.prioritise(sample, genes)
                 .filter(result -> wantedGeneIds.contains(result.getGeneId()))
                 .sorted(Comparator.naturalOrder());
 
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {
-            return resultsStream.collect(toImmutableList());
+            return resultsStream;
         }
-        return resultsStream.limit(limit).collect(toImmutableList());
+        return resultsStream.limit(limit);
     }
 
 }

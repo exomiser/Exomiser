@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
@@ -68,7 +69,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
      * variants).
      */
     @Override
-    public void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
+    public void prioritizeGenes(Sample sample, List<Gene> genes) {
         for (Gene gene : genes) {
             OmimPriorityResult result = prioritiseGene().apply(gene);
             gene.addPriorityResult(result);
@@ -76,7 +77,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
     }
 
     @Override
-    public Stream<OmimPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<OmimPriorityResult> prioritise(Sample sample, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 

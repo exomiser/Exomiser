@@ -27,6 +27,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.jblas.DoubleMatrix;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -48,7 +49,7 @@ import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
  */
 public class HiPhivePriorityTest {
 
-    private final List<String> hpoIds = getHpoIds();
+    private final Sample sample = getSample();
 
     private final PriorityService priorityService = TestPriorityServiceFactory.testPriorityService();
     private final DataMatrix testMatrix = setUpMatrix();
@@ -82,12 +83,15 @@ public class HiPhivePriorityTest {
         return new InMemoryDataMatrix(doubleMatrix.toFloat(), rowIndex);
     }
 
-    private List<String> getHpoIds() {
-        return List.of(
-                "HP:0010055",
-                "HP:0001363",
-                "HP:0001156",
-                "HP:0011304");
+    private Sample getSample() {
+        return Sample.builder()
+                .probandSampleName("sample")
+                .hpoIds(List.of(
+                    "HP:0010055",
+                    "HP:0001363",
+                    "HP:0001156",
+                    "HP:0011304"))
+                .build();
     }
 
     private List<Gene> getGenes() {
@@ -151,7 +155,7 @@ public class HiPhivePriorityTest {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
                 .build(), DataMatrix.empty(), priorityService);
-        instance.prioritizeGenes(hpoIds, genes);
+        instance.prioritizeGenes(sample, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));
@@ -170,7 +174,7 @@ public class HiPhivePriorityTest {
                 .build(), DataMatrix.empty(), priorityService);
         List<Gene> genes = getGenes();
 
-        List<HiPhivePriorityResult> results = instance.prioritise(hpoIds, genes)
+        List<HiPhivePriorityResult> results = instance.prioritise(sample, genes)
                 .sorted(Comparator.naturalOrder())
                 .collect(toList());
 
@@ -185,7 +189,7 @@ public class HiPhivePriorityTest {
     @Test
     public void testPrioritiseWithUnMappedQueryPhenotype() {
 
-        List<String> hpoIds = new ArrayList<>(getHpoIds());
+        List<String> hpoIds = new ArrayList<>(sample.getHpoIds());
         //This phenotype (HP:0000707) is not represented in the HP-HP mappings as it is a very low scoring self-hit.
         //Consequently it increases the overall average score of the hits.
         hpoIds.add("HP:0000707");
@@ -195,7 +199,7 @@ public class HiPhivePriorityTest {
                 .build(), DataMatrix.empty(), priorityService);
         List<Gene> genes = getGenes();
 
-        List<HiPhivePriorityResult> results = instance.prioritise(hpoIds, genes)
+        List<HiPhivePriorityResult> results = instance.prioritise(Sample.builder().hpoIds(hpoIds).build(), genes)
                 .sorted(Comparator.naturalOrder())
                 .collect(toList());
 
@@ -217,7 +221,7 @@ public class HiPhivePriorityTest {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
                 .build(), DataMatrix.empty(), priorityService);
-        instance.prioritizeGenes(hpoIds, genes);
+        instance.prioritizeGenes(sample, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));
@@ -236,7 +240,7 @@ public class HiPhivePriorityTest {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("mouse")
                 .build(), DataMatrix.empty(), priorityService);
-        instance.prioritizeGenes(hpoIds, genes);
+        instance.prioritizeGenes(sample, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));
@@ -265,7 +269,7 @@ public class HiPhivePriorityTest {
                 .build();
 
         HiPhivePriority instance = new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), priorityService);
-        instance.prioritizeGenes(hpoIds, genes);
+        instance.prioritizeGenes(sample, genes);
 
         List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
         assertThat(results.size(), equalTo(genes.size()));

@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.ImmutableSet;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
@@ -76,7 +77,8 @@ public class PhivePriority implements Prioritiser<PhivePriorityResult> {
     }
 
     @Override
-    public Stream<PhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<PhivePriorityResult> prioritise(Sample sample, List<Gene> genes) {
+        List<String> hpoIds = sample.getHpoIds();
         logger.info("Starting {}", PRIORITY_TYPE);
 
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);

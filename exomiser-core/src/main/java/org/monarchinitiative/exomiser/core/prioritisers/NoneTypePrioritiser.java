@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.List;
@@ -39,12 +40,12 @@ import java.util.stream.Stream;
 public class NoneTypePrioritiser implements Prioritiser<PriorityResult> {
 
     @Override
-    public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {
+    public void prioritizeGenes(Sample sample, List<Gene> geneList) {
         //Deliberately empty - this prioritiser does nothing.
     }
 
     @Override
-    public Stream<PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<PriorityResult> prioritise(Sample sample, List<Gene> genes) {
         return Stream.empty();
     }
 

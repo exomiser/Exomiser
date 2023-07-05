@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.analysis.AnalysisStep;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.List;
@@ -57,11 +58,11 @@ public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
      * to the input HPO ids.
      * This will have the side effect of adding the PriorityResult to the Gene object.
      *
-     * @param hpoIds
+     * @param sample
      * @param genes
      */
-    default void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
-        Map<Integer, Optional<T>> results = prioritise(hpoIds, genes)
+    default void prioritizeGenes(Sample sample, List<Gene> genes) {
+        Map<Integer, Optional<T>> results = prioritise(sample, genes)
                 .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
 
         genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
@@ -72,11 +73,11 @@ public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
      * Scores the list of genes by phenotypic similarity to the provided HPO identifiers returning a Stream of
      * PriorityResult from the Prioritiser.
      *
-     * @param hpoIds
+     * @param sample
      * @param genes
      * @return the stream of results.
      */
-    Stream<T> prioritise(List<String> hpoIds, List<Gene> genes);
+    Stream<T> prioritise(Sample sample, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

@@ -1,5 +1,6 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
@@ -60,12 +61,12 @@ public class CombinedScorePvalueCalculator {
         return new CombinedScorePvalueCalculator(PriorityType.NONE, phenoScoreCache);
     }
 
-    public static CombinedScorePvalueCalculator of(int bootStrapValue, Prioritiser<?> prioritiser, List<String> sampleHpoIds, List<Gene> unscoredGenes, int numFilteredGenes) {
+    public static CombinedScorePvalueCalculator of(int bootStrapValue, Prioritiser<?> prioritiser, Sample sample, List<Gene> unscoredGenes, int numFilteredGenes) {
         Objects.requireNonNull(prioritiser);
-        Objects.requireNonNull(sampleHpoIds);
+        Objects.requireNonNull(sample);
         Objects.requireNonNull(unscoredGenes);
         logger.debug("Setting up phenotype score cache on {} genes", unscoredGenes.size());
-        var phenoScoreCache = generatePhenoScoreCache(prioritiser, sampleHpoIds, unscoredGenes);
+        var phenoScoreCache = generatePhenoScoreCache(prioritiser, sample, unscoredGenes);
         logger.debug("Creating bootstrapped combined scores...");
         return new CombinedScorePvalueCalculator(prioritiser.getPriorityType(), phenoScoreCache);
     }
@@ -79,8 +80,8 @@ public class CombinedScorePvalueCalculator {
         return NoOpPvalueScorer.instance();
     }
 
-    private static double[] generatePhenoScoreCache(Prioritiser<?> prioritiser, List<String> hpoIds, List<Gene> genes) {
-        prioritiser.prioritizeGenes(hpoIds, genes);
+    private static double[] generatePhenoScoreCache(Prioritiser<?> prioritiser, Sample sample, List<Gene> genes) {
+        prioritiser.prioritizeGenes(sample, genes);
         PriorityType priorityType = prioritiser.getPriorityType();
         return genes.stream()
                 .mapToDouble(gene -> {

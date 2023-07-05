@@ -1,6 +1,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
@@ -44,9 +45,10 @@ public class CombinedScorePvalueCalculatorTest {
     @Test
     public void testStaticConstructor() {
         Prioritiser<?> prioritiser = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.testPriorityService());
-        List<String> phenotypicFeatures = TestPriorityServiceFactory.pfeifferSyndromePhenotypes().stream().map(PhenotypeTerm::id).collect(Collectors.toList());
+        List<String> hpoIds = TestPriorityServiceFactory.pfeifferSyndromePhenotypes().stream().map(PhenotypeTerm::id).collect(Collectors.toList());
+        Sample sample = Sample.builder().hpoIds(hpoIds).build();
         List<Gene> genes = TestFactory.buildGenes();
-        var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, phenotypicFeatures, genes, genes.size());
+        var instance = CombinedScorePvalueCalculator.of(20_000, prioritiser, sample, genes, genes.size());
         assertThat(instance.calculatePvalueFromCombinedScore(0.89), greaterThan(0.0));
     }
 

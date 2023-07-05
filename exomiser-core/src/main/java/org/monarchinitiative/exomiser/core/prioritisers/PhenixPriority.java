@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import hpo.HPOutils;
 import ontologizer.go.*;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.util.ScoreDistribution;
 import org.monarchinitiative.exomiser.core.prioritisers.util.ScoreDistributionContainer;
@@ -248,8 +249,8 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
     }
 
     @Override
-    public Stream<PhenixPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
-
+    public Stream<PhenixPriorityResult> prioritise(Sample sample, List<Gene> genes) {
+        List<String> hpoIds = sample.getHpoIds();
         if (hpoIds.isEmpty()) {
             throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
         }

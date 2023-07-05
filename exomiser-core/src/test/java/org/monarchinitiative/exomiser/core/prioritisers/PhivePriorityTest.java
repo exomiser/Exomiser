@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
@@ -41,13 +41,18 @@ public class PhivePriorityTest {
 
     //TODO: add these to the TestService as GeneIdentifiers
     private List<Gene> getGenes() {
-        return Lists.newArrayList(
+        return List.of(
                 new Gene("FGFR2", 2263),
                 new Gene("ROR2", 4920),
                 new Gene("FREM2", 341640),
                 new Gene("ZNF738", 148203)
         );
     }
+
+    private final Sample sample = Sample.builder()
+            .probandSampleName("sample-1")
+            .hpoIds(List.of("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304"))
+            .build();
 
     private void checkScores(Map<String, Double> actualScores, Map<String, Double> expectedScores) {
         assertThat(actualScores.size(), equalTo(expectedScores.size()));
@@ -75,9 +80,8 @@ public class PhivePriorityTest {
     public void testPrioritizeGenes() {
         List<Gene> genes = getGenes();
 
-        List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
-        phivePriority.prioritizeGenes(hpoIds, genes);
+        phivePriority.prioritizeGenes(sample, genes);
 
         List<PhivePriorityResult> results = genes.stream()
                 .flatMap(gene -> gene.getPriorityResults().values().stream())
@@ -95,10 +99,9 @@ public class PhivePriorityTest {
     public void testPrioritise() {
         List<Gene> genes = getGenes();
 
-        List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.testPriorityService());
 
-        List<PhivePriorityResult> results = phivePriority.prioritise(hpoIds, genes)
+        List<PhivePriorityResult> results = phivePriority.prioritise(sample, genes)
                 .sorted()
                 .collect(toList());
 

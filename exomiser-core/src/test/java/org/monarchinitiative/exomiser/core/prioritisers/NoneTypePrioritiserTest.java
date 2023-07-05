@@ -26,6 +26,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 
 import java.util.Collections;
 
@@ -42,7 +43,7 @@ public class NoneTypePrioritiserTest {
 
     @Test
     public void testRunAnalysisHasNoEffectOnGenes() {
-        instance.prioritizeGenes(Collections.emptyList(), Collections.emptyList());
+        instance.prioritizeGenes(Sample.builder().build(), Collections.emptyList());
     }
 
     @Test

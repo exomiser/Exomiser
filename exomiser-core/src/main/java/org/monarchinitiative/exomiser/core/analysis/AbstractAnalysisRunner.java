@@ -116,7 +116,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, sample.getHpoIds(), new ArrayList<>(allGenes.values()), inheritanceModeAnnotator, filterStats);
+                runSteps(analysisGroup, sample, new ArrayList<>(allGenes.values()), inheritanceModeAnnotator, filterStats);
             }
         }
 
@@ -174,7 +174,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private CombinedScorePvalueCalculator buildCombinedScorePvalueCalculator(Sample sample, Analysis analysis, int numFilteredGenes) {
         var prioritiser = analysis.getMainPrioritiser();
         List<Gene> knownGenes = genomeAnalysisService.getKnownGenes();
-        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(0, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(0, prioritiser, sample.getHpoIds(), knownGenes, numFilteredGenes);
+        return prioritiser == null ? CombinedScorePvalueCalculator.withRandomScores(0, knownGenes.size(), numFilteredGenes) : CombinedScorePvalueCalculator.of(0, prioritiser, sample, knownGenes, numFilteredGenes);
     }
 
     /**
@@ -307,7 +307,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(AnalysisGroup analysisGroup, List<String> hpoIds, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator, FilterStats filterStats) {
+    private void runSteps(AnalysisGroup analysisGroup, Sample sample, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator, FilterStats filterStats) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisGroup.getAnalysisSteps()) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
@@ -315,7 +315,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 inheritanceModesCalculated = true;
             }
 
-            runStep(analysisStep, hpoIds, genes);
+            runStep(analysisStep, sample, genes);
 
             if (analysisStep instanceof Filter<?>) {
                 collectFilterStatsForFilter((Filter<?>) analysisStep, genes, filterStats);
@@ -330,7 +330,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
-    private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
+    private void runStep(AnalysisStep analysisStep, Sample sample, List<Gene> genes) {
 
         if (analysisStep instanceof VariantFilter) {
             VariantFilter filter = (VariantFilter) analysisStep;
@@ -351,7 +351,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         if (analysisStep instanceof Prioritiser) {
             Prioritiser<?> prioritiser = (Prioritiser<?>) analysisStep;
             logger.info("Running Prioritiser: {}", prioritiser);
-            prioritiser.prioritizeGenes(hpoIds, genes);
+            prioritiser.prioritizeGenes(sample, genes);
         }
     }
 

@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.jblas.FloatMatrix;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.slf4j.Logger;
@@ -158,7 +159,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
     }
 
     @Override
-    public Stream<ExomeWalkerPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<ExomeWalkerPriorityResult> prioritise(Sample sample, List<Gene> genes) {
         if (seedGenes.isEmpty()) {
             logger.error("Seed genes is empty - please specify a valid list of known genes!");
         }
@@ -176,16 +177,16 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
      * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
-     * @param geneList List of candidate genes.
+     * @param genes List of candidate genes.
      */
     @Override
-    public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {
+    public void prioritizeGenes(Sample sample, List<Gene> genes) {
         if (seedGenes.isEmpty()) {
             logger.error("Seed genes is empty - please specify a valid list of known genes!");
         }
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
-        for (Gene gene : geneList) {
+        for (Gene gene : genes) {
             ExomeWalkerPriorityResult relScore = prioritiseGene().apply(gene);
             double score = relScore.getScore();
             if (score > max) {

@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
@@ -82,7 +83,8 @@ public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
     }
 
     @Override
-    public Stream<HiPhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<HiPhivePriorityResult> prioritise(Sample sample, List<Gene> genes) {
+        List<String> hpoIds = sample.getHpoIds();
         if (options.isBenchmarkingEnabled()) {
             logger.debug("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options
                     .getCandidateGeneSymbol());

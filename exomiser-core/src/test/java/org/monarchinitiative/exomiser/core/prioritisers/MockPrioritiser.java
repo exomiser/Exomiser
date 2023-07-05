@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
     }
 
     @Override
-    public void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
+    public void prioritizeGenes(Sample sample, List<Gene> genes) {
 //        for (Gene gene : genes) {
 //            String geneSymbol = gene.getGeneSymbol();
 //            Float score = expectedScores.getOrDefault(geneSymbol, 0f);
@@ -59,7 +60,7 @@ public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
     }
 
     @Override
-    public Stream<MockPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+    public Stream<MockPriorityResult> prioritise(Sample sample, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 
