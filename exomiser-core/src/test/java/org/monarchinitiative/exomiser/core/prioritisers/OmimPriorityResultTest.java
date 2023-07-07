@@ -50,7 +50,7 @@ public class OmimPriorityResultTest {
 
     @Test
     public void testAssociatedDiseases() {
-        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
+        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).build();
         List<Disease> diseases = Lists.newArrayList(disease);
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, diseases, Collections.emptyMap());
         assertThat(instance.getAssociatedDiseases(), equalTo(diseases));
@@ -64,8 +64,8 @@ public class OmimPriorityResultTest {
 
     @Test
     public void testToHtmlOmimDiseases() {
-        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
-        Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).inheritanceModeCode("U").build();
+        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).build();
+        Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).build();
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease), Collections.emptyMap());
         System.out.println(instance.getHTMLCode());
     }

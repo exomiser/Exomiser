@@ -57,34 +57,4 @@ public class DiseaseTest {
 
         assertThat(instance, equalTo(other));
     }
-
-    @Test
-    public void testInheritanceCode() {
-        assertThat(Disease.builder()
-                .inheritanceModeCode("D")
-                .build().getInheritanceMode(), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT));
-    }
-
-    @Test
-    public void testDiseaseCode() {
-        assertThat(Disease.builder()
-                .diseaseTypeCode("D")
-                .build().getDiseaseType(), equalTo(Disease.DiseaseType.DISEASE));
-
-        assertThat(Disease.builder()
-                .diseaseTypeCode("N")
-                .build().getDiseaseType(), equalTo(Disease.DiseaseType.NON_DISEASE));
-
-        assertThat(Disease.builder()
-                .diseaseTypeCode("S")
-                .build().getDiseaseType(), equalTo(Disease.DiseaseType.SUSCEPTIBILITY));
-
-        assertThat(Disease.builder()
-                .diseaseTypeCode("C")
-                .build().getDiseaseType(), equalTo(Disease.DiseaseType.CNV));
-
-        assertThat(Disease.builder()
-                .diseaseTypeCode("U")
-                .build().getDiseaseType(), equalTo(Disease.DiseaseType.UNCONFIRMED));
-    }
 }

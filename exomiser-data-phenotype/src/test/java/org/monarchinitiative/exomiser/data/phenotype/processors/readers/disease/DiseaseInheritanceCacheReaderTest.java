@@ -63,7 +63,7 @@ public class DiseaseInheritanceCacheReaderTest {
      */
     @Test
     public void testGetInheritanceCodeBoth() {
-        assertThat(result.get("OMIM:100300"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE));
+        assertThat(result.get("OMIM:100300"), equalTo(InheritanceMode.SEMIDOMINANT));
     }
 
     /**

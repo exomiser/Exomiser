@@ -193,7 +193,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 // TODO: Implementation code is CORRECT - fix these tests!
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, omimGeneId, 486, "", AUTOSOMAL_DOMINANT_AND_RECESSIVE));
+        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, omimGeneId, 486, "", SEMIDOMINANT));
 
         assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
     }
@@ -220,7 +220,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", AUTOSOMAL_DOMINANT_AND_RECESSIVE));
+        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", SEMIDOMINANT));
 
         assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
     }
@@ -317,8 +317,8 @@ class OrphanetDiseaseGeneFactoryTest {
     void multiGeneDiseaseMoi() {
         List<DiseaseGene> omimDiseaseGenes = List.of(
                 diseaseGene("OMIM:617577", "OMIM:603332", 25981, "DNAH1", AUTOSOMAL_RECESSIVE),
-                diseaseGene("OMIM:618801", "OMIM:610732", 54970, "TTC12", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
-                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                diseaseGene("OMIM:618801", "OMIM:610732", 54970, "TTC12", SEMIDOMINANT),
+                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", SEMIDOMINANT),
                 diseaseGene("OMIM:300991", "OMIM:300933", 139212, "DNAAF6 ", X_RECESSIVE)
         );
 
@@ -345,8 +345,8 @@ class OrphanetDiseaseGeneFactoryTest {
 
         List<DiseaseGene> expected = List.of(
                 diseaseGene(orphaDiseaseId, "OMIM:603332", 25981, "DNAH1", AUTOSOMAL_RECESSIVE),
-                diseaseGene(orphaDiseaseId, "OMIM:610732", 54970, "TTC12", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
-                diseaseGene(orphaDiseaseId, "OMIM:618726", 152110, "NEK10", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                diseaseGene(orphaDiseaseId, "OMIM:610732", 54970, "TTC12", SEMIDOMINANT),
+                diseaseGene(orphaDiseaseId, "OMIM:618726", 152110, "NEK10", SEMIDOMINANT),
                 diseaseGene(orphaDiseaseId, "OMIM:300933", 139212, "DNAAF6", X_RECESSIVE)
         );
 
@@ -357,8 +357,8 @@ class OrphanetDiseaseGeneFactoryTest {
     void emptyOmimGeneIdAreNotReturned() {
         List<DiseaseGene> omimDiseaseGenes = List.of(
                 diseaseGene("OMIM:617577", "OMIM:603332", 25981, "DNAH1", AUTOSOMAL_RECESSIVE),
-                diseaseGene("OMIM:618801", "OMIM:610732", 54970, "TTC12", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
-                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                diseaseGene("OMIM:618801", "OMIM:610732", 54970, "TTC12", SEMIDOMINANT),
+                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", SEMIDOMINANT),
                 diseaseGene("OMIM:300991", "OMIM:300933", 139212, "DNAAF6 ", X_RECESSIVE)
         );
 

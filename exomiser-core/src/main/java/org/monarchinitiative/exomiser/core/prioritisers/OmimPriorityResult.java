@@ -155,7 +155,7 @@ public class OmimPriorityResult extends AbstractPriorityResult {
         InheritanceMode inheritanceMode = disease.getInheritanceMode();
         Disease.DiseaseType diseaseType = disease.getDiseaseType();
         if (diseaseType == Disease.DiseaseType.DISEASE) {
-            return String.format("%s %s - %s", href, disease.getDiseaseName(), inheritanceMode.getTerm());
+            return String.format("%s %s - %s", href, disease.getDiseaseName(), inheritanceMode.label());
         }
         return String.format("%s %s (%s)", href, disease.getDiseaseName(), diseaseType.getValue());
     }

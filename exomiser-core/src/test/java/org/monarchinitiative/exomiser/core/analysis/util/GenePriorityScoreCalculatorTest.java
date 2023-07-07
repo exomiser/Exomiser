@@ -388,7 +388,7 @@ public class GenePriorityScoreCalculatorTest {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
-        InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE};
+        InheritanceMode[] inheritanceModes = {InheritanceMode.SEMIDOMINANT};
         Map<ModeOfInheritance, Double> scores = new EnumMap<>(ModeOfInheritance.class);
         scores.put(ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0);
         scores.put(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 1.0);

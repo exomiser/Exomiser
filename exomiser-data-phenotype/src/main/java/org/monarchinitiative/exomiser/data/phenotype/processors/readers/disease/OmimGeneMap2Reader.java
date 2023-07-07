@@ -235,7 +235,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
             } else if (inheritanceModes.size() == 1) {
                 return inheritanceModes.iterator().next();
             } else if (inheritanceModes.contains(InheritanceMode.AUTOSOMAL_DOMINANT) && inheritanceModes.contains(InheritanceMode.AUTOSOMAL_RECESSIVE)) {
-                return InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
+                return InheritanceMode.SEMIDOMINANT;
             } else if (inheritanceModes.contains(InheritanceMode.X_DOMINANT) && inheritanceModes.contains(InheritanceMode.X_RECESSIVE)) {
                 return InheritanceMode.X_LINKED;
             } else if (inheritanceModes.contains(InheritanceMode.MITOCHONDRIAL)) {

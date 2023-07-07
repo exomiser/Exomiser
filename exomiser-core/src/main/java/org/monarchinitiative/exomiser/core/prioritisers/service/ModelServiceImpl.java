@@ -26,6 +26,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseTypeCodes;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.InheritanceModeCodes;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
@@ -105,8 +107,8 @@ public class ModelServiceImpl implements ModelService {
                         .diseaseName(rs.getString("disease_term"))
                         .associatedGeneId(rs.getInt("entrez_id"))
                         .associatedGeneSymbol(rs.getString("human_gene_symbol"))
-                        .inheritanceModeCode(rs.getString("inheritance_code"))
-                        .diseaseTypeCode(rs.getString("disease_type"))
+                        .inheritanceMode(InheritanceModeCodes.parseInheritanceModeCode(rs.getString("inheritance_code")))
+                        .diseaseType(DiseaseTypeCodes.parseDiseaseTypeCode(rs.getString("disease_type")))
                         .phenotypeIds(phenotypes)
                         .build();
 

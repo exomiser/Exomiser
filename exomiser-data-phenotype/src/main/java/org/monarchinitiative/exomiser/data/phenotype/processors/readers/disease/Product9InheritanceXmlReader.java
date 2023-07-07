@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.disease;
 
 import com.google.common.collect.ArrayListMultimap;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.InheritanceModeCodes;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
 import org.monarchinitiative.exomiser.data.phenotype.processors.readers.ResourceReader;
@@ -185,7 +186,7 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
                         InheritanceMode inheritanceMode = getHpoInheritanceTermId(currentInheritanceId, currentModeOfInheritanceLabel);
                         if (inheritanceMode != null) {
                             String disId = String.format("ORPHA:%s", currentOrphanum);
-                            logger.debug("{} {} {} {}", disId, currentModeOfInheritanceLabel, inheritanceMode.getInheritanceCode(), currentDiseaseName);
+                            logger.debug("{} {} {} {}", disId, currentModeOfInheritanceLabel, InheritanceModeCodes.toInheritanceModeCode(inheritanceMode), currentDiseaseName);
                             disease2inheritanceMultimap.put(disId, inheritanceMode);
                         }
                     } else if (localPart.equals(AVERAGE_AGE_OF_ONSET_LIST)) {

@@ -20,10 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import com.google.common.collect.Lists;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseTypeCodes;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.InheritanceModeCodes;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
@@ -62,7 +63,7 @@ public class TestPrioritiserDataFileReader {
         //FISH	ZDB-GENE-081119-4_3835	341640	HGNC:25396	ZDB-GENE-081119-4	frem2b	ZP:0004670,ZP:0004671,ZP:0004669
         return line -> {
             String[] fields = line.split("\t");
-            return new GeneOrthologModel(fields[1], Organism.valueOf(fields[0]), Integer.parseInt(fields[2]), fields[3], fields[4], fields[5], getOntologyTerms(fields[6]));
+            return new GeneOrthologModel(fields[1], Organism.valueOf(fields[0]), Integer.parseInt(fields[2]), fields[3], fields[4], fields[5], getPhenotypeIds(fields[6]));
         };
     }
 
@@ -81,9 +82,9 @@ public class TestPrioritiserDataFileReader {
                     .diseaseName(fields[4])
                     .associatedGeneId(Integer.parseInt(fields[1]))
                     .associatedGeneSymbol(fields[2])
-                    .diseaseTypeCode(fields[5])
-                    .inheritanceModeCode(fields[6])
-                    .phenotypeIds(getOntologyTerms(fields[7]))
+                    .diseaseType(DiseaseTypeCodes.parseDiseaseTypeCode(fields[5]))
+                    .inheritanceMode(InheritanceModeCodes.parseInheritanceModeCode(fields[6]))
+                    .phenotypeIds(getPhenotypeIds(fields[7]))
                     .build();
         };
     }
@@ -103,19 +104,19 @@ public class TestPrioritiserDataFileReader {
             Disease disease = Disease.builder()
                     .diseaseId(modelId)
                     .diseaseName(fields[3])
-                    .diseaseType(Disease.DiseaseType.code(fields[7]))
+                    .diseaseType(DiseaseTypeCodes.parseDiseaseTypeCode(fields[7]))
                     .associatedGeneId(Integer.parseInt(fields[1]))
                     .associatedGeneSymbol(fields[2])
-                    .inheritanceModeCode(fields[6])
-                    .phenotypeIds(getOntologyTerms(fields[7]))
+                    .inheritanceMode(InheritanceModeCodes.parseInheritanceModeCode(fields[6]))
+                    .phenotypeIds(getPhenotypeIds(fields[7]))
                     .build();
             return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), disease);
 //            return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
         };
     }
 
-    private static List<String> getOntologyTerms(String field) {
-        return Lists.newArrayList(field.split(","));
+    private static List<String> getPhenotypeIds(String field) {
+        return List.of(field.split(","));
     }
 
     public static List<PhenotypeMatch> readOntologyMatchData(String ontologyMatchFile) {

@@ -182,7 +182,7 @@ class OmimGeneMap2ReaderTest {
                 // Deafness, digenic, GJB2/GJB3, 220290 (3), Digenic dominant, Autosomal recessive;
                 omimDisease(220290,603324, "Deafness, digenic, GJB2/GJB3", "GJB3",2707,"ENSG00000188910", Disease.DiseaseType.DISEASE, InheritanceMode.AUTOSOMAL_RECESSIVE),
                 // Erythrokeratodermia variabilis et progressiva 1, 133200 (3), Autosomal dominant, Autosomal recessive
-                omimDisease(133200,603324, "Erythrokeratodermia variabilis et progressiva 1", "GJB3", 2707,	"ENSG00000188910", Disease.DiseaseType.DISEASE, InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE)
+                omimDisease(133200,603324, "Erythrokeratodermia variabilis et progressiva 1", "GJB3", 2707,	"ENSG00000188910", Disease.DiseaseType.DISEASE, InheritanceMode.SEMIDOMINANT)
                 );
         assertThat(diseaseGenes, equalTo(expected));
     }
@@ -216,7 +216,7 @@ class OmimGeneMap2ReaderTest {
                 // {Macular degeneration, age-related, reduced risk of}, 603075 (3), Autosomal dominant;
                 omimDisease(603075,605336, "Macular degeneration, age-related, reduced risk of", "CFHR3", 10878, "ENSG00000116785", Disease.DiseaseType.SUSCEPTIBILITY, InheritanceMode.AUTOSOMAL_DOMINANT),
                 // {Hemolytic uremic syndrome, atypical, susceptibility to}, 235400 (3), Autosomal dominant, Autosomal recessive
-                omimDisease(235400,605336, "Hemolytic uremic syndrome, atypical, susceptibility to", "CFHR3", 10878, "ENSG00000116785", Disease.DiseaseType.SUSCEPTIBILITY, InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE)
+                omimDisease(235400,605336, "Hemolytic uremic syndrome, atypical, susceptibility to", "CFHR3", 10878, "ENSG00000116785", Disease.DiseaseType.SUSCEPTIBILITY, InheritanceMode.SEMIDOMINANT)
                 );
         assertThat(diseaseGenes, equalTo(expected));
     }
@@ -268,13 +268,13 @@ class OmimGeneMap2ReaderTest {
     void moiFromDiseaseInheritanceCacheOverridesOmim() {
         OmimGeneMap2Reader instance = new OmimGeneMap2Reader(diseaseInheritanceCacheReader, emptyResource);
         // This annotation is supplied by the diseaseInheritanceCacheReader coming from the HPO annotations in phenotype_annotation.tab
-        Map<String, InheritanceMode> diseaseInheritanceCache = Map.of("OMIM:267430", InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE);
+        Map<String, InheritanceMode> diseaseInheritanceCache = Map.of("OMIM:267430", InheritanceMode.SEMIDOMINANT);
         List<DiseaseGene> diseaseGenes = instance.parseLine(diseaseInheritanceCache,"chr1\t204154818\t204166336\t1q32\t1q32.1\t179820\tREN, HNFJ2\tRenin\tREN\t5972\tENSG00000143839\t~24cM distal to AT3\t[Hyperproreninemia] (3); Renal tubular dysgenesis, 267430 (3), Autosomal recessive; Hyperuricemic nephropathy, familial juvenile 2, 613092 (3), Autosomal dominant\tRen1 (MGI:97898)\n");
         List<DiseaseGene> expected = List.of(
                 // ~24cM distal to AT3	[Hyperproreninemia] (3);
                 // no phenotype
                 // Renal tubular dysgenesis, 267430 (3), Autosomal recessive;
-                omimDisease(267430,179820, "Renal tubular dysgenesis", "REN", 5972, "ENSG00000143839", Disease.DiseaseType.DISEASE, InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                omimDisease(267430,179820, "Renal tubular dysgenesis", "REN", 5972, "ENSG00000143839", Disease.DiseaseType.DISEASE, InheritanceMode.SEMIDOMINANT),
                 // Hyperuricemic nephropathy, familial juvenile 2, 613092 (3), Autosomal dominant
                 omimDisease(613092,179820, "Hyperuricemic nephropathy, familial juvenile 2", "REN", 5972, "ENSG00000143839", Disease.DiseaseType.DISEASE, InheritanceMode.AUTOSOMAL_DOMINANT)
         );

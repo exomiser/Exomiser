@@ -166,7 +166,7 @@ public class OrphanetDiseaseGeneFactory {
                 return orphanetMois.get(0);
             }
             if (orphanetMois.contains(InheritanceMode.AUTOSOMAL_DOMINANT) && orphanetMois.contains(InheritanceMode.AUTOSOMAL_RECESSIVE)) {
-                return InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
+                return InheritanceMode.SEMIDOMINANT;
             }
             return orphanetMois.get(0);
         }

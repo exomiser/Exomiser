@@ -54,40 +54,13 @@ public class InheritanceModeTest {
      */
     @Test
     public void testGetTerm() {
-        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.getTerm(), equalTo("autosomal recessive"));
-    }
-
-    /**
-     * Test of getInheritanceCode method, of class InheritanceMode.
-     */
-    @Test
-    public void testGetInheritanceCode() {
-        assertThat(InheritanceMode.MITOCHONDRIAL.getInheritanceCode(), equalTo("M"));
-    }
-
-    /**
-     * Test of valueOfInheritanceCode method, of class InheritanceMode.
-     */
-    @Test
-    public void testValueOfInheritanceCode() {
-        assertThat(InheritanceMode.valueOfInheritanceCode("D"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT));
-        assertThat(InheritanceMode.valueOfInheritanceCode("R"), equalTo(InheritanceMode.AUTOSOMAL_RECESSIVE));
-        assertThat(InheritanceMode.valueOfInheritanceCode("B"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE));
-        assertThat(InheritanceMode.valueOfInheritanceCode("X"), equalTo(InheritanceMode.X_LINKED));
-        assertThat(InheritanceMode.valueOfInheritanceCode("XD"), equalTo(InheritanceMode.X_DOMINANT));
-        assertThat(InheritanceMode.valueOfInheritanceCode("XR"), equalTo(InheritanceMode.X_RECESSIVE));
-        assertThat(InheritanceMode.valueOfInheritanceCode("Y"), equalTo(InheritanceMode.Y_LINKED));
-        assertThat(InheritanceMode.valueOfInheritanceCode("M"), equalTo(InheritanceMode.MITOCHONDRIAL));
-        assertThat(InheritanceMode.valueOfInheritanceCode("S"), equalTo(InheritanceMode.SOMATIC));
-        assertThat(InheritanceMode.valueOfInheritanceCode("P"), equalTo(InheritanceMode.POLYGENIC));
-        assertThat(InheritanceMode.valueOfInheritanceCode("U"), equalTo(InheritanceMode.UNKNOWN));
-        assertThat(InheritanceMode.valueOfInheritanceCode("unrecognised code"), equalTo(InheritanceMode.UNKNOWN));
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.label(), equalTo("autosomal recessive"));
     }
 
     @Test
     public void isCompatibleWithDominant() {
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWithDominant(), is(true));
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithDominant(), is(true));
+        assertThat(InheritanceMode.SEMIDOMINANT.isCompatibleWithDominant(), is(true));
 
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWithDominant(), is(false));
     }
@@ -95,7 +68,7 @@ public class InheritanceModeTest {
     @Test
     public void isCompatibleWithRecessive() {
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWithRecessive(), is(true));
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithRecessive(), is(true));
+        assertThat(InheritanceMode.SEMIDOMINANT.isCompatibleWithRecessive(), is(true));
 
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWithRecessive(), is(false));
     }
@@ -113,7 +86,7 @@ public class InheritanceModeTest {
     public void testToModeOfInheritance() {
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(InheritanceMode.SEMIDOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(InheritanceMode.X_DOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_DOMINANT)));
         assertThat(InheritanceMode.X_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE)));
         assertThat(InheritanceMode.MITOCHONDRIAL.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.MITOCHONDRIAL)));
@@ -128,9 +101,9 @@ public class InheritanceModeTest {
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.ANY), is(true));
 
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWith(ModeOfInheritance.ANY), is(true));
+        assertThat(InheritanceMode.SEMIDOMINANT.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(InheritanceMode.SEMIDOMINANT.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(InheritanceMode.SEMIDOMINANT.isCompatibleWith(ModeOfInheritance.ANY), is(true));
 
         assertThat(InheritanceMode.X_DOMINANT.isCompatibleWith(ModeOfInheritance.X_DOMINANT), is(true));
         assertThat(InheritanceMode.X_RECESSIVE.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));

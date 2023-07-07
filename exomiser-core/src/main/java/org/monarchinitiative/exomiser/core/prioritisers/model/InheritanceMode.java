@@ -36,59 +36,45 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum InheritanceMode {
-    //n.b. This is tightly coupled to parsing the input files and inserting disease data into the database, so don't change the inheritanceCodes
-    UNKNOWN("unknown", "U"),
+    UNKNOWN("HP:0000005", "unknown"),
 
-    AUTOSOMAL_RECESSIVE("autosomal recessive", "R"),
-    AUTOSOMAL_DOMINANT("autosomal dominant", "D"),
-    AUTOSOMAL_DOMINANT_AND_RECESSIVE("autosomal dominant/recessive", "B"),
+    AUTOSOMAL_DOMINANT("HP:0000006", "autosomal dominant"),
+    AUTOSOMAL_RECESSIVE("HP:0000007", "autosomal recessive"),
 
-    X_LINKED("X-linked", "X"),
-    X_RECESSIVE("X-linked recessive", "XR"),
-    X_DOMINANT("X-linked dominant", "XD"),
-
-    Y_LINKED("Y-linked", "Y"),
-
-    SOMATIC("somatic", "S"),
-    MITOCHONDRIAL("mitochondrial", "M"),
-    POLYGENIC("polygenic", "P");
-
-    private final String hpoTerm;
-    //short form letter code for the inheritance mode
-    private final String inheritanceCode;
-    
-    InheritanceMode(String hpoTerm, String inheritanceCode) {
-        this.hpoTerm = hpoTerm;
-        this.inheritanceCode = inheritanceCode;
-    }
-        
-    public String getTerm() {
-        return hpoTerm;
-    }
-
-    public String getInheritanceCode() {
-        return inheritanceCode;
-    }
-    
     /**
-     * Returns the InheritanceMode for a given inheritanceCode. Will return UNKNOWN
-     * as a default.
-     * @param inheritanceCode
-     * @return 
+     * A mode of inheritance that is observed for traits related to a gene encoded on chromosomes in which a trait can
+     * manifest in a monoallelic (e.g. heterozygotes) and biallelic (e.g. homozygotes, compound heterozygotes) state,
+     * with similar or differing phenotype severity present dependent on the number of alleles affected.
      */
-    public static InheritanceMode valueOfInheritanceCode(String inheritanceCode) {
-        for (InheritanceMode inheritanceMode : InheritanceMode.values()) {
-            if (inheritanceMode.inheritanceCode.equals(inheritanceCode)) {
-                return inheritanceMode;
-            }
-        }
-        return UNKNOWN;
+    SEMIDOMINANT("HP:0032113", "semidominant"),
+
+    X_LINKED("HP:0001417", "X-linked"),
+    X_DOMINANT("HP:0001423", "X-linked dominant"),
+    X_RECESSIVE("HP:0001419", "X-linked recessive"),
+    Y_LINKED("HP:0001450", "Y-linked"),
+
+    MITOCHONDRIAL("HP:0001427", "mitochondrial"),
+
+    SOMATIC("HP:0001442", "somatic"),
+    POLYGENIC("HP:0010982", "polygenic");
+
+    private final String id;
+    private final String label;
+
+    InheritanceMode(String id, String label) {
+        this.id = id;
+        this.label = label;
+    }
+
+    public String id() {return id;}
+    public String label() {
+        return label;
     }
 
     public boolean isCompatibleWithDominant() {
         switch(this) {
             case AUTOSOMAL_DOMINANT:
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+            case SEMIDOMINANT:
                 return true;
             default:
                 return false;
@@ -98,7 +84,7 @@ public enum InheritanceMode {
     public boolean isCompatibleWithRecessive() {
         switch(this) {
             case AUTOSOMAL_RECESSIVE:
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+            case SEMIDOMINANT:
                 return true;
             default:
                 return false;
@@ -126,7 +112,7 @@ public enum InheritanceMode {
                 return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
             case AUTOSOMAL_RECESSIVE:
                 return EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+            case SEMIDOMINANT:
                 return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
             case X_RECESSIVE:
                 return EnumSet.of(ModeOfInheritance.X_RECESSIVE);
@@ -150,7 +136,7 @@ public enum InheritanceMode {
                 return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT;
             case AUTOSOMAL_RECESSIVE:
                 return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+            case SEMIDOMINANT:
                 return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT || modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
             case X_RECESSIVE:
                 return modeOfInheritance == ModeOfInheritance.X_RECESSIVE;
