@@ -149,8 +149,24 @@ public class HtmlResultsWriter implements ResultsWriter {
                 .orElse("ENSEMBL");
         context.setVariable("transcriptDb", transcriptDb);
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
-        context.setVariable("pValueFormatter", new DecimalFormat("0.0E0"));
+        context.setVariable("pValueFormatter", new ScientificDecimalFormat("0.0E0"));
         return context;
+    }
+
+    /**
+     * Wrapper class for {@link DecimalFormat} to work around new security limitations in Thymeleaf 3.1
+     */
+    public static class ScientificDecimalFormat {
+
+        private final DecimalFormat decimalFormat;
+
+        private ScientificDecimalFormat(String pattern) {
+            decimalFormat = new DecimalFormat("0.0E0");
+        }
+
+        public String format(double number) {
+            return decimalFormat.format(number);
+        }
     }
 
     String toYamlJobString(Sample sample, Analysis analysis, OutputSettings outputSettings) {

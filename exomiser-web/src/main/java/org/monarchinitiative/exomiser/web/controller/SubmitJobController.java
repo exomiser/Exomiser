@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -259,17 +259,17 @@ public class SubmitJobController {
     }
 
     private void writeResultsToFile(UUID analysisId, AnalysisResults analysisResults) {
-        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
+        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"));
         try {
             Files.createDirectory(outputDir);
         } catch (IOException e) {
             logger.error("Unable to create directory {}", outputDir, e);
         }
         logger.info("Output dir: {}", outputDir);
-        String outFileName = outputDir.toString() + "/results";
         OutputSettings outputSettings = OutputSettings.builder()
                 .numberOfGenesToShow(20)
-                .outputPrefix(outFileName)
+                .outputDirectory(outputDir)
+                .outputFileName(analysisId.toString())
                 //OutputFormat.HTML causes issues due to thymeleaf templating - don't use!
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.JSON))
                 .build();
@@ -280,7 +280,7 @@ public class SubmitJobController {
     private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
-        mapper.registerModule(new Jdk7Module());
+        mapper.registerModule(new Jdk8Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         StringWriter jsonSettings = new StringWriter();
