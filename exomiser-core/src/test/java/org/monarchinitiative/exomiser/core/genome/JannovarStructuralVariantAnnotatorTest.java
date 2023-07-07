@@ -66,7 +66,7 @@ class JannovarStructuralVariantAnnotatorTest {
     }
 
     @Test
-    public void exonicInsertion() {
+    public void downstreamInsertion() {
         Variant variant = variant(chr10, 123237843, 123237843, "T", "<INS>", 200);
         List<VariantAnnotation> annotations = instance.annotate(variant);
 
@@ -77,7 +77,26 @@ class JannovarStructuralVariantAnnotatorTest {
 
         assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INSERTION));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+    }
+
+    @Test
+    public void exonicInsertion() {
+        Variant variant = variant(GenomeAssembly.HG19.getContigById(1), 145508025, 145508025, "T", "<INS>", 200);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
+        assertThat(annotations.size(), equalTo(2));
+
+        for (VariantAnnotation variantAnnotation : annotations) {
+            assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+            // Jannovar would add an artificially HIGH impact INSERTION annotation to all non-intergenic insertions which
+            // leads to hugely over-inflated variant effect scores.
+            if (variantAnnotation.getGeneSymbol().equals("RBM8A")) {
+                assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_SEQUENCE_VARIANT));
+            }
+            if (variantAnnotation.getGeneSymbol().equals("GNRHR2")) {
+                assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+            }
+        }
     }
 
     @Test

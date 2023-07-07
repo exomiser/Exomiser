@@ -1,5 +1,10 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 13.2.1 2023-06-30
+
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
+- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants.
+
 ## 13.2.0 2023-02-28
 
  - New multi-architecture docker images with and without bash [#471](https://github.com/exomiser/Exomiser/issues/470)

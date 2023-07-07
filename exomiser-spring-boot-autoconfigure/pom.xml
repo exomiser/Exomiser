@@ -35,7 +35,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>13.2.0</version>
+        <version>13.2.1</version>
     </parent>
 
     <dependencies>

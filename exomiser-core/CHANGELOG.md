@@ -1,5 +1,11 @@
 # The Exomiser - Core Library Changelog
 
+## 13.2.1 2023-06-30
+
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
+- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants. 
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty. 
+
 ## 13.2.0 2023-02-28
 
 - Fixed excessive CPU usage and application hang after variant prioritisation with large number of results

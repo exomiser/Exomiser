@@ -758,8 +758,31 @@ public class GeneTest {
                 .addMixIn(Variant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
-        System.out.println(objectWriter.writeValueAsString(instance));
 
+        assertThat(instance.getCompatibleInheritanceModes(), equalTo(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(adGeneScore)));
+    }
+
+    @Test
+    public void testGetCompatibleGeneScoresNoCompatibleMoi() throws Exception {
+        Gene instance = TestFactory.newGeneFGFR2();
+        // Hmm... this is a bit of a WFT - why does this need to be set rather than computed from the variants?
+        //  ... because it gets set once by the InheritanceModeAnalyser after all the variants have been filtered
+//        instance.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(instance.getCompatibleGeneScores().isEmpty(), is(true));
+
+        GeneScore anyGeneScore = GeneScore.builder()
+                .geneIdentifier(instance.getGeneIdentifier())
+                .modeOfInheritance(ModeOfInheritance.ANY)
+                .phenotypeScore(0.5d)
+                .variantScore(0.5d)
+                .combinedScore(0.5d)
+                .pValue(0.0000001)
+                .build();
+
+        instance.addGeneScore(anyGeneScore);
+
+        assertThat(instance.getCompatibleInheritanceModes().isEmpty(), is(true));
+        assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(anyGeneScore)));
     }
 }
