@@ -284,8 +284,9 @@ public class SubmitJobController {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         StringWriter jsonSettings = new StringWriter();
+        Sample sample = analysisResults.getSample();
         try {
-            mapper.writeValue(jsonSettings, analysisResults.getSample());
+            mapper.writeValue(jsonSettings, sample);
             mapper.writeValue(jsonSettings, analysisResults.getAnalysis());
         } catch (Exception ex) {
             logger.error("Unable to process JSON settings", ex);
@@ -345,8 +346,10 @@ public class SubmitJobController {
                 })
                 .orElse("ENSEMBL");
         model.addAttribute("transcriptDb", transcriptDb);
+        model.addAttribute("ensemblAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
+        model.addAttribute("ucscAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
         model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
-        model.addAttribute("pValueFormatter", new DecimalFormat("0.0E0"));
+        model.addAttribute("pValueFormatter", new HtmlResultsWriter.ScientificDecimalFormat("0.0E0"));
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {

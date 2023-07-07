@@ -241,7 +241,7 @@
         </div>
 
         <!--disabled the footer here as it blocks the submit button in narrow viewports.-->
-        <footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
+        <footer th:insert="~{footer :: footer}" class="navbar-default navbar-bottom"></footer>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"></script>
