@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import org.h2.mvstore.MVStore;
 import org.jblas.FloatMatrix;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
