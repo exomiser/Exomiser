@@ -50,6 +50,7 @@ public class Sample {
     private final Age age;
     private final Sex sex;
     private final Pedigree pedigree;
+    // TODO: update to List<PhenotypicFeature> phenotypicFeatures;
     private final List<String> hpoIds;
 
     public static Sample from(Family family) {

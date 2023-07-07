@@ -52,9 +52,9 @@ public class SampleProtoConverter implements ProtoConverter<Sample, SampleProto.
 
     private SampleProto.Age toProtoAge(Age age) {
         return SampleProto.Age.newBuilder()
-                .setYears(age.getYears())
-                .setMonths(age.getMonths())
-                .setDays(age.getDays())
+                .setYears(age.years())
+                .setMonths(age.months())
+                .setDays(age.days())
                 .build();
     }
 

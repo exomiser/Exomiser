@@ -23,7 +23,11 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Period;
+import java.time.chrono.ChronoPeriod;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A period of time representing a persons age.
@@ -32,22 +36,10 @@ import java.util.Objects;
  * @since 13.0.0
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class Age {
-
-    private static final Age UNKNOWN = new Age(0, 0, 0);
-
-    private final int years;
-    private final int months;
-    private final int days;
-
-    private Age(int years, int months, int days) {
-        this.years = years;
-        this.months = months;
-        this.days = days;
-    }
+public interface Age {
 
     public static Age unknown() {
-        return UNKNOWN;
+        return PostnatalAge.unknown();
     }
 
     /**
@@ -69,9 +61,7 @@ public class Age {
     //  term and P0D being a newborn.
     // usually written on referrals as gestation in the format eg. 22+5  (22 weeks + 5days)
     public static Age gestational(int weeks, int days) {
-        int totalDays = weeks * 7 + days;
-        Period period = Period.of(0, 0, totalDays);
-        return Age.of(period);
+        return GestationalAge.of(weeks, days);
     }
 
     /**
@@ -84,9 +74,9 @@ public class Age {
     public static Age of(Period period) {
         Period normalised = Objects.requireNonNull(period.normalized());
         if (normalised.isZero()) {
-            return UNKNOWN;
+            return unknown();
         }
-        return new Age(normalised.getYears(), normalised.getMonths(), normalised.getDays());
+        return new PostnatalAge(normalised.getYears(), normalised.getMonths(), normalised.getDays());
     }
 
     /**
@@ -108,47 +98,68 @@ public class Age {
         return Age.of(period);
     }
 
-    public int getYears() {
-        return years;
+    /**
+     * Flag indicating that the age is a gestational rather than post-natal age.
+     *
+     * @return true in the case that the age instance is a gestational age
+     */
+    boolean isGestationalAge();
+
+    public int years();
+
+    public int months();
+
+    public int days();
+
+    default Period toPeriod() {
+        return Period.of(years(), months(), days()).normalized();
     }
 
-    public int getMonths() {
-        return months;
+    default boolean isUnknown() {
+        return this == PostnatalAge.UNKNOWN;
     }
 
-    public int getDays() {
-        return days;
+
+    record GestationalAge(int weeks, int days) implements Age {
+
+        public static GestationalAge of(int weeks, int days) {
+            int totalDays = weeks * 7 + days;
+            Period period = Period.of(0, 0, totalDays);
+            return new GestationalAge(weeks, days);
+        }
+
+        @Override
+        public boolean isGestationalAge() {
+            return true;
+        }
+
+        @Override
+        public int years() {
+            return 0;
+        }
+
+        @Override
+        public int months() {
+            return days / (int) ChronoUnit.MONTHS.getDuration().toDays();
+        }
+
+        @Override
+        public String toString() {
+            return weeks + "+" + days;
+        }
     }
 
-    public Period toPeriod() {
-        return Period.of(years, months, days);
-    }
+    record PostnatalAge(int years, int months, int days) implements Age {
 
-    public boolean isUnknown() {
-        return this == UNKNOWN;
-    }
+        private static final Age UNKNOWN = new PostnatalAge(0, 0, 0);
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Age)) return false;
-        Age age = (Age) o;
-        return years == age.years &&
-                months == age.months &&
-                days == age.days;
-    }
+        public static Age unknown() {
+            return UNKNOWN;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(years, months, days);
-    }
-
-    @Override
-    public String toString() {
-        return "Age{" +
-                "years=" + years +
-                ", months=" + months +
-                ", days=" + days +
-                '}';
+        @Override
+        public boolean isGestationalAge() {
+            return false;
+        }
     }
 }

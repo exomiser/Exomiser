@@ -35,6 +35,12 @@ public class AgeRange {
         this.upper = upper;
     }
 
+    /**
+     *
+     * @param lower Age limit (inclusive)
+     * @param upper Age limit (exclusive)
+     * @return
+     */
     public static AgeRange between(Age lower, Age upper) {
         if (lower.toPeriod().toTotalMonths() > upper.toPeriod().toTotalMonths()) {
             throw new IllegalArgumentException("Upper age limit must be greater than lower");
