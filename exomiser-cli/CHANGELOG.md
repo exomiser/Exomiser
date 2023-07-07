@@ -4,6 +4,9 @@
 
 - Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
 - Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants.
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty.
+
+**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require Java 17.* 
 
 ## 13.2.0 2023-02-28
 
