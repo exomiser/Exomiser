@@ -54,7 +54,7 @@ class PhenopacketSampleConverterTest {
             .setUri(vcfFile.toUri().toString())
             .build();
 
-    private final PhenotypicFeature craniosynostosis = PhenotypicFeature.newBuilder()
+    private final org.phenopackets.schema.v1.core.PhenotypicFeature craniosynostosis = org.phenopackets.schema.v1.core.PhenotypicFeature.newBuilder()
             .setType(OntologyClass.newBuilder().setId("HP:0001363").setLabel("Craniosynostosis").build())
             .build();
 
