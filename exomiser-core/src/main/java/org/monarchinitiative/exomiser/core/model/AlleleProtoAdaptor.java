@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySour
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
-import org.monarchinitiative.svart.Variant;
 
 import java.util.*;
 

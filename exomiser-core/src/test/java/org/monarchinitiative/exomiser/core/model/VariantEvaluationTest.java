@@ -43,7 +43,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.monarchinitiative.svart.Variant;
 import org.monarchinitiative.svart.*;
 
 import java.util.*;
@@ -113,8 +112,7 @@ public class VariantEvaluationTest {
 
     private VariantEvaluation newInstance() {
         return VariantEvaluation.builder()
-                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT)
-//                .genomeAssembly(GENOME_ASSEMBLY)
+                .variant(CHR1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
                 .geneId(GENE1_GENE_ID)
@@ -123,20 +121,17 @@ public class VariantEvaluationTest {
 
     private VariantEvaluation.Builder testVariantBuilder() {
         return VariantEvaluation.builder()
-                .with(CHR1, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT);
-//                .genomeAssembly(GENOME_ASSEMBLY);
+                .variant(CHR1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, POSITION, REF, ALT);
     }
 
     private VariantEvaluation.Builder newBuilder(int chr, int pos, String ref, String alt) {
         return VariantEvaluation.builder()
-                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(pos), ref, alt);
-//                .genomeAssembly(GenomeAssembly.HG19);
+                .variant(GENOME_ASSEMBLY.getContigById(chr), Strand.POSITIVE, CoordinateSystem.ONE_BASED, pos, ref, alt);
     }
 
     private VariantEvaluation.Builder newBuilder(int chr, int start, int end, String ref, String alt, int changeLength) {
         return VariantEvaluation.builder()
-                .with(GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength);
-//                .genomeAssembly(GenomeAssembly.HG19);
+                .variant(GENOME_ASSEMBLY.getContigById(chr), Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength);
     }
 
     @Test
@@ -149,7 +144,7 @@ public class VariantEvaluationTest {
         Contig contig = GenomeAssembly.HG38.getContigById(CHROMOSOME);
 
         VariantEvaluation variantEvaluation = VariantEvaluation.builder()
-                .with(contig, "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(POSITION), REF, ALT)
+                .variant(contig, Strand.POSITIVE, CoordinateSystem.ONE_BASED, POSITION, REF, ALT)
                 .genomeAssembly(GenomeAssembly.HG38)
                 .build();
         assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
@@ -184,7 +179,6 @@ public class VariantEvaluationTest {
     @Test
     public void testGetAlt() {
         assertThat(instance.alt(), equalTo(ALT));
-
     }
 
     @Test
@@ -804,7 +798,7 @@ public class VariantEvaluationTest {
 //        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getContigId(), variant
 //                .getStart(), variant.getRef(), variant.getAlt()));
 
-        variants.sort(Variant.naturalOrder());
+        variants.sort(GenomicVariant.naturalOrder());
 
         List<VariantEvaluation> expected = Arrays.asList(zero, one, two, three, four);
 

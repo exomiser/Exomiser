@@ -34,7 +34,7 @@ import htsjdk.variant.variantcontext.GenotypesContext;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.svart.ConfidenceInterval;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.VariantType;
 
 import java.nio.file.Path;
@@ -148,8 +148,8 @@ public class VariantFactoryImplTest {
 
         assertThat(variantEvaluation.contigId(), equalTo(10));
         assertThat(variantEvaluation.contigName(), equalTo("10"));
-        assertThat(variantEvaluation.startPosition(), equalTo(Position.of(123256215)));
-        assertThat(variantEvaluation.endPosition(), equalTo(Position.of(123256215)));
+        assertThat(variantEvaluation.start(), equalTo(123256215));
+        assertThat(variantEvaluation.end(), equalTo(123256215));
         assertThat(variantEvaluation.length(), equalTo(1));
         assertThat(variantEvaluation.ref(), equalTo("T"));
         assertThat(variantEvaluation.alt(), equalTo("G"));
@@ -400,10 +400,10 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.variantType(), equalTo(VariantType.DEL));
 
         assertThat(variantEvaluation.start(), equalTo(123256215));
-        assertThat(variantEvaluation.startPosition(), equalTo(Position.of(123256215, ConfidenceInterval.of(-56, 20))));
+        assertThat(variantEvaluation.startConfidenceInterval(), equalTo(ConfidenceInterval.of(-56, 20)));
 
         assertThat(variantEvaluation.end(), equalTo(123256420));
-        assertThat(variantEvaluation.endPosition(), equalTo(Position.of(123256420, ConfidenceInterval.of(-10, 62))));
+        assertThat(variantEvaluation.endConfidenceInterval(), equalTo(ConfidenceInterval.of(-10, 62)));
         assertThat(variantEvaluation.changeLength(), equalTo(-205));
 
         assertThat(variantEvaluation.ref(), equalTo("T"));
@@ -427,8 +427,9 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
         assertThat(variantEvaluation.variantType(), equalTo(VariantType.DEL));
 
-        assertThat(variantEvaluation.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
-        assertThat(variantEvaluation.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
+        assertThat(variantEvaluation.coordinates(), equalTo(Coordinates.oneBased(212471179, ConfidenceInterval.of(-471, 0), 212472619, ConfidenceInterval.of(0, 444))));
+//        assertThat(variantEvaluation.startPosition(), equalTo(Position.of(212471179, ConfidenceInterval.of(-471, 0))));
+//        assertThat(variantEvaluation.endPosition(), equalTo(Position.of(212472619, ConfidenceInterval.of(0, 444))));
         assertThat(variantEvaluation.changeLength(), equalTo(-1441));
 
         assertThat(variantEvaluation.ref(), equalTo("T"));
@@ -451,12 +452,12 @@ public class VariantFactoryImplTest {
         assertThat(variantEvaluation.variantType(), equalTo(VariantType.INS_ME_ALU));
 
         assertThat(variantEvaluation.start(), equalTo(112992009));
-        assertThat(variantEvaluation.startPosition().maxPos(), equalTo(112992009));
-        assertThat(variantEvaluation.startPosition().minPos(), equalTo(112992009));
+        assertThat(variantEvaluation.startMax(), equalTo(112992009));
+        assertThat(variantEvaluation.startMin(), equalTo(112992009));
 
         assertThat(variantEvaluation.end(), equalTo(112992009));
-        assertThat(variantEvaluation.endPosition().minPos(), equalTo(112992009));
-        assertThat(variantEvaluation.endPosition().maxPos(), equalTo(112992009));
+        assertThat(variantEvaluation.endMin(), equalTo(112992009));
+        assertThat(variantEvaluation.endMax(), equalTo(112992009));
 
         assertThat(variantEvaluation.changeLength(), equalTo(280));
 

@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,7 +39,7 @@ class SvDaoUtilTest {
     private final GenomicAssembly hg37 = GenomicAssemblies.GRCh37p13();
 
     private GenomicRegion buildRegion(int chr, int start, int end) {
-        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, start, end);
+        return GenomicRegion.of(hg37.contigById(chr), Strand.POSITIVE, CoordinateSystem.ONE_BASED, start, end);
     }
 
     @Test

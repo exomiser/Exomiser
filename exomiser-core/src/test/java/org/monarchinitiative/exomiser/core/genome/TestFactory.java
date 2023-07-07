@@ -30,7 +30,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.Coordinates;
 import org.monarchinitiative.svart.Strand;
 
 import java.nio.file.Path;
@@ -129,13 +129,13 @@ public class TestFactory {
 
     public static VariantEvaluation.Builder variantBuilder(int chr, int pos, String ref, String alt) {
         return VariantEvaluation.builder()
-                .with(DEFAULT_GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(pos), ref, alt)
+                .variant(DEFAULT_GENOME_ASSEMBLY.getContigById(chr), Strand.POSITIVE, CoordinateSystem.ONE_BASED, pos, ref, alt)
                 .genomeAssembly(DEFAULT_GENOME_ASSEMBLY);
     }
 
     public static VariantEvaluation.Builder variantBuilder(int chr, int start, int end, String ref, String alt, int changeLength) {
         return VariantEvaluation.builder()
-                .with(DEFAULT_GENOME_ASSEMBLY.getContigById(chr), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), ref, alt, changeLength)
+                .variant(DEFAULT_GENOME_ASSEMBLY.getContigById(chr), Strand.POSITIVE, Coordinates.oneBased(start, end), ref, alt, changeLength)
                 .genomeAssembly(DEFAULT_GENOME_ASSEMBLY);
     }
 }

@@ -25,8 +25,8 @@ import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
 import de.charite.compbio.jannovar.impl.intervals.IntervalEndExtractor;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.Coordinates;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,11 +87,11 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return (ChromosomalRegionIndex<T>) EMPTY;
     }
 
-    public boolean hasRegionContainingVariant(Variant variant) {
+    public boolean hasRegionContainingVariant(GenomicVariant variant) {
         return !getRegionsContainingVariant(variant).isEmpty();
     }
 
-    public boolean hasRegionOverlappingVariant(Variant variant) {
+    public boolean hasRegionOverlappingVariant(GenomicVariant variant) {
         return !getRegionsOverlappingVariant(variant).isEmpty();
     }
 
@@ -107,7 +107,7 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     }
 
     @Nonnull
-    public List<T> getRegionsContainingVariant(Variant variant) {
+    public List<T> getRegionsContainingVariant(GenomicVariant variant) {
         int chromosome = variant.contigId();
         int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
         int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
@@ -121,11 +121,11 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return containingRegions;
     }
 
-    private boolean regionContainsVariant(T region, Variant variant) {
+    private boolean regionContainsVariant(T region, GenomicVariant variant) {
         return Coordinates.aContainsB(CoordinateSystem.oneBased(), region.start(), region.end(), variant.coordinateSystem(), variant.start(), variant.end());
     }
 
-    public List<T> getRegionsOverlappingVariant(Variant variant) {
+    public List<T> getRegionsOverlappingVariant(GenomicVariant variant) {
         int chromosome = variant.contigId();
         int start = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
         int end = variant.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());

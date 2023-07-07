@@ -27,7 +27,7 @@ import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.SimpleVariantCoordinates;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.Collections;
 
@@ -40,7 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ChromosomalRegionIndexTest {
 
-    private final Variant variant = SimpleVariantCoordinates.of(1, 50, "A", "T");
+    private final GenomicVariant variant = SimpleVariantCoordinates.of(1, 50, "A", "T");
 
     @Test
     public void empty() {

@@ -30,7 +30,7 @@ import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     @Override
-    public List<VariantAnnotation> annotate(Variant variant) {
+    public List<VariantAnnotation> annotate(GenomicVariant variant) {
         if (variant == null) {
             return List.of();
         }
@@ -79,7 +79,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         return buildVariantAnnotations(variant, variantAnnotations);
     }
 
-    private List<VariantAnnotation> buildVariantAnnotations(Variant variant, VariantAnnotations variantAnnotations) {
+    private List<VariantAnnotation> buildVariantAnnotations(GenomicVariant variant, VariantAnnotations variantAnnotations) {
         // Group annotations by geneSymbol then create new Jannovar.VariantAnnotations from these then return List<VariantAnnotation>
         // see issue https://github.com/exomiser/Exomiser/issues/294. However it creates approximately 2x as many variants
         // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the amount of new
@@ -141,7 +141,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
                 annotation.getTranscript();
     }
 
-    private VariantAnnotation buildVariantAlleleAnnotation(Variant variant, VariantAnnotations variantAnnotations) {
+    private VariantAnnotation buildVariantAlleleAnnotation(GenomicVariant variant, VariantAnnotations variantAnnotations) {
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
         String geneSymbol = buildGeneSymbol(highestImpactAnnotation);
@@ -229,7 +229,7 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
-    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, Variant variant) {
+    private VariantEffect checkRegulatoryRegionVariantEffect(VariantEffect variantEffect, GenomicVariant variant) {
         //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
         if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionOverlappingVariant(variant)) {
             //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list

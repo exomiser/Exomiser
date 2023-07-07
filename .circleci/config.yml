@@ -8,7 +8,7 @@ jobs:
     docker:
       # was circleci/openjdk:8-jdk but something changed and it tests failed on fork
       #- image: circleci/openjdk@sha256:3640c4f42886e796e805c23af48b0d7348dc1d3fa8dae9a365e1f023f913c795
-      - image: circleci/openjdk:11.0.4-jdk-stretch
+      - image: cimg/openjdk:17.0.7
     steps:
       - checkout
       - run: chmod +x mvnw

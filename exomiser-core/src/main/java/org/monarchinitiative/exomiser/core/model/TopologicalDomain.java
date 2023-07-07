@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicInterval;
 
 import java.util.Map;
 
@@ -62,7 +62,7 @@ public class TopologicalDomain implements ChromosomalRegion {
         return genes;
     }
 
-    public boolean containsPosition(Variant variant) {
+    public boolean containsPosition(GenomicInterval variant) {
         if (variant.contigId() == chromosome) {
             int variantPosition = variant.start();
             return start <= variantPosition && end >= variantPosition;
