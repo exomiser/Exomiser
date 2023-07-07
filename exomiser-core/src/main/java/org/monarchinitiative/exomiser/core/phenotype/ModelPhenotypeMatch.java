@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public final class ModelPhenotypeMatch<T extends Model> implements Comparable<ModelPhenotypeMatch<T>> {
+public final class ModelPhenotypeMatch<T> implements Comparable<ModelPhenotypeMatch<T>> {
 
     private final double score;
     private final T model;
@@ -41,7 +41,7 @@ public final class ModelPhenotypeMatch<T extends Model> implements Comparable<Mo
         this.bestPhenotypeMatches = Objects.requireNonNull(bestPhenotypeMatches);
     }
 
-    public static <T extends Model> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
+    public static <T> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
         return new ModelPhenotypeMatch<>(score, model, List.copyOf(bestPhenotypeMatches));
     }
 
