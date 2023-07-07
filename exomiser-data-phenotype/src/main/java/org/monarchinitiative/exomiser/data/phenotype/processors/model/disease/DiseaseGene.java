@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.data.phenotype.processors.model.disease;
 
 import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseTypeCodes;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.InheritanceModeCodes;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLine;
@@ -112,9 +114,9 @@ public class DiseaseGene implements OutputLine {
 
     @Override
     public String toOutputLine() {
-        return String.format("%s|%s|%s|%d|%s|%s", diseaseId, omimGeneId, diseaseName, entrezGeneId, diseaseType
-                .getCode(), inheritanceMode
-                .getInheritanceCode());
+        return String.format("%s|%s|%s|%d|%s|%s", diseaseId, omimGeneId, diseaseName, entrezGeneId,
+                DiseaseTypeCodes.toDiseaseTypeCode(diseaseType),
+                InheritanceModeCodes.toInheritanceModeCode(inheritanceMode));
     }
 
     @Override

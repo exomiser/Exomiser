@@ -20,15 +20,13 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import org.monarchinitiative.exomiser.core.phenotype.Model;
-
 import java.util.List;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class Disease implements Model {
+public final class Disease {
 
     public enum DiseaseType {
 
@@ -44,15 +42,6 @@ public final class Disease implements Model {
         DiseaseType(String value, String columnValue) {
             this.value = value;
             this.columnValue = columnValue;
-        }
-
-        public static DiseaseType code(String key) {
-            for (DiseaseType diseaseType : DiseaseType.values()) {
-                if (diseaseType.columnValue.equals(key)) {
-                    return diseaseType;
-                }
-            }
-            return UNCONFIRMED;
         }
 
         public String getValue() {
@@ -109,12 +98,6 @@ public final class Disease implements Model {
         return inheritanceMode;
     }
 
-    @Override
-    public String getId() {
-        return diseaseId;
-    }
-
-    @Override
     public List<String> getPhenotypeIds() {
         return phenotypeIds;
     }
@@ -197,18 +180,8 @@ public final class Disease implements Model {
             return this;
         }
 
-        public Builder diseaseTypeCode(String diseaseCode) {
-            this.diseaseType = DiseaseType.code(diseaseCode);
-            return this;
-        }
-
         public Builder inheritanceMode(InheritanceMode inheritanceMode) {
             this.inheritanceMode = Objects.requireNonNullElse(inheritanceMode, InheritanceMode.UNKNOWN);
-            return this;
-        }
-
-        public Builder inheritanceModeCode(String inheritanceCode) {
-            this.inheritanceMode = InheritanceMode.valueOfInheritanceCode(inheritanceCode);
             return this;
         }
 

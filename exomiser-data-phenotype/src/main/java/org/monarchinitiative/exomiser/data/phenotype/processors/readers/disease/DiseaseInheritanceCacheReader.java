@@ -49,7 +49,7 @@ public class DiseaseInheritanceCacheReader implements ResourceReader<Map<String,
             .put("HP:0000007", InheritanceMode.AUTOSOMAL_RECESSIVE)
             .put("HP:0000006", InheritanceMode.AUTOSOMAL_DOMINANT)
             // Semidominant mode of inheritance HP:0032113
-            .put("HP:0032113", InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE)
+            .put("HP:0032113", InheritanceMode.SEMIDOMINANT)
             .put("HP:0001417", InheritanceMode.X_LINKED)
             .put("HP:0001419", InheritanceMode.X_RECESSIVE)
             .put("HP:0001423", InheritanceMode.X_DOMINANT)
@@ -143,7 +143,7 @@ public class DiseaseInheritanceCacheReader implements ResourceReader<Map<String,
             //check whether the observed inheritance patterns of the exome sequences match
             //that of the known disease.
             if (isDominant && isRecessive) {
-                inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
+                inheritanceMode = InheritanceMode.SEMIDOMINANT;
             } else if (isDominant) {
                 inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT;
             } else if (isRecessive) {

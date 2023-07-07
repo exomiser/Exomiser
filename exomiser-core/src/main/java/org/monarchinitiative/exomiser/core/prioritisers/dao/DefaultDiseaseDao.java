@@ -97,8 +97,8 @@ public class DefaultDiseaseDao implements DiseaseDao {
                 .diseaseName(rs.getString("disease_name"))
                 .associatedGeneId(rs.getInt("entrez_id"))
                 .associatedGeneSymbol(rs.getString("human_gene_symbol"))
-                .inheritanceModeCode(formatInheritanceCode(rs.getString("inheritance_code")))
-                .diseaseTypeCode(rs.getString("disease_type"))
+                .inheritanceMode(InheritanceModeCodes.parseInheritanceModeCode(rs.getString("inheritance_code")))
+                .diseaseType(DiseaseTypeCodes.parseDiseaseTypeCode(rs.getString("disease_type")))
                 .phenotypeIds(phenotypes)
                 .build();
     };
