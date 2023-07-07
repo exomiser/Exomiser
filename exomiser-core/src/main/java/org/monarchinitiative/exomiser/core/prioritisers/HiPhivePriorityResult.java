@@ -297,8 +297,8 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                             .getScore(), diseaseLink, geneModelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
-                    stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
-                            .getScore(), geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
+                    stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to mouse mutant involving <a href=\"https://www.informatics.jax.org/allele/genoview/%s\">%s</a>.</dt>", geneModelPhenotypeMatch
+                            .getScore(), geneModelPhenotypeMatch.getId(), geneModelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case FISH:
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", geneModelPhenotypeMatch
