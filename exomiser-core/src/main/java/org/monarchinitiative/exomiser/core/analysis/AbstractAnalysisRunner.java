@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -196,16 +198,16 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         // this can be done using parallel which dramatically reduces runtime at the expense of RAM and
         //  inability to scale past one job running on one machine
         try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-                    filteredVariants = variantStream
+            filteredVariants = variantStream
 //                        .parallel()
-                        .peek(variantLogger.logLoadedAndPassedVariants())
-                        .filter(isObservedInProband(probandIdentifier))
-                        .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
-                        .map(flagWhiteListedVariants())
-                        .filter(isAssociatedWithKnownGene(allGenes))
-                        .filter(runVariantFilters(variantFilters, filterStats))
-                        .peek(variantLogger.countPassedVariant())
-                        .collect(Collectors.toUnmodifiableList());
+                    .peek(variantLogger.logLoadedAndPassedVariants())
+                    .filter(isObservedInProband(probandIdentifier))
+                    .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
+                    .map(flagWhiteListedVariants())
+                    .filter(isAssociatedWithKnownGene(allGenes))
+                    .filter(runVariantFilters(variantFilters, filterStats))
+                    .peek(variantLogger.countPassedVariant())
+                    .toList();
         }
         variantLogger.logResults();
         return filteredVariants;

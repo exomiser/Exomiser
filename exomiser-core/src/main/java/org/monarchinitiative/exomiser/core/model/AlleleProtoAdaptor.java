@@ -137,7 +137,7 @@ public class AlleleProtoAdaptor {
             return PathogenicityData.empty();
         }
         List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPropertiesMap());
-        ClinVarData clinVarData = parseClinVarData(alleleProperties.getClinVar());
+        ClinVarData clinVarData = toClinVarData(alleleProperties.getClinVar());
         return PathogenicityData.of(clinVarData, pathogenicityScores);
     }
 
@@ -154,7 +154,7 @@ public class AlleleProtoAdaptor {
         return pathogenicityScores;
     }
 
-    private static ClinVarData parseClinVarData(ClinVar clinVar) {
+    public static ClinVarData toClinVarData(ClinVar clinVar) {
         if (clinVar.equals(clinVar.getDefaultInstanceForType())) {
             return ClinVarData.empty();
         }
