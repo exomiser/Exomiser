@@ -53,7 +53,7 @@ import java.util.Map;
 @Configuration
 public class Hg38Config extends ResourceConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
+    private static final Logger logger = LoggerFactory.getLogger(Hg38Config.class);
 
     private final Environment environment;
 
@@ -64,11 +64,12 @@ public class Hg38Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
+        ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Path genomeDataPath = genomeDataPath();
         Path genomeProcessPath = genomeProcessPath();
         Map<String, AlleleResource> alleleResources = hg38AlleleResources();
         List<SvResource> svResources = hg38SvResources(genomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, alleleResources, svResources);
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, clinVarAlleleResource, alleleResources, svResources);
     }
 
     public Path genomeDataPath() {
@@ -88,7 +89,7 @@ public class Hg38Config extends ResourceConfig {
         Path path = Path.of(property);
         if (!Files.exists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -108,7 +109,7 @@ public class Hg38Config extends ResourceConfig {
         alleleResources.put("exac", exacAlleleResource());
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
-        alleleResources.put("clinvar", clinVarAlleleResource());
+        // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
     }

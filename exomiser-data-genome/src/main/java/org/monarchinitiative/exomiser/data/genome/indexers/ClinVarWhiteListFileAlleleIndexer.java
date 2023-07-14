@@ -34,8 +34,11 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Specialised AlleleIndexer for producing the ClinVar whitelist
  *
+ * @deprecated Replaced by the {@link org.monarchinitiative.exomiser.core.genome.dao.ClinVarWhiteListLoader} which will
+ * read and filter the entire ClinVar database on the fly.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated
 public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListFileAlleleIndexer.class);

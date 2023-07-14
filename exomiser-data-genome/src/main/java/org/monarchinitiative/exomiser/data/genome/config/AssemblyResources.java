@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.config;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.monarchinitiative.exomiser.data.genome.model.resource.ClinVarAlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 
 import java.nio.file.Path;
@@ -39,15 +40,17 @@ public class AssemblyResources {
     private final GenomeAssembly genomeAssembly;
     private final Path genomeDataPath;
     private final Path genomeProcessedPath;
+    private final ClinVarAlleleResource clinVarAlleleResource;
     private final Map<String, AlleleResource> alleleResources;
     private final List<SvResource> svResources;
 
-    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Path genomeProcessedPath, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
+    public AssemblyResources(GenomeAssembly genomeAssembly, Path genomeDataPath, Path genomeProcessedPath, ClinVarAlleleResource clinVarAlleleResource, Map<String, AlleleResource> alleleResources, List<SvResource> svResources) {
         this.genomeAssembly = genomeAssembly;
         this.genomeDataPath = genomeDataPath;
         this.genomeProcessedPath = genomeProcessedPath;
         this.alleleResources = alleleResources;
         this.svResources = svResources;
+        this.clinVarAlleleResource = clinVarAlleleResource;
     }
 
     public GenomeAssembly getGenomeAssembly() {
@@ -64,6 +67,10 @@ public class AssemblyResources {
 
     public Map<String, AlleleResource> getAlleleResources() {
         return alleleResources;
+    }
+
+    public ClinVarAlleleResource getClinVarResource() {
+        return clinVarAlleleResource;
     }
 
     public List<AlleleResource> getUserDefinedResources(List<String> optionValues) {

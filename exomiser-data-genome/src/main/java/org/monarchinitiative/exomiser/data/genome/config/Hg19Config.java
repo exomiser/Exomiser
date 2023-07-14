@@ -66,11 +66,12 @@ public class Hg19Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg19AssemblyResources() {
+        ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
         Path genomePath = genomeDataPath();
         Path hg19GenomeProcessPath = genomeProcessPath();
         List<SvResource> hg19SvResources = hg19SvResources(hg19GenomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG19, genomePath, hg19GenomeProcessPath, hg19AlleleResources, hg19SvResources);
+        return new AssemblyResources(GenomeAssembly.HG19, genomePath, hg19GenomeProcessPath, clinVarAlleleResource, hg19AlleleResources, hg19SvResources);
     }
 
     public Path genomeDataPath() {
@@ -90,7 +91,7 @@ public class Hg19Config extends ResourceConfig {
         Path path = Path.of(property);
         if (!Files.exists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -110,7 +111,7 @@ public class Hg19Config extends ResourceConfig {
         alleleResources.put("exac", exacAlleleResource());
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
-        alleleResources.put("clinvar", clinVarAlleleResource());
+        // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
     }

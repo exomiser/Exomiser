@@ -26,8 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -44,6 +47,13 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
     public OutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
         logger.info("Writing to {}", outFilePath);
+        try {
+            if (Files.notExists(outFilePath)) {
+                Files.createFile(outFilePath);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to create outfile " + outFilePath, e);
+        }
         try {
             this.bufferedWriter = Files.newBufferedWriter(outFilePath);
         } catch (IOException e) {
