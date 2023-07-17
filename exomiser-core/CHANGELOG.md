@@ -1,5 +1,12 @@
 # The Exomiser - Core Library Changelog
 
+## 14.0.0 2023-MM-dd
+
+- Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
+- The `VariantWhiteList` is now dynamically loaded from the ClinVar data provided in the clinvar.mv.db file
+- `VariantDataServiceImpl` now requires a `ClinVarDao`
+ 
 ## 13.2.1 2023-06-30
 
 - Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.

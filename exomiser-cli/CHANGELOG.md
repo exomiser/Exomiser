@@ -1,5 +1,10 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 14.0.0 2023-MM-dd
+
+- Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
+
+
 ## 13.2.1 2023-06-30
 
 - Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
