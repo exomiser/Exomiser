@@ -3,6 +3,7 @@ package org.monarchinitiative.exomiser.data.genome;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.h2.mvstore.MVStoreTool;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.indexers.AlleleConverter;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -40,7 +41,7 @@ public class ClinVarBuildRunner {
         String outFileName = outFile.toString();
         logger.info("Writing ClinVar data to {}", outFileName);
         try (MVStore clinvarStore = MVStore.open(outFileName)) {
-            MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMap = clinvarStore.openMap("clinvar", clinVarMapBuilder());
+            MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMap = MvStoreUtil.openClinVarMVMap(clinvarStore);
             try(Stream<Allele> alleleStream = clinVarAlleleResource.parseResource()) {
                 alleleStream
                         .forEach(allele -> {

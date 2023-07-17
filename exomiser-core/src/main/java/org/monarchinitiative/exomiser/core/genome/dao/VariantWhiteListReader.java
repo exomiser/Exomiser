@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.slf4j.Logger;
@@ -32,41 +31,45 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Utility class for loading variant whitelist.
+ * Utility class for reading a tabix-indexed variant whitelist.
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-public class VariantWhiteListLoader {
+public class VariantWhiteListReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(VariantWhiteListLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantWhiteListReader.class);
 
-    private VariantWhiteListLoader() {
+    private VariantWhiteListReader() {
         // uninstantiable static utility class
     }
 
     /**
-     * Loads variant whitelist data from the given path into an in-memory instance of a {@link VariantWhiteList}. It is
-     * assumed that the whitelist will only contain a few tens of thousand variants.
+     * Reads variant {@link org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey} data from the given file. It is
+     * assumed that the list will only contain a few tens of thousands of variants.
      * <p>
-     * The whitelist should be a gzipped TSV file containing a single allele on each line where the fields are as follows:
-     * #CHR    POS REF ALT
+     * The whitelist file should be a gzipped TSV file containing a single allele on each line where the fields are as follows:
+     * <pre>
+     * #CHR POS     REF ALT
      * 1    12345   A   T
+     * </pre>
      * <p>
      * It is permissible to add further fields, but they will be ignored.
      *
      * @param whiteListPath {@link Path) to the variant whitelist .gz file.
-     * @return An in-memory instance of the {@link VariantWhiteList}
+     * @return a list of AlleleKey read from the input file
      */
-    public static VariantWhiteList loadVariantWhiteList(Path whiteListPath) {
+    public static Set<AlleleProto.AlleleKey> readVariantWhiteList(Path whiteListPath) {
         Objects.requireNonNull(whiteListPath);
-        logger.info("Loading variant whitelist from: {}", whiteListPath);
+        logger.info("Reading variant whitelist from: {}", whiteListPath);
         // this should be a tabix-indexed gzip file
-        ImmutableSet.Builder<AlleleProto.AlleleKey> whiteListBuilder = new ImmutableSet.Builder<>();
+        Set<AlleleProto.AlleleKey> whiteListBuilder = new HashSet<>();
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(whiteListPath)), StandardCharsets.UTF_8))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -89,12 +92,9 @@ public class VariantWhiteListLoader {
                 whiteListBuilder.add(alleleKey);
             }
         } catch (IOException e) {
-            logger.error("AAARRRGH!", e);
-            throw new RuntimeException("Unable to load variant whitelist", e);
+            throw new IllegalStateException("Unable to read variant whitelist", e);
         }
-
-        ImmutableSet<AlleleProto.AlleleKey> whiteList = whiteListBuilder.build();
-        logger.info("Loaded {} variants into whitelist", whiteList.size());
-        return InMemoryVariantWhiteList.of(whiteList);
+        logger.info("Read {} whitelist variants", whiteListBuilder.size());
+        return Set.copyOf(whiteListBuilder);
     }
 }

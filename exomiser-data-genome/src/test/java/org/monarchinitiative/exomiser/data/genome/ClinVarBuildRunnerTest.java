@@ -5,7 +5,7 @@ import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.dao.ClinVarWhiteListLoader;
+import org.monarchinitiative.exomiser.core.genome.dao.ClinVarWhiteListReader;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
@@ -41,7 +41,7 @@ class ClinVarBuildRunnerTest {
             MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvar = MvStoreUtil.openClinVarMVMap(clinvarStore);
             assertThat(clinvar.size(), equalTo(2000));
 
-            Set<AlleleProto.AlleleKey> whiteListAlleleKeys = ClinVarWhiteListLoader.readVariantWhiteList(clinvarStore);
+            Set<AlleleProto.AlleleKey> whiteListAlleleKeys = ClinVarWhiteListReader.readVariantWhiteList(clinvarStore);
             assertThat(whiteListAlleleKeys.size(), equalTo(23));
         }
     }
