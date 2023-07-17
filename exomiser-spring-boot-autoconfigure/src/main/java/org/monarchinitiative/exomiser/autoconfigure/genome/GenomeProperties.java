@@ -51,6 +51,14 @@ interface GenomeProperties {
 
     void setDataDirectory(String dataDirectory);
 
+    String getClinVarDataVersion();
+
+    void setClinVarDataVersion(String name);
+
+    boolean useClinVarWhiteList();
+
+    void setUseClinVarWhiteList(boolean useClinVarWhiteList);
+
     HikariDataSource genomeDataSource();
 
     //Optional tabix variant data

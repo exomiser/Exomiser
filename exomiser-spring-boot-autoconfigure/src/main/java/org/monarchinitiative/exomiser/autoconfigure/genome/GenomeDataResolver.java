@@ -100,14 +100,16 @@ public class GenomeDataResolver {
         return resolveAbsoluteResourcePath(mvStoreFileName);
     }
 
+    public Path getClinVarMvStorePath() {
+        String clinvarDataVersion = genomeProperties.getClinVarDataVersion();
+        String fileVersion = clinvarDataVersion.isEmpty() ? versionAssemblyPrefix : clinvarDataVersion + "_" + genomeProperties.getAssembly();
+        String mvStoreFileName = String.format("%s_clinvar.mv.db", fileVersion);
+        return resolveAbsoluteResourcePath(mvStoreFileName);
+    }
+
     public Path getGenomeDbPath() {
         //omit the .h2.db extensions
         String dbFileName = String.format("%s_genome", versionAssemblyPrefix);
-        return resolveAbsoluteResourcePath(dbFileName);
-    }
-
-    public Path getSvDbPath() {
-        String dbFileName = String.format("%s_sv", versionAssemblyPrefix);
         return resolveAbsoluteResourcePath(dbFileName);
     }
 }
