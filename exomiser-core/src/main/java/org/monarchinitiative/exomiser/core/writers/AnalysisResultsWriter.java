@@ -20,21 +20,17 @@
 
 package org.monarchinitiative.exomiser.core.writers;
 
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.Collections;
 
 /**
  * Facade for handling writing out {@link org.monarchinitiative.exomiser.core.analysis.AnalysisResults}

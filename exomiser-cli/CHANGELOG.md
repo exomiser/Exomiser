@@ -1,23 +1,32 @@
 # The Exomiser Command Line Executable - Changelog
 
-## 14.0.0
+## 14.0.0 2023-MM-dd
 
+- Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
 - Minimum Java version is now set to __Java 17__
 - __BREAKING CHANGE!__ Added new CLI. Please read the `--help` options carefully as there have been breaking changes to allow for clarity
   between desired sub-commands which wasn't possible before.
 - Added new gene blacklist filter to remove variants from genes which show high variability in healthy populations.
   To use this, add `geneBlacklistFilter: {}` before the `frequencyFilter: {}` in your analysis script. This is added by
   default to the presets.
-- Added new `--output-format` option to enable specifying the desired output options directly from the CLI.
 - __BREAKING CHANGE!__ Removed old MOI-specific TSV and VCF output formats so that there will now only be one output file for each specified
   format.
 - __BREAKING CHANGE!__ New database version and schema. Unfortunately, the old databases are no longer compatible with  
-  this version and older binaries (i.e. exomiser-cli-13.1.0 and lower) will not be able to read data versions greater
-  than 2209. While this is annoying, the newer data are *significantly* smaller - e.g. the 2209_hg19 data was 41 GB when
+  this version and older binaries (i.e. exomiser-cli-13.2.1 and lower) will not be able to read data versions greater
+  than 2302. While this is annoying, the newer data are *significantly* smaller - e.g. the 2209_hg19 data was 41 GB when
   zipped and 63 GB unpacked. In comparison, the newer data is 10 GB when zipped and 14 GB unpacked. This includes the latest
   gnomAD versions (2.1) which includes the 1000 genomes, ExAC and TopMED data, so these have been removed as separate sources
-  from the database. The latest hg38 data also includes gnomAD v2.1 (exome liftover) and v3 (genomes) and NCBI ALFA allele
+  from the database. The latest hg38 data also includes gnomAD v2.1 (exome liftover) and v3 (genomes), NCBI ALFA allele
   frequencies and SpliceAI scores derived from the gnomAD v3 data. All these newer data sources will be used automatically.
+
+
+## 13.2.1 2023-06-30
+
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
+- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants.
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty.
+
+**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require Java 17.* 
 
 ## 13.2.0 2023-02-28
 

@@ -31,7 +31,6 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
-import org.monarchinitiative.svart.Variant;
 
 import java.util.*;
 
@@ -136,7 +135,7 @@ public class AlleleProtoAdaptor {
             return PathogenicityData.empty();
         }
         List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPathogenicityScoresList());
-        ClinVarData clinVarData = parseClinVarData(alleleProperties.getClinVar());
+        ClinVarData clinVarData = toClinVarData(alleleProperties.getClinVar());
         return PathogenicityData.of(clinVarData, pathogenicityScores);
     }
 
@@ -171,7 +170,7 @@ public class AlleleProtoAdaptor {
         };
     }
 
-    private static ClinVarData parseClinVarData(ClinVar clinVar) {
+    public static ClinVarData toClinVarData(ClinVar clinVar) {
         if (clinVar.equals(clinVar.getDefaultInstanceForType())) {
             return ClinVarData.empty();
         }

@@ -71,7 +71,7 @@ public class VariantDatabaseBuildRunner {
              Indexer<Allele> alleleIndexer = new MvStoreAlleleIndexer(mvStore)) {
             alleleIndexer.index(alleleResource);
             logger.info("Written {} alleles to {} store", alleleIndexer.count(), alleleResource.getName());
-            mvStore.compactMoveChunks();
+            mvStore.commit();
             logger.info("Closing {} store", alleleResource.getName());
         } catch (IOException e) {
             throw new IllegalStateException("Error processing resource " + alleleResource.getName(), e);

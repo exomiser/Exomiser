@@ -23,8 +23,10 @@ package org.monarchinitiative.exomiser.data.genome.config;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**

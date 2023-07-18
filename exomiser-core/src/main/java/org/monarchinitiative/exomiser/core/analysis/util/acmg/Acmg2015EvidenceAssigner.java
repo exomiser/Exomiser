@@ -221,6 +221,36 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                 || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
     }
 
+//    private void assignPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation) {
+//        // find same AA change as other P/LP or B/LB MISSENSE variant
+//        TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
+//        if (variantEvaluation.hasTranscriptAnnotations() && transcriptAnnotation.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
+//            // find clinvar variants 2 bases up/downstream
+//            int min = variantEvaluation.start() - 2;
+//            int max = variantEvaluation.start() + 2;
+//            // 123 | 123 | 123
+//            // ... | .A. | ...
+//            //  22 | 23  | 24
+//            // NEED mvStoreDao and logic to do range query on this.
+////            Map<AlleleKey, PathogenicityData> pathogenicityData = mvStoreDao.getPathogenicityDataForRange(chr, min, max);
+//                // 1-2345-A-T
+//            // iterate through entrySet, if there is a ClinVarData && primaryIntepretation is P/LP
+//            // IGNORE same variant, if present
+//            ClinVarData clinVarData = ClinVarData.empty(); // get this from the PathogenicityData
+//            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+//            if (primaryInterpretation == ClinVarData.ClinSig.PATHOGENIC || primaryInterpretation == ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC || primaryInterpretation == ClinVarData.ClinSig.LIKELY_PATHOGENIC) {
+//                // use Jannovar to generate the AA change for this variant using the VariantAnnotator.
+//                // NEED VarantAnnotator
+//                // Create a VariantEvaluation from AlleleKey
+//                // Annotate (can do this against same transcript as above?) (then also need JannovarData to get transcript by accession)
+//                // (p.Arg23Ala) = (p.Lys22Tyr)
+//                if (transcriptAnnotation.getHgvsProtein().equals(clinvarAnnotation.getHgvsProtein())) {
+//                    acmgEvidenceBuilder.add(PS1);
+//                } PM5
+//            }
+//        }
+//    }
+
     /**
      * PM3 "For recessive disorders, detected in trans with a pathogenic variant"
      * Note: This requires testing of parents (or offspring) to determine phase

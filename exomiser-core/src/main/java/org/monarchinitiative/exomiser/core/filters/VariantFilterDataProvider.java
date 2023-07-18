@@ -31,13 +31,25 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 public interface VariantFilterDataProvider extends VariantFilter {
 
     /**
+     * @return the decorated filter which the DataProvider is providing data for.
+     */
+    VariantFilter getDecoratedFilter();
+
+    /**
      * Provides the variantEvaluation with the implementation-specific data.
      * @param variantEvaluation
      */
     void provideVariantData(VariantEvaluation variantEvaluation);
 
-    /**
-     * @return the decorated filter which the DataProvider is providing data for.
-     */
-    VariantFilter getDecoratedFilter();
+    @Override
+    default FilterResult runFilter(VariantEvaluation variantEvaluation) {
+        provideVariantData(variantEvaluation);
+        return getDecoratedFilter().runFilter(variantEvaluation);
+    }
+
+    @Override
+    default FilterType getFilterType() {
+        return getDecoratedFilter().getFilterType();
+    }
+
 }

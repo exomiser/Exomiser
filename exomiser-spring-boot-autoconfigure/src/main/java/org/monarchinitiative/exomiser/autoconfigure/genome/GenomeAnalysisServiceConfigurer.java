@@ -23,9 +23,7 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.*;
-import org.monarchinitiative.exomiser.core.genome.dao.AllelePropertiesDaoAdapter;
-import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
-import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.slf4j.Logger;
@@ -52,7 +50,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     protected final DataSource genomeDataSource;
 
     protected final JannovarData jannovarData;
-    protected final MVStore mvStore;
+    protected final MVStore allelesMvStore;
+    protected final MVStore clinVarMvStore;
 
     protected GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
@@ -64,7 +63,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         this.genomeDataSource = genomeProperties.genomeDataSource();
 
         this.jannovarData = genomeDataSourceLoader.getJannovarData();
-        this.mvStore = genomeDataSourceLoader.getMvStore();
+        this.allelesMvStore = genomeDataSourceLoader.getAllelePropsMvStore();
+        this.clinVarMvStore = genomeDataSourceLoader.getClinVarMvStore();
     }
 
     protected VariantAnnotator buildVariantAnnotator() {
@@ -75,7 +75,10 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     //This method is calling the public interface of the concrete implementation so that the caching works on the DAOs
     protected VariantDataService buildVariantDataService() {
         AllelePropertiesDaoAdapter allelePropertiesDaoAdapter = new AllelePropertiesDaoAdapter(allelePropertiesDao());
+        ClinVarDao clinVarDao = new ClinVarDaoMvStore(clinVarMvStore);
         return VariantDataServiceImpl.builder()
+                .variantWhiteList(variantWhiteList())
+                .clinVarDao(clinVarDao)
                 .defaultFrequencyDao(allelePropertiesDaoAdapter)
                 .defaultPathogenicityDao(allelePropertiesDaoAdapter)
                 .localFrequencyDao(localFrequencyDao())
@@ -84,7 +87,6 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
                 .testPathScoreDao(testPathScoreDao())
                 .svFrequencyDao(svFrequencyDao())
                 .svPathogenicityDao(svPathogenicityDao())
-                .variantWhiteList(variantWhiteList())
                 .build();
     }
 

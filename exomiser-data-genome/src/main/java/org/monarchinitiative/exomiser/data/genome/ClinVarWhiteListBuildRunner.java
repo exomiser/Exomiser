@@ -45,8 +45,12 @@ import java.util.Set;
 /**
  * Creates the standard variant whitelist from ClinVar data
  *
+ * @deprecated This class has been replaced by the {@link ClinVarBuildRunner} which builds a complete version of ClinVar
+ * from the CLinVar VCF file. The {@link org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList} this was used
+ * to build the data for is now
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated
 public class ClinVarWhiteListBuildRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListBuildRunner.class);

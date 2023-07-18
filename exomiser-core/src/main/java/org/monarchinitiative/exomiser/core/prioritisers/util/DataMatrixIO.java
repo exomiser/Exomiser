@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.MVStoreTool;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +83,8 @@ public class DataMatrixIO {
             columns.put(geneId, colVals);
         }
         mvStore.commit();
-        mvStore.compactMoveChunks();
         mvStore.close();
+        MVStoreTool.compact(outfileName.toAbsolutePath().toString(), true);
     }
 
     /**

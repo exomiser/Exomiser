@@ -357,10 +357,20 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return A list of {@link GeneScore} with a compatible mode of inheritance.
      */
     public List<GeneScore> getCompatibleGeneScores() {
-        return this.geneScoreMap.entrySet().stream()
-                .filter(entry -> this.inheritanceModes.contains(entry.getKey()))
+        // An explanation about the logic here: If the Analysis.inheritanceModes is empty or no MOI dependent analysis
+        // step has been run the (compatible) inheritanceModes will be empty. The GeneScorer will always give a gene a
+        // GeneScore but in this case it will have an MOI.ANY. So, in the case that no compatible inheritanceModes are
+        // present, the ANY GeneScore should be returned here otherwise the ResultsWriters relying on this method
+        // (TSV and VCF) will return empty data. See issue https://github.com/exomiser/Exomiser/issues/481
+        return inheritanceModes.isEmpty() ? anyMoiScoreOrEmptyList() : geneScoreMap.entrySet().stream()
+                .filter(entry -> inheritanceModes.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .toList();
+    }
+
+    private List<GeneScore> anyMoiScoreOrEmptyList() {
+        GeneScore geneScore = geneScoreMap.get(ModeOfInheritance.ANY);
+        return geneScore != null ? List.of(geneScore) : List.of();
     }
 
     public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {

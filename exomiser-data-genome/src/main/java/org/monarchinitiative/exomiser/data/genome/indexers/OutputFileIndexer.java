@@ -26,8 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -38,23 +41,28 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
     private static final Logger logger = LoggerFactory.getLogger(OutputFileIndexer.class);
 
     private final AtomicLong count = new AtomicLong(0);
-    private BufferedWriter bufferedWriter = null;
+    private final BufferedWriter bufferedWriter;
     private final Path outFilePath;
 
     public OutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
-        logger.debug("Writing to {}", outFilePath);
+        logger.info("Writing to {}", outFilePath);
+        try {
+            if (Files.notExists(outFilePath)) {
+                Files.createFile(outFilePath);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to create outfile " + outFilePath, e);
+        }
+        try {
+            this.bufferedWriter = Files.newBufferedWriter(outFilePath);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
+        }
     }
 
     @Override
     public void write(T type) {
-        if (bufferedWriter == null) {
-            try {
-                this.bufferedWriter = Files.newBufferedWriter(outFilePath);
-            } catch (IOException e) {
-                throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
-            }
-        }
         try {
             bufferedWriter.write(type.toOutputLine());
             bufferedWriter.newLine();

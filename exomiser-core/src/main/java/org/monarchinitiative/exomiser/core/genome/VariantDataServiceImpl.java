@@ -22,23 +22,18 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
-import org.monarchinitiative.exomiser.core.genome.dao.InMemoryVariantWhiteList;
-import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
-import org.monarchinitiative.exomiser.core.genome.dao.VariantWhiteList;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
@@ -58,6 +53,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     // Default data sources
     private final FrequencyDao defaultFrequencyDao;
     private final PathogenicityDao defaultPathogenicityDao;
+    private final ClinVarDao clinVarDao;
 
     // Optional data sources
     private final FrequencyDao localFrequencyDao;
@@ -71,10 +67,11 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     private VariantDataServiceImpl(Builder builder) {
 
-        this.whiteList = builder.variantWhiteList;
+        this.whiteList = Objects.requireNonNull(builder.variantWhiteList);
 
-        this.defaultFrequencyDao = builder.defaultFrequencyDao;
-        this.defaultPathogenicityDao = builder.defaultPathogenicityDao;
+        this.defaultFrequencyDao = Objects.requireNonNull(builder.defaultFrequencyDao, "defaultFrequencyDao required!");
+        this.defaultPathogenicityDao = Objects.requireNonNull(builder.defaultPathogenicityDao, "defaultPathogenicityDao required!");
+        this.clinVarDao = Objects.requireNonNull(builder.clinVarDao, "clinVarDao required!");
 
         this.localFrequencyDao = builder.localFrequencyDao;
         this.caddDao = builder.caddDao;
@@ -121,11 +118,12 @@ public class VariantDataServiceImpl implements VariantDataService {
             return svPathogenicityDao.getPathogenicityData(variant);
         }
 
+        ClinVarData clinVarData = clinVarDao.getClinVarData(variant);
+
         // This could be run alongside the frequencies as they are all stored in the same datastore
         if (pathogenicitySources.isEmpty()) {
-            PathogenicityData defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
             // Fast-path for the unlikely case when no sources are defined - we'll just return the ClinVar data
-            return PathogenicityData.of(defaultPathogenicityData.getClinVarData());
+            return PathogenicityData.of(clinVarData);
         }
 
         PathogenicityData defaultPathogenicityData;
@@ -161,7 +159,7 @@ public class VariantDataServiceImpl implements VariantDataService {
             addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
         }
 
-        return PathogenicityData.of(defaultPathogenicityData.getClinVarData(), allPathScores);
+        return PathogenicityData.of(clinVarData, allPathScores);
     }
 
     private boolean containsTabixSource(Set<PathogenicitySource> pathogenicitySources) {
@@ -181,27 +179,6 @@ public class VariantDataServiceImpl implements VariantDataService {
         }
     }
 
-//    private List<PathogenicityData> getOptionalPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-//        List<PathogenicityDao> daosToQuery = new ArrayList<>();
-//        // REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
-//        if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
-//            daosToQuery.add(remmDao);
-//        }
-//
-//        // CADD does all of it although is not as good as REMM for the non-coding regions.
-//        if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
-//            daosToQuery.add(caddDao);
-//        }
-//
-//        if (pathogenicitySources.contains(PathogenicitySource.TEST)) {
-//            daosToQuery.add(testPathScoreDao);
-//        }
-//
-//        return daosToQuery.parallelStream()
-//                .map(pathDao -> pathDao.getPathogenicityData(variant))
-//                .collect(Collectors.toList());
-//    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -209,6 +186,8 @@ public class VariantDataServiceImpl implements VariantDataService {
     public static class Builder {
 
         private VariantWhiteList variantWhiteList = InMemoryVariantWhiteList.empty();
+
+        private ClinVarDao clinVarDao;
 
         private FrequencyDao defaultFrequencyDao;
         private PathogenicityDao defaultPathogenicityDao;
@@ -224,6 +203,11 @@ public class VariantDataServiceImpl implements VariantDataService {
 
         public Builder variantWhiteList(VariantWhiteList variantWhiteList) {
             this.variantWhiteList = variantWhiteList;
+            return this;
+        }
+
+        public Builder clinVarDao(ClinVarDao clinVarDao) {
+            this.clinVarDao = clinVarDao;
             return this;
         }
 

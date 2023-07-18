@@ -39,9 +39,21 @@ public class ExomiserConfigReporter {
         var hg19DataVersion = propertyOrDefault(hg19Properties.getDataVersion(), "-");
         logger.info("exomiser.hg19.data-version: {}", hg19DataVersion);
 
+        var hg19ClinVarVersion = propertyOrDefault(hg19Properties.getClinVarDataVersion(), "-");
+        // this is the default placeholder which will be replaced by the actual version if enabled by the user
+        if (!hg19ClinVarVersion.equals("${exomiser.hg19.data-version}")) {
+            logger.info("exomiser.hg19.clinvar-data-version: {}", hg19ClinVarVersion);
+        }
+
         var hg38Properties = exomiserProperties.getHg38();
         var hg38DataVersion = propertyOrDefault(hg38Properties.getDataVersion(), "-");
         logger.info("exomiser.hg38.data-version: {}", hg38DataVersion);
+
+        var hg38ClinVarVersion = propertyOrDefault(hg38Properties.getClinVarDataVersion(), "-");
+        // this is the default placeholder which will be replaced by the actual version if enabled by the user
+        if (!hg38ClinVarVersion.equals("${exomiser.hg38.data-version}")) {
+            logger.info("exomiser.hg38.clinvar-data-version: {}", hg38ClinVarVersion);
+        }
 
         var phenoProperties = exomiserProperties.getPhenotype();
         var phenoDataVersion = propertyOrDefault(phenoProperties.getDataVersion(), "-");

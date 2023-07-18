@@ -94,13 +94,13 @@
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.30</jannovar.version>
-        <svart.version>1.0.2</svart.version>
-        <htsjdk.version>2.24.1</htsjdk.version>
+        <svart.version>2.0.0-RC5</svart.version>
+        <htsjdk.version>3.0.5</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.21.12</protobuf.version>
-        <spring-boot.version>2.7.7</spring-boot.version>
+        <spring-boot.version>3.1.1</spring-boot.version>
         <docker.base.image>
-            gcr.io/distroless/java17@sha256:ab37242e81cbc031b2600eef4440fe87055a05c14b40686df85078cc5086c98f
+            gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
@@ -150,9 +150,12 @@
             <type>jar</type>
         </dependency>
         <!--H2 is a very versatile and highly compatible pure java DB-->
+        <!-- WARNING upgrading the H2 version might result in incompatible data e.g. 2.2.220 uses format version 3 and
+        cannot (or at least will not) read version 2 formatted data from 2.0.202 - 2.1.214 or version 1 data from 1.4.200 -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>2.1.214</version>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <!--        <dependency>-->
@@ -245,6 +248,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
             <plugin>

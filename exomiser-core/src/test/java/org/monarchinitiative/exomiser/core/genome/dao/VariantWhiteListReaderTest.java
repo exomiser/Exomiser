@@ -20,12 +20,12 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,37 +34,36 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-class VariantWhiteListLoaderTest {
+class VariantWhiteListReaderTest {
 
     private final Path testDataDir = Paths.get("src/test/resources/whitelist");
 
     @Test
     void loadEmptyVariantWhiteList() {
-        VariantWhiteList loaded = VariantWhiteListLoader.loadVariantWhiteList(testDataDir.resolve("empty.tsv.gz"));
-        assertThat(loaded, equalTo(InMemoryVariantWhiteList.empty()));
+        Set<AlleleProto.AlleleKey> loaded = VariantWhiteListReader.readVariantWhiteList(testDataDir.resolve("empty.tsv.gz"));
+        assertThat(loaded, equalTo(Collections.emptySet()));
     }
 
     @Test
     void loadEmptyVariantWhiteListWithHeader() {
-        VariantWhiteList loaded = VariantWhiteListLoader.loadVariantWhiteList(testDataDir.resolve("empty-with-header.tsv.gz"));
-        assertThat(loaded, equalTo(InMemoryVariantWhiteList.empty()));
+        Set<AlleleProto.AlleleKey> loaded = VariantWhiteListReader.readVariantWhiteList(testDataDir.resolve("empty-with-header.tsv.gz"));
+        assertThat(loaded, equalTo(Collections.emptySet()));
     }
 
     @Test
     void loadVariantWhiteListWithTooFewFields() {
-        VariantWhiteList loaded = VariantWhiteListLoader.loadVariantWhiteList(testDataDir.resolve("too-few-fields.tsv.gz"));
-        assertThat(loaded, equalTo(InMemoryVariantWhiteList.empty()));
+        Set<AlleleProto.AlleleKey> loaded = VariantWhiteListReader.readVariantWhiteList(testDataDir.resolve("too-few-fields.tsv.gz"));
+        assertThat(loaded, equalTo(Collections.emptySet()));
     }
 
     @Test
     void loadVariantWhiteList() {
-        VariantWhiteList loaded = VariantWhiteListLoader.loadVariantWhiteList(testDataDir.resolve("whitelist.tsv.gz"));
+        Set<AlleleProto.AlleleKey> loaded = VariantWhiteListReader.readVariantWhiteList(testDataDir.resolve("whitelist.tsv.gz"));
 
-        Set<AlleleProto.AlleleKey> keys = ImmutableSet.of(
+        Set<AlleleProto.AlleleKey> keys = Set.of(
                 AlleleProto.AlleleKey.newBuilder().setChr(1).setPosition(12345).setRef("A").setAlt("G").build(),
                 AlleleProto.AlleleKey.newBuilder().setChr(1).setPosition(985052).setRef("C").setAlt("T").build()
         );
-
-        assertThat(loaded, equalTo(InMemoryVariantWhiteList.of(keys)));
+        assertThat(loaded, equalTo(keys));
     }
 }

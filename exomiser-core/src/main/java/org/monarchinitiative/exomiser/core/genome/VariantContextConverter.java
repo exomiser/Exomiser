@@ -24,6 +24,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class VariantContextConverter {
     }
 
     @Nullable
-    public Variant convertToVariant(@Nonnull VariantContext variantContext, @Nonnull Allele altAllele) {
+    public GenomicVariant convertToVariant(@Nonnull VariantContext variantContext, @Nonnull Allele altAllele) {
         Contig contig = vcfConverter.parseContig(variantContext.getContig());
         if (contig.isUnknown()) {
             logger.debug("Unknown contig for {} unable to convert to variant", variantContext);
@@ -77,13 +78,19 @@ public class VariantContextConverter {
         VariantType variantType = VariantType.parseType(ref, alt);
 
         if (VariantType.isBreakend(alt) || variantType == VariantType.BND || variantType == VariantType.TRA) {
+            // TODO: enable breakend conversion and annotation - need full end to end test for intergenic and coding sequence BND
 //            ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
 //            ConfidenceInterval endCi = parseConfidenceInterval(variantContext, "CIEND");
 //
 //            String mateId = variantContext.getAttributeAsString("MATEID", "");
 //            String eventId = parseEventId(variantContext);
 //
-//            return vcfConverter.convertBreakend(contig, id, Position.of(start, startCi), ref, alt, endCi, mateId, eventId);
+//            try {
+//                // use convertSymbolic as this will be copied to a GenomicVariant - convert to BreakendVariant when annotating
+//                return vcfConverter.convertSymbolic(contig, id, start, startCi, ref, alt, endCi, mateId, eventId);
+//            } catch (Exception e) {
+//                logger.warn("Skipping variant {}-{}-{}-{} due to {}: {}", contig.id(), start, ref, alt, e.getClass().getName(), e.getMessage());
+//            }
             // completely disable breakends for the time being as these cause a number of issues.
             logger.debug("Breakend variant {} - skipping conversion", variantContext);
             return null;
@@ -91,13 +98,13 @@ public class VariantContextConverter {
             int end = variantContext.getCommonInfo().getAttributeAsInt("END", variantContext.getEnd());
             int changeLength = parseChangeLength(variantContext, start, variantType, end);
 
-            Position startPos = Position.of(start, parseConfidenceInterval(variantContext, "CIPOS"));
-            Position endPos = Position.of(end, parseConfidenceInterval(variantContext, "CIEND"));
+            ConfidenceInterval startCi = parseConfidenceInterval(variantContext, "CIPOS");
+            ConfidenceInterval endCi = parseConfidenceInterval(variantContext, "CIEND");
 
             try {
                 // due to the general imprecision and lack of definition about symbolic variants skip any which svart
                 // has issues with as svart can be annoyingly precise and inflexible for these types.
-                return vcfConverter.convertSymbolic(contig, id, startPos, endPos, ref, alt, changeLength);
+                return vcfConverter.convertSymbolic(contig, id, start, startCi, end, endCi, ref, alt, changeLength);
             } catch (Exception e) {
                 logger.warn("Skipping variant {}-{}-{}-{}-{} due to {}: {}", contig.id(), start, end, ref, alt, e.getClass().getName(), e.getMessage());
             }

@@ -183,8 +183,6 @@ public class AlleleProtoAdaptorTest {
                 .putIncludedAlleles("54321", ClinVar.ClinSig.ASSOCIATION)
                 .setReviewStatus("conflicting evidence")
                 .build();
-        AlleleProperties alleleProperties = AlleleProperties.newBuilder().setClinVar(clinVar).build();
-
 
         ClinVarData expected = ClinVarData.builder()
                 .alleleId("12345")
@@ -197,6 +195,10 @@ public class AlleleProtoAdaptorTest {
                 .includedAlleles(Map.of("54321", ClinVarData.ClinSig.ASSOCIATION))
                 .reviewStatus("conflicting evidence")
                 .build();
+
+        assertThat(AlleleProtoAdaptor.toClinVarData(clinVar), equalTo(expected));
+
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder().setClinVar(clinVar).build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(expected)));
     }
 }

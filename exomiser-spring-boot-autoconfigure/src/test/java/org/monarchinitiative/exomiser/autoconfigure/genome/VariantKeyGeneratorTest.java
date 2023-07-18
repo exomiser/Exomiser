@@ -26,7 +26,6 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 import org.springframework.cache.interceptor.SimpleKey;
 
@@ -48,10 +47,10 @@ public class VariantKeyGeneratorTest {
     @Test
     public void returnsKeyForVariant() throws Exception {
         Variant variant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2345), "A", "T")
+                .variant(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T")
                 .build();
         // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches
-        // created in version 10.1.1 its OK to use the AlleleKey as the cache key
+        // created in version 10.1.1 it's OK to use the AlleleKey as the cache key
         AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(2345)

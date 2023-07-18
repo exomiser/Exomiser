@@ -26,10 +26,13 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.archive.*;
 import org.monarchinitiative.exomiser.data.genome.model.parsers.*;
+import org.monarchinitiative.exomiser.data.genome.model.resource.ClinVarAlleleResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -57,6 +60,19 @@ public class Hg19ConfigTest {
     }
 
     @Test
+    void testClinVarResource() throws Exception {
+        ClinVarAlleleResource clinVarResource = instance.clinVarAlleleResource();
+
+        Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/clinvar.vcf.gz"));
+        URL expectedUrl = new URL("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz");
+
+        assertThat(clinVarResource.getName(), equalTo("hg19.clinvar"));
+        assertThat(clinVarResource.getParser(), instanceOf(ClinVarAlleleParser.class));
+        assertThat(clinVarResource.getArchive(), equalTo(expectedArchive));
+        assertThat(clinVarResource.getResourceUrl(), equalTo(expectedUrl));
+    }
+
+    @Test
     public void testResources() {
         Map<String, AlleleResource> actualResources = instance.hg19AlleleResources();
 
@@ -70,7 +86,6 @@ public class Hg19ConfigTest {
         // exac removed as this is part of gnomad
         alleleResources.put("esp", instance.espAlleleResource());
         alleleResources.put("dbnsfp", instance.dbnsfpAlleleResource());
-        alleleResources.put("clinvar", instance.clinVarAlleleResource());
 
         Map<String, AlleleResource> expectedResources = alleleResources.build();
 

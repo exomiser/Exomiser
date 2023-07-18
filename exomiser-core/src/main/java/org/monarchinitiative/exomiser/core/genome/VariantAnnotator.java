@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -36,5 +36,5 @@ public interface VariantAnnotator {
      */
     GenomeAssembly genomeAssembly();
 
-    List<VariantAnnotation> annotate(@Nullable Variant variant);
+    List<VariantAnnotation> annotate(@Nullable GenomicVariant variant);
 }

@@ -65,11 +65,12 @@ public class Hg38Config extends ResourceConfig {
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
+        ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Path genomeDataPath = genomeDataDir();
         Path genomeProcessPath = genomeProcessedDir();
         List<SvResource> svResources = hg38SvResources(genomeProcessPath);
         Map<String, AlleleResource> alleleResources = hg38AlleleResources();
-        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, svResources, variantDataDir(), variantProcessedDir(), alleleResources);
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, svResources, variantDataDir(), variantProcessedDir(), clinVarAlleleResource, alleleResources);
     }
 
     public Path variantDataDir() {
@@ -123,7 +124,7 @@ public class Hg38Config extends ResourceConfig {
         // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
-        alleleResources.put("clinvar", clinVarAlleleResource());
+        // CLinVar removed - now handled as a separate data source
 
         return Collections.unmodifiableMap(alleleResources);
     }

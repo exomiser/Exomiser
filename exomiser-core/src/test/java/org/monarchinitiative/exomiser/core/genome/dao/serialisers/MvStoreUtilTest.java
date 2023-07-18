@@ -23,8 +23,10 @@ package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -44,9 +46,24 @@ public class MvStoreUtilTest {
     }
 
     @Test
-    public void alleleMapBuilder() throws Exception {
+    public void alleleMapBuilder() {
         MVMap.Builder<AlleleKey, AlleleProperties> alleleMapBuilder = MvStoreUtil.alleleMapBuilder();
         assertThat(alleleMapBuilder.getKeyType(), equalTo(AlleleKeyDataType.INSTANCE));
         assertThat(alleleMapBuilder.getValueType(), equalTo(AllelePropertiesDataType.INSTANCE));
+    }
+
+    @Test
+    public void openClinVarMVMap() {
+        MVStore mvStore = new MVStore.Builder().open();
+        MVMap<AlleleKey, ClinVar> map = MvStoreUtil.openClinVarMVMap(mvStore);
+        assertThat(map.isEmpty(), is(true));
+        assertThat(mvStore.hasMap("clinvar"), is(true));
+    }
+
+    @Test
+    public void clinvarMapBuilder() {
+        MVMap.Builder<AlleleKey, ClinVar> alleleMapBuilder = MvStoreUtil.clinVarMapBuilder();
+        assertThat(alleleMapBuilder.getKeyType(), equalTo(AlleleKeyDataType.INSTANCE));
+        assertThat(alleleMapBuilder.getValueType(), equalTo(ClinVarDataType.INSTANCE));
     }
 }

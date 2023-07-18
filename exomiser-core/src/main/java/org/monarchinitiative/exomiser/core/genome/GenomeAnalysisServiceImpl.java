@@ -91,9 +91,4 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         return variantDataService.getVariantPathogenicityData(variant, pathogenicitySources);
     }
-
-//    @Override
-//    public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream) {
-//        return variantFactory.createVariantEvaluations(variantContextStream);
-//    }
 }

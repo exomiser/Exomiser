@@ -36,6 +36,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -210,7 +211,7 @@ class SvFrequencyDaoTest {
         System.out.println("Num SV in store: " + r.size());
         r.entrySet().forEach(System.out::println);
 
-        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 21000, 46000);
+        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 21000, 46000);
         SvDaoBoundaryCalculator boundaryCalculator = new SvDaoBoundaryCalculator(region, 0.85);
         int margin = boundaryCalculator.outerBoundsOffset();
 

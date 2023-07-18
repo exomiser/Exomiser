@@ -1,17 +1,30 @@
 # The Exomiser - Core Library Changelog
 
-## 14.0.0 202?-??-??
+## 14.0.0 2023-MM-dd
 
 This release **requires data version >= 2210** and **Java version >= 17** (the most recent LTS release).
 
-API breaking changes:
+- Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
+- The `VariantWhiteList` is now dynamically loaded from the ClinVar data provided in the clinvar.mv.db file
+- `VariantDataServiceImpl` now requires a `ClinVarDao`
 
+API breaking changes:
 
 New APIs:
 - New `AlleleData` class to encapsulate building AlleleProto.Frequency and AlleleProto.PathogenicityScore instances
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
 
 Other changes:
-- Updated Spring Boot to version 2.7.3
+- Updated Spring Boot to version 3.1.0
+
+
+## 13.2.1 2023-06-30
+
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
+- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants. 
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty. 
+
+**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require Java 17.*
 
 ## 13.2.0 2023-02-28
 

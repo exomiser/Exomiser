@@ -26,6 +26,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.monarchinitiative.exomiser.data.genome.config.AssemblyResources;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.BuildInfo;
+import org.monarchinitiative.exomiser.data.genome.model.resource.ClinVarAlleleResource;
 import org.monarchinitiative.exomiser.data.genome.model.resource.sv.SvResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,6 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-
 
 /**
  * Main logic for building the exomiser genome data distribution.
@@ -123,7 +123,7 @@ public class BuildRunner implements ApplicationRunner {
         if (shouldBuildAllData(args, optionalArgs)) {
             logger.info("BUILDING ALLL THIe THINGS!");
             buildTranscriptData(buildInfo, outPath, List.of(TranscriptSource.values()));
-            buildClinVarData(buildInfo, outPath, alleleResources.get("clinvar"));
+            buildClinVarData(buildInfo, outPath, assemblyResources.getClinVarResource());
             buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()), assemblyResources.variantProcessedPath());
             buildGenomeData(buildInfo, outPath, assemblyResources);
         }
@@ -135,7 +135,7 @@ public class BuildRunner implements ApplicationRunner {
         }
 
         if (args.containsOption(BUILD_CLINVAR)) {
-            AlleleResource clinVarResource = alleleResources.get("clinvar");
+            ClinVarAlleleResource clinVarResource = assemblyResources.getClinVarResource();
             buildClinVarData(buildInfo, outPath, clinVarResource);
         }
 
@@ -175,10 +175,10 @@ public class BuildRunner implements ApplicationRunner {
         transcriptDataBuildRunner.run();
     }
 
-    private void buildClinVarData(BuildInfo buildInfo, Path outPath, AlleleResource clinVarResource) {
-        logger.info("Creating ClinVar variant whitelist");
+    private void buildClinVarData(BuildInfo buildInfo, Path outPath, ClinVarAlleleResource clinVarResource) {
+        logger.info("Creating ClinVar database...");
         ResourceDownloader.download(clinVarResource);
-        ClinVarWhiteListBuildRunner clinVarWhiteListBuildRunner = new ClinVarWhiteListBuildRunner(buildInfo, outPath, clinVarResource);
+        ClinVarBuildRunner clinVarWhiteListBuildRunner = new ClinVarBuildRunner(buildInfo, outPath, clinVarResource);
         clinVarWhiteListBuildRunner.run();
     }
 
