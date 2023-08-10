@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -37,12 +36,15 @@ public class JannovarFactoryConfig {
 
     private final Environment environment;
 
-    @Autowired
     public JannovarFactoryConfig(Environment environment) {
         this.environment = environment;
     }
 
     @Bean
+    public Path jannovarIniFile() {
+        return getPathForProperty("jannovar.ini-file");
+    }
+
     JannovarDataFactory jannovarDataFactory() {
         Path jannovarIniFilePath = getPathForProperty("jannovar.ini-file");
         Path buildDir = getPathForProperty("build-dir").resolve("jannovar");

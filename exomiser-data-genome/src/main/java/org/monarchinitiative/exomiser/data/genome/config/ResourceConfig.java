@@ -21,10 +21,14 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,6 +36,8 @@ import java.nio.file.Paths;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class ResourceConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResourceConfig.class);
 
     private final Environment environment;
 
@@ -54,5 +60,27 @@ public class ResourceConfig {
         Path fileDir = Paths.get(environment.getProperty(namespacePrefix + ".file-dir"));
         String fileUrl = environment.getProperty(namespacePrefix + ".file-url");
         return new ResourceProperties(fileName, fileDir, fileUrl);
+    }
+
+    protected Path getPathForProperty(String propertyKey) {
+        String value = environment.getProperty(propertyKey, "");
+
+        if (value.isEmpty()) {
+            throw new IllegalStateException(propertyKey + " has not been specified!");
+        }
+        return Path.of(value);
+    }
+
+    protected Path getDirectoryPathForProperty(String propertyKey) {
+        Path path = getPathForProperty(propertyKey);
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to create missing directory " + path, e);
+            }
+            logger.info("Created missing directory {}", path);
+        }
+        return path;
     }
 }

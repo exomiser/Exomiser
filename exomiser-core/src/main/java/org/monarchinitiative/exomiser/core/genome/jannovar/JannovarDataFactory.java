@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.jannovar;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
@@ -37,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -185,7 +185,7 @@ public class JannovarDataFactory {
 
             DatasourceOptions dsOptions = new DatasourceOptions(httpProxy, httpsProxy, ftpProxy, printProgressBars);
             try {
-                dataSourceFactory = new DataSourceFactory(dsOptions, ImmutableList.of(iniFile.toAbsolutePath().toString()));
+                dataSourceFactory = new DataSourceFactory(dsOptions, List.of(iniFile.toAbsolutePath().toString()));
             } catch (InvalidDataSourceException e) {
                 throw new JannovarException(e);
             }

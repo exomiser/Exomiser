@@ -52,11 +52,8 @@ public class Hg19Config extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
 
-    private final Environment environment;
-
     public Hg19Config(Environment environment) {
         super(environment);
-        this.environment = environment;
     }
 
     @Bean
@@ -75,29 +72,11 @@ public class Hg19Config extends ResourceConfig {
     }
 
     public Path genomeDataPath() {
-        return getPathForProperty("hg19.genome-dir");
+        return getDirectoryPathForProperty("hg19.genome-dir");
     }
 
     public Path genomeProcessPath() {
-        return getPathForProperty("hg19.genome-processed-dir");
-    }
-
-    private Path getPathForProperty(String propertyKey) {
-        String property = environment.getProperty(propertyKey, "");
-
-        if (property.isEmpty()) {
-            throw new IllegalArgumentException(propertyKey + " has not been specified!");
-        }
-        Path path = Path.of(property);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            logger.info("Created missing directory {}", path);
-        }
-        return path;
+        return getDirectoryPathForProperty("hg19.genome-processed-dir");
     }
 
     public Map<String, AlleleResource> hg19AlleleResources() {

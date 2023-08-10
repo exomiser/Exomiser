@@ -41,12 +41,30 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
     private static final Logger logger = LoggerFactory.getLogger(OutputFileIndexer.class);
 
     private final AtomicLong count = new AtomicLong(0);
-    private final BufferedWriter bufferedWriter;
+    private BufferedWriter bufferedWriter;
     private final Path outFilePath;
 
     public OutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
-        logger.info("Writing to {}", outFilePath);
+//        logger.info("Writing to {}", outFilePath);
+    }
+
+    @Override
+    public void write(T type) {
+        if (bufferedWriter == null) {
+            setUp();
+        }
+        try {
+            bufferedWriter.write(type.toOutputLine());
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            logger.error("Unable to write {} line to {}", type.toOutputLine(), outFilePath, e);
+        }
+        count.incrementAndGet();
+    }
+
+    private void setUp() {
         try {
             if (Files.notExists(outFilePath)) {
                 Files.createFile(outFilePath);
@@ -59,18 +77,6 @@ public class OutputFileIndexer<T extends OutputLine> extends AbstractIndexer<T> 
         } catch (IOException e) {
             throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
         }
-    }
-
-    @Override
-    public void write(T type) {
-        try {
-            bufferedWriter.write(type.toOutputLine());
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            logger.error("Unable to write {} line to {}", type.toOutputLine(), outFilePath, e);
-        }
-        count.incrementAndGet();
     }
 
     @Override

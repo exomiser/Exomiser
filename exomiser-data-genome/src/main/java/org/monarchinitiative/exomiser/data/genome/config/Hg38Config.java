@@ -55,11 +55,8 @@ public class Hg38Config extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(Hg38Config.class);
 
-    private final Environment environment;
-
     public Hg38Config(Environment environment) {
         super(environment);
-        this.environment = environment;
     }
 
     @Bean
@@ -73,29 +70,11 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public Path genomeDataPath() {
-        return getPathForProperty("hg38.genome-dir");
+        return getDirectoryPathForProperty("hg38.genome-dir");
     }
 
     public Path genomeProcessPath() {
-        return getPathForProperty("hg38.genome-processed-dir");
-    }
-
-    private Path getPathForProperty(String propertyKey) {
-        String property = environment.getProperty(propertyKey, "");
-
-        if (property.isEmpty()) {
-            throw new IllegalArgumentException(propertyKey + " has not been specified!");
-        }
-        Path path = Path.of(property);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            logger.info("Created missing directory {}", path);
-        }
-        return path;
+        return getDirectoryPathForProperty("hg38.genome-processed-dir");
     }
 
     public Map<String, AlleleResource> hg38AlleleResources() {
@@ -158,7 +137,7 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
-        // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
+        // gnomAD hg38 is part of dbVar, GoNL is hg19 only
         gonlSvFrequencyResource(genomeProcessPath);
         gnomadSvFrequencyResource(genomeProcessPath);
         return List.of(

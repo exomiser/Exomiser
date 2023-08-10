@@ -34,6 +34,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -57,15 +58,15 @@ public class BuildRunner implements ApplicationRunner {
     private final Path buildDir;
     private final AssemblyResources hg19Resources;
     private final AssemblyResources hg38Resources;
-    private final JannovarDataFactory jannovarDataFactory;
+    private final Path jannovarIniFile;
 
-    public BuildRunner(Path buildDir, AssemblyResources hg19AssemblyResources, AssemblyResources hg38AssemblyResources, JannovarDataFactory jannovarDataFactory) {
+    public BuildRunner(Path buildDir, AssemblyResources hg19AssemblyResources, AssemblyResources hg38AssemblyResources, Path jannovarIniFile) {
         this.buildDir = buildDir;
 
         this.hg19Resources = hg19AssemblyResources;
         this.hg38Resources = hg38AssemblyResources;
 
-        this.jannovarDataFactory = jannovarDataFactory;
+        this.jannovarIniFile = jannovarIniFile;
     }
 
     @Override
@@ -83,6 +84,7 @@ public class BuildRunner implements ApplicationRunner {
         // --transcripts
         // OR
         // --transcripts=ensembl,ucsc
+        // --genome
 
         if (!args.containsOption("assembly")) {
             throw new IllegalArgumentException("Missing assembly argument");
@@ -152,7 +154,14 @@ public class BuildRunner implements ApplicationRunner {
 
     private void buildTranscriptData(BuildInfo buildInfo, Path outPath, List<TranscriptSource> transcriptSources) {
         logger.info("Building Jannovar transcript data sources - {}", transcriptSources);
-        TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, jannovarDataFactory, outPath);
+        Path jannovarBuildDir = buildDir.resolve("jannovar");
+        try {
+            Files.createDirectories(jannovarBuildDir);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to create Jannovar build directory", e);
+        }
+        JannovarDataFactory jannovarDataFactory = JannovarDataFactory.builder(jannovarIniFile).downloadDir(jannovarBuildDir).build();
+        TranscriptDataBuildRunner transcriptDataBuildRunner = new TranscriptDataBuildRunner(buildInfo, jannovarDataFactory, outPath, transcriptSources);
         transcriptDataBuildRunner.run();
     }
 
@@ -204,7 +213,7 @@ public class BuildRunner implements ApplicationRunner {
 
     private List<TranscriptSource> getTranscriptSources(List<String> optionValues) {
         if (optionValues.isEmpty()) {
-            return Arrays.asList(TranscriptSource.values());
+            return List.of(TranscriptSource.values());
         }
         return optionValues.stream()
                 .map(TranscriptSource::parseValue)
