@@ -69,11 +69,11 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public Path genomeDataPath() {
-        return getDirectoryPathForProperty("hg38.genome-dir");
+        return getPathForProperty("hg38.genome-dir");
     }
 
     public Path genomeProcessPath() {
-        return getDirectoryPathForProperty("hg38.genome-processed-dir");
+        return getPathForProperty("hg38.genome-processed-dir");
     }
 
     public Map<String, AlleleResource> hg38AlleleResources() {

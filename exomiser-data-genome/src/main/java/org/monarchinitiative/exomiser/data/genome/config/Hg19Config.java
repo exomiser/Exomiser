@@ -39,7 +39,6 @@ import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -57,11 +56,6 @@ public class Hg19Config extends ResourceConfig {
     }
 
     @Bean
-    public Path buildDir() {
-        return getPathForProperty("build-dir");
-    }
-
-    @Bean
     public AssemblyResources hg19AssemblyResources() {
         ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
@@ -72,11 +66,11 @@ public class Hg19Config extends ResourceConfig {
     }
 
     public Path genomeDataPath() {
-        return getDirectoryPathForProperty("hg19.genome-dir");
+        return getPathForProperty("hg19.genome-dir");
     }
 
     public Path genomeProcessPath() {
-        return getDirectoryPathForProperty("hg19.genome-processed-dir");
+        return getPathForProperty("hg19.genome-processed-dir");
     }
 
     public Map<String, AlleleResource> hg19AlleleResources() {

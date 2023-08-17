@@ -23,12 +23,11 @@ package org.monarchinitiative.exomiser.data.genome.config;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -43,6 +42,11 @@ public class ResourceConfig {
 
     public ResourceConfig(Environment environment) {
         this.environment = environment;
+    }
+
+    @Bean
+    public Path buildDir() {
+        return getPathForProperty("build-dir");
     }
 
     protected <T extends AlleleResource> T alleleResource(Class<T> clazz, String namespacePrefix) {
@@ -71,16 +75,4 @@ public class ResourceConfig {
         return Path.of(value);
     }
 
-    protected Path getDirectoryPathForProperty(String propertyKey) {
-        Path path = getPathForProperty(propertyKey);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                throw new IllegalStateException("Unable to create missing directory " + path, e);
-            }
-            logger.info("Created missing directory {}", path);
-        }
-        return path;
-    }
 }
