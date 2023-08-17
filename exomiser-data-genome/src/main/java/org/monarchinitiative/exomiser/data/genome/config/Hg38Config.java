@@ -42,7 +42,6 @@ import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -137,14 +136,13 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
-        // gnomAD hg38 is part of dbVar, GoNL is hg19 only
-        gonlSvFrequencyResource(genomeProcessPath);
-        gnomadSvFrequencyResource(genomeProcessPath);
         return List.of(
                 clinvarSvResource(genomeProcessPath),
                 dbVarFrequencyResource(genomeProcessPath),
                 dgvSvResource(genomeProcessPath),
-                decipherSvResource(genomeProcessPath)
+                decipherSvResource(genomeProcessPath),
+                gonlSvFrequencyResource(genomeProcessPath),
+                gnomadSvFrequencyResource(genomeProcessPath)
         );
     }
 
@@ -172,39 +170,31 @@ public class Hg38Config extends ResourceConfig {
         }
     }
 
-    public void gnomadSvFrequencyResource(Path genomeProcessPath) {
-        try {
-            Path path = genomeProcessPath.resolve("gnomad-sv.pg");
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
-            // https://doi.org/10.1038/s41586-020-2287-8
-            //
+    public NoOpSvResource gnomadSvFrequencyResource(Path genomeProcessPath) {
+        // gnomAD hg38 is part of dbVar
+        return new NoOpSvResource("hg38.gnomad-sv",
+                new FileArchive(genomeDataPath().resolve("gnomad-sv.stub")),
+                genomeProcessPath.resolve("gnomad-sv.pg"));
+        // https://doi.org/10.1038/s41586-020-2287-8
+        //
 //            return new GnomadSvResource("hg38.gnomad-sv",
 //                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
 //                    new TabixArchive(genomeDataPath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
 //                    new GnomadSvVcfFreqParser(),
 //                    new OutputFileIndexer<>(genomeProcessPath.resolve("gnomad-sv.pg")));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     // TODO: Externalise these in the application.properties
-    public void gonlSvFrequencyResource(Path genomeProcessPath) {
-        try {
-            Path path = genomeProcessPath.resolve("gonl-sv.pg");
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
+    public NoOpSvResource gonlSvFrequencyResource(Path genomeProcessPath) {
+        // GoNL is hg19 only
+        return new NoOpSvResource("hg38.gonl",
+                new FileArchive(genomeDataPath().resolve("gonl-sv.stub")),
+                genomeProcessPath.resolve("gonl-sv.pg"));
 //            return new GonlSvResource("hg38.gonl",
 //                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
 //                    new FileArchive(genomeDataPath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
 //                    new GonlSvFreqParser(),
 //                    new OutputFileIndexer<>(genomeProcessPath.resolve("gonl-sv.pg")));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public DgvSvResource dgvSvResource(Path genomeProcessPath) {
