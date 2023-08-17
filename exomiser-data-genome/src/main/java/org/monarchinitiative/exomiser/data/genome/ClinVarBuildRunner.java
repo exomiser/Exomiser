@@ -12,10 +12,11 @@ import org.monarchinitiative.exomiser.data.genome.model.resource.ClinVarAlleleRe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-import static org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil.clinVarMapBuilder;
 
 public class ClinVarBuildRunner {
 
@@ -39,10 +40,16 @@ public class ClinVarBuildRunner {
 
     public void run() {
         String outFileName = outFile.toString();
+        try {
+            // we don't want to accidentally add to an existing file
+            Files.deleteIfExists(outFile);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to delete pre-existing ClinVar file: " + outFileName, e);
+        }
         logger.info("Writing ClinVar data to {}", outFileName);
         try (MVStore clinvarStore = MVStore.open(outFileName)) {
             MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMap = MvStoreUtil.openClinVarMVMap(clinvarStore);
-            try(Stream<Allele> alleleStream = clinVarAlleleResource.parseResource()) {
+            try (Stream<Allele> alleleStream = clinVarAlleleResource.parseResource()) {
                 alleleStream
                         .forEach(allele -> {
                             var alleleKey = AlleleConverter.toAlleleKey(allele);
