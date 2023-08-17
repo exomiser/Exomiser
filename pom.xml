@@ -99,6 +99,9 @@
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.21.12</protobuf.version>
         <spring-boot.version>3.1.1</spring-boot.version>
+        <!-- H2 version 1.4.200 was used for 2302 and below, 2.1.214 is part of Spring boot 3.1.1 the file formats and
+        API for the MVStore are different so consider very hard if this needs updating.-->
+        <h2.version>1.4.200</h2.version>
         <docker.base.image>
             gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
         </docker.base.image>
@@ -153,7 +156,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>${h2.version}</version>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <!--        <dependency>-->
