@@ -27,6 +27,9 @@ import org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology
 
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -39,15 +42,18 @@ class ResourceDownloaderTest {
         Resource hpoResource = Resource.builder()
                 .fileDirectory(tempDir)
                 .fileName("hpo.obo")
-                .remoteFileUrl("https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/")
+                .remoteFileUrl("https://purl.obolibrary.org/obo/hp/")
                 .remoteFileName("hp.obo")
                 .build();
 
-        if (ResourceDownloader.downloadResource(hpoResource)){
+        if (ResourceDownloader.downloadResource(hpoResource)) {
             HpoResourceReader hpoResourceReader = new HpoResourceReader(hpoResource);
-            System.out.println("HPO version: " + hpoResourceReader.read().getDataVersion());
+            String dataVersion = hpoResourceReader.read().getDataVersion();
+            System.out.println("HPO version: " + dataVersion);
+            assertTrue(true);
         } else {
             System.out.println("Download failed");
+            fail();
         }
 
     }
