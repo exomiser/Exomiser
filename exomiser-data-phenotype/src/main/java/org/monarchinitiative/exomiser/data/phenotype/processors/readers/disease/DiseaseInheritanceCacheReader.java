@@ -68,37 +68,37 @@ public class DiseaseInheritanceCacheReader implements ResourceReader<Map<String,
             .put("HP:0010984", InheritanceMode.POLYGENIC)
             .build();
 
-    private final Resource phenotypeAnnotationsResource;
+    private final Resource hpoAnnotationsResource;
 
-    public DiseaseInheritanceCacheReader(Resource phenotypeAnnotationsResource) {
-        this.phenotypeAnnotationsResource = phenotypeAnnotationsResource;
+    public DiseaseInheritanceCacheReader(Resource hpoAnnotationsResource) {
+        this.hpoAnnotationsResource = hpoAnnotationsResource;
     }
 
     @Override
     public Map<String, InheritanceMode> read() {
-        Path phenotypeAnnotationsPath = phenotypeAnnotationsResource.getResourcePath();
+        Path phenotypeAnnotationsPath = hpoAnnotationsResource.getResourcePath();
         logger.info("Reading resource {} ", phenotypeAnnotationsPath);
         //initialise this here to avoid the ability to get false negatives if
         //getInheritanceMode is called before the cache is initialised.
         //In which case a nullPointer will be thrown.
 
-        try (BufferedReader br = phenotypeAnnotationsResource.newBufferedReader()) {
+        try (BufferedReader br = hpoAnnotationsResource.newBufferedReader()) {
             // we're going to map each disease to all it's inheritance mode
             // from the HPO annotations in the file and store them in this intermediate map
             ListMultimap<String, InheritanceMode> intermediateInheritanceMap = ArrayListMultimap.create();
             //so let's parse...
             for (String line; (line = br.readLine()) != null; ) {
-                // #disease-db	disease-identifier	disease-name	negation	HPO-ID	reference	evidence-code	onset	frequencyHPO	modifier	sub-ontology	alt-names	curators	frequencyRaw	sex
-                if (line.startsWith("#")) {
+                // database_id	disease_name	qualifier	hpo_id	reference	evidence	onset	frequency	sex	modifier	aspect	biocuration
+                if (line.startsWith("#") || line.startsWith("database_id")) {
                     // comment line
                     continue;
                 }
                 String[] fields = line.split("\t");
-                if (fields[1].equals("OMIM") || fields[3].equals("NOT")) {
+                if (fields[2].equals("NOT")) {
                     continue;
                 }
-                String currentDiseaseId = fields[0] + ":" + fields[1].replace(" ", "");
-                InheritanceMode currentInheritance = hpoInheritanceCodes.getOrDefault(fields[4], InheritanceMode.UNKNOWN);
+                String currentDiseaseId = fields[0];// + ":" + fields[1].replace(" ", "");
+                InheritanceMode currentInheritance = hpoInheritanceCodes.getOrDefault(fields[3], InheritanceMode.UNKNOWN);
                 // only add the known inheritance mode
                 if (currentInheritance != InheritanceMode.UNKNOWN) {
                     logger.debug("Adding {} {}", currentDiseaseId, currentInheritance);
