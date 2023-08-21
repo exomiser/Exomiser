@@ -34,16 +34,10 @@ public class ResourceConfigurationProperties {
     private ResourceProperties mim2gene = ResourceProperties.ofRemote("https://omim.org/static/omim/data/", "mim2gene.txt");
 
     @NestedConfigurationProperty
-    private ResourceProperties genemap2 = ResourceProperties.ofRemote("https://data.omim.org/downloads/x-9019zsQCqFYgYfIMar4g/", "genemap2.txt");
+    private ResourceProperties genemap2 = ResourceProperties.ofRemote("https://data.omim.org/downloads/nLKYV3qGSpe-HOV8OfliKA/", "genemap2.txt");
 
     @NestedConfigurationProperty
-    private ResourceProperties phenotypeAnnotations = ResourceProperties.ofRemote("http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/", "phenotype_annotation.tab");
-
-    @NestedConfigurationProperty
-    private ResourceProperties hpoAnnotations = ResourceProperties.ofRemote("http://compbio.charite.de/jenkins/job/hpo.annotations.current/lastSuccessfulBuild/artifact/current/", "phenotype.hpoa");
-
-    @NestedConfigurationProperty
-    private ResourceProperties genesToPhenotype = ResourceProperties.ofRemote("http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/util/annotation/", "genes_to_phenotype.txt");
+    private ResourceProperties hpoAnnotations = ResourceProperties.ofRemote("https://purl.obolibrary.org/obo/hp/hpoa/", "phenotype.hpoa");
 
     @NestedConfigurationProperty
     private ResourceProperties orphaProduct1 = ResourceProperties.ofRemote("http://www.orphadata.org/data/xml/", "en_product1.xml");
@@ -64,7 +58,7 @@ public class ResourceConfigurationProperties {
     private ResourceProperties mgiGenePheno = ResourceProperties.ofRemote("http://www.informatics.jax.org/downloads/reports/", "MGI_GenePheno.rpt");
 
     @NestedConfigurationProperty
-    private ResourceProperties impcAllGenotypePhenotype = ResourceProperties.ofRemote("ftp://ftp.ebi.ac.uk/pub/databases/impc/latest/csv/", "ALL_genotype_phenotype.csv.gz");
+    private ResourceProperties impcAllGenotypePhenotype = ResourceProperties.ofRemote("http://ftp.ebi.ac.uk/pub/databases/impc/all-data-releases/latest/results/", "genotype-phenotype-assertions-ALL.csv.gz");
 
     @NestedConfigurationProperty
     private ResourceProperties mgiMouseHumanOrthologs = ResourceProperties.ofRemote("http://www.informatics.jax.org/downloads/reports/", "HOM_MouseHumanSequence.rpt");
@@ -87,7 +81,7 @@ public class ResourceConfigurationProperties {
      * The HPO
      */
     @NestedConfigurationProperty
-    private ResourceProperties hp = ResourceProperties.ofRemote("https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/", "hp.obo");
+    private ResourceProperties hp = ResourceProperties.ofRemote("https://purl.obolibrary.org/obo/hp/", "hp.obo");
 
     @NestedConfigurationProperty
     private ResourceProperties mp = ResourceProperties.ofRemote("https://github.com/obophenotype/mammalian-phenotype-ontology/releases/download/current/", "mp.obo");
@@ -121,28 +115,12 @@ public class ResourceConfigurationProperties {
         this.genemap2 = genemap2;
     }
 
-    public ResourceProperties getPhenotypeAnnotations() {
-        return phenotypeAnnotations;
-    }
-
-    public void setPhenotypeAnnotations(ResourceProperties phenotypeAnnotations) {
-        this.phenotypeAnnotations = phenotypeAnnotations;
-    }
-
     public ResourceProperties getHpoAnnotations() {
         return hpoAnnotations;
     }
 
     public void setHpoAnnotations(ResourceProperties hpoAnnotations) {
         this.hpoAnnotations = hpoAnnotations;
-    }
-
-    public ResourceProperties getGenesToPhenotype() {
-        return genesToPhenotype;
-    }
-
-    public void setGenesToPhenotype(ResourceProperties genesToPhenotype) {
-        this.genesToPhenotype = genesToPhenotype;
     }
 
     public ResourceProperties getOrphaProduct1() {

@@ -38,18 +38,20 @@ class DiseasePhenotypeReaderTest {
 
     @Test
     void read() {
-        Resource phenotypeAnnotationResource = Resource.of("src/test/resources/data/phenotype_annotation_test.tab");
+        Resource phenotypeAnnotationResource = Resource.of("src/test/resources/data/phenotype_test.hpoa");
 
         DiseasePhenotypeReader instance = new DiseasePhenotypeReader(phenotypeAnnotationResource);
         List<DiseasePhenotype> output = instance.read();
 
-        DiseasePhenotype first = new DiseasePhenotype("DECIPHER:1", Set.of("HP:0001249", "HP:0001250", "HP:0001252", "HP:0001518"));
+        DiseasePhenotype first = new DiseasePhenotype("DECIPHER:1", Set.of("HP:0001249", "HP:0001250", "HP:0001252", "HP:0001518", "HP:0000252"));
         DiseasePhenotype last = new DiseasePhenotype("ORPHA:230800", Set.of("HP:0000508",
                 "HP:0000651",
+                "HP:0001324",
                 "HP:0002015",
                 "HP:0002019",
                 "HP:0002094",
                 "HP:0002747",
+                "HP:0003470",
                 "HP:0006597",
                 "HP:0006824",
                 "HP:0011499",

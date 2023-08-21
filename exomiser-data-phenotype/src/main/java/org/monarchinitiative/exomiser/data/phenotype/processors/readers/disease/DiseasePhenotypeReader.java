@@ -39,23 +39,26 @@ public class DiseasePhenotypeReader implements ResourceReader<List<DiseasePhenot
 
     private static final Logger logger = LoggerFactory.getLogger(DiseasePhenotypeReader.class);
 
-    private final Resource hpoPhenotypeAnnotationsResource;
+    private final Resource hpoAnnotationsResource;
 
-    public DiseasePhenotypeReader(Resource hpoPhenotypeAnnotationsResource) {
-        this.hpoPhenotypeAnnotationsResource = hpoPhenotypeAnnotationsResource;
+    public DiseasePhenotypeReader(Resource hpoAnnotationsResource) {
+        this.hpoAnnotationsResource = hpoAnnotationsResource;
     }
 
     @Override
     public List<DiseasePhenotype> read() {
         Map<String, Set<String>> disease2PhenotypeMap = new LinkedHashMap<>();
-        try (BufferedReader reader = hpoPhenotypeAnnotationsResource.newBufferedReader()) {
+        try (BufferedReader reader = hpoAnnotationsResource.newBufferedReader()) {
             String line;
-            // skip header
-            line = reader.readLine();
             while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#") || line.startsWith("database_id")) {
+                    // comment line
+                    // database_id	disease_name	qualifier	hpo_id	reference	evidence	onset	frequency	sex	modifier	aspect	biocuration
+                    continue;
+                }
                 String[] fields = line.split("\\t");
-                String diseaseId = fields[0] + ":" + fields[1];
-                String hpId = fields[4];
+                String diseaseId = fields[0];
+                String hpId = fields[3];
                 if (disease2PhenotypeMap.containsKey(diseaseId)) {
                     disease2PhenotypeMap.get(diseaseId).add(hpId);
                 } else {
@@ -65,7 +68,7 @@ public class DiseasePhenotypeReader implements ResourceReader<List<DiseasePhenot
                 }
             }
         } catch (IOException ex) {
-            logger.error("Error reading file: {}", hpoPhenotypeAnnotationsResource.getResourcePath(), ex);
+            logger.error("Error reading file: {}", hpoAnnotationsResource.getResourcePath(), ex);
         }
 
         return disease2PhenotypeMap.entrySet()
