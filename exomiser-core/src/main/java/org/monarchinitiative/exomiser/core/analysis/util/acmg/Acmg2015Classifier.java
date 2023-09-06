@@ -78,7 +78,7 @@ public final class Acmg2015Classifier implements AcmgEvidenceClassifier {
     }
 
     private static boolean isLikelyPathogenic(int pvs, int ps, int pm, int pp) {
-        if (pvs == 1 && pm == 1) {
+        if (pvs == 1 && (pm == 1 || pp == 1)) {
             return true;
         }
         if (ps == 1 && (pm == 1 || pm == 2) || ps == 1 && pp >= 2) {

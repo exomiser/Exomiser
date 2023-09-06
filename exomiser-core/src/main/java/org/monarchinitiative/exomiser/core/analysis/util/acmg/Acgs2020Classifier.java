@@ -78,6 +78,9 @@ public final class Acgs2020Classifier implements AcmgEvidenceClassifier {
     }
 
     private static boolean isLikelyPathogenic(int pvs, int ps, int pm, int pp) {
+        if (pvs == 1 && pp == 1) {
+            return true;
+        }
         if (ps >= 2) {
             return true;
         }
