@@ -82,6 +82,7 @@ public class AlleleConverter {
     public static ClinVar toProtoClinVar(ClinVarData clinVarData) {
         ClinVar.Builder builder = ClinVar.newBuilder();
         builder.setAlleleId(clinVarData.getAlleleId());
+        builder.setVariationId(clinVarData.getVariationId());
         builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
         for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
             builder.addSecondaryInterpretations(toProtoClinSig(clinSig));

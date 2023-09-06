@@ -59,6 +59,7 @@ public class ClinVarData {
 
     //https://www.ncbi.nlm.nih.gov/clinvar/?term=99222[alleleid]
     private final String alleleId;
+    private final String variationId;
     private final ClinSig primaryInterpretation;
     private final Set<ClinSig> secondaryInterpretations;
 
@@ -112,6 +113,7 @@ public class ClinVarData {
 
     private ClinVarData(Builder builder) {
         this.alleleId = builder.alleleId;
+        this.variationId = builder.variationId;
         this.primaryInterpretation = builder.primaryInterpretation;
         this.secondaryInterpretations = Sets.immutableEnumSet(builder.secondaryInterpretations);
         this.reviewStatus = builder.reviewStatus.replace("_", " ");
@@ -129,6 +131,10 @@ public class ClinVarData {
 
     public String getAlleleId() {
         return alleleId;
+    }
+
+    public String getVariationId() {
+        return variationId;
     }
 
     public ClinSig getPrimaryInterpretation() {
@@ -236,6 +242,7 @@ public class ClinVarData {
 
     public static class Builder {
         private String alleleId = "";
+        private String variationId = "";
         private ClinSig primaryInterpretation = ClinSig.NOT_PROVIDED;
         private Set<ClinSig> secondaryInterpretations = EnumSet.noneOf(ClinSig.class);
 
@@ -245,6 +252,12 @@ public class ClinVarData {
         public Builder alleleId(String alleleId) {
             Objects.requireNonNull(alleleId);
             this.alleleId = alleleId;
+            return this;
+        }
+
+        public Builder variationId(String variationId) {
+            Objects.requireNonNull(variationId);
+            this.variationId = variationId;
             return this;
         }
 

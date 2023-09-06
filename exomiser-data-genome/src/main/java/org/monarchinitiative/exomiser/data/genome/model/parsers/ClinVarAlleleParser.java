@@ -39,8 +39,8 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        ClinVarData clinVarData = parseClinVarData(info);
         for (Allele allele : alleles) {
+            ClinVarData clinVarData = parseClinVarData(allele, info);
             if (!clinVarData.isEmpty()) {
                 allele.setClinVarData(clinVarData);
             }
@@ -54,12 +54,13 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
      * @param info
      * @return
      */
-    private ClinVarData parseClinVarData(String info) {
+    private ClinVarData parseClinVarData(Allele allele, String info) {
 //        ##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description="the ClinVar Allele ID"> - get to the web record using: https://www.ncbi.nlm.nih.gov/clinvar/?term=99222[alleleid]
 //        ##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance for this single variant">
 //        ##INFO=<ID=CLNSIGINCL,Number=.,Type=String,Description="Clinical significance for a haplotype or genotype that includes this variant. Reported as pairs of VariationID:clinical significance.">
 
         ClinVarData.Builder clinVarBuilder = ClinVarData.builder();
+        clinVarBuilder.variationId(allele.getRsId());
         String [] fields = info.split(";");
         for (String field : fields) {
             String[] keyValue = field.split("=");

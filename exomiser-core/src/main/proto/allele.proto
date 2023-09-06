@@ -47,4 +47,8 @@ message ClinVar {
     repeated ClinSig secondaryInterpretations = 3;
     string reviewStatus = 4;
     map<string, ClinSig> includedAlleles = 5;
+    string variationId = 6;
+//    string gene_symbol = 7;
+//    string gene_id = 8;
+//    VariantEffect variant_effect = 9;
 }
