@@ -80,12 +80,18 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     // https://www.ncbi.nlm.nih.gov/clinvar/variation/464/ - check in ClinVar VCF if there is MOI information for a classification
     public AcmgEvidence assignVariantAcmgEvidence(VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
-        // try strict ACMG assignments only if there are known disease-gene associations
-        if (knownDiseases.isEmpty()) {
-            return AcmgEvidence.empty();
-        }
-
         AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+
+        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+        // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
+        if (frequencyData.getMaxFreq() >= 5.0) {
+            acmgEvidenceBuilder.add(BA1);
+            // BA1 is supposed to be used as a filtering criterion where no other evidence need be considered.
+            return acmgEvidenceBuilder.build();
+        }
+        // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
+        assignPM2(acmgEvidenceBuilder, frequencyData);
+
 
         boolean hasCompatibleDiseaseMatches = !compatibleDiseaseMatches.isEmpty();
 
@@ -105,12 +111,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             // BS4 "Lack of segregation in affected members of a family"
             assignBS4(acmgEvidenceBuilder, variantEvaluation, proband);
         }
-
-        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-        // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-        assignPM2(acmgEvidenceBuilder, frequencyData);
-        // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-        assignBA1(acmgEvidenceBuilder, frequencyData);
 
         // PM3 "For recessive disorders, detected in trans with a pathogenic variant"
         assignPM3orBP2(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, contributingVariants, hasCompatibleDiseaseMatches);
@@ -395,6 +395,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     private void assignPM1(Map<AcmgCriterion, Evidence> acmgEvidenceBuilder) {
         // TODO - need UniProt domain / site info and clinvar counts
         //  can upgrade to STRONG
+        // https://www.cell.com/ajhg/fulltext/S0002-9297(22)00461-X suggests to limit the combined evidence from PM1 and PP3 to strong
     }
 
     /**
@@ -402,7 +403,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
         if (!frequencyData.hasEspData() && !frequencyData.hasExacData() && !frequencyData.hasDbSnpData()) {
-            acmgEvidenceBuilder.add(PM2);
+            acmgEvidenceBuilder.add(PM2, Evidence.SUPPORTING);
         }
         // TODO: require disease incidence in carriers and penetrance to be able to calculate expected frequencies for AR
     }
@@ -550,15 +551,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         }
         if (humanGenePhenotypeScoreForMoi >= 0.6) {
             acmgEvidenceBuilder.add(PP4);
-        }
-    }
-
-    /**
-     * BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-     */
-    private void assignBA1(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
-        if (frequencyData.getMaxFreq() >= 5.0) {
-            acmgEvidenceBuilder.add(BA1);
         }
     }
 

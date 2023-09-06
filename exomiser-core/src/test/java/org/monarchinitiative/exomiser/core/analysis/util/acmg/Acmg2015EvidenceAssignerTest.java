@@ -194,11 +194,11 @@ class Acmg2015EvidenceAssignerTest {
 
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
 
-        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PM2).build()));
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PM2, Evidence.SUPPORTING).build()));
     }
 
     @Test
-    void testVariantMustBeInGeneWithKnownDiseaseAssociationForAcmgCriteriaToBeAssigned() {
+    void testVariantNeedNotBeInGeneWithKnownDiseaseAssociationForAcmgCriteriaToBeAssigned() {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12345, "A", "G")
                 // n.b. missing frequency data - should trigger PM2
@@ -207,7 +207,8 @@ class Acmg2015EvidenceAssignerTest {
         // Requires variant to be in gene associated with a disorder in order that any ACMG criteria can be applied
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
 
-        assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
+        AcmgEvidence expected = AcmgEvidence.builder().add(PM2, Evidence.SUPPORTING).build();
+        assertThat(acmgEvidence, equalTo(expected));
     }
 
     @Test

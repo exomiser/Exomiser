@@ -70,7 +70,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
         AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandId, inheritanceModeAnnotator.getPedigree());
-        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acgs2020Classifier();
+        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acmg2020PointsBasedClassifier();
         this.acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, acmgEvidenceClassifier);
     }
 
