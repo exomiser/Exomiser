@@ -55,25 +55,26 @@ analysis:
 
       EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
       EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-      EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-      EXAC_OTHER,
+    #  EXAC_FINNISH,
+      EXAC_NON_FINNISH_EUROPEAN,
+    #  EXAC_OTHER,
 
       GNOMAD_E_AFR,
       GNOMAD_E_AMR,
-    #        GNOMAD_E_ASJ,
+    #  GNOMAD_E_ASJ,
       GNOMAD_E_EAS,
-      GNOMAD_E_FIN,
+    #  GNOMAD_E_FIN,
       GNOMAD_E_NFE,
-      GNOMAD_E_OTH,
+    #  GNOMAD_E_OTH,
       GNOMAD_E_SAS,
 
       GNOMAD_G_AFR,
       GNOMAD_G_AMR,
-    #        GNOMAD_G_ASJ,
+    #  GNOMAD_G_ASJ,
       GNOMAD_G_EAS,
-      GNOMAD_G_FIN,
+    #  GNOMAD_G_FIN,
       GNOMAD_G_NFE,
-      GNOMAD_G_OTH,
+    #  GNOMAD_G_OTH,
       GNOMAD_G_SAS
   ]
   # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
