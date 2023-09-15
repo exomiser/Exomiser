@@ -146,7 +146,8 @@ class Acmg2020PointsBasedClassifierTest {
             "BA1 BS1 BP1",
 //            OR (ii)  ≥2 Strong (BS1–BS4)
             "BS1 BS2",
-            "BS1 BS2 BS3"
+            "BS1 BS2 BS3",
+            "PS3 PS4 PP1_Supporting PM3 PP4 BA1" // would be a warm VUS (4 points) if not for the BA1 benign hard-filter
     })
     void classifiesBenign(String criteria) {
         AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);

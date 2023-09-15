@@ -207,6 +207,24 @@ public class FrequencyData {
         return false;
     }
 
+    /**
+     * Returns the highest frequency in percent for a given set of {@link FrequencySource}.
+     *
+     * @param frequencySources to find the highest frequency for
+     * @return the population frequency as a percentage value i.e. 0.001 == 0.1%
+     * @since 13.3.3
+     */
+    public float getMaxFreqForPopulation(Set<FrequencySource> frequencySources) {
+        float max = 0f;
+        for (int i = 0; i < size; i++) {
+            FrequencySource freqSource = this.sources[i];
+            if (frequencySources.contains(freqSource)) {
+                max = Math.max(max, values[i]);
+            }
+        }
+        return max;
+    }
+
     @JsonIgnore
     public boolean hasKnownFrequency() {
         return size != 0;
@@ -246,7 +264,7 @@ public class FrequencyData {
     }
 
     /**
-     * Returns a the maximum frequency - if there are no known frequencies/ no
+     * Returns the maximum frequency - if there are no known frequencies/ no
      * frequency data it will return 0.
      *
      * @return

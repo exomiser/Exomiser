@@ -140,7 +140,8 @@ public class AcmgEvidence {
         // filter is useful for excluding a variant from entering a Bayesian framework, and will be addressed separately
         // by the ClinGen Sequence Variant Interpretation (SVI) Working Group."
         // Similarly, BM and BVS have been added here because it is possible to assign a Moderate, Strong or VeryStrong
-        // modifier to BP4 which will result in a VUS rather than LB if not included
+        // modifier to BP4 according to https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9748256/ which will result in a VUS
+        // rather than LB if not included
         return (int) (bp + bm * 2.0 + bs * 4.0 + bvs * 8.0 + ba * 8.0);
     }
 

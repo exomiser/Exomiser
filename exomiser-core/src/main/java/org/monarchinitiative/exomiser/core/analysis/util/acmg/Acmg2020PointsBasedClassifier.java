@@ -1,11 +1,13 @@
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 /**
- * This is recommended by the ClinGen <a href = "https://clinicalgenome.org/working-groups/sequence-variant-interpretation/">Sequence Variant Interpretation (SVI)</a> group
+ * A points-based classification recommended by the ClinGen <a href = "https://clinicalgenome.org/working-groups/sequence-variant-interpretation/">Sequence Variant Interpretation (SVI)</a> group.
+ * This implementation uses the points scales described in
  * <p>
  * Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines - Tavtigian et al. 2020,
- * (DOI:10.1002/humu.24088).
+ * DOI:<a href="https://doi.org/10.1002/humu.24088">10.1002/humu.24088</a>.
  * </p>
+ * @since 13.3.0
  */
 public class Acmg2020PointsBasedClassifier implements AcmgEvidenceClassifier {
 
@@ -34,25 +36,6 @@ public class Acmg2020PointsBasedClassifier implements AcmgEvidenceClassifier {
         }
         // points <= -7
         return AcmgClassification.BENIGN;
-    }
-
-    public double score(AcmgEvidence acmgEvidence) {
-        if (acmgEvidence.ba() == 1) {
-            return 0;
-        }
-        int maxPath = Math.min(scorePaths(acmgEvidence), 10);
-        int minBenign = Math.max(scoreBenign(acmgEvidence), -4);
-
-        double score = ((maxPath - minBenign) - -4) / (double) (10 - -4);
-        return Math.max(Math.min(score, 1.0), 0.0);
-    }
-
-    private int scorePaths(AcmgEvidence acmgEvidence) {
-        return acmgEvidence.pp() + (acmgEvidence.pm() * 2) + (acmgEvidence.ps() * 4) + (acmgEvidence.pvs() * 8);
-    }
-
-    private int scoreBenign(AcmgEvidence acmgEvidence) {
-        return acmgEvidence.bp() + (acmgEvidence.bs() * 4);
     }
 
 }

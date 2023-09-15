@@ -92,7 +92,56 @@ public enum FrequencySource {
 
     public static final Set<FrequencySource> ALL_EXAC_SOURCES = Sets.immutableEnumSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
 
+    public static final Set<FrequencySource> ALL_GNOMAD_SOURCES = Sets.immutableEnumSet(EnumSet.range(GNOMAD_E_AFR, GNOMAD_G_SAS));
+
     public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Sets.immutableEnumSet(EnumSet.range(THOUSAND_GENOMES, GNOMAD_G_SAS));
+
+    /**
+     * Returns the set of non-founder/bottle-necked populations for use in frequency filtering.
+     * Here we're using the populations included in the <a href="https://gnomad.broadinstitute.org/help/faf">gnomAD
+     * filtering allele frequency</a>. Note that this is related to the ClinGen recommendations for populations to
+     * consider for filtering against when considering the BA1 (Benign standAlone) evidence category. More explicitly,
+     * this means any {@link FrequencySource} <b>excluding</b> Ashkenazi Jewish (ASJ), European Finnish (FIN), and
+     * "Other" (OTH) populations (gnomAD v2) or Amish (AMI), Ashkenazi Jewish (ASJ), European Finnish (FIN),
+     * Middle Eastern (MID), and "Other" (OTH) populations (gnomAD v3).
+     */
+    public static final Set<FrequencySource> NON_FOUNDER_POPS = Sets.immutableEnumSet(
+            EnumSet.of(
+                    THOUSAND_GENOMES,
+                    TOPMED,
+                    UK10K,
+
+                    ESP_AFRICAN_AMERICAN,
+                    ESP_EUROPEAN_AMERICAN,
+                    ESP_ALL,
+
+                    EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
+                    EXAC_AMERICAN,
+                    EXAC_EAST_ASIAN,
+//                    EXAC_FINNISH,
+                    EXAC_NON_FINNISH_EUROPEAN,
+//                    EXAC_OTHER,
+                    EXAC_SOUTH_ASIAN,
+
+                    GNOMAD_E_AFR,
+                    GNOMAD_E_AMR,
+//                    GNOMAD_E_ASJ,
+                    GNOMAD_E_EAS,
+//                    GNOMAD_E_FIN,
+                    GNOMAD_E_NFE,
+//                    GNOMAD_E_OTH,
+                    GNOMAD_E_SAS,
+
+                    GNOMAD_G_AFR,
+                    GNOMAD_G_AMR,
+//                    GNOMAD_G_ASJ,
+                    GNOMAD_G_EAS,
+//                    GNOMAD_G_FIN,
+                    GNOMAD_G_NFE,
+//                    GNOMAD_G_OTH,
+                    GNOMAD_G_SAS
+            )
+    );
 
     private final String source;
 

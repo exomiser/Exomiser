@@ -7,8 +7,11 @@ ACMG Assignment
 Starting with version 13.1.0, Exomiser performs a partial categorisation of the variants contributing to the gene
 score for a mode of inheritance using the ACMG/AMP `Standards and guidelines for the interpretation of sequence
 variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association
-for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The criteria are assigned and combined according to the
-`UK ACGS 2020 guidelines <https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf>`_.
+for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The criteria are assigned according to the
+`UK ACGS 2020 guidelines <https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf>`_
+and scored according to the
+`ClinGen SVI <https://clinicalgenome.org/working-groups/sequence-variant-interpretation/>`_
+`updated 2020 guidelines <https://clinicalgenome.org/docs/fitting-a-naturally-scaled-point-system-to-the-acmg-amp-variant-classification-guidelines/>`_.
 
 It is important to be aware that these scores are not a substitute for manual assignment by a qualified clinical geneticist
 or clinician - The scores displayed utilise the data found in the Exomiser database and are a subset of the possible
@@ -60,15 +63,25 @@ at least two ancestors of the proband, none of whom are affected and none of who
 
 Population Data
 ===============
+
+For the population data criteria, all frequencies are considered using the populations set by the user in the
+:ref:`frequencysources`, apart from any bottle-necked populations not recommended for frequency filtering from gnomAD
+according to their `filtering allele frequency <https://gnomad.broadinstitute.org/help/faf>`_ document. This excludes
+the Ashkenazi Jewish (ASJ), European Finnish (FIN), Other (OTH), Amish (AMI) and Middle Eastern (MID) populations. In
+addition the LOCAL frequency will also not be used.
+
 BA1
 ---
 Given Exomiser will filter out alleles with an allele frequency of >= 2.0%, this is unlikely to be seen. However, alleles
-with a maximum frequency >= 5.0% in the frequency sources specified will be assigned the `BA1` criterion.
+with a maximum frequency >= 5.0% in the frequency sources specified will be assigned the `BA1` criterion. Variants listed
+as being excluded from this category by the ClinGen SVI working group `BA1 exclusion list <https://www.clinicalgenome.org/site/assets/files/3460/ba1_exception_list_07_30_2018.pdf>`_
+will not be marked as `BA1`, assuming they survived variant filtering.
 
 PM2
 ---
-Alleles not present in the ESP, ExAC and 1000 Genomes data sets (i.e. the allele must be absent from all three) are
-assigned the `PM2` criterion.
+In accordance with the `updated PM2 guidance <https://clinicalgenome.org/site/assets/files/5182/pm2_-_svi_recommendation_-_approved_sept2020.pdf>`_, variants absent from all of the user-defined :ref:`frequencysources`
+will be assigned the `PM2_Supporting` criterion. Additionally, for variants considered under a recessive mode of inheritance they
+can have a frequency of < 0.01% (0.0001) in all non-bottlenecked populations to be assigned `PM2_Supporting`.
 
 Allelic Data
 ============
