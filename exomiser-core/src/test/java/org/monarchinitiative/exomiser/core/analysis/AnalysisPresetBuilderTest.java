@@ -42,7 +42,16 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 public class AnalysisPresetBuilderTest {
 
     private static final Set<FrequencySource> FREQUENCY_SOURCES = FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.stream()
-            .filter(frequencySource -> frequencySource != FrequencySource.GNOMAD_E_ASJ && frequencySource != FrequencySource.GNOMAD_G_ASJ)
+            .filter(frequencySource -> !(
+                    frequencySource == FrequencySource.EXAC_FINNISH ||
+                    frequencySource == FrequencySource.EXAC_OTHER ||
+                    frequencySource == FrequencySource.GNOMAD_E_ASJ ||
+                    frequencySource == FrequencySource.GNOMAD_G_ASJ ||
+                    frequencySource == FrequencySource.GNOMAD_E_FIN ||
+                    frequencySource == FrequencySource.GNOMAD_G_FIN ||
+                    frequencySource == FrequencySource.GNOMAD_E_OTH ||
+                    frequencySource == FrequencySource.GNOMAD_G_OTH
+            ))
             .collect(Collectors.toSet());
 
     private final AnalysisPresetBuilder instance = new AnalysisPresetBuilder(new GenomeAnalysisServiceProvider(TestFactory
