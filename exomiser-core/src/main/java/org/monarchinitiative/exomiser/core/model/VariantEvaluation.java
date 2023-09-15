@@ -376,7 +376,6 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
         if (this.isSymbolic()) {
-            System.out.println(variantEffect + ": " + variantEffectScore);
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
             //                                     |             element contains v
             // class | v contains t | v overlaps t | Coding or splice | UTR   | Intronic | Promoter
