@@ -247,8 +247,8 @@ gnomAD genomes:
     ``GNOMAD_G_OTH``,
     ``GNOMAD_G_SAS``
 
-We recommend using all databases if the proband population background is unknown, although removing the ``GNOMAD_E_ASJ`` and ``GNOMAD_G_ASJ``, unless your proband is
-known to come from an Ashkenazi population e.g.
+We recommend using all databases if the proband population background is unknown, although removing the ``GNOMAD_E_ASJ``
+and ``GNOMAD_G_ASJ``, unless your proband is known to come from an Ashkenazi population e.g.
 
 .. code-block:: yaml
 

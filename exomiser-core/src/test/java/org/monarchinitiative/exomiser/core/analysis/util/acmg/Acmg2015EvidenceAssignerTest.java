@@ -183,7 +183,7 @@ class Acmg2015EvidenceAssignerTest {
     }
 
     @Test
-    void testAssignsPM2() {
+    void testAssignsPM2AutosomalDominant() {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 12345, "A", "G")
                 // n.b. missing frequency data - will trigger PM2
@@ -198,13 +198,26 @@ class Acmg2015EvidenceAssignerTest {
     }
 
     @Test
+    void testAssignsPM2AutosomalRecessive() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 12345, "A", "G")
+                // n.b. low frequency for AR - will trigger PM2
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_EAS, 0.009f)))
+                .build();
+
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variantEvaluation), List.of(), List.of());
+
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PM2, Evidence.SUPPORTING).build()));
+    }
+
+    @Test
     void testVariantNeedNotBeInGeneWithKnownDiseaseAssociationForAcmgCriteriaToBeAssigned() {
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", Pedigree.empty());
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12345, "A", "G")
                 // n.b. missing frequency data - should trigger PM2
                 .frequencyData(FrequencyData.of())
                 .build();
-        // Requires variant to be in gene associated with a disorder in order that any ACMG criteria can be applied
+        // Not required that a variant is in gene associated with a disorder in order that any ACMG criteria can be applied
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
 
         AcmgEvidence expected = AcmgEvidence.builder().add(PM2, Evidence.SUPPORTING).build();
@@ -598,10 +611,27 @@ class Acmg2015EvidenceAssignerTest {
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 5.0f)))
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
 
-        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
         assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.BA1).build()));
+    }
+
+    @Test
+    void testDoesntAssignBA1ForException() {
+        Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        // NM_004004.6:c.109G>A  https://www.ncbi.nlm.nih.gov/clinvar/variation/17023/
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(3, 128598490, "C", "CTAAG")
+                .geneSymbol("GJB2")
+                // high allele freq - triggers BA1 assignment but this is an exception
+                .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_G_EAS, 9.444445f)))
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        // Causes non-syndromic hearing loss (ClinVar 3* reviewed by expert panel)
+        Disease deafness = Disease.builder().diseaseId("OMIM:220290").diseaseName("DEAFNESS, AUTOSOMAL RECESSIVE 1A; DFNB1A")
+                .inheritanceMode(InheritanceMode.AUTOSOMAL_RECESSIVE).diseaseType(Disease.DiseaseType.DISEASE).build();
+
+        AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variantEvaluation), List.of(deafness), List.of());
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
     }
 
     @Test
