@@ -22,8 +22,13 @@ Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWL
 7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
 8. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
 9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
-10. ```qsub owltools_preprocess.sh```
-11. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
+10. ```qsub owltools_preprocess1.sh```
+11. ```qsub owltools_preprocess2.sh```
+12. ```qsub owltools_preprocess3.sh```
+13. ```qsub owltools_preprocess4.sh```
+14. ```qsub owltools_preprocess5.sh```
+15. ```qsub owltools_preprocess6.sh```
+16. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
 
 ```
 qsub owltools_hp_hp.sh
