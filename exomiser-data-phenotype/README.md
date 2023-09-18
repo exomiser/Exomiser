@@ -22,26 +22,8 @@ Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWL
 7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
 8. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
 9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
-10. Run owltools commands:
-
-```
-
-module load java/11.0.20-openjdk
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
-
-/data/WHRI-Phenogenomics/software/opt/owltools/owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
-```
-
-12. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
+10. ```qsub owltools_preprocess.sh```
+11. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
 
 ```
 qsub owltools_hp_hp.sh
@@ -50,7 +32,7 @@ qsub owltools_hp_zp.sh
 
 ```
 
-13. Running the build. More detail below but essentially
+12. Running the build. More detail below but essentially
 
 ```
 gzip hp-*-mapping-cache.txt
