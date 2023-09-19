@@ -31,6 +31,10 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -45,6 +49,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScor
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -354,5 +359,51 @@ public class VcfResultsWriterTest {
                 "{1|10-123256215-T-A_AD|FGFR2||AD|1.0000|1.0000|0.0000|0.0000|0.6000|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>T:p.(Glu565Val)|NOT_AVAILABLE|||\"\"};" +
                 "GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
+    }
+
+    @Test
+    public void testAnnotatedVariantAcmgDiseaseNameWhitespaceIsReplacedWithUnderscore() {
+        GeneIdentifier geneIdentifier = GeneIdentifier.builder()
+                .geneId("6469")
+                // this should not have spaces in the VCF file
+                .geneSymbol("SHH alpha spaces")
+                .hgncId("HGNC:10848")
+                .hgncSymbol("SHH")
+                .entrezId("6469")
+                .ensemblId("ENSG00000164690")
+                .ucscId("uc003wmk.2")
+                .build();
+
+        Gene gene = new Gene(geneIdentifier);
+        VariantEvaluation shhFailedVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CT", SampleGenotype.het(), 30, 1.0);
+        shhFailedVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        shhFailedVariant.addFilterResult(FilterResult.pass(FilterType.INHERITANCE_FILTER));
+        shhFailedVariant.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        shhFailedVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        gene.addVariant(shhFailedVariant);
+        gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        Disease diseaseNameWithSpaces = Disease.builder()
+                .diseaseId("DISEASE:1")
+                // this should not have spaces in the VCF file
+                .diseaseName("Name with spaces")
+                .build();
+
+        GeneScore adScore = GeneScore.builder()
+                .acmgAssignments(List.of(AcmgAssignment.of(shhFailedVariant, geneIdentifier, ModeOfInheritance.AUTOSOMAL_DOMINANT, diseaseNameWithSpaces, AcmgEvidence.of(Map.of(AcmgCriterion.BP1, AcmgCriterion.Evidence.MODERATE)), AcmgClassification.LIKELY_BENIGN)))
+                .contributingVariants(List.of(shhFailedVariant))
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .geneIdentifier(geneIdentifier)
+                .combinedScore(1.0)
+                .build();
+        gene.addGeneScore(adScore);
+
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
+
+        String vcf = instance.writeString(analysisResults, settings);
+        final String expected = METADATA_HEADER + CHR_7_CONTIG_HEADER + SAMPLE_HEADER
+                + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_AD|SHH_alpha_spaces|6469|AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|LIKELY_BENIGN|BP1_Moderate|DISEASE:1|\"Name_with_spaces\"}\tGT:RD\t0/1:30\n";
+        assertThat(vcf, equalTo(expected));
     }
 }
