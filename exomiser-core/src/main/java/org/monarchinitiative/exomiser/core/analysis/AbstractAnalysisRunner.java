@@ -148,7 +148,11 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         Duration duration = Duration.between(timeStart, Instant.now());
         long ms = duration.toMillis();
-        logger.info("Finished analysis in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
+        int hoursPart = duration.toHoursPart();
+        if (hoursPart > 0) {
+            logger.info("Finished analysis in {}h {}m {}s {}ms ({} ms)", hoursPart, duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart(), ms);
+        }
+        logger.info("Finished analysis in {}m {}s {}ms ({} ms)", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart(), ms);
         return analysisResults;
     }
 
