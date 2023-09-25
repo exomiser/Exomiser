@@ -38,8 +38,9 @@ Sample
 It is recommended to provide Exomiser the input sample as in `Phenopacket <https://phenopacket-schema.readthedocs.io/>`_ format.
 Exomiser will accept this in either JSON or YAML format.
 
-probandId:
+proband:
 ----------
+Identifier used for the proband in the VCF file.
 
 hpoIds:
 -------
