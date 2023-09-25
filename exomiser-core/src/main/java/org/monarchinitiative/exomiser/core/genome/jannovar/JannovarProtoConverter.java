@@ -25,9 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.Strand;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.reference.*;
 import org.monarchinitiative.exomiser.core.proto.JannovarProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,19 +84,19 @@ public class JannovarProtoConverter {
                 .setGeneSymbol(transcriptModel.getGeneSymbol())
                 .setGeneID((transcriptModel.getGeneID() == null || transcriptModel.getGeneID()
                         .equals(".")) ? "" : transcriptModel.getGeneID())
-                .putAllAltGeneIds(replaceDotGeneIdWithEmpty(transcriptModel.getAltGeneIDs()))
-                .setTranscriptSupportLevel(transcriptModel.getTranscriptSupportLevel())
-                .setSequence(transcriptModel.getSequence())
-                .setCdsRegion(toProtoGenomeInterval(transcriptModel.getCDSRegion()))
                 .setTxRegion(toProtoGenomeInterval(transcriptModel.getTXRegion()))
+                .setCdsRegion(toProtoGenomeInterval(transcriptModel.getCDSRegion()))
                 .addAllExonRegions(toProtoExonRegions(transcriptModel.getExonRegions()))
-//                .setHasIndels(transcriptModel.isHasIndels())
-//                .setHasSubstitutions(transcriptModel.isHasSubstitutions())
-//                .setAlignment(toProtoSeqAlignment(transcriptModel.getSeqAlignment()))
+                .setSequence(transcriptModel.getSequence())
+                .setTranscriptSupportLevel(transcriptModel.getTranscriptSupportLevel())
+                .setHasSubstitutions(transcriptModel.isHasSubstitutions())
+                .setHasIndels(transcriptModel.isHasIndels())
+                .putAllAltGeneIds(replaceDotGeneIdWithEmpty(transcriptModel.getAltGeneIDs()))
+                .setAlignment(toProtoSeqAlignment(transcriptModel.getSeqAlignment()))
                 .build();
     }
 
-    private static final Pattern ENST_REPEAT_VERSION = Pattern.compile("ENST[0-9]{11}\\.[0-9]+\\.[0-9]+");
+    private static final Pattern ENST_REPEAT_VERSION = Pattern.compile("ENST\\d{11}\\.\\d+\\.\\d+");
 
     //TODO: REMOVE THIS for jannovar version 0.33!
     // fix bug in Jannovar 0.29 where the transcript version is duplicated
@@ -137,21 +135,21 @@ public class JannovarProtoConverter {
         return intervals;
     }
 
-//    private static JannovarProto.Alignment toProtoSeqAlignment(Alignment alignment) {
-//        return JannovarProto.Alignment.newBuilder()
-//                .addAllRefAnchors(toProtoAnchors(alignment.getRefAnchors()))
-//                .addAllQryAnchors(toProtoAnchors(alignment.getQryAnchors()))
-//                .build();
-//    }
-//
-//    private static List<JannovarProto.Anchor> toProtoAnchors(List<Anchor> anchors) {
-//        List<JannovarProto.Anchor> protoAnchors = new ArrayList<>();
-//        anchors.forEach(anchor -> protoAnchors.add(JannovarProto.Anchor.newBuilder()
-//                .setGapPos(anchor.getGapPos())
-//                .setSeqPos(anchor.getSeqPos())
-//                .build()));
-//        return protoAnchors;
-//    }
+    private static JannovarProto.Alignment toProtoSeqAlignment(Alignment alignment) {
+        return JannovarProto.Alignment.newBuilder()
+                .addAllRefAnchors(toProtoAnchors(alignment.getRefAnchors()))
+                .addAllQryAnchors(toProtoAnchors(alignment.getQryAnchors()))
+                .build();
+    }
+
+    private static List<JannovarProto.Anchor> toProtoAnchors(List<Anchor> anchors) {
+        List<JannovarProto.Anchor> protoAnchors = new ArrayList<>();
+        anchors.forEach(anchor -> protoAnchors.add(JannovarProto.Anchor.newBuilder()
+                .setGapPos(anchor.getGapPos())
+                .setSeqPos(anchor.getSeqPos())
+                .build()));
+        return protoAnchors;
+    }
 
     public static JannovarData toJannovarData(JannovarProto.JannovarData protoJannovarData) {
         logger.debug("Converting to jannovar data...");
@@ -175,30 +173,31 @@ public class JannovarProtoConverter {
     public static Function<JannovarProto.TranscriptModel, TranscriptModel> toTranscriptModel(ReferenceDictionary referenceDictionary) {
         return protoTranscriptModel ->
                 new TranscriptModel(
-                protoTranscriptModel.getAccession(),
-                protoTranscriptModel.getGeneSymbol(),
-                toGenomeInterval(referenceDictionary, protoTranscriptModel.getTxRegion()),
-                toGenomeInterval(referenceDictionary, protoTranscriptModel.getCdsRegion()),
-                toExonRegions(referenceDictionary, protoTranscriptModel.getExonRegionsList()),
-                protoTranscriptModel.getSequence(),
-                protoTranscriptModel.getGeneID(),
-                protoTranscriptModel.getTranscriptSupportLevel(),
-                protoTranscriptModel.getAltGeneIdsMap()
-        );
-//                new TranscriptModel(
-//                        protoTranscriptModel.getAccession(),
-//                        protoTranscriptModel.getGeneSymbol(),
-//                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getTxRegion()),
-//                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getCdsRegion()),
-//                        toExonRegions(referenceDictionary, protoTranscriptModel.getExonRegionsList()),
-//                        protoTranscriptModel.getSequence(),
-//                        protoTranscriptModel.getGeneID(),
-//                        protoTranscriptModel.getTranscriptSupportLevel(),
-//                        protoTranscriptModel.getHasSubstitutions(),
-//                        protoTranscriptModel.getHasIndels(),
-//                        protoTranscriptModel.getAltGeneIdsMap(),
-//                        toAlignment(protoTranscriptModel.getAlignment())
-//                );
+                        protoTranscriptModel.getAccession(),
+                        protoTranscriptModel.getGeneSymbol(),
+                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getTxRegion()),
+                        toGenomeInterval(referenceDictionary, protoTranscriptModel.getCdsRegion()),
+                        toExonRegions(referenceDictionary, protoTranscriptModel.getExonRegionsList()),
+                        protoTranscriptModel.getSequence(),
+                        protoTranscriptModel.getGeneID(),
+                        protoTranscriptModel.getTranscriptSupportLevel(),
+                        protoTranscriptModel.getHasSubstitutions(),
+                        protoTranscriptModel.getHasIndels(),
+                        protoTranscriptModel.getAltGeneIdsMap(),
+                        protoTranscriptModel.hasAlignment() ? toAlignment(protoTranscriptModel.getAlignment()) : buildUngappedAlignment(protoTranscriptModel.getExonRegionsList())
+                );
+    }
+
+    // Builds an alignment if there was one missing. This will be the case for data created before the 2302 data release.
+    // For Ensembl/MANE data there will be no difference. RefSeq will be affected, but this should be no different to the
+    // <= 2302 data.
+    private static Alignment buildUngappedAlignment(List<JannovarProto.GenomeInterval> exonRegions) {
+        // Jannovar TranscriptModelBuilder uses the sum of the exon lengths in all the GFF parser code. Only the TranscriptModel
+        // alt constructor uses the sequence length when calling Alignment.createUngappedAlignment
+        int exonsLength = exonRegions.stream().mapToInt(exon -> exon.getEndPos() - exon.getBeginPos()).sum();
+        // Jannovar uses ImmutableList internally
+        List<Anchor> anchors = ImmutableList.of(new Anchor(0, 0), new Anchor(exonsLength, exonsLength));
+        return new Alignment(anchors, anchors);
     }
 
     private static GenomeInterval toGenomeInterval(ReferenceDictionary refDict, JannovarProto.GenomeInterval protoGenomeInterval) {
@@ -217,15 +216,15 @@ public class JannovarProtoConverter {
         return intervals.build();
     }
 
-//    private static Alignment toAlignment(JannovarProto.Alignment protoAlignment) {
-//        ImmutableList<Anchor> refAnchors = toAnchors(protoAlignment.getRefAnchorsList());
-//        ImmutableList<Anchor> qryAnchors = toAnchors(protoAlignment.getQryAnchorsList());
-//        return new Alignment(refAnchors, qryAnchors);
-//    }
-//
-//    private static ImmutableList<Anchor> toAnchors(List<JannovarProto.Anchor> protoAnchors) {
-//        ImmutableList.Builder<Anchor> anchors = ImmutableList.builder();
-//        protoAnchors.forEach(anchor -> anchors.add(new Anchor(anchor.getGapPos(), anchor.getSeqPos())));
-//        return anchors.build();
-//    }
+    private static Alignment toAlignment(JannovarProto.Alignment protoAlignment) {
+        ImmutableList<Anchor> refAnchors = toAnchors(protoAlignment.getRefAnchorsList());
+        ImmutableList<Anchor> qryAnchors = toAnchors(protoAlignment.getQryAnchorsList());
+        return new Alignment(refAnchors, qryAnchors);
+    }
+
+    private static ImmutableList<Anchor> toAnchors(List<JannovarProto.Anchor> protoAnchors) {
+        ImmutableList.Builder<Anchor> anchors = ImmutableList.builder();
+        protoAnchors.forEach(anchor -> anchors.add(new Anchor(anchor.getGapPos(), anchor.getSeqPos())));
+        return anchors.build();
+    }
 }
