@@ -62,6 +62,7 @@ public class JannovarDataProtoSerialiserTest {
     @Test
     public void incorrectFileFormatThrowsException() throws Exception {
         Path protoJannovarPath = getTempFile();
-        assertThrows(InvalidFileFormatException.class, () -> JannovarDataProtoSerialiser.load(protoJannovarPath));
+        Exception exception = assertThrows(InvalidFileFormatException.class, () -> JannovarDataProtoSerialiser.load(protoJannovarPath));
+        assertThat(exception.getMessage(), equalTo(protoJannovarPath + " not an Exomiser format Jannovar transcript database."));
     }
 }

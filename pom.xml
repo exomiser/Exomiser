@@ -93,7 +93,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.30</jannovar.version>
+        <jannovar.version>0.41</jannovar.version>
         <svart.version>1.0.2</svart.version>
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
