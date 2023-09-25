@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>13.3.0-RC1</version>
+    <version>13.3.0-RC2</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -105,8 +105,8 @@
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
         <!--    These properties are use for the README.md  -->
-        <genome.data.version>2302</genome.data.version>
-        <phenotype.data.version>2302</phenotype.data.version>
+        <genome.data.version>2309</genome.data.version>
+        <phenotype.data.version>2309</phenotype.data.version>
     </properties>
 
     <dependencyManagement>
