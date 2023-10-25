@@ -104,6 +104,7 @@ public enum FrequencySource {
      * this means any {@link FrequencySource} <b>excluding</b> Ashkenazi Jewish (ASJ), European Finnish (FIN), and
      * "Other" (OTH) populations (gnomAD v2) or Amish (AMI), Ashkenazi Jewish (ASJ), European Finnish (FIN),
      * Middle Eastern (MID), and "Other" (OTH) populations (gnomAD v3).
+     * @since 13.3.0
      */
     public static final Set<FrequencySource> NON_FOUNDER_POPS = Sets.immutableEnumSet(
             EnumSet.of(

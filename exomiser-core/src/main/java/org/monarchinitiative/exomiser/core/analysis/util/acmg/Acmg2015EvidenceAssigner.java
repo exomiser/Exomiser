@@ -233,6 +233,19 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         }
     }
 
+    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
+        return variantEffect == VariantEffect.INITIATOR_CODON_VARIANT
+                || variantEffect == VariantEffect.START_LOST
+                || variantEffect == VariantEffect.STOP_LOST
+                || variantEffect == VariantEffect.STOP_GAINED
+                || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
+                || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
+                || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
+                || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
+                || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
+                || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
+    }
+
     private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
         // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
         boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
@@ -255,19 +268,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             return true;
         }
         return (probandSex == Individual.Sex.FEMALE || probandSex == Individual.Sex.UNKNOWN) && modeOfInheritance == ModeOfInheritance.X_DOMINANT;
-    }
-
-    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.INITIATOR_CODON_VARIANT
-                || variantEffect == VariantEffect.START_LOST
-                || variantEffect == VariantEffect.STOP_LOST
-                || variantEffect == VariantEffect.STOP_GAINED
-                || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
-                || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
-                || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
-                || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
-                || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
-                || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
     }
 
     /**
@@ -426,7 +426,9 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * and Middle Eastern (MID).
      */
     private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData, ModeOfInheritance modeOfInheritance) {
-        boolean absentFromDatabase = !frequencyData.hasKnownFrequency();
+        // allow local frequency occurrences as these are unverifiable as to their size or content. Also do not use isRepresentedInDatabase()
+        // as this will exclude anything with an rsID which could be a ClinVar variant not seen in any population database.
+        boolean absentFromDatabase = frequencyData.isEmpty() || (frequencyData.size() == 1 && frequencyData.containsFrequencySource(FrequencySource.LOCAL));
         boolean atVeryLowFrequencyIfRecessive = modeOfInheritance.isRecessive() && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) < 0.01f;
         if (absentFromDatabase || atVeryLowFrequencyIfRecessive) {
             acmgEvidenceBuilder.add(PM2, Evidence.SUPPORTING);

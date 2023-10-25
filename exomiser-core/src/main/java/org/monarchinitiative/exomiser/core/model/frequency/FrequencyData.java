@@ -135,6 +135,41 @@ public class FrequencyData {
         return notNull;
     }
 
+    /**
+     *
+     * @return the count of the frequencies
+     * @since 13.3.0
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Checks if there are any frequencies present. It is possible that there may be an rsID where there are no
+     * frequencies. For example, rare variants seen only in ClinVar.
+     *
+     * @return true if the count of the frequencies is zero
+     * @since 13.3.0
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    /**
+     * Checks whether the instance contains a given {@link FrequencySource}.
+     * @param frequencySource The frequency source to check for membership in the instance.
+     * @return true if the instance contains the given {@link FrequencySource}
+     * @since 13.3.0
+     */
+    public boolean containsFrequencySource(FrequencySource frequencySource) {
+        for (FrequencySource dataSource : sources) {
+            if (dataSource == frequencySource) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getRsId() {
         return rsId;
     }
