@@ -55,12 +55,10 @@ public class DiseaseResourceConfig {
 
     @Bean
     public DiseaseProcessingGroup diseaseProcessingGroup() {
-        Resource phenotypeAnnotationsResource = resourceBuilder.buildResource(resourceProperties.getPhenotypeAnnotations());
-//        TODO: replace phenotype_annotations with hpo_annotations
-//        Resource hpoAnnotationsResource = resourceBuilder.buildResource(resourceProperties.getHpoAnnotations());
+        Resource hpoAnnotationsResource = resourceBuilder.buildResource(resourceProperties.getHpoAnnotations());
 
         OutputLineWriter<DiseasePhenotype> diseasePhenotypeWriter = new OutputLineWriter<>(processPath.resolve("diseaseHp.pg"));
-        DiseasePhenotypeStep diseasePhenotypeStep = DiseasePhenotypeStep.create(phenotypeAnnotationsResource, diseasePhenotypeWriter);
+        DiseasePhenotypeStep diseasePhenotypeStep = DiseasePhenotypeStep.create(hpoAnnotationsResource, diseasePhenotypeWriter);
 
         //
         Resource geneMap2Resource = resourceBuilder.buildResource(resourceProperties.getGenemap2());
@@ -70,7 +68,7 @@ public class DiseaseResourceConfig {
         Resource product9Resource = resourceBuilder.buildResource(resourceProperties.getOrphaProduct9Ages());
 
         OutputLineWriter<DiseaseGene> diseaseGeneWriter = new OutputLineWriter<>(processPath.resolve("disease.pg"));
-        DiseaseGeneStep diseaseGeneStep = DiseaseGeneStep.create(phenotypeAnnotationsResource, geneMap2Resource, mimToGeneResource, product1Resource, product6Resource, product9Resource, diseaseGeneWriter);
+        DiseaseGeneStep diseaseGeneStep = DiseaseGeneStep.create(hpoAnnotationsResource, geneMap2Resource, mimToGeneResource, product1Resource, product6Resource, product9Resource, diseaseGeneWriter);
 
         // Output files for HPO annotations QC - open a ticket with these using the md file as the ticket body
         OutputLineWriter<DiseaseGeneMoiComparison> missingInHpoMoiWriter = new OutputLineWriter<>(processPath.resolve("missing_moi_hpo.md"));
@@ -78,7 +76,7 @@ public class DiseaseResourceConfig {
         OutputLineWriter<DiseaseGeneMoiComparison> mismatchedMoiWriter = new OutputLineWriter<>(processPath.resolve("mismatched_moi.md"));
 
         DiseaseGeneMoiComparisonStep diseaseGeneMoiComparisonStep = DiseaseGeneMoiComparisonStep.create(
-                phenotypeAnnotationsResource,
+                hpoAnnotationsResource,
                 geneMap2Resource,
                 missingInHpoMoiWriter,
                 missingInOmimMoiWriter,
@@ -90,7 +88,7 @@ public class DiseaseResourceConfig {
         OutputLineWriter<EntrezIdGeneSymbol> entrezGeneSymbolWriter = new OutputLineWriter<>(processPath.resolve("entrez2sym.pg"));
         EntrezIdGeneSymbolStep entrezIdGeneSymbolStep = EntrezIdGeneSymbolStep.create(hgncResource, entrezGeneSymbolWriter);
 
-        List<Resource> diseaseResources = List.of(phenotypeAnnotationsResource, geneMap2Resource, mimToGeneResource, product1Resource, product6Resource, product9Resource, hgncResource);
+        List<Resource> diseaseResources = List.of(hpoAnnotationsResource, geneMap2Resource, mimToGeneResource, product1Resource, product6Resource, product9Resource, hgncResource);
 
         return new DiseaseProcessingGroup(diseaseResources, diseasePhenotypeStep, diseaseGeneStep, diseaseGeneMoiComparisonStep, entrezIdGeneSymbolStep);
     }

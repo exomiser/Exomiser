@@ -404,17 +404,13 @@ class OrphanetDiseaseGeneFactoryTest {
     @Test
     @Disabled("Integration test")
     void integrationTest() {
-        Path inDir = Paths.get("C:/Users/hhx640/Downloads/");
+        Path inDir = Paths.get("/home/hhx640/Downloads/");
 
         ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(inDir, "test");
         ResourceBuilder resourceBuilder = new ResourceBuilder(releaseFileSystem);
-        //
-        ResourceConfigurationProperties resourceConfig = new ResourceConfigurationProperties();
 
-        // parse all the ORPHANET data
-        resourceConfig.getPhenotypeAnnotations();
         // OMIM resources
-        DiseaseInheritanceCacheReader diseaseInheritanceCacheReader = new DiseaseInheritanceCacheReader(resource(inDir, "phenotype_annotation.tab"));
+        DiseaseInheritanceCacheReader diseaseInheritanceCacheReader = new DiseaseInheritanceCacheReader(resource(inDir, "phenotype.hpoa"));
         OmimGeneMap2Reader omimGeneMap2Reader = new OmimGeneMap2Reader(diseaseInheritanceCacheReader, resource(inDir, "genemap2.txt"));
 
 

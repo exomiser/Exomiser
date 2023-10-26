@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.proto.JannovarProto;
 
+import java.nio.file.Path;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -55,5 +57,20 @@ public class JannovarProtoConverterTest {
     @Test
     void testTrimDuplicatedVersionFromEnst() {
         assertThat(JannovarProtoConverter.trimDuplicatedEnsemblVersion("ENST00000523072.11.11"), equalTo("ENST00000523072.11"));
+    }
+
+    @Test
+    void canLoadPreJannovar041Data() {
+        // jannovar exomiser format < 0.33
+        JannovarData v30Data = JannovarDataSourceLoader.loadJannovarData(Path.of("src/test/resources/jannovar/1710_hg19_transcripts_ensembl_exomiser_format.ser"));
+        // jannovar exomiser format >= 0.33
+        JannovarData v41Data = JannovarDataSourceLoader.loadJannovarData(Path.of("src/test/resources/jannovar/2309_hg19_transcripts_ensembl_exomiser_format.ser"));
+        // jannovarData does not implement equals, so we need to test the internals manually
+        assertThat(v30Data.getRefDict().getContigNameToID(), equalTo(v41Data.getRefDict().getContigNameToID()));
+        assertThat(v30Data.getRefDict().getContigIDToLength(), equalTo(v41Data.getRefDict()
+                .getContigIDToLength()));
+        assertThat(v30Data.getRefDict().getContigIDToName(), equalTo(v41Data.getRefDict().getContigIDToName()));
+        assertThat(v30Data.getTmByGeneSymbol(), equalTo(v41Data.getTmByGeneSymbol()));
+        assertThat(v30Data.getTmByAccession(), equalTo(v41Data.getTmByAccession()));
     }
 }

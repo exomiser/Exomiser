@@ -44,7 +44,7 @@ public class PvalueGeneScorer implements GeneScorer {
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
         this.pValueCalculator = Objects.requireNonNull(pValueCalculator);
         AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandId, inheritanceModeAnnotator.getPedigree());
-        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acgs2020Classifier();
+        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acmg2020PointsBasedClassifier();
         this.acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, acmgEvidenceClassifier);
     }
 
@@ -101,6 +101,15 @@ public class PvalueGeneScorer implements GeneScorer {
 
         GenePriorityScoreCalculator.GenePriorityScore priorityScore = genePriorityScoreCalculator.calculateGenePriorityScore(gene, modeOfInheritance);
 
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
+
+        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
+
+//        double variantScore = acmgAssignments.stream()
+//                .mapToDouble(acmgAssignment -> acmgAssignment.acmgEvidence().postProbPath())
+//                .average()
+//                .orElse(0.1); // 0.1 is the equivalent of a 0-point VUS
+
         double variantScore = contributingVariants.stream()
                 .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
@@ -109,10 +118,6 @@ public class PvalueGeneScorer implements GeneScorer {
         double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults().keySet());
 
         double pValue = pValueCalculator.calculatePvalueFromCombinedScore(combinedScore);
-
-        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
-
-        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())

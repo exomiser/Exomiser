@@ -32,6 +32,21 @@ import java.util.*;
  */
 public class AcmgEvidence {
 
+    // These constants are derived in "Modeling the ACMG/AMP Variant Classification Guidelines as a Bayesian
+    //  Classification Framework" Tavtigian et al. 2018, DOI:10.1038/gim.2017.210
+    // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6336098/bin/NIHMS915467-supplement-Supplemental_Table_S1.xlsx
+
+    // Very_Strong == (2 * Strong) == (2 * Moderate) == (2 * Supporting)
+    // therefore points Supporting = 1, Moderate = 2, Strong = 4, Very_strong = 8 can be assigned and these fit to a
+    // Bayesian classification framework where (using the combining rules from Riggs et al. 2016) the posterior
+    // probabilities are Path >= 0.99, LikelyPath 0.90 - 0.98, LikelyBenign 0.1 - 0.01, Benign < 0.01
+
+    private static final double PRIOR_PROB = 0.1;
+    private static final double ODDS_PATH_VERY_STRONG = 350.0;
+    private static final double EXPONENTIAL_PROGRESSION = 2.0;
+    private static final double SUPPORTING_EVIDENCE_EXPONENT = Math.pow(EXPONENTIAL_PROGRESSION, -3); // 0.125
+    private static final double ODDS_PATH_SUPPORTING = Math.pow(ODDS_PATH_VERY_STRONG, SUPPORTING_EVIDENCE_EXPONENT); // 2.08
+
     private static final AcmgEvidence EMPTY = new AcmgEvidence(Map.of());
 
     @JsonProperty
@@ -43,12 +58,17 @@ public class AcmgEvidence {
     private int pp = 0;
 
     private int ba = 0;
+    private int bvs = 0;
     private int bs = 0;
+    private int bm = 0;
     private int bp = 0;
+
+    private int points = 0;
 
     private AcmgEvidence(Map<AcmgCriterion, Evidence> evidence) {
         this.evidence = evidence == null || evidence.isEmpty() ? Map.of() : Collections.unmodifiableMap(new EnumMap<>(evidence));
         countCriteriaEvidence(this.evidence);
+        points = pathPoints() - benignPoints();
     }
 
     @JsonCreator
@@ -89,8 +109,14 @@ public class AcmgEvidence {
                     case STAND_ALONE:
                         ba++;
                         break;
+                    case VERY_STRONG:
+                        bvs++;
+                        break;
                     case STRONG:
                         bs++;
+                        break;
+                    case MODERATE:
+                        bm++;
                         break;
                     case SUPPORTING:
                         bp++;
@@ -101,6 +127,22 @@ public class AcmgEvidence {
                 }
             }
         }
+    }
+
+    public int pathPoints() {
+        return (int) (pp + pm * 2.0 + ps * 4.0 + pvs * 8.0);
+    }
+
+    public int benignPoints() {
+        // n.b. here BA1 is given the equivalent weight as PVS1. This was *not* specified in the two papers. Specifically,
+        // in the 2018 paper they state "We excluded BA1, “benign stand alone” because it is used as absolute evidence
+        // that a variant is benign, irrespective of other evidence, which is contrary to Bayesian reasoning. The BA1
+        // filter is useful for excluding a variant from entering a Bayesian framework, and will be addressed separately
+        // by the ClinGen Sequence Variant Interpretation (SVI) Working Group."
+        // Similarly, BM and BVS have been added here because it is possible to assign a Moderate, Strong or VeryStrong
+        // modifier to BP4 according to https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9748256/ which will result in a VUS
+        // rather than LB if not included
+        return (int) (bp + bm * 2.0 + bs * 4.0 + bvs * 8.0 + ba * 8.0);
     }
 
     public boolean hasCriterion(AcmgCriterion acmgCriterion) {
@@ -144,12 +186,32 @@ public class AcmgEvidence {
         return ba;
     }
 
+    public int bvs() {
+        return bvs;
+    }
+
     public int bs() {
         return bs;
     }
 
+    public int bm() {
+        return bm;
+    }
+
     public int bp() {
         return bp;
+    }
+
+    public int points() {
+        return points;
+    }
+
+    public double postProbPath() {
+        // Equation 2 from Tavtigian et al., 2020 (DOI: 10.1002/humu.24088) which is a re-written from of equation 5 from
+        // Tavtigian et al., 2018 (DOI: 10.1038/gim.2017.210)
+        double oddsPath = Math.pow(ODDS_PATH_SUPPORTING, points);
+        // posteriorProbability = (OddsPathogenicity*Prior P)/((OddsPathogenicity−1)*Prior_P+1)
+        return (oddsPath * PRIOR_PROB) / ((oddsPath - 1) * PRIOR_PROB + 1);
     }
 
     public static AcmgEvidence.Builder builder() {

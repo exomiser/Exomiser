@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>13.2.1</version>
+    <version>13.3.0</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -93,7 +93,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.30</jannovar.version>
+        <jannovar.version>0.41</jannovar.version>
         <svart.version>1.0.2</svart.version>
         <htsjdk.version>2.24.1</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
@@ -105,8 +105,8 @@
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
         <!--    These properties are use for the README.md  -->
-        <genome.data.version>2302</genome.data.version>
-        <phenotype.data.version>2302</phenotype.data.version>
+        <genome.data.version>2309</genome.data.version>
+        <phenotype.data.version>2309</phenotype.data.version>
     </properties>
 
     <dependencyManagement>

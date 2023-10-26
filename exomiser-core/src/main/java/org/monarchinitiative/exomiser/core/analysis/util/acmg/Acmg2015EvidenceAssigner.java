@@ -25,19 +25,20 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
-import org.monarchinitiative.exomiser.core.model.SampleGenotype;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
@@ -46,6 +47,49 @@ import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriteri
  * @since 13.1.0
  */
 public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
+
+    // Variants to be excluded from being assigned BA1 as specified by the ClinGen SVI working group in:
+    //   https://www.clinicalgenome.org/site/assets/files/3460/ba1_exception_list_07_30_2018.pdf
+    private static final Set<AlleleProto.AlleleKey> HG19_BA1_EXCLUSION_VARIANTS = Set.of(
+            // ClinVar 1018 - 3: 128598490 (GRCh37) 128879647 (GRCh38) (SPDI: NC_000003.12:128879647:TAAG:TAAGTAAG)
+            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(128_598_490).setRef("C").setAlt("CTAAG").build(),
+            // ClinVar 17023 - 13: 20763612 (GRCh37) 20189473 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(20_763_612).setRef("C").setAlt("T").build(),
+            // ClinVar 10 - 6: 26091179 (GRCh37) 26090951 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_091_179).setRef("C").setAlt("G").build(),
+            // ClinVar 9 - 6: 26093141 (GRCh37) 26092913 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_093_141).setRef("G").setAlt("A").build(),
+            // ClinVar 2551 - 16: 3299586 (GRCh37) 3249586 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_299_586).setRef("G").setAlt("A").build(),
+            // ClinVar 2552 - 16: 3299468 (GRCh37) 3249468 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_299_468).setRef("C").setAlt("T").build(),
+            // ClinVar 217689 - 13: 73409497 (GRCh37) 72835359 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(73_409_497).setRef("G").setAlt("A").build(),
+            // ClinVar 3830 - 12: 121175678 (GRCh37) 120737875 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(12).setPosition(121_175_678).setRef("C").setAlt("T").build(),
+            // ClinVar 1900 - 3: 15686693 (GRCh37) 15645186 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(15_686_693).setRef("G").setAlt("C").build()
+    );
+    private static final Set<AlleleProto.AlleleKey> HG38_BA1_EXCLUSION_VARIANTS = Set.of(
+            // ClinVar 1018 - 3: 128598490 (GRCh37) 128879647 (GRCh38) (SPDI: NC_000003.12:128879647:TAAG:TAAGTAAG)
+            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(128_879_647).setRef("C").setAlt("CTAAG").build(),
+            // ClinVar 17023 - 13: 20763612 (GRCh37) 20189473 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(20_189_473).setRef("C").setAlt("T").build(),
+            // ClinVar 10 - 6: 26091179 (GRCh37) 26090951 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_090_951).setRef("C").setAlt("G").build(),
+            // ClinVar 9 - 6: 26093141 (GRCh37) 26092913 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_092_913).setRef("G").setAlt("A").build(),
+            // ClinVar 2551 - 16: 3299586 (GRCh37) 3249586 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_249_586).setRef("G").setAlt("A").build(),
+            // ClinVar 2552 - 16: 3299468 (GRCh37) 3249468 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_249_468).setRef("C").setAlt("T").build(),
+            // ClinVar 217689 - 13: 73409497 (GRCh37) 72835359 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(72_835_359).setRef("G").setAlt("A").build(),
+            // ClinVar 3830 - 12: 121175678 (GRCh37) 120737875 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(12).setPosition(120_737_875).setRef("C").setAlt("T").build(),
+            // ClinVar 1900 - 3: 15686693 (GRCh37) 15645186 (GRCh38)
+            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(15_645_186).setRef("G").setAlt("C").build()
+    );
 
     private final String probandId;
     private final Individual.Sex probandSex;
@@ -80,12 +124,23 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     // https://www.ncbi.nlm.nih.gov/clinvar/variation/464/ - check in ClinVar VCF if there is MOI information for a classification
     public AcmgEvidence assignVariantAcmgEvidence(VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
-        // try strict ACMG assignments only if there are known disease-gene associations
-        if (knownDiseases.isEmpty()) {
-            return AcmgEvidence.empty();
-        }
-
         AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+
+        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+        // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
+        // Updated recommendation: "Allele frequency is >0.05 in any general continental population dataset of at least
+        // 2,000 observed alleles and found in a gene without a gene- or variant-specific BA1 modification." i.e. ExAC
+        // African, East Asian, European [non-Finnish], Latino, and South Asian
+        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variantEvaluation);
+        boolean isBa1ExcludedVariant = variantEvaluation.getGenomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
+        if (!isBa1ExcludedVariant && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
+            acmgEvidenceBuilder.add(BA1);
+            // BA1 is supposed to be used as a filtering criterion where no other evidence need be considered.
+            return acmgEvidenceBuilder.build();
+        }
+        // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
+        assignPM2(acmgEvidenceBuilder, frequencyData, modeOfInheritance);
+
 
         boolean hasCompatibleDiseaseMatches = !compatibleDiseaseMatches.isEmpty();
 
@@ -105,12 +160,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             // BS4 "Lack of segregation in affected members of a family"
             assignBS4(acmgEvidenceBuilder, variantEvaluation, proband);
         }
-
-        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-        // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-        assignPM2(acmgEvidenceBuilder, frequencyData);
-        // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-        assignBA1(acmgEvidenceBuilder, frequencyData);
 
         // PM3 "For recessive disorders, detected in trans with a pathogenic variant"
         assignPM3orBP2(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, contributingVariants, hasCompatibleDiseaseMatches);
@@ -184,6 +233,19 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         }
     }
 
+    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
+        return variantEffect == VariantEffect.INITIATOR_CODON_VARIANT
+                || variantEffect == VariantEffect.START_LOST
+                || variantEffect == VariantEffect.STOP_LOST
+                || variantEffect == VariantEffect.STOP_GAINED
+                || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
+                || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
+                || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
+                || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
+                || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
+                || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
+    }
+
     private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
         // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
         boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
@@ -206,19 +268,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             return true;
         }
         return (probandSex == Individual.Sex.FEMALE || probandSex == Individual.Sex.UNKNOWN) && modeOfInheritance == ModeOfInheritance.X_DOMINANT;
-    }
-
-    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.INITIATOR_CODON_VARIANT
-                || variantEffect == VariantEffect.START_LOST
-                || variantEffect == VariantEffect.STOP_LOST
-                || variantEffect == VariantEffect.STOP_GAINED
-                || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
-                || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
-                || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
-                || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
-                || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
-                || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
     }
 
     /**
@@ -365,16 +414,25 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     private void assignPM1(Map<AcmgCriterion, Evidence> acmgEvidenceBuilder) {
         // TODO - need UniProt domain / site info and clinvar counts
         //  can upgrade to STRONG
+        // https://www.cell.com/ajhg/fulltext/S0002-9297(22)00461-X suggests to limit the combined evidence from PM1 and PP3 to strong
     }
 
     /**
-     * PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
+     * PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes
+     * Project, or Exome Aggregation Consortium"
+     * See <a href=https://clinicalgenome.org/site/assets/files/5182/pm2_-_svi_recommendation_-_approved_sept2020.pdf>ClinGen SVI updated recommendations</a>.
+     * This method uses the recommended frequency filtering populations from gnomAD for their <a href=https://gnomad.broadinstitute.org/help/faf>Filtering allele frequency</a>
+     * which excludes the bottle-necked populations Ashkenazi Jewish (ASJ), European Finnish (FIN), Other (OTH), Amish (AMI)
+     * and Middle Eastern (MID).
      */
-    private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
-        if (!frequencyData.hasEspData() && !frequencyData.hasExacData() && !frequencyData.hasDbSnpData()) {
-            acmgEvidenceBuilder.add(PM2);
+    private void assignPM2(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData, ModeOfInheritance modeOfInheritance) {
+        // allow local frequency occurrences as these are unverifiable as to their size or content. Also do not use isRepresentedInDatabase()
+        // as this will exclude anything with an rsID which could be a ClinVar variant not seen in any population database.
+        boolean absentFromDatabase = frequencyData.isEmpty() || (frequencyData.size() == 1 && frequencyData.containsFrequencySource(FrequencySource.LOCAL));
+        boolean atVeryLowFrequencyIfRecessive = modeOfInheritance.isRecessive() && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) < 0.01f;
+        if (absentFromDatabase || atVeryLowFrequencyIfRecessive) {
+            acmgEvidenceBuilder.add(PM2, Evidence.SUPPORTING);
         }
-        // TODO: require disease incidence in carriers and penetrance to be able to calculate expected frequencies for AR
     }
 
     /**
@@ -520,15 +578,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         }
         if (humanGenePhenotypeScoreForMoi >= 0.6) {
             acmgEvidenceBuilder.add(PP4);
-        }
-    }
-
-    /**
-     * BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
-     */
-    private void assignBA1(AcmgEvidence.Builder acmgEvidenceBuilder, FrequencyData frequencyData) {
-        if (frequencyData.getMaxFreq() >= 5.0) {
-            acmgEvidenceBuilder.add(BA1);
         }
     }
 

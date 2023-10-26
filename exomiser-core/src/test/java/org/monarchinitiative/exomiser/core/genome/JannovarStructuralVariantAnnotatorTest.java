@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 
@@ -113,6 +114,52 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         // this is an EXON_LOSS
         assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.START_LOST));
+    }
+
+    @Test
+    public void wholeGeneInversion() {
+        // FGFR2 10:123237848-123357972
+        Variant variant = variant(chr10, 123237800, 123358000, "T", "<INV>", 0);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
+        System.out.println(annotations);
+
+        assertThat(annotations.size(), equalTo(1));
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
+    }
+
+    @Test
+    public void singleExonInversion() {
+        // FGFR2 10:123237848-123357972
+        Variant variant = variant(chr10, 123357475, 123357972, "T", "<INV>", 0);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
+
+        assertThat(annotations.size(), equalTo(1));
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        // this is an EXON_LOSS
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
+    }
+
+    @Test
+    public void upstreamGeneInversion() {
+        // FGFR2 10:123237848-123357972
+        Variant variant = variant(chr10, 123358000, 123359000, "T", "<INV>", 0);
+        List<VariantAnnotation> annotations = instance.annotate(variant);
+
+        assertThat(annotations.size(), equalTo(1));
+        VariantAnnotation variantAnnotation = annotations.get(0);
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
     }
 
     @Test
