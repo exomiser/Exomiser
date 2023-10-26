@@ -119,7 +119,7 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void wholeGeneInversion() {
         // FGFR2 10:123237848-123357972
-        Variant variant = variant(chr10, 123237800, 123358000, "T", "<INV>", 0);
+        GenomicVariant variant = variant(chr10, 123237800, 123358000, "T", "<INV>", 0);
         List<VariantAnnotation> annotations = instance.annotate(variant);
         System.out.println(annotations);
 
@@ -135,7 +135,7 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void singleExonInversion() {
         // FGFR2 10:123237848-123357972
-        Variant variant = variant(chr10, 123357475, 123357972, "T", "<INV>", 0);
+        GenomicVariant variant = variant(chr10, 123357475, 123357972, "T", "<INV>", 0);
         List<VariantAnnotation> annotations = instance.annotate(variant);
 
         assertThat(annotations.size(), equalTo(1));
@@ -150,7 +150,7 @@ class JannovarStructuralVariantAnnotatorTest {
     @Test
     public void upstreamGeneInversion() {
         // FGFR2 10:123237848-123357972
-        Variant variant = variant(chr10, 123358000, 123359000, "T", "<INV>", 0);
+        GenomicVariant variant = variant(chr10, 123358000, 123359000, "T", "<INV>", 0);
         List<VariantAnnotation> annotations = instance.annotate(variant);
 
         assertThat(annotations.size(), equalTo(1));
