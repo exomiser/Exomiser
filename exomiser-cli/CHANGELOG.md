@@ -5,6 +5,16 @@
 - Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
 
 
+## 13.3.0 2023-10-17
+
+- Updated Jannovar version to 0.41 to fix incorrect MT codon table usage [#521](https://github.com/exomiser/Exomiser/issues/521)
+- Downgraded PM2 - PM2_Supporting for variants lacking frequency information [#502](https://github.com/exomiser/Exomiser/issues/502).
+- Updated AcmgEvidence to fit a Bayesian points-based system [#514](https://github.com/exomiser/Exomiser/issues/514)
+- Removed ASJ, FIN, OTH ExAC and gnomAD populations from presets and examples [#513](https://github.com/exomiser/Exomiser/issues/513).
+- Fix for regression causing `<INV>` variants to be incorrectly down-ranked
+- Fix for issue [#486](https://github.com/exomiser/Exomiser/issues/486) where VCF output includes whitespace in INFO field.
+- Logs will now display elapsed time correctly if an analysis runs over an hour (!). 
+
 ## 13.2.1 2023-06-30
 
 - Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.

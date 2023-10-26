@@ -395,6 +395,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.2f : 0.8f;
             } else if (variantEffect.isSplicing()) {
                 variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.9f : 1.0f;
+            } else if (variantEffect == VariantEffect.CODING_TRANSCRIPT_VARIANT) {
+                // TODO: the INV variant effect annotation needs better resolution for potential overlapping regions.
+                //  Currently it is too basic and misses annotations such as START_LOSS or any of the splicing categories.
+                variantEffectScore = variantType().baseType() == VariantType.INV ? VariantEffectPathogenicityScore.INVERSION_SCORE : variantEffectScore;
             }
             // do not apply any scoring to INV as Jannovar uses this as a blanket annotation for any overlap of the
             // transcript, even if it only occurs in an intron or UTR, so we can't give this an outright score of 1.

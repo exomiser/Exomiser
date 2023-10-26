@@ -21,10 +21,13 @@
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
@@ -217,5 +220,47 @@ public class AcmgEvidenceTest {
                 .add(PM1, Evidence.VERY_STRONG)
                 .build();
         assertThat(instance.evidence(), equalTo(Map.of(PVS1, PVS1.evidence(), PM1, Evidence.VERY_STRONG)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "PVS1 PS1, 12, 0.999",
+            "PVS1 PM2 PM6 BP5, 11, 0.997",
+            "PVS1 PM2_Supporting, 9, 0.988",
+            "PS1 PS2 BP1, 7, 0.949",
+            "PS1 PS2 BP4 BP5, 6, 0.900",
+            "PS1 PS2 BS1, 4, 0.675",
+            "PM2 PP1, 3, 0.500",
+            "PM2, 2, 0.325",
+            "PP1, 1, 0.188",
+            "PP1 BP1, 0, 0.1",
+            "BP4, -1, 0.051",
+            "BP1, -1, 0.051",
+            "BP4_Moderate, -2, 0.025",
+            "BP1 BP2, -2, 0.025",
+            "BP4_Strong, -4, 0.006",
+            "BS1 BP1, -5, 0.003",
+            "BP4_VeryStrong, -8, 0.000", // There are no (current) recommendations where a Benign_VeryStrong is used, but it seems like a logical addition
+            "BA1, -8, 0.000", // BA1 is a bit of an anomaly - it's intended as a hard filter, so doesn't fit into the points system
+    })
+    void testPosteriorProb(String criteria, int points, double posteriorProb) {
+        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        assertThat(acmgEvidence.points(), equalTo(points));
+        assertThat(acmgEvidence.postProbPath(), closeTo(posteriorProb, 0.001));
+    }
+
+    private AcmgEvidence parseAcmgEvidence(String criteria) {
+        AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+        for (String criterion : criteria.split(" ")) {
+            String[] criteriaModifier = criterion.split("_");
+            AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criteriaModifier[0]);
+            if (criteriaModifier.length == 2) {
+                AcmgCriterion.Evidence evidence = AcmgCriterion.Evidence.parseValue(criteriaModifier[1]);
+                acmgEvidenceBuilder.add(acmgCriterion, evidence);
+            } else {
+                acmgEvidenceBuilder.add(acmgCriterion);
+            }
+        }
+        return acmgEvidenceBuilder.build();
     }
 }

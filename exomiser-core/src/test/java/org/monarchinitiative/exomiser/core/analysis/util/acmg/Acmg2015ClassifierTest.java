@@ -71,6 +71,7 @@ class Acmg2015ClassifierTest {
     @CsvSource({
 //            (i)   1 Very strong (PVS1) AND 1 moderate (PM1–PM6)
             "PVS1 PM1",
+            "PVS1 PP1", // updated rule https://clinicalgenome.org/site/assets/files/5182/pm2_-_svi_recommendation_-_approved_sept2020.pdf
 //            OR (ii)   1 Strong (PS1–PS4) AND 1–2 moderate (PM1–PM6)
             "PS1 PM1 PM2",
 //            OR (iii)   1 Strong (PS1–PS4) AND ≥2 supporting (PP1–PP5)
@@ -121,7 +122,7 @@ class Acmg2015ClassifierTest {
     @ParameterizedTest
     @CsvSource({
 //            (i)  Other criteria shown above are not met
-            "PVS1 PP1",
+//            "PVS1 PP1", - Changed to LP in https://clinicalgenome.org/site/assets/files/5182/pm2_-_svi_recommendation_-_approved_sept2020.pdf
             "PS1 PP1", // VUS_Hot
             "PM1 PM2 PP1", // VUS_Hot
 //            "PM1 PP1 PP2 PP3", // VUS_Hot - classified as LP

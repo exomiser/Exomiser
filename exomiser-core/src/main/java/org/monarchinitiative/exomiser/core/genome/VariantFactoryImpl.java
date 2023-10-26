@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -233,8 +235,11 @@ public class VariantFactoryImpl implements VariantFactory {
                         variantRecords.get(), annotatedVariants.get(), structuralVariants.get());
             }
             Duration duration = Duration.between(start, Instant.now());
-            long ms = duration.toMillis();
-            logger.info("Variant annotation finished in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
+            int hoursPart = duration.toHoursPart();
+            if (hoursPart > 0) {
+                logger.info("Variant annotation finished in {}h {}m {}s {}ms ({} ms)", hoursPart, duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart(), duration.toMillis());
+            }
+            logger.info("Variant annotation finished in {}m {}s {}ms ({} ms)", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart(), duration.toMillis());
         }
     }
 }

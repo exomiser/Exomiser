@@ -443,34 +443,35 @@ public class VariantEvaluationTest {
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-        "<INS>, CODING_SEQUENCE_VARIANT, 0.2",
-        "<INS:ME>, CODING_SEQUENCE_VARIANT, 0.2",
-        "<INV>, CODING_SEQUENCE_VARIANT, 0.8", // should be unreachable in production code
-        "<DEL>, CODING_SEQUENCE_VARIANT, 0.8",
-        "<DEL:ME>, CODING_SEQUENCE_VARIANT, 0.8",
-        "<DUP>, CODING_SEQUENCE_VARIANT, 0.8",
-        "<INS>, SPLICE_REGION_VARIANT, 0.9",
-        "<INS:ME>, SPLICE_REGION_VARIANT, 0.9",
-        "<INV>, SPLICE_REGION_VARIANT, 1.0", // should be unreachable in production code
-        "<DEL>, SPLICE_REGION_VARIANT, 1.0",
-        "<DEL:ME>, SPLICE_REGION_VARIANT, 1.0",
-        "<DUP>, SPLICE_REGION_VARIANT, 1.0",
-    })
-    void testSymbolicInsertionScores(String alt, VariantEffect variantEffect, float expected) {
-        VariantEvaluation sv = newBuilder(2, 1, 1, "C", alt, alt.startsWith("<DEL") ? -12345 : 12345)
-                .variantEffect(variantEffect)
-                .build();
-        assertThat(sv.getPathogenicityScore(), equalTo(expected));
-    }
-
     @Test
     public void testGetFailedFilterTypes() {
         Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.getFilterType());
 
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
         assertThat(instance.getFailedFilterTypes(), equalTo(expectedFilters));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "<INS>, CODING_SEQUENCE_VARIANT, 0.2",
+            "<INS:ME>, CODING_SEQUENCE_VARIANT, 0.2",
+            "<INV>, CODING_SEQUENCE_VARIANT, 0.8", // should be unreachable in production code
+            "<INV>, CODING_TRANSCRIPT_VARIANT, 0.6",
+            "<DEL>, CODING_SEQUENCE_VARIANT, 0.8",
+            "<DEL:ME>, CODING_SEQUENCE_VARIANT, 0.8",
+            "<DUP>, CODING_SEQUENCE_VARIANT, 0.8",
+            "<INS>, SPLICE_REGION_VARIANT, 0.9",
+            "<INS:ME>, SPLICE_REGION_VARIANT, 0.9",
+            "<INV>, SPLICE_REGION_VARIANT, 1.0", // should be unreachable in production code
+            "<DEL>, SPLICE_REGION_VARIANT, 1.0",
+            "<DEL:ME>, SPLICE_REGION_VARIANT, 1.0",
+            "<DUP>, SPLICE_REGION_VARIANT, 1.0",
+    })
+    void testSymbolicInsertionScores(String alt, VariantEffect variantEffect, float expected) {
+        VariantEvaluation sv = newBuilder(2, 1, 1, "C", alt, alt.startsWith("<DEL") ? -12345 : 12345)
+                .variantEffect(variantEffect)
+                .build();
+        assertThat(sv.getPathogenicityScore(), equalTo(expected));
     }
 
     @Test

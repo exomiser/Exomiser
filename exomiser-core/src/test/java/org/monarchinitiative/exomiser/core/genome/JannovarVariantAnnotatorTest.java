@@ -81,7 +81,7 @@ public class JannovarVariantAnnotatorTest {
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
-        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.12278533A>C"));
+        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.123256215T>G"));
         assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.1694A>C"));
         assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Glu565Ala)"));
     }
@@ -104,9 +104,61 @@ public class JannovarVariantAnnotatorTest {
         assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
         assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
-        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.12291429A>C"));
+        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.123243319T>G"));
         assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.2196-2A>C"));
         assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.?"));
+    }
+
+    @Test
+    void testAnnotateMitochondrialAlternateCodonStopGainVariant() {
+        TranscriptModel tmMTCYB = new GeneTranscriptModelBuilder("MT-CYB", "HGNC:7427", "ENST00000361789.2", 25, de.charite.compbio.jannovar.reference.Strand.FWD,
+                "ATGACCCCAATACGCAAAACTAACCCCCTAATAAAATTAATTAACCACTCATTCATCGAC" +
+                        "CTCCCCACCCCATCCAACATCTCCGCATGATGAAACTTCGGCTCACTCCTTGGCGCCTGC" +
+                        "CTGATCCTCCAAATCACCACAGGACTATTCCTAGCCATGCACTACTCACCAGACGCCTCA" +
+                        "ACCGCCTTTTCATCAATCGCCCACATCACTCGAGACGTAAATTATGGCTGAATCATCCGC" +
+                        "TACCTTCACGCCAATGGCGCCTCAATATTCTTTATCTGCCTCTTCCTACACATCGGGCGA" +
+                        "GGCCTATATTACGGATCATTTCTCTACTCAGAAACCTGAAACATCGGCATTATCCTCCTG" +
+                        "CTTGCAACTATAGCAACAGCCTTCATAGGCTATGTCCTCCCGTGAGGCCAAATATCATTC" +
+                        "TGAGGGGCCACAGTAATTACAAACTTACTATCCGCCATCCCATACATTGGGACAGACCTA" +
+                        "GTTCAATGAATCTGAGGAGGCTACTCAGTAGACAGTCCCACCCTCACACGATTCTTTACC" +
+                        "TTTCACTTCATCTTGCCCTTCATTATTGCAGCCCTAGCAACACTCCACCTCCTATTCTTG" +
+                        "CACGAAACGGGATCAAACAACCCCCTAGGAATCACCTCCCATTCCGATAAAATCACCTTC" +
+                        "CACCCTTACTACACAATCAAAGACGCCCTCGGCTTACTTCTCTTCCTTCTCTCCTTAATG" +
+                        "ACATTAACACTATTCTCACCAGACCTCCTAGGCGACCCAGACAATTATACCCTAGCCAAC" +
+                        "CCCTTAAACACCCCTCCCCACATCAAGCCCGAATGATATTTCCTATTCGCCTACACAATT" +
+                        "CTCCGATCCGTCCCTAACAAACTAGGAGGCGTCCTTGCCCTATTACTATCCATCCTCATC" +
+                        "CTAGCAATAATCCCCATCCTCCATATATCCAAACAACAAAGCATAATATTTCGCCCACTA" +
+                        "AGCCAATCACTTTATTGACTCCTAGCCGCAGACCTCCTCATTCTAACCTGAATCGGAGGA" +
+                        "CAACCAGTAAGCTACCCTTTTACCATCATTGGACAAGTAGCATCCGTACTATACTTCACA" +
+                        "ACAATCCTAATCCTAATACCAACTATCTCCCTAATTGAAAACAAAATACTCAAATGGGCC" +
+                        "T")
+                .buildTxRegion(14746, 15887) // zero-based coordinates
+                .buildCdsRegion(14746, 15887)
+                .addExon(14746, 15887)
+                .build();
+        JannovarData jannovarData = new JannovarData(TestFactory.getDefaultRefDict(), ImmutableList.of(tmMTCYB));;
+
+        JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), jannovarData, ChromosomalRegionIndex.empty());
+
+        // see https://www.mitomap.org/foswiki/bin/view/MITOMAP/VariantsCoding for know variants
+        // MT-CYB m.15150G>A p.(Trp135*)
+        // MT-CYB m.15722T>A p.(Trp326*)
+        List<VariantAnnotation> annotations = annotate(jannovarVariantAnnotator, "MT", 15150, "G", "A");
+        assertThat(annotations.size(), equalTo(1));
+
+        VariantAnnotation variantAnnotation = annotations.get(0);
+
+        assertThat(variantAnnotation.getGeneId(), equalTo("HGNC:7427"));
+        assertThat(variantAnnotation.getGeneSymbol(), equalTo("MT-CYB"));
+        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STOP_GAINED));
+        assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("MT-CYB"));
+        assertThat(transcriptAnnotation.getAccession(), equalTo("ENST00000361789.2"));
+        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
+        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.15150G>A")); // should be NC_012920.1:m.15150G>A
+        assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.404G>A"));
+        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Trp135*)")); // p.(Ter135=) using the standard eukaryotic codon table
     }
 
     @Test

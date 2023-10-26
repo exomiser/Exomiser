@@ -21,11 +21,10 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import de.charite.compbio.jannovar.reference.Strand;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.reference.*;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +44,7 @@ class TranscriptModelUtilTest {
     @Test
     void getTranscriptAccession() {
         TranscriptModel transcriptModel = new TranscriptModel("ENST12345678", null, TX_REGION, TX_REGION,
-                ImmutableList.of(TX_REGION), null, null, 0);
+                ImmutableList.of(TX_REGION), null, null, 0, false, false, Map.of(), Alignment.createUngappedAlignment(TX_REGION.length()));
         assertThat(TranscriptModelUtil.getTranscriptAccession(transcriptModel), equalTo("ENST12345678"));
     }
 
@@ -57,14 +56,14 @@ class TranscriptModelUtilTest {
     @Test
     void getTranscriptNullGeneIdNullTranscriptModelGeneId() {
         TranscriptModel transcriptModel = new TranscriptModel(null, null, TX_REGION, TX_REGION,
-                ImmutableList.of(TX_REGION), null, null, 0);
+                ImmutableList.of(TX_REGION), null, null, 0, false, false, Map.of(), Alignment.createUngappedAlignment(TX_REGION.length()));
         assertThat(TranscriptModelUtil.getTranscriptGeneId(transcriptModel), equalTo(""));
     }
 
     @Test
     void getTranscriptGeneId() {
         TranscriptModel transcriptModel = new TranscriptModel(null, null, TX_REGION, TX_REGION,
-                ImmutableList.of(TX_REGION), null, "GENE:12345", 0);
+                ImmutableList.of(TX_REGION), null, "GENE:12345", 0, false, false, Map.of(), Alignment.createUngappedAlignment(TX_REGION.length()));
         assertThat(TranscriptModelUtil.getTranscriptGeneId(transcriptModel), equalTo("GENE:12345"));
     }
 
@@ -76,14 +75,14 @@ class TranscriptModelUtilTest {
     @Test
     void getTranscriptNullGeneSymbolNullTranscriptModelGeneSymbol() {
         TranscriptModel transcriptModel = new TranscriptModel(null, null, TX_REGION, TX_REGION,
-                ImmutableList.of(TX_REGION), null, null, 0);
+                ImmutableList.of(TX_REGION), null, null, 0, false, false, Map.of(), Alignment.createUngappedAlignment(TX_REGION.length()));
         assertThat(TranscriptModelUtil.getTranscriptGeneSymbol(transcriptModel), equalTo("."));
     }
 
     @Test
     void getTranscriptGeneSymbol() {
         TranscriptModel transcriptModel = new TranscriptModel(null, "SYMBOL", TX_REGION, TX_REGION,
-                ImmutableList.of(TX_REGION), null, null, 0);
+                ImmutableList.of(TX_REGION), null, null, 0, false, false, Map.of(), Alignment.createUngappedAlignment(TX_REGION.length()));
         assertThat(TranscriptModelUtil.getTranscriptGeneSymbol(transcriptModel), equalTo("SYMBOL"));
     }
 }

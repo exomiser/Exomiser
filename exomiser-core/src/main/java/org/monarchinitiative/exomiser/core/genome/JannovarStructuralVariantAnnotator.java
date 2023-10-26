@@ -108,6 +108,8 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
         // [INSERTION, STRUCTURAL_VARIANT, CODING_SEQUENCE_VARIANT, CODING_TRANSCRIPT_VARIANT] -> CODING_SEQUENCE_VARIANT
         // This is a downstream, non-coding insertion so is probably uninteresting
         // [INSERTION, DOWNSTREAM_GENE_VARIANT, STRUCTURAL_VARIANT, CODING_TRANSCRIPT_VARIANT] -> DOWNSTREAM_GENE_VARIANT
+        // This is an inversion overlapping a coding transcript. Note that CODING_TRANSCRIPT_VARIANT is a MODIFIER impact
+        // [INVERSION, STRUCTURAL_VARIANT, CODING_TRANSCRIPT_VARIANT] -> CODING_TRANSCRIPT_VARIANT
         // TODO: This would be an ideal place to calculate a variantEffectScore (instead of in the VariantEffectPathogenicityScore)
         //  based on the SvAnna scoring system https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
         VariantEffect highestImpactEffect = getHighestImpactEffect(highestImpactAnnotation);
@@ -126,10 +128,12 @@ class JannovarStructuralVariantAnnotator implements VariantAnnotator {
     }
 
     private static VariantEffect filterEffects(Set<VariantEffect> variantEffects) {
-        return variantEffects.stream()
-                .filter(vaEff -> !(vaEff == INSERTION || vaEff == INVERSION || vaEff == STRUCTURAL_VARIANT))
-                .findFirst()
-                .orElse(DEFAULT_EFFECT);
+        for (VariantEffect varEff : variantEffects) {
+            if (!(varEff == INSERTION || varEff == INVERSION || varEff == STRUCTURAL_VARIANT)) {
+                return varEff;
+            }
+        }
+        return DEFAULT_EFFECT;
     }
 
     private List<TranscriptAnnotation> buildSvTranscriptAnnotations(List<SVAnnotation> svAnnotations) {

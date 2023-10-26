@@ -309,4 +309,28 @@ public class FrequencyDataTest {
         assertThat(instance.getScore(), equalTo(0.9857672f));
     }
 
+    @Test
+    void testSize() {
+        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
+        FrequencyData instance = FrequencyData.of(maxFrequency);
+        assertThat(FrequencyData.empty().size(), equalTo(0));
+        assertThat(instance.size(), equalTo(1));
+    }
+
+    @Test
+    void testIsEmpty() {
+        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
+        FrequencyData instance = FrequencyData.of(maxFrequency);
+        assertThat(FrequencyData.empty().isEmpty(), equalTo(true));
+        assertThat(instance.isEmpty(), equalTo(false));
+    }
+
+    @Test
+    void testContainsFrequencySource() {
+        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
+        FrequencyData instance = FrequencyData.of(maxFrequency);
+        assertThat(FrequencyData.empty().containsFrequencySource(LOCAL), equalTo(false));
+        assertThat(instance.containsFrequencySource(LOCAL), equalTo(false));
+        assertThat(instance.containsFrequencySource(THOUSAND_GENOMES), equalTo(true));
+    }
 }

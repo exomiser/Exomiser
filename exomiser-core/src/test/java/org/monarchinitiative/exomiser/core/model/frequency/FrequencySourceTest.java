@@ -27,6 +27,8 @@ package org.monarchinitiative.exomiser.core.model.frequency;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumSet;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -109,5 +111,17 @@ public class FrequencySourceTest {
     @Test
     public void testGetAllExacFrequencySources(){
         assertThat(FrequencySource.ALL_EXAC_SOURCES.size(), equalTo(7));
+    }
+
+    @Test
+    void nonFounderPopulations() {
+        // Finnish, Other, Ashkenazi
+        EnumSet<FrequencySource> founderPopulations = EnumSet.of(
+                FrequencySource.EXAC_FINNISH, FrequencySource.EXAC_OTHER,
+                FrequencySource.GNOMAD_E_FIN, FrequencySource.GNOMAD_G_FIN,
+                FrequencySource.GNOMAD_E_ASJ, FrequencySource.GNOMAD_G_ASJ,
+                FrequencySource.GNOMAD_E_OTH, FrequencySource.GNOMAD_G_OTH
+        );
+        assertThat(FrequencySource.NON_FOUNDER_POPS.containsAll(founderPopulations), equalTo(false));
     }
 }
