@@ -20,8 +20,10 @@
 
 package org.monarchinitiative.exomiser.data.genome;
 
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataFactory;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.monarchinitiative.exomiser.data.genome.config.AssemblyResources;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
@@ -36,6 +38,8 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,24 +55,23 @@ import static picocli.CommandLine.*;
 @Component
 @Command(name = "build", description = "Command to build the Exomiser genome data bundle.")
 public class BuildCommand implements Callable<Integer> {
-
     private static final Logger logger = LoggerFactory.getLogger(BuildCommand.class);
 
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     boolean usageHelpRequested;
 
-    @Option(names = "--build-dir", required = true)
-    private Path buildDir;
+    @Option(names = "--build-dir", description = "The directory in which to build the data (default: ${DEFAULT-VALUE}).")
+    private Path buildDir = Path.of(System.getProperty("user.dir"));
     private final AssemblyResources hg19Resources;
     private final AssemblyResources hg38Resources;
     private final Path jannovarIniFile;
 
-    @Option(names = "--assembly", required = true, converter = AssemblyConverter.class, description = "Genome assembly to build the data for - one of hg19 or hg38.")
+    @Option(names = "--assembly", required = true, converter = AssemblyConverter.class, description = "Genome assembly for the build. Either hg19 or hg38.", order = 0)
     private GenomeAssembly assembly;
-    @Option(names = "--version", required = true, description = "Data version for this build. Typically this would be of the form YYMM i.e. 2308 indicates the data was built in August 2023.")
-    private String version;
-    @Option(names = "--clinvar", description = "Flag to trigger building of ClinVar data.")
-    private boolean buildClinVar;
+    @Option(names = "--version", description = "Data version for this build. Typically this would be of the form yyMM i.e. 2308 indicates the data was built in August 2023 (default: ${DEFAULT-VALUE}).")
+    private String version = DateTimeFormatter.ofPattern("yyMM").format(LocalDate.now());
+    @Option(names = "--clinvar", arity = "0..1", converter = ClinVarOptionConverter.class, description = "Flag to trigger building of ClinVar data using the specified transcript data file. If not specified, the transcript_ensembl.ser for the current build will be used.")
+    private Path buildClinVar;
     @Option(names = "--transcripts", converter = TranscriptSourceConverter.class, split = ",", arity = "0..1", fallbackValue = "ensembl,refseq,ucsc", description = "List of transcript databases to build. If specified without parameter, will build all sources: ${FALLBACK-VALUE}")
     private List<TranscriptSource> transcriptSources;
     @Option(names = "--variants", split = ",", arity = "0..1", fallbackValue = "esp,exac,uk10k,topmed,dbsnp,gnomad-exome,gnomad-genome,dbnsfp", description = "List of variant data sources to build. If specified without parameter, will build all sources: ${FALLBACK-VALUE}")
@@ -102,8 +105,9 @@ public class BuildCommand implements Callable<Integer> {
         BuildInfo buildInfo = BuildInfo.of(assembly, version);
         String buildString = buildInfo.getBuildString();
         logger.info("Building version {}", buildString);
-        Path outPath = buildDir.resolve(buildString);
-        logger.info("Build directory set to {}", outPath);
+        Path outPath = getOutPath(buildDir, buildInfo);
+        logger.info("Build directory set to {}", buildDir);
+        logger.info("Build artefacts will be written to {}", outPath);
         if (!outPath.toFile().exists()) {
             Files.createDirectories(outPath);
         }
@@ -113,8 +117,8 @@ public class BuildCommand implements Callable<Integer> {
 
         if (shouldBuildAllData()) {
             logger.info("BUILDING ALLL THIe THINGS!");
-            buildClinVarData(buildInfo, outPath, assemblyResources.getClinVarResource());
             buildTranscriptData(buildInfo, outPath, List.of(TranscriptSource.values()));
+            buildClinVarData(buildInfo, outPath, assemblyResources.getClinVarResource());
             buildVariantData(buildInfo, outPath, new ArrayList<>(alleleResources.values()));
             buildGenomeData(buildInfo, outPath, assemblyResources);
         }
@@ -123,7 +127,7 @@ public class BuildCommand implements Callable<Integer> {
             buildTranscriptData(buildInfo, outPath, transcriptSources);
         }
 
-        if (buildClinVar) {
+        if (buildClinVar != null) {
             ClinVarAlleleResource clinVarResource = assemblyResources.getClinVarResource();
             buildClinVarData(buildInfo, outPath, clinVarResource);
         }
@@ -141,8 +145,12 @@ public class BuildCommand implements Callable<Integer> {
         return 0;
     }
 
+    private Path getOutPath(Path buildDir, BuildInfo buildInfo) {
+        return buildDir.resolve(buildInfo.getBuildString());
+    }
+
     private boolean shouldBuildAllData() {
-        return !buildGenome && !buildClinVar && transcriptSources == null && variantSources == null;
+        return !buildGenome && buildClinVar == null && transcriptSources == null && variantSources == null;
     }
 
     private void buildTranscriptData(BuildInfo buildInfo, Path outPath, List<TranscriptSource> transcriptSources) {
@@ -160,9 +168,19 @@ public class BuildCommand implements Callable<Integer> {
 
     private void buildClinVarData(BuildInfo buildInfo, Path outPath, ClinVarAlleleResource clinVarResource) {
         logger.info("Creating ClinVar database...");
+        Path transcriptFilePath = buildClinVar == null ? new ClinVarOptionConverter().fallbackPath() : buildClinVar;
+        JannovarData jannovarData = loadJannovarData(transcriptFilePath);
         ResourceDownloader.download(clinVarResource);
-        ClinVarBuildRunner clinVarWhiteListBuildRunner = new ClinVarBuildRunner(buildInfo, outPath, clinVarResource);
+        ClinVarBuildRunner clinVarWhiteListBuildRunner = new ClinVarBuildRunner(buildInfo, outPath, clinVarResource, jannovarData);
         clinVarWhiteListBuildRunner.run();
+    }
+
+    private static JannovarData loadJannovarData(Path transcriptFilePath) {
+        try {
+            return JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to load transcript data for ClinVar annotation from " + transcriptFilePath, e.getCause());
+        }
     }
 
     private void buildVariantData(BuildInfo buildInfo, Path outPath, List<AlleleResource> userDefinedAlleleResources) {
@@ -202,11 +220,28 @@ public class BuildCommand implements Callable<Integer> {
             return GenomeAssembly.parseAssembly(value);
         }
     }
+
     static class TranscriptSourceConverter implements CommandLine.ITypeConverter<TranscriptSource> {
 
         @Override
         public TranscriptSource convert(String value) throws Exception {
             return TranscriptSource.parseValue(value.trim());
+        }
+    }
+
+    private class ClinVarOptionConverter implements ITypeConverter<Path> {
+        @Override
+        public Path convert(String value) throws Exception {
+            if (value == null) {
+                return null;
+            }
+            return value.isEmpty() ? fallbackPath() : Path.of(value);
+        }
+
+        public Path fallbackPath() {
+            BuildInfo buildInfo = BuildInfo.of(assembly, version);
+            logger.info("Transcript file path for ClinVar annotation not specified for build {}. Using fallback path...", buildInfo.getBuildString());
+            return getOutPath(buildDir, buildInfo).resolve(TranscriptDataBuildRunner.transcriptFileName(buildInfo, TranscriptSource.ENSEMBL));
         }
     }
 }

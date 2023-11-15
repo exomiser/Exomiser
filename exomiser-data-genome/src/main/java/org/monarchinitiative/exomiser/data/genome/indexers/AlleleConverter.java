@@ -20,7 +20,9 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
@@ -91,43 +93,114 @@ public class AlleleConverter {
         for (Map.Entry<String, ClinVarData.ClinSig> entry : clinVarData.getIncludedAlleles().entrySet()) {
             builder.putIncludedAlleles(entry.getKey(), toProtoClinSig(entry.getValue()));
         }
+        builder.setGeneSymbol(clinVarData.getGeneSymbol());
+        builder.setVariantEffect(toProtoVariantEffect(clinVarData.getVariantEffect()));
         return builder.build();
     }
 
     private static ClinVar.ClinSig toProtoClinSig(ClinVarData.ClinSig clinSig) {
-        switch (clinSig){
-            case BENIGN:
-                return ClinVar.ClinSig.BENIGN;
-            case BENIGN_OR_LIKELY_BENIGN:
-                return ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
-            case LIKELY_BENIGN:
-                return ClinVar.ClinSig.LIKELY_BENIGN;
-            case UNCERTAIN_SIGNIFICANCE:
-                return ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
-            case LIKELY_PATHOGENIC:
-                return ClinVar.ClinSig.LIKELY_PATHOGENIC;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case PATHOGENIC:
-                return ClinVar.ClinSig.PATHOGENIC;
-            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
-                return ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case AFFECTS:
-                return ClinVar.ClinSig.AFFECTS;
-            case ASSOCIATION:
-                return ClinVar.ClinSig.ASSOCIATION;
-            case DRUG_RESPONSE:
-                return ClinVar.ClinSig.DRUG_RESPONSE;
-            case NOT_PROVIDED:
-                return ClinVar.ClinSig.NOT_PROVIDED;
-            case OTHER:
-                return ClinVar.ClinSig.OTHER;
-            case PROTECTIVE:
-                return ClinVar.ClinSig.PROTECTIVE;
-            case RISK_FACTOR:
-                return ClinVar.ClinSig.RISK_FACTOR;
-        }
-        throw new IllegalArgumentException(clinSig + " not a recognised value");
+        return switch (clinSig) {
+            case BENIGN -> ClinVar.ClinSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN -> ClinVar.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN -> ClinVar.ClinSig.LIKELY_BENIGN;
+            case UNCERTAIN_SIGNIFICANCE -> ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case LIKELY_PATHOGENIC -> ClinVar.ClinSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS -> ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case AFFECTS -> ClinVar.ClinSig.AFFECTS;
+            case ASSOCIATION -> ClinVar.ClinSig.ASSOCIATION;
+            case DRUG_RESPONSE -> ClinVar.ClinSig.DRUG_RESPONSE;
+            case NOT_PROVIDED -> ClinVar.ClinSig.NOT_PROVIDED;
+            case OTHER -> ClinVar.ClinSig.OTHER;
+            case PROTECTIVE -> ClinVar.ClinSig.PROTECTIVE;
+            case RISK_FACTOR -> ClinVar.ClinSig.RISK_FACTOR;
+        };
+    }
+
+    public static AlleleProto.VariantEffect toProtoVariantEffect(VariantEffect variantEffect) {
+        return switch (variantEffect) {
+            case CHROMOSOME_NUMBER_VARIATION -> AlleleProto.VariantEffect.CHROMOSOME_NUMBER_VARIATION;
+            case TRANSCRIPT_ABLATION -> AlleleProto.VariantEffect.TRANSCRIPT_ABLATION;
+            case EXON_LOSS_VARIANT -> AlleleProto.VariantEffect.EXON_LOSS_VARIANT;
+            case INVERSION -> AlleleProto.VariantEffect.INVERSION;
+            case INSERTION -> AlleleProto.VariantEffect.INSERTION;
+            case TRANSLOCATION -> AlleleProto.VariantEffect.TRANSLOCATION;
+            case FRAMESHIFT_ELONGATION -> AlleleProto.VariantEffect.FRAMESHIFT_ELONGATION;
+            case FRAMESHIFT_TRUNCATION -> AlleleProto.VariantEffect.FRAMESHIFT_TRUNCATION;
+            case FRAMESHIFT_VARIANT -> AlleleProto.VariantEffect.FRAMESHIFT_VARIANT;
+            case INTERNAL_FEATURE_ELONGATION -> AlleleProto.VariantEffect.INTERNAL_FEATURE_ELONGATION;
+            case FEATURE_TRUNCATION -> AlleleProto.VariantEffect.FEATURE_TRUNCATION;
+            case TRANSCRIPT_AMPLIFICATION -> AlleleProto.VariantEffect.TRANSCRIPT_AMPLIFICATION;
+            case COPY_NUMBER_CHANGE -> AlleleProto.VariantEffect.COPY_NUMBER_CHANGE;
+            case MNV -> AlleleProto.VariantEffect.MNV;
+            case COMPLEX_SUBSTITUTION -> AlleleProto.VariantEffect.COMPLEX_SUBSTITUTION;
+            case STOP_GAINED -> AlleleProto.VariantEffect.STOP_GAINED;
+            case STOP_LOST -> AlleleProto.VariantEffect.STOP_LOST;
+            case START_LOST -> AlleleProto.VariantEffect.START_LOST;
+            case SPLICE_ACCEPTOR_VARIANT -> AlleleProto.VariantEffect.SPLICE_ACCEPTOR_VARIANT;
+            case SPLICE_DONOR_VARIANT -> AlleleProto.VariantEffect.SPLICE_DONOR_VARIANT;
+            case RARE_AMINO_ACID_VARIANT -> AlleleProto.VariantEffect.RARE_AMINO_ACID_VARIANT;
+            // unused marker
+            case _SMALLEST_HIGH_IMPACT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case MISSENSE_VARIANT -> AlleleProto.VariantEffect.MISSENSE_VARIANT;
+            case INFRAME_INSERTION -> AlleleProto.VariantEffect.INFRAME_INSERTION;
+            case DISRUPTIVE_INFRAME_INSERTION -> AlleleProto.VariantEffect.DISRUPTIVE_INFRAME_INSERTION;
+            case INFRAME_DELETION -> AlleleProto.VariantEffect.INFRAME_DELETION;
+            case DISRUPTIVE_INFRAME_DELETION -> AlleleProto.VariantEffect.DISRUPTIVE_INFRAME_DELETION;
+            case FIVE_PRIME_UTR_TRUNCATION -> AlleleProto.VariantEffect.FIVE_PRIME_UTR_TRUNCATION;
+            case THREE_PRIME_UTR_TRUNCATION -> AlleleProto.VariantEffect.THREE_PRIME_UTR_TRUNCATION;
+            // unused marker
+            case _SMALLEST_MODERATE_IMPACT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case SPLICE_REGION_VARIANT -> AlleleProto.VariantEffect.SPLICE_REGION_VARIANT;
+            case STOP_RETAINED_VARIANT -> AlleleProto.VariantEffect.STOP_RETAINED_VARIANT;
+            case INITIATOR_CODON_VARIANT -> AlleleProto.VariantEffect.INITIATOR_CODON_VARIANT;
+            case SYNONYMOUS_VARIANT -> AlleleProto.VariantEffect.SYNONYMOUS_VARIANT;
+            case CODING_TRANSCRIPT_INTRON_VARIANT -> AlleleProto.VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT;
+            case FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT -> AlleleProto.VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT;
+            case FIVE_PRIME_UTR_EXON_VARIANT -> AlleleProto.VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT;
+            case THREE_PRIME_UTR_EXON_VARIANT -> AlleleProto.VariantEffect.THREE_PRIME_UTR_EXON_VARIANT;
+            case FIVE_PRIME_UTR_INTRON_VARIANT -> AlleleProto.VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT;
+            case THREE_PRIME_UTR_INTRON_VARIANT -> AlleleProto.VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT;
+            case NON_CODING_TRANSCRIPT_EXON_VARIANT -> AlleleProto.VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT;
+            case NON_CODING_TRANSCRIPT_INTRON_VARIANT -> AlleleProto.VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT;
+            // unused marker
+            case _SMALLEST_LOW_IMPACT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case DIRECT_TANDEM_DUPLICATION -> AlleleProto.VariantEffect.DIRECT_TANDEM_DUPLICATION;
+            case MOBILE_ELEMENT_DELETION -> AlleleProto.VariantEffect.MOBILE_ELEMENT_DELETION;
+            case MOBILE_ELEMENT_INSERTION -> AlleleProto.VariantEffect.MOBILE_ELEMENT_INSERTION;
+            // unused
+            case CUSTOM -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case UPSTREAM_GENE_VARIANT -> AlleleProto.VariantEffect.UPSTREAM_GENE_VARIANT;
+            case DOWNSTREAM_GENE_VARIANT -> AlleleProto.VariantEffect.DOWNSTREAM_GENE_VARIANT;
+            case INTERGENIC_VARIANT -> AlleleProto.VariantEffect.INTERGENIC_VARIANT;
+            case TFBS_ABLATION -> AlleleProto.VariantEffect.TFBS_ABLATION;
+            case TFBS_AMPLIFICATION -> AlleleProto.VariantEffect.TFBS_AMPLIFICATION;
+            case TF_BINDING_SITE_VARIANT -> AlleleProto.VariantEffect.TF_BINDING_SITE_VARIANT;
+            case REGULATORY_REGION_VARIANT -> AlleleProto.VariantEffect.REGULATORY_REGION_VARIANT;
+            case REGULATORY_REGION_ABLATION -> AlleleProto.VariantEffect.REGULATORY_REGION_ABLATION;
+            case REGULATORY_REGION_AMPLIFICATION -> AlleleProto.VariantEffect.REGULATORY_REGION_AMPLIFICATION;
+            case CONSERVED_INTRON_VARIANT -> AlleleProto.VariantEffect.CONSERVED_INTRON_VARIANT;
+            case INTRAGENIC_VARIANT -> AlleleProto.VariantEffect.INTRAGENIC_VARIANT;
+            case CONSERVED_INTERGENIC_VARIANT -> AlleleProto.VariantEffect.CONSERVED_INTERGENIC_VARIANT;
+            case STRUCTURAL_VARIANT -> AlleleProto.VariantEffect.STRUCTURAL_VARIANT;
+            case CODING_SEQUENCE_VARIANT -> AlleleProto.VariantEffect.CODING_SEQUENCE_VARIANT;
+            case INTRON_VARIANT -> AlleleProto.VariantEffect.INTRON_VARIANT;
+            case EXON_VARIANT -> AlleleProto.VariantEffect.EXON_VARIANT;
+            case SPLICING_VARIANT -> AlleleProto.VariantEffect.SPLICING_VARIANT;
+            case MIRNA -> AlleleProto.VariantEffect.MIRNA;
+            // unused
+            case GENE_VARIANT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case CODING_TRANSCRIPT_VARIANT -> AlleleProto.VariantEffect.CODING_TRANSCRIPT_VARIANT;
+            case NON_CODING_TRANSCRIPT_VARIANT -> AlleleProto.VariantEffect.NON_CODING_TRANSCRIPT_VARIANT;
+            // unused
+            case TRANSCRIPT_VARIANT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            // unused
+            case INTERGENIC_REGION -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            // unused
+            case CHROMOSOME -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+            case SEQUENCE_VARIANT -> AlleleProto.VariantEffect.SEQUENCE_VARIANT;
+        };
     }
 
 }

@@ -31,14 +31,10 @@ import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -127,16 +123,15 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         return annotations.stream()
                 .collect(groupingBy(Annotation::getGeneSymbol))
                 .values().stream()
-                //.peek(annotationList -> annotationList.forEach(annotation -> logger.info("{}", toAnnotationString(annotation))))
+                //.peek(annotationList -> annotationList.forEach(annotation -> logger.info("{}", toAnnotationString(genomeVariant, annotation))))
                 .map(annos -> new VariantAnnotations(genomeVariant, annos));
     }
 
-    private String toAnnotationString(VariantType variantType, SVAnnotation annotation) {
-        return variantType + ", " +
-                annotation.getVariant() + ", " +
+    private String toAnnotationString(GenomeVariant genomeVariant, Annotation annotation) {
+        return genomeVariant + ", " +
                 annotation.getTranscript().getGeneSymbol() + ", " +
                 annotation.getTranscript().getGeneID() + ", " +
-                annotation.getMostPathogenicVariantEffect() + ", " +
+                annotation.getMostPathogenicVarType() + ", " +
                 annotation.getPutativeImpact() + ", " +
                 annotation.getTranscript();
     }

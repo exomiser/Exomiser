@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -28,6 +29,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
@@ -160,10 +162,13 @@ public class AlleleProtoAdaptor {
         }
         ClinVarData.Builder builder = ClinVarData.builder();
         builder.alleleId(clinVar.getAlleleId());
+        builder.variationId(clinVar.getVariationId());
         builder.primaryInterpretation(toClinSig(clinVar.getPrimaryInterpretation()));
         builder.secondaryInterpretations(toClinSigSet(clinVar.getSecondaryInterpretationsList()));
         builder.includedAlleles(getToIncludedAlleles(clinVar.getIncludedAllelesMap()));
         builder.reviewStatus(clinVar.getReviewStatus());
+        builder.geneSymbol(clinVar.getGeneSymbol());
+        builder.variantEffect(toVariantEffect(clinVar.getVariantEffect()));
         return builder.build();
     }
 
@@ -192,39 +197,94 @@ public class AlleleProtoAdaptor {
     }
 
     private static ClinVarData.ClinSig toClinSig(ClinVar.ClinSig protoClinSig) {
-        switch (protoClinSig) {
-            case BENIGN:
-                return ClinVarData.ClinSig.BENIGN;
-            case BENIGN_OR_LIKELY_BENIGN:
-                return ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN;
-            case LIKELY_BENIGN:
-                return ClinVarData.ClinSig.LIKELY_BENIGN;
-            case UNCERTAIN_SIGNIFICANCE:
-                return ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE;
-            case LIKELY_PATHOGENIC:
-                return ClinVarData.ClinSig.LIKELY_PATHOGENIC;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case PATHOGENIC:
-                return ClinVarData.ClinSig.PATHOGENIC;
-            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
-                return ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case AFFECTS:
-                return ClinVarData.ClinSig.AFFECTS;
-            case ASSOCIATION:
-                return ClinVarData.ClinSig.ASSOCIATION;
-            case DRUG_RESPONSE:
-                return ClinVarData.ClinSig.DRUG_RESPONSE;
-            case OTHER:
-                return ClinVarData.ClinSig.OTHER;
-            case PROTECTIVE:
-                return ClinVarData.ClinSig.PROTECTIVE;
-            case RISK_FACTOR:
-                return ClinVarData.ClinSig.RISK_FACTOR;
-            case NOT_PROVIDED:
-            case UNRECOGNIZED:
-            default:
-                return ClinVarData.ClinSig.NOT_PROVIDED;
-        }
+        return switch (protoClinSig) {
+            case BENIGN -> ClinVarData.ClinSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN -> ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN -> ClinVarData.ClinSig.LIKELY_BENIGN;
+            case UNCERTAIN_SIGNIFICANCE -> ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case LIKELY_PATHOGENIC -> ClinVarData.ClinSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC -> ClinVarData.ClinSig.PATHOGENIC;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS ->
+                    ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case AFFECTS -> ClinVarData.ClinSig.AFFECTS;
+            case ASSOCIATION -> ClinVarData.ClinSig.ASSOCIATION;
+            case DRUG_RESPONSE -> ClinVarData.ClinSig.DRUG_RESPONSE;
+            case OTHER -> ClinVarData.ClinSig.OTHER;
+            case PROTECTIVE -> ClinVarData.ClinSig.PROTECTIVE;
+            case RISK_FACTOR -> ClinVarData.ClinSig.RISK_FACTOR;
+            default -> ClinVarData.ClinSig.NOT_PROVIDED;
+        };
+    }
+
+    private static VariantEffect toVariantEffect(AlleleProto.VariantEffect clinVarVariantEffect) {
+        return switch (clinVarVariantEffect) {
+            case SEQUENCE_VARIANT -> VariantEffect.SEQUENCE_VARIANT;
+            case CHROMOSOME_NUMBER_VARIATION -> VariantEffect.CHROMOSOME_NUMBER_VARIATION;
+            case TRANSCRIPT_ABLATION -> VariantEffect.TRANSCRIPT_ABLATION;
+            case EXON_LOSS_VARIANT -> VariantEffect.EXON_LOSS_VARIANT;
+            case INVERSION -> VariantEffect.INVERSION;
+            case INSERTION -> VariantEffect.INSERTION;
+            case TRANSLOCATION -> VariantEffect.TRANSLOCATION;
+            case FRAMESHIFT_ELONGATION -> VariantEffect.FRAMESHIFT_ELONGATION;
+            case FRAMESHIFT_TRUNCATION -> VariantEffect.FRAMESHIFT_TRUNCATION;
+            case FRAMESHIFT_VARIANT -> VariantEffect.FRAMESHIFT_VARIANT;
+            case INTERNAL_FEATURE_ELONGATION -> VariantEffect.INTERNAL_FEATURE_ELONGATION;
+            case FEATURE_TRUNCATION -> VariantEffect.FEATURE_TRUNCATION;
+            case TRANSCRIPT_AMPLIFICATION -> VariantEffect.TRANSCRIPT_AMPLIFICATION;
+            case COPY_NUMBER_CHANGE -> VariantEffect.COPY_NUMBER_CHANGE;
+            case MNV -> VariantEffect.MNV;
+            case COMPLEX_SUBSTITUTION -> VariantEffect.COMPLEX_SUBSTITUTION;
+            case STOP_GAINED -> VariantEffect.STOP_GAINED;
+            case STOP_LOST -> VariantEffect.STOP_LOST;
+            case START_LOST -> VariantEffect.START_LOST;
+            case SPLICE_ACCEPTOR_VARIANT -> VariantEffect.SPLICE_ACCEPTOR_VARIANT;
+            case SPLICE_DONOR_VARIANT -> VariantEffect.SPLICE_DONOR_VARIANT;
+            case RARE_AMINO_ACID_VARIANT -> VariantEffect.RARE_AMINO_ACID_VARIANT;
+            case MISSENSE_VARIANT -> VariantEffect.MISSENSE_VARIANT;
+            case INFRAME_INSERTION -> VariantEffect.INFRAME_INSERTION;
+            case DISRUPTIVE_INFRAME_INSERTION -> VariantEffect.DISRUPTIVE_INFRAME_INSERTION;
+            case INFRAME_DELETION -> VariantEffect.INFRAME_DELETION;
+            case DISRUPTIVE_INFRAME_DELETION -> VariantEffect.DISRUPTIVE_INFRAME_DELETION;
+            case FIVE_PRIME_UTR_TRUNCATION -> VariantEffect.FIVE_PRIME_UTR_TRUNCATION;
+            case THREE_PRIME_UTR_TRUNCATION -> VariantEffect.THREE_PRIME_UTR_TRUNCATION;
+            case SPLICE_REGION_VARIANT -> VariantEffect.SPLICE_REGION_VARIANT;
+            case STOP_RETAINED_VARIANT -> VariantEffect.STOP_RETAINED_VARIANT;
+            case INITIATOR_CODON_VARIANT -> VariantEffect.INITIATOR_CODON_VARIANT;
+            case SYNONYMOUS_VARIANT -> VariantEffect.SYNONYMOUS_VARIANT;
+            case CODING_TRANSCRIPT_INTRON_VARIANT -> VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT;
+            case FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT ->
+                    VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT;
+            case FIVE_PRIME_UTR_EXON_VARIANT -> VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT;
+            case THREE_PRIME_UTR_EXON_VARIANT -> VariantEffect.THREE_PRIME_UTR_EXON_VARIANT;
+            case FIVE_PRIME_UTR_INTRON_VARIANT -> VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT;
+            case THREE_PRIME_UTR_INTRON_VARIANT -> VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT;
+            case NON_CODING_TRANSCRIPT_EXON_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT;
+            case NON_CODING_TRANSCRIPT_INTRON_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT;
+            case DIRECT_TANDEM_DUPLICATION -> VariantEffect.DIRECT_TANDEM_DUPLICATION;
+            case MOBILE_ELEMENT_DELETION -> VariantEffect.MOBILE_ELEMENT_DELETION;
+            case MOBILE_ELEMENT_INSERTION -> VariantEffect.MOBILE_ELEMENT_INSERTION;
+            case UPSTREAM_GENE_VARIANT -> VariantEffect.UPSTREAM_GENE_VARIANT;
+            case DOWNSTREAM_GENE_VARIANT -> VariantEffect.DOWNSTREAM_GENE_VARIANT;
+            case INTERGENIC_VARIANT -> VariantEffect.INTERGENIC_VARIANT;
+            case TFBS_ABLATION -> VariantEffect.TFBS_ABLATION;
+            case TFBS_AMPLIFICATION -> VariantEffect.TFBS_AMPLIFICATION;
+            case TF_BINDING_SITE_VARIANT -> VariantEffect.TF_BINDING_SITE_VARIANT;
+            case REGULATORY_REGION_VARIANT -> VariantEffect.REGULATORY_REGION_VARIANT;
+            case REGULATORY_REGION_ABLATION -> VariantEffect.REGULATORY_REGION_ABLATION;
+            case REGULATORY_REGION_AMPLIFICATION -> VariantEffect.REGULATORY_REGION_AMPLIFICATION;
+            case CONSERVED_INTRON_VARIANT -> VariantEffect.CONSERVED_INTRON_VARIANT;
+            case INTRAGENIC_VARIANT -> VariantEffect.INTRAGENIC_VARIANT;
+            case CONSERVED_INTERGENIC_VARIANT -> VariantEffect.CONSERVED_INTERGENIC_VARIANT;
+            case STRUCTURAL_VARIANT -> VariantEffect.STRUCTURAL_VARIANT;
+            case CODING_SEQUENCE_VARIANT -> VariantEffect.CODING_SEQUENCE_VARIANT;
+            case INTRON_VARIANT -> VariantEffect.INTRON_VARIANT;
+            case EXON_VARIANT -> VariantEffect.EXON_VARIANT;
+            case SPLICING_VARIANT -> VariantEffect.SPLICING_VARIANT;
+            case MIRNA -> VariantEffect.MIRNA;
+            case CODING_TRANSCRIPT_VARIANT -> VariantEffect.CODING_TRANSCRIPT_VARIANT;
+            case NON_CODING_TRANSCRIPT_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_VARIANT;
+            case UNRECOGNIZED -> VariantEffect.SEQUENCE_VARIANT;
+        };
     }
 }

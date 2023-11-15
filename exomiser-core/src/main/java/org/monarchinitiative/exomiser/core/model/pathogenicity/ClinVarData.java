@@ -21,8 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.*;
 
@@ -65,6 +64,8 @@ public class ClinVarData {
 
     private final String reviewStatus;
     private final Map<String, ClinSig> includedAlleles;
+    private final String geneSymbol;
+    private final VariantEffect variantEffect;
 
     // https://www.medschool.umaryland.edu/Genetic_Variant_Interpretation_Tool1.html/
     // BP1, Missense variant in a gene for which primarily truncating variants are known to cause disease
@@ -115,9 +116,11 @@ public class ClinVarData {
         this.alleleId = builder.alleleId;
         this.variationId = builder.variationId;
         this.primaryInterpretation = builder.primaryInterpretation;
-        this.secondaryInterpretations = Sets.immutableEnumSet(builder.secondaryInterpretations);
+        this.secondaryInterpretations = Collections.unmodifiableSet(builder.secondaryInterpretations);
         this.reviewStatus = builder.reviewStatus.replace("_", " ");
-        this.includedAlleles = ImmutableMap.copyOf(builder.includedAlleles);
+        this.includedAlleles = Collections.unmodifiableMap(builder.includedAlleles);
+        this.geneSymbol = builder.geneSymbol;
+        this.variantEffect = builder.variantEffect;
     }
 
     public static ClinVarData empty() {
@@ -153,6 +156,14 @@ public class ClinVarData {
         return includedAlleles;
     }
 
+    public String getGeneSymbol() {
+        return geneSymbol;
+    }
+
+    public VariantEffect getVariantEffect() {
+        return variantEffect;
+    }
+
     /**
      * @return true if the secondary CLNSIG contains one of 'affects', 'other', 'association', 'risk factor' or
      * 'protective'. These are considered unimportant from the mendelian disease perspective. The category 'drug response'
@@ -163,49 +174,36 @@ public class ClinVarData {
     @JsonIgnore
     public boolean isSecondaryAssociationRiskFactorOrOther() {
         for (ClinVarData.ClinSig secondaryClinSig : secondaryInterpretations) {
-            switch (secondaryClinSig) {
-                case AFFECTS:
-                case OTHER:
-                case ASSOCIATION:
-                case RISK_FACTOR:
-                case PROTECTIVE:
-                    return true;
-                default:
-                    return false;
+            if (Objects.requireNonNull(secondaryClinSig) == ClinSig.AFFECTS || secondaryClinSig == ClinSig.OTHER || secondaryClinSig == ClinSig.ASSOCIATION || secondaryClinSig == ClinSig.RISK_FACTOR || secondaryClinSig == ClinSig.PROTECTIVE) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * Returns the ClinVar star rating according to the criteria provided at
-     * https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/#revstat_def
+     * Returns the <a href=https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/#revstat_def>ClinVar star rating</a>.
+     * In the VCF CLNREVSTAT the star ratings are mapped as follows:
      * <p>
-     * In the VCF CLNREVSTAT the start ratings are mapped as follows:
-     * <p>
+     * <pre>
      * 1* criteria_provided,_conflicting_interpretations
      * 1* criteria_provided,_single_submitter
      * 2* criteria_provided,_multiple_submitters,_no_conflicts
      * 3* reviewed_by_expert_panel
      * 4* practice_guideline
+     * </pre>
      *
      * @return an integer value between 0 (worst) and 4 (best)
      * @since 13.0.0
      */
     public int starRating() {
-        switch (reviewStatus) {
-            case "criteria provided, single submitter":
-            case "criteria provided, conflicting interpretations":
-                return 1;
-            case "criteria provided, multiple submitters, no conflicts":
-                return 2;
-            case "reviewed by expert panel":
-                return 3;
-            case "practice guideline":
-                return 4;
-            default:
-                return 0;
-        }
+        return switch (reviewStatus) {
+            case "criteria provided, single submitter", "criteria provided, conflicting interpretations" -> 1;
+            case "criteria provided, multiple submitters, no conflicts" -> 2;
+            case "reviewed by expert panel" -> 3;
+            case "practice guideline" -> 4;
+            default -> 0;
+        };
     }
 
     @Override
@@ -214,10 +212,10 @@ public class ClinVarData {
         if (o == null || getClass() != o.getClass()) return false;
         ClinVarData that = (ClinVarData) o;
         return Objects.equals(alleleId, that.alleleId) &&
-                primaryInterpretation == that.primaryInterpretation &&
-                Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
-                Objects.equals(reviewStatus, that.reviewStatus) &&
-                Objects.equals(includedAlleles, that.includedAlleles);
+               primaryInterpretation == that.primaryInterpretation &&
+               Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
+               Objects.equals(reviewStatus, that.reviewStatus) &&
+               Objects.equals(includedAlleles, that.includedAlleles);
     }
 
     @Override
@@ -228,12 +226,27 @@ public class ClinVarData {
     @Override
     public String toString() {
         return "ClinVarData{" +
-                "alleleId='" + alleleId + '\'' +
-                ", primaryInterpretation=" + primaryInterpretation +
-                ", secondaryInterpretations=" + secondaryInterpretations +
-                ", reviewStatus='" + reviewStatus + '\'' +
-                ", includedAlleles=" + includedAlleles +
-                '}';
+               "variationId='" + variationId + '\'' +
+               ", alleleId='" + alleleId + '\'' +
+               ", geneSymbol='" + geneSymbol + '\'' +
+               ", variantEffect='" + variantEffect + '\'' +
+               ", primaryInterpretation=" + primaryInterpretation +
+               ", secondaryInterpretations=" + secondaryInterpretations +
+               ", reviewStatus='" + reviewStatus + '\'' +
+               ", includedAlleles=" + includedAlleles +
+               '}';
+    }
+
+    public Builder toBuilder() {
+        return new Builder()
+                .variationId(variationId)
+                .alleleId(alleleId)
+                .primaryInterpretation(primaryInterpretation)
+                .secondaryInterpretations(secondaryInterpretations)
+                .reviewStatus(reviewStatus)
+                .includedAlleles(includedAlleles)
+                .geneSymbol(geneSymbol)
+                .variantEffect(variantEffect);
     }
 
     public static Builder builder() {
@@ -248,6 +261,9 @@ public class ClinVarData {
 
         private String reviewStatus = "";
         private Map<String, ClinSig> includedAlleles = Collections.emptyMap();
+
+        private String geneSymbol = "";
+        private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
 
         public Builder alleleId(String alleleId) {
             Objects.requireNonNull(alleleId);
@@ -269,7 +285,7 @@ public class ClinVarData {
 
         public Builder secondaryInterpretations(Set<ClinSig> secondaryInterpretations) {
             Objects.requireNonNull(secondaryInterpretations);
-            this.secondaryInterpretations = secondaryInterpretations;
+            this.secondaryInterpretations = secondaryInterpretations.isEmpty() ? Set.of() : EnumSet.copyOf(secondaryInterpretations);
             return this;
         }
 
@@ -282,6 +298,18 @@ public class ClinVarData {
         public Builder includedAlleles(Map<String, ClinSig> includedAlleles) {
             Objects.requireNonNull(includedAlleles);
             this.includedAlleles = includedAlleles;
+            return this;
+        }
+
+        public Builder geneSymbol(String geneSymbol) {
+            Objects.requireNonNull(geneSymbol);
+            this.geneSymbol = geneSymbol;
+            return this;
+        }
+
+        public Builder variantEffect(VariantEffect variantEffect) {
+            Objects.requireNonNull(variantEffect);
+            this.variantEffect = variantEffect;
             return this;
         }
 

@@ -48,9 +48,13 @@ public class TranscriptDataBuildRunner {
         this.transcriptSources = transcriptSources;
     }
 
+    public static String transcriptFileName(BuildInfo buildInfo, TranscriptSource transcriptSource) {
+        return buildInfo.getBuildString() + "_transcripts_" + transcriptSource + ".ser";
+    }
+
     public void run() {
         transcriptSources.forEach(transcriptSource -> {
-            String outputName = String.format("%s_transcripts_%s.ser", buildInfo.getBuildString(), transcriptSource);
+            String outputName = transcriptFileName(buildInfo, transcriptSource);
             logger.info("Building {}", outputName);
             jannovarDataFactory.buildAndWrite(buildInfo.getAssembly(), transcriptSource, outPath.resolve(outputName));
         });
