@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 

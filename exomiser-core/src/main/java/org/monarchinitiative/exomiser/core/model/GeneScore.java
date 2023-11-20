@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;

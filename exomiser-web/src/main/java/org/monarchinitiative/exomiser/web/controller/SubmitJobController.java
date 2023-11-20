@@ -59,7 +59,6 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.*;
 
 import static org.monarchinitiative.exomiser.core.prioritisers.PriorityType.*;
