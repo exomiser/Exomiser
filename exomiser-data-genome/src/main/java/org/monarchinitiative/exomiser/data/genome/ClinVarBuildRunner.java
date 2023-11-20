@@ -9,6 +9,7 @@ import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
@@ -90,10 +91,13 @@ public class ClinVarBuildRunner {
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         if (!variantAnnotations.isEmpty()) {
             VariantAnnotation variantAnnotation = variantAnnotations.get(0);
+            TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
             return allele.getClinVarData()
                     .toBuilder()
                     .geneSymbol(variantAnnotation.getGeneSymbol())
                     .variantEffect(variantAnnotation.getVariantEffect())
+//                builder.hgvsCdna(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsCdna());  // TODO need cDNA info for PS1/PM5
+//                builder.hgvsProtein(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsProtein()); // TODO need AA info for PS1/PM5
                     .build();
         }
         return allele.getClinVarData();
