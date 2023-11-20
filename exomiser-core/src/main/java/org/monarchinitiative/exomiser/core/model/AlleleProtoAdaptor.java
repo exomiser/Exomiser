@@ -33,6 +33,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.*;
 
@@ -102,9 +103,7 @@ public class AlleleProtoAdaptor {
 
     // This would make sense to have this here rather than having similar functionality in the MvStoreUtil
     // and the VariantKeyGenerator
-    public static AlleleKey toAlleleKey(Variant variant) {
-        // ARGH! I didn't put the frikking genome assembly in the alleleKey!
-        // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
+    public static AlleleKey toAlleleKey(GenomicVariant variant) {
         return AlleleKey.newBuilder()
                 .setChr(variant.contigId())
                 .setPosition(variant.start())
