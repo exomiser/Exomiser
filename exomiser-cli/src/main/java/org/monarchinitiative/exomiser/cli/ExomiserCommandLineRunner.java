@@ -20,9 +20,12 @@
 
 package org.monarchinitiative.exomiser.cli;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import org.apache.commons.cli.CommandLine;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.core.Exomiser;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisDurationFormatter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
 import org.slf4j.Logger;
@@ -71,11 +74,19 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             }
             Duration duration = Duration.between(timeStart, Instant.now());
             long ms = duration.toMillis();
-            logger.info("Finished batch of {} samples in {}m {}s ({} ms)", jobs.size(), (ms / 1000) / 60 % 60, ms / 1000 % 60, ms);
+            String formatted = AnalysisDurationFormatter.format(duration);
+            logger.info("Finished batch of {} samples in {} ({} ms)", jobs.size(), formatted, ms);
         }
     }
 
     private void runJob(JobProto.Job job) {
+        if (logger.isDebugEnabled()) {
+            try {
+                logger.debug("Running job {}", JsonFormat.printer().print(job));
+            } catch (InvalidProtocolBufferException e) {
+                throw new IllegalStateException(e);
+            }
+        }
         AnalysisResults analysisResults = exomiser.run(job);
         logger.info("Writing results...");
         AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
