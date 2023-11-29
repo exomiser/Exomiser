@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.filters.FilterResultCount;
+import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
@@ -213,6 +215,32 @@ public class AnalysisResultsTest {
         List<VariantEvaluation> unAnnotatedVariantEvaluations = Collections.singletonList(unAnnotatedVariantEvaluation);
 
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
+    }
+
+    @Test
+    void noFilterCounts() {
+        AnalysisResults instance = AnalysisResults.builder()
+                .build();
+        assertThat(instance.getFilterCounts(), equalTo(Collections.emptyList()));
+        assertThat(instance.getFilterCount(FilterType.FREQUENCY_FILTER), equalTo(new FilterResultCount(FilterType.FREQUENCY_FILTER, 0, 0)));
+    }
+
+    @Test
+    void filterCounts() {
+        FilterResultCount freqFilterResultCount = new FilterResultCount(FilterType.FREQUENCY_FILTER, 1000, 2000);
+        FilterResultCount pathFilterResultCount = new FilterResultCount(FilterType.PATHOGENICITY_FILTER, 3000, 0);
+        List<FilterResultCount> filterResultCounts = List.of(
+                freqFilterResultCount,
+                pathFilterResultCount
+        );
+        AnalysisResults instance = AnalysisResults.builder()
+                .filterCounts(filterResultCounts)
+                .build();
+
+        assertThat(instance.getFilterCounts(), equalTo(filterResultCounts));
+        assertThat(instance.getFilterCount(FilterType.FREQUENCY_FILTER), equalTo(freqFilterResultCount));
+        assertThat(instance.getFilterCount(FilterType.PATHOGENICITY_FILTER), equalTo(pathFilterResultCount));
+        assertThat(instance.getFilterCount(FilterType.VARIANT_EFFECT_FILTER), equalTo(new FilterResultCount(FilterType.VARIANT_EFFECT_FILTER, 0, 0)));
     }
 
     @Test

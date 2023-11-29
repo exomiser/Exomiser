@@ -20,10 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.monarchinitiative.exomiser.core.filters.FilterResult;
-import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
-import org.monarchinitiative.exomiser.core.filters.SimpleVariantFilterRunner;
-import org.monarchinitiative.exomiser.core.filters.VariantFilter;
+import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -49,13 +46,10 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters, FilterStats filterStats) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
-            variantFilters.forEach(filter -> {
-                FilterResult result = variantFilterRunner.run(filter, variantEvaluation);
-                filterStats.addResult(result);
-            });
+            variantFilters.forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
             return true;
         };
     }

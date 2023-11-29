@@ -29,14 +29,13 @@ package org.monarchinitiative.exomiser.core.analysis;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.filters.FilterResultCount;
+import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -59,6 +58,8 @@ public class AnalysisResults {
     @JsonIgnore
     private final List<VariantEvaluation> variantEvaluations;
 
+    private final List<FilterResultCount> filterResultCounts;
+
     public AnalysisResults(Builder builder) {
         this.sample = builder.sample;
         this.analysis = builder.analysis;
@@ -67,6 +68,7 @@ public class AnalysisResults {
 
         this.genes = builder.genes;
         this.variantEvaluations = builder.variantEvaluations;
+        this.filterResultCounts = builder.filtercounts;
     }
 
     /**
@@ -128,6 +130,25 @@ public class AnalysisResults {
      */
     public List<VariantEvaluation> getVariantEvaluations() {
         return variantEvaluations;
+    }
+
+
+    /**
+     *
+     * @return the {@link FilterResultCount} for this {@link Analysis}.
+     */
+    public List<FilterResultCount> getFilterCounts() {
+        return filterResultCounts;
+    }
+
+    public FilterResultCount getFilterCount(FilterType filterType) {
+        // this is only ever a max of ~5-10 so not worth making into a map
+        for (FilterResultCount filterResultCount : filterResultCounts) {
+            if (filterResultCount.filterType() == filterType) {
+                return filterResultCount;
+            }
+        }
+        return new FilterResultCount(filterType, 0, 0);
     }
 
     /**
@@ -250,6 +271,7 @@ public class AnalysisResults {
         private List<VariantEvaluation> variantEvaluations = Collections.emptyList();
         private List<Gene> genes = Collections.emptyList();
 
+        private List<FilterResultCount> filtercounts = Collections.emptyList();
 
         public Builder sample(Sample sample) {
             this.sample = Objects.requireNonNull(sample);
@@ -273,6 +295,11 @@ public class AnalysisResults {
 
         public Builder genes(List<Gene> geneList) {
             this.genes = Objects.requireNonNull(geneList);
+            return this;
+        }
+
+        public Builder filterCounts(List<FilterResultCount> filterResultCounts) {
+            this.filtercounts = Objects.requireNonNull(filterResultCounts);
             return this;
         }
 

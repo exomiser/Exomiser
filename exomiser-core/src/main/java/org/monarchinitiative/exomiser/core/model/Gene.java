@@ -481,6 +481,13 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return false;
     }
 
+    @Override
+    public boolean failedFilter(FilterType filterType) {
+        Objects.requireNonNull(filterType);
+        // Test variants too? Should return true if *all* variants have failed the filter?
+        return failedFilterTypes.contains(filterType) && !passedFilterTypes.contains(filterType);
+    }
+
     private FilterStatus getFilterStatus() {
          if (passedFilters()) {
             return FilterStatus.PASSED;

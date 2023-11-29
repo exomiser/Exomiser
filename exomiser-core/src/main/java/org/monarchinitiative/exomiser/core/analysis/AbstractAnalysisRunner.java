@@ -34,9 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -96,7 +94,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        FilterStats filterStats = new FilterStats();
 
         // How Exomiser uses the input sample data will depend on the analysis steps provided. These are grouped by
         // function (variant filter, gene filter, prioritiser) as an AnalysisGroup. Only a variant filter step/group
@@ -112,20 +109,22 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 // Variants take up 99% of all the memory in an analysis - this scales approximately linearly with the
                 //  sample size so for whole genomes this is best run as a stream to filter out the unwanted variants
                 //  with as many filters as possible in one go
-                variantEvaluations = loadAndFilterVariants(variantFactory, probandIdentifier, allGenes, analysisGroup, analysis, filterStats);
+                variantEvaluations = loadAndFilterVariants(variantFactory, probandIdentifier, allGenes, analysisGroup, analysis);
                 // This is done here as there are GeneFilter steps which may require Variants in the genes, or the
                 //  InheritanceModeDependent steps which definitely need them...
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, sample.getHpoIds(), new ArrayList<>(allGenes.values()), inheritanceModeAnnotator, filterStats);
+                runSteps(analysis, analysisGroup, sample.getHpoIds(), new ArrayList<>(allGenes.values()), inheritanceModeAnnotator);
             }
         }
 
-        if (!filterStats.isEmpty()) {
+        List<FilterResultCount> filterResultCounts = collectFilterCounts(analysis.getAnalysisSteps());
+
+        if (!filterResultCounts.isEmpty()) {
             logger.info("Variant filter stats are:");
-            filterStats.getFilterCounts().forEach(filterStat -> logger.info("{}: pass={} fail={}",
-                    filterStat.getFilterType(), filterStat.getPassCount(), filterStat.getFailCount()));
+            filterResultCounts.forEach(filterStat -> logger.info("{}: pass={} fail={}",
+                    filterStat.filterType(), filterStat.passCount(), filterStat.failCount()));
         }
 
         // If no variant steps have been run and there is a VCF present, don't load it here - See issues #129, #478
@@ -140,7 +139,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         logger.info("Analysed sample {} with {} genes containing {} filtered variants", probandIdentifier, genes.size(), variants.size());
         AnalysisResults analysisResults = AnalysisResults.builder()
-                // TODO: add FilterStats? - would make HTML output more meaningful
+                .filterCounts(filterResultCounts)
                 .sample(sample)
                 .analysis(analysis)
                 .sampleNames(sampleNames)
@@ -153,6 +152,24 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         String formatted = AnalysisDurationFormatter.format(duration);
         logger.info("Finished analysis in {} ({} ms)", formatted, ms);
         return analysisResults;
+    }
+
+    private List<FilterResultCount> collectFilterCounts(List<AnalysisStep> analysisSteps) {
+        // build filter counts
+        List<FilterType> filterStepTypes = analysisSteps.stream()
+                .filter(Filter.class::isInstance)
+                .map(step -> ((Filter<?>) step).getFilterType())
+                .collect(Collectors.toUnmodifiableList());
+
+        Map<FilterType, FilterResultCount> filterCountsByType = new EnumMap<>(FilterType.class);
+        // add all the filter counts from the gene and variant filter runners to the map
+        variantFilterRunner.filterCounts().forEach(filterCount -> filterCountsByType.put(filterCount.filterType(), filterCount));
+        geneFilterRunner.filterCounts().forEach(filterCount -> filterCountsByType.put(filterCount.filterType(), filterCount));
+
+        return filterStepTypes.stream()
+                .map(filterCountsByType::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private void logWarningIfSubOptimalAnalysisSumbitted(List<AnalysisGroup> analysisStepGroups) {
@@ -189,7 +206,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
     }
 
-    private List<VariantEvaluation> loadAndFilterVariants(VariantFactory variantFactory, String probandIdentifier, Map<String, Gene> allGenes, AnalysisGroup analysisGroup, Analysis analysis, FilterStats filterStats) {
+    private List<VariantEvaluation> loadAndFilterVariants(VariantFactory variantFactory, String probandIdentifier, Map<String, Gene> allGenes, AnalysisGroup analysisGroup, Analysis analysis) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = prepareVariantFilterSteps(analysis, analysisGroup);
 
@@ -199,16 +216,16 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         // this can be done using parallel which dramatically reduces runtime at the expense of RAM and
         //  inability to scale past one job running on one machine
         try (Stream<VariantEvaluation> variantStream = variantFactory.createVariantEvaluations()) {
-            filteredVariants = variantStream
+                    filteredVariants = variantStream
 //                        .parallel()
-                    .peek(variantLogger.logLoadedAndPassedVariants())
-                    .filter(isObservedInProband(probandIdentifier))
-                    .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
-                    .map(flagWhiteListedVariants())
-                    .filter(isAssociatedWithKnownGene(allGenes))
-                    .filter(runVariantFilters(variantFilters, filterStats))
-                    .peek(variantLogger.countPassedVariant())
-                    .toList();
+                        .peek(variantLogger.logLoadedAndPassedVariants())
+                        .filter(isObservedInProband(probandIdentifier))
+                        .map(geneReassigner::reassignRegulatoryAndNonCodingVariantAnnotations)
+                        .map(flagWhiteListedVariants())
+                        .filter(isAssociatedWithKnownGene(allGenes))
+                        .filter(runVariantFilters(variantFilters))
+                        .peek(variantLogger.countPassedVariant())
+                        .toList();
         }
         variantLogger.logResults();
         return filteredVariants;
@@ -284,7 +301,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @param variantFilters
      * @return
      */
-    abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters, FilterStats filterStats);
+    abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
 
     protected abstract Predicate<Gene> genesToScore();
 
@@ -310,19 +327,14 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(AnalysisGroup analysisGroup, List<String> hpoIds, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator, FilterStats filterStats) {
+    private void runSteps(Analysis analysis, AnalysisGroup analysisGroup, List<String> hpoIds, List<Gene> genes, InheritanceModeAnnotator inheritanceModeAnnotator) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisGroup.getAnalysisSteps()) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
                 analyseGeneCompatibilityWithInheritanceMode(genes, inheritanceModeAnnotator);
                 inheritanceModesCalculated = true;
             }
-
-            runStep(analysisStep, hpoIds, genes);
-
-            if (analysisStep instanceof Filter<?>) {
-                collectFilterStatsForFilter((Filter<?>) analysisStep, genes, filterStats);
-            }
+            runStep(analysis, analysisStep, hpoIds, genes);
         }
     }
 
@@ -333,49 +345,34 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
-    private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
-
+    private void runStep(Analysis analysis, AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
         if (analysisStep instanceof VariantFilter) {
-            VariantFilter filter = (VariantFilter) analysisStep;
-            logger.info("Running VariantFilter: {}", filter);
-            for (Gene gene : genes) {
-                variantFilterRunner.run(filter, gene.getVariantEvaluations());
-            }
-            return;
+            VariantFilter filter = wrapWithFilterDataProvider((VariantFilter) analysisStep, analysis);
+            runVariantFilterStep(filter, genes);
         }
-
-        if (analysisStep instanceof GeneFilter) {
-            GeneFilter filter = (GeneFilter) analysisStep;
-            logger.info("Running GeneFilter: {}", filter);
-            geneFilterRunner.run(filter, genes);
-            return;
+        else if (analysisStep instanceof GeneFilter) {
+            runGeneFilterStep((GeneFilter) analysisStep, genes);
         }
-
-        if (analysisStep instanceof Prioritiser) {
-            Prioritiser<?> prioritiser = (Prioritiser<?>) analysisStep;
-            logger.info("Running Prioritiser: {}", prioritiser);
-            prioritiser.prioritizeGenes(hpoIds, genes);
+        else if (analysisStep instanceof Prioritiser) {
+            runPrioritiserStep((Prioritiser<?>) analysisStep, hpoIds, genes);
         }
     }
 
-    private void collectFilterStatsForFilter(Filter<?> filter, List<Gene> genes, FilterStats filterStats) {
-        FilterType filterType = filter.getFilterType();
-        FilterResult passFilterResult = FilterResult.pass(filterType);
-        FilterResult failFilterResult = FilterResult.fail(filterType);
-        if (filter.isOnlyGeneDependent()) {
-            // Cater for the case where the PriorityScoreFilter is run before any variants are loaded
-            // don't add variant filter counts here as they can get mixed with genes which did have variants
-            // so the numbers don't add up correctly. The alternative is to implement FilterStats::addGeneResult
-            // but this also gets messy
-            genes.stream()
-                    .map(gene -> gene.passedFilter(filterType) ? passFilterResult : failFilterResult)
-                    .forEach(filterStats::addResult);
-        } else {
-            genes.stream()
-                    .flatMap(gene -> gene.getVariantEvaluations().stream())
-                    .map(variantEvaluation -> variantEvaluation.passedFilter(filterType) ? passFilterResult : failFilterResult)
-                    .forEach(filterStats::addResult);
+    private void runVariantFilterStep(VariantFilter variantFilter, List<Gene> genes) {
+        logger.info("Running VariantFilter: {}", variantFilter);
+        for (Gene gene : genes) {
+            variantFilterRunner.run(variantFilter, gene.getVariantEvaluations());
         }
+    }
+
+    private void runGeneFilterStep(GeneFilter geneFilter, List<Gene> genes) {
+        logger.info("Running GeneFilter: {}", geneFilter);
+        geneFilterRunner.run(geneFilter, genes);
+    }
+
+    private void runPrioritiserStep(Prioritiser<?> prioritiser, List<String> hpoIds, List<Gene> genes) {
+        logger.info("Running Prioritiser: {}", prioritiser);
+        prioritiser.prioritizeGenes(hpoIds, genes);
     }
 
     /**

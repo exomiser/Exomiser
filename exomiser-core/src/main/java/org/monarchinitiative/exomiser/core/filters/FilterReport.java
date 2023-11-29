@@ -25,8 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -48,7 +46,7 @@ public class FilterReport {
         this.filterType = filterType;
         this.passed = pass;
         this.failed = fail;
-        this.messages = ImmutableList.copyOf(messages);
+        this.messages = List.copyOf(messages);
     }
 
     public FilterType getFilterType() {

@@ -304,12 +304,18 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @Override
     public synchronized boolean passedFilters() {
+        // n.b. this is an _extremely_ hot method!
         return failedFilterTypes.isEmpty();
     }
 
     @Override
     public synchronized boolean passedFilter(FilterType filterType) {
         return !failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType);
+    }
+
+    @Override
+    public synchronized boolean failedFilter(FilterType filterType) {
+        return failedFilterTypes.contains(filterType) && !passedFilterTypes.contains(filterType);
     }
 
     private synchronized boolean isUnFiltered() {

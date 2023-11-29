@@ -26,6 +26,7 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.List;
 
@@ -34,6 +35,12 @@ import java.util.List;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SimpleGeneFilterRunner implements GeneFilterRunner {
+
+    private final FilterResultsCounter filterResultsCounter;
+
+    public SimpleGeneFilterRunner() {
+        filterResultsCounter = new FilterResultsCounter();
+    }
 
     @Override
     public List<Gene> run(GeneFilter filter, List<Gene> genes) {
@@ -49,7 +56,18 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
         FilterResult filterResult = filter.runFilter(gene);
         if (filterResult.wasRun()) {
             gene.addFilterResult(filterResult);
+            filterResultsCounter.logResultsForFilter(filter, gene);
         }
     }
 
+    @Override
+    public FilterResult logFilterResult(FilterResult filterResult) {
+        filterResultsCounter.logResult(filterResult);
+        return filterResult;
+    }
+
+    @Override
+    public List<FilterResultCount> filterCounts() {
+        return filterResultsCounter.filterResultCounts();
+    }
 }

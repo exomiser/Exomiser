@@ -39,6 +39,8 @@ public interface Filterable {
 
     public boolean passedFilter(FilterType filterType);
 
+    public boolean failedFilter(FilterType filterType);
+
     public boolean addFilterResult(FilterResult filterResult);
 
 }

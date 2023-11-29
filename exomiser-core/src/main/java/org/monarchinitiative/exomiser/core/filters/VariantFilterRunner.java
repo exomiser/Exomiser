@@ -41,6 +41,7 @@ public interface VariantFilterRunner extends FilterRunner<VariantFilter, Variant
     default FilterResult run(VariantFilter filter, VariantEvaluation variantEvaluation) {
         FilterResult filterResult = filter.runFilter(variantEvaluation);
         variantEvaluation.addFilterResult(filterResult);
+        logFilterResult(filterResult);
         return filterResult;
     }
 }

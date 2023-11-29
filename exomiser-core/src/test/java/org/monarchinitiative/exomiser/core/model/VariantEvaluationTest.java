@@ -652,6 +652,7 @@ public class VariantEvaluationTest {
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
 
         assertThat(instance.passedFilter(passedFilterType), is(true));
+        assertThat(instance.failedFilter(passedFilterType), is(false));
     }
 
     @Test
@@ -661,6 +662,14 @@ public class VariantEvaluationTest {
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
 
         assertThat(instance.passedFilter(filterType), is(false));
+        assertThat(instance.failedFilter(filterType), is(true));
+    }
+
+    @Test
+    public void testNeitherPassesNorFailsFilterWhenFilterWasNotRun() {
+        FilterType filterType = FAIL_FREQUENCY_RESULT.getFilterType();
+        assertThat(instance.passedFilter(filterType), is(false));
+        assertThat(instance.failedFilter(filterType), is(false));
     }
 
     @Test
