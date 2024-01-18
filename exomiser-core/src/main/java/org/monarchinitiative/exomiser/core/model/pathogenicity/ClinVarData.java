@@ -56,8 +56,7 @@ public class ClinVarData {
         RISK_FACTOR
     }
 
-    //https://www.ncbi.nlm.nih.gov/clinvar/?term=99222[alleleid]
-    private final String alleleId;
+    //https://www.ncbi.nlm.nih.gov/clinvar/variation/99222
     private final String variationId;
     private final ClinSig primaryInterpretation;
     private final Map<ClinSig, Integer> conflictingInterpretationCounts;
@@ -117,7 +116,6 @@ public class ClinVarData {
     //##INFO=<ID=SSR,Number=1,Type=Integer,Description="Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other">
 
     private ClinVarData(Builder builder) {
-        this.alleleId = builder.alleleId;
         this.variationId = builder.variationId;
         this.primaryInterpretation = builder.primaryInterpretation;
         Map<ClinSig, Integer> map = new EnumMap<>(ClinSig.class);
@@ -139,10 +137,6 @@ public class ClinVarData {
     @JsonIgnore
     public boolean isEmpty() {
         return this.equals(EMPTY);
-    }
-
-    public String getAlleleId() {
-        return alleleId;
     }
 
     public String getVariationId() {
@@ -232,7 +226,7 @@ public class ClinVarData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClinVarData that = (ClinVarData) o;
-        return Objects.equals(alleleId, that.alleleId) &&
+        return Objects.equals(variationId, that.variationId) &&
                primaryInterpretation == that.primaryInterpretation &&
                Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
                Objects.equals(reviewStatus, that.reviewStatus) &&
@@ -241,14 +235,13 @@ public class ClinVarData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(alleleId, primaryInterpretation, secondaryInterpretations, reviewStatus, includedAlleles);
+        return Objects.hash(variationId, primaryInterpretation, secondaryInterpretations, reviewStatus, includedAlleles);
     }
 
     @Override
     public String toString() {
         return "ClinVarData{" +
                "variationId='" + variationId + '\'' +
-               ", alleleId='" + alleleId + '\'' +
                ", geneSymbol='" + geneSymbol + '\'' +
                ", hgvsCdna='" + hgvsCdna + '\'' +
                ", hgvsProtein='" + hgvsProtein + '\'' +
@@ -264,7 +257,6 @@ public class ClinVarData {
     public Builder toBuilder() {
         return new Builder()
                 .variationId(variationId)
-                .alleleId(alleleId)
                 .primaryInterpretation(primaryInterpretation)
                 .secondaryInterpretations(secondaryInterpretations)
                 .reviewStatus(reviewStatus)
@@ -282,7 +274,6 @@ public class ClinVarData {
     }
 
     public static class Builder {
-        private String alleleId = "";
         private String variationId = "";
         private ClinSig primaryInterpretation = ClinSig.NOT_PROVIDED;
         private Set<ClinSig> secondaryInterpretations = EnumSet.noneOf(ClinSig.class);

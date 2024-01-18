@@ -345,7 +345,7 @@ public class MvStoreAlleleIndexerTest {
         updateAllele.setRsId("rs534165942");
         updateAllele.addValue(AlleleProperty.EXAC_NFE, 2.0f);
         ClinVarData alleleClinVarData = ClinVarData.builder()
-                .alleleId("12345")
+                .variationId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
                 .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))

@@ -335,7 +335,7 @@
                                       th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
                                 <span th:case="*" class="label label-default"
                                       th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
-                                <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                                <a th:href="@{|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId}|}"
                                    th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                     (criteria_provided,_single_submitter)
                                 </a>
@@ -479,7 +479,7 @@
                                   th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
                             <span th:case="*" class="label label-default"
                                   th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
-                            <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
+                            <a th:href="@{|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId}|}"
                                th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                 (criteria_provided,_single_submitter)
                             </a>

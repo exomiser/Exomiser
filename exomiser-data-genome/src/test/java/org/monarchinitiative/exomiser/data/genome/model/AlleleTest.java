@@ -76,7 +76,7 @@ public class AlleleTest {
     public void testAddClinVar() {
         Allele instance = new Allele(1, 123456, "A", "C");
         assertThat(instance.hasClinVarData(), is(false));
-        ClinVarData clinVarData = ClinVarData.builder().alleleId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        ClinVarData clinVarData = ClinVarData.builder().variationId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
         instance.setClinVarData(clinVarData);
         assertThat(instance.hasClinVarData(), is(true));
         assertThat(instance.getClinVarData(), equalTo(clinVarData));

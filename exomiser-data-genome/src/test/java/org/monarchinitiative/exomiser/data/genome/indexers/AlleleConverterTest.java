@@ -41,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AlleleConverterTest {
 
     private static final ClinVarData CLINVAR_DATA = ClinVarData.builder()
-            .alleleId("12334")
+            .variationId("12334")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE))
             .reviewStatus("yada-yada")
@@ -58,7 +58,7 @@ public class AlleleConverterTest {
             .build();
 
     private static final ClinVar PROTO_CLINVAR = ClinVar.newBuilder()
-            .setAlleleId("12334")
+            .setVariationId("12334")
             .setPrimaryInterpretation(ClinVar.ClinSig.PATHOGENIC)
             .addSecondaryInterpretations(ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE)
             .addSecondaryInterpretations(ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)

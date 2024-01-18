@@ -21,5 +21,5 @@
 INSERT INTO sv_path
 SELECT *
 FROM CSVREAD('${import.path}/clinvar-sv.pg',
-             'chromosome|start|end|change_length|variant_type|db_var_id|source|rcv_id|allele_id|clin_sig|clin_rev_stat',
+             'chromosome|start|end|change_length|variant_type|db_var_id|source|rcv_id|variation_id|clin_sig|clin_rev_stat',
              'charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');

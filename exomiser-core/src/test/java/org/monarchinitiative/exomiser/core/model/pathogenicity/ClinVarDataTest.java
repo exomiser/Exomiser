@@ -39,7 +39,7 @@ public class ClinVarDataTest {
     public void testEmptyBuilder() {
         ClinVarData instance = ClinVarData.builder().build();
 
-        assertThat(instance.getAlleleId(), equalTo(""));
+        assertThat(instance.getVariationId(), equalTo(""));
         assertThat(instance.getPrimaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
         assertThat(instance.getSecondaryInterpretations(), equalTo(Collections.emptySet()));
         assertThat(instance.getReviewStatus(), equalTo(""));
@@ -58,7 +58,6 @@ public class ClinVarDataTest {
         Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
                 .variationId(variationId)
-                .alleleId(alleleId)
                 .geneSymbol(geneSymbol)
                 .variantEffect(variantEffect)
                 .primaryInterpretation(clinSig)
@@ -67,7 +66,6 @@ public class ClinVarDataTest {
                 .includedAlleles(included)
                 .build();
 
-        assertThat(instance.getAlleleId(), equalTo(alleleId));
         assertThat(instance.getVariationId(), equalTo(variationId));
         assertThat(instance.getGeneSymbol(), equalTo(geneSymbol));
         assertThat(instance.getVariantEffect(), equalTo(variantEffect));
@@ -86,7 +84,6 @@ public class ClinVarDataTest {
         String reviewStatus = "multiple_submitters,_no_conflict";
         Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
-                .alleleId(alleleId)
                 .primaryInterpretation(clinSig)
                 .secondaryInterpretations(secondaryInterpretations)
                 .reviewStatus(reviewStatus)

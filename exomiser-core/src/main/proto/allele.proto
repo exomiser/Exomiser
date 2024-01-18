@@ -42,7 +42,7 @@ message ClinVar {
         RISK_FACTOR = 14;
     }
 
-    string alleleId = 1;
+    string alleleId = 1 [deprecated = true];
     ClinSig primaryInterpretation = 2;
     repeated ClinSig secondaryInterpretations = 3;
     string reviewStatus = 4;

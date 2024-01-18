@@ -83,7 +83,6 @@ public class AlleleConverter {
 
     public static ClinVar toProtoClinVar(ClinVarData clinVarData) {
         ClinVar.Builder builder = ClinVar.newBuilder();
-        builder.setAlleleId(clinVarData.getAlleleId());
         builder.setVariationId(clinVarData.getVariationId());
         builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
         for (Map.Entry<ClinVarData.ClinSig, Integer> entry : clinVarData.getConflictingInterpretationCounts().entrySet()) {
@@ -98,6 +97,8 @@ public class AlleleConverter {
         }
         builder.setGeneSymbol(clinVarData.getGeneSymbol());
         builder.setVariantEffect(toProtoVariantEffect(clinVarData.getVariantEffect()));
+        builder.setHgvsCdna(clinVarData.getHgvsCdna());
+        builder.setHgvsProtein(clinVarData.getHgvsProtein());
         return builder.build();
     }
 

@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -145,7 +146,7 @@ public class AlleleProtoAdaptorTest {
     public void parseClinVarData() {
 
         ClinVar clinVar = ClinVar.newBuilder()
-                .setAlleleId("12345")
+                .setVariationId("12345")
                 .setPrimaryInterpretation(ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .addSecondaryInterpretations(ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC)
                 .addSecondaryInterpretations(ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE)
@@ -157,7 +158,7 @@ public class AlleleProtoAdaptorTest {
                 .build();
 
         ClinVarData expected = ClinVarData.builder()
-                .alleleId("12345")
+                .variationId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .secondaryInterpretations(EnumSet.of(
                         ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,

@@ -233,7 +233,7 @@ public class PathogenicityDataTest {
 
     @Test
     public void testClinVarData() {
-        ClinVarData clinVarData = ClinVarData.builder().alleleId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        ClinVarData clinVarData = ClinVarData.builder().variationId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
         PathogenicityData instance = PathogenicityData.of(clinVarData, POLYPHEN_PASS);
         assertThat(instance.hasClinVarData(), is(true));
         assertThat(instance.getClinVarData(), equalTo(clinVarData));

@@ -107,7 +107,7 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
 
     private StringJoiner createClinVarInfo(ClinVarData clinVarData) {
         StringJoiner stringJoiner = new StringJoiner(";");
-        stringJoiner.add("ALLELEID=" + clinVarData.getAlleleId());
+        stringJoiner.add("VARIATIONID=" + clinVarData.getVariationId());
         stringJoiner.add("CLNSIG=" + clinVarData.getPrimaryInterpretation());
         stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus().replace(" ", "_"));
         stringJoiner.add("STARS=" + clinVarData.starRating());

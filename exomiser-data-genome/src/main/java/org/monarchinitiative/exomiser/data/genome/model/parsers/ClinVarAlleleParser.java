@@ -67,9 +67,6 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             String key = keyValue[0];
             String value = keyValue[1];
             switch (key) {
-                case "ALLELEID":
-                    clinVarBuilder.alleleId(value);
-                    break;
                 case "CLNSIG":
                     String[] clinsigs = value.split(",_");
                     ClinSig primary = parseClinSig(clinsigs[0]);

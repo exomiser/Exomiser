@@ -160,7 +160,6 @@ public class AlleleProtoAdaptor {
             return ClinVarData.empty();
         }
         ClinVarData.Builder builder = ClinVarData.builder();
-        builder.alleleId(clinVar.getAlleleId());
         builder.variationId(clinVar.getVariationId());
         builder.primaryInterpretation(toClinSig(clinVar.getPrimaryInterpretation()));
         builder.conflictingInterpretationCounts(toConflictCounts(clinVar.getClinSigCountsMap()));

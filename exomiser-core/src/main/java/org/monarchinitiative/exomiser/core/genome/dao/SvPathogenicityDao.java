@@ -194,7 +194,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
             if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
                 ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
                 ClinVarData clinVarData = ClinVarData.builder()
-                        .alleleId(alleleId)
+                        .variationId(alleleId)
                         .primaryInterpretation(sig)
                         .reviewStatus(clinRevStat)
                         .build();

@@ -57,21 +57,11 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
 
     @Test
     public void testUnwantedInfoField() {
-        String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;UNWANTED=0.003;FIELDS=these_should_not_produce_anything";
+        String line = "1	28590	54321	T	TTGG	999	PASS	ALLELEID=12345;UNWANTED=0.003;FIELDS=these_should_not_produce_anything;RS=11111111";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
+        expected.setRsId("11111111");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
-                .build());
-
-        assertParseLineEquals(line, List.of(expected));
-    }
-
-    @Test
-    public void testParseAlleleId() {
-        String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345";
-        Allele expected = new Allele(1, 28590, "T", "TTGG");
-        expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
+                .variationId("54321")
                 .build());
 
         assertParseLineEquals(line, List.of(expected));
@@ -83,7 +73,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setRsId("54321");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .variationId("54321")
                 .build());
 
@@ -96,7 +85,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(7, 117199644, "ATCT", "A");
         expected.setRsId("7105");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("22144")
+                .variationId("7105")
                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
                 .reviewStatus("practice_guideline")
                 .build());
@@ -110,7 +99,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(10, 123256215, "T", "C");
         expected.setRsId("121918506");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("361707")
+                .variationId("374823")
                 .primaryInterpretation(ClinVarData.ClinSig.LIKELY_PATHOGENIC)
                 .reviewStatus("criteria_provided,_single_submitter")
                 .build());
@@ -123,7 +112,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIG=Benign/Likely_benign";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN)
                 .build());
 
@@ -135,7 +123,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIG=Pathogenic/Likely_pathogenic,_other,_association";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC)
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.OTHER, ClinVarData.ClinSig.ASSOCIATION))
                 .build());
@@ -147,10 +134,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
     public void testParseClnSigUnknownValue() {
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIG=WIBBLE!";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
-        expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
-                .primaryInterpretation(ClinVarData.ClinSig.NOT_PROVIDED)
-                .build());
 
         assertParseLineEquals(line, List.of(expected));
     }
@@ -161,7 +144,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNREVSTAT=criteria_provided,_conflicting_interpretations";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .reviewStatus("criteria_provided,_conflicting_interpretations")
                 .build());
 
@@ -173,7 +155,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIGINCL=424752:Pathogenic";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .includedAlleles(Map.of("424752", ClinVarData.ClinSig.PATHOGENIC))
                 .build());
 
@@ -185,7 +166,6 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNSIGINCL=424752:Pathogenic|15612:other";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("12345")
                 .includedAlleles(Map.of(
                         "424752", ClinVarData.ClinSig.PATHOGENIC,
                         "15612", ClinVarData.ClinSig.OTHER
@@ -201,7 +181,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         Allele expected = new Allele(3, 39307162, "G", "A");
         expected.setRsId("25511");
         expected.setClinVarData(ClinVarData.builder()
-                .alleleId("36774")
+                .variationId("25511")
                 .reviewStatus("no interpretation for the single variant")
                 .includedAlleles(Map.of(
                         "8152", ClinVarData.ClinSig.PATHOGENIC
@@ -210,6 +190,23 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
 
         assertParseLineEquals(line, List.of(expected));
     }
+
+    @Test
+    void testParseClinSigConf() {
+        String line = "13\t100515567\t218256\tG\tA\t.\t.\tCLNREVSTAT=criteria_provided,_conflicting_interpretations;CLNSIG=Conflicting_interpretations_of_pathogenicity;CLNSIGCONF=Pathogenic(5)|Uncertain_significance(1);RS=369982920";
+        Allele expected = new Allele(13, 100515567, "G", "A");
+        expected.setRsId("369982920");
+        expected.setClinVarData(ClinVarData.builder()
+                .variationId("218256")
+                .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .reviewStatus("criteria_provided,_conflicting_interpretations")
+                // CLNSIGCONF=Pathogenic(5)|Uncertain_significance(1)
+                .conflictingInterpretationCounts(Map.of(ClinVarData.ClinSig.PATHOGENIC, 5, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 1))
+                .build());
+
+        assertParseLineEquals(line, List.of(expected));
+    }
+
     //CLNSIGINCL=424752:Pathogenic
     //CLNSIGINCL=15127:other|15128:other|15334:Pathogenic|15335:Pathogenic|15336:Pathogenic|15337:Pathogenic|15610:Pathogenic|15612:other
 

@@ -73,7 +73,7 @@ public class VariantDataServiceImplTest {
     @Mock
     private PathogenicityDao svPathogenicityDao;
 
-    private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().alleleId("12345")
+    private static final ClinVarData PATH_CLINVAR_DATA = ClinVarData.builder().variationId("12345")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .build();
     private static final PathogenicityData PATH_DATA = PathogenicityData.of(
