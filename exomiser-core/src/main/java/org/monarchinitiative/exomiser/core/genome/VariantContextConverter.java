@@ -69,7 +69,7 @@ public class VariantContextConverter {
             logger.debug("Unknown contig for {} unable to convert to variant", variantContext);
             return null;
         }
-        String id = variantContext.getID();
+        String id = variantContext.hasID() ? variantContext.getID() : "";
         int start = variantContext.getStart();
         String ref = getBaseString(variantContext.getReference().getBases());
         // Symbolic variants are 'symbolic' in that they have no reported bases and/or contain non-base characters '<>[].'

@@ -182,7 +182,6 @@ public class VariantFactoryImpl implements VariantFactory {
                 .genomeAssembly(genomeAssembly)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
-                .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())
                 .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual());
