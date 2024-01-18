@@ -22,10 +22,9 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.CoordinateSystem;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
 import org.springframework.cache.interceptor.SimpleKey;
 
@@ -46,9 +45,7 @@ public class VariantKeyGeneratorTest {
 
     @Test
     public void returnsKeyForVariant() throws Exception {
-        Variant variant = VariantEvaluation.builder()
-                .variant(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T")
-                .build();
+        GenomicVariant variant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T");
         // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches
         // created in version 10.1.1 it's OK to use the AlleleKey as the cache key
         AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
