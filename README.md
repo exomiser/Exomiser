@@ -56,7 +56,7 @@ For further instructions on installing and running please refer to the [README.m
 
 #### Running it
 
-Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on how to configure and run the Exomiser.
+Please refer to the [manual](https://exomiser.readthedocs.io/en/latest/) for details on how to configure and run the Exomiser.
 
 #### Demo site
 
