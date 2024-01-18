@@ -30,6 +30,7 @@ import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -142,5 +143,18 @@ public class AlleleConverterTest {
     @Test
     public void convertClinVar() {
         assertThat(AlleleConverter.toProtoClinVar(CLINVAR_DATA), equalTo(PROTO_CLINVAR));
+    }
+
+    @Test
+    public void convertClinVarConflictingInterpretationCounts() {
+        ClinVarData clinVarData = ClinVarData.builder()
+                .conflictingInterpretationCounts(Map.of(ClinVarData.ClinSig.PATHOGENIC, 3, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 2))
+                .build();
+
+        ClinVar expected = ClinVar.newBuilder()
+                .putAllClinSigCounts(Map.of("PATHOGENIC", 3, "UNCERTAIN_SIGNIFICANCE", 2))
+                .build();
+
+        assertThat(AlleleConverter.toProtoClinVar(clinVarData), equalTo(expected));
     }
 }

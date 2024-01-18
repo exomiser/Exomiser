@@ -349,6 +349,7 @@ public class SubmitJobController {
         model.addAttribute("ucscAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
         model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         model.addAttribute("pValueFormatter", new HtmlResultsWriter.ScientificDecimalFormat("0.0E0"));
+        model.addAttribute("conflictingInterpretationsFormatter", new HtmlResultsWriter.ConflictingInterpretationsFormatter());
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {

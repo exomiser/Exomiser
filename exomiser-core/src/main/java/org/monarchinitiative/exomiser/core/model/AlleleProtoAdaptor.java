@@ -163,12 +163,26 @@ public class AlleleProtoAdaptor {
         builder.alleleId(clinVar.getAlleleId());
         builder.variationId(clinVar.getVariationId());
         builder.primaryInterpretation(toClinSig(clinVar.getPrimaryInterpretation()));
+        builder.conflictingInterpretationCounts(toConflictCounts(clinVar.getClinSigCountsMap()));
         builder.secondaryInterpretations(toClinSigSet(clinVar.getSecondaryInterpretationsList()));
         builder.includedAlleles(getToIncludedAlleles(clinVar.getIncludedAllelesMap()));
         builder.reviewStatus(clinVar.getReviewStatus());
         builder.geneSymbol(clinVar.getGeneSymbol());
         builder.variantEffect(toVariantEffect(clinVar.getVariantEffect()));
+        builder.hgvsCdna(clinVar.getHgvsCdna());
+        builder.hgvsProtein(clinVar.getHgvsProtein());
         return builder.build();
+    }
+
+    private static Map<ClinVarData.ClinSig, Integer> toConflictCounts(Map<String, Integer> clinSigCountsMap) {
+        if (clinSigCountsMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<ClinVarData.ClinSig, Integer> converted = new EnumMap<>(ClinVarData.ClinSig.class);
+        for (Map.Entry<String, Integer> included : clinSigCountsMap.entrySet()) {
+            converted.put(ClinVarData.ClinSig.valueOf(included.getKey()), included.getValue());
+        }
+        return converted;
     }
 
     private static Map<String, ClinVarData.ClinSig> getToIncludedAlleles(Map<String, ClinVar.ClinSig> includedAllelesMap) {

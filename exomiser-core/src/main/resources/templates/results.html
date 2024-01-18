@@ -337,10 +337,14 @@
                                       th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
                                 <a th:href="@{https://www.ncbi.nlm.nih.gov/clinvar/(term=${clinVarData.alleleId} + '[alleleid]')}"
                                    th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
-                                        (criteria_provided,_single_submitter)
-                                    </a>
+                                    (criteria_provided,_single_submitter)
+                                </a>
+                                <span th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
+                                      th:unless="${#maps.isEmpty(clinVarData.conflictingInterpretationCounts)}"
+                                      th:text="'(' + ${conflictingInterpretationsFormatter.format(conflictingInterpretationCounts)} + ')'">(P:3, LP:2, VUS:1)
+                                </span>
                                 </th:block>
-                            </div>
+                        </div>
                             <div class="col-sm-6">
                                 <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
                                     score: 0.600</b>
@@ -479,6 +483,10 @@
                                th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                 (criteria_provided,_single_submitter)
                             </a>
+                            <span th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
+                                  th:unless="${#maps.isEmpty(clinVarData.conflictingInterpretationCounts)}"
+                                  th:text="'(' + ${conflictingInterpretationsFormatter.format(conflictingInterpretationCounts)} + ')'">(P:3, LP:2, VUS:1)
+                            </span>
                         </th:block>
                     </div>
                     <div class="col-sm-6">

@@ -24,10 +24,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -132,5 +129,30 @@ public class ClinVarDataTest {
                 .secondaryInterpretations(Set.of(secondaryInterpretations))
                 .build()
                 .isSecondaryAssociationRiskFactorOrOther();
+    }
+
+    @Test
+    void hgvsC() {
+        ClinVarData instance = ClinVarData.builder()
+                .hgvsCdna("c.12345A>G")
+                .build();
+        assertThat(instance.getHgvsCdna(), equalTo("c.12345A>G"));
+    }
+
+    @Test
+    void hgvsP() {
+        ClinVarData instance = ClinVarData.builder()
+                .hgvsProtein("p.(Ser123Gly)")
+                .build();
+        assertThat(instance.getHgvsProtein(), equalTo("p.(Ser123Gly)"));
+    }
+
+    @Test
+    void conflictingInterpretations() {
+        Map<ClinSig, Integer> conflictingInterpretations = Map.of(ClinSig.PATHOGENIC, 3, ClinSig.UNCERTAIN_SIGNIFICANCE, 1);
+        ClinVarData instance = ClinVarData.builder()
+                .conflictingInterpretationCounts(conflictingInterpretations)
+                .build();
+        assertThat(instance.getConflictingInterpretationCounts(), equalTo(conflictingInterpretations));
     }
 }

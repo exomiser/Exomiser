@@ -38,13 +38,13 @@ public class ClinVarData {
 
     public enum ClinSig {
         // ACMG/AMP-based
-        BENIGN,
-        BENIGN_OR_LIKELY_BENIGN,
-        LIKELY_BENIGN,
-        UNCERTAIN_SIGNIFICANCE,
-        LIKELY_PATHOGENIC,
-        PATHOGENIC_OR_LIKELY_PATHOGENIC,
         PATHOGENIC,
+        PATHOGENIC_OR_LIKELY_PATHOGENIC,
+        LIKELY_PATHOGENIC,
+        UNCERTAIN_SIGNIFICANCE,
+        LIKELY_BENIGN,
+        BENIGN_OR_LIKELY_BENIGN,
+        BENIGN,
         CONFLICTING_PATHOGENICITY_INTERPRETATIONS,
         //Non-ACMG-based
         AFFECTS,
@@ -60,12 +60,16 @@ public class ClinVarData {
     private final String alleleId;
     private final String variationId;
     private final ClinSig primaryInterpretation;
+    private final Map<ClinSig, Integer> conflictingInterpretationCounts;
     private final Set<ClinSig> secondaryInterpretations;
 
     private final String reviewStatus;
     private final Map<String, ClinSig> includedAlleles;
     private final String geneSymbol;
     private final VariantEffect variantEffect;
+
+    private final String hgvsCdna;
+    private final String hgvsProtein;
 
     // https://www.medschool.umaryland.edu/Genetic_Variant_Interpretation_Tool1.html/
     // BP1, Missense variant in a gene for which primarily truncating variants are known to cause disease
@@ -116,11 +120,16 @@ public class ClinVarData {
         this.alleleId = builder.alleleId;
         this.variationId = builder.variationId;
         this.primaryInterpretation = builder.primaryInterpretation;
+        Map<ClinSig, Integer> map = new EnumMap<>(ClinSig.class);
+        map.putAll(builder.conflictingInterpretationCounts);
+        this.conflictingInterpretationCounts = Collections.unmodifiableMap(map);
         this.secondaryInterpretations = Collections.unmodifiableSet(builder.secondaryInterpretations);
         this.reviewStatus = builder.reviewStatus.replace("_", " ");
         this.includedAlleles = Collections.unmodifiableMap(builder.includedAlleles);
         this.geneSymbol = builder.geneSymbol;
         this.variantEffect = builder.variantEffect;
+        this.hgvsCdna = builder.hgvsCdna;
+        this.hgvsProtein = builder.hgvsProtein;
     }
 
     public static ClinVarData empty() {
@@ -144,6 +153,10 @@ public class ClinVarData {
         return primaryInterpretation;
     }
 
+    public Map<ClinSig, Integer> getConflictingInterpretationCounts() {
+        return conflictingInterpretationCounts;
+    }
+
     public Set<ClinSig> getSecondaryInterpretations() {
         return secondaryInterpretations;
     }
@@ -162,6 +175,14 @@ public class ClinVarData {
 
     public VariantEffect getVariantEffect() {
         return variantEffect;
+    }
+
+    public String getHgvsCdna() {
+        return hgvsCdna;
+    }
+
+    public String getHgvsProtein() {
+        return hgvsProtein;
     }
 
     /**
@@ -229,8 +250,11 @@ public class ClinVarData {
                "variationId='" + variationId + '\'' +
                ", alleleId='" + alleleId + '\'' +
                ", geneSymbol='" + geneSymbol + '\'' +
+               ", hgvsCdna='" + hgvsCdna + '\'' +
+               ", hgvsProtein='" + hgvsProtein + '\'' +
                ", variantEffect='" + variantEffect + '\'' +
                ", primaryInterpretation=" + primaryInterpretation +
+               (primaryInterpretation == ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? ", conflictingInterpretationCounts=" + conflictingInterpretationCounts : "") +
                ", secondaryInterpretations=" + secondaryInterpretations +
                ", reviewStatus='" + reviewStatus + '\'' +
                ", includedAlleles=" + includedAlleles +
@@ -246,7 +270,11 @@ public class ClinVarData {
                 .reviewStatus(reviewStatus)
                 .includedAlleles(includedAlleles)
                 .geneSymbol(geneSymbol)
-                .variantEffect(variantEffect);
+                .variantEffect(variantEffect)
+                .hgvsCdna(hgvsCdna)
+                .hgvsProtein(hgvsProtein)
+                .conflictingInterpretationCounts(conflictingInterpretationCounts)
+                ;
     }
 
     public static Builder builder() {
@@ -265,11 +293,10 @@ public class ClinVarData {
         private String geneSymbol = "";
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
 
-        public Builder alleleId(String alleleId) {
-            Objects.requireNonNull(alleleId);
-            this.alleleId = alleleId;
-            return this;
-        }
+        private String hgvsCdna = "";
+        private String hgvsProtein = "";
+
+        private Map<ClinSig, Integer> conflictingInterpretationCounts = new EnumMap<>(ClinSig.class);
 
         public Builder variationId(String variationId) {
             Objects.requireNonNull(variationId);
@@ -278,8 +305,7 @@ public class ClinVarData {
         }
 
         public Builder primaryInterpretation(ClinSig primaryInterpretation) {
-            Objects.requireNonNull(primaryInterpretation);
-            this.primaryInterpretation = primaryInterpretation;
+            this.primaryInterpretation = Objects.requireNonNull(primaryInterpretation);
             return this;
         }
 
@@ -290,26 +316,37 @@ public class ClinVarData {
         }
 
         public Builder reviewStatus(String reviewStatus) {
-            Objects.requireNonNull(reviewStatus);
-            this.reviewStatus = reviewStatus;
+            this.reviewStatus = Objects.requireNonNull(reviewStatus);
             return this;
         }
 
         public Builder includedAlleles(Map<String, ClinSig> includedAlleles) {
-            Objects.requireNonNull(includedAlleles);
-            this.includedAlleles = includedAlleles;
+            this.includedAlleles = Objects.requireNonNull(includedAlleles);
             return this;
         }
 
         public Builder geneSymbol(String geneSymbol) {
-            Objects.requireNonNull(geneSymbol);
-            this.geneSymbol = geneSymbol;
+            this.geneSymbol = Objects.requireNonNull(geneSymbol);
             return this;
         }
 
         public Builder variantEffect(VariantEffect variantEffect) {
-            Objects.requireNonNull(variantEffect);
-            this.variantEffect = variantEffect;
+            this.variantEffect = Objects.requireNonNull(variantEffect);
+            return this;
+        }
+
+        public Builder hgvsCdna(String hgvsCdna) {
+            this.hgvsCdna = Objects.requireNonNull(hgvsCdna);
+            return this;
+        }
+
+        public Builder hgvsProtein(String hgvsProtein) {
+            this.hgvsProtein = Objects.requireNonNull(hgvsProtein);
+            return this;
+        }
+
+        public Builder conflictingInterpretationCounts(Map<ClinSig, Integer> conflictingInterpretationCounts) {
+            this.conflictingInterpretationCounts = Objects.requireNonNull(conflictingInterpretationCounts);
             return this;
         }
 

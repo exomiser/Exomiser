@@ -86,6 +86,14 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
                     Map<String, ClinVarData.ClinSig> includedAlleles = parseIncludedAlleles(value);
                     clinVarBuilder.includedAlleles(includedAlleles);
                     break;
+                case "CLNSIGCONF":
+                    Map<ClinSig, Integer> clnSigConf = parseClnSigConf(value);
+                    clinVarBuilder.conflictingInterpretationCounts(clnSigConf);
+                    break;
+                case "RS":
+                    // Clinvar use their variation ID in the ID field and indicate the rsID in the RS INFO field.
+                    allele.setRsId(value);
+                    break;
                 default:
                     break;
             }
@@ -93,7 +101,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         return clinVarBuilder.build();
     }
 
-    private Map<String,ClinSig> parseIncludedAlleles(String value) {
+    private Map<String, ClinSig> parseIncludedAlleles(String value) {
         //15127:other|15128:other|15334:Pathogenic|
         Map<String, ClinSig> includedAlleles = new HashMap<>();
         String[] incls = value.split("\\|");
@@ -116,6 +124,21 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         }
         return Collections.emptySet();
     }
+
+    private Map<ClinSig, Integer> parseClnSigConf(String value) {
+        // CLNSIGCONF=Pathogenic(1)|Uncertain_significance(2)
+        // CLNSIGCONF=Uncertain_significance(1)|Likely_benign(1)
+        Map<ClinSig, Integer> confMap = new LinkedHashMap<>();
+        String[] categories = value.split("\\|");
+        for (String category : categories) {
+            int openParenIndex = category.indexOf("(");
+            ClinSig clinSig = parseClinSig(category.substring(0, openParenIndex));
+            int count = Integer.parseInt(category.substring(openParenIndex + 1, category.length() - 1));
+            confMap.put(clinSig, count);
+        }
+        return confMap;
+    }
+
 
     private ClinSig parseClinSig(String clinsig) {
         // Unique CLNSIG counts

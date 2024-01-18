@@ -518,6 +518,10 @@
                                                    th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                                     (criteria_provided,_single_submitter)
                                                 </a>
+                                                <span th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
+                                                      th:unless="${#maps.isEmpty(clinVarData.conflictingInterpretationCounts)}"
+                                                      th:text="'(' + ${conflictingInterpretationsFormatter.format(conflictingInterpretationCounts)} + ')'">(P:3, LP:2, VUS:1)
+                                                </span>
                                             </th:block>
                                         </div>
                                         <div class="col-sm-6">
@@ -640,8 +644,8 @@
                                         <b>ClinVar: </b>
                                         <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
                                                   th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
-                        <span th:case="'BENIGN'" class="label label-success"
-                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                                            <span th:case="'BENIGN'" class="label label-success"
+                                                  th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
                                             <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
                                                   th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
                                             <span th:case="'LIKELY_BENIGN'" class="label label-info"
@@ -658,6 +662,10 @@
                                                th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
                                                 (criteria_provided,_single_submitter)
                                             </a>
+                                            <span th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
+                                                  th:unless="${#maps.isEmpty(clinVarData.conflictingInterpretationCounts)}"
+                                                  th:text="'(' + ${conflictingInterpretationsFormatter.format(conflictingInterpretationCounts)} + ')'">(P:3, LP:2, VUS:1)
+                                            </span>
                                         </th:block>
                                     </div>
                                     <div class="col-sm-6">

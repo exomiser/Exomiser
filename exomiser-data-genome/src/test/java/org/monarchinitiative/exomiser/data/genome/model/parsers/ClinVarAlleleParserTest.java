@@ -106,8 +106,9 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
 
     @Test
     public void testParseClnSigLikelyPathogenic() {
-        String line = "10	123256215	.	T	C	.	.	ALLELEID=361707;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_pathogenic";
+        String line = "10	123256215	374823	T	C	.	.	ALLELEID=361707;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_pathogenic;RS=121918506";
         Allele expected = new Allele(10, 123256215, "T", "C");
+        expected.setRsId("121918506");
         expected.setClinVarData(ClinVarData.builder()
                 .alleleId("361707")
                 .primaryInterpretation(ClinVarData.ClinSig.LIKELY_PATHOGENIC)

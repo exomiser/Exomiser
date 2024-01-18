@@ -91,14 +91,16 @@ public class ClinVarBuildRunner {
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         if (!variantAnnotations.isEmpty()) {
             VariantAnnotation variantAnnotation = variantAnnotations.get(0);
-            TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-            return allele.getClinVarData()
-                    .toBuilder()
-                    .geneSymbol(variantAnnotation.getGeneSymbol())
-                    .variantEffect(variantAnnotation.getVariantEffect())
-//                builder.hgvsCdna(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsCdna());  // TODO need cDNA info for PS1/PM5
-//                builder.hgvsProtein(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsProtein()); // TODO need AA info for PS1/PM5
-                    .build();
+            if (!variantAnnotation.getTranscriptAnnotations().isEmpty()) {
+                TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
+                return allele.getClinVarData()
+                        .toBuilder()
+                        .geneSymbol(variantAnnotation.getGeneSymbol())
+                        .variantEffect(variantAnnotation.getVariantEffect())
+                        .hgvsCdna(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsCdna())
+                        .hgvsProtein(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsProtein())
+                        .build();
+            }
         }
         return allele.getClinVarData();
     }

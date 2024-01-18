@@ -34,6 +34,7 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -152,6 +153,7 @@ public class AlleleProtoAdaptorTest {
                 .addSecondaryInterpretations(ClinVar.ClinSig.BENIGN)
                 .putIncludedAlleles("54321", ClinVar.ClinSig.ASSOCIATION)
                 .setReviewStatus("conflicting evidence")
+                .putAllClinSigCounts(Map.of(ClinVar.ClinSig.PATHOGENIC.toString(), 5, ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE.toString(), 1))
                 .build();
 
         ClinVarData expected = ClinVarData.builder()
@@ -164,11 +166,39 @@ public class AlleleProtoAdaptorTest {
                         ClinVarData.ClinSig.BENIGN))
                 .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.ASSOCIATION))
                 .reviewStatus("conflicting evidence")
+                .conflictingInterpretationCounts(Map.of(ClinVarData.ClinSig.PATHOGENIC, 5, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 1))
                 .build();
 
         assertThat(AlleleProtoAdaptor.toClinVarData(clinVar), equalTo(expected));
 
         AlleleProperties alleleProperties = AlleleProperties.newBuilder().setClinVar(clinVar).build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(expected)));
+    }
+
+    @Test
+    public void parseClinVarAdditionalAnnotationData() {
+
+        ClinVar clinVar = ClinVar.newBuilder()
+                .setVariantEffect(AlleleProto.VariantEffect.MISSENSE_VARIANT)
+                .setHgvsCdna("c.12345A>C")
+                .setHgvsProtein("p.Arg123Lys")
+                .build();
+
+        ClinVarData actual = AlleleProtoAdaptor.toClinVarData(clinVar);
+        assertThat(actual.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+        assertThat(actual.getHgvsCdna(), equalTo("c.12345A>C"));
+        assertThat(actual.getHgvsProtein(), equalTo("p.Arg123Lys"));
+    }
+
+    @Test
+    public void convertClinVarConflictingInterpretationCounts() {
+
+        ClinVar clinVar = ClinVar.newBuilder()
+                .putAllClinSigCounts(Map.of("PATHOGENIC", 3, "UNCERTAIN_SIGNIFICANCE", 2))
+                .build();
+
+        ClinVarData actual = AlleleProtoAdaptor.toClinVarData(clinVar);
+        assertThat(actual.getConflictingInterpretationCounts(),
+                equalTo(Map.of(ClinVarData.ClinSig.PATHOGENIC, 3, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 2)));
     }
 }

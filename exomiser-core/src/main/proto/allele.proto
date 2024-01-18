@@ -51,6 +51,9 @@ message ClinVar {
     string gene_symbol = 7;
     string gene_id = 8;
     VariantEffect variant_effect = 9;
+    string hgvs_cdna = 10;
+    string hgvs_protein = 11;
+    map<string, uint32> clin_sig_counts = 12; //CLNSIGCONF
 }
 
 enum VariantEffect {

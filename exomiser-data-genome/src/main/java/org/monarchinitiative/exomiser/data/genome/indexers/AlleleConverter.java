@@ -86,6 +86,9 @@ public class AlleleConverter {
         builder.setAlleleId(clinVarData.getAlleleId());
         builder.setVariationId(clinVarData.getVariationId());
         builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
+        for (Map.Entry<ClinVarData.ClinSig, Integer> entry : clinVarData.getConflictingInterpretationCounts().entrySet()) {
+            builder.putClinSigCounts(entry.getKey().toString(), entry.getValue());
+        }
         for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
             builder.addSecondaryInterpretations(toProtoClinSig(clinSig));
         }
