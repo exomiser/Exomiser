@@ -41,20 +41,18 @@ public class ClinVarDaoMvStore implements ClinVarDao {
 
     @Override
     public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+        // TODO: WARNING! This is not fully tested/optimised - DO NOT USE!
         Contig contig = genomicInterval.contig();
 
         int chr = genomicInterval.contigId();
-        int start = genomicInterval.start();
-        int end = genomicInterval.end();
+        // the ClinVar data is stored using VCF coordinates
+        int start = genomicInterval.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ONE_BASED);
+        int end = genomicInterval.endOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.ONE_BASED);
 
         // build Allele keys for map and define bounds
         AlleleProto.AlleleKey lowerBound = AlleleProto.AlleleKey.newBuilder()
                 .setChr(chr)
                 .setPosition(start)
-                .build();
-        AlleleProto.AlleleKey upperBound = AlleleProto.AlleleKey.newBuilder()
-                .setChr(chr)
-                .setPosition(end)
                 .build();
 
         AlleleProto.AlleleKey floorKey = clinVarMap.floorKey(lowerBound);
@@ -63,26 +61,56 @@ public class ClinVarDaoMvStore implements ClinVarDao {
         }
 
         Map<GenomicVariant, ClinVarData> results = new LinkedHashMap<>();
+        System.out.println(genomicInterval);
+        System.out.println("From=" + (floorKey != null ?  floorKey.getPosition() : floorKey));
+        // all keys are upstream of the variant
 
-        Iterator<AlleleProto.AlleleKey> keyIterator = clinVarMap.keyIterator(lowerBound);
+        Iterator<AlleleProto.AlleleKey> keyIterator = clinVarMap.keyIterator(floorKey);
         while (keyIterator.hasNext()) {
-            AlleleProto.AlleleKey ak = keyIterator.next();
+            AlleleProto.AlleleKey alleleKey = keyIterator.next();
+            System.out.println(broadFormat(alleleKey));
             // don't process keys out of the initial boundaries
-            if (ak.getPosition() >= start && ak.getPosition() <= end) {
-                GenomicVariant gvFromAk = alleleKeyToGenomicVariant(ak, contig, genomicInterval.coordinateSystem());
-                ClinVarData cvData = getClinVarData(ak);
-                results.put(gvFromAk, cvData);
+            // alleleKey end: (alleleKey.getPosition() + alleleKey.getRef().length() - 1) use this or alleleKey.getPosition()?
+            if (alleleKey.getPosition() >= start && alleleKey.getPosition() <= end) {
+                GenomicVariant variant = alleleKeyToGenomicVariant(alleleKey, contig, genomicInterval.coordinateSystem());
+                ClinVarData clinVarData = getClinVarData(alleleKey);
+                results.put(variant, clinVarData);
             }
-            if (ak.getPosition() > upperBound.getPosition()) {
+            if (alleleKey.getPosition() > end) {
                 break;
             }
         }
         return results;
+
+//        Map<GenomicVariant, ClinVarData> results = new LinkedHashMap<>();
+//        AlleleProto.AlleleKey from = clinVarMap.ceilingKey(AlleleProto.AlleleKey.newBuilder().setChr(chr).setPosition(start).setRef("A").build());
+//        System.out.println(genomicInterval);
+//        System.out.println("From=" + (from != null ?  from.getPosition() : from));
+//        if (from == null || from.getPosition() < end) {
+//            return results;
+//        }
+//        // 17-78451256-C-A rs920455245, freq={GNOMAD_G_EAS=1|1558|0}, path={}
+//        Iterator<AlleleProto.AlleleKey> keyIterator = clinVarMap.keyIterator(from);
+//        while (keyIterator.hasNext()) {
+//            AlleleProto.AlleleKey a = keyIterator.next();
+//            if (a.getPosition() <= genomicInterval.end()) {
+//                GenomicVariant clinVarVariant = alleleKeyToGenomicVariant(a, contig, CoordinateSystem.ONE_BASED);
+//                ClinVarData clinVarData = getClinVarData(a);
+//                results.put(clinVarVariant, clinVarData);
+//            }
+//            if (a.getPosition() > end) {
+//                break;
+//            }
+//        }
+//        return results;
+    }
+
+    private String broadFormat(AlleleProto.AlleleKey alleleKey) {
+        return alleleKey.getChr() + "-" + alleleKey.getPosition()  + "-" + alleleKey.getRef() + "-" + alleleKey.getAlt();
     }
 
     private GenomicVariant alleleKeyToGenomicVariant(AlleleProto.AlleleKey alleleKey, Contig contig, CoordinateSystem coordinateSystem) {
-        return GenomicVariant.builder()
-                .variant(contig, Strand.POSITIVE, Coordinates.ofAllele(coordinateSystem, alleleKey.getPosition(), alleleKey.getRef()), alleleKey.getRef(), alleleKey.getAlt()).build();
+        return GenomicVariant.of(contig, Strand.POSITIVE, coordinateSystem, alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
     }
 
 }

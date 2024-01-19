@@ -323,12 +323,18 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     /**
      * PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
      */
-    private void assignPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEffect variantEffect, ClinVarData clinVarData) {
+    private void assignPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, VariantEffect variantEffect, ClinVarData clinVarData) {
         ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
         if (isMissense(variantEffect) && isPathOrLikelyPath(primaryInterpretation) && clinVarData.starRating() >= 2) {
             // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
             // TODO: can't quite do this fully as also need to know others with same AA change, if not identical
-            acmgEvidenceBuilder.add(PS1);
+            List<TranscriptAnnotation> annotations = variantEvaluation.getTranscriptAnnotations();
+            if (!annotations.isEmpty()) {
+                TranscriptAnnotation anno = annotations.get(0);
+                if (anno.getHgvsProtein().equals(clinVarData.getHgvsProtein()) && !anno.getHgvsCdna().equals(clinVarData.getHgvsCdna())) {
+                    acmgEvidenceBuilder.add(PS1);
+                }
+            }
         }
     }
 
