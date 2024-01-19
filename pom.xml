@@ -94,7 +94,7 @@
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.41</jannovar.version>
-        <svart.version>2.0.0-RC5</svart.version>
+        <svart.version>2.0.0-RC6</svart.version>
         <htsjdk.version>3.0.5</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.21.12</protobuf.version>
