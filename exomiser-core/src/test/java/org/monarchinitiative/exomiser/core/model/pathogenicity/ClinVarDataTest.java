@@ -42,7 +42,7 @@ public class ClinVarDataTest {
         assertThat(instance.getVariationId(), equalTo(""));
         assertThat(instance.getPrimaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
         assertThat(instance.getSecondaryInterpretations(), equalTo(Collections.emptySet()));
-        assertThat(instance.getReviewStatus(), equalTo(""));
+        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED));
         assertThat(instance.getIncludedAlleles(), equalTo(Collections.emptyMap()));
     }
 
@@ -54,7 +54,6 @@ public class ClinVarDataTest {
         VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
-        String reviewStatus = "multiple_submitters,_no_conflict";
         Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
                 .variationId(variationId)
@@ -62,7 +61,7 @@ public class ClinVarDataTest {
                 .variantEffect(variantEffect)
                 .primaryInterpretation(clinSig)
                 .secondaryInterpretations(secondaryInterpretations)
-                .reviewStatus(reviewStatus)
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                 .includedAlleles(included)
                 .build();
 
@@ -71,7 +70,7 @@ public class ClinVarDataTest {
         assertThat(instance.getVariantEffect(), equalTo(variantEffect));
         assertThat(instance.getPrimaryInterpretation(), equalTo(clinSig));
         assertThat(instance.getSecondaryInterpretations(), equalTo(secondaryInterpretations));
-        assertThat(instance.getReviewStatus(), equalTo("multiple submitters, no conflict"));
+        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS));
         assertThat(instance.getIncludedAlleles(), equalTo(included));
         System.out.println(instance);
     }
@@ -81,12 +80,11 @@ public class ClinVarDataTest {
         String alleleId = "12345";
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
-        String reviewStatus = "multiple_submitters,_no_conflict";
         Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
                 .primaryInterpretation(clinSig)
                 .secondaryInterpretations(secondaryInterpretations)
-                .reviewStatus(reviewStatus)
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                 .includedAlleles(included)
                 .build();
         assertThat(instance.toString(), containsString("PATHOGENIC"));
@@ -104,10 +102,7 @@ public class ClinVarDataTest {
     }
 
     private int starRating(String clinRevStat) {
-        return ClinVarData.builder()
-                .reviewStatus(clinRevStat)
-                .build()
-                .starRating();
+        return ClinVarData.ReviewStatus.parseReviewStatus(clinRevStat).starRating();
     }
 
     @Test

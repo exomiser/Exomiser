@@ -37,9 +37,9 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
     private final String rcvId;
     private final String variationId;
     private final ClinVarData.ClinSig clinSig;
-    private final String clinRevStat;
+    private final ClinVarData.ReviewStatus clinRevStat;
 
-    public SvPathogenicity(int chr, int start, int end, int svLen, VariantType svType, String dbVarId, String source, String rcvId, String variationId, ClinVarData.ClinSig clinSig, String clinRevStat) {
+    public SvPathogenicity(int chr, int start, int end, int svLen, VariantType svType, String dbVarId, String source, String rcvId, String variationId, ClinVarData.ClinSig clinSig, ClinVarData.ReviewStatus clinRevStat) {
         this.chr = chr;
         this.start = start;
         this.end = end;
@@ -93,7 +93,7 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
         return clinSig;
     }
 
-    public String clinRevStat() {
+    public ClinVarData.ReviewStatus clinRevStat() {
         return clinRevStat;
     }
 

@@ -91,7 +91,7 @@ public class AlleleConverter {
         for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
             builder.addSecondaryInterpretations(toProtoClinSig(clinSig));
         }
-        builder.setReviewStatus(clinVarData.getReviewStatus());
+        builder.setReviewStatus(toProtoReviewStatus(clinVarData.getReviewStatus()));
         for (Map.Entry<String, ClinVarData.ClinSig> entry : clinVarData.getIncludedAlleles().entrySet()) {
             builder.putIncludedAlleles(entry.getKey(), toProtoClinSig(entry.getValue()));
         }
@@ -119,6 +119,19 @@ public class AlleleConverter {
             case OTHER -> ClinVar.ClinSig.OTHER;
             case PROTECTIVE -> ClinVar.ClinSig.PROTECTIVE;
             case RISK_FACTOR -> ClinVar.ClinSig.RISK_FACTOR;
+        };
+    }
+
+    private static ClinVar.ReviewStatus toProtoReviewStatus(ClinVarData.ReviewStatus reviewStatus) {
+        return switch (reviewStatus) {
+            case NO_ASSERTION_PROVIDED -> ClinVar.ReviewStatus.NO_ASSERTION_PROVIDED;
+            case NO_ASSERTION_CRITERIA_PROVIDED -> ClinVar.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED;
+            case NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT -> ClinVar.ReviewStatus.NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+            case CRITERIA_PROVIDED_SINGLE_SUBMITTER -> ClinVar.ReviewStatus.CRITERIA_PROVIDED_SINGLE_SUBMITTER;
+            case CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS -> ClinVar.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+            case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> ClinVar.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
+            case REVIEWED_BY_EXPERT_PANEL -> ClinVar.ReviewStatus.REVIEWED_BY_EXPERT_PANEL;
+            case PRACTICE_GUIDELINE -> ClinVar.ReviewStatus.PRACTICE_GUIDELINE;
         };
     }
 

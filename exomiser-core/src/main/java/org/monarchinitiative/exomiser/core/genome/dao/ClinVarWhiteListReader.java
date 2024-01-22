@@ -53,7 +53,7 @@ public class ClinVarWhiteListReader {
     }
 
     private static boolean isWhiteListed(AlleleProto.ClinVar clinVar) {
-        return isPathOrLikelyPath(clinVar) && starRating(clinVar) >= 1;
+        return isPathOrLikelyPath(clinVar) && starRating(clinVar.getReviewStatus()) >= 1;
     }
 
     /*
@@ -98,14 +98,15 @@ public class ClinVarWhiteListReader {
         };
     }
 
-    private static int starRating(AlleleProto.ClinVar clinVar) {
-        return switch (clinVar.getReviewStatus().toLowerCase().replace("_", " ")) {
-            // ordinarily "criteria provided, conflicting interpretations" is also a 1 star variant,
+    private static int starRating(AlleleProto.ClinVar.ReviewStatus reviewStatus) {
+        return switch (reviewStatus) {
+            // ordinarily "CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS" is also a 1 star variant,
+            // (see https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/)
             // but we're going to be more stringent for the whitelist
-            case "criteria provided, single submitter" -> 1;
-            case "criteria provided, multiple submitters, no conflicts" -> 2;
-            case "reviewed by expert panel" -> 3;
-            case "practice guideline" -> 4;
+            case CRITERIA_PROVIDED_SINGLE_SUBMITTER -> 1;
+            case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> 2;
+            case REVIEWED_BY_EXPERT_PANEL -> 3;
+            case PRACTICE_GUIDELINE -> 4;
             default -> 0;
         };
     }

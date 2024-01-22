@@ -27,7 +27,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar association = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("11111")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.ASSOCIATION)
-                    .setReviewStatus("reviewed_by_expert_panel")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.REVIEWED_BY_EXPERT_PANEL)
                     .build();
             alleleKeyClinVarMVMap.put(associationKey, association);
 
@@ -40,7 +40,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar conflicting = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("22222")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
-                    .setReviewStatus("criteria_provided,_conflicting_interpretations")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                     .build();
             alleleKeyClinVarMVMap.put(conflictingKey, conflicting);
 
@@ -54,7 +54,7 @@ class ClinVarWhiteListReaderTest {
                     .setAlleleId("3333")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
                     .addSecondaryInterpretations(AlleleProto.ClinVar.ClinSig.RISK_FACTOR)
-                    .setReviewStatus("criteria_provided,_multiple submitters,_no_conflicts")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                     .build();
             alleleKeyClinVarMVMap.put(pathogenicAndRiskFactorKey, pathogenicAndRiskFactor);
 
@@ -68,7 +68,7 @@ class ClinVarWhiteListReaderTest {
                     .setAlleleId("3333")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
                     .addSecondaryInterpretations(AlleleProto.ClinVar.ClinSig.RISK_FACTOR)
-                    .setReviewStatus("no_assertion_criteria_provided")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED)
                     .build();
             alleleKeyClinVarMVMap.put(pathogenicAndRiskFactorNoCriteriaKey, pathogenicAndRiskFactorNoCriteria);
 
@@ -81,7 +81,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar likelyPathNoCriteria = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("4444")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.LIKELY_PATHOGENIC)
-                    .setReviewStatus("no_assertion_criteria_provided")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED)
                     .build();
             alleleKeyClinVarMVMap.put(likelyPathNoCriteriaKey, likelyPathNoCriteria);
 
@@ -94,7 +94,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar pathCriteriaProvided = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("5555")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
-                    .setReviewStatus("criteria provided,_single_submitter")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_SINGLE_SUBMITTER)
                     .build();
             alleleKeyClinVarMVMap.put(pathCriteriaProvidedKey, pathCriteriaProvided);
 
@@ -107,7 +107,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar pathCriteriaProvidedMultipleSubs = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("6666")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC)
-                    .setReviewStatus("criteria provided,_multiple_submitters,_no_conflicts")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                     .build();
             alleleKeyClinVarMVMap.put(pathCriteriaProvidedMultipleSubsKey, pathCriteriaProvidedMultipleSubs);
 
@@ -120,7 +120,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar pathExpertReviewPanel = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("7777")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
-                    .setReviewStatus("reviewed_by_expert panel")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.REVIEWED_BY_EXPERT_PANEL)
                     .build();
             alleleKeyClinVarMVMap.put(pathExpertReviewPanelKey, pathExpertReviewPanel);
 
@@ -133,7 +133,7 @@ class ClinVarWhiteListReaderTest {
             AlleleProto.ClinVar pathPracticeGuideline = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("8888")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
-                    .setReviewStatus("practice_guideline")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.PRACTICE_GUIDELINE)
                     .build();
             alleleKeyClinVarMVMap.put(pathPracticeGuidelineKey, pathPracticeGuideline);
 

@@ -95,21 +95,17 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
     //   4* practice_guideline,
 
     private boolean isPathOrLikelyPath(ClinVarData clinVarData) {
-        switch (clinVarData.getPrimaryInterpretation()) {
-            case PATHOGENIC:
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-            case LIKELY_PATHOGENIC:
-                return true;
-            default:
-                return false;
-        }
+        return switch (clinVarData.getPrimaryInterpretation()) {
+            case PATHOGENIC, PATHOGENIC_OR_LIKELY_PATHOGENIC, LIKELY_PATHOGENIC -> true;
+            default -> false;
+        };
     }
 
     private StringJoiner createClinVarInfo(ClinVarData clinVarData) {
         StringJoiner stringJoiner = new StringJoiner(";");
         stringJoiner.add("VARIATIONID=" + clinVarData.getVariationId());
         stringJoiner.add("CLNSIG=" + clinVarData.getPrimaryInterpretation());
-        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus().replace(" ", "_"));
+        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus());
         stringJoiner.add("STARS=" + clinVarData.starRating());
         return stringJoiner;
     }

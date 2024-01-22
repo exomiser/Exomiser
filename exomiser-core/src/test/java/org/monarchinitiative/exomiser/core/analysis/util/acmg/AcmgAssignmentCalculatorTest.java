@@ -73,7 +73,9 @@ class AcmgAssignmentCalculatorTest {
                 .annotations(List.of(startLostAnnotation))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .pathogenicityData(PathogenicityData.of(ClinVarData.builder()
-                                .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build(),
+                                .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
+                                .reviewStatus(ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL)
+                                .build(),
                         PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f), PathogenicityScore.of(PathogenicitySource.MVP, 1.0f)))
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER), FilterResult.pass(FilterType.PATHOGENICITY_FILTER))
                 .build();

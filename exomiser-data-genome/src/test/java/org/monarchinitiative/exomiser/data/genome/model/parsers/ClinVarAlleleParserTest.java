@@ -87,7 +87,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         expected.setClinVarData(ClinVarData.builder()
                 .variationId("7105")
                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
-                .reviewStatus("practice_guideline")
+                .reviewStatus(ClinVarData.ReviewStatus.PRACTICE_GUIDELINE)
                 .build());
 
         assertParseLineEquals(line, List.of(expected));
@@ -101,7 +101,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         expected.setClinVarData(ClinVarData.builder()
                 .variationId("374823")
                 .primaryInterpretation(ClinVarData.ClinSig.LIKELY_PATHOGENIC)
-                .reviewStatus("criteria_provided,_single_submitter")
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_SINGLE_SUBMITTER)
                 .build());
 
         assertParseLineEquals(line, List.of(expected));
@@ -144,7 +144,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         String line = "1	28590	.	T	TTGG	999	PASS	ALLELEID=12345;CLNREVSTAT=criteria_provided,_conflicting_interpretations";
         Allele expected = new Allele(1, 28590, "T", "TTGG");
         expected.setClinVarData(ClinVarData.builder()
-                .reviewStatus("criteria_provided,_conflicting_interpretations")
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 .build());
 
         assertParseLineEquals(line, List.of(expected));
@@ -182,7 +182,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         expected.setRsId("25511");
         expected.setClinVarData(ClinVarData.builder()
                 .variationId("25511")
-                .reviewStatus("no interpretation for the single variant")
+                .reviewStatus(ClinVarData.ReviewStatus.NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT)
                 .includedAlleles(Map.of(
                         "8152", ClinVarData.ClinSig.PATHOGENIC
                 ))
@@ -199,7 +199,7 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         expected.setClinVarData(ClinVarData.builder()
                 .variationId("218256")
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
-                .reviewStatus("criteria_provided,_conflicting_interpretations")
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 // CLNSIGCONF=Pathogenic(5)|Uncertain_significance(1)
                 .conflictingInterpretationCounts(Map.of(ClinVarData.ClinSig.PATHOGENIC, 5, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 1))
                 .build());

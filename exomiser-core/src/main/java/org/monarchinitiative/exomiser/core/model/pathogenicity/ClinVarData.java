@@ -36,6 +36,7 @@ public class ClinVarData {
 
     private static final ClinVarData EMPTY = new Builder().build();
 
+
     public enum ClinSig {
         // ACMG/AMP-based
         PATHOGENIC,
@@ -53,23 +54,62 @@ public class ClinVarData {
         NOT_PROVIDED,
         OTHER,
         PROTECTIVE,
-        RISK_FACTOR
+        RISK_FACTOR;
     }
 
+    /**
+     * Enum for the ClinVar <a href=https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/>review status</a> field.
+     * @since 14.0.0
+     */
+    public enum ReviewStatus {
+        NO_ASSERTION_PROVIDED, // default value
+        NO_ASSERTION_CRITERIA_PROVIDED,
+        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT,
+        CRITERIA_PROVIDED_SINGLE_SUBMITTER,
+        CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS,
+        CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS,
+        REVIEWED_BY_EXPERT_PANEL,
+        PRACTICE_GUIDELINE;
+
+        public int starRating() {
+            return switch (this) {
+                case CRITERIA_PROVIDED_SINGLE_SUBMITTER, CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS -> 1;
+                case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> 2;
+                case REVIEWED_BY_EXPERT_PANEL -> 3;
+                case PRACTICE_GUIDELINE -> 4;
+                default -> 0;
+            };
+        }
+
+        public static ReviewStatus parseReviewStatus(String reviewStatus) {
+            return switch (reviewStatus.replace("_", " ")) {
+                case "no assertion criteria provided" -> NO_ASSERTION_CRITERIA_PROVIDED;
+                case "no interpretation for the single variant", "no interpretation for the individual variant" ->
+                        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+                case "criteria provided, single submitter" -> CRITERIA_PROVIDED_SINGLE_SUBMITTER;
+                case "criteria provided, conflicting interpretations" -> CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+                case "criteria provided, multiple submitters, no conflicts" ->
+                        CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
+                case "reviewed by expert panel" -> REVIEWED_BY_EXPERT_PANEL;
+                case "practice guideline" -> PRACTICE_GUIDELINE;
+                default -> NO_ASSERTION_PROVIDED;
+            };
+        }
+    }
     //https://www.ncbi.nlm.nih.gov/clinvar/variation/99222
     private final String variationId;
     private final ClinSig primaryInterpretation;
     private final Map<ClinSig, Integer> conflictingInterpretationCounts;
-    private final Set<ClinSig> secondaryInterpretations;
 
-    private final String reviewStatus;
+    private final Set<ClinSig> secondaryInterpretations;
+    private final ReviewStatus reviewStatus;
     private final Map<String, ClinSig> includedAlleles;
     private final String geneSymbol;
+
     private final VariantEffect variantEffect;
-
     private final String hgvsCdna;
-    private final String hgvsProtein;
 
+    private final String hgvsProtein;
     // https://www.medschool.umaryland.edu/Genetic_Variant_Interpretation_Tool1.html/
     // BP1, Missense variant in a gene for which primarily truncating variants are known to cause disease
     // BP2, Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern
@@ -113,6 +153,7 @@ public class ClinVarData {
     //##INFO=<ID=MC,Number=.,Type=String,Description="comma separated list of molecular consequence in the form of Sequence Ontology ID|molecular_consequence">
     //##INFO=<ID=ORIGIN,Number=.,Type=String,Description="Allele origin. One or more of the following values may be added: 0 - unknown; 1 - germline; 2 - somatic; 4 - inherited; 8 - paternal; 16 - maternal; 32 - de-novo; 64 - biparental; 128 - uniparental; 256 - not-tested; 512 - tested-inconclusive; 1073741824 - other">
     //##INFO=<ID=RS,Number=.,Type=String,Description="dbSNP ID (i.e. rs number)">
+
     //##INFO=<ID=SSR,Number=1,Type=Integer,Description="Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other">
 
     private ClinVarData(Builder builder) {
@@ -122,7 +163,7 @@ public class ClinVarData {
         map.putAll(builder.conflictingInterpretationCounts);
         this.conflictingInterpretationCounts = Collections.unmodifiableMap(map);
         this.secondaryInterpretations = Collections.unmodifiableSet(builder.secondaryInterpretations);
-        this.reviewStatus = builder.reviewStatus.replace("_", " ");
+        this.reviewStatus = builder.reviewStatus;
         this.includedAlleles = Collections.unmodifiableMap(builder.includedAlleles);
         this.geneSymbol = builder.geneSymbol;
         this.variantEffect = builder.variantEffect;
@@ -155,7 +196,7 @@ public class ClinVarData {
         return secondaryInterpretations;
     }
 
-    public String getReviewStatus() {
+    public ReviewStatus getReviewStatus() {
         return reviewStatus;
     }
 
@@ -212,13 +253,7 @@ public class ClinVarData {
      * @since 13.0.0
      */
     public int starRating() {
-        return switch (reviewStatus) {
-            case "criteria provided, single submitter", "criteria provided, conflicting interpretations" -> 1;
-            case "criteria provided, multiple submitters, no conflicts" -> 2;
-            case "reviewed by expert panel" -> 3;
-            case "practice guideline" -> 4;
-            default -> 0;
-        };
+        return reviewStatus.starRating();
     }
 
     @Override
@@ -229,7 +264,7 @@ public class ClinVarData {
         return Objects.equals(variationId, that.variationId) &&
                primaryInterpretation == that.primaryInterpretation &&
                Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
-               Objects.equals(reviewStatus, that.reviewStatus) &&
+               reviewStatus == that.reviewStatus &&
                Objects.equals(includedAlleles, that.includedAlleles);
     }
 
@@ -249,7 +284,7 @@ public class ClinVarData {
                ", primaryInterpretation=" + primaryInterpretation +
                (primaryInterpretation == ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? ", conflictingInterpretationCounts=" + conflictingInterpretationCounts : "") +
                ", secondaryInterpretations=" + secondaryInterpretations +
-               ", reviewStatus='" + reviewStatus + '\'' +
+               ", reviewStatus=" + reviewStatus +
                ", includedAlleles=" + includedAlleles +
                '}';
     }
@@ -278,7 +313,7 @@ public class ClinVarData {
         private ClinSig primaryInterpretation = ClinSig.NOT_PROVIDED;
         private Set<ClinSig> secondaryInterpretations = EnumSet.noneOf(ClinSig.class);
 
-        private String reviewStatus = "";
+        private ReviewStatus reviewStatus = ReviewStatus.NO_ASSERTION_PROVIDED;
         private Map<String, ClinSig> includedAlleles = Collections.emptyMap();
 
         private String geneSymbol = "";
@@ -306,7 +341,7 @@ public class ClinVarData {
             return this;
         }
 
-        public Builder reviewStatus(String reviewStatus) {
+        public Builder reviewStatus(ReviewStatus reviewStatus) {
             this.reviewStatus = Objects.requireNonNull(reviewStatus);
             return this;
         }

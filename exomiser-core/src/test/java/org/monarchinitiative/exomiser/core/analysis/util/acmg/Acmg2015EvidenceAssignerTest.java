@@ -260,7 +260,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("PTEN")
                 // n.b. start loss variant - will trigger PVS1
                 .variantEffect(VariantEffect.START_LOST)
-                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL).build()))
                 .sampleGenotypes(SampleGenotypes.of(
                         SampleData.of("proband", SampleGenotype.parseGenotype("1|0"))
                 ))
@@ -287,7 +287,7 @@ class Acmg2015EvidenceAssignerTest {
                 .build();
 
         VariantEvaluation pathogenic = TestFactory.variantBuilder(10, 89624227, "A", "G")
-                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL).build()))
                 .sampleGenotypes(SampleGenotypes.of(
                         SampleData.of("proband", SampleGenotype.parseGenotype("0|1"))
                 ))
@@ -322,7 +322,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("PTEN")
                 // n.b. start loss variant - will trigger PVS1
                 .variantEffect(VariantEffect.START_LOST)
-                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build()))
+                .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL).build()))
                 .sampleGenotypes(SampleGenotypes.of(
                         SampleData.of("proband", SampleGenotype.parseGenotype("1|0"))
                 ))
@@ -575,7 +575,7 @@ class Acmg2015EvidenceAssignerTest {
                     .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f)))
                     // n.b. missense variant - will not trigger PVS1
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(reviewStatus).build()))
+                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus(ClinVarData.ReviewStatus.parseReviewStatus(reviewStatus)).build()))
                     .build();
 
             Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
@@ -605,7 +605,7 @@ class Acmg2015EvidenceAssignerTest {
                     .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN, 1.42f)))
                     // n.b. missense variant - will not trigger PVS1
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).reviewStatus(reviewStatus).build()))
+                    .pathogenicityData(PathogenicityData.of(ClinVarData.builder().primaryInterpretation(ClinVarData.ClinSig.BENIGN).reviewStatus(ClinVarData.ReviewStatus.parseReviewStatus(reviewStatus)).build()))
                     .build();
 
             Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();

@@ -53,8 +53,8 @@ public class AlleleProtoAdaptor {
             .put("TOPMED", TOPMED)
             .put("UK10K", UK10K)
 
-            .put("ESP_AA", ESP_AFRICAN_AMERICAN)
-            .put("ESP_EA", ESP_EUROPEAN_AMERICAN)
+            .put("ESP_AA", ESP_AA)
+            .put("ESP_EA", ESP_EA)
             .put("ESP_ALL", ESP_ALL)
 
             .put("EXAC_AFR", EXAC_AFRICAN_INC_AFRICAN_AMERICAN)
@@ -76,10 +76,12 @@ public class AlleleProtoAdaptor {
 
             .put("GNOMAD_G_AFR", GNOMAD_G_AFR)
             .put("GNOMAD_G_AMR", GNOMAD_G_AMR)
+            .put("GNOMAD_G_AMI", GNOMAD_G_AMI)
             .put("GNOMAD_G_ASJ", GNOMAD_G_ASJ)
             .put("GNOMAD_G_EAS", GNOMAD_G_EAS)
             .put("GNOMAD_G_FIN", GNOMAD_G_FIN)
             .put("GNOMAD_G_NFE", GNOMAD_G_NFE)
+            .put("GNOMAD_G_MID", GNOMAD_G_MID)
             .put("GNOMAD_G_OTH", GNOMAD_G_OTH)
             .put("GNOMAD_G_SAS", GNOMAD_G_SAS)
             .build();
@@ -116,43 +118,108 @@ public class AlleleProtoAdaptor {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return FrequencyData.empty();
         }
-        List<Frequency> frequencies = parseFrequencyData(alleleProperties.getPropertiesMap());
-        return FrequencyData.of(alleleProperties.getRsId(), frequencies);
+        FrequencyData.Builder frequencyDataBuilder = FrequencyData.builder()
+                .rsId(alleleProperties.getRsId());
+        parseFrequencyData(frequencyDataBuilder, alleleProperties.getFrequenciesList());
+        return frequencyDataBuilder.build();
     }
 
-    private static List<Frequency> parseFrequencyData(Map<String, Float> values) {
-        List<Frequency> frequencies = new ArrayList<>(values.size());
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
-                FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
-                float value = field.getValue();
-                frequencies.add(Frequency.of(source, value));
-            }
+    private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, List<AlleleProto.Frequency> frequenciesList) {
+        for (AlleleProto.Frequency frequency : frequenciesList) {
+            var freqSource = toFreqSource(frequency.getFrequencySource());
+            var freq = Frequency.percentageFrequency(frequency.getAc(), frequency.getAn());
+            var hom = frequency.getHom();
+            frequencyDataBuilder.addFrequency(freqSource, freq, hom);
         }
-        return frequencies;
+    }
+
+    private static FrequencySource toFreqSource(AlleleProto.FrequencySource frequencySource) {
+        return switch (frequencySource) {
+            case LOCAL -> LOCAL;
+
+            case KG -> THOUSAND_GENOMES;
+            case TOPMED -> TOPMED;
+            case UK10K -> UK10K;
+
+            case ESP_EA -> ESP_EA;
+            case ESP_AA -> ESP_AA;
+            case ESP_ALL -> ESP_ALL;
+
+            case GNOMAD_E_AFR -> GNOMAD_E_AFR;
+            case GNOMAD_E_AMR -> GNOMAD_E_AMR;
+            case GNOMAD_E_ASJ -> GNOMAD_E_ASJ;
+            case GNOMAD_E_EAS -> GNOMAD_E_EAS;
+            case GNOMAD_E_FIN -> GNOMAD_E_FIN;
+            case GNOMAD_E_NFE -> GNOMAD_E_NFE;
+            case GNOMAD_E_OTH -> GNOMAD_E_OTH;
+            case GNOMAD_E_SAS -> GNOMAD_E_SAS;
+
+            case GNOMAD_G_AFR -> GNOMAD_G_AFR;
+            case GNOMAD_G_AMI -> GNOMAD_G_AMI;
+            case GNOMAD_G_AMR -> GNOMAD_G_AMR;
+            case GNOMAD_G_ASJ -> GNOMAD_G_ASJ;
+            case GNOMAD_G_EAS -> GNOMAD_G_EAS;
+            case GNOMAD_G_FIN -> GNOMAD_G_FIN;
+            case GNOMAD_G_MID -> GNOMAD_G_MID;
+            case GNOMAD_G_NFE -> GNOMAD_G_NFE;
+            case GNOMAD_G_OTH -> GNOMAD_G_OTH;
+            case GNOMAD_G_SAS -> GNOMAD_G_SAS;
+
+            case ALFA_AFA -> ALFA_AFA;
+            case ALFA_AFR -> ALFA_AFR;
+            case ALFA_AFO -> ALFA_AFO;
+            case ALFA_EUR -> ALFA_EUR;
+            case ALFA_LAC -> ALFA_LAC;
+            case ALFA_LEN -> ALFA_LEN;
+            case ALFA_EAS -> ALFA_EAS;
+            case ALFA_SAS -> ALFA_SAS;
+            case ALFA_ASN -> ALFA_ASN;
+            case ALFA_OAS -> ALFA_OAS;
+            case ALFA_OTR -> ALFA_OTR;
+            case ALFA_TOT -> ALFA_TOT;
+
+            case UNSPECIFIED_FREQUENCY_SOURCE, UNRECOGNIZED -> UNKNOWN;
+        };
     }
 
     public static PathogenicityData toPathogenicityData(AlleleProperties alleleProperties) {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return PathogenicityData.empty();
         }
-        List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPropertiesMap());
+        List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPathogenicityScoresList());
         ClinVarData clinVarData = toClinVarData(alleleProperties.getClinVar());
         return PathogenicityData.of(clinVarData, pathogenicityScores);
     }
 
-    private static List<PathogenicityScore> parsePathogenicityData(Map<String, Float> values) {
-        List<PathogenicityScore> pathogenicityScores = new ArrayList<>();
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if(PATHOGENICITY_SOURCE_MAP.containsKey(key)) {
-                PathogenicitySource source = PATHOGENICITY_SOURCE_MAP.get(key);
-                float score = field.getValue();
-                pathogenicityScores.add(PathogenicityScore.of(source, score));
-            }
+    private static List<PathogenicityScore> parsePathogenicityData(List<AlleleProto.PathogenicityScore> pathogenicityScoresList) {
+        List<PathogenicityScore> pathogenicityScores = new ArrayList<>(pathogenicityScoresList.size());
+        for (int i = 0; i < pathogenicityScoresList.size(); i++) {
+            AlleleProto.PathogenicityScore pathogenicityScore = pathogenicityScoresList.get(i);
+            pathogenicityScores.add(PathogenicityScore.of(toPathSource(pathogenicityScore.getPathogenicitySource()), pathogenicityScore.getScore()));
         }
         return pathogenicityScores;
+    }
+
+    private static PathogenicitySource toPathSource(AlleleProto.PathogenicitySource pathogenicitySource) {
+        return switch (pathogenicitySource) {
+            case VARIANT_EFFECT -> VARIANT_TYPE;
+            case POLYPHEN -> POLYPHEN;
+            case MUTATION_TASTER -> MUTATION_TASTER;
+            case SIFT -> SIFT;
+            case CADD -> CADD;
+            case REMM -> REMM;
+            case REVEL -> REVEL;
+            case M_CAP -> M_CAP;
+            case MPC -> MPC;
+            case MVP -> MVP;
+            case PRIMATE_AI -> PRIMATE_AI;
+            case SPLICE_AI -> SPLICE_AI;
+            case TEST -> TEST;
+            case DBVAR -> PathogenicitySource.DBVAR;
+            case CLINVAR -> CLINVAR;
+            case UNRECOGNIZED, UNKNOWN_PATH_SOURCE ->
+                    throw new IllegalStateException("Unexpected value: " + pathogenicitySource);
+        };
     }
 
     public static ClinVarData toClinVarData(ClinVar clinVar) {
@@ -165,7 +232,7 @@ public class AlleleProtoAdaptor {
         builder.conflictingInterpretationCounts(toConflictCounts(clinVar.getClinSigCountsMap()));
         builder.secondaryInterpretations(toClinSigSet(clinVar.getSecondaryInterpretationsList()));
         builder.includedAlleles(getToIncludedAlleles(clinVar.getIncludedAllelesMap()));
-        builder.reviewStatus(clinVar.getReviewStatus());
+        builder.reviewStatus(toReviewStatus(clinVar.getReviewStatus()));
         builder.geneSymbol(clinVar.getGeneSymbol());
         builder.variantEffect(toVariantEffect(clinVar.getVariantEffect()));
         builder.hgvsCdna(clinVar.getHgvsCdna());
@@ -225,7 +292,21 @@ public class AlleleProtoAdaptor {
             case OTHER -> ClinVarData.ClinSig.OTHER;
             case PROTECTIVE -> ClinVarData.ClinSig.PROTECTIVE;
             case RISK_FACTOR -> ClinVarData.ClinSig.RISK_FACTOR;
-            default -> ClinVarData.ClinSig.NOT_PROVIDED;
+            case NOT_PROVIDED, UNRECOGNIZED -> ClinVarData.ClinSig.NOT_PROVIDED;
+        };
+    }
+
+    private static ClinVarData.ReviewStatus toReviewStatus(ClinVar.ReviewStatus protoReviewStatus) {
+        return switch (protoReviewStatus) {
+            case NO_ASSERTION_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED;
+            case NO_ASSERTION_CRITERIA_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED;
+            case NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT -> ClinVarData.ReviewStatus.NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+            case CRITERIA_PROVIDED_SINGLE_SUBMITTER -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_SINGLE_SUBMITTER;
+            case CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+            case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
+            case REVIEWED_BY_EXPERT_PANEL -> ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL;
+            case PRACTICE_GUIDELINE -> ClinVarData.ReviewStatus.PRACTICE_GUIDELINE;
+            case UNRECOGNIZED -> ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED;
         };
     }
 

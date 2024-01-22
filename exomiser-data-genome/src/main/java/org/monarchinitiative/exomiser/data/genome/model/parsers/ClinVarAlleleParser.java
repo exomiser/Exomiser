@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ReviewStatus;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,6 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
     }
 
     /**
-     *
      * @param info
      * @return
      */
@@ -61,7 +61,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
         ClinVarData.Builder clinVarBuilder = ClinVarData.builder();
         clinVarBuilder.variationId(allele.getRsId());
-        String [] fields = info.split(";");
+        String[] fields = info.split(";");
         for (String field : fields) {
             String[] keyValue = field.split("=");
             String key = keyValue[0];
@@ -77,7 +77,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
                 case "CLNREVSTAT":
                     //CLNREVSTAT criteria_provided,_conflicting_interpretations, criteria_provided,_multiple_submitters,_no_conflicts, criteria_provided,_single_submitter, no_assertion_criteria_provided, no_assertion_provided, no_interpretation_for_the_single_variant, practice_guideline, reviewed_by_expert_panel
                     //CLNREVSTAT counts: criteria_provided,_conflicting_interpretations=12678, criteria_provided,_multiple_submitters,_no_conflicts=34967, criteria_provided,_single_submitter=197277, no_assertion_criteria_provided=34308, no_assertion_provided=10980, no_interpretation_for_the_single_variant=500, practice_guideline=23, reviewed_by_expert_panel=8786
-                    clinVarBuilder.reviewStatus(value);
+                    clinVarBuilder.reviewStatus(ReviewStatus.parseReviewStatus(value));
                     break;
                 case "CLNSIGINCL":
                     Map<String, ClinVarData.ClinSig> includedAlleles = parseIncludedAlleles(value);
@@ -143,38 +143,23 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         // Likely_benign=52064, Likely_pathogenic=15127, Pathogenic=46803, Pathogenic/Likely_pathogenic=3278,
         // Uncertain_significance=120418, association=148, drug_response=290, not_provided=10980, other=1796, protective=30,
         // risk_factor=411
-        switch (clinsig) {
-            case "Uncertain_significance":
-                return UNCERTAIN_SIGNIFICANCE;
-            case "Benign":
-                return BENIGN;
-            case "Benign/Likely_benign":
-                return BENIGN_OR_LIKELY_BENIGN;
-            case "Likely_benign":
-                return LIKELY_BENIGN;
-            case "Conflicting_interpretations_of_pathogenicity":
-                return CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case "Likely_pathogenic":
-                return LIKELY_PATHOGENIC;
-            case "Pathogenic/Likely_pathogenic":
-                return PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case "Pathogenic":
-                return PATHOGENIC;
-            case "Affects":
-                return AFFECTS;
-            case "association":
-                return ASSOCIATION;
-            case "drug_response":
-                return DRUG_RESPONSE;
-            case "other":
-                return OTHER;
-            case "protective":
-                return PROTECTIVE;
-            case "risk_factor":
-                return RISK_FACTOR;
-            case "not_provided":
-            default:
-                return NOT_PROVIDED;
-        }
+        return switch (clinsig) {
+            case "Uncertain_significance" -> UNCERTAIN_SIGNIFICANCE;
+            case "Benign" -> BENIGN;
+            case "Benign/Likely_benign" -> BENIGN_OR_LIKELY_BENIGN;
+            case "Likely_benign" -> LIKELY_BENIGN;
+            case "Conflicting_interpretations_of_pathogenicity" -> CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case "Likely_pathogenic" -> LIKELY_PATHOGENIC;
+            case "Pathogenic/Likely_pathogenic" -> PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case "Pathogenic" -> PATHOGENIC;
+            case "Affects" -> AFFECTS;
+            case "association" -> ASSOCIATION;
+            case "drug_response" -> DRUG_RESPONSE;
+            case "other" -> OTHER;
+            case "protective" -> PROTECTIVE;
+            case "risk_factor" -> RISK_FACTOR;
+            default -> NOT_PROVIDED;
+        };
     }
+
 }

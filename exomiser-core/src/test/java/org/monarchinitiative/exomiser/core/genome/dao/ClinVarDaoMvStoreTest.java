@@ -80,7 +80,7 @@ class ClinVarDaoMvStoreTest {
             AlleleProto.ClinVar clinVar = AlleleProto.ClinVar.newBuilder()
                     .setAlleleId("12345")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
-                    .setReviewStatus("criteria_provided,_multiple_submitters,_no_conflicts")
+                    .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                     .build();
             clinvarMap.put(alleleKey, clinVar);
 

@@ -349,7 +349,7 @@ public class MvStoreAlleleIndexerTest {
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
                 .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))
-                .reviewStatus("conflicting interpretations")
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 .build();
         updateAllele.setClinVarData(alleleClinVarData);
 

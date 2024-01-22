@@ -44,7 +44,7 @@ public class AlleleConverterTest {
             .variationId("12334")
             .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
             .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE))
-            .reviewStatus("yada-yada")
+            .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
             .includedAlleles(ImmutableMap.of("455645", ClinVarData.ClinSig.LIKELY_PATHOGENIC))
             .build();
 
@@ -62,7 +62,7 @@ public class AlleleConverterTest {
             .setPrimaryInterpretation(ClinVar.ClinSig.PATHOGENIC)
             .addSecondaryInterpretations(ClinVar.ClinSig.UNCERTAIN_SIGNIFICANCE)
             .addSecondaryInterpretations(ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
-            .setReviewStatus("yada-yada")
+            .setReviewStatus(ClinVar.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
             .putIncludedAlleles("455645", ClinVar.ClinSig.LIKELY_PATHOGENIC)
             .build();
 

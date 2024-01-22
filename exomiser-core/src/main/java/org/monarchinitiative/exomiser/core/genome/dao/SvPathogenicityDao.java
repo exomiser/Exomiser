@@ -193,10 +193,11 @@ public class SvPathogenicityDao implements PathogenicityDao {
             // lengths all == 2, so there isn't any awkward changeLength fiddling required here.
             if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
                 ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
+                ClinVarData.ReviewStatus reviewStatus = ClinVarData.ReviewStatus.valueOf(clinRevStat);
                 ClinVarData clinVarData = ClinVarData.builder()
                         .variationId(alleleId)
                         .primaryInterpretation(sig)
-                        .reviewStatus(clinRevStat)
+                        .reviewStatus(reviewStatus)
                         .build();
                 SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, alleleId);
                 results.add(svResult);

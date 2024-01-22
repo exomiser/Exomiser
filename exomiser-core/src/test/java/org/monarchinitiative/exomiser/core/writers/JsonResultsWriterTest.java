@@ -127,7 +127,7 @@ public class JsonResultsWriterTest {
         variant.setWhiteListed(true);
         ClinVarData clinVarData = ClinVarData.builder()
                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
-                .reviewStatus("criteria provided, multiple submitters, no conflicts")
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                 .build();
         variant.setPathogenicityData(PathogenicityData.of(clinVarData, PolyPhenScore.of(1f)));
         return variant;
