@@ -212,6 +212,12 @@ public class JobParser {
         // so no need to do so here.
         Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
         for (String source : frequencySourcesList) {
+            if ("ESP_AFRICAN_AMERICAN".equals(source)) {
+                source = "ESP_AA";
+            }
+            if ("ESP_EUROPEAN_AMERICAN".equals(source)) {
+                source = "ESP_EA";
+            }
             frequencySources.add(FrequencySource.valueOf(source));
         }
         return frequencySources;

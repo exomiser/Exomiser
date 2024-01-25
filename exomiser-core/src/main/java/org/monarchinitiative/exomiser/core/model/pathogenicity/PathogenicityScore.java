@@ -42,25 +42,16 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
      * @return a typed {@link PathogenicityScore}
      */
     public static PathogenicityScore of(PathogenicitySource source, float score) {
-        switch (source) {
-            case POLYPHEN:
-                return PolyPhenScore.of(score);
-            case MUTATION_TASTER:
-                return MutationTasterScore.of(score);
-            case SIFT:
-                return SiftScore.of(score);
-            case CADD:
-                return CaddScore.of(score);
-            case REMM:
-                return RemmScore.of(score);
-            case REVEL:
-                return RevelScore.of(score);
-            case MPC:
-                return MpcScore.of(score);
-                // TODO: Add MVP, ClinPred, PrimateAi, M-CAP,
-            default:
-                return new BasePathogenicityScore(source, score);
-        }
+        return switch (source) {
+            case POLYPHEN -> PolyPhenScore.of(score);
+            case MUTATION_TASTER -> MutationTasterScore.of(score);
+            case SIFT -> SiftScore.of(score);
+            case CADD -> CaddScore.of(score);
+            case REMM -> RemmScore.of(score);
+            case REVEL -> RevelScore.of(score);
+            case SPLICE_AI -> SpliceAiScore.of(score);
+            default -> new BasePathogenicityScore(source, score);
+        };
     }
 
     /**

@@ -34,6 +34,8 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 public enum PathogenicitySource {
     // variant type is from Jannovar
     VARIANT_TYPE,
+    // An unspecified source for use in testing new pathogenicity scores
+    TEST,
     // these guys are calculated from other sources
     // http://genetics.bwh.harvard.edu/pph2/
     POLYPHEN,
@@ -48,12 +50,10 @@ public enum PathogenicitySource {
     // “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885
     // http://dx.doi.org/10.1016/j.ajhg.2016.08.016
     REVEL,
-    M_CAP,
-    MPC,
     MVP,
-    PRIMATE_AI,
-    // An unspecified source for use in testing new pathogenicity scores
-    TEST,
+    SPLICE_AI,
+    ALPHA_MISSENSE,
+    EVE,
 
     // SV data sources
     DBVAR,

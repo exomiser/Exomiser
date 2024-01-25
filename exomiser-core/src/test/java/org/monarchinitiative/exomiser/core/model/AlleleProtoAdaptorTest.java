@@ -110,35 +110,11 @@ public class AlleleProtoAdaptorTest {
     }
 
     @Test
-    public void testToPathDataMcap() {
-        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.M_CAP, 0.7f))
-                .build();
-        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(M_CAP, 0.7f))));
-    }
-
-    @Test
-    public void testToPathDataMpc() {
-        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MPC, 0.7f))
-                .build();
-        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MPC, 0.7f))));
-    }
-
-    @Test
     public void testToPathDataMvp() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
                 .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.MVP, 0.7f))
                 .build();
         assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(MVP, 0.7f))));
-    }
-
-    @Test
-    public void testToPathDataPrimateAi() {
-        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
-                .addPathogenicityScores(AlleleData.pathogenicityScoreOf(AlleleProto.PathogenicitySource.PRIMATE_AI, 0.7f))
-                .build();
-        assertThat(AlleleProtoAdaptor.toPathogenicityData(alleleProperties), equalTo(PathogenicityData.of(PathogenicityScore.of(PRIMATE_AI, 0.7f))));
     }
 
     @Test

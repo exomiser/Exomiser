@@ -81,7 +81,8 @@ enum FrequencySource {
     GNOMAD_E_NFE = 21;
     GNOMAD_E_OTH = 22;
     GNOMAD_E_SAS = 23;
-    reserved 24 to 35; // for GNOMAD_E
+    GNOMAD_E_MID = 24;
+    reserved 25 to 35; // for GNOMAD_E
 
     //reserved 36-55 GNOMAD_G
     GNOMAD_G_AFR = 36;
@@ -91,9 +92,9 @@ enum FrequencySource {
     GNOMAD_G_FIN = 40;
     GNOMAD_G_NFE = 41;
     GNOMAD_G_OTH = 42;
-    GNOMAD_G_SAS= 43;
-    GNOMAD_G_AMI= 44;
-    GNOMAD_G_MID= 45;
+    GNOMAD_G_SAS = 43;
+    GNOMAD_G_AMI = 44;
+    GNOMAD_G_MID = 45;
     reserved 46 to 55; // for GNOMAD_G
 
     // reserved 68-75 for ALFA
@@ -120,20 +121,20 @@ message PathogenicityScore {
 
 enum PathogenicitySource {
     UNKNOWN_PATH_SOURCE = 0;
+    // A default score derived from the predicted variant effect
     VARIANT_EFFECT = 1;
-    POLYPHEN = 2;
-    MUTATION_TASTER = 3;
-    SIFT = 4;
-    CADD = 5;
-    REMM = 6;
-    REVEL = 7;
-    M_CAP = 8;
-    MPC = 9;
-    MVP = 10;
-    PRIMATE_AI = 11;
-    SPLICE_AI = 12;
     // An unspecified source for use in testing new pathogenicity scores
-    TEST = 13;
+    TEST = 2;
+    POLYPHEN = 3;
+    MUTATION_TASTER = 4;
+    SIFT = 5;
+    CADD = 6;
+    REMM = 7;
+    REVEL = 8;
+    MVP = 9;
+    SPLICE_AI = 10;
+    ALPHA_MISSENSE = 11;
+    EVE = 12;
 
     // SV data sources
     DBVAR = 14;

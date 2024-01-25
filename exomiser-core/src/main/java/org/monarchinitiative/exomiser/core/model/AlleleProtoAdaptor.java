@@ -39,6 +39,7 @@ import java.util.*;
 
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.DBVAR;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -93,10 +94,7 @@ public class AlleleProtoAdaptor {
             .put("CADD", CADD)
             .put("REMM", REMM)
             .put("REVEL", REVEL)
-            .put("MCAP", M_CAP)
-            .put("MPC", MPC)
             .put("MVP", MVP)
-            .put("PRIMATE_AI", PRIMATE_AI)
             .build();
 
     private AlleleProtoAdaptor() {
@@ -153,6 +151,7 @@ public class AlleleProtoAdaptor {
             case GNOMAD_E_NFE -> GNOMAD_E_NFE;
             case GNOMAD_E_OTH -> GNOMAD_E_OTH;
             case GNOMAD_E_SAS -> GNOMAD_E_SAS;
+            case GNOMAD_E_MID -> GNOMAD_E_MID;
 
             case GNOMAD_G_AFR -> GNOMAD_G_AFR;
             case GNOMAD_G_AMI -> GNOMAD_G_AMI;
@@ -203,19 +202,18 @@ public class AlleleProtoAdaptor {
     private static PathogenicitySource toPathSource(AlleleProto.PathogenicitySource pathogenicitySource) {
         return switch (pathogenicitySource) {
             case VARIANT_EFFECT -> VARIANT_TYPE;
+            case TEST -> TEST;
             case POLYPHEN -> POLYPHEN;
             case MUTATION_TASTER -> MUTATION_TASTER;
             case SIFT -> SIFT;
             case CADD -> CADD;
             case REMM -> REMM;
             case REVEL -> REVEL;
-            case M_CAP -> M_CAP;
-            case MPC -> MPC;
             case MVP -> MVP;
-            case PRIMATE_AI -> PRIMATE_AI;
             case SPLICE_AI -> SPLICE_AI;
-            case TEST -> TEST;
-            case DBVAR -> PathogenicitySource.DBVAR;
+            case ALPHA_MISSENSE -> ALPHA_MISSENSE;
+            case EVE -> EVE;
+            case DBVAR -> DBVAR;
             case CLINVAR -> CLINVAR;
             case UNRECOGNIZED, UNKNOWN_PATH_SOURCE ->
                     throw new IllegalStateException("Unexpected value: " + pathogenicitySource);

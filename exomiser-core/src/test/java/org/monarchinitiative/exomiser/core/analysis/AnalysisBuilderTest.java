@@ -120,7 +120,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAnalysisBuilderFrequencySources() {
-        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
+        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         analysisBuilder.frequencySources(frequencySources);
         assertThat(analysisBuilder.build().getFrequencySources(), equalTo(frequencySources));
     }
@@ -267,7 +267,7 @@ public class AnalysisBuilderTest {
     @Test
     public void testAnalysisBuilderCanBuildCompleteAnalysis() {
         EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
-        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
+        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         float frequencyCutOff = 2f;
         FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
 

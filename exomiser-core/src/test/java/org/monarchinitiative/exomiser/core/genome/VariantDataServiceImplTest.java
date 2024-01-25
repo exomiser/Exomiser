@@ -83,7 +83,7 @@ public class VariantDataServiceImplTest {
             SiftScore.of(0)
     );
 
-    private static final FrequencyData FREQ_DATA = FrequencyData.of("rs1234567", Frequency.of(ESP_AFRICAN_AMERICAN, 100.0f));
+    private static final FrequencyData FREQ_DATA = FrequencyData.of("rs1234567", Frequency.of(ESP_AA, 100.0f));
 
     private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.of(15f));
 
@@ -219,12 +219,12 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsSpecifiedFrequencyDataForVariant() {
-        FrequencyData frequencyData = FrequencyData.of("rs234567", Frequency.of(ESP_AFRICAN_AMERICAN, 1f), Frequency
-                .of(ESP_EUROPEAN_AMERICAN, 1f));
+        FrequencyData frequencyData = FrequencyData.of("rs234567", Frequency.of(ESP_AA, 1f), Frequency
+                .of(ESP_EA, 1f));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
-        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(ESP_AFRICAN_AMERICAN));
-        assertThat(result, equalTo(FrequencyData.of("rs234567", Frequency.of(ESP_AFRICAN_AMERICAN, 1f))));
+        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(ESP_AA));
+        assertThat(result, equalTo(FrequencyData.of("rs234567", Frequency.of(ESP_AA, 1f))));
     }
 
     @Test
@@ -248,15 +248,15 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsSpecifiedFrequencyDataForVariantIncludingLocalData() {
-        FrequencyData frequencyData = FrequencyData.of("rs234567", Frequency.of(ESP_AFRICAN_AMERICAN, 1f), Frequency
-                .of(ESP_EUROPEAN_AMERICAN, 1f));
+        FrequencyData frequencyData = FrequencyData.of("rs234567", Frequency.of(ESP_AA, 1f), Frequency
+                .of(ESP_EA, 1f));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
         FrequencyData localFrequencyData = FrequencyData.of(Frequency.of(LOCAL, 2f));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
-        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(ESP_AFRICAN_AMERICAN, LOCAL));
-        assertThat(result, equalTo(FrequencyData.of("rs234567", Frequency.of(ESP_AFRICAN_AMERICAN, 1f), Frequency
+        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(ESP_AA, LOCAL));
+        assertThat(result, equalTo(FrequencyData.of("rs234567", Frequency.of(ESP_AA, 1f), Frequency
                 .of(LOCAL, 2f))));
     }
 
