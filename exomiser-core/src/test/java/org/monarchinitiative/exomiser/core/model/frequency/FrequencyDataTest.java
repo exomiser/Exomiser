@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -48,8 +49,8 @@ public class FrequencyDataTest {
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
 
     private static final Frequency ESP_ALL_PASS = Frequency.of(ESP_ALL, PASS_FREQ);
-    private static final Frequency ESP_AA_PASS = Frequency.of(ESP_AFRICAN_AMERICAN, PASS_FREQ);
-    private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EUROPEAN_AMERICAN, PASS_FREQ);
+    private static final Frequency ESP_AA_PASS = Frequency.of(ESP_AA, PASS_FREQ);
+    private static final Frequency ESP_EA_PASS = Frequency.of(ESP_EA, PASS_FREQ);
     private static final Frequency DBSNP_PASS = Frequency.of(THOUSAND_GENOMES, PASS_FREQ);
 
     private static final String RS_ID = "rs12335";
@@ -123,17 +124,27 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetEspEaMaf() {
-        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_EUROPEAN_AMERICAN), equalTo(ESP_EA_PASS));
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_EA), equalTo(ESP_EA_PASS));
     }
 
     @Test
     public void testGetEspAaMaf() {
-        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_AFRICAN_AMERICAN), equalTo(ESP_AA_PASS));
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_AA), equalTo(ESP_AA_PASS));
     }
 
     @Test
     public void testGetEspAllMaf() {
         assertThat(FREQUENCY_DATA.getFrequencyForSource(ESP_ALL), equalTo(ESP_ALL_PASS));
+    }
+
+    @Test
+    public void testGetFrequencyForUnavailableSource() {
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(GNOMAD_E_NFE), equalTo(null));
+    }
+
+    @Test
+    public void testGetFrequencyForUnavailableSourceBefore() {
+        assertThat(FREQUENCY_DATA.getFrequencyForSource(UNKNOWN), equalTo(null));
     }
 
     @Test
@@ -310,27 +321,157 @@ public class FrequencyDataTest {
     }
 
     @Test
-    void testSize() {
-        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
-        FrequencyData instance = FrequencyData.of(maxFrequency);
-        assertThat(FrequencyData.empty().size(), equalTo(0));
-        assertThat(instance.size(), equalTo(1));
+    void testBuilderEquivalentToStaticConstructor() {
+        FrequencyData actual = FrequencyData.builder()
+                .rsId("rs12345")
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .build();
+
+        FrequencyData expected = FrequencyData.of("rs12345", Frequency.of(GNOMAD_E_AFR, 0.0005f), Frequency.of(GNOMAD_E_AMR, 0.0002f));
+        assertThat(actual, equalTo(expected));
     }
 
     @Test
-    void testIsEmpty() {
-        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
-        FrequencyData instance = FrequencyData.of(maxFrequency);
-        assertThat(FrequencyData.empty().isEmpty(), equalTo(true));
-        assertThat(instance.isEmpty(), equalTo(false));
+    void testBuilder() {
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .build();
+        assertThat(instance.getKnownFrequencies(), equalTo(List.of(Frequency.of(GNOMAD_E_AFR, 0.0005f), Frequency.of(GNOMAD_E_AMR, 0.0002f))));
     }
 
     @Test
-    void testContainsFrequencySource() {
-        Frequency maxFrequency = Frequency.of(THOUSAND_GENOMES, 100f);
-        FrequencyData instance = FrequencyData.of(maxFrequency);
-        assertThat(FrequencyData.empty().containsFrequencySource(LOCAL), equalTo(false));
-        assertThat(instance.containsFrequencySource(LOCAL), equalTo(false));
-        assertThat(instance.containsFrequencySource(THOUSAND_GENOMES), equalTo(true));
+    void testBuilderEmpty() {
+        FrequencyData instance = FrequencyData.builder()
+                .build();
+        assertThat(instance, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    void testBuilderIsEmpty() {
+        FrequencyData instance = FrequencyData.builder()
+                .build();
+        assertThat(instance.isEmpty(), equalTo(true));
+    }
+
+    @Test
+    void testToBuilder() {
+        FrequencyData frequencyData = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .build();
+
+        FrequencyData instance = frequencyData.toBuilder().build();
+
+        assertThat(instance, equalTo(frequencyData));
+    }
+
+    @Test
+    void testBuilderRetainSourcesEmpty() {
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .retainSources(Set.of())
+                .build();
+        assertThat(instance, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    void testBuilderRetainSources() {
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .retainSources(Set.of(GNOMAD_E_AMR))
+                .build();
+
+        FrequencyData expected = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .build();
+
+        assertThat(instance, equalTo(expected));
+    }
+
+    @Test
+    void testBuilderRetainSourcesAllRemoved() {
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .retainSources(Set.of(GNOMAD_E_SAS))
+                .build();
+        assertThat(instance, equalTo(FrequencyData.empty()));
+    }
+
+    @Test
+    void testBuilderMergeEmpty() {
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .mergeFrequencyData(FrequencyData.empty())
+                .build();
+
+        FrequencyData expected = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .build();
+
+        assertThat(instance, equalTo(expected));
+    }
+
+    @Test
+    void testBuilderMergeNewFrequencyIntoEmpty() {
+        FrequencyData toMerge = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        FrequencyData instance = FrequencyData.builder()
+                .mergeFrequencyData(toMerge)
+                .build();
+
+        FrequencyData expected = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        assertThat(instance, equalTo(expected));
+    }
+
+    @Test
+    void testBuilderMergeNewFrequency() {
+        FrequencyData toMerge = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .mergeFrequencyData(toMerge)
+                .build();
+
+        FrequencyData expected = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        assertThat(instance, equalTo(expected));
+    }
+
+    @Test
+    void testBuilderMergeSameFrequency() {
+        FrequencyData toMerge = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        FrequencyData instance = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_EAS, 0.0005f, 0)
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .mergeFrequencyData(toMerge)
+                .build();
+
+        FrequencyData expected = FrequencyData.builder()
+                .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
+                .addFrequency(GNOMAD_E_EAS, 0.0001f, 1)
+                .build();
+
+        assertThat(instance, equalTo(expected));
     }
 }

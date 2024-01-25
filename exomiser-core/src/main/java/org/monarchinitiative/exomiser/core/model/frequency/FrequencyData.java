@@ -36,9 +36,15 @@ import java.util.*;
 public class FrequencyData {
 
     private static final String VCF_EMPTY_VALUE = ".";
-    private static final FrequencyData EMPTY_DATA = new FrequencyData("", Collections.emptyList());
+    private static final FrequencyData EMPTY_DATA = new FrequencyData("", List.of());
 
     private static final int NUM_FREQ_SOURCES = FrequencySource.values().length;
+    // offsets for data array
+    // [SOURCE, SOURCE, SOURCE]
+    // [FREQ, HOM, FREQ, HOM, FREQ, HOM]
+    private static final int WORD_SIZE = 2;
+    private static final int FREQ_OFFSET = 0;
+    private static final int HOM_OFFSET = 1;
 
     private static final float VERY_RARE_SCORE = 1f;
     private static final float NOT_RARE_SCORE = 0f;
@@ -47,7 +53,7 @@ public class FrequencyData {
 
     private final int size;
     private final FrequencySource[] sources;
-    private final float[] values;
+    private final float[] data;
 
     public static FrequencyData of(String rsId, Collection<Frequency> frequencies) {
         return validate(rsId, frequencies);
@@ -58,19 +64,19 @@ public class FrequencyData {
     }
 
     public static FrequencyData of(String rsId, Frequency frequency) {
-        return of(rsId, Collections.singletonList(frequency));
+        return of(rsId, List.of(frequency));
     }
 
     public static FrequencyData of(String rsId, Frequency... frequency) {
-        return of(rsId, Arrays.asList(frequency));
+        return of(rsId, List.of(frequency));
     }
 
     public static FrequencyData of(Frequency... frequency) {
-        return of(Arrays.asList(frequency));
+        return of(List.of(frequency));
     }
 
     public static FrequencyData of(Frequency frequency) {
-        return of(Collections.singletonList(frequency));
+        return of(List.of(frequency));
     }
 
     public static FrequencyData empty() {
@@ -100,20 +106,26 @@ public class FrequencyData {
         // the values. This means that duplicated FrequencySource will be overwritten. In practice this shouldn't happen
         // as they are extracted from a map instance.
         Frequency[] sorted = orderByFrequencySource(frequencies);
-
         this.size = countNotNullFrequencies(sorted);
         this.sources = new FrequencySource[size];
-        this.values = new float[size];
-        // TODO add AN and AC to Frequency
+        this.data = new float[size * WORD_SIZE];
 
         int pos = 0;
         for (Frequency entry : sorted) {
             if (entry != null) {
-                sources[pos] = entry.getSource();
-                values[pos] = entry.getFrequency();
+                this.sources[pos] = entry.getSource();
+                this.data[pos * WORD_SIZE + FREQ_OFFSET] = entry.getFrequency();
+                this.data[pos * WORD_SIZE + HOM_OFFSET] = 0f;
                 pos++;
             }
         }
+    }
+
+    private FrequencyData(String rsId, FrequencySource[] sources, float[] data) {
+        this.rsId = rsId;
+        this.size = sources.length;
+        this.sources = sources;
+        this.data = data;
     }
 
     private Frequency[] orderByFrequencySource(Collection<Frequency> frequencies) {
@@ -162,12 +174,8 @@ public class FrequencyData {
      * @since 13.3.0
      */
     public boolean containsFrequencySource(FrequencySource frequencySource) {
-        for (FrequencySource dataSource : sources) {
-            if (dataSource == frequencySource) {
-                return true;
-            }
-        }
-        return false;
+        int i = Arrays.binarySearch(sources, frequencySource);
+        return i >= 0;
     }
 
     public String getRsId() {
@@ -176,13 +184,17 @@ public class FrequencyData {
 
     @Nullable
     public Frequency getFrequencyForSource(FrequencySource source) {
-        for (int i = 0; i < size; i++) {
-            if (sources[i] == source) {
-                float value = values[i];
-                return Frequency.of(source, value);
-            }
-        }
-        return null;
+        int i = Arrays.binarySearch(sources, source);
+        // , homs(i)
+        return i < 0 ? null : Frequency.of(sources[i], freq(i));
+    }
+
+    private float freq(int i) {
+        return data[i * WORD_SIZE + FREQ_OFFSET];
+    }
+
+    private int homs(int i) {
+        return (int) data[i * WORD_SIZE + HOM_OFFSET];
     }
 
     /**
@@ -214,11 +226,8 @@ public class FrequencyData {
     public boolean hasEspData() {
         for (FrequencySource dataSource : sources) {
             switch (dataSource) {
-                case ESP_AFRICAN_AMERICAN:
-                case ESP_EUROPEAN_AMERICAN:
-                case ESP_ALL:
+                case ESP_AA, ESP_EA, ESP_ALL:
                     return true;
-                default:
             }
         }
         return false;
@@ -242,6 +251,16 @@ public class FrequencyData {
         return false;
     }
 
+    @JsonIgnore
+    public boolean hasGnomadData() {
+        for (FrequencySource dataSource : sources) {
+            if (dataSource.isGnomadSource()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the highest frequency in percent for a given set of {@link FrequencySource}.
      *
@@ -254,7 +273,7 @@ public class FrequencyData {
         for (int i = 0; i < size; i++) {
             FrequencySource freqSource = this.sources[i];
             if (frequencySources.contains(freqSource)) {
-                max = Math.max(max, values[i]);
+                max = Math.max(max, freq(i));
             }
         }
         return max;
@@ -277,7 +296,7 @@ public class FrequencyData {
      */
     public boolean hasFrequencyOverPercentageValue(float maxFreq) {
         for (int i = 0; i < size; i++) {
-            if (values[i] > maxFreq) {
+            if (freq(i) > maxFreq) {
                 return true;
             }
         }
@@ -293,7 +312,7 @@ public class FrequencyData {
     public List<Frequency> getKnownFrequencies() {
         List<Frequency> freqs = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            freqs.add(Frequency.of(sources[i], values[i]));
+            freqs.add(Frequency.of(sources[i], freq(i)));
         }
         return freqs;
     }
@@ -308,7 +327,7 @@ public class FrequencyData {
     public float getMaxFreq() {
         float max = 0f;
         for (int i = 0; i < size; i++) {
-            max = Math.max(max, values[i]);
+            max = Math.max(max, freq(i));
         }
         return max;
     }
@@ -328,7 +347,7 @@ public class FrequencyData {
         int maxSource = 0;
 
         for(int i = 0; i < this.size; ++i) {
-            float value = this.values[i];
+            float value = freq(i);
             if (value > max) {
                 max = value;
                 maxSource = i;
@@ -366,14 +385,14 @@ public class FrequencyData {
         return Objects.equals(rsId, that.rsId) &&
                 size == that.size &&
                 Arrays.equals(sources, that.sources) &&
-                Arrays.equals(values, that.values);
+                Arrays.equals(data, that.data);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(rsId, size);
         result = 31 * result + Arrays.hashCode(sources);
-        result = 31 * result + Arrays.hashCode(values);
+        result = 31 * result + Arrays.hashCode(data);
         return result;
     }
 
@@ -387,10 +406,121 @@ public class FrequencyData {
                 sb.append(", ");
             }
             first = false;
-            sb.append(sources[i]).append('=').append(values[i]);
+            sb.append(sources[i]).append('=').append(freq(i));
         }
         sb.append('}');
-        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + sb.toString() + '}';
+        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + sb + '}';
     }
 
+    /**
+     *
+     * @return a new mutable {@link FrequencyData.Builder} object from the instance
+     * @since 14.0.0
+     */
+    public Builder toBuilder() {
+        Builder builder = new Builder();
+        builder.rsId(rsId);
+        for (int i = 0; i < sources.length; i++) {
+            builder.addFrequency(sources[i], freq(i), homs(i));
+        }
+        return builder;
+    }
+
+    /**
+     *
+     * @return a new mutable {@link FrequencyData.Builder} object
+     * @since 14.0.0
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String rsId = "";
+        private final FrequencySource[] frequencySources = new FrequencySource[NUM_FREQ_SOURCES];
+        private final float[] frequencyData = new float[NUM_FREQ_SOURCES * WORD_SIZE];
+
+        public Builder rsId(String rsId) {
+            this.rsId = Objects.requireNonNullElse(rsId, "");
+            return this;
+        }
+
+        public Builder addFrequency(FrequencySource frequencySource, float frequency, int homCount) {
+            frequencySources[frequencySource.ordinal()] = Objects.requireNonNull(frequencySource);
+            frequencyData[frequencySource.ordinal() * WORD_SIZE + FREQ_OFFSET] = frequency;
+            frequencyData[frequencySource.ordinal() * WORD_SIZE + HOM_OFFSET] = homCount;
+            return this;
+        }
+
+        /**
+         * Removes any frequency data not in the input set of {@link FrequencySource}.
+         *
+         * @return the {@link FrequencyData.Builder} instance with potentially updated frequencies
+         * @since 14.0.0
+         */
+        public Builder retainSources(Set<FrequencySource> sourcesToRetain) {
+            Objects.requireNonNull(sourcesToRetain);
+            if (sourcesToRetain.isEmpty()) {
+                Arrays.fill(frequencySources, null);
+                // no need to set frequencyData elements to zero as these will be ignored when build() is called
+                return this;
+            }
+            for (int i = 0; i < frequencySources.length; i++) {
+                if (frequencySources[i] != null && !sourcesToRetain.contains(frequencySources[i])) {
+                    frequencySources[i] = null;
+                    // no need to set frequencyData elements to zero as these will be ignored when build() is called
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Merges the frequency data from the input frequencyData into the builder instance. Any existing frequencies
+         * will be overwritten by the input set.
+         *
+         * @return the {@link FrequencyData.Builder} instance with potentially updated frequencies
+         * @since 14.0.0
+         */
+        public Builder mergeFrequencyData(FrequencyData frequencyData) {
+            if (frequencyData == null || frequencyData.isEmpty()) {
+                return this;
+            }
+            for (int i = 0; i < frequencyData.sources.length; i++) {
+                this.addFrequency(frequencyData.sources[i], frequencyData.freq(i), frequencyData.homs(i));
+            }
+            return this;
+        }
+
+        public FrequencyData build() {
+            int size = countNotNullSources(frequencySources);
+
+            if (isEmptyValue(rsId) && size == 0) {
+                return FrequencyData.empty();
+            }
+
+            var sources = new FrequencySource[size];
+            var data = new float[size * WORD_SIZE];
+
+            int dataPos = 0;
+            for (FrequencySource source : FrequencySource.values()) {
+                if (frequencySources[source.ordinal()] != null) {
+                    sources[dataPos] = source;
+                    data[dataPos * WORD_SIZE + FREQ_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + FREQ_OFFSET];
+                    data[dataPos * WORD_SIZE + HOM_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + HOM_OFFSET];
+                    dataPos++;
+                }
+            }
+            return new FrequencyData(rsId, sources, data);
+        }
+
+        private int countNotNullSources(FrequencySource[] sources) {
+            int notNull = 0;
+            for (int i = 0, sourcesLength = sources.length; i < sourcesLength; i++) {
+                if (sources[i] != null) {
+                    notNull++;
+                }
+            }
+            return notNull;
+        }
+    }
 }

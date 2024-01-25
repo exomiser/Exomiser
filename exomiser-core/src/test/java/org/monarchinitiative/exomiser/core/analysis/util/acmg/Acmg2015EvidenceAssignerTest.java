@@ -423,7 +423,7 @@ class Acmg2015EvidenceAssignerTest {
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
-                            PathogenicityScore.of(PathogenicitySource.M_CAP, 0.0f)
+                            PathogenicityScore.of(PathogenicitySource.MUTATION_TASTER, 0.0f)
                     ))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .build();
@@ -441,7 +441,7 @@ class Acmg2015EvidenceAssignerTest {
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 1.0f),
-                            PathogenicityScore.of(PathogenicitySource.M_CAP, 0.0f),
+                            PathogenicityScore.of(PathogenicitySource.SIFT, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.MUTATION_TASTER, 0.0f)
                     ))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
@@ -496,7 +496,7 @@ class Acmg2015EvidenceAssignerTest {
                     .pathogenicityData(PathogenicityData.of(
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 0.0f),
                             PathogenicityScore.of(PathogenicitySource.MVP, 0.0f),
-                            PathogenicityScore.of(PathogenicitySource.M_CAP, 1.0f)
+                            PathogenicityScore.of(PathogenicitySource.MUTATION_TASTER, 1.0f)
                     ))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .build();
@@ -527,7 +527,7 @@ class Acmg2015EvidenceAssignerTest {
                             PathogenicityScore.of(PathogenicitySource.MVP, 0.0f),
                             PathogenicityScore.of(PathogenicitySource.POLYPHEN, 1.0f),
                             PathogenicityScore.of(PathogenicitySource.SIFT, 0.0f),
-                            PathogenicityScore.of(PathogenicitySource.M_CAP, 1.0f)
+                            PathogenicityScore.of(PathogenicitySource.MUTATION_TASTER, 1.0f)
                     ))
                     .variantEffect(VariantEffect.MISSENSE_VARIANT)
                     .build();

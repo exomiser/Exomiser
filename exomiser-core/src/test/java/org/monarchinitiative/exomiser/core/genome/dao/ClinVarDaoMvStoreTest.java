@@ -5,12 +5,10 @@ import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.HgvsUtil;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
-import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
 
@@ -225,10 +223,10 @@ class ClinVarDaoMvStoreTest {
     @Disabled("manual testing utility")
     @Test
     void manualDataExplorer() {
-        MVStore mvStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2302_hg19/2312_hg19_clinvar.mv.db").readOnly().open();
+        MVStore mvStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_clinvar.mv.db").readOnly().open();
         ClinVarDaoMvStore clinVarDao = new ClinVarDaoMvStore(mvStore);
 
-        MVStore alleleStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2302_hg19/2302_hg19_variants.mv.db").readOnly().open();
+        MVStore alleleStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_variants.mv.db").readOnly().open();
         AllelePropertiesDao allelePropertiesDao = new AllelePropertiesDaoMvStore(alleleStore);
 
         // 18-57550760-A-T NA
@@ -242,17 +240,25 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomicVariant genomicVariant = parseVariant("10-123279564-A-T"); // 10-123256215-T-G
+        GenomicVariant genomicVariant = parseVariant("10-123256215-T-G"); // 10-123256215-T-G
 
         System.out.println("Searching for: " + toBroad(genomicVariant));
-
-        AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(AlleleProtoAdaptor.toAlleleKey(genomicVariant), GenomeAssembly.HG19);
+        // encode as VariantKey (https://doi.org/10.1101/473744) == 8 bytes fixed size (long);
+        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(genomicVariant);
+        System.out.println("AlleleKey size (bytes): " + alleleKey.getSerializedSize()); // SNP = 13 bytes, 11 bases = 23
+        System.out.println();
+        AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, GenomeAssembly.HG19);
 
         System.out.println(clinVarDao.getClinVarData(genomicVariant));
         Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> {System.out.println(toBroad(variant) + " : " + clinVarData);});
         System.out.println(AlleleProtoAdaptor.toFrequencyData(alleleProperties));
-        System.out.println(AlleleProtoAdaptor.toPathogenicityData(alleleProperties).getPredictedPathogenicityScores());
+        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+        System.out.println(pathogenicityData.getPredictedPathogenicityScores());
+        ClinVarData clinVarData = clinVarDao.getClinVarData(genomicVariant);
+        if (!clinVarData.isEmpty()) {
+            System.out.println(clinVarData);
+        }
     }
 
     private String toBroad(GenomicVariant genomicVariant) {
