@@ -78,10 +78,11 @@ public class Hg19Config extends ResourceConfig {
 
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed removed as this is now part of dbSNP
-        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        // TOPMed removed as this is now part of gnomAD v2.1
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
-        alleleResources.put("exac", exacAlleleResource());
+        // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
         // CLinVar removed - now handled as a separate data source
@@ -130,6 +131,10 @@ public class Hg19Config extends ResourceConfig {
 
     public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
         return alleleResource(GnomadExomeAlleleResource.class, "hg19.gnomad-exome");
+    }
+
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg19.gnomad-mito");
     }
 
     private List<SvResource> hg19SvResources(Path genomeProcessPath) {

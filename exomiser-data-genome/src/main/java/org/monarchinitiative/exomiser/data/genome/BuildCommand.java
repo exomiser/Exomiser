@@ -74,7 +74,7 @@ public class BuildCommand implements Callable<Integer> {
     private Path buildClinVar;
     @Option(names = "--transcripts", converter = TranscriptSourceConverter.class, split = ",", arity = "0..1", fallbackValue = "ensembl,refseq,ucsc", description = "List of transcript databases to build. If specified without parameter, will build all sources: ${FALLBACK-VALUE}")
     private List<TranscriptSource> transcriptSources;
-    @Option(names = "--variants", split = ",", arity = "0..1", fallbackValue = "esp,exac,uk10k,topmed,dbsnp,gnomad-exome,gnomad-genome,dbnsfp", description = "List of variant data sources to build. If specified without parameter, will build all sources: ${FALLBACK-VALUE}")
+    @Option(names = "--variants", split = ",", arity = "0..1", fallbackValue = "esp,exac,uk10k,topmed,dbsnp,gnomad-exome,gnomad-genome,gnomad-mito,alfa,dbnsfp", description = "List of variant data sources to build. If specified without parameter, will build all sources: ${FALLBACK-VALUE}")
     private List<String> variantSources;
     @Option(names = "--genome", description = "Flag to trigger building of genome data.")
     private boolean buildGenome;

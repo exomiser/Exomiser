@@ -31,44 +31,21 @@ import java.util.Objects;
  */
 public class DbNsfpColumnIndex {
 
-    public static final DbNsfpColumnIndex HG19 = builder().chrHeader("hg19_chr").posHeader("hg19_pos(1-based)").build();
-    public static final DbNsfpColumnIndex HG38 = builder().chrHeader("chr").posHeader("pos(1-based)").build();
+    public static final DbNsfpColumnIndex HG19 = new DbNsfpColumnIndex("hg19_chr", "hg19_pos(1-based)");
+    public static final DbNsfpColumnIndex HG38 = new DbNsfpColumnIndex("chr", "pos(1-based)");
 
     private final String chrHeader;
     private final String posHeader;
-    private final String rsPrefix;
-    private final String refHeader;
-    private final String altHeader;
 
-    private final String siftHeader;
-    private final String polyPhen2HvarHeader;
-    private final String mTasterScoreHeader;
-    private final String mTasterPredHeader;
-    // Second-generation scores
-    private final String revelScoreHeader;
-    // Version 4.0 second-generation scores
-    private final String mcapScoreHeader;
-    private final String mpcScoreHeader;
-    private final String mvpScoreHeader;
-    private final String primateAiScoreHeader;
-
-    private DbNsfpColumnIndex(Builder builder) {
-        this.chrHeader = builder.chrHeader;
-        this.posHeader = builder.posHeader;
-        this.rsPrefix = builder.rsPrefix;
-        this.refHeader = builder.refHeader;
-        this.altHeader = builder.altHeader;
-
-        this.siftHeader = builder.siftHeader;
-        this.polyPhen2HvarHeader = builder.polyPhen2HvarHeader;
-        this.mTasterScoreHeader = builder.mTasterScoreHeader;
-        this.mTasterPredHeader = builder.mTasterPredHeader;
-
-        this.revelScoreHeader = builder.revelScoreHeader;
-        this.mcapScoreHeader = builder.mcapScoreHeader;
-        this.mpcScoreHeader = builder.mpcScoreHeader;
-        this.mvpScoreHeader = builder.mvpScoreHeader;
-        this.primateAiScoreHeader = builder.primateAiScoreHeader;
+    private DbNsfpColumnIndex(String chrHeader, String posHeader) {
+        if (!chrHeader.contains("chr")) {
+            throw new IllegalArgumentException("Expected 'chr' but got " + chrHeader);
+        }
+        if (!posHeader.contains("pos")) {
+            throw new IllegalArgumentException("Expected 'pos' but got " + posHeader);
+        }
+        this.chrHeader = chrHeader;
+        this.posHeader = posHeader;
     }
 
     public String getChrHeader() {
@@ -79,74 +56,18 @@ public class DbNsfpColumnIndex {
         return posHeader;
     }
 
-    public String getRsPrefix() {
-        return rsPrefix;
-    }
-
-    public String getRefHeader() {
-        return refHeader;
-    }
-
-    public String getAltHeader() {
-        return altHeader;
-    }
-
-    public String getSiftHeader() {
-        return siftHeader;
-    }
-
-    public String getPolyPhen2HvarHeader() {
-        return polyPhen2HvarHeader;
-    }
-
-    public String getMTasterScoreHeader() {
-        return mTasterScoreHeader;
-    }
-
-    public String getMTasterPredHeader() {
-        return mTasterPredHeader;
-    }
-
-    public String getRevelScoreHeader() {
-        return revelScoreHeader;
-    }
-
-    public String getMcapScoreHeader() {
-        return mcapScoreHeader;
-    }
-
-    public String getMpcScoreHeader() {
-        return mpcScoreHeader;
-    }
-
-    public String getMvpScoreHeader() {
-        return mvpScoreHeader;
-    }
-
-    public String getPrimateAiScoreHeader() {
-        return primateAiScoreHeader;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DbNsfpColumnIndex that = (DbNsfpColumnIndex) o;
         return Objects.equals(chrHeader, that.chrHeader) &&
-                Objects.equals(posHeader, that.posHeader) &&
-                Objects.equals(rsPrefix, that.rsPrefix) &&
-                Objects.equals(refHeader, that.refHeader) &&
-                Objects.equals(altHeader, that.altHeader) &&
-                Objects.equals(siftHeader, that.siftHeader) &&
-                Objects.equals(polyPhen2HvarHeader, that.polyPhen2HvarHeader) &&
-                Objects.equals(mTasterScoreHeader, that.mTasterScoreHeader) &&
-                Objects.equals(mTasterPredHeader, that.mTasterPredHeader) &&
-                Objects.equals(revelScoreHeader, that.revelScoreHeader);
+                Objects.equals(posHeader, that.posHeader);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chrHeader, posHeader, rsPrefix, refHeader, altHeader, siftHeader, polyPhen2HvarHeader, mTasterScoreHeader, mTasterPredHeader, revelScoreHeader);
+        return Objects.hash(chrHeader, posHeader);
     }
 
     @Override
@@ -154,117 +75,7 @@ public class DbNsfpColumnIndex {
         return "DbNsfpColumnIndex{" +
                 "chrHeader='" + chrHeader + '\'' +
                 ", posHeader='" + posHeader + '\'' +
-                ", rsPrefix='" + rsPrefix + '\'' +
-                ", refHeader='" + refHeader + '\'' +
-                ", altHeader='" + altHeader + '\'' +
-                ", siftHeader='" + siftHeader + '\'' +
-                ", polyPhen2HvarHeader='" + polyPhen2HvarHeader + '\'' +
-                ", mTasterScoreHeader='" + mTasterScoreHeader + '\'' +
-                ", mTasterPredHeader='" + mTasterPredHeader + '\'' +
-                ", revelScoreHeader='" + revelScoreHeader + '\'' +
-                ", mcapScoreHeader='" + mcapScoreHeader + '\'' +
-                ", mpcScoreHeader='" + mpcScoreHeader + '\'' +
-                ", mvpScoreHeader='" + mvpScoreHeader + '\'' +
-                ", primateAiScoreHeader='" + primateAiScoreHeader + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-
-        private String chrHeader = "chr";
-        private String posHeader = "pos(1-based)";
-        //the rs column could change as it starts with 'rs_dbSNP' and is suffixed with the DbSNP build number: rs_dbSNP147
-        private String rsPrefix = "rs_dbSNP";
-        private String refHeader = "ref";
-        private String altHeader = "alt";
-
-        private String siftHeader = "SIFT_score";
-        private String polyPhen2HvarHeader = "Polyphen2_HVAR_score";
-        private String mTasterScoreHeader = "MutationTaster_score";
-        private String mTasterPredHeader = "MutationTaster_pred";
-        // Second-generation scores
-        private String revelScoreHeader = "REVEL_score";
-        private String mcapScoreHeader = "M-CAP_score";
-        private String mpcScoreHeader = "MPC_score";
-        private String mvpScoreHeader = "MVP_score";
-        private String primateAiScoreHeader = "PrimateAI_score";
-
-        public Builder chrHeader(String chrHeader) {
-            this.chrHeader = chrHeader;
-            return this;
-        }
-
-        public Builder posHeader(String posHeader) {
-            this.posHeader = posHeader;
-            return this;
-        }
-
-        public Builder rsPrefix(String rsPrefix) {
-            this.rsPrefix = rsPrefix;
-            return this;
-        }
-
-        public Builder refHeader(String refHeader) {
-            this.refHeader = refHeader;
-            return this;
-        }
-
-        public Builder altHeader(String altHeader) {
-            this.altHeader = altHeader;
-            return this;
-        }
-
-        public Builder siftHeader(String siftHeader) {
-            this.siftHeader = siftHeader;
-            return this;
-        }
-
-        public Builder polyPhen2HvarHeader(String polyPhen2HvarHeader) {
-            this.polyPhen2HvarHeader = polyPhen2HvarHeader;
-            return this;
-        }
-
-        public Builder mTasterScoreHeader(String mTasterScoreHeader) {
-            this.mTasterScoreHeader = mTasterScoreHeader;
-            return this;
-        }
-
-        public Builder mTasterPredHeader(String mTasterPredHeader) {
-            this.mTasterPredHeader = mTasterPredHeader;
-            return this;
-        }
-
-        public Builder revelScoreHeader(String revelScoreHeader) {
-            this.revelScoreHeader = revelScoreHeader;
-            return this;
-        }
-
-        public Builder mcapScoreHeader(String mcapScoreHeader) {
-            this.mcapScoreHeader = mcapScoreHeader;
-            return this;
-        }
-
-        public Builder mpcScoreHeader(String mpcScoreHeader) {
-            this.mpcScoreHeader = mpcScoreHeader;
-            return this;
-        }
-
-        public Builder mvpScoreHeader(String mvpScoreHeader) {
-            this.mvpScoreHeader = mvpScoreHeader;
-            return this;
-        }
-
-        public Builder primateAiScoreHeader(String primateAiScoreHeader) {
-            this.primateAiScoreHeader = primateAiScoreHeader;
-            return this;
-        }
-
-        public DbNsfpColumnIndex build() {
-            return new DbNsfpColumnIndex(this);
-        }
-    }
 }

@@ -48,6 +48,14 @@ public class ArchiveFileReaderTest {
     }
 
     @Test
+    void readLinesFromBgzip() {
+        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(Path.of("src/test/resources/gnomad-test/chr1.vcf.bgz")));
+        long lineCount = instance.lines().count();
+        // 57 header + 5 allele = 62 lines total in the file
+        assertThat(lineCount, equalTo(62L));
+    }
+
+    @Test
     void readNonFolderArchive() {
         ArchiveFileReader instance = new SimpleArchiveFileReader(new FileArchive(Path.of("src/test/resources/genome/ensembl_enhancers.tsv")));
         assertThat(instance.lines().count(), equalTo(7L));

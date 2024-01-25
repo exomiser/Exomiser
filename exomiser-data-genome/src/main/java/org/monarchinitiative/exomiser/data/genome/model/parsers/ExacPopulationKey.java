@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
 import java.util.List;
@@ -54,7 +53,7 @@ public class ExacPopulationKey {
     private static final String AC_ASJ = "AC_ASJ";
     private static final String AN_ASJ = "AN_ASJ";
 
-    public static final List<ExacPopulationKey> EXAC_EXOMES = ImmutableList.of(
+    public static final List<ExacPopulationKey> EXAC_EXOMES = List.of(
             ExacPopulationKey.of(EXAC_AFR, AC_AFR, AN_AFR),
             ExacPopulationKey.of(EXAC_AMR, AC_AMR, AN_AMR),
             ExacPopulationKey.of(EXAC_EAS, AC_EAS, AN_EAS),
@@ -64,7 +63,7 @@ public class ExacPopulationKey {
             ExacPopulationKey.of(EXAC_SAS, AC_SAS, AN_SAS)
     );
 
-    public static final List<ExacPopulationKey> GNOMAD_EXOMES = ImmutableList.of(
+    public static final List<ExacPopulationKey> GNOMAD_EXOMES = List.of(
             ExacPopulationKey.of(GNOMAD_E_AFR, AC_AFR, AN_AFR),
             ExacPopulationKey.of(GNOMAD_E_AMR, AC_AMR, AN_AMR),
             ExacPopulationKey.of(GNOMAD_E_ASJ, AC_ASJ, AN_ASJ),
@@ -75,7 +74,7 @@ public class ExacPopulationKey {
             ExacPopulationKey.of(GNOMAD_E_SAS, AC_SAS, AN_SAS)
     );
 
-    public static final List<ExacPopulationKey> GNOMAD_GENOMES = ImmutableList.of(
+    public static final List<ExacPopulationKey> GNOMAD_GENOMES = List.of(
             ExacPopulationKey.of(GNOMAD_G_AFR, AC_AFR, AN_AFR),
             ExacPopulationKey.of(GNOMAD_G_AMR, AC_AMR, AN_AMR),
             ExacPopulationKey.of(GNOMAD_G_ASJ, AC_ASJ, AN_ASJ),

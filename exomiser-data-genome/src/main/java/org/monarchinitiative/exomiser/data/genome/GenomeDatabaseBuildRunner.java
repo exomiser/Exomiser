@@ -43,6 +43,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,16 +107,20 @@ public class GenomeDatabaseBuildRunner {
         // e.g. V1.3.1__insert_sv_path
         // truncate and drop original resource tables
         // TODO: ADD gnomAD pLOF, pLI, HI, triplosensitivity, genic intolerance, gene constraint scores.
-        //                    // TODO: do we want to do this? Don't we want each resource to handle its own sources, parsing and writing?
-        //                    //  e.g. dbVar has 3-4 nr_ source files, clinVar has one file for both assemblies and only the correct
-        //                    //  lines should be converted and written.
-
 
         //build genome.h2.db
         Path databasePath = outputPath.resolve(String.format("%s_genome", buildInfo.getBuildString()));
         DataSource dataSource = createDataSource(databasePath);
         logger.info("Created database: {}", databasePath);
         migrateDatabase(dataSource);
+        // try compacting the database once everything is loaded to reduce size on disk
+        try(Connection connection = dataSource.getConnection();
+            CallableStatement statement = connection.prepareCall("SHUTDOWN COMPACT;")) {
+            logger.info("Shutting down and compacting genome database");
+            statement.execute();
+        } catch (SQLException e) {
+            logger.error("", e);
+        }
         logger.info("Finished importing genome data");
     }
 
@@ -165,7 +172,7 @@ public class GenomeDatabaseBuildRunner {
     }
 
     private DataSource createDataSource(Path databasePath) {
-        String initSql = "MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;MV_STORE=FALSE;";
+        String initSql = "MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;";
         String url = String.format("jdbc:h2:file:%s;%s", databasePath.toAbsolutePath(), initSql);
         return DataSourceBuilder.create()
                 .type(HikariDataSource.class)

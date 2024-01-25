@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
@@ -80,9 +81,10 @@ public class Hg19ConfigTest {
 
         alleleResources.put("gnomad-genome", instance.gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", instance.gnomadExomeAlleleResource());
-        alleleResources.put("dbsnp", instance.dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", instance.gnomadMitoAlleleResource());
+//        alleleResources.put("dbsnp", instance.dbSnpAlleleResource());
         alleleResources.put("uk10k", instance.uk10kAlleleResource());
-        alleleResources.put("exac", instance.exacAlleleResource());
+        // exac removed as this is part of gnomad
         alleleResources.put("esp", instance.espAlleleResource());
         alleleResources.put("dbnsfp", instance.dbnsfpAlleleResource());
 
@@ -125,6 +127,7 @@ public class Hg19ConfigTest {
         assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
+    @Disabled("deprecated resource")
     @Test
     public void exacAlleleResource() throws Exception {
         AlleleResource alleleResource = instance.exacAlleleResource();
@@ -141,9 +144,9 @@ public class Hg19ConfigTest {
         AlleleResource alleleResource = instance.gnomadGenomeAlleleResource();
 
         Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/gnomad.genomes.r2.0.1.sites.noVEP.vcf.gz"));
-        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
-        GnomadGenomeAlleleParser exacAlleleParser = (GnomadGenomeAlleleParser) alleleResource.getParser();
-        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_GENOMES));
+        assertThat(alleleResource.getParser(), instanceOf(GnomadAlleleParser.class));
+        Gnomad2GenomeAlleleParser exacAlleleParser = (Gnomad2GenomeAlleleParser) alleleResource.getParser();
+        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(GnomadPopulationKey.GNOMAD_V2_1_GENOMES));
         assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 
@@ -152,9 +155,9 @@ public class Hg19ConfigTest {
         AlleleResource alleleResource = instance.gnomadExomeAlleleResource();
 
         Archive expectedArchive = new TabixArchive(Paths.get("src/test/resources/hg19/variants/gnomad.exomes.r2.0.1.sites.noVEP.vcf.gz"));
-        assertThat(alleleResource.getParser(), instanceOf(ExacAlleleParser.class));
-        GnomadExomeAlleleParser exacAlleleParser = (GnomadExomeAlleleParser) alleleResource.getParser();
-        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(ExacPopulationKey.GNOMAD_EXOMES));
+        assertThat(alleleResource.getParser(), instanceOf(GnomadAlleleParser.class));
+        Gnomad2ExomeAlleleParser exacAlleleParser = (Gnomad2ExomeAlleleParser) alleleResource.getParser();
+        assertThat(exacAlleleParser.getPopulationKeys(), equalTo(GnomadPopulationKey.GNOMAD_V2_1_EXOMES));
         assertThat(alleleResource.getArchive(), equalTo(expectedArchive));
     }
 

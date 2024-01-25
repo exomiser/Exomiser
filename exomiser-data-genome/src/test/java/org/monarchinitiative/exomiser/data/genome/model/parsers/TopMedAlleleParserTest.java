@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
@@ -34,6 +35,7 @@ import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.TO
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+//@Disabled("Obsolete, for now")
 public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAlleleParser> {
 
     @Override
@@ -46,6 +48,7 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
         String line = "1\t1669523\trs185801647\tC\tT\t.\t.\tTOPMED=0.000206058";
 
         Allele expected = new Allele(1, 1669523, "C", "T");
+        expected.setRsId("rs185801647");
         expected.addValue(TOPMED, 0.0206058f);
 
         List<Allele> alleles = parseLine(line);

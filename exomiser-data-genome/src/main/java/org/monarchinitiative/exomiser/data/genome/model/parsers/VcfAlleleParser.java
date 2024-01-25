@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.svart.Strand;
@@ -29,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,12 +39,12 @@ public abstract class VcfAlleleParser implements AlleleParser {
     private static final Logger logger = LoggerFactory.getLogger(VcfAlleleParser.class);
     private final VariantTrimmer variantTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
 
-    protected Set<String> allowedFilterValues = ImmutableSet.of(".", "PASS");
+    protected Set<String> allowedFilterValues = Set.of(".", "PASS");
 
     public List<Allele> parseLine(String line) {
         if (line.startsWith("#")) {
             // comment line.
-            return Collections.emptyList();
+            return List.of();
         }
         String[] fields = line.split("\t");
         List<Allele> alleles = parseAlleles(fields);
@@ -75,7 +73,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
 
         int chr = Contigs.parseId(fields[0]);
         if (chr == 0 || !unfilteredOrPassed(fields[6])) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         int pos = Integer.parseInt(fields[1]);
@@ -94,7 +92,7 @@ public abstract class VcfAlleleParser implements AlleleParser {
         //should be skipped
         String[] alts = fields[4].toUpperCase().split(",");
 
-        List<Allele> alleles = new ArrayList<>();
+        List<Allele> alleles = new ArrayList<>(alts.length);
         for (int i = 0; i < alts.length; i++) {
             Allele allele = makeAllele(chr, pos, ref, alts[i]);
             allele.setRsId(rsId);

@@ -20,13 +20,12 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,35 +70,34 @@ public class Uk10kAlleleParser extends VcfAlleleParser {
      */
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        List<String> alleleFrequencies = parseAlleleFrequencies(info);
+        String[] infoFields = info.split(";");
+        int an = 0;
+        String[] acValues = new String[0];
+
+        for (String infoField : infoFields) {
+            if (infoField.startsWith("AN=")) {
+                String anValue = infoField.substring(3);
+                an = Integer.parseInt(anValue);
+            }
+            if (infoField.startsWith("AC=")) {
+                acValues = infoField.substring(3).split(",");
+            }
+        }
+        if (acValues.length != alleles.size()) {
+            logger.warn("Incorrect number of alleles present: {}", info);
+            return alleles;
+        }
+
+        // CAUTION! This file appears to have duplicated sites with slightly different counts.
+        // $ tabix UK10K_COHORT.20160215.sites.vcf.gz 1:11957369-11957369
+        // 1	11957369	rs36041052	G	GAC	999	PASS	DP=22894;VQSLOD=7.4972;AN=7562;AC=350;AF=0.046284;AN_TWINSUK=3708;AC_TWINSUK=177;AF_TWINSUK=0.047735;AN_ALSPAC=3854;AC_ALSPAC=173;AF_ALSPAC=0.044888;CSQ=-:-:intergenic_variant;AC_TWINSUK_NODUP=173;AN_TWINSUK_NODUP=3574;AF_TWINSUK_NODUP=0.0484051
+        // 1	11957369	rs36041052	G	GAC	999	PASS	DP=22373;VQSLOD=7.3524;AN=7562;AC=352;AF=0.046549;AN_TWINSUK=3708;AC_TWINSUK=178;AF_TWINSUK=0.048004;AN_ALSPAC=3854;AC_ALSPAC=174;AF_ALSPAC=0.045148;CSQ=-:-:intergenic_variant;AC_TWINSUK_NODUP=173;AN_TWINSUK_NODUP=3574;AF_TWINSUK_NODUP=0.0484051
 
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
-            if (!alleleFrequencies.isEmpty()) {
-                String af = alleleFrequencies.get(i);
-                if (!af.isEmpty() && !af.equals(".")) {
-                    Float freq = 100f * Float.valueOf(af);
-                    allele.addValue(AlleleProperty.UK10K, freq);
-                }
-            }
+            var frequency = AlleleData.frequencyOf(AlleleProto.FrequencySource.UK10K, Integer.parseInt(acValues[i]), an);
+            allele.addFrequency(frequency);
         }
-
         return alleles;
-    }
-
-    private List<String> parseAlleleFrequencies(String info) {
-        //##INFO=<ID=AF,Number=A,Type=Float,Description="Allele frequency in called genotypes">
-        String[] infoFields = info.split(";");
-        for (String infoField : infoFields) {
-            if (infoField.startsWith("AF=")) {
-                return parseFrequencyField(3, infoField);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    private List<String> parseFrequencyField(int keyLength, String infoField) {
-        String[] freqs = infoField.substring(keyLength).split(",");
-        return Arrays.asList(freqs);
     }
 }

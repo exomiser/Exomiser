@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (c) 2016-2021 Queen Mary University of London.
+ * Copyright (c) 2016-2019 Queen Mary University of London.
  * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,25 +18,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.genome.indexers;
+package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import org.monarchinitiative.exomiser.data.genome.model.Resource;
-
-import java.io.Closeable;
-import java.util.stream.Stream;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface Indexer<T> extends Closeable {
+public class Gnomad2GenomeAlleleParser extends GnomadAlleleParser {
 
-    default void index(Resource<T> resource) {
-        try (Stream<T> resourcesStream = resource.parseResource()) {
-            resourcesStream.forEach(this::write);
-        }
+    public Gnomad2GenomeAlleleParser() {
+        // See header file for gnomAD genomes data - we're keeping all but the AC0 fails
+        super(GnomadPopulationKey.GNOMAD_V2_1_GENOMES, Set.of(".", "PASS", "RF", "InbreedingCoeff", "LCR", "SEGDUP"));
     }
-
-    void write(T type);
-
-    long count();
 }

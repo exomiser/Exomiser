@@ -79,13 +79,16 @@ public class Hg38Config extends ResourceConfig {
     public Map<String, AlleleResource> hg38AlleleResources() {
         ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
 
+        // thousand genomes removed as this is part of gnomAD v2.1
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed removed as this is now part of dbSNP
-        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        alleleResources.put("alfa", alfaAlleleResource());
+        // TOPMed removed as this is part of gnomAD v2.1
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
-        alleleResources.put("exac", exacAlleleResource());
-        alleleResources.put("esp", espAlleleResource());
+        // ExAC removed as this is part of gnomad-exomes v2.1
+        // ESP removed as this is part of gnomad-exomes v4
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
         // CLinVar removed - now handled as a separate data source
 
@@ -127,21 +130,30 @@ public class Hg38Config extends ResourceConfig {
         return alleleResource(Uk10kAlleleResource.class, "hg38.uk10k");
     }
 
-    public GnomadGenomeAlleleResource gnomadGenomeAlleleResource() {
-        return alleleResource(GnomadGenomeAlleleResource.class, "hg38.gnomad-genome");
+    public Gnomad4GenomeAlleleResource gnomadGenomeAlleleResource() {
+        return alleleResource(Gnomad4GenomeAlleleResource.class, "hg38.gnomad-genome");
     }
 
-    public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
-        return alleleResource(GnomadExomeAlleleResource.class, "hg38.gnomad-exome");
+    public Gnomad4ExomeAlleleResource gnomadExomeAlleleResource() {
+        return alleleResource(Gnomad4ExomeAlleleResource.class, "hg38.gnomad-exome");
+    }
+
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg38.gnomad-mito");
+    }
+
+    public AlfaAlleleResource alfaAlleleResource() {
+        return alleleResource(AlfaAlleleResource.class, "hg38.alfa");
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
+        // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
         return List.of(
                 clinvarSvResource(genomeProcessPath),
                 dbVarFrequencyResource(genomeProcessPath),
                 dgvSvResource(genomeProcessPath),
                 decipherSvResource(genomeProcessPath),
-                gonlSvFrequencyResource(genomeProcessPath),
+//                gonlSvFrequencyResource(genomeProcessPath),
                 gnomadSvFrequencyResource(genomeProcessPath)
         );
     }

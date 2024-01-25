@@ -28,13 +28,20 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class AlleleConverter {
+
+    private static final Logger logger = LoggerFactory.getLogger(AlleleConverter.class);
 
     private AlleleConverter() {
         //static utility class
@@ -50,24 +57,77 @@ public class AlleleConverter {
     }
 
     public static AlleleProperties mergeProperties(AlleleProperties originalProperties, AlleleProperties properties) {
-        String updatedRsId = (originalProperties.getRsId()
-                .isEmpty()) ? properties.getRsId() : originalProperties.getRsId();
-        return AlleleProperties.newBuilder()
-                .mergeFrom(originalProperties)
-                .mergeFrom(properties)
-                //original rsid would have been overwritten by the new one - we don't necessarily want that, so re-set it now.
+        if (originalProperties.equals(properties)) {
+            return originalProperties;
+        }
+        logger.debug("Merging {} with {}", originalProperties, properties);
+        //original rsid would have been overwritten by the new one - we don't necessarily want that, so re-set it now.
+        String updatedRsId = originalProperties.getRsId().isEmpty() ? properties.getRsId() : originalProperties.getRsId();
+
+        // unfortunately since changing from a map to a list-based representation of the frequencies and pathogenicity scores
+        // this is more manual than simply calling .mergeFrom(originalProperties) / .mergeFrom(properties) as these will
+        // append the lists resulting in possible duplicates, hence we're merging them manually to avoid duplicates and
+        // overwrite any existing values with the newer version for that source.
+        Collection<AlleleProto.Frequency> mergedFrequencies = mergeFrequencies(originalProperties.getFrequenciesList(), properties.getFrequenciesList());
+        Collection<AlleleProto.PathogenicityScore> mergedPathScores = mergePathScores(originalProperties.getPathogenicityScoresList(), properties.getPathogenicityScoresList());
+
+        AlleleProperties.Builder mergedProperties = originalProperties.toBuilder();
+        if (!mergedProperties.hasClinVar() && properties.hasClinVar()) {
+            mergedProperties.setClinVar(properties.getClinVar());
+        }
+        return mergedProperties
+                .clearFrequencies()
+                .addAllFrequencies(mergedFrequencies)
+                .clearPathogenicityScores()
+                .addAllPathogenicityScores(mergedPathScores)
                 .setRsId(updatedRsId)
                 .build();
+    }
+
+    private static Collection<AlleleProto.PathogenicityScore> mergePathScores(List<AlleleProto.PathogenicityScore> originalPathScores, List<AlleleProto.PathogenicityScore> currentPathScores) {
+        if (originalPathScores.isEmpty()) {
+            return currentPathScores;
+        }
+        Map<AlleleProto.PathogenicitySource, AlleleProto.PathogenicityScore> mergedPaths = new EnumMap<>(AlleleProto.PathogenicitySource.class);
+        mergePaths(originalPathScores, mergedPaths);
+        mergePaths(currentPathScores, mergedPaths);
+        return mergedPaths.values();
+    }
+
+    private static void mergePaths(List<AlleleProto.PathogenicityScore> originalPathScores, Map<AlleleProto.PathogenicitySource, AlleleProto.PathogenicityScore> mergedPaths) {
+        for (int i = 0; i < originalPathScores.size(); i++) {
+            var pathScore = originalPathScores.get(i);
+            mergedPaths.put(pathScore.getPathogenicitySource(), pathScore);
+        }
+    }
+
+    private static Collection<AlleleProto.Frequency> mergeFrequencies(List<AlleleProto.Frequency> originalFreqs, List<AlleleProto.Frequency> currentFreqs) {
+        if (originalFreqs.isEmpty()) {
+            return currentFreqs;
+        }
+        Map<AlleleProto.FrequencySource, AlleleProto.Frequency> mergedFreqs = new EnumMap<>(AlleleProto.FrequencySource.class);
+        mergeFreqs(originalFreqs, mergedFreqs);
+        mergeFreqs(currentFreqs, mergedFreqs);
+        return mergedFreqs.values();
+    }
+
+    private static void mergeFreqs(List<AlleleProto.Frequency> originalFreqs, Map<AlleleProto.FrequencySource, AlleleProto.Frequency> mergedFreqs) {
+        for (int i = 0; i < originalFreqs.size(); i++) {
+            var freq = originalFreqs.get(i);
+            mergedFreqs.put(freq.getFrequencySource(), freq);
+        }
     }
 
     public static AlleleProperties toAlleleProperties(Allele allele) {
         AlleleProperties.Builder builder = AlleleProperties.newBuilder();
         builder.setRsId(allele.getRsId());
-        addAllelePropertyValues(builder, allele.getValues());
+        builder.addAllFrequencies(allele.getFrequencies());
+        builder.addAllPathogenicityScores(allele.getPathogenicityScores());
         addClinVarData(builder, allele);
         return builder.build();
     }
 
+    @Deprecated(since = "14.0.0")
     private static void addAllelePropertyValues(AlleleProperties.Builder builder, Map<AlleleProperty, Float> values) {
         for (Map.Entry<AlleleProperty, Float> entry : values.entrySet()) {
             builder.putProperties(entry.getKey().toString(), entry.getValue());
