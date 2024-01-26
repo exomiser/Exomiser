@@ -128,7 +128,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 "       DBVAR_ID,\n" +
                 "       SOURCE,\n" +
                 "       RCV_ID,\n" +
-                "       ALLELE_ID,\n" +
+                "       VARIATION_ID,\n" +
                 "       CLIN_SIG,\n" +
                 "       CLIN_REV_STAT\n" +
                 "FROM SV_PATH \n" +
