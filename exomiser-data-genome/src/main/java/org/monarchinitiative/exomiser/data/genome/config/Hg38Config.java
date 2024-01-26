@@ -147,13 +147,14 @@ public class Hg38Config extends ResourceConfig {
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
-        // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
         return List.of(
                 clinvarSvResource(genomeProcessPath),
                 dbVarFrequencyResource(genomeProcessPath),
                 dgvSvResource(genomeProcessPath),
                 decipherSvResource(genomeProcessPath),
-//                gonlSvFrequencyResource(genomeProcessPath),
+                // GoNL is hg19 only, this is a no-op method to avoid db migration errors
+                gonlSvFrequencyResource(genomeProcessPath),
+                // gnomAD hg38 is part of dbVar, this is a no-op method to avoid db migration errors
                 gnomadSvFrequencyResource(genomeProcessPath)
         );
     }
