@@ -43,9 +43,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,10 +114,15 @@ public class GenomeDatabaseBuildRunner {
         logger.info("Created database: {}", databasePath);
         migrateDatabase(dataSource);
         // try compacting the database once everything is loaded to reduce size on disk
-        try(Connection connection = dataSource.getConnection();
-            CallableStatement statement = connection.prepareCall("SHUTDOWN COMPACT;")) {
+        try {
+            // The only way to compact the database is using the "SHUTDOWN COMPACT" command, and this will, as the name
+            // suggests, shut down the database. This severs the connection and will result in the error:
+            //  org.h2.jdbc.JdbcSQLNonTransientConnectionException: Database is already closed (to disable automatic closing at VM shutdown, add ";DB_CLOSE_ON_EXIT=FALSE" to the db URL)
+            // and a trace.db file being left on disk if this is done in a try-with-resources block.
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
             logger.info("Shutting down and compacting genome database");
-            statement.execute();
+            statement.execute("SHUTDOWN COMPACT;");
         } catch (SQLException e) {
             logger.error("", e);
         }
