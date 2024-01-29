@@ -104,18 +104,13 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private float mapClinSigToScore(ClinVarData.ClinSig primaryInterpretation) {
-        switch (primaryInterpretation) {
-            case PATHOGENIC:
-                return 1.0f;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return 0.9f;
-            case LIKELY_PATHOGENIC:
-                return 0.8f;
-            case UNCERTAIN_SIGNIFICANCE:
-                return 0.6f;
-            default:
-                return 0f;
-        }
+        return switch (primaryInterpretation) {
+            case PATHOGENIC -> 1.0f;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> 0.9f;
+            case LIKELY_PATHOGENIC -> 0.8f;
+            case UNCERTAIN_SIGNIFICANCE -> 0.6f;
+            default -> 0f;
+        };
     }
 
     private List<SvResult> runQuery(Variant variant) {
