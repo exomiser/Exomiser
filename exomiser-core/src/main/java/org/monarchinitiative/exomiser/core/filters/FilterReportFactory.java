@@ -224,7 +224,7 @@ public class FilterReportFactory {
                 .map(ModeOfInheritance::toString)
                 .collect(Collectors.joining(", "));
 
-        return List.of(String.format("Genes filtered for compatibility with %s inheritance.", inheritanceModes));
+        return List.of(String.format("Variants filtered for compatibility with %s inheritance.", inheritanceModes));
     }
 
     private List<String> messages(PriorityScoreFilter priorityScoreFilter) {
