@@ -179,7 +179,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
             String svType = rs.getString("VARIANT_TYPE");
             String source = rs.getString("SOURCE");
             String id = rs.getString("RCV_ID");
-            String alleleId = rs.getString("ALLELE_ID");
+            String variationId = rs.getString("VARIATION_ID");
             String clinSig = rs.getString("CLIN_SIG");
             String clinRevStat = rs.getString("CLIN_REV_STAT");
 
@@ -190,11 +190,11 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
                 ClinVarData.ReviewStatus reviewStatus = ClinVarData.ReviewStatus.valueOf(clinRevStat);
                 ClinVarData clinVarData = ClinVarData.builder()
-                        .variationId(alleleId)
+                        .variationId(variationId)
                         .primaryInterpretation(sig)
                         .reviewStatus(reviewStatus)
                         .build();
-                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, alleleId);
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, variationId);
                 results.add(svResult);
             }
         }
