@@ -21,20 +21,30 @@
 package org.monarchinitiative.exomiser.autoconfigure;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public abstract class AbstractAutoConfigurationTest {
 
-    protected static final Path TEST_DATA = Paths.get("src/test/resources/data").toAbsolutePath();
-    protected static final String TEST_DATA_ENV = "exomiser.data-directory=" + TEST_DATA;
+    private static final String DATA_VERSION = "1710";
+
+    @TempDir
+    protected static Path TEST_DATA;
+
+    @BeforeAll
+    static void beforeAll() {
+        TestDataDirectories.setupDataDirectories(TEST_DATA, DATA_VERSION);
+    }
+
+    protected final String TEST_DATA_ENV = "exomiser.data-directory=" + TEST_DATA;
 
     protected ConfigurableApplicationContext context;
 

@@ -21,8 +21,9 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.db.SpatialKey;
 import org.h2.mvstore.rtree.MVRTreeMap;
-import org.h2.mvstore.rtree.SpatialKey;
+import org.h2.mvstore.rtree.Spatial;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -219,12 +219,11 @@ class SvFrequencyDaoTest {
         System.out.println("margin: " + margin);
         System.out.println("Searching chr" + region.contigId() + " from " + (region.start() - margin) + " to " + (region
                 .end() + margin));
-// iterate over the intersecting keys
-        Iterator<SpatialKey> it =
+        MVRTreeMap.RTreeCursor<SvFrequencyDao.SvResult> it =
 //                r.findContainedKeys(new SpatialKey(0, 0f, 9f, 3f, 6f));
                 r.findIntersectingKeys(new SpatialKey(0, boundaryCalculator.startMin(), boundaryCalculator.endMax(), region.contigId(), region.contigId()));
         while (it.hasNext()) {
-            SpatialKey k = it.next();
+            Spatial k = it.next();
             SvFrequencyDao.SvResult svResult = r.get(k);
             System.out.println(k + ": " + svResult + ", simJ=" + SvDaoUtil.jaccard(region, svResult));
         }

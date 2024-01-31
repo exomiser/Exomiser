@@ -1,60 +1,28 @@
 package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import org.h2.mvstore.DataUtils;
-import org.h2.mvstore.WriteBuffer;
-import org.h2.mvstore.type.DataType;
-import org.h2.util.Utils;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
-
-import java.nio.ByteBuffer;
+import com.google.protobuf.Parser;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
 
 
-public enum ClinVarDataType implements DataType {
+public class ClinVarDataType extends ProtobufDataType<ClinVar> {
 
-    INSTANCE;
+    public static final ClinVarDataType INSTANCE = new ClinVarDataType();
 
     @Override
-    public int compare(Object a, Object b) {
-        return -1;
-    }
-
-    @Override
-    public int getMemory(Object obj) {
-        AlleleProto.ClinVar clinVar = (AlleleProto.ClinVar) obj;
-        return clinVar.getSerializedSize();
-    }
-
-    @Override
-    public void read(ByteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            obj[i] = read(buff);
+    public int compare(ClinVar a, ClinVar b) {
+        if (a.equals(b)) {
+            return 0;
         }
+        throw new UnsupportedOperationException("Unable to compare " + a + " with " + b);
     }
 
     @Override
-    public AlleleProto.ClinVar read(ByteBuffer buff) {
-        int len = DataUtils.readVarInt(buff);
-        byte[] data = Utils.newBytes(len);
-        buff.get(data);
-        try {
-            return AlleleProto.ClinVar.parseFrom(data);
-        } catch (InvalidProtocolBufferException e) {
-            throw new InvalidAlleleProtoException(e);
-        }
+    public ClinVar[] createStorage(int size) {
+        return new ClinVar[size];
     }
 
     @Override
-    public void write(WriteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            write(buff, obj[i]);
-        }
-    }
-
-    @Override
-    public void write(WriteBuffer buff, Object obj) {
-        AlleleProto.ClinVar clinVar = (AlleleProto.ClinVar) obj;
-        byte[] data = clinVar.toByteArray();
-        buff.putVarInt(data.length).put(data);
+    public Parser<ClinVar> messageParser() {
+        return ClinVar.parser();
     }
 }

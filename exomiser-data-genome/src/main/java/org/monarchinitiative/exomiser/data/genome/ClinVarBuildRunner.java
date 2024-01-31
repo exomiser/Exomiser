@@ -80,7 +80,6 @@ public class ClinVarBuildRunner {
             }
             logger.info("Wrote {} ClinVar records", clinVarMap.size());
             clinvarStore.commit();
-            clinvarStore.compactMoveChunks();
         }
         logger.info("Compacting MVStore");
         MVStoreTool.compact(outFileName, true);

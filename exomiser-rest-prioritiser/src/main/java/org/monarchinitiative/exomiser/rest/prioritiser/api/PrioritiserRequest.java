@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +42,8 @@ public class PrioritiserRequest {
     private final int limit;
 
     private PrioritiserRequest(Builder builder) {
-        this.phenotypes = builder.phenotypes.stream().distinct().collect(ImmutableList.toImmutableList());
-        this.genes = builder.genes.stream().distinct().collect(ImmutableList.toImmutableList());
+        this.phenotypes = builder.phenotypes.stream().distinct().toList();
+        this.genes = builder.genes.stream().distinct().toList();
         this.prioritiser = builder.prioritiser;
         this.prioritiserParams = builder.prioritiserParams;
         this.limit = builder.limit;

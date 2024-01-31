@@ -101,9 +101,9 @@
         <spring-boot.version>3.1.1</spring-boot.version>
         <!-- H2 version 1.4.200 was used for 2309 and below, 2.1.214 is part of Spring boot 3.1.1 the file formats and
         API for the MVStore are different so consider very hard if this needs updating.-->
-        <h2.version>1.4.200</h2.version>
+        <h2.version>2.2.224</h2.version>
         <!-- flway needs to be limited for it to support migrations on the H2 version used above -->
-        <flyway.version>8.2.1</flyway.version>
+        <flyway.version>10.6.0</flyway.version>
         <docker.base.image>
             gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
         </docker.base.image>

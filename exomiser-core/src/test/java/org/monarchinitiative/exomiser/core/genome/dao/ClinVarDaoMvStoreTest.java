@@ -240,18 +240,18 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomicVariant genomicVariant = parseVariant("10-123256215-T-G"); // 10-123256215-T-G
+        GenomicVariant genomicVariant = parseVariant("10-123256215-T-ACG"); // 10-123256215-T-G hg38:10-121496701-T-G
 
         System.out.println("Searching for: " + toBroad(genomicVariant));
-        // encode as VariantKey (https://doi.org/10.1101/473744) == 8 bytes fixed size (long);
         AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(genomicVariant);
+        // encode as VariantKey (https://doi.org/10.1101/473744) == 8 bytes fixed size (long);
         System.out.println("AlleleKey size (bytes): " + alleleKey.getSerializedSize()); // SNP = 13 bytes, 11 bases = 23
         System.out.println();
         AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, GenomeAssembly.HG19);
 
         System.out.println(clinVarDao.getClinVarData(genomicVariant));
         Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
-        clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> {System.out.println(toBroad(variant) + " : " + clinVarData);});
+        clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> System.out.println(toBroad(variant) + " : " + clinVarData));
         System.out.println(AlleleProtoAdaptor.toFrequencyData(alleleProperties));
         PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
         System.out.println(pathogenicityData.getPredictedPathogenicityScores());

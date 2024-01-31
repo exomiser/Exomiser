@@ -22,11 +22,10 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -75,7 +74,7 @@ public class DataMatrixIOTest {
         floatMatrix.put(3, 3, 33);
 
         Map<Integer, Integer> entrezIdToRowIndex = new TreeMap<>();
-        entrezIdToRowIndex.put(0000, 0);
+        entrezIdToRowIndex.put(0, 0);
         entrezIdToRowIndex.put(1111, 1);
         entrezIdToRowIndex.put(2222, 2);
         entrezIdToRowIndex.put(3333, 3);
@@ -116,34 +115,30 @@ public class DataMatrixIOTest {
     }
 
     @Test
-    public void loadDataMatrixFromMap() {
-        Path mapPath = Paths.get("src/test/resources/prioritisers/test_ppi_matrix.mv");
-        DataMatrix dataMatrix = DataMatrixIO.loadOffHeapDataMatrix(mapPath);
-        assertThat(dataMatrix.numRows(), equalTo(10));
-        assertThat(dataMatrix.numColumns(), equalTo(10));
-    }
-
-    @Test
-    public void testWriteMatrix() throws Exception {
-        Path matrixFile = Paths.get("target/testMatrix");
-        Path matrixIndexFile = Paths.get("target/testMatrix_id2index");
+    public void testWriteMatrix(@TempDir Path tempDir) throws Exception {
+        Path matrixFile = tempDir.resolve("testMatrix");
+        Path matrixIndexFile = tempDir.resolve("testMatrix_id2index");
 
         DataMatrixIO.writeMatrix(dataMatrix, matrixFile.toString(), true);
 
-        assertFileExistsThenDelete(matrixFile);
-        assertFileExistsThenDelete(matrixIndexFile);
+        assertThat(Files.exists(matrixFile), is(true));
+        assertThat(Files.exists(matrixIndexFile), is(true));
     }
 
     @Test
-    public void testWriteMatrixWithHeaders() throws Exception {
-        Path outFile = Paths.get("target/testMatrixWithRowIdAndHeader");
+    public void testWriteMatrixWithHeaders(@TempDir Path tempDir) throws Exception {
+        Path outFile = tempDir.resolve("testMatrixWithRowIdAndHeader");
         DataMatrixIO.writeMatrixInclHeaderAndRowIDs(dataMatrix, outFile.toString(), true);
-        assertFileExistsThenDelete(outFile);
-    }
-
-    private void assertFileExistsThenDelete(Path outFile) throws IOException {
         assertThat(Files.exists(outFile), is(true));
-        Files.delete(outFile);
     }
 
+//    @Test
+//    void updateDataMatrixMvStoreVersion() {
+//        String matrixPath = "/home/hhx640/Documents/exomiser-build/rw_string_10.gz";
+//        String indexPath = "/home/hhx640/Documents/exomiser-build/rw_string_10_id2index.gz";
+//
+//        Path matrixMapFile = Path.of("/home/hhx640/Documents/exomiser-build/rw_string_10.mv.2.2");
+//        DataMatrixIO.convertToMap(matrixPath, indexPath, matrixMapFile);
+//        MVStoreTool.compact("/home/hhx640/Documents/exomiser-build/rw_string_10.mv.2.2", true);
+//    }
 }

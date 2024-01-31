@@ -177,7 +177,7 @@ public class GenomeDatabaseBuildRunner {
     }
 
     private DataSource createDataSource(Path databasePath) {
-        String initSql = "MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;";
+        String initSql = "MODE=POSTGRESQL;CACHE_SIZE=65536;LOCK_MODE=0;";
         String url = String.format("jdbc:h2:file:%s;%s", databasePath.toAbsolutePath(), initSql);
         return DataSourceBuilder.create()
                 .type(HikariDataSource.class)
@@ -196,6 +196,7 @@ public class GenomeDatabaseBuildRunner {
                 .schemas("EXOMISER")
                 .locations("classpath:db/migration")
                 .placeholders(propertyPlaceHolders)
+                .cleanDisabled(false)
                 .load();
         h2Flyway.clean();
         h2Flyway.migrate();

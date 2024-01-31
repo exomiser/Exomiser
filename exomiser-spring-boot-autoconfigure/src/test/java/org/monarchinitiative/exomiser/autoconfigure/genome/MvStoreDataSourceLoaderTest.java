@@ -21,7 +21,10 @@
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.MVStoreException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,8 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class MvStoreDataSourceLoaderTest {
 
     @Test
-    public void loadsData() {
-        Path mvStorePath = Paths.get("src/test/resources/data/1710_hg19/1710_hg19_variants.mv.db");
+    public void loadsData(@TempDir Path tempDir) {
+        Path mvStorePath = tempDir.resolve("1710_hg19_variants.mv.db");
+
+        MVStore hg19variantsMv = MVStore.open(mvStorePath.toString());
+        MvStoreUtil.openAlleleMVMap(hg19variantsMv);
+        hg19variantsMv.close();
+
         MVStore mvStore = MvStoreDataSourceLoader.openMvStore(mvStorePath);
         assertThat(mvStore, instanceOf(MVStore.class));
         mvStore.close();
@@ -46,6 +54,6 @@ public class MvStoreDataSourceLoaderTest {
     @Test
     public void cannotLoadData() {
         Path mvStorePath = Paths.get("wibble");
-        assertThrows(IllegalStateException.class, () -> MvStoreDataSourceLoader.openMvStore(mvStorePath));
+        assertThrows(MVStoreException.class, () -> MvStoreDataSourceLoader.openMvStore(mvStorePath));
     }
 }
