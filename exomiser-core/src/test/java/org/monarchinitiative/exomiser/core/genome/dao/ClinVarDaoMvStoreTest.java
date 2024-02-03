@@ -1,17 +1,27 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
+import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
+import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
 
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -228,7 +238,10 @@ class ClinVarDaoMvStoreTest {
 
         MVStore alleleStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_variants.mv.db").readOnly().open();
         AllelePropertiesDao allelePropertiesDao = new AllelePropertiesDaoMvStore(alleleStore);
+        GenomeAssembly assembly = GenomeAssembly.HG19;
 
+        JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_transcripts_ensembl.ser"));
+        VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(assembly, jannovarData, ChromosomalRegionIndex.empty());
         // 18-57550760-A-T NA
         // 18-57550753-A-C LP // 55217985 (hg19)
         // 1-226923505-G-T // hg19
@@ -240,7 +253,6 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomeAssembly assembly = GenomeAssembly.HG19;
         GenomicVariant genomicVariant = parseVariant(assembly, "10-123256215-T-A"); // 10-123256215-T-G hg38:10-121496701-T-G
 
         System.out.println("Searching for: " + toBroad(genomicVariant));
@@ -253,14 +265,29 @@ class ClinVarDaoMvStoreTest {
         Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> System.out.println(toBroad(variant) + " : " + clinVarData));
 
+        System.out.println();
+        List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, assembly);
-        System.out.println(AlleleProtoAdaptor.toFrequencyData(alleleProperties));
-        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-        System.out.println(pathogenicityData.getPredictedPathogenicityScores());
-
+        FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties);
         ClinVarData clinVarData = clinVarDao.getClinVarData(genomicVariant);
-        if (!clinVarData.isEmpty()) {
-            System.out.println(clinVarData);
+        VariantAnnotation variantAnnotation = variantAnnotations.isEmpty() ? null : variantAnnotations.get(0);
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation != null && variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.getTranscriptAnnotations().get(0) : null;
+        System.out.println(toBroad(genomicVariant) +  (variantAnnotation == null ? "" : " " + variantAnnotation.getGeneSymbol() + (transcriptAnnotation == null ? "" :  ":" + transcriptAnnotation.getHgvsCdna() + ":" + transcriptAnnotation.getHgvsProtein() ) + " " + variantAnnotation.getVariantEffect()));
+        System.out.print(frequencyData.getRsId());
+        System.out.println(clinVarData.isEmpty() ? "" : " " + clinVarData.getPrimaryInterpretation() + " ("  + clinVarData.starRating() + "*) " + clinVarData.getVariationId() + " " + clinVarData.getGeneSymbol() + ":" + clinVarData.getHgvsCdna() + ":" + clinVarData.getHgvsProtein() + " " + clinVarData.getVariantEffect());
+        System.out.println("Frequency data:");
+        if (frequencyData.isEmpty()) {
+            System.out.println("\t-");
+        } else {
+            frequencyData.getKnownFrequencies().forEach(freq -> System.out.println("\t" + freq.getSource() + "=" + freq.getFrequency()));
+        }
+
+        System.out.println("Pathogenicity scores:");
+        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+        if (pathogenicityData.isEmpty()) {
+            System.out.println("\t-");
+        } else {
+            pathogenicityData.getPredictedPathogenicityScores().forEach(path -> System.out.println("\t" + path));
         }
     }
 
