@@ -12,7 +12,7 @@ public class AlleleData {
 
     public static AlleleProto.Frequency frequencyOf(AlleleProto.FrequencySource frequencySource, int ac, int an) {
         if (ac > an) {
-            throw new IllegalArgumentException(frequencySource + "AC=" + ac + " must be less than or equal to AN=" + an);
+            throw new IllegalArgumentException(frequencySource + " AC=" + ac + " must be less than or equal to AN=" + an);
         }
         return AlleleProto.Frequency.newBuilder().setFrequencySource(frequencySource).setAc(ac).setAn(an).build();
     }

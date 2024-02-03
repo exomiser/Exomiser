@@ -240,21 +240,24 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomicVariant genomicVariant = parseVariant("10-123256215-T-ACG"); // 10-123256215-T-G hg38:10-121496701-T-G
+        GenomeAssembly assembly = GenomeAssembly.HG19;
+        GenomicVariant genomicVariant = parseVariant(assembly, "10-123256215-T-A"); // 10-123256215-T-G hg38:10-121496701-T-G
 
         System.out.println("Searching for: " + toBroad(genomicVariant));
         AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(genomicVariant);
         // encode as VariantKey (https://doi.org/10.1101/473744) == 8 bytes fixed size (long);
-        System.out.println("AlleleKey size (bytes): " + alleleKey.getSerializedSize()); // SNP = 13 bytes, 11 bases = 23
+//        System.out.println("AlleleKey size (bytes): " + alleleKey.getSerializedSize()); // SNP = 13 bytes, 11 bases = 23
         System.out.println();
-        AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, GenomeAssembly.HG19);
 
         System.out.println(clinVarDao.getClinVarData(genomicVariant));
         Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> System.out.println(toBroad(variant) + " : " + clinVarData));
+
+        AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, assembly);
         System.out.println(AlleleProtoAdaptor.toFrequencyData(alleleProperties));
         PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
         System.out.println(pathogenicityData.getPredictedPathogenicityScores());
+
         ClinVarData clinVarData = clinVarDao.getClinVarData(genomicVariant);
         if (!clinVarData.isEmpty()) {
             System.out.println(clinVarData);
@@ -265,4 +268,8 @@ class ClinVarDaoMvStoreTest {
         return genomicVariant.contig().name() + '-' + genomicVariant.start() + '-' + genomicVariant.ref() + '-' + genomicVariant.alt();
     }
 
+    private GenomicVariant parseVariant(GenomeAssembly genomeAssembly, String broadFormatVariant) {
+        String[] fields = broadFormatVariant.split("-");
+        return GenomicVariant.of(genomeAssembly.getContigByName(fields[0]), Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.ONE_BASED, Integer.parseInt(fields[1]), fields[2]), fields[2], fields[3]);
+    }
 }
