@@ -285,7 +285,6 @@ public class FrequencyDataTest {
         Frequency minFrequency = Frequency.of(GNOMAD_G_AFR, 0.0002f);
         Frequency midFrequency = Frequency.of(GNOMAD_E_AMR, 25.5f);
         FrequencyData instance = FrequencyData.of(RS_ID, minFrequency, maxFrequency, midFrequency);
-        System.out.println(instance.getMaxFrequency());
         assertThat(instance.getMaxFrequency(), equalTo(maxFrequency));
     }
 
@@ -372,7 +371,7 @@ public class FrequencyDataTest {
         FrequencyData instance = FrequencyData.builder()
                 .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
                 .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
-                .retainSources(Set.of())
+                .filterSources(Set.of())
                 .build();
         assertThat(instance, equalTo(FrequencyData.empty()));
     }
@@ -382,7 +381,7 @@ public class FrequencyDataTest {
         FrequencyData instance = FrequencyData.builder()
                 .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
                 .addFrequency(GNOMAD_E_AMR, 0.0002f, 0)
-                .retainSources(Set.of(GNOMAD_E_AMR))
+                .filterSources(Set.of(GNOMAD_E_AMR))
                 .build();
 
         FrequencyData expected = FrequencyData.builder()
@@ -396,7 +395,7 @@ public class FrequencyDataTest {
     void testBuilderRetainSourcesAllRemoved() {
         FrequencyData instance = FrequencyData.builder()
                 .addFrequency(GNOMAD_E_AFR, 0.0005f, 0)
-                .retainSources(Set.of(GNOMAD_E_SAS))
+                .filterSources(Set.of(GNOMAD_E_SAS))
                 .build();
         assertThat(instance, equalTo(FrequencyData.empty()));
     }

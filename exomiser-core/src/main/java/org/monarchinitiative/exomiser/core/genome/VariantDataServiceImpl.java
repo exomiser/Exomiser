@@ -24,7 +24,6 @@ package org.monarchinitiative.exomiser.core.genome;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
@@ -97,24 +96,15 @@ public class VariantDataServiceImpl implements VariantDataService {
         // This could be run alongside the pathogenicities as they are all stored in the same datastore
         FrequencyData defaultFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
 
-        List<Frequency> allFrequencies = filterFrequencies(variant, frequencySources, defaultFrequencyData);
-
-        return FrequencyData.of(defaultFrequencyData.getRsId(), allFrequencies);
-    }
-
-    private List<Frequency> filterFrequencies(Variant variant, Set<FrequencySource> frequencySources, FrequencyData defaultFrequencyData) {
-        List<Frequency> allFrequencies = new ArrayList<>();
-        for (Frequency frequency : defaultFrequencyData.getKnownFrequencies()) {
-            if (frequencySources.contains(frequency.getSource())) {
-                allFrequencies.add(frequency);
-            }
-        }
+        FrequencyData.Builder frequencyDataBuilder = defaultFrequencyData.toBuilder();
+        frequencyDataBuilder.filterSources(frequencySources);
 
         if (frequencySources.contains(FrequencySource.LOCAL)) {
             FrequencyData localFrequencyData = localFrequencyDao.getFrequencyData(variant);
-            allFrequencies.addAll(localFrequencyData.getKnownFrequencies());
+            frequencyDataBuilder.mergeFrequencyData(localFrequencyData);
         }
-        return allFrequencies;
+
+        return frequencyDataBuilder.build();
     }
 
     // PacBio data contains lots of longer non-symbolic variants with an SVTYPE
@@ -132,7 +122,6 @@ public class VariantDataServiceImpl implements VariantDataService {
 
         ClinVarData clinVarData = clinVarDao.getClinVarData(variant);
 
-        // This could be run alongside the frequencies as they are all stored in the same datastore
         if (pathogenicitySources.isEmpty()) {
             // Fast-path for the unlikely case when no sources are defined - we'll just return the ClinVar data
             return PathogenicityData.of(clinVarData);

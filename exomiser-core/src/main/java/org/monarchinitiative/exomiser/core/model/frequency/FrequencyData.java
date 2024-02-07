@@ -445,6 +445,13 @@ public class FrequencyData {
             return this;
         }
 
+        /**
+         *
+         * @param frequencySource
+         * @param frequency the frequency of the variant as a <b>percentage</b> value.
+         * @param homCount
+         * @return
+         */
         public Builder addFrequency(FrequencySource frequencySource, float frequency, int homCount) {
             frequencySources[frequencySource.ordinal()] = Objects.requireNonNull(frequencySource);
             frequencyData[frequencySource.ordinal() * WORD_SIZE + FREQ_OFFSET] = frequency;
@@ -453,12 +460,13 @@ public class FrequencyData {
         }
 
         /**
-         * Removes any frequency data not in the input set of {@link FrequencySource}.
+         * Removes any frequency data not in the argument set of {@link FrequencySource}. Equivalent to a stream.filter()
+         * operation.
          *
          * @return the {@link FrequencyData.Builder} instance with potentially updated frequencies
          * @since 14.0.0
          */
-        public Builder retainSources(Set<FrequencySource> sourcesToRetain) {
+        public Builder filterSources(Set<FrequencySource> sourcesToRetain) {
             Objects.requireNonNull(sourcesToRetain);
             if (sourcesToRetain.isEmpty()) {
                 Arrays.fill(frequencySources, null);
@@ -466,7 +474,8 @@ public class FrequencyData {
                 return this;
             }
             for (int i = 0; i < frequencySources.length; i++) {
-                if (frequencySources[i] != null && !sourcesToRetain.contains(frequencySources[i])) {
+                FrequencySource frequencySource = frequencySources[i];
+                if (frequencySource != null && !sourcesToRetain.contains(frequencySource)) {
                     frequencySources[i] = null;
                     // no need to set frequencyData elements to zero as these will be ignored when build() is called
                 }
