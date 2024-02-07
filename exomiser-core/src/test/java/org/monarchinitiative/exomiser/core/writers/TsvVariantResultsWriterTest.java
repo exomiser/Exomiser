@@ -125,9 +125,9 @@ public class TsvVariantResultsWriterTest {
                 .build();
 
         String expected = HEADER +
-                "1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27				REVEL	0.95	REVEL=0.95\n"+
-                "1	10-123256214-A-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.5958	0	0			10	123256214	123256214	A	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27	GNOMAD_G_AFR	0.05	GNOMAD_G_AFR=0.05\t\t\t\n"+
-                "2	7-155604800-C-CT_ANY	SHH	6469	ANY	1.0000	0.0000	0.0000	0.0000	1.0000	0	0			7	155604800	155604800	C	CT	1	1.0000	var-effect	0/1	frameshift_variant	SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)	NOT_AVAILABLE					NOT_PROVIDED	0	0.0	0.0	0.242\t\t\t\t\t\t\n"
+                "1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.18759\t0.129\t0.278				REVEL	0.95	REVEL=0.95\n"+
+                "1	10-123256214-A-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.5958	0	0			10	123256214	123256214	A	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1695G>C:p.(Glu565Asp)	NOT_AVAILABLE					NOT_PROVIDED	0	0.18759\t0.129\t0.278	GNOMAD_G_AFR	0.05	GNOMAD_G_AFR=0.05\t\t\t\n"+
+                "2	7-155604800-C-CT_ANY	SHH	6469	ANY	1.0000	0.0000	0.0000	0.0000	1.0000	0	0			7	155604800	155604800	C	CT	1	1.0000	var-effect	0/1	frameshift_variant	SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)	NOT_AVAILABLE					NOT_PROVIDED	0	0.21546\t0.105\t0.493\t\t\t\t\t\t\n"
                 ;
         assertThat(instance.writeString(ModeOfInheritance.ANY, analysisResults, settings), equalTo(expected));
     }
@@ -143,7 +143,7 @@ public class TsvVariantResultsWriterTest {
 
         String expected =
                 HEADER +
-                "1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.13692	0.074	0.27				REVEL	0.95	REVEL=0.95\n";
+                "1	10-123256215-T-G_AD	FGFR2	2263	AD	1.0000	1.0000	1.0000	0.9500	0.9500	1	0			10	123256215	123256215	T	G	0	2.2000	PASS	0/1	missense_variant	FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)	NOT_AVAILABLE					NOT_PROVIDED	0	0.18759\t0.129\t0.278				REVEL	0.95	REVEL=0.95\n";
         assertThat(instance.writeString(ModeOfInheritance.ANY, results, settings), equalTo(expected));
     }
 }
