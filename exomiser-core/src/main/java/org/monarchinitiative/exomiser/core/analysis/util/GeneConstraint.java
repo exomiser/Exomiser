@@ -41,47 +41,7 @@ import java.util.Objects;
 /**
  * @since 13.1.0
  */
-public class GeneConstraint {
-
-    private final String geneSymbol;
-    private final String transcriptId;
-    private final double pLI;
-    private final double loeuf;
-    private final double loeufLower;
-    private final double loeufUpper;
-
-    public GeneConstraint(String geneSymbol, String transcriptId, double pLI, double loeuf, double loeufLower, double loeufUpper) {
-        this.geneSymbol = geneSymbol;
-        this.transcriptId = transcriptId;
-        this.pLI = pLI;
-        this.loeuf = loeuf;
-        this.loeufLower = loeufLower;
-        this.loeufUpper = loeufUpper;
-    }
-
-    public String geneSymbol() {
-        return geneSymbol;
-    }
-
-    public String transcriptId() {
-        return transcriptId;
-    }
-
-    public double pLI() {
-        return pLI;
-    }
-
-    public double loeuf() {
-        return loeuf;
-    }
-
-    public double loeufLower() {
-        return loeufLower;
-    }
-
-    public double loeufUpper() {
-        return loeufUpper;
-    }
+public record GeneConstraint(String geneSymbol, String transcriptId, double pLI, double loeuf, double loeufLower, double loeufUpper, double missenseZ, double synonymousZ) {
 
     /**
      * For the interpretation of Mendelian diseases cases, we suggest using the upper bound of the oe CI < 0.35 as a threshold if needed.
@@ -92,31 +52,7 @@ public class GeneConstraint {
         //gnomAD suggest using a loeufUpper < 0.35;
         // However varsome suggests a relaxed metric has better recall due to lower FP.
         // https://varsome.com/about/resources/acmg-implementation/#pvs1
-        return loeuf < 0.7635;
+        return loeuf < 0.7555;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GeneConstraint that = (GeneConstraint) o;
-        return Double.compare(that.pLI, pLI) == 0 && Double.compare(that.loeuf, loeuf) == 0 && Double.compare(that.loeufLower, loeufLower) == 0 && Double.compare(that.loeufUpper, loeufUpper) == 0 && geneSymbol.equals(that.geneSymbol) && transcriptId.equals(that.transcriptId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(geneSymbol, transcriptId, pLI, loeuf, loeufLower, loeufUpper);
-    }
-
-    @Override
-    public String toString() {
-        return "GeneContraint{" +
-                "geneSymbol='" + geneSymbol + '\'' +
-                ", transcriptId='" + transcriptId + '\'' +
-                ", pLI=" + pLI +
-                ", loeuf=" + loeuf +
-                ", loeufLower=" + loeufLower +
-                ", loeufUpper=" + loeufUpper +
-                '}';
-    }
 }

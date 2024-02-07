@@ -25,24 +25,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @since 13.1.0
  */
 public class GeneConstraints {
 
-    private static final Map<String, GeneConstraint> geneConstraints = GnomadGeneConstraintParser.readGeneConstraints("gnomad.v2.1.1.gene-constraints.tsv");
+    private static final Map<String, GeneConstraint> GENE_CONSTRAINTS = GnomadGeneConstraintParser.readGeneConstraints("gnomad.v4.0.gene-constraints.tsv");
 
     private GeneConstraints() {
     }
 
     @Nullable
-    public static GeneConstraint geneContraint(String geneSymbol) {
-        return geneConstraints.get(geneSymbol);
+    public static GeneConstraint geneConstraint(String geneSymbol) {
+        return GENE_CONSTRAINTS.get(geneSymbol);
+    }
+
+    public static Collection<GeneConstraint> geneConstraints() {
+        return GENE_CONSTRAINTS.values();
     }
 
     private static class GnomadGeneConstraintParser {
@@ -53,9 +54,9 @@ public class GeneConstraints {
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getResourceAsStream(constraintsFile)))) {
                 for (String line; (line = bufferedReader.readLine()) != null; ) {
                     if (!line.startsWith("#")) {
-                        GeneConstraint geneContraint = parseGeneConstraint(line);
-                        if (!Double.isNaN(geneContraint.loeufUpper())) {
-                            geneConstraints.put(geneContraint.geneSymbol(), geneContraint);
+                        GeneConstraint geneConstraint = parseGeneConstraint(line);
+                        if (geneConstraint != null) {
+                            geneConstraints.put(geneConstraint.geneSymbol(), geneConstraint);
                         }
                     }
                 }
@@ -66,14 +67,21 @@ public class GeneConstraints {
         }
 
         private static GeneConstraint parseGeneConstraint(String line) {
+            // gene	transcript	mane_select	lof.oe	lof.pLI	lof.oe_ci.lower	lof.oe_ci.upper	mis.z_score	syn.z_score
             String[] fields = line.split("\t");
             String geneSymbol = fields[0];
             String transcriptId = fields[1];
-            double pLI = parseDouble(fields[2]);
+            boolean isManeSelect = Boolean.parseBoolean(fields[2]);
+            if (geneSymbol.equals("NA") || !isManeSelect) {
+                return null;
+            }
+            double pLI = parseDouble(fields[4]);
             double loeuf = parseDouble(fields[3]);
-            double loeufLower = parseDouble(fields[4]);
-            double loeufUpper = parseDouble(fields[5]);
-            return new GeneConstraint(geneSymbol, transcriptId, pLI, loeuf, loeufLower, loeufUpper);
+            double loeufLower = parseDouble(fields[5]);
+            double loeufUpper = parseDouble(fields[6]);
+            double missenseZ = parseDouble(fields[7]);
+            double synonymousZ = parseDouble(fields[8]);
+            return new GeneConstraint(geneSymbol, transcriptId, pLI, loeuf, loeufLower, loeufUpper, missenseZ, synonymousZ);
         }
 
         private static double parseDouble(String field) {

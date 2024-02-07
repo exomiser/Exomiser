@@ -21,14 +21,29 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 class GeneConstraintsTest {
 
-    @Test
-    void geneContraint() {
-        assertThat(GeneConstraints.geneContraint("USP9X"), equalTo(new GeneConstraint("USP9X", "ENST00000324545", 1.0, 0.010698, 0.003, 0.051)));
+    @ParameterizedTest
+    @CsvSource(
+            delimiter = '\t',
+            value = {
+            // #gene	transcript	mane_select	lof.oe	lof.pLI	lof.oe_ci.lower	lof.oe_ci.upper	mis.z_score	syn.z_score
+                "ZZZ3\tENST00000370801\ttrue\t1.8520e-01\t1.0000e+00\t1.2100e-01\t2.9000e-01\t2.4446e+00\t1.0101e+00",
+                "A1BG\tENST00000263100\ttrue\t1.0463e+00\t1.7129e-16\t8.2300e-01\t1.3420e+00\t-8.6948e-01\t-6.4437e-01"
+    })
+    void geneContraint(String geneSymbol, String transcriptId, boolean isManeSelect, double loeuf,  double pLi, double loeufLower, double loeufUpper, double missenseZ, double synonymousZ) {
+        assertThat(GeneConstraints.geneConstraint(geneSymbol), equalTo(new GeneConstraint(geneSymbol, transcriptId, pLi, loeuf, loeufLower, loeufUpper, missenseZ, synonymousZ)));
     }
+
+    @Test
+    void constraints() {
+        assertThat(GeneConstraints.geneConstraints().size(), equalTo(17454));
+    }
+
 }

@@ -167,7 +167,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         fields.add(clinVarData.getVariationId());
         fields.add(clinVarData.getPrimaryInterpretation());
         fields.add(clinVarData.starRating());
-        GeneConstraint geneConstraint = GeneConstraints.geneContraint(geneIdentifier.getGeneSymbol());
+        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneIdentifier.getGeneSymbol());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeuf());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufLower());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufUpper());

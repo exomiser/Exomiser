@@ -210,7 +210,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // •  Use caution with splice variants that are predicted to lead to exon skipping but leave the remainder of the protein intact
         // •  Use caution in the presence of multiple transcripts
 
-        GeneConstraint geneContraint = GeneConstraints.geneContraint(variantEvaluation.getGeneSymbol());
+        GeneConstraint geneContraint = GeneConstraints.geneConstraint(variantEvaluation.getGeneSymbol());
         // Should this be using the hasCompatibleDiseaseMatches variable?
         boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
         if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEvaluation.getVariantEffect())
