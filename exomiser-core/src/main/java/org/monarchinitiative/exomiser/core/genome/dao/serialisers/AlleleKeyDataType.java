@@ -46,16 +46,17 @@ public class AlleleKeyDataType extends ProtobufDataType<AlleleKey> {
      */
     @Override
     public int compare(AlleleKey a, AlleleKey b) {
-        if (a.getChr() != b.getChr()) {
-            return Integer.compare(a.getChr(), b.getChr());
+        int result = Integer.compare(a.getChr(), b.getChr());
+        if (result == 0) {
+            result = Integer.compare(a.getPosition(), b.getPosition());
         }
-        if (a.getPosition() != b.getPosition()) {
-            return Integer.compare(a.getPosition(), b.getPosition());
+        if (result == 0) {
+            result = a.getRef().compareTo(b.getRef());
         }
-        if (!a.getRef().equals(b.getRef())) {
-            return a.getRef().compareTo(b.getRef());
+        if (result == 0) {
+            result = a.getAlt().compareTo(b.getAlt());
         }
-        return a.getAlt().compareTo(b.getAlt());
+        return result;
     }
 
     @Override
