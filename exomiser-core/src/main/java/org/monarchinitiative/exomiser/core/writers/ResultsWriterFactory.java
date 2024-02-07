@@ -45,19 +45,13 @@ public class ResultsWriterFactory {
      * @return the constructed {@link ResultsWriter} implementation
      */
     public static ResultsWriter getResultsWriter(OutputFormat outputFormat) {
-        switch (outputFormat) {
-            case TSV_GENE:
-                return new TsvGeneResultsWriter();
-            case TSV_VARIANT:
-                return new TsvVariantResultsWriter();
-            case VCF:
-                return new VcfResultsWriter();
-            case JSON:
-                return new JsonResultsWriter();
-            case HTML:
-            default:
-                return new HtmlResultsWriter();
-        }
+        return switch (outputFormat) {
+            case TSV_GENE -> new TsvGeneResultsWriter();
+            case TSV_VARIANT -> new TsvVariantResultsWriter();
+            case VCF -> new VcfResultsWriter();
+            case JSON -> new JsonResultsWriter();
+            default -> new HtmlResultsWriter();
+        };
     }
 
 }
