@@ -58,7 +58,7 @@ public class InMemoryVariantWhiteList implements VariantWhiteList {
 
     @Override
     public boolean contains(Variant variant) {
-        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variant);
+        AlleleProto.AlleleKey alleleKey = variant.alleleKey();
         return whiteList.contains(alleleKey);
     }
 

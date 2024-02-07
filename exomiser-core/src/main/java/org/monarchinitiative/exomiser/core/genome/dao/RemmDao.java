@@ -37,6 +37,8 @@ import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 
+import static org.monarchinitiative.svart.VariantType.INS;
+
 /**
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -52,8 +54,8 @@ public class RemmDao implements PathogenicityDao {
     }
 
     @Caching(cacheable = {
-            @Cacheable(cacheNames = "hg19.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
-            @Cacheable(cacheNames = "hg38.remm", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+            @Cacheable(cacheNames = "hg19.remm", key = "#variant.alleleKey()", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.remm", key = "#variant.alleleKey()", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
     })
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
@@ -62,44 +64,11 @@ public class RemmDao implements PathogenicityDao {
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();
         }
-        return processResults(variant);
-    }
-
-    private PathogenicityData processResults(Variant variant) {
         String chromosome = variant.contigName();
         int start = variant.start();
-        int end = calculateEndPosition(variant);
+        // test bases either side of insertion or all bases of a SNV/MNV/DEL
+        int end = variant.variantType() == INS ? variant.end() + 1 : variant.end();
         return getRemmData(chromosome, start, end);
-    }
-
-    private int calculateEndPosition(Variant variant) {
-        int pos = variant.start();
-
-        //we're doing this here in order not to have to count all this each time we need the value
-        int refLength = variant.ref().length();
-        int altLength = variant.alt().length();
-        //What about MNV?
-        if (refLength == altLength) {
-            return pos;
-        }
-        //these end positions are calculated according to recommendation by Max and Peter who produced the REMM score
-        //don't change this unless they say.
-        if (isDeletion(refLength, altLength)) {
-            // test all deleted bases (being 1-based we need to correct the length)
-            return pos + refLength - 1;
-        } else if (isInsertion(refLength, altLength)) {
-            // test bases either side of insertion
-            return pos + 1;
-        }
-        return pos;
-    }
-
-    private static boolean isDeletion(int refLength, int altLength) {
-        return refLength > altLength;
-    }
-
-    private static boolean isInsertion(int refLength, int altLength) {
-        return refLength < altLength;
     }
 
     private synchronized PathogenicityData getRemmData(String chromosome, int start, int end) {

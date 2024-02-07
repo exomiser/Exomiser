@@ -24,9 +24,9 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProtoFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -50,24 +50,21 @@ public class AllelePropertiesDaoMvStore implements AllelePropertiesDao {
     }
 
     @Caching(cacheable = {
-            @Cacheable(cacheNames = "hg19.allele", condition = "#genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
-            @Cacheable(cacheNames = "hg38.allele", condition = "#genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+            @Cacheable(cacheNames = "hg19.allele", key = "#alleleKey", condition = "#genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.allele", key = "#alleleKey", condition = "#genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
     })
     @Override
     public AlleleProto.AlleleProperties getAlleleProperties(AlleleProto.AlleleKey alleleKey, GenomeAssembly genomeAssembly) {
         AlleleProto.AlleleProperties alleleProperties = map.getOrDefault(alleleKey, AlleleProto.AlleleProperties.getDefaultInstance());
-        logger.debug("{} {}", alleleKey, alleleProperties);
+        if (logger.isDebugEnabled()) {
+            logger.debug("{} {}", AlleleProtoFormatter.format(alleleKey), AlleleProtoFormatter.format(alleleProperties));
+        }
         return alleleProperties;
     }
 
-    @Caching(cacheable = {
-            @Cacheable(cacheNames = "hg19.allele", keyGenerator = "variantKeyGenerator", condition = "T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19.containsContig(#variant.contig())"),
-            @Cacheable(cacheNames = "hg38.allele", keyGenerator = "variantKeyGenerator", condition = "T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38.containsContig(#variant.contig())"),
-    })
     @Override
     public AlleleProto.AlleleProperties getAlleleProperties(Variant variant) {
-        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variant);
-        return getAlleleProperties(alleleKey, variant.getGenomeAssembly());
+        return getAlleleProperties(variant.alleleKey(), variant.getGenomeAssembly());
     }
 
 }

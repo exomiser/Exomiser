@@ -4,6 +4,7 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
+import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
@@ -29,12 +30,16 @@ public class ClinVarDaoMvStore implements ClinVarDao {
     }
 
     @Override
-    public ClinVarData getClinVarData(@Nonnull GenomicVariant variant) {
-        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variant);
-        return getClinVarData(alleleKey);
+    public ClinVarData getClinVarData(@Nonnull Variant variant) {
+        return getClinVarData(variant.alleleKey());
     }
 
-    private ClinVarData getClinVarData(AlleleProto.AlleleKey alleleKey) {
+    @Override
+    public ClinVarData getClinVarData(@Nonnull GenomicVariant genomicVariant) {
+        return getClinVarData(AlleleProtoAdaptor.toAlleleKey(genomicVariant));
+    }
+
+    public ClinVarData getClinVarData(@Nonnull AlleleProto.AlleleKey alleleKey) {
         AlleleProto.ClinVar clinVar = clinVarMap.get(alleleKey);
         return clinVar == null ? ClinVarData.empty() : AlleleProtoAdaptor.toClinVarData(clinVar);
     }

@@ -101,14 +101,17 @@ public class AlleleProtoAdaptor {
         //un-instantiable utility class
     }
 
-    // This would make sense to have this here rather than having similar functionality in the MvStoreUtil
-    // and the VariantKeyGenerator
+
     public static AlleleKey toAlleleKey(GenomicVariant variant) {
+        return toAlleleKey(variant.contigId(), variant.start(), variant.ref(), variant.alt());
+    }
+
+    public static AlleleKey toAlleleKey(int contigId, int start, String ref, String alt) {
         return AlleleKey.newBuilder()
-                .setChr(variant.contigId())
-                .setPosition(variant.start())
-                .setRef(variant.ref())
-                .setAlt(variant.alt())
+                .setChr(contigId)
+                .setPosition(start)
+                .setRef(ref)
+                .setAlt(alt)
                 .build();
     }
 
@@ -118,12 +121,14 @@ public class AlleleProtoAdaptor {
         }
         FrequencyData.Builder frequencyDataBuilder = FrequencyData.builder()
                 .rsId(alleleProperties.getRsId());
-        parseFrequencyData(frequencyDataBuilder, alleleProperties.getFrequenciesList());
+        parseFrequencyData(frequencyDataBuilder, alleleProperties);
         return frequencyDataBuilder.build();
     }
 
-    private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, List<AlleleProto.Frequency> frequenciesList) {
-        for (AlleleProto.Frequency frequency : frequenciesList) {
+    private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, AlleleProperties alleleProperties) {
+        int freqsCount = alleleProperties.getFrequenciesCount();
+        for (int i = 0; i < freqsCount; i++) {
+            AlleleProto.Frequency frequency = alleleProperties.getFrequencies(i);
             var freqSource = toFreqSource(frequency.getFrequencySource());
             var freq = Frequency.percentageFrequency(frequency.getAc(), frequency.getAn());
             var hom = frequency.getHom();

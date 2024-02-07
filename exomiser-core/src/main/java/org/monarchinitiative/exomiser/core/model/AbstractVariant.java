@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
 
     final GenomeAssembly genomeAssembly;
 
+    final AlleleProto.AlleleKey alleleKey;
+
     final String geneSymbol;
     final String geneId;
     final VariantEffect variantEffect;
@@ -41,6 +44,7 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
 
     AbstractVariant(Builder<?> builder) {
         super(builder);
+        this.alleleKey = AlleleProtoAdaptor.toAlleleKey(this);
         this.genomeAssembly = builder.genomeAssembly;
         this.geneSymbol = builder.geneSymbol;
         this.geneId = builder.geneId;
@@ -50,11 +54,17 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
 
     AbstractVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
         super(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
+        this.alleleKey = AlleleProtoAdaptor.toAlleleKey(this);
         this.genomeAssembly = genomeAssembly;
         this.geneSymbol = geneSymbol;
         this.geneId = geneId;
         this.variantEffect = variantEffect;
         this.annotations = List.copyOf(annotations);
+    }
+
+    @Override
+    public AlleleProto.AlleleKey alleleKey() {
+        return alleleKey;
     }
 
     public String getGeneSymbol() {

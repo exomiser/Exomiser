@@ -1,6 +1,8 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
+import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.GenomicInterval;
 import org.monarchinitiative.svart.GenomicVariant;
 
@@ -14,7 +16,11 @@ import java.util.Map;
  */
 public interface ClinVarDao {
 
-    ClinVarData getClinVarData(GenomicVariant variant);
+    ClinVarData getClinVarData(Variant variant);
+
+    ClinVarData getClinVarData(GenomicVariant genomicVariant);
+
+    ClinVarData getClinVarData(AlleleProto.AlleleKey alleleKey);
 
     Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval);
 }

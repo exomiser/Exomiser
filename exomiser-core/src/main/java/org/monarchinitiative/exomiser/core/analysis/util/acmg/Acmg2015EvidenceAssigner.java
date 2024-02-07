@@ -52,43 +52,43 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     //   https://www.clinicalgenome.org/site/assets/files/3460/ba1_exception_list_07_30_2018.pdf
     private static final Set<AlleleProto.AlleleKey> HG19_BA1_EXCLUSION_VARIANTS = Set.of(
             // ClinVar 1018 - 3: 128598490 (GRCh37) 128879647 (GRCh38) (SPDI: NC_000003.12:128879647:TAAG:TAAGTAAG)
-            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(128_598_490).setRef("C").setAlt("CTAAG").build(),
+            AlleleProtoAdaptor.toAlleleKey(3, 128_598_490, "C", "CTAAG"),
             // ClinVar 17023 - 13: 20763612 (GRCh37) 20189473 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(20_763_612).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(13, 20_763_612, "C", "T"),
             // ClinVar 10 - 6: 26091179 (GRCh37) 26090951 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_091_179).setRef("C").setAlt("G").build(),
+            AlleleProtoAdaptor.toAlleleKey(6, 26_091_179, "C", "G"),
             // ClinVar 9 - 6: 26093141 (GRCh37) 26092913 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_093_141).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(6, 26_093_141, "G", "A"),
             // ClinVar 2551 - 16: 3299586 (GRCh37) 3249586 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_299_586).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(16, 3_299_586, "G", "A"),
             // ClinVar 2552 - 16: 3299468 (GRCh37) 3249468 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_299_468).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(16, 3_299_468, "C", "T"),
             // ClinVar 217689 - 13: 73409497 (GRCh37) 72835359 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(73_409_497).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(13, 73_409_497, "G", "A"),
             // ClinVar 3830 - 12: 121175678 (GRCh37) 120737875 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(12).setPosition(121_175_678).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(12, 121_175_678, "C", "T"),
             // ClinVar 1900 - 3: 15686693 (GRCh37) 15645186 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(15_686_693).setRef("G").setAlt("C").build()
+            AlleleProtoAdaptor.toAlleleKey(3, 15_686_693, "G", "C")
     );
     private static final Set<AlleleProto.AlleleKey> HG38_BA1_EXCLUSION_VARIANTS = Set.of(
             // ClinVar 1018 - 3: 128598490 (GRCh37) 128879647 (GRCh38) (SPDI: NC_000003.12:128879647:TAAG:TAAGTAAG)
-            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(128_879_647).setRef("C").setAlt("CTAAG").build(),
+            AlleleProtoAdaptor.toAlleleKey(3, 128_879_647, "C", "CTAAG"),
             // ClinVar 17023 - 13: 20763612 (GRCh37) 20189473 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(20_189_473).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(13, 20_189_473, "C", "T"),
             // ClinVar 10 - 6: 26091179 (GRCh37) 26090951 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_090_951).setRef("C").setAlt("G").build(),
+            AlleleProtoAdaptor.toAlleleKey(6, 26_090_951, "C", "G"),
             // ClinVar 9 - 6: 26093141 (GRCh37) 26092913 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(6).setPosition(26_092_913).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(6, 26_092_913, "G", "A"),
             // ClinVar 2551 - 16: 3299586 (GRCh37) 3249586 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_249_586).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(16, 3_249_586, "G", "A"),
             // ClinVar 2552 - 16: 3299468 (GRCh37) 3249468 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(16).setPosition(3_249_468).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(16, 3_249_468, "C", "T"),
             // ClinVar 217689 - 13: 73409497 (GRCh37) 72835359 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(13).setPosition(72_835_359).setRef("G").setAlt("A").build(),
+            AlleleProtoAdaptor.toAlleleKey(13, 72_835_359, "G", "A"),
             // ClinVar 3830 - 12: 121175678 (GRCh37) 120737875 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(12).setPosition(120_737_875).setRef("C").setAlt("T").build(),
+            AlleleProtoAdaptor.toAlleleKey(12, 120_737_875, "C", "T"),
             // ClinVar 1900 - 3: 15686693 (GRCh37) 15645186 (GRCh38)
-            AlleleProto.AlleleKey.newBuilder().setChr(3).setPosition(15_645_186).setRef("G").setAlt("C").build()
+            AlleleProtoAdaptor.toAlleleKey(3, 15_645_186, "G", "C")
     );
 
     private final String probandId;
@@ -131,7 +131,8 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // Updated recommendation: "Allele frequency is >0.05 in any general continental population dataset of at least
         // 2,000 observed alleles and found in a gene without a gene- or variant-specific BA1 modification." i.e. ExAC
         // African, East Asian, European [non-Finnish], Latino, and South Asian
-        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variantEvaluation);
+//        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variantEvaluation);
+        AlleleProto.AlleleKey alleleKey = variantEvaluation.alleleKey();
         boolean isBa1ExcludedVariant = variantEvaluation.getGenomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
         if (!isBa1ExcludedVariant && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
             acmgEvidenceBuilder.add(BA1);

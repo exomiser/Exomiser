@@ -25,8 +25,10 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.GenomicVariant;
 
 /**
@@ -39,5 +41,8 @@ public interface Variant extends GenomicVariant, VariantAnnotations {
     default GenomeAssembly getGenomeAssembly() {
         return GenomeAssembly.assemblyOfContig(contig());
     }
+
+    @JsonIgnore
+    AlleleProto.AlleleKey alleleKey();
 
 }
