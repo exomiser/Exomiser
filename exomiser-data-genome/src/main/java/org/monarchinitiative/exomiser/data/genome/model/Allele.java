@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model;
 
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProtoFormatter;
 
 import java.util.*;
 
@@ -181,51 +182,15 @@ public class Allele implements Comparable<Allele> {
     @Override
     public String toString() {
         return "Allele{" +
-                "chr=" + chr +
-                ", pos=" + pos +
-                ", ref='" + ref + '\'' +
-                ", alt='" + alt + '\'' +
-                ", rsId='" + rsId + '\'' +
-                ", clinVarData='" + clinVarData + '\'' +
-                ", values=" + values + '\'' +
-                ", frequencies=" + printFrequencies(frequencies) +
-                ", pathogenicityScores=" + printPathScores(pathogenicityScores) +
-                '}';
+               "chr=" + chr +
+               ", pos=" + pos +
+               ", ref='" + ref + '\'' +
+               ", alt='" + alt + '\'' +
+               ", rsId='" + rsId + '\'' +
+               ", clinVarData='" + clinVarData + '\'' +
+               ", values=" + values + '\'' +
+               ", frequencies=" + AlleleProtoFormatter.formatFrequencies(frequencies) +
+               ", pathogenicityScores=" + AlleleProtoFormatter.formatPathScores(pathogenicityScores) +
+               '}';
     }
-
-    private String printFrequencies(List<AlleleProto.Frequency> frequencies) {
-        StringBuilder stringBuilder = new StringBuilder("{");
-        for (int i = 0; i < frequencies.size(); i++) {
-            AlleleProto.Frequency frequency = frequencies.get(i);
-            stringBuilder.append(frequency.getFrequencySource());
-            stringBuilder.append("=");
-            stringBuilder.append(frequency.getAc());
-            stringBuilder.append("|");
-            stringBuilder.append(frequency.getAn());
-            stringBuilder.append("|");
-            stringBuilder.append(frequency.getHom());
-            if (i < frequencies.size() - 1) {
-                stringBuilder.append(", ");
-            }
-        }
-        stringBuilder.append("}");
-        return stringBuilder.toString();
-    }
-
-    private String printPathScores(List<AlleleProto.PathogenicityScore> pathogenicityScores) {
-        StringBuilder stringBuilder = new StringBuilder("{");
-        for (int i = 0; i < pathogenicityScores.size(); i++) {
-            AlleleProto.PathogenicityScore pathogenicityScore = pathogenicityScores.get(i);
-            stringBuilder.append(pathogenicityScore.getPathogenicitySource());
-            stringBuilder.append("=");
-            stringBuilder.append(pathogenicityScore.getScore());
-            if (i < pathogenicityScores.size() - 1) {
-                stringBuilder.append(", ");
-            }
-        }
-        stringBuilder.append("}");
-        return stringBuilder.toString();
-    }
-
-
 }

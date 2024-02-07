@@ -67,9 +67,9 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
 
         Allele expected = new Allele(17, 156203, "G", "A");
         expected.setRsId("rs375149461");
-        expected.addFrequency(AlleleData.frequencyOf(ESP_EA, 20, 3162));
-        expected.addFrequency(AlleleData.frequencyOf(ESP_AA, 1, 1383));
-        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 21, 4545));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_EA, 20, 3182));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_AA, 1, 1384));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 21, 4566));
 
         assertParseLineEquals(line, List.of(expected));
     }

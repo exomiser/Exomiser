@@ -10,6 +10,13 @@ public class AlleleData {
     private AlleleData() {
     }
 
+    public static AlleleProto.Frequency frequencyOf(AlleleProto.FrequencySource frequencySource, float freq) {
+        if (freq > 100f) {
+            throw new IllegalArgumentException(frequencySource + " AF=" + freq + " must be less than 100%!");
+        }
+        return AlleleProto.Frequency.newBuilder().setFrequencySource(frequencySource).setFrequency(freq).build();
+    }
+
     public static AlleleProto.Frequency frequencyOf(AlleleProto.FrequencySource frequencySource, int ac, int an) {
         if (ac > an) {
             throw new IllegalArgumentException(frequencySource + " AC=" + ac + " must be less than or equal to AN=" + an);

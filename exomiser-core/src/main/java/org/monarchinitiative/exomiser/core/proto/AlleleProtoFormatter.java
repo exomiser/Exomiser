@@ -59,7 +59,7 @@ public class AlleleProtoFormatter {
                 + "|" +
                 frequency.getHom()
                 + "|" +
-                numberFormat.format(Frequency.percentageFrequency(frequency.getAc(), frequency.getAn()));
+                numberFormat.format(frequency.getAn() == 0 ? frequency.getFrequency() : Frequency.percentageFrequency(frequency.getAc(), frequency.getAn()));
     }
 
     public static String formatPathScores(List<AlleleProto.PathogenicityScore> pathogenicityScores) {

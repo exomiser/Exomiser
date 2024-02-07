@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.TOPMED;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.TOPMED;
 
 /**
  * Parser for TOPMED VCF files downloaded from
@@ -56,8 +57,8 @@ public class TopMedAlleleParser extends VcfAlleleParser {
                 String freqValue = alleleFrequencyValues.get(i);
                 if (!freqValue.isEmpty() && !".".equals(freqValue)) {
                     try {
-                        Float freq = 100f * Float.parseFloat(freqValue);
-                        allele.addValue(TOPMED, freq);
+                        float freq = 100f * Float.parseFloat(freqValue);
+                        allele.addFrequency(AlleleData.frequencyOf(TOPMED, freq));
                     } catch (NumberFormatException ex) {
                         // swallow these
                     }

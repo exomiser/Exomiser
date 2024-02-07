@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.util.Arrays;
@@ -30,12 +30,11 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.TOPMED;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.TOPMED;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-//@Disabled("Obsolete, for now")
 public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAlleleParser> {
 
     @Override
@@ -49,7 +48,7 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
 
         Allele expected = new Allele(1, 1669523, "C", "T");
         expected.setRsId("rs185801647");
-        expected.addValue(TOPMED, 0.0206058f);
+        expected.addFrequency(AlleleData.frequencyOf(TOPMED, 0.0206058f));
 
         List<Allele> alleles = parseLine(line);
 
@@ -66,11 +65,11 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
 
         Allele expected1 = new Allele(1, 1669549, "G", "A");
         expected1.setRsId("rs904496209");
-        expected1.addValue(TOPMED, 3.4343e-003f);
+        expected1.addFrequency(AlleleData.frequencyOf(TOPMED, 3.4343e-003f));
 
         Allele expected2 = new Allele(1, 1669549, "G", "C");
         expected2.setRsId("rs904496209");
-        expected2.addValue(TOPMED, 0.0103029f);
+        expected2.addFrequency(AlleleData.frequencyOf(TOPMED, 0.0103029f));
 
         List<Allele> expectedAlleles = Arrays.asList(expected1, expected2);
 
@@ -84,7 +83,7 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
 
         Allele expected1 = new Allele(1, 1668890, "C", "G");
         expected1.setRsId("rs367918436");
-        expected1.addValue(TOPMED, 0.0034364301f);
+        expected1.addFrequency(AlleleData.frequencyOf(TOPMED, 0.0034364301f));
 
         Allele expected2 = new Allele(1, 1668890, "C", "T");
         expected2.setRsId("rs367918436");
@@ -103,7 +102,7 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
 
         Allele expected2 = new Allele(2, 202593315, "G", "C");
         expected2.setRsId("rs587777132");
-        expected2.addValue(TOPMED, 6.8686e-003f);
+        expected2.addFrequency(AlleleData.frequencyOf(TOPMED, 6.8686e-003f));
 
         Allele expected3 = new Allele(2, 202593315, "G", "T");
         expected3.setRsId("rs587777132");
@@ -137,7 +136,7 @@ public class TopMedAlleleParserTest extends AbstractAlleleParserTester<TopMedAll
 
         Allele expected1 = new Allele(13, 86928760, "AGA", "A");
         expected1.setRsId("rs201161694");
-        expected1.addValue(TOPMED, 99.0109f);
+        expected1.addFrequency(AlleleData.frequencyOf(TOPMED, 99.0109f));
 
         Allele expected2 = new Allele(13, 86928760, "AG", "A");
         expected2.setRsId("rs201161694");

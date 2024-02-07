@@ -79,7 +79,9 @@ public class Hg19Config extends ResourceConfig {
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
         alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
-        // TOPMed removed as this is now part of gnomAD v2.1
+        // TOPMed removed as this is now part of gnomAD v2.1 (which release of TOPMed?)
+        // TOPMed removed as this is now part of dbSNP
+        alleleResources.put("dbsnp", dbSnpAlleleResource());
         // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
         // ExAC removed as this is part of gnomad-exomes
