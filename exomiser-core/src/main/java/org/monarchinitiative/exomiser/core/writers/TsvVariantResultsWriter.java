@@ -163,7 +163,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName()).orElse(""));
         PathogenicityData pathogenicityData = ve.getPathogenicityData();
-        ClinVarData clinVarData = pathogenicityData.getClinVarData();
+        ClinVarData clinVarData = pathogenicityData.clinVarData();
         fields.add(clinVarData.getVariationId());
         fields.add(clinVarData.getPrimaryInterpretation());
         fields.add(clinVarData.starRating());
@@ -175,10 +175,10 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         fields.add(maxFreq == null ? "" : maxFreq.source());
         fields.add(maxFreq == null ? "" : maxFreq.frequency());
         fields.add(toVcfFreqInfo(frequencyData.frequencies()));
-        PathogenicityScore maxPath = pathogenicityData.getMostPathogenicScore();
+        PathogenicityScore maxPath = pathogenicityData.mostPathogenicScore();
         fields.add(maxPath == null ? "" : maxPath.getSource());
         fields.add(maxPath == null ? "" : maxPath.getScore());
-        fields.add(toVcfPathInfo(pathogenicityData.getPredictedPathogenicityScores()));
+        fields.add(toVcfPathInfo(pathogenicityData.pathogenicityScores()));
         return fields;
     }
 

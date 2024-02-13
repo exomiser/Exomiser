@@ -379,7 +379,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
-        float expected = VariantEffectPathogenicityScore.getPathogenicityScoreOf(type);
+        float expected = VariantEffectPathogenicityScore.pathogenicityScoreOf(type);
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 
@@ -389,7 +389,7 @@ public class VariantEvaluationTest {
         PathogenicityData pathData = PathogenicityData.of(CaddScore.of(1f));
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
-        assertThat(instance.getPathogenicityScore(), equalTo(pathData.getScore()));
+        assertThat(instance.getPathogenicityScore(), equalTo(pathData.pathogenicityScore()));
     }
 
     @Test
@@ -397,7 +397,7 @@ public class VariantEvaluationTest {
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
-        float expected = VariantEffectPathogenicityScore.getPathogenicityScoreOf(type);
+        float expected = VariantEffectPathogenicityScore.pathogenicityScoreOf(type);
         assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 

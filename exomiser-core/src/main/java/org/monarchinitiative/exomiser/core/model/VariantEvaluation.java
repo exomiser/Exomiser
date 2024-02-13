@@ -379,8 +379,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (whiteListed) {
             return 1f;
         }
-        float predictedScore = pathogenicityData.getScore();
-        float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        float predictedScore = pathogenicityData.pathogenicityScore();
+        float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
         if (this.isSymbolic()) {
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
             //                                     |             element contains v

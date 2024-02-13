@@ -287,7 +287,7 @@ class ClinVarDaoMvStoreTest {
         if (pathogenicityData.isEmpty()) {
             System.out.println("\t-");
         } else {
-            pathogenicityData.getPredictedPathogenicityScores().forEach(path -> System.out.println("\t" + path));
+            pathogenicityData.pathogenicityScores().forEach(path -> System.out.println("\t" + path));
         }
     }
 

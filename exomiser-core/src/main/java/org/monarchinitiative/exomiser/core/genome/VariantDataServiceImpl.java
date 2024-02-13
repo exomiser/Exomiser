@@ -147,7 +147,7 @@ public class VariantDataServiceImpl implements VariantDataService {
             }
             for (CompletableFuture<PathogenicityData> pathogenicityDataCompletableFuture : futurePathData) {
                 PathogenicityData pathogenicityData = pathogenicityDataCompletableFuture.join();
-                allPathScores.addAll(pathogenicityData.getPredictedPathogenicityScores());
+                allPathScores.addAll(pathogenicityData.pathogenicityScores());
             }
             defaultPathogenicityData = futureDefaultData.join();
         } else {
@@ -173,7 +173,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     private void addAllWantedScores(Set<PathogenicitySource> pathogenicitySources, PathogenicityData defaultPathogenicityData, List<PathogenicityScore> allPathScores) {
-        for (PathogenicityScore score : defaultPathogenicityData.getPredictedPathogenicityScores()) {
+        for (PathogenicityScore score : defaultPathogenicityData.pathogenicityScores()) {
             if (pathogenicitySources.contains(score.getSource())) {
                 allPathScores.add(score);
             }

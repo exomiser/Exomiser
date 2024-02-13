@@ -57,6 +57,6 @@ class SvPathogenicityDaoTest {
     void getPathogenicityData(int chr, int start, int end, String alt, int changeLength, ClinVarData.ClinSig expected) {
         Variant variant = TestFactory.variantBuilder(chr, start, end, "", alt, changeLength).build();
         PathogenicityData result = instance.getPathogenicityData(variant);
-        assertThat(result.getClinVarData().getPrimaryInterpretation(), equalTo(expected));
+        assertThat(result.clinVarData().getPrimaryInterpretation(), equalTo(expected));
     }
 }

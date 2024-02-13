@@ -114,37 +114,37 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetNonExistentFrequency() {
-        assertThat(EMPTY_DATA.frequencyForSource(THOUSAND_GENOMES), equalTo(null));
+        assertThat(EMPTY_DATA.frequency(THOUSAND_GENOMES), equalTo(null));
     }
 
     @Test
     public void testGetDbSnpMaf() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(THOUSAND_GENOMES), equalTo(DBSNP_PASS));
+        assertThat(FREQUENCY_DATA.frequency(THOUSAND_GENOMES), equalTo(DBSNP_PASS));
     }
 
     @Test
     public void testGetEspEaMaf() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(ESP_EA), equalTo(ESP_EA_PASS));
+        assertThat(FREQUENCY_DATA.frequency(ESP_EA), equalTo(ESP_EA_PASS));
     }
 
     @Test
     public void testGetEspAaMaf() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(ESP_AA), equalTo(ESP_AA_PASS));
+        assertThat(FREQUENCY_DATA.frequency(ESP_AA), equalTo(ESP_AA_PASS));
     }
 
     @Test
     public void testGetEspAllMaf() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(ESP_ALL), equalTo(ESP_ALL_PASS));
+        assertThat(FREQUENCY_DATA.frequency(ESP_ALL), equalTo(ESP_ALL_PASS));
     }
 
     @Test
     public void testGetFrequencyForUnavailableSource() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(GNOMAD_E_NFE), equalTo(null));
+        assertThat(FREQUENCY_DATA.frequency(GNOMAD_E_NFE), equalTo(null));
     }
 
     @Test
     public void testGetFrequencyForUnavailableSourceBefore() {
-        assertThat(FREQUENCY_DATA.frequencyForSource(UNKNOWN), equalTo(null));
+        assertThat(FREQUENCY_DATA.frequency(UNKNOWN), equalTo(null));
     }
 
     @Test

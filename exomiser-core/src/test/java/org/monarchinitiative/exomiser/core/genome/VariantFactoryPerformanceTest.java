@@ -180,7 +180,7 @@ public class VariantFactoryPerformanceTest {
                 variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
                 variantEvaluation.getVariantScore(),
                 variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().maxFreq(),
-                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().getPredictedPathogenicityScores()
+                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().pathogenicityScores()
         );
     }
 

@@ -111,12 +111,12 @@ public class TestVariantDataService implements VariantDataService {
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
 
-        List<PathogenicityScore> wanted = pathData.getPredictedPathogenicityScores()
+        List<PathogenicityScore> wanted = pathData.pathogenicityScores()
                 .stream()
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
-                .collect(Collectors.toList());
+                .toList();
 
-        return PathogenicityData.of(pathData.getClinVarData(), wanted);
+        return PathogenicityData.of(pathData.clinVarData(), wanted);
     }
 
     public static Builder builder() {

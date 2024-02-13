@@ -172,7 +172,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         assignPP4(acmgEvidenceBuilder, compatibleDiseaseMatches);
 
         PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
-        ClinVarData clinVarData = variantEvaluation.getPathogenicityData().getClinVarData();
+        ClinVarData clinVarData = variantEvaluation.getPathogenicityData().clinVarData();
         if (!clinVarData.isEmpty()) {
             // PP5 "Reputable source recently reports variant as pathogenic, but the evidence is not available to the laboratory to perform an independent evaluation"
             assignPP5(acmgEvidenceBuilder, clinVarData);
@@ -281,7 +281,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             if (contributingVariants.size() >= 2 && contributingVariants.contains(variantEvaluation)) {
                 for (VariantEvaluation otherVariant : contributingVariants) {
                     SampleGenotype otherVariantGenotype = otherVariant.getSampleGenotype(probandId);
-                    ClinVarData otherClinVarData = otherVariant.getPathogenicityData().getClinVarData();
+                    ClinVarData otherClinVarData = otherVariant.getPathogenicityData().clinVarData();
                     if (otherClinVarData.getPrimaryInterpretation() == ClinVarData.ClinSig.PATHOGENIC && !otherVariant.equals(variantEvaluation)) {
                         // X = this variant, P = other pathogenic variant
                         boolean inTrans = inTrans(thisVariantGenotype, otherVariantGenotype);
@@ -487,7 +487,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         //   classification and ClinGen recommendations for clinical use of PP3/BP4 criteria"
         //   https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1
         //
-        var revelScore = pathogenicityData.getPredictedScore(PathogenicitySource.REVEL);
+        var revelScore = pathogenicityData.pathogenicityScore(PathogenicitySource.REVEL);
         if (revelScore != null) {
             assignRevelBasedPP3BP4Classification(acmgEvidenceBuilder, revelScore);
         } else {
@@ -538,18 +538,18 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     private void assignEnsembleBasedPP3BP4Classification(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityData pathogenicityData) {
         int numBenign = 0;
         int numPathogenic = 0;
-        List<PathogenicityScore> predictedPathogenicityScores = pathogenicityData.getPredictedPathogenicityScores();
-        for (PathogenicityScore pathogenicityScore : predictedPathogenicityScores) {
+        List<PathogenicityScore> pathogenicityScores = pathogenicityData.pathogenicityScores();
+        for (PathogenicityScore pathogenicityScore : pathogenicityScores) {
             if (isPathogenic(pathogenicityScore)) {
                 numPathogenic++;
             } else {
                 numBenign++;
             }
         }
-        if (predictedPathogenicityScores.size() > 1 && numPathogenic > numBenign) {
+        if (pathogenicityScores.size() > 1 && numPathogenic > numBenign) {
             acmgEvidenceBuilder.add(PP3);
         }
-        if (predictedPathogenicityScores.size() > 1 && numBenign > numPathogenic) {
+        if (pathogenicityScores.size() > 1 && numBenign > numPathogenic) {
             acmgEvidenceBuilder.add(BP4);
         }
     }

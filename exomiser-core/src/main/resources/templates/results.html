@@ -378,10 +378,10 @@
                                     <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
                                         th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
                                     </dd>
-                                    <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No
+                                    <dd th:if="${#lists.isEmpty(pathogenicityData.pathogenicityScores)}">No
                                         pathogenicity data
                                     </dd>
-                                    <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}"
+                                    <dd th:each="pathScore: ${pathogenicityData.pathogenicityScores}"
                                         th:text="${pathScore}">Mutation Taster: 0.999 (P)
                                     </dd>
                                 </dl>
@@ -519,10 +519,10 @@
                             <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
                                 th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
                             </dd>
-                            <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No
+                            <dd th:if="${#lists.isEmpty(pathogenicityData.pathogenicityScores)}">No
                                 pathogenicity data
                             </dd>
-                            <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}"
+                            <dd th:each="pathScore: ${pathogenicityData.pathogenicityScores}"
                                 th:text="${pathScore}">Mutation Taster: 0.999 (P)
                             </dd>
                         </dl>

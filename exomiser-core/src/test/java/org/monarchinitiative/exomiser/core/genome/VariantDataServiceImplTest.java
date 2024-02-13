@@ -147,7 +147,7 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsCaddDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
-        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.getPredictedScore(PathogenicitySource.CADD))));
+        assertThat(result, equalTo(PathogenicityData.of(PATH_CLINVAR_DATA, CADD_DATA.pathogenicityScore(PathogenicitySource.CADD))));
     }
 
     @Test

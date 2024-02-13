@@ -155,7 +155,7 @@ public class FrequencyData {
     }
 
     @Nullable
-    public Frequency frequencyForSource(FrequencySource source) {
+    public Frequency frequency(FrequencySource source) {
         int i = frequencySourceIndex(source);
         return i < 0 ? null : frequency(i);
     }
