@@ -55,7 +55,7 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
                 }
             }
         }
-        return alleles;
+        return alleles.stream().filter(allele -> !allele.getFrequencies().isEmpty()).toList();
     }
 
     // ##INFO=<ID=CAF,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on 1000Genomes, starting with the reference allele followed by alternate alleles as ordered in the ALT column. Where a 1000Genomes alternate allele is not in the dbSNPs alternate allele set, the allele is added to the ALT column.  The minor allele is the second largest value in the list, and was previuosly reported in VCF as the GMAF.  This is the GMAF reported on the RefSNP and EntrezSNP pages and VariationReporter">
