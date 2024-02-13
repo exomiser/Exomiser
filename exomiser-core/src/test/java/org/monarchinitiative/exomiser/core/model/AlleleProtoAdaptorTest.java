@@ -66,14 +66,31 @@ public class AlleleProtoAdaptorTest {
     public void testToFreqData() {
         AlleleProperties alleleProperties = AlleleProperties.newBuilder()
                 // 100f * (ac / (float) an);
-                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 4, 1000))
-                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.TOPMED, 200, 400000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_ASJ, 4, 1000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_EAS, 200, 400000, 1))
                 .build();
         assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
                 equalTo(FrequencyData.of(
-                    Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.4f),
-                    Frequency.of(FrequencySource.TOPMED, 0.05f))
+                    Frequency.of(FrequencySource.GNOMAD_E_ASJ, 4, 1000, 0),
+                    Frequency.of(FrequencySource.GNOMAD_E_EAS, 200, 400000, 1))
                 )
+        );
+    }
+
+    @Test
+    public void testToFreqDataNoAnType() {
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                // 100f * (ac / (float) an);
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 0.001f))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.TOPMED, 0.002f))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.GNOMAD_E_EAS, 200, 400000, 1))
+                .build();
+        assertThat(AlleleProtoAdaptor.toFrequencyData(alleleProperties),
+                equalTo(FrequencyData.of(
+                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.001f),
+                        Frequency.of(FrequencySource.TOPMED, 0.002f),
+                        Frequency.of(FrequencySource.GNOMAD_E_EAS, 200, 400000, 1))
+                        )
         );
     }
 

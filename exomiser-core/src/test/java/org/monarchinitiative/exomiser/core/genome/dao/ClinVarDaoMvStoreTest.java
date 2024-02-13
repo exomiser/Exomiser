@@ -279,7 +279,7 @@ class ClinVarDaoMvStoreTest {
         if (frequencyData.isEmpty()) {
             System.out.println("\t-");
         } else {
-            frequencyData.getKnownFrequencies().forEach(freq -> System.out.println("\t" + freq.getSource() + "=" + freq.getFrequency()));
+            frequencyData.frequencies().forEach(freq -> System.out.println("\t" + freq.source() + "=" + freq.frequency()));
         }
 
         System.out.println("Pathogenicity scores:");

@@ -99,9 +99,9 @@ public class TestVariantDataService implements VariantDataService {
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
 
-        List<Frequency> wanted = allFrequencyData.getKnownFrequencies()
+        List<Frequency> wanted = allFrequencyData.frequencies()
                 .stream()
-                .filter(frequency -> frequencySources.contains(frequency.getSource()))
+                .filter(frequency -> frequencySources.contains(frequency.source()))
                 .collect(Collectors.toList());
 
         return FrequencyData.of(allFrequencyData.getRsId(), wanted);

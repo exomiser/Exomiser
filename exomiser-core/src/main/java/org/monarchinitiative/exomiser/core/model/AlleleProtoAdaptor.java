@@ -130,9 +130,15 @@ public class AlleleProtoAdaptor {
         for (int i = 0; i < freqsCount; i++) {
             AlleleProto.Frequency frequency = alleleProperties.getFrequencies(i);
             var freqSource = toFreqSource(frequency.getFrequencySource());
-            var freq = Frequency.percentageFrequency(frequency.getAc(), frequency.getAn());
-            var hom = frequency.getHom();
-            frequencyDataBuilder.addFrequency(freqSource, freq, hom);
+            int an = frequency.getAn();
+            if (an == 0) {
+                float af = frequency.getFrequency();
+                frequencyDataBuilder.addFrequency(freqSource, af);
+            } else {
+                int ac = frequency.getAc();
+                int hom = frequency.getHom();
+                frequencyDataBuilder.addFrequency(freqSource, ac, an, hom);
+            }
         }
     }
 

@@ -87,13 +87,13 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
                 .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 4, 1000))
-                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.ESP_AA, 3, 6000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.ESP_AA, 3, 6000, 1))
                 .build();
         FrequencyDao instance = newInstanceWithData(Map.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
                 equalTo(FrequencyData.of("rs54321",
-                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.4f),
-                        Frequency.of(FrequencySource.ESP_AA, 0.05f))));
+                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 4, 1000, 0),
+                        Frequency.of(FrequencySource.ESP_AA, 3, 6000, 1))));
     }
 
 }

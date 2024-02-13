@@ -96,7 +96,7 @@ public class SvFrequencyDao implements FrequencyDao {
         }
         SvResult first = topMatches.get(0);
         Frequency frequency = toFrequency(first);
-        if (first.an < 10 || frequency.getFrequency() == 0) {
+        if (first.an < 10 || frequency.frequency() == 0) {
             // Don't report poorly defined frequencies
             return FrequencyData.of(first.id());
         }

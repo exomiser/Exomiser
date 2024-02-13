@@ -134,7 +134,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 //        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variantEvaluation);
         AlleleProto.AlleleKey alleleKey = variantEvaluation.alleleKey();
         boolean isBa1ExcludedVariant = variantEvaluation.getGenomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
-        if (!isBa1ExcludedVariant && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
+        if (!isBa1ExcludedVariant && frequencyData.maxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
             acmgEvidenceBuilder.add(BA1);
             // BA1 is supposed to be used as a filtering criterion where no other evidence need be considered.
             return acmgEvidenceBuilder.build();
@@ -436,7 +436,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // allow local frequency occurrences as these are unverifiable as to their size or content. Also do not use isRepresentedInDatabase()
         // as this will exclude anything with an rsID which could be a ClinVar variant not seen in any population database.
         boolean absentFromDatabase = frequencyData.isEmpty() || (frequencyData.size() == 1 && frequencyData.containsFrequencySource(FrequencySource.LOCAL));
-        boolean atVeryLowFrequencyIfRecessive = modeOfInheritance.isRecessive() && frequencyData.getMaxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) < 0.01f;
+        boolean atVeryLowFrequencyIfRecessive = modeOfInheritance.isRecessive() && frequencyData.maxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) < 0.01f;
         if (absentFromDatabase || atVeryLowFrequencyIfRecessive) {
             acmgEvidenceBuilder.add(PM2, Evidence.SUPPORTING);
         }

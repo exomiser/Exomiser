@@ -120,7 +120,7 @@ public class FrequencyDataProviderTest {
 
         VariantDataService variantDataService = TestVariantDataService.builder().put(variant, variantFrequencyData).build();
 
-        instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource()), new KnownVariantFilter());
+        instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.source()), new KnownVariantFilter());
         instance.runFilter(variant);
 
         assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RS_ID, espAll)));
@@ -135,7 +135,7 @@ public class FrequencyDataProviderTest {
 
         VariantDataService variantDataService = TestVariantDataService.builder().put(variant, variantFrequencyData).build();
 
-        instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource(), exacAfr.getSource()), new KnownVariantFilter());
+        instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.source(), exacAfr.source()), new KnownVariantFilter());
         instance.runFilter(variant);
 
         assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RS_ID, espAll, exacAfr)));

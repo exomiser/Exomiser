@@ -150,10 +150,10 @@ public class InheritanceModeAnnotator {
             // float maxFreq = frequencyData.maxFreqIgnoring(Set.of(LOCAL, ESP))
             // float maxFreq = frequencyData.maxFreqFrom(Set.of(LOCAL, ESP))
             FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-            if (frequencyData.getMaxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
+            if (frequencyData.maxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
                 compatibleVariants.add(variantEvaluation);
             } else {
-                logger.debug("FAIL variant freq {} >= {} (maxFreq for MOI) {}", frequencyData.getMaxFreq(), maxFreqForMode, variantEvaluation);
+                logger.debug("FAIL variant freq {} >= {} (maxFreq for MOI) {}", frequencyData.maxFreq(), maxFreqForMode, variantEvaluation);
             }
         }
         return compatibleVariants;

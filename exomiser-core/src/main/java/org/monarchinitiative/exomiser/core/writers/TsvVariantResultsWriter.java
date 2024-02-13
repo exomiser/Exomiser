@@ -171,10 +171,10 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         fields.add(geneConstraint == null ? "" : geneConstraint.loeuf());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufLower());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufUpper());
-        Frequency maxFreq = frequencyData.getMaxFrequency();
-        fields.add(maxFreq == null ? "" : maxFreq.getSource());
-        fields.add(maxFreq == null ? "" : maxFreq.getFrequency());
-        fields.add(toVcfFreqInfo(frequencyData.getKnownFrequencies()));
+        Frequency maxFreq = frequencyData.maxFrequency();
+        fields.add(maxFreq == null ? "" : maxFreq.source());
+        fields.add(maxFreq == null ? "" : maxFreq.frequency());
+        fields.add(toVcfFreqInfo(frequencyData.frequencies()));
         PathogenicityScore maxPath = pathogenicityData.getMostPathogenicScore();
         fields.add(maxPath == null ? "" : maxPath.getSource());
         fields.add(maxPath == null ? "" : maxPath.getScore());
@@ -193,7 +193,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
     private String toVcfFreqInfo(List<Frequency> frequencies) {
         return frequencies.stream()
-                .map(frequency -> frequency.getSource() + "=" + frequency.getFrequency())
+                .map(frequency -> frequency.source() + "=" + frequency.frequency())
                 .collect(joining(","));
     }
 

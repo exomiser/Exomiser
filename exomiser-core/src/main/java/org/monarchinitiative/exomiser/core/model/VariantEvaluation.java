@@ -356,7 +356,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return a score between 0 and 1
      */
     public float getFrequencyScore() {
-        return whiteListed ? 1f : frequencyData.getScore();
+        return whiteListed ? 1f : frequencyData.frequencyScore();
     }
 
     /**
