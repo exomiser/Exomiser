@@ -158,7 +158,7 @@ conjunction with a disorder, the assigned criteria with any modifiers and the fi
               ],
               "frequencyData": {
                 "rsId": "rs121918506",
-                "score": 1
+                "frequencyScore": 1
               },
               "pathogenicityData": {
                 "clinVarData": {
@@ -166,8 +166,8 @@ conjunction with a disorder, the assigned criteria with any modifiers and the fi
                   "primaryInterpretation": "LIKELY_PATHOGENIC",
                   "reviewStatus": "criteria provided, single submitter"
                 },
-                "score": 0.965,
-                "predictedPathogenicityScores": [
+                "pathogenicitycore": 0.965,
+                "pathogenicityScores": [
                   {
                     "source": "REVEL",
                     "score": 0.965
