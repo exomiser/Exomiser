@@ -26,7 +26,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.List;
 

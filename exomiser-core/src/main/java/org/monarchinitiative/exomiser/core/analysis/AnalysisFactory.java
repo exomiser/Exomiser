@@ -63,14 +63,11 @@ public class AnalysisFactory {
         // below are package-private.
         GenomeAnalysisService genomeAnalysisService = genomeAnalysisServiceProvider.get(genomeAssembly);
 
-        switch (analysisMode) {
-            case FULL:
-                return new SimpleAnalysisRunner(genomeAnalysisService);
-            case PASS_ONLY:
-            default:
-                //this guy takes up the least RAM
-                return new PassOnlyAnalysisRunner(genomeAnalysisService);
-        }
+        return switch (analysisMode) {
+            case FULL -> new SimpleAnalysisRunner(genomeAnalysisService);
+            // PASS_ONLY takes up the least RAM
+            case PASS_ONLY -> new PassOnlyAnalysisRunner(genomeAnalysisService);
+        };
     }
 
     public AnalysisBuilder getAnalysisBuilder() {

@@ -89,7 +89,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
         return variants.stream()
                 .filter(VariantEvaluation::passedFilters)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     @Override

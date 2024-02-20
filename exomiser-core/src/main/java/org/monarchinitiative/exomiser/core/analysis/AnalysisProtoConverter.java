@@ -39,9 +39,9 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
         return AnalysisProto.Analysis.newBuilder()
                 .setAnalysisMode(analysis.getAnalysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
                 .putAllInheritanceModes(analysis.getInheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
-                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).collect(Collectors.toList()))
-                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).collect(Collectors.toList()))
-                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).collect(Collectors.toList()))
+                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).toList())
+                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).toList())
+                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
                 .build();
     }
 
@@ -59,21 +59,18 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
 
     private AnalysisProto.AnalysisStep buildFilterProto(AnalysisStep analysisStep) {
         AnalysisProto.AnalysisStep.Builder stepBuilder = AnalysisProto.AnalysisStep.newBuilder();
-        if (analysisStep instanceof VariantEffectFilter) {
-            VariantEffectFilter variantEffectFilter = (VariantEffectFilter) analysisStep;
+        if (analysisStep instanceof VariantEffectFilter variantEffectFilter) {
             return stepBuilder
                     .setVariantEffectFilter(FiltersProto.VariantEffectFilter.newBuilder()
-                            .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).collect(Collectors.toList())))
+                            .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).toList()))
                     .build();
         }
-        if (analysisStep instanceof FrequencyFilter) {
-            FrequencyFilter frequencyFilter = (FrequencyFilter) analysisStep;
+        if (analysisStep instanceof FrequencyFilter frequencyFilter) {
             return stepBuilder
                     .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(frequencyFilter.getMaxFreq()))
                     .build();
         }
-        if (analysisStep instanceof PathogenicityFilter) {
-            PathogenicityFilter pathogenicityFilter = (PathogenicityFilter) analysisStep;
+        if (analysisStep instanceof PathogenicityFilter pathogenicityFilter) {
             return stepBuilder
                     .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(pathogenicityFilter.keepNonPathogenic()))
                     .build();
@@ -88,25 +85,29 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setKnownVariantFilter(FiltersProto.KnownVariantFilter.newBuilder())
                     .build();
         }
-        if (analysisStep instanceof QualityFilter) {
-            QualityFilter qualityFilter = (QualityFilter) analysisStep;
+        if (analysisStep instanceof QualityFilter qualityFilter) {
             return stepBuilder
                     .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) qualityFilter.getMimimumQualityThreshold()))
                     .build();
         }
-        if (analysisStep instanceof IntervalFilter) {
-            IntervalFilter intervalFilter = (IntervalFilter) analysisStep;
+        if (analysisStep instanceof IntervalFilter intervalFilter) {
             return stepBuilder
                     .setIntervalFilter(FiltersProto.IntervalFilter.newBuilder()
-                            .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).collect(Collectors.toList())))
+                            .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).toList()))
                     .build();
         }
-        if (analysisStep instanceof GeneSymbolFilter) {
-            GeneSymbolFilter geneSymbolFilter = (GeneSymbolFilter) analysisStep;
+        if (analysisStep instanceof GeneSymbolFilter geneSymbolFilter) {
             return stepBuilder
                     .setGenePanelFilter(FiltersProto.GenePanelFilter.newBuilder().addAllGeneSymbols(geneSymbolFilter.getGeneSymbols()))
                     .build();
         }
+
+        if (analysisStep instanceof GeneBlacklistFilter geneBlacklistFilter) {
+           return stepBuilder
+                   .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
+                   .build();
+        }
+
         if (analysisStep instanceof InheritanceFilter) {
             return stepBuilder
                     .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder().build())
@@ -115,8 +116,7 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
         if (analysisStep instanceof RegulatoryFeatureFilter) {
             return stepBuilder.setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()).build();
         }
-        if (analysisStep instanceof PriorityScoreFilter) {
-            PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) analysisStep;
+        if (analysisStep instanceof PriorityScoreFilter priorityScoreFilter) {
             return stepBuilder
                     .setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder()
                             .setMinPriorityScore((float) priorityScoreFilter.getMinPriorityScore())
@@ -133,8 +133,7 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder())
                     .build();
         }
-        if (analysisStep instanceof HiPhivePriority) {
-            HiPhivePriority hiPhivePriority = (HiPhivePriority) analysisStep;
+        if (analysisStep instanceof HiPhivePriority hiPhivePriority) {
             HiPhiveOptions hiPhiveOptions = hiPhivePriority.getOptions();
             return stepBuilder
                     .setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder()
@@ -153,8 +152,7 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.newBuilder())
                     .build();
         }
-        if (analysisStep instanceof ExomeWalkerPriority) {
-            ExomeWalkerPriority exomeWalkerPriority = (ExomeWalkerPriority) analysisStep;
+        if (analysisStep instanceof ExomeWalkerPriority exomeWalkerPriority) {
             return stepBuilder
                     .setExomeWalkerPrioritiser(PrioritisersProto.ExomeWalkerPrioritiser.newBuilder().addAllSeedGeneIds(exomeWalkerPriority.getSeedGenes()))
                     .build();

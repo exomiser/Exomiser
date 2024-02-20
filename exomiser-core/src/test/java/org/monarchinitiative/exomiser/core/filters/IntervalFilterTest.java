@@ -26,12 +26,13 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -92,7 +93,7 @@ public class IntervalFilterTest {
         ChromosomalRegion interval3 = new GeneticInterval(3, 50, 60);
         ChromosomalRegion interval4 = new GeneticInterval(3, 51, 55);
 
-        IntervalFilter multiIntervalFilter = new IntervalFilter(ImmutableList.of(interval3, interval2, interval3, interval1, interval4));
+        IntervalFilter multiIntervalFilter = new IntervalFilter(List.of(interval3, interval2, interval3, interval1, interval4));
 
         FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(TestFactory.variantBuilder(1, 19, "A", "T").build()));
         FilterTestHelper.assertPassed(multiIntervalFilter.runFilter(TestFactory.variantBuilder(1, 20, "A", "T").build()));
@@ -103,12 +104,12 @@ public class IntervalFilterTest {
 
         FilterTestHelper.assertFailed(multiIntervalFilter.runFilter(TestFactory.variantBuilder(2, 233, "A", "T").build()));
 
-        assertThat(multiIntervalFilter.getChromosomalRegions(), equalTo(ImmutableList.of(interval1, interval2, interval3, interval4)));
+        assertThat(multiIntervalFilter.getChromosomalRegions(), equalTo(List.of(interval1, interval2, interval3, interval4)));
     }
 
     @Test
     public void throwsExceptionWithEmptyInputList() {
-        assertThrows(IllegalStateException.class, () -> new IntervalFilter(ImmutableList.of()));
+        assertThrows(IllegalStateException.class, () -> new IntervalFilter(List.of()));
     }
 
     @Test

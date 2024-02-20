@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -62,7 +61,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static java.nio.file.Files.newInputStream;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @since 7.0.0
@@ -363,8 +361,7 @@ public class AnalysisParser {
             try {
                 return SubModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                List<SubModeOfInheritance> permitted = Arrays.stream(SubModeOfInheritance.values())
-                        .collect(toList());
+                List<SubModeOfInheritance> permitted = List.of(SubModeOfInheritance.values());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
@@ -373,8 +370,7 @@ public class AnalysisParser {
             try {
                 return ModeOfInheritance.valueOf(value);
             } catch (IllegalArgumentException e) {
-                List<ModeOfInheritance> permitted = Arrays.stream(ModeOfInheritance.values())
-                        .collect(toList());
+                List<ModeOfInheritance> permitted = List.of(ModeOfInheritance.values());
                 throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, permitted));
             }
         }
@@ -434,6 +430,8 @@ public class AnalysisParser {
                     return makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
                 case "regulatoryFeatureFilter":
                     return analysisBuilder.addRegulatoryFeatureFilter();
+                case "geneBlacklistFilter":
+                    return makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
                 case "omimPrioritiser":
                     return analysisBuilder.addOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -460,7 +458,7 @@ public class AnalysisParser {
         private List<ChromosomalRegion> parseIntervalFilterOptions(Map<String, Object> options){
             if (options.containsKey("interval")) {
                 String interval = (String) options.get("interval");
-                return ImmutableList.of(GeneticInterval.parseString(interval));
+                return List.of(GeneticInterval.parseString(interval));
             }
             if (options.containsKey("intervals")) {
                 List<String> intervalStrings = (List<String>) options.get("intervals");
@@ -470,7 +468,7 @@ public class AnalysisParser {
             }
             if (options.containsKey("bed")) {
                 String bedPath = (String) options.get("bed");
-                return BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
+                return BedFiles.readChromosomalRegions(Paths.get(bedPath)).toList();
             }
             throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}", options);
         }
@@ -568,6 +566,14 @@ public class AnalysisParser {
             List<FrequencySource> sources = new ArrayList<>();
             for (String source : frequencySources) {
                 try {
+                    // legacy long-form ESP names
+                    if (source.startsWith("ESP")) {
+                        source = switch (source) {
+                            case "ESP_AFRICAN_AMERICAN" -> "ESP_AA";
+                            case "ESP_EUROPEAN_AMERICAN" -> "ESP_EA";
+                            default -> source;
+                        };
+                    }
                     FrequencySource frequencySource = FrequencySource.valueOf(source);
                     sources.add(frequencySource);
                 } catch (IllegalArgumentException ex) {
@@ -631,6 +637,10 @@ public class AnalysisParser {
                 return analysisBuilder;
             }
             return analysisBuilder.addInheritanceFilter();
+        }
+
+        private AnalysisBuilder makeGeneBlacklistFilter(Map<String, String> options, AnalysisBuilder analysisBuilder) {
+            return analysisBuilder.addGeneBlacklistFilter();
         }
 
         private AnalysisBuilder makeHiPhivePrioritiser(Map<String, String> options, AnalysisBuilder analysisBuilder) {

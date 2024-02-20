@@ -80,30 +80,24 @@ public class FilterReportFactory {
         Filter<?> baseFilter = unWrapVariantFilterDataProvider(filter);
         FilterType filterType = filter.getFilterType();
         FilterResultCount filterResultCount = analysisResults.getFilterCount(filterType);
-        switch (filterType) {
-            case FAILED_VARIANT_FILTER:
-                return filterReport(filterResultCount, failedVariantFilterMessages((FailedVariantFilter) baseFilter));
-            case VARIANT_EFFECT_FILTER:
-                return filterReport(filterResultCount, messages((VariantEffectFilter) baseFilter));
-            case KNOWN_VARIANT_FILTER:
-                return filterReport(filterResultCount, messages((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations()));
-            case FREQUENCY_FILTER:
-                return filterReport(filterResultCount, messages((FrequencyFilter) baseFilter));
-            case QUALITY_FILTER:
-                return filterReport(filterResultCount, messages((QualityFilter) baseFilter));
-            case PATHOGENICITY_FILTER:
-                return filterReport(filterResultCount, messages((PathogenicityFilter) baseFilter));
-            case INTERVAL_FILTER:
-                return filterReport(filterResultCount, messages((IntervalFilter) baseFilter));
-            case INHERITANCE_FILTER:
-                return filterReport(filterResultCount, messages((InheritanceFilter) baseFilter));
-            case PRIORITY_SCORE_FILTER:
-                return filterReport(filterResultCount, messages((PriorityScoreFilter) baseFilter));
-            case REGULATORY_FEATURE_FILTER:
-                return filterReport(filterResultCount, messages((RegulatoryFeatureFilter) baseFilter));
-            default:
-                return filterReport(filterResultCount, List.of());
-        }
+        return switch (filterType) {
+            case FAILED_VARIANT_FILTER ->
+                    filterReport(filterResultCount, failedVariantFilterMessages((FailedVariantFilter) baseFilter));
+            case VARIANT_EFFECT_FILTER -> filterReport(filterResultCount, messages((VariantEffectFilter) baseFilter));
+            case KNOWN_VARIANT_FILTER ->
+                    filterReport(filterResultCount, messages((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations()));
+            case FREQUENCY_FILTER -> filterReport(filterResultCount, messages((FrequencyFilter) baseFilter));
+            case QUALITY_FILTER -> filterReport(filterResultCount, messages((QualityFilter) baseFilter));
+            case ENTREZ_GENE_ID_FILTER -> filterReport(filterResultCount, messages((GeneSymbolFilter) baseFilter));
+            case PATHOGENICITY_FILTER -> filterReport(filterResultCount, messages((PathogenicityFilter) baseFilter));
+            case INTERVAL_FILTER -> filterReport(filterResultCount, messages((IntervalFilter) baseFilter));
+            case INHERITANCE_FILTER -> filterReport(filterResultCount, messages((InheritanceFilter) baseFilter));
+            case BED_FILTER -> filterReport(filterResultCount, List.of());
+            case PRIORITY_SCORE_FILTER -> filterReport(filterResultCount, messages((PriorityScoreFilter) baseFilter));
+            case REGULATORY_FEATURE_FILTER ->
+                    filterReport(filterResultCount, messages((RegulatoryFeatureFilter) baseFilter));
+            case GENE_BLACKLIST_FILTER -> filterReport(filterResultCount, messages((GeneBlacklistFilter) baseFilter));
+        };
     }
 
     private FilterReport filterReport(FilterResultCount filterResultCount, List<String> messages) {
@@ -111,11 +105,7 @@ public class FilterReportFactory {
     }
 
     private Filter<?> unWrapVariantFilterDataProvider(Filter<?> filter) {
-        if (filter instanceof VariantFilterDataProvider) {
-            VariantFilterDataProvider decorator = (VariantFilterDataProvider) filter;
-            return decorator.getDecoratedFilter();
-        }
-        return filter;
+        return filter instanceof VariantFilterDataProvider decorator ? decorator.getDecoratedFilter() : filter;
     }
 
     private List<String> failedVariantFilterMessages(FailedVariantFilter baseFilter) {
@@ -178,13 +168,21 @@ public class FilterReportFactory {
 
     private List<String> messages(PathogenicityFilter pathogenicityFilter) {
         if (pathogenicityFilter.keepNonPathogenic()) {
-           return List.of("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
+            return List.of("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
         }
         return List.of("Retained all non-pathogenic missense variants");
     }
 
     private List<String> messages(RegulatoryFeatureFilter baseFilter) {
         return List.of("Variants found within a regulatory region or <= 20 Kb upstream of the nearest gene");
+    }
+
+    private List<String> messages(GeneSymbolFilter baseFilter) {
+        return List.of(String.format("Removed variants in genes: %s", baseFilter.getGeneSymbols()));
+    }
+
+    private List<String> messages(GeneBlacklistFilter baseFilter) {
+        return List.of(String.format("Removed variants in blacklisted genes including pseudogenes, HLA genes, and others that have a high degree of variants called in healthy individuals: %s", baseFilter.getBlacklist().stream().sorted().toList()));
     }
 
     private List<String> messages(IntervalFilter intervalFilter) {
@@ -203,7 +201,7 @@ public class FilterReportFactory {
                 messages.add(formatRegion(chromosomalRegion));
             }
         } else {
-            for (int i = 0; i < regionsToShow - 2 ; i++) {
+            for (int i = 0; i < regionsToShow - 2; i++) {
                 ChromosomalRegion region = chromosomalRegions.get(i);
                 messages.add(formatRegion(region));
             }

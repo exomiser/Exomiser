@@ -150,8 +150,7 @@ class AnalysisStepChecker {
 
     private void removePriorityScoreFiltersNotOfType(List<AnalysisStep> analysisSteps, Set<PriorityType> prioritiserTypes) {
         analysisSteps.removeIf(step -> {
-            if (step instanceof PriorityScoreFilter) {
-                PriorityScoreFilter filter = (PriorityScoreFilter) step;
+            if (step instanceof PriorityScoreFilter filter) {
                 if (!prioritiserTypes.contains(filter.getPriorityType())) {
                     logger.info("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
                     return true;
@@ -187,8 +186,7 @@ class AnalysisStepChecker {
 
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
-            if (step instanceof Prioritiser) {
-                Prioritiser prioritiser = (Prioritiser) step;
+            if (step instanceof Prioritiser prioritiser) {
                 if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
                     containsMatchingPrioritiser = true;
                     positionOfMatchingPrioritiser = i;

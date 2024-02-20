@@ -26,7 +26,6 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +51,7 @@ public class FilterReportTest {
 
     @BeforeEach
     public void setUp() {
-        instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
+        instance = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, List.of(MESSAGE));
     }
 
     @Test
@@ -92,7 +91,7 @@ public class FilterReportTest {
 
     @Test
     public void testHashCode() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, List.of(MESSAGE));
         int expResult = other.hashCode();
         assertThat(instance.hashCode(), equalTo(expResult));
 
@@ -124,7 +123,7 @@ public class FilterReportTest {
 
     @Test
     public void testEqualsOtherFilterReport() {
-        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, FAILED, List.of(MESSAGE));
         assertThat(instance.equals(other), is(true));
     }
 
@@ -142,9 +141,8 @@ public class FilterReportTest {
 
     @Test
     public void testToString() {
-        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, ImmutableList.of(MESSAGE));
+        String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, List.of(MESSAGE));
         assertThat(instance.toString(), equalTo(expResult));
-
     }
 
 }

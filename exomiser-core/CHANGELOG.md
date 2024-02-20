@@ -2,11 +2,31 @@
 
 ## 14.0.0 2023-MM-dd
 
+This release **requires data version >= 2210** and **Java version >= 17** (the most recent LTS release).
+
+- Added new GeneBlacklistFilter [#457](https://github.com/exomiser/Exomiser/issues/457)
 - Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
 - Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
 - The `VariantWhiteList` is now dynamically loaded from the ClinVar data provided in the clinvar.mv.db file
 - `VariantDataServiceImpl` now requires a `ClinVarDao`
+- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
+- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity annotations are missing in certain run configurations.
 
+New APIs:
+- New `AnalysisDurationFormatter`
+- New `FilterResultsCounter`
+- New `FilterResultCount` data class
+- New `AnalysisResults.filterResultCounts` field
+- New `FilterRunner.filterCounts()` and `FilterRunner.logFilterResult()` methods
+- New `Filterable.failedFilter()` method
+- New `AlleleData` class to encapsulate building AlleleProto.Frequency and AlleleProto.PathogenicityScore instances
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
+- 
+API breaking changes:
+
+
+Other changes:
+- Updated Spring Boot to version 3.1.0
 
 ## 13.3.0 2023-10-17
 
