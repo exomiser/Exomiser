@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -98,6 +99,7 @@ public class PathogenicityData {
      * @return a {@code ClinVarData} object
      * @since 10.1.0
      */
+    @JsonProperty
     public ClinVarData clinVarData() {
         return clinVarData;
     }
@@ -112,6 +114,7 @@ public class PathogenicityData {
         return !clinVarData.isEmpty();
     }
 
+    @JsonProperty
     public List<PathogenicityScore> pathogenicityScores() {
         return new ArrayList<>(pathogenicityScores.values());
     }
@@ -143,6 +146,7 @@ public class PathogenicityData {
     /**
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
+    @JsonProperty
     public float pathogenicityScore() {
         if (pathogenicityScores.isEmpty()) {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
@@ -168,6 +172,7 @@ public class PathogenicityData {
      * @return The most pathogenic score or null if there are no predicted scores
      */
     @Nullable
+    @JsonProperty
     public PathogenicityScore mostPathogenicScore() {
         // Add filter step using PathogenicityScore::isPredictedPathogenic?
         // n.b. here min() is referring to the *first* element in a sorted list, rather than the minimum numeric value

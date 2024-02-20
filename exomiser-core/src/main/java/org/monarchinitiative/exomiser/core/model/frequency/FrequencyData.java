@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.frequency;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -295,6 +296,7 @@ public class FrequencyData {
      *
      * @return an immutable copy of the {@code Frequency} data
      */
+    @JsonProperty
     public List<Frequency> frequencies() {
         Frequency[] freqs = new Frequency[size];
         for (int i = 0; i < size; i++) {
@@ -332,6 +334,7 @@ public class FrequencyData {
      * maximum MAF in any of the databases, and returns a score that depends on
      * the MAF. Note that the frequency is expressed as a percentage.
      */
+    @JsonProperty
     public float frequencyScore() {
         float max = maxFreq();
         if (max <= 0) {

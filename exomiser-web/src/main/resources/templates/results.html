@@ -244,7 +244,7 @@
 <!--                                </div>-->
 <!--                                <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">-->
 <!--                                    <b>ClinVar: </b>-->
-<!--                                    <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"-->
+<!--                                    <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}"-->
 <!--                                              th:switch="${clinVarData.getPrimaryInterpretation().toString()}">-->
 <!--                                        <span th:case="'BENIGN'" class="label label-success"-->
 <!--                                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>-->
@@ -498,7 +498,7 @@
                                         </div>
                                         <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
                                             <b>ClinVar: </b>
-                                            <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                            <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}"
                                                       th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
                                     <span th:case="'BENIGN'" class="label label-success"
                                           th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
@@ -642,7 +642,7 @@
                                     <!--                    </div>-->
                                     <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
                                         <b>ClinVar: </b>
-                                        <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.getClinVarData()}"
+                                        <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}"
                                                   th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
                                             <span th:case="'BENIGN'" class="label label-success"
                                                   th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>

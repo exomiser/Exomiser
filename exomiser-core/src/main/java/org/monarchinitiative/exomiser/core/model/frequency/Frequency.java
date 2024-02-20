@@ -26,6 +26,8 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -65,22 +67,27 @@ public class Frequency {
         this.homs = homs;
     }
 
+    @JsonProperty
     public FrequencySource source() {
         return source;
     }
 
+    @JsonProperty
     public float frequency() {
         return value;
     }
 
+    @JsonProperty
     public int ac() {
         return ac;
     }
 
+    @JsonProperty
     public int an() {
         return an;
     }
 
+    @JsonProperty
     public int homs() {
         return homs;
     }
