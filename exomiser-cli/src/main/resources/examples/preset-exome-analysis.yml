@@ -33,11 +33,11 @@ frequencySources: [
   #  GNOMAD_G_OTH,
     GNOMAD_G_SAS
 ]
-# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM, SPLICE_AI, ALPHA_MISSENSE
 # REMM is trained on non-coding regulatory regions
 # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
 # and updated their location in the application.properties. Exomiser will not run without this.
-pathogenicitySources: [ REVEL, MVP ]
+pathogenicitySources: [ REVEL, MVP, SPLICE_AI ]
 #this is the standard exomiser order.
 steps: [
     failedVariantFilter: { },

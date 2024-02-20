@@ -28,8 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
@@ -226,7 +224,7 @@ public class CommandLineOptionsParser {
         return options.getOptions().stream()
                 .filter(option -> "file".equals(option.getArgName()))
                 .map(Option::getLongOpt)
-                .collect(toList());
+                .toList();
     }
 
     public static void printHelp() {

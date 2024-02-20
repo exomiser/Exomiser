@@ -50,9 +50,9 @@ public class Main {
 
         // all ok so far - try launching the app
         Locale.setDefault(Locale.UK);
-        SpringApplication.run(Main.class, args).close();
-
+        int exitCode = SpringApplication.exit(SpringApplication.run(Main.class, args));
         logger.info("Exomising finished - Bye!");
+        System.exit(exitCode);
     }
 
 }

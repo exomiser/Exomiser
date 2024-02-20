@@ -2,7 +2,10 @@
 
 ## 14.0.0 2023-MM-dd
 
+- Minimum Java version is now set to __Java 17__
 - Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
+- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
+- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity annotations are missing in certain run configurations.
 
 
 ## 13.3.0 2023-10-17

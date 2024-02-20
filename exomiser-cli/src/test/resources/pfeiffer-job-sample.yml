@@ -61,7 +61,7 @@ analysis:
   # REMM is trained on non-coding regulatory regions
   # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
   # and updated their location in the application.properties. Exomiser will not run without this.
-  pathogenicitySources: [ REVEL, MVP ]
+  pathogenicitySources: [ REVEL, MVP, SPLICE_AI ]
   #this is the standard exomiser order.
   #all steps are optional
   steps: [
@@ -73,6 +73,7 @@ analysis:
     # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
     #intervalFilter: {bed: /full/path/to/bed_file.bed},
     #genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
+    # geneBlacklistFilter: { },
       failedVariantFilter: { },
     #qualityFilter: {minQuality: 50.0},
       variantEffectFilter: {

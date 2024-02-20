@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Reads in Exomiser batch files and returns a list of Paths to the
  * settings/analysis files. The reader expects a single path per line.
@@ -56,7 +54,7 @@ public class BatchFileReader {
                     .filter(commentLines())
                     .filter(emptyLines())
                     .map(line -> Paths.get(line.trim()))
-                    .collect(toList());
+                    .toList();
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }
@@ -71,7 +69,7 @@ public class BatchFileReader {
                     .filter(commentLines())
                     .filter(emptyLines())
                     .flatMap(line -> commandLineJobReader.readJobs(CommandLineOptionsParser.parse(line.split("\\s+"))).stream())
-                    .collect(toList());
+                    .toList();
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }

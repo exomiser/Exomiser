@@ -52,8 +52,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.MVP;
-import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.REVEL;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -265,7 +264,7 @@ class CommandLineJobReaderTest {
 //                    FrequencySource.GNOMAD_G_OTH,
                     FrequencySource.GNOMAD_G_SAS
             ))
-            .pathogenicitySources(ImmutableSet.of(REVEL, MVP))
+            .pathogenicitySources(ImmutableSet.of(REVEL, MVP, SPLICE_AI))
             .addFailedVariantFilter()
             .addVariantEffectFilter(ImmutableSet.of(
                     FIVE_PRIME_UTR_EXON_VARIANT,
