@@ -169,8 +169,7 @@ public class OutputSettings {
      * @since 13.0.0
      */
     public List<Gene> filterGenesForOutput(List<Gene> genes) {
-        return applyOutputSettings(genes)
-                .collect(toUnmodifiableList());
+        return applyOutputSettings(genes).toList();
     }
 
     /**
@@ -184,7 +183,7 @@ public class OutputSettings {
     public List<Gene> filterPassedGenesForOutput(List<Gene> genes) {
         return applyOutputSettings(genes)
                 .filter(Gene::passedFilters)
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     /**
