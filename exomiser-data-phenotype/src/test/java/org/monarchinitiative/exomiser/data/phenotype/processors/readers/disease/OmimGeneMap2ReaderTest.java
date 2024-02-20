@@ -280,4 +280,17 @@ class OmimGeneMap2ReaderTest {
         );
         assertThat(diseaseGenes, equalTo(expected));
     }
+
+    @Test
+    void xLinkedDominantAndRecessive() {
+        OmimGeneMap2Reader instance = new OmimGeneMap2Reader(diseaseInheritanceCacheReader, emptyResource);
+        // This annotation is supplied by the diseaseInheritanceCacheReader coming from the HPO annotations in phenotype_annotation.tab
+        Map<String, InheritanceMode> diseaseInheritanceCache = Map.of();
+        List<DiseaseGene> diseaseGenes = instance.parseLine(diseaseInheritanceCache,"chrX\t41333308\t41364472\tXp11.3-p11.23\tXp11.4\t300160\tDDX3X, DDX3, DBX, MRX102, MRXSSB\tDEAD-box helicase 3, X-linked\tDDX3X\t1654\tENSG00000215301\t\tIntellectual developmental disorder, X-linked syndromic, Snijders Blok type, 300958 (3), X-linked recessive, X-linked dominant\tD1Pas1,Ddx3x (MGI:103064,MGI:91842)\n");
+        List<DiseaseGene> expected = List.of(
+                // Intellectual developmental disorder, X-linked syndromic, Snijders Blok type, 300958 (3), X-linked recessive, X-linked dominant
+                omimDisease(300958, 300160,"Intellectual developmental disorder, X-linked syndromic, Snijders Blok type", "DDX3X", 1654, "ENSG00000215301", Disease.DiseaseType.DISEASE, InheritanceMode.X_LINKED)
+        );
+        assertThat(diseaseGenes, equalTo(expected));
+    }
 }

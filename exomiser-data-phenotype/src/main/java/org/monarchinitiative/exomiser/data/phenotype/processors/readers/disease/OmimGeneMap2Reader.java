@@ -115,6 +115,8 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
                         String diseaseName = trimDiseaseName(phenotypeMatch.group("name"));
                         Disease.DiseaseType diseaseType = parseDiseaseType(phenotypeMatch);
                         InheritanceMode inheritanceMode = parseInheritanceMode(phenotypeMatch.group("moi"));
+                        // defer to the HPOA for MOI annotations
+                        inheritanceMode = diseaseInheritanceCache.getOrDefault(diseaseId, inheritanceMode);
                         logger.debug("OMIM:{} geneMIM:{} {}, {} name: {}", diseaseId, geneMim, diseaseType, inheritanceMode.toString(), diseaseName);
 
                         if (!mim.equals(phenotypeMatch.group("diseaseId"))) {
@@ -126,7 +128,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
                                     .ensemblGeneId(ensemblGeneId)
                                     .entrezGeneId(Integer.parseInt(entrezGeneId))
                                     .diseaseType(diseaseType)
-                                    .inheritanceMode(diseaseInheritanceCache.getOrDefault(diseaseId, inheritanceMode))
+                                    .inheritanceMode(inheritanceMode)
                                     .build();
                             logger.debug("{}", diseaseGene);
                             diseases.add(diseaseGene);
@@ -230,32 +232,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
                         break;
                 }
             }
-            if (inheritanceModes.isEmpty()) {
-                return InheritanceMode.UNKNOWN;
-            } else if (inheritanceModes.size() == 1) {
-                return inheritanceModes.iterator().next();
-            } else if (inheritanceModes.contains(InheritanceMode.AUTOSOMAL_DOMINANT) && inheritanceModes.contains(InheritanceMode.AUTOSOMAL_RECESSIVE)) {
-                return InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
-            } else if (inheritanceModes.contains(InheritanceMode.X_DOMINANT) && inheritanceModes.contains(InheritanceMode.X_RECESSIVE)) {
-                return InheritanceMode.X_LINKED;
-            } else if (inheritanceModes.contains(InheritanceMode.MITOCHONDRIAL)) {
-                return InheritanceMode.MITOCHONDRIAL;
-            }
-            // here we're assuming there is a mix of somatic/polygenic, multifactirial and AD/AR/XD/Xr and are returning the A or X in preference of the bsomatic
-            else if (inheritanceModes.contains(InheritanceMode.AUTOSOMAL_DOMINANT)) {
-                return InheritanceMode.AUTOSOMAL_DOMINANT;
-            } else if (inheritanceModes.contains(InheritanceMode.AUTOSOMAL_RECESSIVE)) {
-                return InheritanceMode.AUTOSOMAL_RECESSIVE;
-            } else if (inheritanceModes.contains(InheritanceMode.X_DOMINANT)) {
-                return InheritanceMode.X_DOMINANT;
-            } else if (inheritanceModes.contains(InheritanceMode.X_RECESSIVE)) {
-                return InheritanceMode.X_RECESSIVE;
-            }
-            else if (inheritanceModes.contains(InheritanceMode.SOMATIC)) {
-                return InheritanceMode.SOMATIC;
-            } else if (inheritanceModes.contains(InheritanceMode.POLYGENIC)) {
-                return InheritanceMode.POLYGENIC;
-            }
+            return InheritanceModeWrangler.wrangleInheritanceMode(inheritanceModes);
         }
         return InheritanceMode.UNKNOWN;
     }

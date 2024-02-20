@@ -119,40 +119,11 @@ public class DiseaseInheritanceCacheReader implements ResourceReader<Map<String,
         ImmutableMap.Builder<String, InheritanceMode> inheritanceMap = new ImmutableMap.Builder<>();
 
         for (Map.Entry<String, Collection<InheritanceMode>> entry : diseaseInheritanceMap.asMap().entrySet()) {
-            logger.debug("Mapping entry {} {}", entry.getKey(), entry.getValue());
-            boolean isDominant = false;
-            boolean isRecessive = false;
-            InheritanceMode inheritanceMode = InheritanceMode.UNKNOWN;
-            //trim out the unknowns
-            for (InheritanceMode mode : entry.getValue()) {
-                //bizzarrely some diseases appear to be both dominant and recessive
-                if (mode == InheritanceMode.AUTOSOMAL_DOMINANT) {
-                    isDominant = true;
-                }
-                if (mode == InheritanceMode.AUTOSOMAL_RECESSIVE) {
-                    isRecessive = true;
-                }
-                if (mode != InheritanceMode.UNKNOWN) {
-                    inheritanceMode = mode;
-                }
-            }
-            logger.debug("InheritanceModes for {}: Dominant:{} Recessive:{}", entry.getKey(), isDominant, isRecessive);
-
-            //now decide the inheritance - this ordering is important as mainly
-            //we're interested in whether the disease is dominant or recessive in order to
-            //check whether the observed inheritance patterns of the exome sequences match
-            //that of the known disease.
-            if (isDominant && isRecessive) {
-                inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
-            } else if (isDominant) {
-                inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT;
-            } else if (isRecessive) {
-                inheritanceMode = InheritanceMode.AUTOSOMAL_RECESSIVE;
-            }
-            logger.debug("Setting inheritanceMode for {} to {}", entry.getKey(), inheritanceMode);
-
-            inheritanceMap.put(entry.getKey(), inheritanceMode);
-
+            String diseaseId = entry.getKey();
+            Collection<InheritanceMode> inheritanceModes = entry.getValue();
+            logger.debug("Mapping entry {} {}", diseaseId, inheritanceModes);
+            InheritanceMode inheritanceMode = InheritanceModeWrangler.wrangleInheritanceMode(inheritanceModes);
+            inheritanceMap.put(diseaseId, inheritanceMode);
         }
         return inheritanceMap.build();
     }

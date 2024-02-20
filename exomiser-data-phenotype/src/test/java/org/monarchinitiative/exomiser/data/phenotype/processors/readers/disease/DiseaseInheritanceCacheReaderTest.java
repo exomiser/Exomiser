@@ -71,6 +71,12 @@ public class DiseaseInheritanceCacheReaderTest {
         assertThat(result.get("OMIM:301050"), equalTo(InheritanceMode.X_DOMINANT));
     }
 
+    @Test
+    void testXlinked() {
+        // OMIM:300958 is XR & XD, so we're calling it X
+        assertThat(result.get("OMIM:300958"), equalTo(InheritanceMode.X_LINKED));
+    }
+
     /**
      * Test of getInheritanceMode method, of class DiseaseInheritanceCache.
      */
