@@ -20,7 +20,5 @@ public interface ClinVarDao {
 
     ClinVarData getClinVarData(GenomicVariant genomicVariant);
 
-    ClinVarData getClinVarData(AlleleProto.AlleleKey alleleKey);
-
     Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval);
 }

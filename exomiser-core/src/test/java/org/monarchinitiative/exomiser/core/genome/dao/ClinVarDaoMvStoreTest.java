@@ -1,19 +1,19 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2015EvidenceAssigner;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2020PointsBasedClassifier;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
-import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -50,35 +50,10 @@ class ClinVarDaoMvStoreTest {
                 .build();
     }
 
-    private GenomicVariant parseVariant(String broadFormatVariant) {
+    private GenomicVariant variant(String broadFormatVariant) {
         String[] fields = broadFormatVariant.split("-");
         return GenomicVariant.of(GenomeAssembly.HG19.getContigByName(fields[0]), Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.ONE_BASED, Integer.parseInt(fields[1]), fields[2]), fields[2], fields[3]);
     }
-
-    private final AlleleProto.AlleleKey positionStartMinus1 = parseAlleleKey("1-1229-A-G");
-    private final AlleleProto.AlleleKey positionEndPlus1 = parseAlleleKey("1-1231-C-G");
-
-    // Variants directly at the boundaries:
-    private final AlleleProto.AlleleKey positionStartMinus2 = parseAlleleKey("1-1228-A-G");
-    private final AlleleProto.AlleleKey positionEndPlus2 = parseAlleleKey("1-1232-T-A");
-
-    // Variants just outside the boundaries:
-    private final AlleleProto.AlleleKey positionStartMinus3 = parseAlleleKey("1-1227-A-G");
-    private final AlleleProto.AlleleKey positionEndPlus3 = parseAlleleKey("1-1233-C-T");
-
-    // Variants are exactly matching on position:
-    private final AlleleProto.AlleleKey positionExactlyMatches = parseAlleleKey("1-1230-T-G");
-
-    // Variants are exactly matching on position + but ref and alt are different
-    private final AlleleProto.AlleleKey positionExactlyMatchesButDifferentRefAlt = parseAlleleKey("1-1230-T-C");
-
-    // Variants are far out of boundaries:
-    private final AlleleProto.AlleleKey positionFarOutOfBoundariesMinus = parseAlleleKey("1-7700-A-G");
-    private final AlleleProto.AlleleKey positionFarOutOfBoundariesPlus = parseAlleleKey("1-1-A-G");
-
-    // two variants that are in range but Alt.length and Ref.length > 1
-    private final AlleleProto.AlleleKey positionInButLengthIncorrect = parseAlleleKey("1-1229-AA-G");
-    private final AlleleProto.AlleleKey positionInButLengthIncorrect1 = parseAlleleKey("1-1231-A-GG");
 
     @Test
     void getClinVarData() {
@@ -86,7 +61,7 @@ class ClinVarDaoMvStoreTest {
             var clinvarMap = MvStoreUtil.openClinVarMVMap(mvStore);
             AlleleProto.AlleleKey alleleKey = parseAlleleKey("1-200-A-T");
             AlleleProto.ClinVar clinVar = AlleleProto.ClinVar.newBuilder()
-                    .setAlleleId("12345")
+                    .setVariationId("12345")
                     .setPrimaryInterpretation(AlleleProto.ClinVar.ClinSig.PATHOGENIC)
                     .setReviewStatus(AlleleProto.ClinVar.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                     .build();
@@ -94,45 +69,46 @@ class ClinVarDaoMvStoreTest {
 
             ClinVarDao instance = new ClinVarDaoMvStore(mvStore);
 
-            GenomicVariant clinVarVariant = parseVariant("1-200-A-T");
+            GenomicVariant clinVarVariant = variant("1-200-A-T");
             assertThat(instance.getClinVarData(clinVarVariant), equalTo(AlleleProtoAdaptor.toClinVarData(clinVar)));
 
-            GenomicVariant nonClinVarVariant = parseVariant("1-200-A-A");
+            GenomicVariant nonClinVarVariant = variant("1-200-A-A");
             assertThat(instance.getClinVarData(nonClinVarVariant), equalTo(ClinVarData.empty()));
         }
     }
 
     @Test
-    public void emptyStore() {
+    void emptyStore() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore();
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant);
         assertThat(result.size(), equalTo(0));
     }
 
     @Test
-    public void variantDownstreamOfVariantsInStore() {
+    void variantDownstreamOfVariantsInStore() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1220-A-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant);
         assertThat(result.size(), equalTo(0));
     }
 
     @Test
-    public void variantUpstreamOfVariantsInStore() {
+    void variantUpstreamOfVariantsInStore() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1240-A-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant);
         assertThat(result.size(), equalTo(0));
     }
 
     @Test
-    public void fiveInsideAndFourOutsideBoundaries() {
+    void insideAndOutsideBoundaries() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore(
                 "1-1-A-G",
+                "1-1226-TGTGGGAA-A", // -4 this does overlap
                 "1-1227-A-G", // -3
                 "1-1228-A-G", // -2
                 "1-1229-A-G", // -1
@@ -140,6 +116,8 @@ class ClinVarDaoMvStoreTest {
                 "1-1230-T-C", // 0 same ref
                 "1-1231-C-G", // +1
                 "1-1232-T-A", // +2
+                "1-1232-TGTGGGAA-A", // +2
+                "1-1232-A-ATTC", // +2
                 "1-1233-C-T", // +3
                 "1-7700-A-G"
                 );
@@ -148,63 +126,67 @@ class ClinVarDaoMvStoreTest {
         GenomicInterval genomicInterval = GenomicInterval.of(chr1, Strand.POSITIVE, Coordinates.oneBased(1228, 1232));
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicInterval);
-        assertThat(result.size(), equalTo(6));
+        assertThat(result.keySet(), equalTo(Set.of(
+                variant("1-1228-A-G"),
+                variant("1-1229-A-G"),
+                variant("1-1230-T-G"),
+                variant("1-1230-T-C"),
+                variant("1-1231-C-G"),
+                variant("1-1232-T-A"),
+                variant("1-1232-TGTGGGAA-A"),
+                variant("1-1232-A-ATTC")
+        )));
     }
 
     @Test
-    public void variantsNonOverlap() {
+    void variantsNonOverlap() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1227-A-G", "1-1233-C-T");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(0));
     }
 
     @Test
-    public void variantsOverlapDirectlyAtBoundaries() {
+    void variantsOverlapDirectlyAtBoundaries() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1228-A-G", "1-1232-T-A");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(2));
     }
 
     @Test
-    public void variantsOverlapInsideBoundaries() {
-//        MVStore mvStore = newMvStore();
-//        MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMap = MvStoreUtil.openClinVarMVMap(mvStore);
-//        clinVarMap.put(parseAlleleKey("1-1229-A-G"), AlleleProto.ClinVar.newBuilder().build());
-//        clinVarMap.put(parseAlleleKey("1-1231-C-G"), AlleleProto.ClinVar.newBuilder().build());
-//        ClinVarDaoMvStore clinVarDao = new ClinVarDaoMvStore(mvStore);
+    void variantsOverlapInsideBoundaries() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1229-A-G", "1-1231-C-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(2));
     }
 
     @Test
-    public void variantsExactlyMatchOnPosition() {
+    void variantsExactlyMatchOnPosition() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1229-A-G", "1-1230-T-G", "1-1231-C-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant);
-        assertThat(result.keySet(), equalTo(Set.of(parseVariant("1-1230-T-G"))));
+        assertThat(result.keySet(), equalTo(Set.of(variant("1-1230-T-G"))));
     }
 
     @Test
-    public void variantOverlapsDeletionPosition() {
+    void variantOverlapsDeletionPosition() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1229-A-G", "1-1230-T-G", "1-1231-C-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-TT-A");
+        GenomicVariant genomicVariant = variant("1-1230-TT-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant);
-        assertThat(result.keySet(), equalTo(Set.of(parseVariant("1-1230-T-G"), parseVariant("1-1231-C-G"))));
+        assertThat(result.keySet(), equalTo(Set.of(variant("1-1230-T-G"), variant("1-1231-C-G"))));
     }
 
     @Test
-    public void variantsAreFarOutOfBoundaries() {
+    void variantsAreFarOutOfBoundaries() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-7700-A-G", "1-1-A-G");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(0));
@@ -212,9 +194,9 @@ class ClinVarDaoMvStoreTest {
     }
 
     @Test
-    public void noVariantsGettingAddedNoOverlap() {
+    void noVariantsGettingAddedNoOverlap() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore();
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(0));
@@ -222,9 +204,9 @@ class ClinVarDaoMvStoreTest {
     }
 
     @Test
-    public void setPositionInButLengthIncorrectTest() {
+    void setPositionInButLengthIncorrectTest() {
         ClinVarDaoMvStore clinVarDao = buildClinVarDaoMvStore("1-1228-AA-G", "1-1231-A-GG");
-        GenomicVariant genomicVariant = parseVariant("1-1230-T-A");
+        GenomicVariant genomicVariant = variant("1-1230-T-A");
 
         var result = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
         assertThat(result.size(), equalTo(2));
@@ -233,14 +215,14 @@ class ClinVarDaoMvStoreTest {
     @Disabled("manual testing utility")
     @Test
     void manualDataExplorer() {
-        MVStore mvStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_clinvar.mv.db").readOnly().open();
+        MVStore mvStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2402_hg19/2402_hg19_clinvar.mv.db").readOnly().open();
         ClinVarDaoMvStore clinVarDao = new ClinVarDaoMvStore(mvStore);
 
-        MVStore alleleStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_variants.mv.db").readOnly().open();
+        MVStore alleleStore = new MVStore.Builder().fileName("/home/hhx640/Documents/exomiser-data/2402_hg19/2402_hg19_variants.mv.db").readOnly().open();
         AllelePropertiesDao allelePropertiesDao = new AllelePropertiesDaoMvStore(alleleStore);
         GenomeAssembly assembly = GenomeAssembly.HG19;
 
-        JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/exomiser-data/2401_hg19/2401_hg19_transcripts_ensembl.ser"));
+        JannovarData jannovarData = JannovarDataSourceLoader.loadJannovarData(Path.of("/home/hhx640/Documents/exomiser-data/2402_hg19/2402_hg19_transcripts_ensembl.ser"));
         VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(assembly, jannovarData, ChromosomalRegionIndex.empty());
         // 18-57550760-A-T NA
         // 18-57550753-A-C LP // 55217985 (hg19)
@@ -253,8 +235,10 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomicVariant genomicVariant = parseVariant(assembly, "10-123256215-T-A"); // 10-123256215-T-G hg38:10-121496701-T-G
+        GenomicVariant genomicVariant = variant(assembly, "17-10551919-G-C"); // 10-123256215-T-G hg38:10-121496701-T-G
 
+        // 10-123247514-C-G : PS1, PM1, PM2_Supporting, PM5_Supporting, PP3, PP5_Strong
+        // 10-123247517-T-G : PS1_Supporting, PM1, PM2_Supporting, PM5_Supporting, PP2, PP3
         System.out.println("Searching for: " + toBroad(genomicVariant));
         AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(genomicVariant);
         // encode as VariantKey (https://doi.org/10.1101/473744) == 8 bytes fixed size (long);
@@ -262,7 +246,7 @@ class ClinVarDaoMvStoreTest {
         System.out.println();
 
         System.out.println(clinVarDao.getClinVarData(genomicVariant));
-        Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(2, 2));
+        Map<GenomicVariant, ClinVarData> clinVarRecordsOverlappingInterval = clinVarDao.findClinVarRecordsOverlappingInterval(genomicVariant.withPadding(25, 25));
         clinVarRecordsOverlappingInterval.forEach((variant, clinVarData) -> System.out.println(toBroad(variant) + " : " + clinVarData));
 
         System.out.println();
@@ -289,13 +273,28 @@ class ClinVarDaoMvStoreTest {
         } else {
             pathogenicityData.pathogenicityScores().forEach(path -> System.out.println("\t" + path));
         }
+
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder()
+                .variant(genomicVariant)
+                .geneId(variantAnnotation.getGeneId())
+                .geneSymbol(variantAnnotation.getGeneSymbol())
+                .variantEffect(variantAnnotation.getVariantEffect())
+                .annotations(variantAnnotation.getTranscriptAnnotations())
+                .frequencyData(frequencyData)
+                .pathogenicityData(PathogenicityData.of(clinVarData, pathogenicityData.pathogenicityScores()))
+                .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .build();
+        Acmg2015EvidenceAssigner acmg2015EvidenceAssigner = new Acmg2015EvidenceAssigner("sample", null, clinVarDao);
+        var acmgEvidence = acmg2015EvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
+        Acmg2020PointsBasedClassifier classifier = new Acmg2020PointsBasedClassifier();
+        System.out.println(classifier.classify(acmgEvidence) + " " + acmgEvidence + " points=" + acmgEvidence.points());
     }
 
     private String toBroad(GenomicVariant genomicVariant) {
         return genomicVariant.contig().name() + '-' + genomicVariant.start() + '-' + genomicVariant.ref() + '-' + genomicVariant.alt();
     }
 
-    private GenomicVariant parseVariant(GenomeAssembly genomeAssembly, String broadFormatVariant) {
+    private GenomicVariant variant(GenomeAssembly genomeAssembly, String broadFormatVariant) {
         String[] fields = broadFormatVariant.split("-");
         return GenomicVariant.of(genomeAssembly.getContigByName(fields[0]), Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.ONE_BASED, Integer.parseInt(fields[1]), fields[2]), fields[2], fields[3]);
     }
