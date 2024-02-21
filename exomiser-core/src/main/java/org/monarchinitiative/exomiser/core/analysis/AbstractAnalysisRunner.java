@@ -128,10 +128,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         // If no variant steps have been run and there is a VCF present, don't load it here - See issues #129, #478
-        List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : allGenes.values().stream().filter(genesToScore()).collect(Collectors.toUnmodifiableList());
+        List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : allGenes.values().stream().filter(genesToScore()).toList();
         // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
         CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
-        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
+        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator, genomeAnalysisService);
 
         logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
@@ -159,7 +159,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<FilterType> filterStepTypes = analysisSteps.stream()
                 .filter(Filter.class::isInstance)
                 .map(step -> ((Filter<?>) step).getFilterType())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         Map<FilterType, FilterResultCount> filterCountsByType = new EnumMap<>(FilterType.class);
         // add all the filter counts from the gene and variant filter runners to the map
@@ -169,7 +169,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return filterStepTypes.stream()
                 .map(filterCountsByType::get)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private void logWarningIfSubOptimalAnalysisSumbitted(List<AnalysisGroup> analysisStepGroups) {
@@ -243,10 +243,10 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Filtering variants with:");
         List<VariantFilter> list = new ArrayList<>();
         for (AnalysisStep analysisStep : analysisGroup.getAnalysisSteps()) {
-            if (analysisStep instanceof VariantFilter) {
-                logger.info("{}", analysisStep);
-                VariantFilter variantFilter = wrapWithFilterDataProvider((VariantFilter) analysisStep, analysis);
-                list.add(variantFilter);
+            if (analysisStep instanceof VariantFilter variantFilter) {
+                logger.info("{}", variantFilter);
+                VariantFilter wrappedFilter = wrapWithFilterDataProvider(variantFilter, analysis);
+                list.add(wrappedFilter);
             }
         }
         return list;
@@ -321,7 +321,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return
      */
     protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
-        return allGenes.values().stream().filter(Gene::hasVariants).collect(Collectors.toUnmodifiableList());
+        return allGenes.values().stream().filter(Gene::hasVariants).toList();
     }
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
@@ -346,15 +346,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private void runStep(Analysis analysis, AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
-        if (analysisStep instanceof VariantFilter) {
-            VariantFilter filter = wrapWithFilterDataProvider((VariantFilter) analysisStep, analysis);
+        if (analysisStep instanceof VariantFilter variantFilter) {
+            VariantFilter filter = wrapWithFilterDataProvider(variantFilter, analysis);
             runVariantFilterStep(filter, genes);
         }
-        else if (analysisStep instanceof GeneFilter) {
-            runGeneFilterStep((GeneFilter) analysisStep, genes);
+        else if (analysisStep instanceof GeneFilter geneFilter) {
+            runGeneFilterStep(geneFilter, genes);
         }
-        else if (analysisStep instanceof Prioritiser) {
-            runPrioritiserStep((Prioritiser<?>) analysisStep, hpoIds, genes);
+        else if (analysisStep instanceof Prioritiser prioritiser) {
+            runPrioritiserStep(prioritiser, hpoIds, genes);
         }
     }
 

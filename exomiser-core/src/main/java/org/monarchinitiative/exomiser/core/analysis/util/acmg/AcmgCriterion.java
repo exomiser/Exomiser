@@ -79,36 +79,24 @@ public enum AcmgCriterion {
             } catch (IllegalArgumentException ex) {
                 // swallow and try the display string
             }
-            switch (displayString) {
-                case "StandAlone":
-                    return STAND_ALONE;
-                case "VeryStrong":
-                    return VERY_STRONG;
-                case "Strong":
-                    return STRONG;
-                case "Moderate":
-                    return MODERATE;
-                case "Supporting":
-                    return SUPPORTING;
-                default:
-                    throw new IllegalArgumentException("Unrecognised evidence value '" + displayString + "'");
-            }
+            return switch (displayString) {
+                case "StandAlone" -> STAND_ALONE;
+                case "VeryStrong" -> VERY_STRONG;
+                case "Strong" -> STRONG;
+                case "Moderate" -> MODERATE;
+                case "Supporting" -> SUPPORTING;
+                default -> throw new IllegalArgumentException("Unrecognised evidence value '" + displayString + "'");
+            };
         }
 
         public String displayString() {
-            switch (this) {
-                case STAND_ALONE:
-                    return "StandAlone";
-                case VERY_STRONG:
-                    return "VeryStrong";
-                case STRONG:
-                    return "Strong";
-                case MODERATE:
-                    return "Moderate";
-                case SUPPORTING:
-                    return "Supporting";
-            }
-            return "";
+            return switch (this) {
+                case STAND_ALONE -> "StandAlone";
+                case VERY_STRONG -> "VeryStrong";
+                case STRONG -> "Strong";
+                case MODERATE -> "Moderate";
+                case SUPPORTING -> "Supporting";
+            };
         }
     }
 
