@@ -41,6 +41,7 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
+        System.out.println(info);
         Map<AlleleProto.FrequencySource, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
 
         for (Map.Entry<AlleleProto.FrequencySource, List<String>> entry : minorAlleleFrequencies.entrySet()) {
@@ -91,6 +92,7 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
 //                        case "ALSPAC":
 //                            // http://www.bristol.ac.uk/alspac/researchers/cohort-profile/
 //                            mafMap.put(AlleleProperty.ALSPAC, parseFreqField(frequencyValues));
+                        default: // do nothing
                     }
                 }
             }

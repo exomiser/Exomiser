@@ -431,7 +431,7 @@ public class MvStoreAlleleIndexerTest {
         int originalMapSize = alleleMap.size();
         logger.info("Map contains {} entries:", originalMapSize);
         assertThat(originalMapSize, equalTo(10));
-
+        Map<AlleleKey, AlleleProperties> original = Map.copyOf(alleleMap);
         logger.info("Closing map");
         mvStore.close();
 
@@ -443,28 +443,10 @@ public class MvStoreAlleleIndexerTest {
                 .open();
 
         MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap = reOpened.openMap("alleles", MvStoreUtil.alleleMapBuilder());
-
+        var reopened = Map.copyOf(reOpenedAlleleMap);
+        assertThat(reopened, equalTo(original));
         logger.info("Re-opened map contains {} entries:", reOpenedAlleleMap.size());
-        assertThat(reOpenedAlleleMap.size(), equalTo(originalMapSize));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10019, "TA", "T").getRsId(), equalTo("rs775809821"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10039, "A", "C").getRsId(), equalTo("rs978760828"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10043, "T", "A").getRsId(), equalTo("rs1008829651"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10051, "A", "G").getRsId(), equalTo("rs1052373574"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10055, "T", "A").getRsId(), equalTo("rs892501864"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10055, "T", "TA").getRsId(), equalTo("rs768019142"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10063, "A", "C").getRsId(), equalTo("rs1010989343"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10077, "C", "G").getRsId(), equalTo("rs1022805358"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10109, "A", "T").getRsId(), equalTo("rs376007522"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10108, "C", "T").getRsId(), equalTo("rs62651026"));
-
         reOpened.close();
-    }
-
-    private AlleleProperties getAlleleProperties(MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap, int chr, int pos, String ref, String alt) {
-        AlleleKey last = alleleKey(chr, pos, ref, alt);
-        AlleleProperties lastProperties = reOpenedAlleleMap.get(last);
-        logger.debug("{}-{}-{}-{} {{} {}}", chr, pos, ref, alt, lastProperties.getRsId(), lastProperties.getPropertiesMap());
-        return lastProperties;
     }
 
 
