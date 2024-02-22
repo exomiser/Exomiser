@@ -131,7 +131,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : allGenes.values().stream().filter(genesToScore()).toList();
         // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
         CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
-        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator, genomeAnalysisService);
+        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
 
         logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
