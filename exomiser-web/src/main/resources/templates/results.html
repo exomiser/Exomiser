@@ -710,8 +710,8 @@
                                         <!--<b>Frequency Score: 0.95</b>-->
                                         <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                             <dt>Frequency Data:</dt>
-                                            <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                                            <dd th:each="freq: ${frequencyData.knownFrequencies}"
+                                            <dd th:if="${#lists.isEmpty(frequencyData.frequencies)}">No frequency data</dd>
+                                            <dd th:each="freq: ${frequencyData.frequencies}"
                                                 th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">
                                                 1000Genomes: 0.02%
                                             </dd>
