@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
@@ -40,7 +41,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
@@ -129,9 +129,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         // If no variant steps have been run and there is a VCF present, don't load it here - See issues #129, #478
         List<Gene> genesToScore = variantsLoaded ? getGenesWithVariants(allGenes) : allGenes.values().stream().filter(genesToScore()).toList();
-        // Temporarily add a new PValueGeneScorer so as not to break semver will revert to RawScoreGeneScorer in 14.0.0
-        CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
-        GeneScorer geneScorer = new PvalueGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator);
+        GeneScorer geneScorer = buildGeneScorer(sample, analysis, genesToScore, probandIdentifier, inheritanceModeAnnotator);
 
         logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
@@ -152,6 +150,15 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         String formatted = AnalysisDurationFormatter.format(duration);
         logger.info("Finished analysis in {} ({} ms)", formatted, ms);
         return analysisResults;
+    }
+
+    private GeneScorer buildGeneScorer(Sample sample, Analysis analysis, List<Gene> genesToScore, String probandIdentifier, InheritanceModeAnnotator inheritanceModeAnnotator) {
+        CombinedScorePvalueCalculator combinedScorePvalueCalculator = buildCombinedScorePvalueCalculator(sample, analysis, genesToScore.size());
+
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandIdentifier, inheritanceModeAnnotator.getPedigree(), genomeAnalysisService);
+        AcmgAssignmentCalculator acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acmg2020PointsBasedClassifier());
+
+        return new RawScoreGeneScorer(probandIdentifier, sample.getSex(), inheritanceModeAnnotator, combinedScorePvalueCalculator, acmgAssignmentCalculator);
     }
 
     private List<FilterResultCount> collectFilterCounts(List<AnalysisStep> analysisSteps) {

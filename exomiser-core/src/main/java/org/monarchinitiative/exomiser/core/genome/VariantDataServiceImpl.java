@@ -30,6 +30,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.svart.GenomicInterval;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,6 +180,21 @@ public class VariantDataServiceImpl implements VariantDataService {
                 allPathScores.add(score);
             }
         }
+    }
+
+    @Override
+    public ClinVarData getClinVarData(Variant variant) {
+        return clinVarDao.getClinVarData(variant);
+    }
+
+    @Override
+    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+        return clinVarDao.getClinVarData(genomicVariant);
+    }
+
+    @Override
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+        return clinVarDao.findClinVarRecordsOverlappingInterval(genomicInterval);
     }
 
     public static Builder builder() {

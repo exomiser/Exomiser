@@ -26,6 +26,7 @@ import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.dao.ClinVarDao;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -34,12 +35,16 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.svart.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
@@ -47,6 +52,8 @@ import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriteri
  * @since 13.1.0
  */
 public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
+
+    private static final Logger logger = LoggerFactory.getLogger(Acmg2015EvidenceAssigner.class);
 
     // Variants to be excluded from being assigned BA1 as specified by the ClinGen SVI working group in:
     //   https://www.clinicalgenome.org/site/assets/files/3460/ba1_exception_list_07_30_2018.pdf
@@ -91,11 +98,16 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             AlleleProtoAdaptor.toAlleleKey(3, 15_645_186, "G", "C")
     );
 
+    // e.g. p.(Lys567Thr)
+    private static final Pattern MISSENSE_HGVS_P = Pattern.compile("p\\.\\((?<refPos>[A-Z][a-z]{2}\\d+)(?<alt>[A-Z][a-z]{2})\\)");
+    private final ClinVarDao clinVarDao;
+
+
     private final String probandId;
     private final Individual.Sex probandSex;
     private final Pedigree pedigree;
 
-    public Acmg2015EvidenceAssigner(String probandId, Pedigree pedigree) {
+    public Acmg2015EvidenceAssigner(String probandId, Pedigree pedigree, ClinVarDao clinVarDao) {
         this.probandId = Objects.requireNonNull(probandId);
         this.pedigree = pedigree == null || pedigree.isEmpty() ? Pedigree.justProband(probandId) : pedigree;
         Individual proband = this.pedigree.getIndividualById(probandId);
@@ -103,6 +115,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             throw new IllegalArgumentException("Proband '" + probandId + "' not found in pedigree " + pedigree);
         }
         this.probandSex = proband.getSex();
+        this.clinVarDao = clinVarDao;
     }
 
     /**
@@ -131,7 +144,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // Updated recommendation: "Allele frequency is >0.05 in any general continental population dataset of at least
         // 2,000 observed alleles and found in a gene without a gene- or variant-specific BA1 modification." i.e. ExAC
         // African, East Asian, European [non-Finnish], Latino, and South Asian
-//        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(variantEvaluation);
         AlleleProto.AlleleKey alleleKey = variantEvaluation.alleleKey();
         boolean isBa1ExcludedVariant = variantEvaluation.getGenomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
         if (!isBa1ExcludedVariant && frequencyData.maxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
@@ -148,9 +160,21 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
         assignPVS1(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, knownDiseases);
 
-        // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
-        // Should NOT assign for PS1 for same base change. Unable to assign PS1 due to lack of AA change info in database
-//        assignPS1(acmgEvidenceBuilder, variantEvaluation.getVariantEffect(), variantEvaluation.getPathogenicityData().getClinVarData());
+        // ignore non-missense, truncating, splice or mitochondrial variants
+        if (isMissenseOrInframeIndel(variantEvaluation.getVariantEffect()) && variantEvaluation.contigId() != 25) {
+            // ensure region is within contig bounds
+            Contig contig = variantEvaluation.contig();
+            var upStream = Math.max(1, variantEvaluation.start() - 25);
+            var downStream = Math.min(contig.length(), variantEvaluation.start() + 25);
+            GenomicInterval genomicInterval = GenomicInterval.of(contig, Strand.POSITIVE, Coordinates.oneBased(upStream, downStream));
+            var localClinVarData = clinVarDao.findClinVarRecordsOverlappingInterval(genomicInterval);
+            // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
+            // PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"
+            assignPS1PM5(acmgEvidenceBuilder, variantEvaluation, localClinVarData);
+            // PM1 "Located in a mutational hot spot and/or critical and well-established functional domain (e.g., active site of an enzyme) without benign variation"
+            assignPM1(acmgEvidenceBuilder, variantEvaluation, localClinVarData);
+            // TODO: PM1/BP3 "In-frame deletions/insertions in a repetitive region without a known function" - requires domain information.
+        }
 
         if (pedigree.containsId(probandId)) {
             Individual proband = pedigree.getIndividualById(probandId);
@@ -166,7 +190,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         assignPM3orBP2(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, contributingVariants, hasCompatibleDiseaseMatches);
         // PM4 Protein length changes as a result of in-frame deletions/insertions in a nonrepeat region or stop-loss variants
         assignPM4(acmgEvidenceBuilder, variantEvaluation);
-        // TODO: PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before
 
         // PP4 "Patient’s phenotype or family history is highly specific for a disease with a single genetic etiology"
         assignPP4(acmgEvidenceBuilder, compatibleDiseaseMatches);
@@ -214,10 +237,10 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // Should this be using the hasCompatibleDiseaseMatches variable?
         boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
         if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEvaluation.getVariantEffect())
-                && (modeOfInheritance == ModeOfInheritance.ANY
+            && (modeOfInheritance == ModeOfInheritance.ANY
                 || compatibleWithRecessive(modeOfInheritance)
                 || compatibleWithDominant(modeOfInheritance) && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
-        )
+            )
         ) {
             if (variantEvaluation.hasTranscriptAnnotations()) {
                 TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
@@ -235,16 +258,15 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     }
 
     private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.INITIATOR_CODON_VARIANT
-                || variantEffect == VariantEffect.START_LOST
-                || variantEffect == VariantEffect.STOP_LOST
-                || variantEffect == VariantEffect.STOP_GAINED
-                || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
-                || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
-                || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
-                || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
-                || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
-                || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
+        return variantEffect == VariantEffect.START_LOST
+               || variantEffect == VariantEffect.STOP_LOST
+               || variantEffect == VariantEffect.STOP_GAINED
+               || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
+               || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
+               || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
+               || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
+               || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
+               || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
     }
 
     private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
@@ -309,38 +331,103 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // GT in trans = (1|0 && 0|1) (variant in both copies of gene)
         // GT in cis   = (1|0 && 1|0) or (0|1 && 0|1) (variant in same copy of gene)
         return thisVariantGenotype.isPhased() && thisVariantGenotype.isHet()
-                && otherVariantGenotype.isPhased() && otherVariantGenotype.isHet()
-                && !thisVariantGenotype.equals(otherVariantGenotype);
+               && otherVariantGenotype.isPhased() && otherVariantGenotype.isHet()
+               && !thisVariantGenotype.equals(otherVariantGenotype);
     }
 
     private boolean inCis(SampleGenotype thisVariantGenotype, SampleGenotype otherVariantGenotype) {
         // GT in trans = (1|0 && 0|1) (variant in both copies of gene)
         // GT in cis   = (1|0 && 1|0) or (0|1 && 0|1) (variant in same copy of gene)
         return thisVariantGenotype.isPhased() && thisVariantGenotype.isHet()
-                && otherVariantGenotype.isPhased() && otherVariantGenotype.isHet()
-                && thisVariantGenotype.equals(otherVariantGenotype);
+               && otherVariantGenotype.isPhased() && otherVariantGenotype.isHet()
+               && thisVariantGenotype.equals(otherVariantGenotype);
     }
 
-    /**
-     * PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
-     */
-    private void assignPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, VariantEffect variantEffect, ClinVarData clinVarData) {
-        ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
-        if (isMissense(variantEffect) && isPathOrLikelyPath(primaryInterpretation) && clinVarData.starRating() >= 2) {
-            // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
-            // TODO: can't quite do this fully as also need to know others with same AA change, if not identical
-            List<TranscriptAnnotation> annotations = variantEvaluation.getTranscriptAnnotations();
-            if (!annotations.isEmpty()) {
-                TranscriptAnnotation anno = annotations.get(0);
-                if (anno.getHgvsProtein().equals(clinVarData.getHgvsProtein()) && !anno.getHgvsCdna().equals(clinVarData.getHgvsCdna())) {
-                    acmgEvidenceBuilder.add(PS1);
+
+    // PM1 "Located in a mutational hot spot and/or critical and well-established functional domain (e.g., active site of an enzyme) without benign variation"
+    private void assignPM1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, Map<GenomicVariant, ClinVarData> localClinVarData) {
+        // TODO - need UniProt domain / site info and clinvar counts
+        //  can upgrade to STRONG
+        // https://www.cell.com/ajhg/fulltext/S0002-9297(22)00461-X suggests to limit the combined evidence from PM1 and PP3 to strong
+        int pathCount = 0;
+        int vusCount = 0;
+        int benignCount = 0;
+        for (var entry : localClinVarData.entrySet()) {
+            ClinVarData clinVarData = entry.getValue();
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+            if (isMissenseOrInframeIndel(clinVarData.getVariantEffect())) {
+                if (isPathOrLikelyPath(primaryInterpretation)) {
+                    pathCount++;
+                }
+                if (primaryInterpretation == ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE) {
+                    vusCount++;
+                }
+                if (isBenignOrLikelyBenign(primaryInterpretation)) {
+                    benignCount++;
+                }
+            }
+        }
+        logger.debug("PM1 evidence for region {} {}:{}-{} Paths: {} VUSs: {} Benigns: {}", variantEvaluation.getGenomeAssembly(), variantEvaluation.contigId(), variantEvaluation.start() - 25, variantEvaluation.end() + 25, pathCount, vusCount, benignCount);
+        if (pathCount >= 4 && benignCount == 0) {
+            // could do funkier thing to score other path variants by severity/star rating and distance to variant
+            if (pathCount > vusCount) {
+                acmgEvidenceBuilder.add(PM1);
+                logger.debug("{} -> {}", variantEvaluation, PM1);
+            } else {
+                acmgEvidenceBuilder.add(PM1, Evidence.SUPPORTING);
+                logger.debug("{} -> {}_Supporting", variantEvaluation, PM1);
+            }
+        }
+    }
+
+    private void assignPS1PM5(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, Map<GenomicVariant, ClinVarData> localClinVarData) {
+        if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {
+            return;
+        }
+        String variantProteinChange = variantEvaluation.getTranscriptAnnotations().get(0).getHgvsProtein();
+        Matcher queryVariantMatcher = MISSENSE_HGVS_P.matcher(variantProteinChange);
+        boolean matches = queryVariantMatcher.matches();
+        String aaRefPos = matches ? queryVariantMatcher.group("refPos") : "";
+        String aaAlt = matches ? queryVariantMatcher.group("alt") : "";
+        for (var entry : localClinVarData.entrySet()) {
+            ClinVarData clinVarData = entry.getValue();
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+            if (isMissenseOrInframeIndel(clinVarData.getVariantEffect()) && isPathOrLikelyPath(primaryInterpretation)) {
+                GenomicVariant clinVarVariant = entry.getKey();
+                if (Math.abs(clinVarVariant.distanceTo(variantEvaluation)) <= 2 && GenomicVariant.compare(clinVarVariant, variantEvaluation) != 0) {
+                    // within codon so check for same AA change or different AA change
+                    Matcher clinvarMatcher = MISSENSE_HGVS_P.matcher(clinVarData.getHgvsProtein());
+                    if (clinvarMatcher.matches()) {
+                        String clnAaRefPos = clinvarMatcher.group("refPos");
+                        String clnAaAlt = clinvarMatcher.group("alt");
+                        if (aaRefPos.equals(clnAaRefPos)) {
+                            if (aaAlt.equals(clnAaAlt)) {
+                                // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
+                                Evidence evidence;
+                                if (clinVarData.starRating() >= 2) {
+                                    evidence = Evidence.STRONG;
+                                } else if (clinVarData.starRating() == 1) {
+                                    evidence = Evidence.MODERATE;
+                                } else {
+                                    evidence = Evidence.SUPPORTING;
+                                }
+                                logger.debug("{} -> {}_{}", clinVarData.getHgvsProtein(), PS1, evidence);
+                                acmgEvidenceBuilder.add(PS1, evidence);
+                            } else {
+                                Evidence evidence = clinVarData.starRating() >= 2 ? Evidence.MODERATE : Evidence.SUPPORTING;
+                                logger.debug("{} -> {}_{}", clinVarData.getHgvsProtein(), PM5, evidence);
+                                // PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"
+                                acmgEvidenceBuilder.add(PM5, evidence);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private boolean isMissense(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.MISSENSE_VARIANT;
+    private boolean isMissenseOrInframeIndel(VariantEffect variantEffect) {
+        return variantEffect == VariantEffect.MISSENSE_VARIANT || variantEffect == VariantEffect.INFRAME_DELETION || variantEffect == VariantEffect.INFRAME_INSERTION;
     }
 
     /**
@@ -351,8 +438,12 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         boolean pathOrLikelyPath = isPathOrLikelyPath(primaryInterpretation);
         if (pathOrLikelyPath && clinVarData.starRating() == 1) {
             acmgEvidenceBuilder.add(PP5);
-        } else if (pathOrLikelyPath && clinVarData.starRating() >= 2) {
+        } else if (pathOrLikelyPath && clinVarData.starRating() == 2) {
+            // multiple submitters, no conflicts
             acmgEvidenceBuilder.add(PP5, Evidence.STRONG);
+        } else if (pathOrLikelyPath && clinVarData.starRating() >= 3) {
+            // expert panel or practice guidelines
+            acmgEvidenceBuilder.add(PP5, Evidence.VERY_STRONG);
         }
     }
 
@@ -415,14 +506,6 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         return (ancestorGenotype.isNoCall() || ancestorGenotype.isHomRef()) && (probandGenotype.isHet() || probandGenotype.isHomAlt());
     }
 
-    /**
-     * PM1 "Located in a mutational hot spot and/or critical and well-established functional domain (e.g., active site of an enzyme) without benign variation"
-     */
-    private void assignPM1(Map<AcmgCriterion, Evidence> acmgEvidenceBuilder) {
-        // TODO - need UniProt domain / site info and clinvar counts
-        //  can upgrade to STRONG
-        // https://www.cell.com/ajhg/fulltext/S0002-9297(22)00461-X suggests to limit the combined evidence from PM1 and PP3 to strong
-    }
 
     /**
      * PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes
@@ -468,8 +551,8 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 //        novo variant found by exome sequencing in a child with
 //        nonspecific features such as developmental delay.
         if (hasCompatibleDiseaseMatches && modeOfInheritance.isDominant()
-                && contributingVariants.contains(variantEvaluation)
-                && variantEvaluation.getSampleGenotypes().size() == 1 && variantEvaluation.getSampleGenotype(probandId).isHet()) {
+            && contributingVariants.contains(variantEvaluation)
+            && variantEvaluation.getSampleGenotypes().size() == 1 && variantEvaluation.getSampleGenotype(probandId).isHet()) {
             // making an assumption that this could be a de novo
             acmgEvidenceBuilder.add(PM6);
         }
@@ -555,20 +638,16 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     }
 
     private boolean isPathogenic(PathogenicityScore pathogenicityScore) {
-        if (pathogenicityScore instanceof SiftScore) {
-            SiftScore score = (SiftScore) pathogenicityScore;
+        if (pathogenicityScore instanceof SiftScore score) {
             return score.getRawScore() < SiftScore.SIFT_THRESHOLD;
         }
-        if (pathogenicityScore instanceof MutationTasterScore) {
-            MutationTasterScore score = (MutationTasterScore) pathogenicityScore;
+        if (pathogenicityScore instanceof MutationTasterScore score) {
             return score.getScore() > MutationTasterScore.MTASTER_THRESHOLD;
         }
-        if (pathogenicityScore instanceof PolyPhenScore) {
-            PolyPhenScore score = (PolyPhenScore) pathogenicityScore;
+        if (pathogenicityScore instanceof PolyPhenScore score) {
             return score.getScore() > PolyPhenScore.POLYPHEN_PROB_DAMAGING_THRESHOLD;
         }
-        if (pathogenicityScore instanceof CaddScore) {
-            CaddScore score = (CaddScore) pathogenicityScore;
+        if (pathogenicityScore instanceof CaddScore score) {
             // 95-99% most deleterious.
             return score.getRawScore() >= 13.0f;
         }
@@ -598,7 +677,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
                     .filter(Individual::isAffected)
                     .filter(individual -> !individual.getId().equals(probandId))
                     .filter(individual -> individual.getFamilyId().equals(proband.getFamilyId()))
-                    .collect(Collectors.toList());
+                    .toList();
             boolean segregatesWithAffectedInFamily = true;
             SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
             if (!affectedFamilyMembers.isEmpty()) {

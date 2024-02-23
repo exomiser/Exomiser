@@ -6,8 +6,8 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2015EvidenceAssigner;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2020PointsBasedClassifier;
+import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
@@ -17,6 +17,8 @@ import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
 
@@ -235,8 +237,9 @@ class ClinVarDaoMvStoreTest {
         // https://mart.ensembl.org/info/genome/genebuild/canonical.html (see also vitt). Ideally the Jannovar Annotations
         // should be sorted before being converted to TranscriptAnnotations. This isn't an issue if MANE only
         // transcripts are being used as these are the only ones available to report on.
-        GenomicVariant genomicVariant = variant(assembly, "17-10551919-G-C"); // 10-123256215-T-G hg38:10-121496701-T-G
+        GenomicVariant genomicVariant = variant(assembly, "10-89624227-A-G"); // 10-123256215-T-G hg38:10-121496701-T-G
 
+        // 10-89624227-A-G (PTEN)
         // 10-123247514-C-G : PS1, PM1, PM2_Supporting, PM5_Supporting, PP3, PP5_Strong
         // 10-123247517-T-G : PS1_Supporting, PM1, PM2_Supporting, PM5_Supporting, PP2, PP3
         System.out.println("Searching for: " + toBroad(genomicVariant));
@@ -253,27 +256,10 @@ class ClinVarDaoMvStoreTest {
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, assembly);
         FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties);
+        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+        pathogenicityData = PathogenicityData.of(pathogenicityData.pathogenicityScores().stream().filter(score -> score.getSource() == PathogenicitySource.ALPHA_MISSENSE).toList());
         ClinVarData clinVarData = clinVarDao.getClinVarData(genomicVariant);
         VariantAnnotation variantAnnotation = variantAnnotations.isEmpty() ? null : variantAnnotations.get(0);
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation != null && variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.getTranscriptAnnotations().get(0) : null;
-        System.out.println(toBroad(genomicVariant) +  (variantAnnotation == null ? "" : " " + variantAnnotation.getGeneSymbol() + (transcriptAnnotation == null ? "" :  ":" + transcriptAnnotation.getHgvsCdna() + ":" + transcriptAnnotation.getHgvsProtein() ) + " " + variantAnnotation.getVariantEffect()));
-        System.out.print(frequencyData.getRsId());
-        System.out.println(clinVarData.isEmpty() ? "" : " " + clinVarData.getPrimaryInterpretation() + " ("  + clinVarData.starRating() + "*) " + clinVarData.getVariationId() + " " + clinVarData.getGeneSymbol() + ":" + clinVarData.getHgvsCdna() + ":" + clinVarData.getHgvsProtein() + " " + clinVarData.getVariantEffect());
-        System.out.println("Frequency data:");
-        if (frequencyData.isEmpty()) {
-            System.out.println("\t-");
-        } else {
-            frequencyData.frequencies().forEach(freq -> System.out.println("\t" + freq.source() + "=" + freq.frequency()));
-        }
-
-        System.out.println("Pathogenicity scores:");
-        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-        if (pathogenicityData.isEmpty()) {
-            System.out.println("\t-");
-        } else {
-            pathogenicityData.pathogenicityScores().forEach(path -> System.out.println("\t" + path));
-        }
-
         VariantEvaluation variantEvaluation = VariantEvaluation.builder()
                 .variant(genomicVariant)
                 .geneId(variantAnnotation.getGeneId())
@@ -282,11 +268,36 @@ class ClinVarDaoMvStoreTest {
                 .annotations(variantAnnotation.getTranscriptAnnotations())
                 .frequencyData(frequencyData)
                 .pathogenicityData(PathogenicityData.of(clinVarData, pathogenicityData.pathogenicityScores()))
-                .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
+                .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE))
                 .build();
-        Acmg2015EvidenceAssigner acmg2015EvidenceAssigner = new Acmg2015EvidenceAssigner("sample", null, clinVarDao);
-        var acmgEvidence = acmg2015EvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(), List.of());
-        Acmg2020PointsBasedClassifier classifier = new Acmg2020PointsBasedClassifier();
+
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation != null && variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.getTranscriptAnnotations().get(0) : null;
+        System.out.println(toBroad(genomicVariant) +  (variantAnnotation == null ? "" : " " + variantAnnotation.getGeneSymbol() + (transcriptAnnotation == null ? "" :  ":" + transcriptAnnotation.getHgvsCdna() + ":" + transcriptAnnotation.getHgvsProtein() ) + " " + variantAnnotation.getVariantEffect()));
+        System.out.println(frequencyData.getRsId() + " " + (transcriptAnnotation == null ? "" :  transcriptAnnotation.getAccession()));
+        String geneSymbol = variantAnnotation.getGeneSymbol();
+        System.out.println(geneSymbol + " " + GeneConstraints.geneConstraint(geneSymbol));
+        System.out.println(clinVarData.isEmpty() ? "" : clinVarData.getPrimaryInterpretation() + " ("  + clinVarData.starRating() + "*) " + clinVarData.getVariationId() + " " + clinVarData.getGeneSymbol() + ":" + clinVarData.getHgvsCdna() + ":" + clinVarData.getHgvsProtein() + " " + clinVarData.getVariantEffect());
+        System.out.println("Variant score: " + variantEvaluation.getVariantScore() + " Frequency score: " + variantEvaluation.getFrequencyScore() + " Pathogenicity score: " + variantEvaluation.getPathogenicityScore());
+        System.out.println("Frequency data:");
+        if (frequencyData.isEmpty()) {
+            System.out.println("\n\t-");
+        } else {
+            System.out.println("\tfrequency score: " + frequencyData.frequencyScore());
+            frequencyData.frequencies().forEach(freq -> System.out.println("\t" + freq.source() + "=" + freq.frequency() + "(" + freq.ac() + "|" + freq.an() + "|" + freq.homs() + ")"));
+        }
+
+        System.out.println("Pathogenicity scores:");
+        if (pathogenicityData.isEmpty()) {
+            System.out.println("\t-");
+        } else {
+            System.out.println("\tpathogenicity score: " + pathogenicityData.pathogenicityScore());
+            pathogenicityData.pathogenicityScores().forEach(path -> System.out.println("\t" + path));
+        }
+
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("sample", Pedigree.justProband("sample"), clinVarDao);
+        var acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_RECESSIVE, List.of(variantEvaluation), List.of(), List.of());
+        AcmgEvidenceClassifier classifier = new Acmg2020PointsBasedClassifier();
+        // should use an AcmgAssignmentCalculator to figure out the correct disease-gene association to use
         System.out.println(classifier.classify(acmgEvidence) + " " + acmgEvidence + " points=" + acmgEvidence.points());
     }
 

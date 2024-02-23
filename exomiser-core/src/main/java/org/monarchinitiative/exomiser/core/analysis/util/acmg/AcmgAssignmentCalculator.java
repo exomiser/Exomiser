@@ -61,7 +61,7 @@ public class AcmgAssignmentCalculator {
         return contributingVariants.stream()
                 .sorted(VariantEvaluation::compareByRank)
                 .map(assignVariantAcmg(modeOfInheritance, gene, contributingVariants, knownDiseases, compatibleDiseaseMatches, disease))
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private Disease findTopDiseaseMatch(List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
@@ -75,7 +75,7 @@ public class AcmgAssignmentCalculator {
     private List<Disease> findKnownDiseasesCompatibleWithMoi(ModeOfInheritance modeOfInheritance, Gene gene) {
         return gene.getAssociatedDiseases().stream()
                 .filter(disease -> disease.getInheritanceMode().isCompatibleWith(modeOfInheritance))
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private Function<VariantEvaluation, AcmgAssignment> assignVariantAcmg(ModeOfInheritance modeOfInheritance, Gene gene, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches, Disease disease) {

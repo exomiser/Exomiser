@@ -31,9 +31,12 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.svart.GenomicInterval;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,6 +122,21 @@ public class TestVariantDataService implements VariantDataService {
         return PathogenicityData.of(pathData.clinVarData(), wanted);
     }
 
+    @Override
+    public ClinVarData getClinVarData(Variant variant) {
+        return null;
+    }
+
+    @Override
+    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+        return null;
+    }
+
+    @Override
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+        return null;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -181,6 +199,20 @@ public class TestVariantDataService implements VariantDataService {
             return PathogenicityData.empty();
         }
 
+        @Override
+        public ClinVarData getClinVarData(Variant variant) {
+            return ClinVarData.empty();
+        }
+
+        @Override
+        public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+            return ClinVarData.empty();
+        }
+
+        @Override
+        public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+            return Map.of();
+        }
     }
 
 }
