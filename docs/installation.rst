@@ -44,18 +44,18 @@ The following shell script should work-
     # download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-\ |version|\-distribution.zip
     # download the data (this is ~80GB and will take a while). If you only require a single assembly, only download the relevant file.
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2302_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2302_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2302_phenotype.zip
 
     # unzip the distribution and data files - this will create a directory called 'exomiser-cli-|version|' in the current working directory
     unzip exomiser-cli-|version|-distribution.zip
-    unzip 2202_*.zip -d exomiser-cli-|version|/data
+    unzip 2302_*.zip -d exomiser-cli-|version|/data
 
     # Check the application.properties are pointing to the correct versions
-    # exomiser.hg19.data-version=2202
-    # exomiser.hg38.data-version=2202
-    # exomiser.phenotype.data-version=2202
+    # exomiser.hg19.data-version=2302
+    # exomiser.hg38.data-version=2302
+    # exomiser.phenotype.data-version=2302
 
     # run a test exome analysis
     cd exomiser-cli-|version|
@@ -155,7 +155,7 @@ with
 
     exomiser.data-directory=/full/path/to/alternative/data/directory
 
-For example, assuming you unzipped the contents of the `2202_hg38.zip` data file into `/data/exomiser-data`:
+For example, assuming you unzipped the contents of the `2302_hg38.zip` data file into `/data/exomiser-data`:
 
 .. parsed-literal::
 
@@ -167,9 +167,9 @@ where the contents of `exomiser-data` looks something like this:
 
     $ tree -L 1 /data/exomiser-data/
         /data/exomiser-data/
-        ├── 2202_hg19
-        ├── 2202_hg38
-        ├── 2202_phenotype
+        ├── 2302_hg19
+        ├── 2302_hg38
+        ├── 2302_phenotype
         ├── cadd
         └── remm
 
