@@ -37,7 +37,7 @@ frequencySources: [
 # REMM is trained on non-coding regulatory regions
 # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
 # and updated their location in the application.properties. Exomiser will not run without this.
-pathogenicitySources: [ REVEL, MVP, REMM, SPLICE_AI ]
+pathogenicitySources: [ REVEL, MVP, REMM ]
 # this is the recommended order for a genome-sized analysis.
 steps: [
     hiPhivePrioritiser: { },

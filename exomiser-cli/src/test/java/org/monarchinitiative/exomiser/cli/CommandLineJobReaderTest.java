@@ -264,7 +264,7 @@ class CommandLineJobReaderTest {
 //                    FrequencySource.GNOMAD_G_OTH,
                     FrequencySource.GNOMAD_G_SAS
             ))
-            .pathogenicitySources(ImmutableSet.of(REVEL, MVP, SPLICE_AI))
+            .pathogenicitySources(ImmutableSet.of(REVEL, MVP))
             .addFailedVariantFilter()
             .addVariantEffectFilter(ImmutableSet.of(
                     FIVE_PRIME_UTR_EXON_VARIANT,

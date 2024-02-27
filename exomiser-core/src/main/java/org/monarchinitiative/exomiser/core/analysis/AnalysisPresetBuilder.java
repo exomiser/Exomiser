@@ -115,7 +115,7 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP, REMM, SPLICE_AI))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP, REMM))
                 .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
                 .addPriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.5f)// will remove a lot of the weak PPI hits
                 .addFailedVariantFilter()
@@ -132,7 +132,7 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP, SPLICE_AI))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP))
                 .addVariantEffectFilter(EnumSet.of(
                         VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
                         VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
