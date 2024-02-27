@@ -55,11 +55,11 @@
 # -- Project information -----------------------------------------------------
 
 project = u'exomiser'
-copyright = u'2021, Jules Jacobsen, Damian Smedley, Peter Robinson'
+copyright = u'2024, Jules Jacobsen, Damian Smedley, Peter Robinson'
 author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
-version = u'13.1.0'
+version = u'14.0.0'
 # The full version, including alpha/beta/rc tags
 release = version
 
