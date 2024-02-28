@@ -5,9 +5,9 @@ Installation
 Software and Hardware requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Minimum 8/16GB RAM (For an exome analysis of a 30,000 variant sample 4GB RAM should suffice. For a genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.)
+- Minimum 8/16GB RAM (For an exome analysis of a 30,000 variant sample 4GB RAM should suffice. For a genome analysis of a 4,400,000 variant sample 8GB RAM should suffice.)
 - Any 64-bit operating system
-- Java 11 or above
+- Java 17 or above
 - At least 100GB free disk space (SSD preferred for best performance)
 - An internet connection is not required to run the Exomiser, although network access will be required if accessing a networked database (optional).
 - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
@@ -30,7 +30,7 @@ Windows install
 1. Install `7-Zip <http://www.7-zip.org>`_ for unzipping the archive files. The built-in archiving software has issues extracting the zip files.
 2. Download the data and distribution files from https://data.monarchinitiative.org/exomiser/latest
 3. Extract the distribution files by right-clicking exomiser-cli-|version|-distribution.zip and selecting 7-Zip > Extract Here
-4. Extract the data files (e.g. 2109_phenotype.zip, 2109_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files... into the exomiser data directory. By default exomiser expects this to be 'exomiser-cli-\ |version|\/data', but this can be changed in the ``application.properties``
+4. Extract the data files (e.g. 2402_phenotype.zip, 2402_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files... into the exomiser data directory. By default exomiser expects this to be 'exomiser-cli-\ |version|\/data', but this can be changed in the ``application.properties``
 5. cd exomiser-cli-|version|
 6. java -Xmx4g -jar exomiser-cli-|version|.jar --analysis examples/test-analysis-exome.yml
 
@@ -44,18 +44,18 @@ The following shell script should work-
     # download the distribution (won't take long)
     wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-\ |version|\-distribution.zip
     # download the data (this is ~80GB and will take a while). If you only require a single assembly, only download the relevant file.
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg19.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2202_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2402_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2402_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2402_phenotype.zip
 
     # unzip the distribution and data files - this will create a directory called 'exomiser-cli-|version|' in the current working directory
     unzip exomiser-cli-|version|-distribution.zip
-    unzip 2202_*.zip -d exomiser-cli-|version|/data
+    unzip 2402_*.zip -d exomiser-cli-|version|/data
 
     # Check the application.properties are pointing to the correct versions
-    # exomiser.hg19.data-version=2202
-    # exomiser.hg38.data-version=2202
-    # exomiser.phenotype.data-version=2202
+    # exomiser.hg19.data-version=2402
+    # exomiser.hg38.data-version=2402
+    # exomiser.phenotype.data-version=2402
 
     # run a test exome analysis
     cd exomiser-cli-|version|
@@ -155,7 +155,7 @@ with
 
     exomiser.data-directory=/full/path/to/alternative/data/directory
 
-For example, assuming you unzipped the contents of the `2202_hg38.zip` data file into `/data/exomiser-data`:
+For example, assuming you unzipped the contents of the `2402_hg38.zip` data file into `/data/exomiser-data`:
 
 .. parsed-literal::
 
@@ -167,9 +167,9 @@ where the contents of `exomiser-data` looks something like this:
 
     $ tree -L 1 /data/exomiser-data/
         /data/exomiser-data/
-        ├── 2202_hg19
-        ├── 2202_hg38
-        ├── 2202_phenotype
+        ├── 2402_hg19
+        ├── 2402_hg38
+        ├── 2402_phenotype
         ├── cadd
         └── remm
 
@@ -182,11 +182,10 @@ the ``application.properties`` to contain this:
 .. code-block:: yaml
 
     ### hg19 assembly ###
-    exomiser.hg19.data-version=2109
-    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.gz
+    exomiser.hg19.data-version=2402
 
     ### phenotypes ###
-    exomiser.phenotype.data-version=2109
+    exomiser.phenotype.data-version=2402
 
 
 For a GRCh38/hg38 only setup:
@@ -194,11 +193,10 @@ For a GRCh38/hg38 only setup:
 .. code-block:: yaml
 
     ### hg38 assembly ###
-    exomiser.hg38.data-version=2109
-    exomiser.hg38.variant-white-list-path=2109_hg38_clinvar_whitelist.tsv.gz
+    exomiser.hg38.data-version=2402
 
     ### phenotypes ###
-    exomiser.phenotype.data-version=2109
+    exomiser.phenotype.data-version=2402
 
 
 Or an install supporting both assemblies:
@@ -206,21 +204,19 @@ Or an install supporting both assemblies:
 .. code-block:: yaml
 
     ### hg19 assembly ###
-    exomiser.hg19.data-version=2109
-    exomiser.hg19.variant-white-list-path=2109_hg19_clinvar_whitelist.tsv.gz
+    exomiser.hg19.data-version=2402
 
     ### hg38 assembly ###
-    exomiser.hg38.data-version=2109
-    exomiser.hg38.variant-white-list-path=2109_hg38_clinvar_whitelist.tsv.gz
+    exomiser.hg38.data-version=2402
 
     ### phenotypes ###
-    exomiser.phenotype.data-version=2109
+    exomiser.phenotype.data-version=2402
 
 
 *n.b.* each assembly will require approximately 1GB RAM to load. Attempting to analyse a VCF called using an
 unsupported/unloaded assembly data will result in an unrecoverable error being thrown.
 
-Notice here that we are loading a whitelist created from ClinVar data. Exomiser will consider any variant on the whitelist
+By default, Exomiser uses a whitelist created from ClinVar data. Exomiser will consider any variant on the whitelist
 to be maximally pathogenic, regardless of the underlying data (*e.g.* variant effect, allele frequency, predicted pathogenicity)
 and always included these in the results.
 

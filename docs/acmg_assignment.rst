@@ -30,12 +30,23 @@ Computational and Predictive Data
 PVS1
 ----
 Variants must have a predicted loss of function effect, be in a gene with known disease associations and have a gene
-constraint LOF O/E < 0.7635 (gnomAD 2.1.1) to suggest that a gene is LoF intolerant. Variants not predicted to lead to
+constraint LOF O/E < 0.7635 (gnomAD 4.0) to suggest that a gene is LoF intolerant. Variants not predicted to lead to
 NMD (those located in the last exon) will have the modifier downgraded to Strong.
+
+PS1
+---
+Variants with the same amino acid change as previously reported P/LP missense or in-frame indel ClinVar variants will be
+assigned `PS1` with a strength of `Strong` for variants >= 2 stars, `Moderate` for variants with 1 star or `Supporting`
+for those without a ClinVar start rating.
 
 PM4
 ---
 Stop-loss and in-frame insertions or deletions, not previously assigned a `PVS1` criterion are assigned `PM4`.
+
+PM5
+---
+Variants having a novel missense change to an amino acid where a previously reported ClinVar P/LP variant has been seen
+will be assigned `PM5` with a strength of `Moderate` for those with >=2 stars or `Supporting` otherwise.
 
 PP3 / BP4
 ---------
@@ -45,6 +56,16 @@ and ClinGen recommendations for clinical use of PP3/BP4 criteria <https://www.bi
 Note that this suggests the use of modifiers up to Strong in the case of pathogenic or Very Strong in the case of benign predictions.
 Otherwise, an ensemble-based approach will be used for other pathogenicity predictors as per the original 215 guidelines.
 It should be noted we found better performance using the REVEL-based approach when testing against the 100K genomes data.
+
+Functional Data
+===============
+PM1
+---
+Missense and inframe indels are assigned `PM1` if the surrounding region of 25 nucleotides either side of the variant
+contain at least 4 reported P/LP variants in ClinVar and no B/LB variants. If the number of P/LP variants is greater
+than the number of VUS in the region the strength will be assigned `Moderate` but regions containing P/LP <= VUS
+(and no B/BL) will have the strength downgraded to `Supporting`.
+
 
 Segregation Data
 ================

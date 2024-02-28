@@ -90,7 +90,7 @@ or
     only recognizes class file versions up to 52.0
 
 
-You are running an older unsupported version of Java. Exomiser requires java version 11 or higher. This can be checked by running:
+You are running an older unsupported version of Java. Exomiser requires java version 17 or higher. This can be checked by running:
 
 .. code-block:: console
 
@@ -100,9 +100,9 @@ You should see something like this in response:
 
 .. code-block:: console
 
-    openjdk version "11.0.11" 2021-04-20
-    OpenJDK Runtime Environment (build 11.0.11+9-Ubuntu-0ubuntu2.20.04)
-    OpenJDK 64-Bit Server VM (build 11.0.11+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)
+    openjdk version "17.0.9" 2023-10-17
+    OpenJDK Runtime Environment (build 17.0.9+9-Ubuntu-122.04)
+    OpenJDK 64-Bit Server VM (build 17.0.9+9-Ubuntu-122.04, mixed mode, sharing)
 
 
-Versions lower than 11 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10) will not run exomiser, so you will need to install the latest java version.
+Versions lower than 17 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10) will not run exomiser, so you will need to install the latest java version.

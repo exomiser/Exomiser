@@ -107,12 +107,7 @@ requires anything different, it is possible to manually define the data sources 
         TOPMED,
         UK10K,
 
-        ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-
-        EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-        EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-        EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-        EXAC_OTHER,
+        ESP_AA, ESP_EA, ESP_ALL,
 
         GNOMAD_E_AFR,
         GNOMAD_E_AMR,
@@ -208,8 +203,10 @@ Here you can specify which variant frequency databases you want to use. You can 
 array format as the HPO IDs.
 
 The data sources used are from `1000 genomes <http://www.1000genomes.org>`_ (via DBSNP), `DBSNP <https://www.ncbi.nlm.nih.gov/projects/SNP/>`_,
-`ESP <https://evs.gs.washington.edu/EVS/>`_, `ExAC, gnomAD exomes and gnomAD genomes <https://gnomad.broadinstitute.org/about>`_,
-`UK10K <https://www.uk10k.org/>`_ (via DBSNP), `TOPMed <https://topmed.nhlbi.nih.gov/>`_ (via DBSNP).
+`ESP <https://evs.gs.washington.edu/EVS/>`_, `UK10K <https://www.uk10k.org/>`_ (via DBSNP), `TOPMed <https://topmed.nhlbi.nih.gov/>`_ (via DBSNP).
+
+As of the 2402 data release `ExAC, gnomAD exomes and gnomAD genomes <https://gnomad.broadinstitute.org/about>`_ source
+has been removed as this is part of the gnomAD 2.1+ data.
 
 DBSNP:
     ``THOUSAND_GENOMES``,
@@ -217,16 +214,7 @@ DBSNP:
     ``TOPMED``
 
 ESP:
-    ``ESP_AFRICAN_AMERICAN``, ``ESP_EUROPEAN_AMERICAN``, ``ESP_ALL``
-
-ExAC:
-    ``EXAC_AFRICAN_INC_AFRICAN_AMERICAN``,
-    ``EXAC_AMERICAN``,
-    ``EXAC_SOUTH_ASIAN``,
-    ``EXAC_EAST_ASIAN``,
-    ``EXAC_FINNISH``,
-    ``EXAC_NON_FINNISH_EUROPEAN``,
-    ``EXAC_OTHER``
+    ``ESP_AA``, ``ESP_EA``, ``ESP_ALL``
 
 gnomAD exomes:
     ``GNOMAD_E_AFR``,
@@ -235,21 +223,26 @@ gnomAD exomes:
     ``GNOMAD_E_EAS``,
     ``GNOMAD_E_FIN``,
     ``GNOMAD_E_NFE``,
+    ``GNOMAD_E_MID``,
     ``GNOMAD_E_OTH``,
     ``GNOMAD_E_SAS``,
 
 gnomAD genomes:
     ``GNOMAD_G_AFR``,
     ``GNOMAD_G_AMR``,
+    ``GNOMAD_G_AMI``,
     ``GNOMAD_G_ASJ``,
     ``GNOMAD_G_EAS``,
     ``GNOMAD_G_FIN``,
     ``GNOMAD_G_NFE``,
+    ``GNOMAD_G_MID``,
     ``GNOMAD_G_OTH``,
     ``GNOMAD_G_SAS``
 
-We recommend using all databases if the proband population background is unknown, although removing the ``GNOMAD_E_ASJ``
-and ``GNOMAD_G_ASJ``, unless your proband is known to come from an Ashkenazi population e.g.
+We recommend using all databases if the proband population background is unknown, although removing the ``ASJ``, ``AMI``,
+``FIN``, ``MID`` and ``OTH`` populations is recommended as these are small/founder populations which are likely to have
+artificially high allele frequencies for some relevant variants. These populations will not be included when assessing
+the population frequency for the ACMG assignments, even if used in the filtering.
 
 .. code-block:: yaml
 
@@ -258,29 +251,24 @@ and ``GNOMAD_G_ASJ``, unless your proband is known to come from an Ashkenazi pop
       TOPMED,
       UK10K,
 
-      ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-
-      EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-      EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-      EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-      EXAC_OTHER,
+      ESP_AA, ESP_EA, ESP_ALL,
 
       GNOMAD_E_AFR,
       GNOMAD_E_AMR,
-      #        GNOMAD_E_ASJ,
+      # GNOMAD_E_ASJ,
       GNOMAD_E_EAS,
-      GNOMAD_E_FIN,
+      # GNOMAD_E_FIN,
       GNOMAD_E_NFE,
-      GNOMAD_E_OTH,
+      # GNOMAD_E_OTH,
       GNOMAD_E_SAS,
 
       GNOMAD_G_AFR,
       GNOMAD_G_AMR,
-      #        GNOMAD_G_ASJ,
+      # GNOMAD_G_ASJ,
       GNOMAD_G_EAS,
-      GNOMAD_G_FIN,
+      # GNOMAD_G_FIN,
       GNOMAD_G_NFE,
-      GNOMAD_G_OTH,
+      # GNOMAD_G_OTH,
       GNOMAD_G_SAS
     ]
 
@@ -289,14 +277,27 @@ and ``GNOMAD_G_ASJ``, unless your proband is known to come from an Ashkenazi pop
 
 pathogenicitySources:
 ---------------------
-Possible pathogenicitySources: ``POLYPHEN``, ``MUTATION_TASTER``, ``SIFT``, ``REVEL``, ``MVP``, ``CADD``, ``REMM``. ``REMM`` is trained on
+Possible pathogenicitySources: ``POLYPHEN``, ``MUTATION_TASTER``, ``SIFT``, ``REVEL``, ``MVP``, ``ALPHA_MISSENSE``,
+``SPLICE_AI`` (derived from gnomAD 4.0, so only available for hg38),  ``CADD``, ``REMM``. ``REMM`` is trained on
 non-coding regulatory regions. **WARNING** if you enable ``CADD``, ensure that you have downloaded and installed the CADD
 tabix files and updated their location in the ``application.properties`` (see :ref:`cadd-install`). Exomiser will not run
 without this.
 
 We recommend using either  ``[REVEL, MVP]`` **OR** ``[POLYPHEN, MUTATION_TASTER, SIFT]`` as REVEL and MVP are newer
 predictors which have been shown to have better performance and are more nuanced. Mixing them with the Polyphen2,
-MutationTaster or SIFT will give worse performance.
+MutationTaster or SIFT will give worse performance. Testing on GEL solved cases with AlphaMissense slightly increased
+performance when combined with MVP. We advise testing on local cohorts for assessing local performance.
+
+`REVEL scores are freely available for non-commercial use. For other uses, please contact Weiva Sieh.`
+
+`AlphaMissense Database Copyright (2023) DeepMind Technologies Limited. All predictions are provided for non-commercial
+research use only under CC BY-NC-SA license. Researchers interested in predictions not yet provided, and for
+non-commercial use, can send an expression of interest to alphamissense@google.com.`
+
+`SpliceAI source code is provided under the GPLv3 license. SpliceAI includes several third party packages provided under
+other open source licenses, please see NOTICE for additional details. The trained models used by SpliceAI (located in
+this package at spliceai/models) are provided under the CC BY NC 4.0 license for academic and non-commercial use; other
+use requires a commercial license from Illumina, Inc.`
 
 .. code-block:: yaml
 

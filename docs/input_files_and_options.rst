@@ -94,6 +94,14 @@ setting the analysisMode option to PASS_ONLY. This will also aid your ability to
 
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
+.. important::
+
+    The exome and genome analyses found in the `test-analysis-exome.yml` and `test-analysis-genome.yml` files are
+    recommended for use in most situations, and removing steps from the analysis is likely to negatively impact
+    performance. It is *strongly* recommended to test any changes against the standard setup on the example samples and
+    your own solved cases to check the impact of any changes you might want to make.
+
+
 .. parsed-literal::
 
     java -jar exomiser-cli-|version|.jar --analysis-batch examples/test-analysis-batch.txt
