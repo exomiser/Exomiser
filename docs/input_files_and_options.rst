@@ -78,6 +78,15 @@ genome assembly and is enabled in the ``application.properties`` see the :ref:`r
 Analysis
 ========
 
+.. important::
+
+    The exome and genome analyses found in the `test-analysis-exome.yml` and `test-analysis-genome.yml` files are
+    recommended for use in most situations, and removing steps from the analysis is likely to negatively impact
+    performance. It is *strongly* recommended to test any changes against the standard setup on the example samples and
+    your own solved cases to check the impact of any changes you might want to make. If you want to score all variants
+    and write failed ones to the output, it is recommended to use `analysisMode: FULL`.
+
+
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
 
@@ -93,14 +102,6 @@ a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM req
 setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
 
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
-
-.. important::
-
-    The exome and genome analyses found in the `test-analysis-exome.yml` and `test-analysis-genome.yml` files are
-    recommended for use in most situations, and removing steps from the analysis is likely to negatively impact
-    performance. It is *strongly* recommended to test any changes against the standard setup on the example samples and
-    your own solved cases to check the impact of any changes you might want to make.
-
 
 .. parsed-literal::
 

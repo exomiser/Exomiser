@@ -320,7 +320,7 @@ Analysis steps are defined in terms of :ref:`variant filters<variantfilters>`, :
 operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are
 run at the correct time if they have been incorrectly placed.
 
-Using these it is possible to create artificial exomes, define gene panels or only examine specific regions, for example.
+Using these it is possible, for example to create artificial exomes, define gene panels or only examine specific regions.
 
 .. _variantfilters:
 
@@ -414,12 +414,18 @@ frequencyFilter:
 Frequency cutoff of a variant **in percent**. Frequencies are derived from the databases defined in the :ref:`frequencySources<frequencysources>`
 section. We recommend a value below 5.0 % depending on the disease. Variants will be removed/failed if they have a
 frequency higher than the stated percentage in any database defined in the :ref:`frequencySources<frequencysources>` section.
-_n.b_ Not defining this filter will result in all variants having no frequency data, even if the :ref:`frequencySources<frequencysources>`
-contains values.
 
 .. code-block:: yaml
 
     frequencyFilter: {maxFrequency: 1.0}
+
+
+.. important::
+
+    Not defining this filter will result in all variants having no frequency data, even if the :ref:`frequencySources<frequencysources>`
+    are defined. Failing to include this will result in Exomiser assuming variants are all very rare and subsequently
+    assigning an artificially inflated score, especially for very common variants. If you want to score all variants and
+    write failed ones to the output, it is recommended to use `analysisMode: FULL`.
 
 
 .. _pathogenicityfilter:
@@ -434,6 +440,14 @@ This filter is meant to be quite permissive and we recommend it be set to true.
 .. code-block:: yaml
 
     pathogenicityFilter: {keepNonPathogenic: true}
+
+
+.. important::
+
+    Not defining this filter will result in all variants having no pathogenicity data or ClinVar annotations, even if the
+    :ref:`pathogenicitySources<pathogenicitysources>` are defined. Failing to include this will result in Exomiser
+    using default scores based on the assigned variant effect. If you want to score all variants and write failed ones
+    to the output, it is recommended to use `analysisMode: FULL`.
 
 
 .. _genefilters:
