@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.data.genome.model.archive;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.nio.file.Path;
 
@@ -30,21 +32,18 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ArchiveFileReaderTest {
+class ArchiveFileReaderTest {
 
-    @Test
-    void readEmptyLines() {
-        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(Path.of("src/test/resources/test_empty.vcf.gz")));
+    @ParameterizedTest
+    @CsvSource({
+            "src/test/resources/test_empty.vcf.gz,  0", // empty
+            "src/test/resources/test_first_ten_dbsnp.vcf.gz, 79", // gzipped vcf
+            "src/test/resources/gnomad-test/chr1.vcf.bgz, 62" // bgzipped vcf
+    })
+    void readTabixArchive(Path archiveFile, long expectedLineCount) {
+        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(archiveFile));
         long lineCount = instance.lines().count();
-        assertThat(lineCount, equalTo(0L));
-    }
-
-    @Test
-    void readLines() {
-        ArchiveFileReader instance = new SimpleArchiveFileReader(new TabixArchive(Path.of("src/test/resources/test_first_ten_dbsnp.vcf.gz")));
-        long lineCount = instance.lines().count();
-        // 57 header + 10 allele = 67 lines total in the file
-        assertThat(lineCount, equalTo(67L));
+        assertThat(lineCount, equalTo(expectedLineCount));
     }
 
     @Test

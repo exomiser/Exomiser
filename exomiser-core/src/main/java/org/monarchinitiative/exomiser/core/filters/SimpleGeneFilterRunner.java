@@ -35,6 +35,12 @@ import java.util.List;
  */
 public class SimpleGeneFilterRunner implements GeneFilterRunner {
 
+    private final FilterResultsCounter filterResultsCounter;
+
+    public SimpleGeneFilterRunner() {
+        filterResultsCounter = new FilterResultsCounter();
+    }
+
     @Override
     public List<Gene> run(GeneFilter filter, List<Gene> genes) {
         for (Gene gene : genes) {
@@ -49,7 +55,18 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
         FilterResult filterResult = filter.runFilter(gene);
         if (filterResult.wasRun()) {
             gene.addFilterResult(filterResult);
+            filterResultsCounter.logResultsForFilter(filter, gene);
         }
     }
 
+    @Override
+    public FilterResult logFilterResult(FilterResult filterResult) {
+        filterResultsCounter.logResult(filterResult);
+        return filterResult;
+    }
+
+    @Override
+    public List<FilterResultCount> filterCounts() {
+        return filterResultsCounter.filterResultCounts();
+    }
 }

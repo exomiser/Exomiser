@@ -29,12 +29,14 @@ import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnnotato
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.TestVcfReader;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
-import org.monarchinitiative.exomiser.core.genome.VcfReader;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
@@ -488,5 +490,62 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         instance.analyseInheritanceModes(List.of(rbm8a));
         System.out.println(rbm8a.getCompatibleInheritanceModes());
         rbm8a.getPassedVariantEvaluations().forEach(System.out::println);
+    }
+
+    @Test
+    void testRunAnalysisPrioritiserPriorityScoreFilterSeperatesVariantFiltersRequiringDataProviderWrapping() {
+        double desiredPrioritiserScore = 0.9f;
+        Map<String, Double> geneSymbolPrioritiserScores = Map.of("RBM8A", desiredPrioritiserScore);
+
+        PriorityType prioritiserTypeToMock = PriorityType.HIPHIVE_PRIORITY;
+        Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
+        GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1);
+        IntervalFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        FrequencyFilter frequencyFiler = new FrequencyFilter(1.0f);
+        PathogenicityFilter pathogenicityFilter = new PathogenicityFilter(true);
+
+        Analysis analysis = Analysis.builder()
+                .frequencySources(EnumSet.of(FrequencySource.GNOMAD_E_AFR))
+                .pathogenicitySources(EnumSet.of(PathogenicitySource.REVEL))
+                .steps(List.of(intervalFilter, prioritiser, pathogenicityFilter, priorityScoreFilter, frequencyFiler))
+                .build();
+
+        // setup data and mocking data
+        Variant variant = TestFactory.variantBuilder(1, 145508800, "T", "C").build();
+        FrequencyData frequencyData = FrequencyData.of(Frequency.of(FrequencySource.GNOMAD_E_AFR, 0.001f));
+        PathogenicityData pathogenicityData = PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f));
+
+        VariantDataService mockVariantDataService = TestVariantDataService.builder()
+                .put(variant, frequencyData)
+                .put(variant, pathogenicityData)
+                .build();
+
+        GenomeAnalysisService mockGenomeAnalysisService = new GenomeAnalysisServiceImpl(TestFactory.getDefaultGenomeAssembly(),
+                TestFactory.buildDefaultGenomeDataService(),
+                mockVariantDataService,
+                TestFactory.buildDefaultVariantAnnotator());
+        PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(mockGenomeAnalysisService);
+
+        AnalysisResults analysisResults = instance.run(vcfandPhenotypesSample, analysis);
+
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
+
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+
+        Gene passedGene = results.get("RBM8A");
+        assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
+        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+
+        VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant2.passedFilters(), is(true));
+        assertThat(rbm8Variant2.contigId(), equalTo(1));
+        assertThat(rbm8Variant2.start(), equalTo(145508800));
+        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
+        assertThat(rbm8Variant2.getFrequencyData(), equalTo(frequencyData));
+        assertThat(rbm8Variant2.getPathogenicityData(), equalTo(pathogenicityData));
     }
 }

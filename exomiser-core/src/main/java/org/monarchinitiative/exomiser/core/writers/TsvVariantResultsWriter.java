@@ -71,7 +71,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
             .withSkipHeaderRecord()
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
-            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_ALLELE_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
+            .withHeader("#RANK", "ID", "GENE_SYMBOL", "ENTREZ_GENE_ID", "MOI", "P-VALUE", "EXOMISER_GENE_COMBINED_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_VARIANT_SCORE", "CONTRIBUTING_VARIANT", "WHITELIST_VARIANT", "VCF_ID", "RS_ID", "CONTIG", "START", "END", "REF", "ALT", "CHANGE_LENGTH", "QUAL", "FILTER", "GENOTYPE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_ACMG_CLASSIFICATION", "EXOMISER_ACMG_EVIDENCE", "EXOMISER_ACMG_DISEASE_ID", "EXOMISER_ACMG_DISEASE_NAME", "CLINVAR_VARIATION_ID", "CLINVAR_PRIMARY_INTERPRETATION", "CLINVAR_STAR_RATING", "GENE_CONSTRAINT_LOEUF", "GENE_CONSTRAINT_LOEUF_LOWER", "GENE_CONSTRAINT_LOEUF_UPPER", "MAX_FREQ_SOURCE", "MAX_FREQ", "ALL_FREQ", "MAX_PATH_SOURCE", "MAX_PATH", "ALL_PATH");
 
     private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
@@ -163,22 +163,22 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName()).orElse(""));
         PathogenicityData pathogenicityData = ve.getPathogenicityData();
-        ClinVarData clinVarData = pathogenicityData.getClinVarData();
-        fields.add(clinVarData.getAlleleId());
+        ClinVarData clinVarData = pathogenicityData.clinVarData();
+        fields.add(clinVarData.getVariationId());
         fields.add(clinVarData.getPrimaryInterpretation());
         fields.add(clinVarData.starRating());
-        GeneConstraint geneConstraint = GeneConstraints.geneContraint(geneIdentifier.getGeneSymbol());
+        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneIdentifier.getGeneSymbol());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeuf());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufLower());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufUpper());
-        Frequency maxFreq = frequencyData.getMaxFrequency();
-        fields.add(maxFreq == null ? "" : maxFreq.getSource());
-        fields.add(maxFreq == null ? "" : maxFreq.getFrequency());
-        fields.add(toVcfFreqInfo(frequencyData.getKnownFrequencies()));
-        PathogenicityScore maxPath = pathogenicityData.getMostPathogenicScore();
+        Frequency maxFreq = frequencyData.maxFrequency();
+        fields.add(maxFreq == null ? "" : maxFreq.source());
+        fields.add(maxFreq == null ? "" : maxFreq.frequency());
+        fields.add(toVcfFreqInfo(frequencyData.frequencies()));
+        PathogenicityScore maxPath = pathogenicityData.mostPathogenicScore();
         fields.add(maxPath == null ? "" : maxPath.getSource());
         fields.add(maxPath == null ? "" : maxPath.getScore());
-        fields.add(toVcfPathInfo(pathogenicityData.getPredictedPathogenicityScores()));
+        fields.add(toVcfPathInfo(pathogenicityData.pathogenicityScores()));
         return fields;
     }
 
@@ -193,7 +193,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
     private String toVcfFreqInfo(List<Frequency> frequencies) {
         return frequencies.stream()
-                .map(frequency -> frequency.getSource() + "=" + frequency.getFrequency())
+                .map(frequency -> frequency.source() + "=" + frequency.frequency())
                 .collect(joining(","));
     }
 

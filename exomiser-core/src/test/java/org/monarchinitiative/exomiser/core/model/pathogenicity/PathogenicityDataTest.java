@@ -61,9 +61,9 @@ public class PathogenicityDataTest {
     public void testEmptyData() {
         PathogenicityData instance = PathogenicityData.empty();
         assertThat(instance.hasPredictedScore(), is(false));
-        assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
-        assertThat(instance.getMostPathogenicScore(), nullValue());
-        assertThat(instance.getScore(), equalTo(0f));
+        assertThat(instance.pathogenicityScores().isEmpty(), is(true));
+        assertThat(instance.mostPathogenicScore(), nullValue());
+        assertThat(instance.pathogenicityScore(), equalTo(0f));
     }
 
     @Test
@@ -76,8 +76,8 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScoresIsEmptyWhenNullsUsedInConstructor() {
         PathogenicityData instance = PathogenicityData.of(ClinVarData.empty(), Collections.emptySet());
-        assertThat(instance.getClinVarData().isEmpty(), is(true));
-        assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(true));
+        assertThat(instance.clinVarData().isEmpty(), is(true));
+        assertThat(instance.pathogenicityScores().isEmpty(), is(true));
         assertThat(instance.isEmpty(), is(true));
         assertThat(instance, equalTo(PathogenicityData.empty()));
         assertThat(PathogenicityData.of(), equalTo(PathogenicityData.empty()));
@@ -93,62 +93,62 @@ public class PathogenicityDataTest {
     @Test
     public void testPathogenicityDataRemovesNullsUsedInConstructor() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL, null);
-        assertThat(instance.getPredictedPathogenicityScores().isEmpty(), is(false));
-        assertThat(instance.getPredictedPathogenicityScores().size(), equalTo(1));
+        assertThat(instance.pathogenicityScores().isEmpty(), is(false));
+        assertThat(instance.pathogenicityScores().size(), equalTo(1));
     }
     
     @Test
     public void testGetMostPathogenicScoreReturnsNullWhenNoScorePresent() {
-        PathogenicityScore mostPathogenicScore = PathogenicityData.empty().getMostPathogenicScore();
+        PathogenicityScore mostPathogenicScore = PathogenicityData.empty().mostPathogenicScore();
         assertThat(mostPathogenicScore, nullValue());
     }
     
     @Test
     public void testGetMostPathogenicScoreReturnsOnlyScoreWhenOneScorePresent() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL);
-        PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
+        PathogenicityScore mostPathogenicScore = instance.mostPathogenicScore();
         assertThat(mostPathogenicScore, equalTo(POLYPHEN_FAIL));
     }
 
     @Test
     public void testConstructorWithCollectionReturnsMostPathogenicScore() {
         PathogenicityData instance = PathogenicityData.of(Arrays.asList(POLYPHEN_FAIL, SIFT_PASS));
-        PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
+        PathogenicityScore mostPathogenicScore = instance.mostPathogenicScore();
         assertThat(mostPathogenicScore, equalTo(SIFT_PASS));
     }
 
     @Test
     public void testGetMostPathogenicScoreReturnsMostPathogenicScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL, SIFT_PASS);
-        PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
+        PathogenicityScore mostPathogenicScore = instance.mostPathogenicScore();
         assertThat(mostPathogenicScore, equalTo(SIFT_PASS));
     }
     
     @Test
     public void testGetPolyPhenScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL);
-        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.POLYPHEN);
+        PathogenicityScore result = instance.pathogenicityScore(PathogenicitySource.POLYPHEN);
         assertThat(result, equalTo(POLYPHEN_FAIL));
     }
 
     @Test
     public void testGetMutationTasterScore() {
         PathogenicityData instance = PathogenicityData.of(MTASTER_PASS);
-        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.MUTATION_TASTER);
+        PathogenicityScore result = instance.pathogenicityScore(PathogenicitySource.MUTATION_TASTER);
         assertThat(result, equalTo(MTASTER_PASS));
     }
     
     @Test
     public void testGetSiftScore() {
         PathogenicityData instance = PathogenicityData.of(SIFT_FAIL);
-        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.SIFT);
+        PathogenicityScore result = instance.pathogenicityScore(PathogenicitySource.SIFT);
         assertThat(result, equalTo(SIFT_FAIL));
     }
     
     @Test
     public void testGetRemmScore() {
         PathogenicityData instance = PathogenicityData.of(RemmScore.of(1f));
-        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.REMM);
+        PathogenicityScore result = instance.pathogenicityScore(PathogenicitySource.REMM);
         assertThat(result, equalTo(RemmScore.of(1f)));
     }
 
@@ -156,7 +156,7 @@ public class PathogenicityDataTest {
     public void testGetCaddScore() {
         CaddScore caddScore = CaddScore.of(POLYPHEN_PASS_SCORE);
         PathogenicityData instance = PathogenicityData.of(caddScore);
-        PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.CADD);
+        PathogenicityScore result = instance.pathogenicityScore(PathogenicitySource.CADD);
         assertThat(result, equalTo(caddScore));
     }
 
@@ -165,7 +165,7 @@ public class PathogenicityDataTest {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
 
-        List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
+        List<PathogenicityScore> result = instance.pathogenicityScores();
         assertThat(result, equalTo(expResult));
     }
     
@@ -174,9 +174,9 @@ public class PathogenicityDataTest {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         //try and add another score to the instance post-construction
-        instance.getPredictedPathogenicityScores().add(SIFT_PASS);
+        instance.pathogenicityScores().add(SIFT_PASS);
         
-        List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
+        List<PathogenicityScore> result = instance.pathogenicityScores();
         assertThat(result, equalTo(expResult));
     }
 
@@ -200,7 +200,7 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedScoreWhenScorePresent() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS);
-        PathogenicityScore result =  instance.getPredictedScore(PathogenicitySource.POLYPHEN);
+        PathogenicityScore result =  instance.pathogenicityScore(PathogenicitySource.POLYPHEN);
         assertThat(result.getScore(), equalTo(POLYPHEN_PASS.getScore()));
         assertThat(result.getSource(), equalTo(POLYPHEN_PASS.getSource()));
         assertThat(result, equalTo(POLYPHEN_PASS));
@@ -208,7 +208,7 @@ public class PathogenicityDataTest {
     
     @Test
     public void testGetPredictedScoreScoreMissingReturnsNull() {
-        assertThat(EMPTY_DATA.getPredictedScore(PathogenicitySource.POLYPHEN), is(nullValue()));
+        assertThat(EMPTY_DATA.pathogenicityScore(PathogenicitySource.POLYPHEN), is(nullValue()));
     }
 
     @Test
@@ -228,15 +228,15 @@ public class PathogenicityDataTest {
 
     @Test
     public void testEmptyClinVarData() {
-        assertThat(EMPTY_DATA.getClinVarData(), equalTo(ClinVarData.empty()));
+        assertThat(EMPTY_DATA.clinVarData(), equalTo(ClinVarData.empty()));
     }
 
     @Test
     public void testClinVarData() {
-        ClinVarData clinVarData = ClinVarData.builder().alleleId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
+        ClinVarData clinVarData = ClinVarData.builder().variationId("12345").primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).build();
         PathogenicityData instance = PathogenicityData.of(clinVarData, POLYPHEN_PASS);
         assertThat(instance.hasClinVarData(), is(true));
-        assertThat(instance.getClinVarData(), equalTo(clinVarData));
+        assertThat(instance.clinVarData(), equalTo(clinVarData));
     }
 
     @Test
@@ -259,19 +259,19 @@ public class PathogenicityDataTest {
 
     @Test
     public void testGetScoreNoPredictedData() {
-        assertThat(PathogenicityData.empty().getScore(), equalTo(0f));
+        assertThat(PathogenicityData.empty().pathogenicityScore(), equalTo(0f));
     }
 
     @Test
     public void testGetScoreNonSiftPredictedData() {
         PathogenicityData instance = PathogenicityData.of(MTASTER_PASS, POLYPHEN_FAIL);
-        assertThat(instance.getScore(), equalTo(MTASTER_PASS_SCORE));
+        assertThat(instance.pathogenicityScore(), equalTo(MTASTER_PASS_SCORE));
     }
 
     @Test
     public void testGetScoreReturnsNormalisedSiftScore() {
         PathogenicityData instance = PathogenicityData.of(MTASTER_FAIL, SIFT_PASS);
-        assertThat(instance.getScore(), equalTo(1 - SIFT_PASS_SCORE));
+        assertThat(instance.pathogenicityScore(), equalTo(1 - SIFT_PASS_SCORE));
     }
 
     @Test

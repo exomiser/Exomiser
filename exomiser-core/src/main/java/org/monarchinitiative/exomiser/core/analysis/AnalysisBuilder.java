@@ -161,6 +161,11 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
         analysisSteps.add(new FrequencyFilter(cutOff));
         return this;
     }
+    @Override
+    public AnalysisBuilder addGeneBlacklistFilter() {
+        analysisSteps.add(new GeneBlacklistFilter());
+        return this;
+    }
 
     /**
      * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this

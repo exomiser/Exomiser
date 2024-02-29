@@ -21,8 +21,9 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.db.SpatialKey;
 import org.h2.mvstore.rtree.MVRTreeMap;
-import org.h2.mvstore.rtree.SpatialKey;
+import org.h2.mvstore.rtree.Spatial;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,11 +36,11 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -210,7 +211,7 @@ class SvFrequencyDaoTest {
         System.out.println("Num SV in store: " + r.size());
         r.entrySet().forEach(System.out::println);
 
-        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, 21000, 46000);
+        GenomicRegion region = GenomicRegion.of(chr1, Strand.POSITIVE, CoordinateSystem.ONE_BASED, 21000, 46000);
         SvDaoBoundaryCalculator boundaryCalculator = new SvDaoBoundaryCalculator(region, 0.85);
         int margin = boundaryCalculator.outerBoundsOffset();
 
@@ -218,12 +219,11 @@ class SvFrequencyDaoTest {
         System.out.println("margin: " + margin);
         System.out.println("Searching chr" + region.contigId() + " from " + (region.start() - margin) + " to " + (region
                 .end() + margin));
-// iterate over the intersecting keys
-        Iterator<SpatialKey> it =
+        MVRTreeMap.RTreeCursor<SvFrequencyDao.SvResult> it =
 //                r.findContainedKeys(new SpatialKey(0, 0f, 9f, 3f, 6f));
                 r.findIntersectingKeys(new SpatialKey(0, boundaryCalculator.startMin(), boundaryCalculator.endMax(), region.contigId(), region.contigId()));
         while (it.hasNext()) {
-            SpatialKey k = it.next();
+            Spatial k = it.next();
             SvFrequencyDao.SvResult svResult = r.get(k);
             System.out.println(k + ": " + svResult + ", simJ=" + SvDaoUtil.jaccard(region, svResult));
         }

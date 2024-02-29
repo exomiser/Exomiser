@@ -54,6 +54,9 @@ message PathogenicityFilter {
 message InheritanceFilter {
 }
 
+message GeneBlacklistFilter {
+}
+
 // Running the prioritiser followed by a priorityScoreFilter will remove genes
 // which are least likely to contribute to the phenotype defined in hpoIds, this will
 // dramatically reduce the time and memory required to analyse a genome.

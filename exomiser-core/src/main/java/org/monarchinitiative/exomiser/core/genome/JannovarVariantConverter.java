@@ -41,7 +41,7 @@ public class JannovarVariantConverter {
         this.referenceDictionary = jannovarData.getRefDict();
     }
 
-    public GenomeVariant toGenomeVariant(Variant variant) {
+    public GenomeVariant toGenomeVariant(GenomicVariant variant) {
         if (variant.isSymbolic()) {
             throw new IllegalArgumentException("Cannot create GenomeVariant from symbolic variant " + variant);
         }
@@ -49,48 +49,39 @@ public class JannovarVariantConverter {
         return new GenomeVariant(genomePosition, variant.ref(), variant.alt());
     }
 
-    public SVGenomeVariant toSvGenomeVariant(Variant variant) {
+    public SVGenomeVariant toSvGenomeVariant(GenomicVariant variant) {
         // n.b. it is possible to create a SVGenomeVariant from a precise variant, it need not be symbolic.
         GenomePosition start = startGenomePosition(variant);
-        ConfidenceInterval startCi = variant.startPosition().confidenceInterval();
+        ConfidenceInterval startCi = variant.startConfidenceInterval();
         int startCiLower = startCi.lowerBound();
         int startCiUpper = startCi.upperBound();
 
         // Breakend variants have a left and right Breakend - return the right one if this is a breakend, or the original variant if not.
         GenomicRegion endRegion = variantOrRightBreakend(variant);
         GenomePosition end = endGenomePosition(endRegion);
-        ConfidenceInterval endCi = endRegion.endPosition().confidenceInterval();
+        ConfidenceInterval endCi = endRegion.endConfidenceInterval();
         int endCiLower = endCi.lowerBound();
         int endCiUpper = endCi.upperBound();
 
         VariantType svSubType = variant.variantType().subType();
-        switch (svSubType) {
-            case DEL:
-                return new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DEL_ME:
-                return new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP:
-                return new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case DUP_TANDEM:
-                return new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case INS:
-                return new SVInsertion(start, startCiLower, startCiUpper);
-            case INS_ME:
-                return new SVMobileElementInsertion(start, startCiLower, startCiUpper);
-            case INV:
-                return new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case CNV:
-                return new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-            case BND:
-                return new SVBreakend(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper, variant.ref(), variant.alt(), SVBreakend.Side.LEFT_END);
-            default:
-                return new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
-        }
+        return switch (svSubType) {
+            case DEL -> new SVDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DEL_ME -> new SVMobileElementDeletion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP -> new SVDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case DUP_TANDEM -> new SVTandemDuplication(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case INS -> new SVInsertion(start, startCiLower, startCiUpper);
+            case INS_ME -> new SVMobileElementInsertion(start, startCiLower, startCiUpper);
+            case INV -> new SVInversion(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case CNV -> new SVCopyNumberVariant(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+            case BND ->
+                    new SVBreakend(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper, variant.ref(), variant.alt(), SVBreakend.Side.LEFT_END);
+            default -> new SVUnknown(start, end, startCiLower, startCiUpper, endCiLower, endCiUpper);
+        };
     }
 
-    private GenomicRegion variantOrRightBreakend(Variant variant) {
+    private GenomicRegion variantOrRightBreakend(GenomicVariant variant) {
         if (variant.isBreakend()) {
-            BreakendVariant breakend = (BreakendVariant) variant;
+            GenomicBreakendVariant breakend = (GenomicBreakendVariant) variant;
             return breakend.right();
         }
         return variant;

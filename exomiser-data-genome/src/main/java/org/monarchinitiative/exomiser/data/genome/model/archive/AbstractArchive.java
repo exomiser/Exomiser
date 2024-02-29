@@ -58,13 +58,6 @@ abstract class AbstractArchive implements Archive {
     }
 
     @Override
-    public Stream<String> lines() {
-        // this needs to be abstract too as it needs a separate implementation for dbNSFP4
-        ArchiveFileReader archiveFileReader = new SimpleArchiveFileReader(this);
-        return archiveFileReader.lines();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

@@ -21,8 +21,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.Test;
@@ -56,7 +54,7 @@ public class AnalysisTest {
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.ANY);
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
-        return Lists.newArrayList(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
+        return List.of(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
     }
 
     @Test
@@ -74,7 +72,7 @@ public class AnalysisTest {
 
     @Test
     public void testCanMakeAnalysisWithInheritanceModesFromMap() {
-        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        Map<SubModeOfInheritance, Float> inheritanceMap = Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
 
         Analysis instance = newBuilder()
                 .inheritanceModeOptions(inheritanceMap)
@@ -85,7 +83,7 @@ public class AnalysisTest {
 
     @Test
     public void testCanMakeAnalysisWithInheritanceModesFromInheritanceModeOptions() {
-        Map<SubModeOfInheritance, Float> inheritanceMap = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
+        Map<SubModeOfInheritance, Float> inheritanceMap = Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2.0f);
         InheritanceModeOptions inheritanceModeOptions = InheritanceModeOptions.of(inheritanceMap);
 
         Analysis instance = newBuilder()

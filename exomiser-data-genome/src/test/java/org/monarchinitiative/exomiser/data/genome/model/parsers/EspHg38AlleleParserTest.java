@@ -21,10 +21,12 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 
-import java.util.Collections;
+import java.util.List;
+
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,7 +41,7 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
     @Test
     public void parseHeaderLine() throws Exception {
         String line = "##fileformat=VCFv4.1";
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
     @Test
@@ -47,7 +49,7 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
         //##INFO=<ID=GRCh38_POSITION,Number=.,Type=String,Description="GRCh38 chromosomal postion liftover from the original GRCh37 chromosomal position. A value of -1 means the GRCh37 position can not be mapped to the GRCh38 build.">
         String line = "1\t12345\t.\tT\tA\t.\tPASS\tGRCh38_POSITION=-1";
 
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
     @Test
@@ -55,7 +57,7 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
         //##INFO=<ID=GRCh38_POSITION,Number=.,Type=String,Description="GRCh38 chromosomal postion liftover from the original GRCh37 chromosomal position. A value of -1 means the GRCh37 position can not be mapped to the GRCh38 build.">
         String line = "1\t12345\t.\tT\tA\t.\tPASS\tGRCh38_POSITION=7_KI270803v1_alt:466346";
 
-        assertParseLineEquals(line, Collections.emptyList());
+        assertParseLineEquals(line, List.of());
     }
 
     @Test
@@ -65,10 +67,10 @@ public class EspHg38AlleleParserTest extends AbstractAlleleParserTester<EspHg38A
 
         Allele expected = new Allele(17, 156203, "G", "A");
         expected.setRsId("rs375149461");
-        expected.addValue(AlleleProperty.ESP_EA, 0.6285f);
-        expected.addValue(AlleleProperty.ESP_AA, 0.0723f);
-        expected.addValue(AlleleProperty.ESP_ALL, 0.4599f);
+        expected.addFrequency(AlleleData.frequencyOf(ESP_EA, 20, 3182));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_AA, 1, 1384));
+        expected.addFrequency(AlleleData.frequencyOf(ESP_ALL, 21, 4566));
 
-        assertParseLineEquals(line, Collections.singletonList(expected));
+        assertParseLineEquals(line, List.of(expected));
     }
 }

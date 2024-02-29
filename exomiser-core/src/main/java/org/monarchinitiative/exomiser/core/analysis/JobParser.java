@@ -46,7 +46,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static java.util.stream.Collectors.toList;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.valueOf;
 
 /**
@@ -160,18 +159,20 @@ public class JobParser {
     }
 
     private Analysis parsePreset(JobProto.Job protoJob) {
-        switch (protoJob.getPreset()) {
-            case PHENOTYPE_ONLY:
+        return switch (protoJob.getPreset()) {
+            case PHENOTYPE_ONLY -> {
                 logger.info("Running PHENOTYPE_ONLY preset");
-                return analysisPresetBuilder.buildPhenotypeOnlyPreset();
-            case GENOME:
+                yield analysisPresetBuilder.buildPhenotypeOnlyPreset();
+            }
+            case GENOME -> {
                 logger.info("Running GENOME preset");
-                return analysisPresetBuilder.buildGenomePreset();
-            case EXOME:
-            default:
+                yield analysisPresetBuilder.buildGenomePreset();
+            }
+            default -> {
                 logger.info("Running EXOME preset");
-                return analysisPresetBuilder.buildExomePreset();
-        }
+                yield analysisPresetBuilder.buildExomePreset();
+            }
+        };
     }
 
     private Analysis parseProtoAnalysis(AnalysisProto.Analysis protoAnalysis) {
@@ -212,6 +213,12 @@ public class JobParser {
         // so no need to do so here.
         Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
         for (String source : frequencySourcesList) {
+            if ("ESP_AFRICAN_AMERICAN".equals(source)) {
+                source = "ESP_AA";
+            }
+            if ("ESP_EUROPEAN_AMERICAN".equals(source)) {
+                source = "ESP_EA";
+            }
             frequencySources.add(FrequencySource.valueOf(source));
         }
         return frequencySources;
@@ -261,6 +268,8 @@ public class JobParser {
             analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
         } else if (protoAnalysisStep.hasInheritanceFilter()) {
             analysisBuilder.addInheritanceFilter();
+        } else if (protoAnalysisStep.hasGeneBlacklistFilter()) {
+            analysisBuilder.addGeneBlacklistFilter();
         } else if (protoAnalysisStep.hasPriorityScoreFilter()) {
             PriorityType priorityType = parsePriorityType(protoAnalysisStep.getPriorityScoreFilter());
             float minPriorityScore = parseMinPriorityScore(protoAnalysisStep.getPriorityScoreFilter());
@@ -295,7 +304,7 @@ public class JobParser {
         }
         if (!intervalFilter.getBed().isEmpty()) {
             String bedPath = intervalFilter.getBed();
-            return BedFiles.readChromosomalRegions(Paths.get(bedPath)).collect(toList());
+            return BedFiles.readChromosomalRegions(Paths.get(bedPath)).toList();
         }
         throw new IllegalArgumentException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'} or bed file path {bed: /data/intervals.bed}");
     }

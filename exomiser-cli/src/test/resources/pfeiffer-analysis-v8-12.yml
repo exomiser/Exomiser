@@ -24,56 +24,30 @@ analysis:
   }
   #FULL or PASS_ONLY
   analysisMode: PASS_ONLY
-  #Possible frequencySources:
-  #Thousand Genomes project http://www.1000genomes.org/
-  #   THOUSAND_GENOMES,
-  #ESP project http://evs.gs.washington.edu/EVS/
-  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-  #ExAC project http://exac.broadinstitute.org/about
-  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-  #   EXAC_OTHER
-  #Possible frequencySources:
-  #Thousand Genomes project - http://www.1000genomes.org/ (THOUSAND_GENOMES)
-  #TOPMed - https://www.nhlbi.nih.gov/science/precision-medicine-activities (TOPMED)
-  #UK10K - http://www.uk10k.org/ (UK10K)
-  #ESP project - http://evs.gs.washington.edu/EVS/ (ESP_)
-  #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-  #ExAC project http://exac.broadinstitute.org/about (EXAC_)
-  #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-  #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-  #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-  #   EXAC_OTHER
-  #gnomAD - http://gnomad.broadinstitute.org/ (GNOMAD_E, GNOMAD_G)
+  # Possible frequencySources:
+  # UK10K - http://www.uk10k.org/ (UK10K)
+  # gnomAD - http://gnomad.broadinstitute.org/ (GNOMAD_E, GNOMAD_G)
+  # note that as of gnomAD v2.1 1000 genomes, ExAC are part of gnomAD
+  # as of gnomAD v4 TOPMed & ESP are also included in gnomAD
   frequencySources: [
-    THOUSAND_GENOMES,
-    TOPMED,
     UK10K,
-
-    ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-
-    EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-    EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-    EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-    EXAC_OTHER,
 
     GNOMAD_E_AFR,
     GNOMAD_E_AMR,
     #        GNOMAD_E_ASJ,
     GNOMAD_E_EAS,
-    GNOMAD_E_FIN,
+    #    GNOMAD_E_FIN,
     GNOMAD_E_NFE,
-    GNOMAD_E_OTH,
+    #    GNOMAD_E_OTH,
     GNOMAD_E_SAS,
 
     GNOMAD_G_AFR,
     GNOMAD_G_AMR,
     #        GNOMAD_G_ASJ,
     GNOMAD_G_EAS,
-    GNOMAD_G_FIN,
+    #    GNOMAD_G_FIN,
     GNOMAD_G_NFE,
-    GNOMAD_G_OTH,
+    #    GNOMAD_G_OTH,
     GNOMAD_G_SAS
   ]
   # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
@@ -92,6 +66,7 @@ analysis:
     # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
     #intervalFilter: {bed: /full/path/to/bed_file.bed},
     #genePanelFilter: {geneSymbols: ['FGFR1','FGFR2']},
+    # geneBlacklistFilter: { },
       failedVariantFilter: { },
     #qualityFilter: {minQuality: 50.0},
       variantEffectFilter: {

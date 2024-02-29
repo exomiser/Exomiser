@@ -22,11 +22,12 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
 import org.springframework.cache.interceptor.SimpleKey;
 
@@ -36,22 +37,22 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantKeyGeneratorTest {
+class VariantKeyGeneratorTest {
 
     private final VariantKeyGenerator instance = new VariantKeyGenerator();
 
     @Test
-    public void returnsEmptyKeyForEmptyQuery() throws Exception {
+    void returnsEmptyKeyForEmptyQuery() throws Exception {
         assertThat(instance.generate(new Object(), Object.class.getMethod("toString")), equalTo(SimpleKey.EMPTY));
     }
 
+    
     @Test
-    public void returnsKeyForVariant() throws Exception {
-        Variant variant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(2345), "A", "T")
-                .build();
+    void returnsKeyForVariant() throws Exception {
+        GenomicVariant genomicVariant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T");
+        Variant variant = VariantEvaluation.builder().variant(genomicVariant).build();
         // AlleleKey has no genomeAssembly. This might have been a bit of an oversight, but with assembly-specific caches
-        // created in version 10.1.1 its OK to use the AlleleKey as the cache key
+        // created in version 10.1.1 it's OK to use the AlleleKey as the cache key
         AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
                 .setChr(1)
                 .setPosition(2345)
@@ -63,7 +64,34 @@ public class VariantKeyGeneratorTest {
     }
 
     @Test
-    public void returnsSimpleKeyForManyThings() throws Exception {
+    void returnsKeyForGenomicVariant() throws Exception {
+        GenomicVariant genomicVariant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T");
+        AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
+                .setChr(1)
+                .setPosition(2345)
+                .setRef("A")
+                .setAlt("T")
+                .build();
+
+        assertThat(instance.generate(new Object(), Object.class.getMethod("toString"), genomicVariant), equalTo(expected));
+    }
+
+    @Test
+    void returnsKeyForAlleleKey() throws Exception {
+        GenomicVariant genomicVariant = GenomicVariant.of(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 2345, "A", "T");
+        AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(genomicVariant);
+        AlleleProto.AlleleKey expected = AlleleProto.AlleleKey.newBuilder()
+                .setChr(1)
+                .setPosition(2345)
+                .setRef("A")
+                .setAlt("T")
+                .build();
+
+        assertThat(instance.generate(new Object(), Object.class.getMethod("toString"), alleleKey), equalTo(expected));
+    }
+
+    @Test
+    void returnsSimpleKeyForManyThings() throws Exception {
         Object object1 = new Object();
         Object object2 = new Object();
 

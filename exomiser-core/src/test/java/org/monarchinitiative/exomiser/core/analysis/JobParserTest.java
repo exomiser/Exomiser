@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
@@ -407,7 +406,7 @@ class JobParserTest {
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
 
-        List<ChromosomalRegion> expectedIntervals = ImmutableList.of(
+        List<ChromosomalRegion> expectedIntervals = List.of(
                 new GeneticInterval(10, 122892600, 122892700),
                 new GeneticInterval(10, 122892900, 122893000)
         );
@@ -454,6 +453,16 @@ class JobParserTest {
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
 
         assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))))));
+    }
+
+    @Test
+    public void testGeneBlacklistFilter() {
+        AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
+                .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
+                .build();
+        Analysis analysis = initialiseAnalysisWithStep(analysisStep);
+
+        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneBlacklistFilter())));
     }
 
     @Test
@@ -526,7 +535,7 @@ class JobParserTest {
                 .build();
 
         AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
-                .addAllFrequencySources(ImmutableList.of("THOUSAND_GENOMES", "TOPMED"))
+                .addAllFrequencySources(List.of("THOUSAND_GENOMES", "TOPMED"))
                 .addSteps(analysisStep)
                 .build();
 
@@ -568,7 +577,7 @@ class JobParserTest {
                 .build();
 
         AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
-                .addAllFrequencySources(ImmutableList.of("THOUSAND_GENOMES", "TOPMED"))
+                .addAllFrequencySources(List.of("THOUSAND_GENOMES", "TOPMED"))
                 .putInheritanceModes("AUTOSOMAL_DOMINANT", 0.1f)
                 .addSteps(analysisStep)
                 .build();
@@ -587,7 +596,7 @@ class JobParserTest {
                 .build();
 
         AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
-                .addAllFrequencySources(ImmutableList.of("THOUSAND_GENOMES", "TOPMED"))
+                .addAllFrequencySources(List.of("THOUSAND_GENOMES", "TOPMED"))
                 .addSteps(analysisStep)
                 .build();
 
@@ -605,7 +614,7 @@ class JobParserTest {
                 .build();
 
         AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
-                .addAllFrequencySources(ImmutableList.of("THOUSAND_GENOMES", "TOPMED"))
+                .addAllFrequencySources(List.of("THOUSAND_GENOMES", "TOPMED"))
                 .putInheritanceModes("AUTOSOMAL_DOMINANT", 0.1f)
                 .addSteps(analysisStep)
                 .build();
@@ -624,7 +633,7 @@ class JobParserTest {
                 .build();
 
         AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
-                .addAllFrequencySources(ImmutableList.of("THOUSAND_GENOMES", "TOPMED"))
+                .addAllFrequencySources(List.of("THOUSAND_GENOMES", "TOPMED"))
                 .putInheritanceModes("AUTOSOMAL_DOMINANT", 0.1f)
                 .addSteps(analysisStep)
                 .build();

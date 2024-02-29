@@ -121,7 +121,7 @@ CREATE TABLE sv_path
     dbvar_id      CHARACTER VARYING(20),
     source        CHARACTER VARYING(20),
     rcv_id        CHARACTER VARYING(20),
-    allele_id     CHARACTER VARYING(20),
+    variation_id  CHARACTER VARYING(20),
     clin_sig      CHARACTER VARYING(42),
     clin_rev_stat CHARACTER VARYING(55)
 );

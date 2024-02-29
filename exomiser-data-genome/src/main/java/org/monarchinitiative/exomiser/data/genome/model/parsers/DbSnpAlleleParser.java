@@ -20,8 +20,9 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,37 +41,38 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
-        Map<AlleleProperty, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
+        System.out.println(info);
+        Map<AlleleProto.FrequencySource, List<String>> minorAlleleFrequencies = parseMinorAlleleFrequencies(info);
 
-        for (Map.Entry<AlleleProperty, List<String>> entry : minorAlleleFrequencies.entrySet()) {
-            AlleleProperty alleleProperty = entry.getKey();
+        for (Map.Entry<AlleleProto.FrequencySource, List<String>> entry : minorAlleleFrequencies.entrySet()) {
+            AlleleProto.FrequencySource alleleProperty = entry.getKey();
             List<String> alleleMafs = entry.getValue();
             for (int i = 0; i < alleleMafs.size(); i++) {
                 String maf = alleleMafs.get(i);
                 if (!maf.equals(".")) {
                     float freq = 100f * Float.parseFloat(maf);
                     Allele allele = alleles.get(i);
-                    allele.addValue(alleleProperty, freq);
+                    allele.addFrequency(AlleleData.frequencyOf(alleleProperty, freq));
                 }
             }
         }
-        return alleles;
+        return alleles.stream().filter(allele -> !allele.getFrequencies().isEmpty()).toList();
     }
 
     // ##INFO=<ID=CAF,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on 1000Genomes, starting with the reference allele followed by alternate alleles as ordered in the ALT column. Where a 1000Genomes alternate allele is not in the dbSNPs alternate allele set, the allele is added to the ALT column.  The minor allele is the second largest value in the list, and was previuosly reported in VCF as the GMAF.  This is the GMAF reported on the RefSNP and EntrezSNP pages and VariationReporter">
     // also in b151
     // ##INFO=<ID=TOPMED,Number=.,Type=String,Description="An ordered, comma delimited list of allele frequencies based on TOPMed, starting with the reference allele followed by alternate alleles as ordered in the ALT column. The TOPMed minor allele is the second largest value in the list.">
-    private Map<AlleleProperty, List<String>> parseMinorAlleleFrequencies(String info) {
-        EnumMap<AlleleProperty, List<String>> mafMap = new EnumMap<>(AlleleProperty.class);
+    private Map<AlleleProto.FrequencySource, List<String>> parseMinorAlleleFrequencies(String info) {
+        EnumMap<AlleleProto.FrequencySource, List<String>> mafMap = new EnumMap<>(AlleleProto.FrequencySource.class);
         String[] infoFields = info.split(";");
         for (String infoField : infoFields) {
             if (infoField.startsWith("CAF=")) {
                 String frequencyValues = getFrequencyValues(infoField);
-                mafMap.put(AlleleProperty.KG, parseFreqField(frequencyValues));
+                mafMap.put(AlleleProto.FrequencySource.KG, parseFreqField(frequencyValues));
             }
             if (infoField.startsWith("TOPMED=")) {
                 String frequencyValues = getFrequencyValues(infoField);
-                mafMap.put(AlleleProperty.TOPMED, parseFreqField(frequencyValues));
+                mafMap.put(AlleleProto.FrequencySource.TOPMED, parseFreqField(frequencyValues));
             }
             // newer b152+ format has all the frequency data in the FREQ field which requires further parsing
             if (infoField.startsWith("FREQ=")) {
@@ -81,15 +83,16 @@ public class DbSnpAlleleParser extends VcfAlleleParser {
                     String frequencyValues = source.substring(colonPos + 1);
                     switch (sourceId) {
                         case "1000Genomes":
-                            mafMap.put(AlleleProperty.KG, parseFreqField(frequencyValues));
+                            mafMap.put(AlleleProto.FrequencySource.KG, parseFreqField(frequencyValues));
                         case "TOPMED":
-                            mafMap.put(AlleleProperty.TOPMED, parseFreqField(frequencyValues));
+                            mafMap.put(AlleleProto.FrequencySource.TOPMED, parseFreqField(frequencyValues));
 //                        case "TWINSUK":
 //                            // https://twinsuk.ac.uk/about-us/what-is-twinsuk/
 //                            mafMap.put(AlleleProperty.TWINSUK, parseFreqField(frequencyValues));
 //                        case "ALSPAC":
 //                            // http://www.bristol.ac.uk/alspac/researchers/cohort-profile/
 //                            mafMap.put(AlleleProperty.ALSPAC, parseFreqField(frequencyValues));
+                        default: // do nothing
                     }
                 }
             }

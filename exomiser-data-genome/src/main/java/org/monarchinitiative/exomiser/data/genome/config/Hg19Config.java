@@ -39,7 +39,6 @@ import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -52,25 +51,18 @@ public class Hg19Config extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
 
-    private final Environment environment;
-
     public Hg19Config(Environment environment) {
         super(environment);
-        this.environment = environment;
-    }
-
-    @Bean
-    public Path buildDir() {
-        return getPathForProperty("build-dir");
     }
 
     @Bean
     public AssemblyResources hg19AssemblyResources() {
+        ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Map<String, AlleleResource> hg19AlleleResources = hg19AlleleResources();
         Path genomePath = genomeDataPath();
         Path hg19GenomeProcessPath = genomeProcessPath();
         List<SvResource> hg19SvResources = hg19SvResources(hg19GenomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG19, genomePath, hg19GenomeProcessPath, hg19AlleleResources, hg19SvResources);
+        return new AssemblyResources(GenomeAssembly.HG19, genomePath, hg19GenomeProcessPath, clinVarAlleleResource, hg19AlleleResources, hg19SvResources);
     }
 
     public Path genomeDataPath() {
@@ -81,36 +73,21 @@ public class Hg19Config extends ResourceConfig {
         return getPathForProperty("hg19.genome-processed-dir");
     }
 
-    private Path getPathForProperty(String propertyKey) {
-        String property = environment.getProperty(propertyKey, "");
-
-        if (property.isEmpty()) {
-            throw new IllegalArgumentException(propertyKey + " has not been specified!");
-        }
-        Path path = Path.of(property);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectory(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            logger.info("Created missing directory {}", path);
-        }
-        return path;
-    }
-
     public Map<String, AlleleResource> hg19AlleleResources() {
         ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
 
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        // TOPMed removed as this is now part of gnomAD v2.1 (which release of TOPMed?)
         // TOPMed removed as this is now part of dbSNP
         alleleResources.put("dbsnp", dbSnpAlleleResource());
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
-        alleleResources.put("exac", exacAlleleResource());
+        // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
-        alleleResources.put("clinvar", clinVarAlleleResource());
+        // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
     }
@@ -156,6 +133,10 @@ public class Hg19Config extends ResourceConfig {
 
     public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
         return alleleResource(GnomadExomeAlleleResource.class, "hg19.gnomad-exome");
+    }
+
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg19.gnomad-mito");
     }
 
     private List<SvResource> hg19SvResources(Path genomeProcessPath) {

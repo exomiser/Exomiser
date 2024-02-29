@@ -58,7 +58,7 @@ class AnalysisProtoBuilderTest {
     @Test
     public void testAnalysisBuilderCanBuildCompleteAnalysis() {
         EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
-        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
+        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         float frequencyCutOff = 2f;
         AnalysisProto.AnalysisStep frequencyFilter = AnalysisProto.AnalysisStep.newBuilder()
                 .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(frequencyCutOff))
@@ -66,6 +66,10 @@ class AnalysisProtoBuilderTest {
 
         AnalysisProto.AnalysisStep phivePrioritiser = AnalysisProto.AnalysisStep.newBuilder()
                 .setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.getDefaultInstance())
+                .build();
+
+        AnalysisProto.AnalysisStep blacklistFilter = AnalysisProto.AnalysisStep.newBuilder()
+                .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.getDefaultInstance())
                 .build();
 
         PriorityType priorityType = PriorityType.PHIVE_PRIORITY;
@@ -93,6 +97,7 @@ class AnalysisProtoBuilderTest {
                 .addPhivePrioritiser()
                 .addPriorityScoreFilter(priorityType, minPriorityScore)
                 .addRegulatoryFeatureFilter()
+                .addGeneBlacklistFilter()
                 .addFrequencyFilter(frequencyCutOff)
                 .addInheritanceFilter()
                 .build();
@@ -119,6 +124,7 @@ class AnalysisProtoBuilderTest {
                 phivePrioritiser,
                 priorityScoreFilter,
                 regulatoryFeatureFilter,
+                blacklistFilter,
                 frequencyFilter,
                 inheritanceFilter
         )));

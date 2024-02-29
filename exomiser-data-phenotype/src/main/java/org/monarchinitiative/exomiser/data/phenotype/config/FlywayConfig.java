@@ -54,6 +54,7 @@ public class FlywayConfig {
                 .schemas(StringUtils.toStringArray(flywayProperties.getSchemas()))
                 .locations(StringUtils.toStringArray(flywayProperties.getLocations()))
                 .placeholders(flywayProperties.getPlaceholders())
+                .cleanDisabled(flywayProperties.isCleanDisabled())
                 .load();
     }
 

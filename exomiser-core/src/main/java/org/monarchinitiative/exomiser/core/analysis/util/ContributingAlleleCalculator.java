@@ -70,21 +70,18 @@ class ContributingAlleleCalculator {
                 //It is critical only the PASS variants are used in the scoring
                 .filter(VariantEvaluation::passedFilters)
                 .filter(variantEvaluation -> variantEvaluation.isCompatibleWith(modeOfInheritance))
-                .collect(toUnmodifiableList());
+                .toList();
         //note these need to be filtered for the relevant ModeOfInheritance before being checked for the contributing variants
         if (variantsCompatibleWithMode.isEmpty()) {
             return variantsCompatibleWithMode;
         }
-        switch (modeOfInheritance) {
-            case AUTOSOMAL_RECESSIVE:
-                return findAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
-            case X_RECESSIVE:
-                return findXRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
-            case ANY:
-                return findIncompletePenetranceContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
-            default:
-                return findNonAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
-        }
+        return switch (modeOfInheritance) {
+            case AUTOSOMAL_RECESSIVE ->
+                    findAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+            case X_RECESSIVE -> findXRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+            case ANY -> findIncompletePenetranceContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+            default -> findNonAutosomalRecessiveContributingVariants(modeOfInheritance, variantsCompatibleWithMode);
+        };
 
     }
 

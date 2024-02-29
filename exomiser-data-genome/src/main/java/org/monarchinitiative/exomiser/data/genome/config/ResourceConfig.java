@@ -21,6 +21,9 @@
 package org.monarchinitiative.exomiser.data.genome.config;
 
 import org.monarchinitiative.exomiser.data.genome.model.AlleleResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,10 +36,17 @@ import java.nio.file.Paths;
  */
 public class ResourceConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(ResourceConfig.class);
+
     private final Environment environment;
 
     public ResourceConfig(Environment environment) {
         this.environment = environment;
+    }
+
+    @Bean
+    public Path buildDir() {
+        return getPathForProperty("build-dir");
     }
 
     protected <T extends AlleleResource> T alleleResource(Class<T> clazz, String namespacePrefix) {
@@ -55,4 +65,14 @@ public class ResourceConfig {
         String fileUrl = environment.getProperty(namespacePrefix + ".file-url");
         return new ResourceProperties(fileName, fileDir, fileUrl);
     }
+
+    protected Path getPathForProperty(String propertyKey) {
+        String value = environment.getProperty(propertyKey, "");
+
+        if (value.isEmpty()) {
+            throw new IllegalStateException(propertyKey + " has not been specified!");
+        }
+        return Path.of(value);
+    }
+
 }

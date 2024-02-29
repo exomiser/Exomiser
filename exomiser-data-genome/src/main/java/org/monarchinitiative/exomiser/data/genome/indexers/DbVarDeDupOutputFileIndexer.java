@@ -39,23 +39,24 @@ public class DbVarDeDupOutputFileIndexer extends AbstractIndexer<SvFrequency> {
     private static final Logger logger = LoggerFactory.getLogger(DbVarDeDupOutputFileIndexer.class);
 
     private final AtomicLong count = new AtomicLong(0);
-    private final BufferedWriter bufferedWriter;
     private final Path outFilePath;
+    private BufferedWriter bufferedWriter;
 
     private SvFrequency previous = null;
 
     public DbVarDeDupOutputFileIndexer(Path outFilePath) {
         this.outFilePath = outFilePath;
-        logger.info("Writing to {}", outFilePath);
-        try {
-            this.bufferedWriter = Files.newBufferedWriter(outFilePath);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
-        }
     }
 
     @Override
     public void write(SvFrequency type) {
+        if (bufferedWriter == null) {
+            try {
+                this.bufferedWriter = Files.newBufferedWriter(outFilePath);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to access outfile " + outFilePath, e);
+            }
+        }
         if (previous == null || !isDuplicate(previous, type)) {
             try {
                 previous = type;
@@ -67,7 +68,6 @@ public class DbVarDeDupOutputFileIndexer extends AbstractIndexer<SvFrequency> {
             }
             count.incrementAndGet();
         }
-
     }
 
     private boolean isDuplicate(SvFrequency previous, SvFrequency current) {

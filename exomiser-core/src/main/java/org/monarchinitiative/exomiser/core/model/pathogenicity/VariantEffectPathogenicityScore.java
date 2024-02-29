@@ -84,7 +84,7 @@ public final class VariantEffectPathogenicityScore {
         //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
     }
 
-    public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
+    public static float pathogenicityScoreOf(VariantEffect variantEffect) {
         switch (variantEffect) {
             case SEQUENCE_VARIANT:
                 return NON_PATHOGENIC_SCORE;

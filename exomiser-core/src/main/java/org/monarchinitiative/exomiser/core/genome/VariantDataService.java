@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
+import org.monarchinitiative.exomiser.core.genome.dao.ClinVarDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -37,7 +38,7 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface VariantDataService {
+public interface VariantDataService extends ClinVarDao {
 
     public boolean variantIsWhiteListed(Variant variant);
 

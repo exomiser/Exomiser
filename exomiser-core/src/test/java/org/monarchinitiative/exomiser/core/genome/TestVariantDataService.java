@@ -31,9 +31,12 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.svart.GenomicInterval;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -99,9 +102,9 @@ public class TestVariantDataService implements VariantDataService {
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
 
-        List<Frequency> wanted = allFrequencyData.getKnownFrequencies()
+        List<Frequency> wanted = allFrequencyData.frequencies()
                 .stream()
-                .filter(frequency -> frequencySources.contains(frequency.getSource()))
+                .filter(frequency -> frequencySources.contains(frequency.source()))
                 .collect(Collectors.toList());
 
         return FrequencyData.of(allFrequencyData.getRsId(), wanted);
@@ -111,12 +114,27 @@ public class TestVariantDataService implements VariantDataService {
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
 
-        List<PathogenicityScore> wanted = pathData.getPredictedPathogenicityScores()
+        List<PathogenicityScore> wanted = pathData.pathogenicityScores()
                 .stream()
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
-                .collect(Collectors.toList());
+                .toList();
 
-        return PathogenicityData.of(pathData.getClinVarData(), wanted);
+        return PathogenicityData.of(pathData.clinVarData(), wanted);
+    }
+
+    @Override
+    public ClinVarData getClinVarData(Variant variant) {
+        return null;
+    }
+
+    @Override
+    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+        return null;
+    }
+
+    @Override
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+        return null;
     }
 
     public static Builder builder() {
@@ -181,6 +199,20 @@ public class TestVariantDataService implements VariantDataService {
             return PathogenicityData.empty();
         }
 
+        @Override
+        public ClinVarData getClinVarData(Variant variant) {
+            return ClinVarData.empty();
+        }
+
+        @Override
+        public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+            return ClinVarData.empty();
+        }
+
+        @Override
+        public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+            return Map.of();
+        }
     }
 
 }

@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ public class MvStoreUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(MvStoreUtil.class);
     private static final String ALLELE_MAP_NAME = "alleles";
+    private static final String CLINVAR_MAP_NAME = "clinvar";
 
     private MvStoreUtil() {
         //static utility class - not instantiable
@@ -53,13 +55,29 @@ public class MvStoreUtil {
      * @since 10.1.0
      */
     public static MVMap<AlleleKey, AlleleProperties> openAlleleMVMap(MVStore mvStore) {
+        return openMap(mvStore, ALLELE_MAP_NAME, alleleMapBuilder());
+    }
+
+    /**
+     * Opens the 'clinvar' map from the {@link MVStore}. If the store does not already contain this map, a new one will
+     * be created and returned.
+     *
+     * @param mvStore The {@code MVStore} to be used for the 'clinvar' {@link MVMap}
+     * @return an instance of the {@link MVMap}. This map may be empty.
+     * @since 14.0.0
+     */
+    public static MVMap<AlleleKey, AlleleProto.ClinVar> openClinVarMVMap(MVStore mvStore) {
+        return openMap(mvStore, CLINVAR_MAP_NAME, clinVarMapBuilder());
+    }
+
+    private static <K, V> MVMap<K, V> openMap(MVStore mvStore, String mapName, MVMap.Builder<K, V> mapBuilder) {
         Objects.requireNonNull(mvStore);
-        if (!mvStore.hasMap(ALLELE_MAP_NAME)) {
-            logger.warn("MVStore does not contain map '{}' - creating new map instance.", ALLELE_MAP_NAME);
+        if (!mvStore.hasMap(mapName)) {
+            logger.warn("MVStore does not contain map '{}' - creating new map instance.", mapName);
         }
-        MVMap<AlleleKey, AlleleProperties> map = mvStore.openMap(ALLELE_MAP_NAME, MvStoreUtil.alleleMapBuilder());
+        MVMap<K, V> map = mvStore.openMap(mapName, mapBuilder);
         if (!map.isEmpty()) {
-            logger.debug("MVMap '{}' opened with {} entries", ALLELE_MAP_NAME, map.size());
+            logger.info("MVMap '{}' opened with {} entries", mapName, map.size());
         }
         return map;
     }
@@ -68,5 +86,11 @@ public class MvStoreUtil {
         return new MVMap.Builder<AlleleKey, AlleleProperties>()
                 .keyType(AlleleKeyDataType.INSTANCE)
                 .valueType(AllelePropertiesDataType.INSTANCE);
+    }
+// TODO: separate this into AllelePropertiesMVMap and ClinVarMVMap classes?
+    public static MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMapBuilder() {
+        return new MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.ClinVar>()
+                .keyType(AlleleKeyDataType.INSTANCE)
+                .valueType(ClinVarDataType.INSTANCE);
     }
 }

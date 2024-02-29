@@ -74,9 +74,6 @@ public class VariantDatabaseBuildRunner {
             throw new IllegalStateException("Error writing to MVStore " + fileName, e);
         }
 
-        MVMap<AlleleKey, AlleleProperties> alleleMVMap = MvStoreUtil.openAlleleMVMap(mvStore);
-        logger.info("Written {} alleles to store", alleleMVMap.size());
-
         // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
         logger.info("Compacting store...");
         MVStoreTool.compact(fileName, true);

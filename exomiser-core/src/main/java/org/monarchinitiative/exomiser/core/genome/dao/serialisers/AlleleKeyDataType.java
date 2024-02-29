@@ -20,14 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao.serialisers;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import org.h2.mvstore.DataUtils;
-import org.h2.mvstore.WriteBuffer;
+import com.google.protobuf.Parser;
 import org.h2.mvstore.type.DataType;
-import org.h2.util.Utils;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-
-import java.nio.ByteBuffer;
 
 /**
  * Specialised {@link DataType} for (de)serialising {@link AlleleKey} objects into and out of
@@ -35,9 +30,12 @@ import java.nio.ByteBuffer;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AlleleKeyDataType implements DataType {
+public class AlleleKeyDataType extends ProtobufDataType<AlleleKey> {
 
     public static final AlleleKeyDataType INSTANCE = new AlleleKeyDataType();
+
+    private AlleleKeyDataType() {
+    }
 
     /**
      * Sorts variants according to their natural ordering of genome position. Variants are sorted according to
@@ -47,59 +45,27 @@ public class AlleleKeyDataType implements DataType {
      * @return comparator score consistent with equals.
      */
     @Override
-    public int compare(Object a, Object b) {
-        AlleleKey keyA = (AlleleKey) a;
-        AlleleKey keyB = (AlleleKey) b;
-
-        if (keyA.getChr() != keyB.getChr()) {
-            return Integer.compare(keyA.getChr(), keyB.getChr());
+    public int compare(AlleleKey a, AlleleKey b) {
+        int result = Integer.compare(a.getChr(), b.getChr());
+        if (result == 0) {
+            result = Integer.compare(a.getPosition(), b.getPosition());
         }
-        if (keyA.getPosition() != keyB.getPosition()) {
-            return Integer.compare(keyA.getPosition(), keyB.getPosition());
+        if (result == 0) {
+            result = a.getRef().compareTo(b.getRef());
         }
-        if (!keyA.getRef().equals(keyB.getRef())) {
-            return keyA.getRef().compareTo(keyB.getRef());
+        if (result == 0) {
+            result = a.getAlt().compareTo(b.getAlt());
         }
-        return keyA.getAlt().compareTo(keyB.getAlt());
+        return result;
     }
 
     @Override
-    public int getMemory(Object obj) {
-        AlleleKey key = (AlleleKey) obj;
-        return key.getSerializedSize();
+    public Parser<AlleleKey> messageParser() {
+        return AlleleKey.parser();
     }
 
     @Override
-    public void read(ByteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            obj[i] = read(buff);
-        }
+    public AlleleKey[] createStorage(int size) {
+        return new AlleleKey[size];
     }
-
-    @Override
-    public void write(WriteBuffer buff, Object[] obj, int len, boolean key) {
-        for (int i = 0; i < len; i++) {
-            write(buff, obj[i]);
-        }
-    }
-
-    @Override
-    public AlleleKey read(ByteBuffer buff) {
-        int len = DataUtils.readVarInt(buff);
-        byte[] data = Utils.newBytes(len);
-        buff.get(data);
-        try {
-            return AlleleKey.parseFrom(data);
-        } catch (InvalidProtocolBufferException e) {
-            throw new InvalidAlleleProtoException(e);
-        }
-    }
-
-    @Override
-    public void write(WriteBuffer buff, Object obj) {
-        AlleleKey key = (AlleleKey) obj;
-        byte[] data = key.toByteArray();
-        buff.putVarInt(data.length).put(data);
-    }
-
 }

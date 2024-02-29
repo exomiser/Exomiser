@@ -21,8 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.*;
 
@@ -37,15 +36,16 @@ public class ClinVarData {
 
     private static final ClinVarData EMPTY = new Builder().build();
 
+
     public enum ClinSig {
         // ACMG/AMP-based
-        BENIGN,
-        BENIGN_OR_LIKELY_BENIGN,
-        LIKELY_BENIGN,
-        UNCERTAIN_SIGNIFICANCE,
-        LIKELY_PATHOGENIC,
-        PATHOGENIC_OR_LIKELY_PATHOGENIC,
         PATHOGENIC,
+        PATHOGENIC_OR_LIKELY_PATHOGENIC,
+        LIKELY_PATHOGENIC,
+        UNCERTAIN_SIGNIFICANCE,
+        LIKELY_BENIGN,
+        BENIGN_OR_LIKELY_BENIGN,
+        BENIGN,
         CONFLICTING_PATHOGENICITY_INTERPRETATIONS,
         //Non-ACMG-based
         AFFECTS,
@@ -54,17 +54,62 @@ public class ClinVarData {
         NOT_PROVIDED,
         OTHER,
         PROTECTIVE,
-        RISK_FACTOR
+        RISK_FACTOR;
     }
 
-    //https://www.ncbi.nlm.nih.gov/clinvar/?term=99222[alleleid]
-    private final String alleleId;
+    /**
+     * Enum for the ClinVar <a href=https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/>review status</a> field.
+     * @since 14.0.0
+     */
+    public enum ReviewStatus {
+        NO_ASSERTION_PROVIDED, // default value
+        NO_ASSERTION_CRITERIA_PROVIDED,
+        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT,
+        CRITERIA_PROVIDED_SINGLE_SUBMITTER,
+        CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS,
+        CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS,
+        REVIEWED_BY_EXPERT_PANEL,
+        PRACTICE_GUIDELINE;
+
+        public int starRating() {
+            return switch (this) {
+                case CRITERIA_PROVIDED_SINGLE_SUBMITTER, CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS -> 1;
+                case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> 2;
+                case REVIEWED_BY_EXPERT_PANEL -> 3;
+                case PRACTICE_GUIDELINE -> 4;
+                default -> 0;
+            };
+        }
+
+        public static ReviewStatus parseReviewStatus(String reviewStatus) {
+            return switch (reviewStatus.replace("_", " ")) {
+                case "no assertion criteria provided" -> NO_ASSERTION_CRITERIA_PROVIDED;
+                case "no interpretation for the single variant", "no interpretation for the individual variant" ->
+                        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+                case "criteria provided, single submitter" -> CRITERIA_PROVIDED_SINGLE_SUBMITTER;
+                case "criteria provided, conflicting interpretations" -> CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+                case "criteria provided, multiple submitters, no conflicts" ->
+                        CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
+                case "reviewed by expert panel" -> REVIEWED_BY_EXPERT_PANEL;
+                case "practice guideline" -> PRACTICE_GUIDELINE;
+                default -> NO_ASSERTION_PROVIDED;
+            };
+        }
+    }
+    //https://www.ncbi.nlm.nih.gov/clinvar/variation/99222
+    private final String variationId;
     private final ClinSig primaryInterpretation;
+    private final Map<ClinSig, Integer> conflictingInterpretationCounts;
+
     private final Set<ClinSig> secondaryInterpretations;
-
-    private final String reviewStatus;
+    private final ReviewStatus reviewStatus;
     private final Map<String, ClinSig> includedAlleles;
+    private final String geneSymbol;
 
+    private final VariantEffect variantEffect;
+    private final String hgvsCdna;
+
+    private final String hgvsProtein;
     // https://www.medschool.umaryland.edu/Genetic_Variant_Interpretation_Tool1.html/
     // BP1, Missense variant in a gene for which primarily truncating variants are known to cause disease
     // BP2, Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern
@@ -108,14 +153,22 @@ public class ClinVarData {
     //##INFO=<ID=MC,Number=.,Type=String,Description="comma separated list of molecular consequence in the form of Sequence Ontology ID|molecular_consequence">
     //##INFO=<ID=ORIGIN,Number=.,Type=String,Description="Allele origin. One or more of the following values may be added: 0 - unknown; 1 - germline; 2 - somatic; 4 - inherited; 8 - paternal; 16 - maternal; 32 - de-novo; 64 - biparental; 128 - uniparental; 256 - not-tested; 512 - tested-inconclusive; 1073741824 - other">
     //##INFO=<ID=RS,Number=.,Type=String,Description="dbSNP ID (i.e. rs number)">
+
     //##INFO=<ID=SSR,Number=1,Type=Integer,Description="Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other">
 
     private ClinVarData(Builder builder) {
-        this.alleleId = builder.alleleId;
+        this.variationId = builder.variationId;
         this.primaryInterpretation = builder.primaryInterpretation;
-        this.secondaryInterpretations = Sets.immutableEnumSet(builder.secondaryInterpretations);
-        this.reviewStatus = builder.reviewStatus.replace("_", " ");
-        this.includedAlleles = ImmutableMap.copyOf(builder.includedAlleles);
+        Map<ClinSig, Integer> map = new EnumMap<>(ClinSig.class);
+        map.putAll(builder.conflictingInterpretationCounts);
+        this.conflictingInterpretationCounts = Collections.unmodifiableMap(map);
+        this.secondaryInterpretations = Collections.unmodifiableSet(builder.secondaryInterpretations);
+        this.reviewStatus = builder.reviewStatus;
+        this.includedAlleles = Collections.unmodifiableMap(builder.includedAlleles);
+        this.geneSymbol = builder.geneSymbol;
+        this.variantEffect = builder.variantEffect;
+        this.hgvsCdna = builder.hgvsCdna;
+        this.hgvsProtein = builder.hgvsProtein;
     }
 
     public static ClinVarData empty() {
@@ -127,24 +180,44 @@ public class ClinVarData {
         return this.equals(EMPTY);
     }
 
-    public String getAlleleId() {
-        return alleleId;
+    public String getVariationId() {
+        return variationId;
     }
 
     public ClinSig getPrimaryInterpretation() {
         return primaryInterpretation;
     }
 
+    public Map<ClinSig, Integer> getConflictingInterpretationCounts() {
+        return conflictingInterpretationCounts;
+    }
+
     public Set<ClinSig> getSecondaryInterpretations() {
         return secondaryInterpretations;
     }
 
-    public String getReviewStatus() {
+    public ReviewStatus getReviewStatus() {
         return reviewStatus;
     }
 
     public Map<String, ClinSig> getIncludedAlleles() {
         return includedAlleles;
+    }
+
+    public String getGeneSymbol() {
+        return geneSymbol;
+    }
+
+    public VariantEffect getVariantEffect() {
+        return variantEffect;
+    }
+
+    public String getHgvsCdna() {
+        return hgvsCdna;
+    }
+
+    public String getHgvsProtein() {
+        return hgvsProtein;
     }
 
     /**
@@ -157,49 +230,30 @@ public class ClinVarData {
     @JsonIgnore
     public boolean isSecondaryAssociationRiskFactorOrOther() {
         for (ClinVarData.ClinSig secondaryClinSig : secondaryInterpretations) {
-            switch (secondaryClinSig) {
-                case AFFECTS:
-                case OTHER:
-                case ASSOCIATION:
-                case RISK_FACTOR:
-                case PROTECTIVE:
-                    return true;
-                default:
-                    return false;
+            if (Objects.requireNonNull(secondaryClinSig) == ClinSig.AFFECTS || secondaryClinSig == ClinSig.OTHER || secondaryClinSig == ClinSig.ASSOCIATION || secondaryClinSig == ClinSig.RISK_FACTOR || secondaryClinSig == ClinSig.PROTECTIVE) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * Returns the ClinVar star rating according to the criteria provided at
-     * https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/#revstat_def
+     * Returns the <a href=https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/#revstat_def>ClinVar star rating</a>.
+     * In the VCF CLNREVSTAT the star ratings are mapped as follows:
      * <p>
-     * In the VCF CLNREVSTAT the start ratings are mapped as follows:
-     * <p>
+     * <pre>
      * 1* criteria_provided,_conflicting_interpretations
      * 1* criteria_provided,_single_submitter
      * 2* criteria_provided,_multiple_submitters,_no_conflicts
      * 3* reviewed_by_expert_panel
      * 4* practice_guideline
+     * </pre>
      *
      * @return an integer value between 0 (worst) and 4 (best)
      * @since 13.0.0
      */
     public int starRating() {
-        switch (reviewStatus) {
-            case "criteria provided, single submitter":
-            case "criteria provided, conflicting interpretations":
-                return 1;
-            case "criteria provided, multiple submitters, no conflicts":
-                return 2;
-            case "reviewed by expert panel":
-                return 3;
-            case "practice guideline":
-                return 4;
-            default:
-                return 0;
-        }
+        return reviewStatus.starRating();
     }
 
     @Override
@@ -207,27 +261,47 @@ public class ClinVarData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClinVarData that = (ClinVarData) o;
-        return Objects.equals(alleleId, that.alleleId) &&
-                primaryInterpretation == that.primaryInterpretation &&
-                Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
-                Objects.equals(reviewStatus, that.reviewStatus) &&
-                Objects.equals(includedAlleles, that.includedAlleles);
+        return Objects.equals(variationId, that.variationId) &&
+               primaryInterpretation == that.primaryInterpretation &&
+               Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
+               reviewStatus == that.reviewStatus &&
+               Objects.equals(includedAlleles, that.includedAlleles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(alleleId, primaryInterpretation, secondaryInterpretations, reviewStatus, includedAlleles);
+        return Objects.hash(variationId, primaryInterpretation, secondaryInterpretations, reviewStatus, includedAlleles);
     }
 
     @Override
     public String toString() {
         return "ClinVarData{" +
-                "alleleId='" + alleleId + '\'' +
-                ", primaryInterpretation=" + primaryInterpretation +
-                ", secondaryInterpretations=" + secondaryInterpretations +
-                ", reviewStatus='" + reviewStatus + '\'' +
-                ", includedAlleles=" + includedAlleles +
-                '}';
+               "variationId='" + variationId + '\'' +
+               ", geneSymbol='" + geneSymbol + '\'' +
+               ", hgvsCdna='" + hgvsCdna + '\'' +
+               ", hgvsProtein='" + hgvsProtein + '\'' +
+               ", variantEffect='" + variantEffect + '\'' +
+               ", primaryInterpretation=" + primaryInterpretation +
+               (primaryInterpretation == ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? ", conflictingInterpretationCounts=" + conflictingInterpretationCounts : "") +
+               ", secondaryInterpretations=" + secondaryInterpretations +
+               ", reviewStatus=" + reviewStatus +
+               ", includedAlleles=" + includedAlleles +
+               '}';
+    }
+
+    public Builder toBuilder() {
+        return new Builder()
+                .variationId(variationId)
+                .primaryInterpretation(primaryInterpretation)
+                .secondaryInterpretations(secondaryInterpretations)
+                .reviewStatus(reviewStatus)
+                .includedAlleles(includedAlleles)
+                .geneSymbol(geneSymbol)
+                .variantEffect(variantEffect)
+                .hgvsCdna(hgvsCdna)
+                .hgvsProtein(hgvsProtein)
+                .conflictingInterpretationCounts(conflictingInterpretationCounts)
+                ;
     }
 
     public static Builder builder() {
@@ -235,40 +309,70 @@ public class ClinVarData {
     }
 
     public static class Builder {
-        private String alleleId = "";
+        private String variationId = "";
         private ClinSig primaryInterpretation = ClinSig.NOT_PROVIDED;
         private Set<ClinSig> secondaryInterpretations = EnumSet.noneOf(ClinSig.class);
 
-        private String reviewStatus = "";
+        private ReviewStatus reviewStatus = ReviewStatus.NO_ASSERTION_PROVIDED;
         private Map<String, ClinSig> includedAlleles = Collections.emptyMap();
 
-        public Builder alleleId(String alleleId) {
-            Objects.requireNonNull(alleleId);
-            this.alleleId = alleleId;
+        private String geneSymbol = "";
+        private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
+
+        private String hgvsCdna = "";
+        private String hgvsProtein = "";
+
+        private Map<ClinSig, Integer> conflictingInterpretationCounts = new EnumMap<>(ClinSig.class);
+
+        public Builder variationId(String variationId) {
+            Objects.requireNonNull(variationId);
+            this.variationId = variationId;
             return this;
         }
 
         public Builder primaryInterpretation(ClinSig primaryInterpretation) {
-            Objects.requireNonNull(primaryInterpretation);
-            this.primaryInterpretation = primaryInterpretation;
+            this.primaryInterpretation = Objects.requireNonNull(primaryInterpretation);
             return this;
         }
 
         public Builder secondaryInterpretations(Set<ClinSig> secondaryInterpretations) {
             Objects.requireNonNull(secondaryInterpretations);
-            this.secondaryInterpretations = secondaryInterpretations;
+            this.secondaryInterpretations = secondaryInterpretations.isEmpty() ? Set.of() : EnumSet.copyOf(secondaryInterpretations);
             return this;
         }
 
-        public Builder reviewStatus(String reviewStatus) {
-            Objects.requireNonNull(reviewStatus);
-            this.reviewStatus = reviewStatus;
+        public Builder reviewStatus(ReviewStatus reviewStatus) {
+            this.reviewStatus = Objects.requireNonNull(reviewStatus);
             return this;
         }
 
         public Builder includedAlleles(Map<String, ClinSig> includedAlleles) {
-            Objects.requireNonNull(includedAlleles);
-            this.includedAlleles = includedAlleles;
+            this.includedAlleles = Objects.requireNonNull(includedAlleles);
+            return this;
+        }
+
+        public Builder geneSymbol(String geneSymbol) {
+            this.geneSymbol = Objects.requireNonNull(geneSymbol);
+            return this;
+        }
+
+        public Builder variantEffect(VariantEffect variantEffect) {
+            this.variantEffect = Objects.requireNonNull(variantEffect);
+            return this;
+        }
+
+        public Builder hgvsCdna(String hgvsCdna) {
+            this.hgvsCdna = Objects.requireNonNull(hgvsCdna);
+            return this;
+        }
+
+        public Builder hgvsProtein(String hgvsProtein) {
+            this.hgvsProtein = Objects.requireNonNull(hgvsProtein);
+            return this;
+        }
+
+        public Builder conflictingInterpretationCounts(Map<ClinSig, Integer> conflictingInterpretationCounts) {
+            this.conflictingInterpretationCounts = Objects.requireNonNull(conflictingInterpretationCounts);
             return this;
         }
 

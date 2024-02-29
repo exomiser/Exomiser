@@ -55,11 +55,11 @@
 # -- Project information -----------------------------------------------------
 
 project = u'exomiser'
-copyright = u'2021, Jules Jacobsen, Damian Smedley, Peter Robinson'
+copyright = u'2024, Jules Jacobsen, Damian Smedley, Peter Robinson'
 author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
-version = u'13.1.0'
+version = u'14.0.0'
 # The full version, including alpha/beta/rc tags
 release = version
 
@@ -94,7 +94,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

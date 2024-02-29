@@ -176,6 +176,12 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
         return this;
     }
 
+    @Override
+    public AnalysisProtoBuilder addGeneBlacklistFilter() {
+        builder.addSteps(stepBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()));
+        return this;
+    }
+
     /**
      * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this
      * method requires that the {@code inheritanceModes} method has already been called and supplied with a non-empty

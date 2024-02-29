@@ -54,6 +54,12 @@ import java.util.List;
  */
 public class SparseVariantFilterRunner implements VariantFilterRunner {
 
+    private final FilterResultsCounter filterResultsCounter;
+
+    public SparseVariantFilterRunner() {
+        this.filterResultsCounter = new FilterResultsCounter();
+    }
+
     @Override
     public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
@@ -74,4 +80,14 @@ public class SparseVariantFilterRunner implements VariantFilterRunner {
         return passedVariantEvaluations;
     }
 
+    @Override
+    public FilterResult logFilterResult(FilterResult filterResult) {
+        filterResultsCounter.logResult(filterResult);
+        return filterResult;
+    }
+
+    @Override
+    public List<FilterResultCount> filterCounts() {
+        return filterResultsCounter.filterResultCounts();
+    }
 }

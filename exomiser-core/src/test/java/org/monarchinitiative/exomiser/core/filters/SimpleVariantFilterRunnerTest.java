@@ -170,6 +170,11 @@ public class SimpleVariantFilterRunnerTest {
         assertThat(passesTargetQualityFilter.passedFilters(), is(false));
         assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, VARIANT_EFFECT_FILTER);
         assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
+
+        FilterResultCount targetCount = new FilterResultCount(VARIANT_EFFECT_FILTER, 2, 2);
+        FilterResultCount qualityCount = new FilterResultCount(QUALITY_FILTER, 3, 1);
+        FilterResultCount frequencyCount = new FilterResultCount(FREQUENCY_FILTER, 2, 2);
+        assertThat(instance.filterCounts(), equalTo(List.of(targetCount, qualityCount, frequencyCount)));
     }
 
     @Test

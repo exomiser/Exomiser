@@ -32,9 +32,14 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2015EvidenceAssigner;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2020PointsBasedClassifier;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignmentCalculator;
+import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidenceAssigner;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
@@ -60,6 +65,7 @@ public class RawScoreGeneScorerTest {
     private static final FilterResult FAIL_FREQUENCY = FilterResult.fail(FilterType.FREQUENCY_FILTER);
     private static final FilterResult PASS_PATHOGENICITY = FilterResult.pass(FilterType.PATHOGENICITY_FILTER);
     private static final FilterResult FAIL_PATHOGENICITY = FilterResult.fail(FilterType.PATHOGENICITY_FILTER);
+    private final CombinedScorePvalueCalculator noOpCombinedScorePvalueCalculator = CombinedScorePvalueCalculator.noOpCombinedScorePvalueCalculator();
 
     private Gene newGene(VariantEvaluation... variantEvaluations) {
         Gene gene = new Gene("TEST1", 1234);
@@ -119,7 +125,8 @@ public class RawScoreGeneScorerTest {
     private List<GeneScore> scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, String probandSample, Pedigree pedigree, Sex sex) {
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, InheritanceModeOptions
                 .defaultForModes(modeOfInheritance));
-        RawScoreGeneScorer instance = new RawScoreGeneScorer(probandSample, sex, inheritanceModeAnnotator);
+        AcmgAssignmentCalculator acmgAssignmentCalculator = acmgAssignmentCalculator(probandSample, pedigree);
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(probandSample, sex, inheritanceModeAnnotator, noOpCombinedScorePvalueCalculator, acmgAssignmentCalculator);
         return instance.scoreGene().apply(gene);
     }
 
@@ -137,12 +144,18 @@ public class RawScoreGeneScorerTest {
 
     private RawScoreGeneScorer getInstance(InheritanceModeOptions inheritanceModeOptions, String probandSample, Pedigree pedigree) {
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
-        return new RawScoreGeneScorer(probandSample, Sex.UNKNOWN, inheritanceModeAnnotator);
+        AcmgAssignmentCalculator acmgAssignmentCalculator = acmgAssignmentCalculator(probandSample, pedigree);
+        return new RawScoreGeneScorer(probandSample, Sex.UNKNOWN, inheritanceModeAnnotator, noOpCombinedScorePvalueCalculator, acmgAssignmentCalculator);
     }
 
     private RawScoreGeneScorer getInstance(InheritanceModeOptions inheritanceModeOptions, Sex sex, String probandSample, Pedigree pedigree) {
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(pedigree, inheritanceModeOptions);
-        return new RawScoreGeneScorer(probandSample, sex, inheritanceModeAnnotator);
+        AcmgAssignmentCalculator acmgAssignmentCalculator = acmgAssignmentCalculator(probandSample, pedigree);
+        return new RawScoreGeneScorer(probandSample, sex, inheritanceModeAnnotator, noOpCombinedScorePvalueCalculator, acmgAssignmentCalculator);
+    }
+
+    private static AcmgAssignmentCalculator acmgAssignmentCalculator(String probandSample, Pedigree pedigree) {
+        return new AcmgAssignmentCalculator(new Acmg2015EvidenceAssigner(probandSample, pedigree, TestVariantDataService.stub()), new Acmg2020PointsBasedClassifier());
     }
 
     @Test
@@ -714,12 +727,13 @@ public class RawScoreGeneScorerTest {
 
         InheritanceModeAnnotator inheritanceModeAnnotator = new InheritanceModeAnnotator(Pedigree.justProband("Nemo"), InheritanceModeOptions
                 .empty());
-        RawScoreGeneScorer instance = new RawScoreGeneScorer("Nemo", Sex.UNKNOWN, inheritanceModeAnnotator);
-        instance.scoreGenes(genes);
+        AcmgAssignmentCalculator acmgAssignmentCalculator = acmgAssignmentCalculator("Nemo", inheritanceModeAnnotator.getPedigree());
+        GeneScorer instance = new RawScoreGeneScorer("Nemo", Sex.UNKNOWN, inheritanceModeAnnotator, noOpCombinedScorePvalueCalculator, acmgAssignmentCalculator);
 
-        assertThat(genes.indexOf(first), equalTo(0));
-        assertThat(genes.indexOf(middle), equalTo(1));
-        assertThat(genes.indexOf(last), equalTo(2));
+        List<Gene> scoredGenes = instance.scoreGenes(genes);
+        assertThat(scoredGenes.indexOf(first), equalTo(0));
+        assertThat(scoredGenes.indexOf(middle), equalTo(1));
+        assertThat(scoredGenes.indexOf(last), equalTo(2));
     }
 
     ///Priority and Combined score tests

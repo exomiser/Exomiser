@@ -24,11 +24,14 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoader;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +47,8 @@ public class GenomeDataSourceLoader {
     private final GenomeDataResolver genomeDataResolver;
 
     private final JannovarData jannovarData;
-    private final MVStore mvStore;
+    private final MVStore allelePropsMvStore;
+    private final MVStore clinVarMvStore;
 
     private final VariantWhiteList variantWhiteList;
 
@@ -66,7 +70,8 @@ public class GenomeDataSourceLoader {
         // shenanigans, but I've left the code here as a reminder.
         // start this here as it'll take a while longer than all the others put together
 //        CompletableFuture<JannovarData> jannovarDataFuture = loadJannovarDataAsync();
-        this.mvStore = loadMvStore();
+        this.allelePropsMvStore = loadAllelePropsMvStore();
+        this.clinVarMvStore = loadClinVarMvStore();
         this.variantWhiteList = loadVariantWhiteList();
 
         this.localFrequencyTabixDataSource = getTabixDataSourceOrDefault("LOCAL", genomeProperties.getLocalFrequencyPath());
@@ -95,18 +100,27 @@ public class GenomeDataSourceLoader {
         return JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
     }
 
-    private MVStore loadMvStore() {
+    private MVStore loadAllelePropsMvStore() {
         Path mvStoreAbsolutePath = genomeDataResolver.getVariantsMvStorePath();
-        logger.debug("Opening MVStore from {}", mvStoreAbsolutePath);
+        logger.debug("Opening variants MVStore from {}", mvStoreAbsolutePath);
         return MvStoreDataSourceLoader.openMvStore(mvStoreAbsolutePath);
+    }
+
+    private MVStore loadClinVarMvStore() {
+        Path clinVarMvStoreAbsolutePath = genomeDataResolver.getClinVarMvStorePath();
+        logger.debug("Opening ClinVar MVStore from {}", clinVarMvStoreAbsolutePath);
+        return MvStoreDataSourceLoader.openMvStore(clinVarMvStoreAbsolutePath);
     }
 
     private VariantWhiteList loadVariantWhiteList() {
         Path variantWhiteListPath = genomeDataResolver.resolvePathOrNullIfEmpty(genomeProperties.getVariantWhiteListPath());
-        if (variantWhiteListPath != null) {
-            return VariantWhiteListLoader.loadVariantWhiteList(variantWhiteListPath);
-        }
-        return InMemoryVariantWhiteList.empty();
+        Set<AlleleProto.AlleleKey> clinVarWhiteList = genomeProperties.useClinVarWhiteList() ? ClinVarWhiteListReader.readVariantWhiteList(clinVarMvStore) : Set.of();
+        Set<AlleleProto.AlleleKey> userWhiteList = variantWhiteListPath != null ? VariantWhiteListReader.readVariantWhiteList(variantWhiteListPath) : Set.of();
+        // merge clinvar and user whitelists into final whitelist
+        Set<AlleleProto.AlleleKey> whiteList = new HashSet<>(clinVarWhiteList);
+        whiteList.addAll(userWhiteList);
+        logger.info("Loaded {} whitelist variants", whiteList.size());
+        return InMemoryVariantWhiteList.of(Set.copyOf(whiteList));
     }
 
     private TabixDataSource getTabixDataSourceOrDefault(String dataSourceName, String tabixPath) {
@@ -125,8 +139,12 @@ public class GenomeDataSourceLoader {
         return jannovarData;
     }
 
-    public MVStore getMvStore() {
-        return mvStore;
+    public MVStore getAllelePropsMvStore() {
+        return allelePropsMvStore;
+    }
+
+    public MVStore getClinVarMvStore() {
+        return clinVarMvStore;
     }
 
     public VariantWhiteList getVariantWhiteList() {
@@ -159,7 +177,7 @@ public class GenomeDataSourceLoader {
         if (o == null || getClass() != o.getClass()) return false;
         GenomeDataSourceLoader that = (GenomeDataSourceLoader) o;
         return Objects.equals(jannovarData, that.jannovarData) &&
-                Objects.equals(mvStore, that.mvStore) &&
+                Objects.equals(allelePropsMvStore, that.allelePropsMvStore) &&
                 Objects.equals(localFrequencyTabixDataSource, that.localFrequencyTabixDataSource) &&
                 Objects.equals(caddSnvTabixDataSource, that.caddSnvTabixDataSource) &&
                 Objects.equals(caddIndelTabixDataSource, that.caddIndelTabixDataSource) &&
@@ -168,7 +186,7 @@ public class GenomeDataSourceLoader {
 
     @Override
     public int hashCode() {
-        return Objects.hash(jannovarData, mvStore, localFrequencyTabixDataSource, caddSnvTabixDataSource, caddIndelTabixDataSource, remmTabixDataSource);
+        return Objects.hash(jannovarData, allelePropsMvStore, localFrequencyTabixDataSource, caddSnvTabixDataSource, caddIndelTabixDataSource, remmTabixDataSource);
     }
 
 }

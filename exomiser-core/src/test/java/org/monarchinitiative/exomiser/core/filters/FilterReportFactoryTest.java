@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,10 +41,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -70,7 +66,12 @@ public class FilterReportFactoryTest {
 
         variantEvaluations = new ArrayList<>();
         genes = new ArrayList<>();
-        analysisResults = AnalysisResults.builder()
+        analysisResults = analysisResults(List.of());
+    }
+
+    private AnalysisResults analysisResults(List<FilterResultCount> filterResultCounts) {
+        return AnalysisResults.builder()
+                .filterCounts(filterResultCounts)
                 .variantEvaluations(variantEvaluations)
                 .genes(genes)
                 .build();
@@ -144,20 +145,18 @@ public class FilterReportFactoryTest {
         Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);    
         FilterType filterType = filter.getFilterType();
 
-        genes.add(makePassedGene(filterType));
-        genes.add(makeFailedGene(filterType));
+        List<FilterResultCount> filterResultCounts = List.of(new FilterResultCount(filterType, 25, 100));
+        FilterReport report = instance.makeFilterReport(filter, analysisResults(filterResultCounts));
 
-        FilterReport report = instance.makeFilterReport(filter, analysisResults);
-
-        assertThat(report.getPassed(), equalTo(1));
-        assertThat(report.getFailed(), equalTo(1));
+        assertThat(report.getPassed(), equalTo(25));
+        assertThat(report.getFailed(), equalTo(100));
     }
 
     @Test
     public void testMakeTargetFilterReport() {
         VariantEffectFilter filter = new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class));      
 
-        ImmutableList<String> messages = ImmutableList.of(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
+        List<String> messages = List.of(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
         FilterReport report = new FilterReport(filter.getFilterType(), 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -193,10 +192,10 @@ public class FilterReportFactoryTest {
                 .of(FrequencySource.ESP_ALL, 100f), Frequency.of(FrequencySource.EXAC_OTHER, 100f)));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
 
-        ImmutableList<String> messages = ImmutableList.of("Variants filtered for maximum allele frequency of 0.00%");
+        List<String> messages = List.of("Variants filtered for maximum allele frequency of 0.00%");
         FilterReport report = new FilterReport(filter.getFilterType(), 1, 1, messages);
 
-        FilterReport result = instance.makeFilterReport(filter, analysisResults);
+        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.getFilterType(), 1, 1))));
         assertThat(result, equalTo(report));
     }
     
@@ -226,7 +225,7 @@ public class FilterReportFactoryTest {
         messages.add("Data available from ExAC Project for 1 variants (50.0%)");
 
         FilterReport report = new FilterReport(filter.getFilterType(), 1, 1, messages);
-        FilterReport result = instance.makeFilterReport(filter, analysisResults);
+        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.getFilterType(), 1, 1))));
 
         assertThat(result, equalTo(report));
     }
@@ -236,7 +235,7 @@ public class FilterReportFactoryTest {
         Filter filter = new QualityFilter(100.0f);
         FilterType filterType = filter.getFilterType();
 
-        ImmutableList<String> messages = ImmutableList.of("Variants filtered for mimimum PHRED quality of 100.0");
+        List<String> messages = List.of("Variants filtered for mimimum PHRED quality of 100.0");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -249,7 +248,7 @@ public class FilterReportFactoryTest {
         Filter filter = new PathogenicityFilter(true);
         FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
+        List<String> messages = List.of("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -262,7 +261,7 @@ public class FilterReportFactoryTest {
         Filter filter = new PathogenicityFilter(false);
         FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Retained all non-pathogenic missense variants");
+        List<String> messages = List.of("Retained all non-pathogenic missense variants");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -276,7 +275,7 @@ public class FilterReportFactoryTest {
         Filter filter = new IntervalFilter(interval);
         FilterType filterType = FilterType.INTERVAL_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Restricted variants to interval:", "1:2-3");
+        List<String> messages = List.of("Restricted variants to interval:", "1:2-3");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -297,7 +296,7 @@ public class FilterReportFactoryTest {
 
         Filter filter = new IntervalFilter(intervals);
 
-        ImmutableList<String> messages = ImmutableList.of(
+        List<String> messages = List.of(
                 "Restricted variants to intervals:",
                 "1:2-3",
                 "2:2-3",
@@ -317,7 +316,7 @@ public class FilterReportFactoryTest {
         Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Genes filtered for compatibility with AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE inheritance.");
+        List<String> messages = List.of("Variants filtered for compatibility with AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE inheritance.");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
@@ -331,7 +330,7 @@ public class FilterReportFactoryTest {
         Filter filter = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, minimumPriorityScore);
         FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
-        ImmutableList<String> messages = ImmutableList.of("Genes filtered for minimum PHIVE_PRIORITY score of 0.5");
+        List<String> messages = List.of("Genes filtered for minimum PHIVE_PRIORITY score of 0.5");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);

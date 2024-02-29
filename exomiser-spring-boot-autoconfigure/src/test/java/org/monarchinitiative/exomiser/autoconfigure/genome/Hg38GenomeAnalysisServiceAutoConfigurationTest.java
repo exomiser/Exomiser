@@ -48,9 +48,11 @@ public class Hg38GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
 
         assertThat(context.getBean("hg38jannovarData"), instanceOf(JannovarData.class));
         assertThat(context.getBean("hg38mvStore"), instanceOf(MVStore.class));
+        assertThat(context.getBean("hg38clinVarStore"), instanceOf(MVStore.class));
         assertThat(context.getBean("hg38variantAnnotator"), instanceOf(VariantAnnotator.class));
         assertThat(context.getBean("hg38variantDataService"), instanceOf(VariantDataService.class));
         assertThat(context.getBean("hg38genomeDataService"), instanceOf(GenomeDataService.class));
+        assertThat(context.getBean("hg38VariantWhiteList"), instanceOf(VariantWhiteList.class));
 
         assertThat(context.getBean("hg38allelePropertiesDao"), instanceOf(AllelePropertiesDao.class));
 

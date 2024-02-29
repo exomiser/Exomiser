@@ -37,6 +37,9 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
     private Path dataDirectory;
 
+    private String clinVarDataVersion = "";
+    private boolean useClinVarWhiteList = true;
+
     // Optional tabix data file containing whitelisted variants
     // This overrides the variant effect, frequency and pathogenicity filters
     private String variantWhiteListPath = "";
@@ -69,12 +72,31 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
         return assembly;
     }
 
+    @Override
     public String getDataVersion() {
         return dataVersion;
     }
 
     public void setDataVersion(String dataVersion) {
         this.dataVersion = dataVersion;
+    }
+
+    @Override
+    public String getClinVarDataVersion() {
+        return clinVarDataVersion;
+    }
+
+    public void setClinVarDataVersion(String clinVarDataVersion) {
+        this.clinVarDataVersion = clinVarDataVersion;
+    }
+
+    @Override
+    public boolean useClinVarWhiteList() {
+        return useClinVarWhiteList;
+    }
+
+    public void setUseClinVarWhiteList(boolean useClinVarWhiteList) {
+        this.useClinVarWhiteList = useClinVarWhiteList;
     }
 
     public TranscriptSource getTranscriptSource() {

@@ -21,20 +21,22 @@
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
+import org.monarchinitiative.exomiser.data.genome.model.resource.DbNsfp4AlleleResource;
 
-import java.util.Collections;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.StringJoiner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.monarchinitiative.exomiser.data.genome.model.AlleleProperty.*;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.PathogenicitySource.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DbNsfpAlleleParserTest {
+class DbNsfpAlleleParserTest {
 
     private List<Allele> parseLine(DbNsfpColumnIndex columnIndex, String line) {
         DbNsfpAlleleParser instance = new DbNsfpAlleleParser(columnIndex);
@@ -44,195 +46,174 @@ public class DbNsfpAlleleParserTest {
 
     private void assertParseLineEqualsExpected(DbNsfpColumnIndex columnIndex, String line, List<Allele> expectedAlleles) {
         List<Allele> alleles = parseLine(columnIndex, line);
-
         assertThat(alleles.size(), equalTo(expectedAlleles.size()));
         for (int i = 0; i < alleles.size(); i++) {
             Allele allele = alleles.get(i);
             Allele expected = expectedAlleles.get(i);
             assertThat(allele, equalTo(expected));
             assertThat(allele.getRsId(), equalTo(expected.getRsId()));
-            assertThat(allele.getValues(), equalTo(expected.getValues()));
+            assertThat(allele.getPathogenicityScores(), equalTo(expected.getPathogenicityScores()));
         }
     }
 
     @Test
-    public void parseChrZero() throws Exception {
+    void parseChrZero() {
         String line = lineBuilder().chr19("0").pos19("11").ref("A").alt("T").build();
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.emptyList());
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of());
     }
 
     @Test
-    public void parseHg19NoScoresNoRsId() throws Exception {
+    void parseHg19NoScoresNoRsId() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11").build();
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.emptyList());
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of());
     }
 
     @Test
-    public void parseHg38NoScoresNoRsId() throws Exception {
+    void parseHg38NoScoresNoRsId() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11").build();
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, Collections.emptyList());
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, List.of());
     }
 
     @Test
-    public void parseHg19NoScoresRsId() throws Exception {
+    void parseHg19NoScoresRsId() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .rs("rs12345")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
         allele.setRsId("rs12345");
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of());
     }
 
     @Test
-    public void parseHg38NoScoresRsId() throws Exception {
+    void parseHg38NoScoresRsId() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .rs("rs12345")
                 .build();
         Allele allele = new Allele(1, 10, "A", "T");
         allele.setRsId("rs12345");
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, Collections.singletonList(allele));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG38, line, List.of());
     }
 
     @Test
-    public void parseMultiRsId() throws Exception {
+    void parseMultiRsId() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .rs("rs12345;rs54321")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
         allele.setRsId("rs12345");
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of());
     }
 
     @Test
-    public void parseSift() throws Exception {
+    void parseSift() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .sift("0.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(SIFT, 0f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(SIFT, 0f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseSiftMultipleValuesReturnsHighest() throws Exception {
+    void parseSiftMultipleValuesReturnsHighest() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .sift("0.0;1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(SIFT, 0f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(SIFT, 0f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parsePolyPhen() throws Exception {
+    void parsePolyPhen() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .polyPhen2Hvar("1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(POLYPHEN, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(POLYPHEN, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parsePolyPhenMultipleValuesReturnsHighest() throws Exception {
+    void parsePolyPhenMultipleValuesReturnsHighest() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .polyPhen2Hvar("0.998;0.02;0.99")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(POLYPHEN, 0.998f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(POLYPHEN, 0.998f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseMutationTaster() throws Exception {
+    void parseMutationTaster() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .mTasterScore("1")
                 .mTasterPred("D")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MUT_TASTER, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MUTATION_TASTER, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseMutationTasterMultipleValuesReturnsHighest() throws Exception {
+    void parseMutationTasterMultipleValuesReturnsHighest() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .mTasterScore("0.880664;1")
                 .mTasterPred("D;D")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MUT_TASTER, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MUTATION_TASTER, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseRevel() {
+    void parseRevel() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .revelScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(REVEL, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(REVEL, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseMcap() {
-        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
-                .mCapScore("1")
-                .build();
-        Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MCAP, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
-    }
-
-    @Test
-    public void parseMpcSingleTranscript() {
-        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
-                .mpcScore("1")
-                .build();
-        Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MPC, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
-    }
-
-    @Test
-    public void parseMpcMultiTranscript() {
-        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
-                .mpcScore("1.0;0.5;0.1")
-                .build();
-        Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MPC, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
-    }
-
-    @Test
-    public void parseMvpSingleTranscript() {
+    void parseMvpSingleTranscript() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .mvpScore("1.0")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MVP, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MVP, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parseMvpMultiTranscript() {
+    void parseMvpMultiTranscript() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
                 .mvpScore("1.0;0.5;0.1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(MVP, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(MVP, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     @Test
-    public void parsePrimateAi() {
+    void parseAlphaMissense() {
         String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
-                .primateAiScore("1")
+                .alphaMissenseScore("1")
                 .build();
         Allele allele = new Allele(1, 11, "A", "T");
-        allele.addValue(PRIMATE_AI, 1f);
-        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, Collections.singletonList(allele));
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(ALPHA_MISSENSE, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
+    }
+
+    @Test
+    void parseEve() {
+        String line = lineBuilder().chr("1").pos("10").ref("A").alt("T").chr19("1").pos19("11")
+                .eveScore("1")
+                .build();
+        Allele allele = new Allele(1, 11, "A", "T");
+        allele.addPathogenicityScore(AlleleData.pathogenicityScoreOf(EVE, 1f));
+        assertParseLineEqualsExpected(DbNsfpColumnIndex.HG19, line, List.of(allele));
     }
 
     //##chr	pos(1-based)	ref	alt	aaref	aaalt	rs_dbSNP147	hg19_chr	hg19_pos(1-based)	hg18_chr	hg18_pos(1-based)	genename	cds_strand	refcodon	codonpos	codon_degeneracy	Ancestral_allele	AltaiNeandertal	Denisova	Ensembl_geneid	Ensembl_transcriptid	Ensembl_proteinid	aapos	SIFT_score	SIFT_converted_rankscore	SIFT_pred	Uniprot_acc_Polyphen2	Uniprot_id_Polyphen2	Uniprot_aapos_Polyphen2	Polyphen2_HDIV_score	Polyphen2_HDIV_rankscore	Polyphen2_HDIV_pred	Polyphen2_HVAR_score	Polyphen2_HVAR_rankscore	Polyphen2_HVAR_pred	LRT_score	LRT_converted_rankscore	LRT_pred	LRT_Omega	MutationTaster_score	MutationTaster_converted_rankscore	MutationTaster_pred	MutationTaster_model	MutationTaster_AAE	MutationAssessor_UniprotID	MutationAssessor_variant	MutationAssessor_score	MutationAssessor_score_rankscore	MutationAssessor_pred	FATHMM_score	FATHMM_converted_rankscore	FATHMM_pred	PROVEAN_score	PROVEAN_converted_rankscore	PROVEAN_pred	Transcript_id_VEST3	Transcript_var_VEST3	VEST3_score	VEST3_rankscore	MetaSVM_score	MetaSVM_rankscore	MetaSVM_pred	MetaLR_score	MetaLR_rankscore	MetaLR_pred	Reliability_index	M-CAP_score	M-CAP_rankscore	M-CAP_pred	CADD_raw	CADD_raw_rankscore	CADD_phred	DANN_score	DANN_rankscore	fathmm-MKL_coding_score	fathmm-MKL_coding_rankscore	fathmm-MKL_coding_pred	fathmm-MKL_coding_group	Eigen_coding_or_noncoding	Eigen-raw	Eigen-phred	Eigen-PC-raw	Eigen-PC-phred	Eigen-PC-raw_rankscore	GenoCanyon_score	GenoCanyon_score_rankscore	integrated_fitCons_score	integrated_fitCons_score_rankscore	integrated_confidence_value	GM12878_fitCons_score	GM12878_fitCons_score_rankscore	GM12878_confidence_value	H1-hESC_fitCons_score	H1-hESC_fitCons_score_rankscore	H1-hESC_confidence_value	HUVEC_fitCons_score	HUVEC_fitCons_score_rankscore	HUVEC_confidence_value	GERP++_NR	GERP++_RS	GERP++_RS_rankscore	phyloP100way_vertebrate	phyloP100way_vertebrate_rankscore	phyloP20way_mammalian	phyloP20way_mammalian_rankscore	phastCons100way_vertebrate	phastCons100way_vertebrate_rankscore	phastCons20way_mammalian	phastCons20way_mammalian_rankscore	SiPhy_29way_pi	SiPhy_29way_logOdds	SiPhy_29way_logOdds_rankscore	1000Gp3_AC	1000Gp3_AF	1000Gp3_AFR_AC	1000Gp3_AFR_AF	1000Gp3_EUR_AC	1000Gp3_EUR_AF	1000Gp3_AMR_AC	1000Gp3_AMR_AF	1000Gp3_EAS_AC	1000Gp3_EAS_AF	1000Gp3_SAS_AC	1000Gp3_SAS_AF	TWINSUK_AC	TWINSUK_AF	ALSPAC_AC	ALSPAC_AF	ESP6500_AA_AC	ESP6500_AA_AF	ESP6500_EA_AC	ESP6500_EA_AF	ExAC_AC	ExAC_AF	ExAC_Adj_AC	ExAC_Adj_AF	ExAC_AFR_AC	ExAC_AFR_AF	ExAC_AMR_AC	ExAC_AMR_AF	ExAC_EAS_AC	ExAC_EAS_AF	ExAC_FIN_AC	ExAC_FIN_AF	ExAC_NFE_AC	ExAC_NFE_AF	ExAC_SAS_AC	ExAC_SAS_AF	ExAC_nonTCGA_AC	ExAC_nonTCGA_AF	ExAC_nonTCGA_Adj_AC	ExAC_nonTCGA_Adj_AF	ExAC_nonTCGA_AFR_AC	ExAC_nonTCGA_AFR_AF	ExAC_nonTCGA_AMR_AC	ExAC_nonTCGA_AMR_AF	ExAC_nonTCGA_EAS_AC	ExAC_nonTCGA_EAS_AF	ExAC_nonTCGA_FIN_AC	ExAC_nonTCGA_FIN_AF	ExAC_nonTCGA_NFE_AC	ExAC_nonTCGA_NFE_AF	ExAC_nonTCGA_SAS_AC	ExAC_nonTCGA_SAS_AF	ExAC_nonpsych_AC	ExAC_nonpsych_AF	ExAC_nonpsych_Adj_AC	ExAC_nonpsych_Adj_AF	ExAC_nonpsych_AFR_AC	ExAC_nonpsych_AFR_AF	ExAC_nonpsych_AMR_AC	ExAC_nonpsych_AMR_AF	ExAC_nonpsych_EAS_AC	ExAC_nonpsych_EAS_AF	ExAC_nonpsych_FIN_AC	ExAC_nonpsych_FIN_AF	ExAC_nonpsych_NFE_AC	ExAC_nonpsych_NFE_AF	ExAC_nonpsych_SAS_AC	ExAC_nonpsych_SAS_AF	clinvar_rs	clinvar_clnsig	clinvar_trait	clinvar_golden_stars	Interpro_domain	GTEx_V6_gene	GTEx_V6_tissue
@@ -288,7 +269,10 @@ public class DbNsfpAlleleParserTest {
                 "M-CAP_score\t" +
                 "MPC_score\t" +
                 "MVP_score\t" +
-                "PrimateAI_score";
+                "PrimateAI_score\t" +
+                "AlphaMissense_score\t" +
+                "EVE_score\t"
+                ;
 
 
         private String chr = "0";
@@ -311,6 +295,8 @@ public class DbNsfpAlleleParserTest {
         private String mpcScore = ".";
         private String mvpScore = ".";
         private String primateAiScore = ".";
+        private String alphaMissenseScore = ".";
+        private String eveScore = ".";
 
         public LineBuilder chr(String chr) {
             this.chr = chr;
@@ -392,6 +378,16 @@ public class DbNsfpAlleleParserTest {
             return this;
         }
 
+        public LineBuilder alphaMissenseScore(String alphaMissenseScore) {
+            this.alphaMissenseScore = alphaMissenseScore;
+            return this;
+        }
+
+        public LineBuilder eveScore(String eveScore) {
+            this.eveScore = eveScore;
+            return this;
+        }
+
         public String build() {
             StringJoiner stringJoiner = new StringJoiner("\t");
             // This order is critical for the tests to work properly.
@@ -412,9 +408,16 @@ public class DbNsfpAlleleParserTest {
             stringJoiner.add(mpcScore);
             stringJoiner.add(mvpScore);
             stringJoiner.add(primateAiScore);
+            stringJoiner.add(alphaMissenseScore);
+            stringJoiner.add(eveScore);
             return stringJoiner.toString();
         }
 
     }
 
+    @Test
+    void realFileDebugTest() {
+        var resource = new DbNsfp4AlleleResource("hg19.dbnsfp", null, Path.of("/home/hhx640/Documents/GitHub/Exomiser/exomiser-data-genome/build/hg19/variants/dbNSFP4.5a.zip"), DbNsfpColumnIndex.HG19);
+        resource.parseResource().limit(1).forEach(System.out::println);
+    }
 }

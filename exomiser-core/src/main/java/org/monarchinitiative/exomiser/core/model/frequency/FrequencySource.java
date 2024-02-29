@@ -24,8 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import com.google.common.collect.Sets;
-
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -41,7 +40,7 @@ public enum FrequencySource {
     //Frequencies from a local datasource
     LOCAL("Local"),
 
-    //Thousand genomes http://www.1000genomes.org/ 
+    //Thousand genomes http://www.1000genomes.org/
     THOUSAND_GENOMES("1000Genomes"),
     //https://www.nhlbi.nih.gov/research/resources/nhlbi-precision-medicine-initiative/topmed
     TOPMED("TOPMed"),
@@ -49,8 +48,8 @@ public enum FrequencySource {
     UK10K("UK10K"),
 
     //ESP project http://evs.gs.washington.edu/EVS/
-    ESP_AFRICAN_AMERICAN("ESP AA"),
-    ESP_EUROPEAN_AMERICAN("ESP EA"),
+    ESP_AA("ESP AA"),
+    ESP_EA("ESP EA"),
     ESP_ALL("ESP All"),
 
     //ExAC project http://exac.broadinstitute.org/about
@@ -69,17 +68,33 @@ public enum FrequencySource {
     GNOMAD_E_EAS("gnomAD_E_EAS"),
     GNOMAD_E_FIN("gnomAD_E_FIN"),
     GNOMAD_E_NFE("gnomAD_E_NFE"),
+    GNOMAD_E_MID("gnomAD_E_MID"),
     GNOMAD_E_OTH("gnomAD_E_OTH"),
     GNOMAD_E_SAS("gnomAD_E_SAS"),
 
     GNOMAD_G_AFR("gnomAD_G_AFR"),
+    GNOMAD_G_AMI("gnomAD_G_AMI"),
     GNOMAD_G_AMR("gnomAD_G_AMR"),
     GNOMAD_G_ASJ("gnomAD_G_ASJ"),
     GNOMAD_G_EAS("gnomAD_G_EAS"),
     GNOMAD_G_FIN("gnomAD_G_FIN"),
     GNOMAD_G_NFE("gnomAD_G_NFE"),
+    GNOMAD_G_MID("gnomAD_G_MID"),
     GNOMAD_G_OTH("gnomAD_G_OTH"),
     GNOMAD_G_SAS("gnomAD_G_SAS"),
+
+    ALFA_AFO("ALFA_AFO"),
+    ALFA_AFA("ALFA_AFA"),
+    ALFA_AFR("ALFA_AFR"),
+    ALFA_EUR("ALFA_EUR"),
+    ALFA_LAC("ALFA_LAC"),
+    ALFA_LEN("ALFA_LEN"),
+    ALFA_SAS("ALFA_SAS"),
+    ALFA_EAS("ALFA_EAS"),
+    ALFA_ASN("ALFA_ASN"),
+    ALFA_OAS("ALFA_OAS"),
+    ALFA_OTR("ALFA_OTR"),
+    ALFA_TOT("ALFA_TOT"),
 
     // structural variant frequency sources
     DBVAR("dbVar"),
@@ -88,13 +103,15 @@ public enum FrequencySource {
     GONL("GoNL"),
     GNOMAD_SV("gnomAD_SV");
 
-    public static final Set<FrequencySource> ALL_ESP_SOURCES = Sets.immutableEnumSet(EnumSet.range(ESP_AFRICAN_AMERICAN, ESP_ALL));
+    public static final Set<FrequencySource> ALL_ESP_SOURCES = Collections.unmodifiableSet(EnumSet.range(ESP_AA, ESP_ALL));
 
-    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Sets.immutableEnumSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
+    public static final Set<FrequencySource> ALL_EXAC_SOURCES = Collections.unmodifiableSet(EnumSet.range(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_SOUTH_ASIAN));
 
-    public static final Set<FrequencySource> ALL_GNOMAD_SOURCES = Sets.immutableEnumSet(EnumSet.range(GNOMAD_E_AFR, GNOMAD_G_SAS));
+    public static final Set<FrequencySource> ALL_GNOMAD_SOURCES = Collections.unmodifiableSet(EnumSet.range(GNOMAD_E_AFR, GNOMAD_G_SAS));
 
-    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Sets.immutableEnumSet(EnumSet.range(THOUSAND_GENOMES, GNOMAD_G_SAS));
+    public static final Set<FrequencySource> ALL_ALFA_SOURCES = Collections.unmodifiableSet(EnumSet.range(ALFA_AFO, ALFA_TOT));
+
+    public static final Set<FrequencySource> ALL_EXTERNAL_FREQ_SOURCES = Collections.unmodifiableSet(EnumSet.range(THOUSAND_GENOMES, ALFA_TOT));
 
     /**
      * Returns the set of non-founder/bottle-necked populations for use in frequency filtering.
@@ -106,14 +123,14 @@ public enum FrequencySource {
      * Middle Eastern (MID), and "Other" (OTH) populations (gnomAD v3).
      * @since 13.3.0
      */
-    public static final Set<FrequencySource> NON_FOUNDER_POPS = Sets.immutableEnumSet(
+    public static final Set<FrequencySource> NON_FOUNDER_POPS = Collections.unmodifiableSet(
             EnumSet.of(
                     THOUSAND_GENOMES,
                     TOPMED,
                     UK10K,
 
-                    ESP_AFRICAN_AMERICAN,
-                    ESP_EUROPEAN_AMERICAN,
+                    ESP_AA,
+                    ESP_EA,
                     ESP_ALL,
 
                     EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
@@ -135,10 +152,12 @@ public enum FrequencySource {
 
                     GNOMAD_G_AFR,
                     GNOMAD_G_AMR,
+//                    GNOMAD_G_AMI,
 //                    GNOMAD_G_ASJ,
                     GNOMAD_G_EAS,
 //                    GNOMAD_G_FIN,
                     GNOMAD_G_NFE,
+//                    GNOMAD_G_MID,
 //                    GNOMAD_G_OTH,
                     GNOMAD_G_SAS
             )
@@ -154,4 +173,7 @@ public enum FrequencySource {
         return source;
     }
 
+    public boolean isGnomadSource() {
+        return ALL_GNOMAD_SOURCES.contains(this);
+    }
 }

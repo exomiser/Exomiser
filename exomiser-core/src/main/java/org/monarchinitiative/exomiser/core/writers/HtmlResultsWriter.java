@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
@@ -42,9 +41,11 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -55,10 +56,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -147,10 +149,53 @@ public class HtmlResultsWriter implements ResultsWriter {
                     return "";
                 })
                 .orElse("ENSEMBL");
+        context.setVariable("ensemblAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
+        context.setVariable("ucscAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
         context.setVariable("transcriptDb", transcriptDb);
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
-        context.setVariable("pValueFormatter", new DecimalFormat("0.0E0"));
+        context.setVariable("pValueFormatter", new ScientificDecimalFormat("0.0E0"));
+        context.setVariable("conflictingInterpretationsFormatter", new ConflictingInterpretationsFormatter());
         return context;
+    }
+
+    /**
+     * Wrapper class for {@link DecimalFormat} to work around new security limitations in Thymeleaf 3.1
+     */
+    public static class ScientificDecimalFormat {
+
+        private final DecimalFormat decimalFormat;
+
+        public ScientificDecimalFormat(String pattern) {
+            decimalFormat = new DecimalFormat(pattern);
+        }
+
+        public String format(double number) {
+            return decimalFormat.format(number);
+        }
+    }
+
+    public static class ConflictingInterpretationsFormatter {
+
+        public String format(Map<ClinVarData.ClinSig, Integer> conflictingInterpretationCounts) {
+            StringJoiner stringJoiner = new StringJoiner(", ");
+            conflictingInterpretationCounts.forEach((k, v) -> {
+                // (P:3, LP:2, VUS:1)
+                String count = abbreviate(k) + ":" + v;
+                stringJoiner.add(count);
+            });
+            return stringJoiner.toString();
+        }
+
+        private String abbreviate(ClinVarData.ClinSig clinSig) {
+            return switch (clinSig) {
+                case PATHOGENIC -> "P";
+                case LIKELY_PATHOGENIC -> "LP";
+                case UNCERTAIN_SIGNIFICANCE -> "VUS";
+                case LIKELY_BENIGN -> "LB";
+                case BENIGN -> "B";
+                default -> "";
+            };
+        }
     }
 
     String toYamlJobString(Sample sample, Analysis analysis, OutputSettings outputSettings) {

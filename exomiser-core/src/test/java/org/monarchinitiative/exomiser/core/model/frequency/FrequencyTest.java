@@ -40,27 +40,39 @@ import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySourc
 public class FrequencyTest {
 
     @Test
-    public void testfrequencyOnlyConstructor(){
+    public void testFrequencyOnlyConstructor(){
         float frequency = 1.0f;
         Frequency instance = Frequency.of(UNKNOWN, frequency);
-        assertThat(instance.getFrequency(), equalTo(frequency));
-        assertThat(instance.getSource(), equalTo(FrequencySource.UNKNOWN));
+        assertThat(instance.frequency(), equalTo(frequency));
+        assertThat(instance.source(), equalTo(FrequencySource.UNKNOWN));
+        assertThat(instance.ac(), equalTo(0));
+        assertThat(instance.an(), equalTo(0));
+        assertThat(instance.homs(), equalTo(0));}
+
+    @Test
+    public void testFrequencyAcAnHomConstructor(){
+        Frequency instance = Frequency.of(UNKNOWN, 2, 200, 1);
+        assertThat(instance.frequency(), equalTo(1.0f));
+        assertThat(instance.source(), equalTo(FrequencySource.UNKNOWN));
+        assertThat(instance.ac(), equalTo(2));
+        assertThat(instance.an(), equalTo(200));
+        assertThat(instance.homs(), equalTo(1));
     }
     
     @Test
-    public void testfrequencySourceInConstructor(){
+    public void testFrequencySourceInConstructor(){
         float frequency = 1.0f;
         FrequencySource source = EXAC_NON_FINNISH_EUROPEAN;
 
         Frequency instance = Frequency.of(source, frequency);
-        assertThat(instance.getFrequency(), equalTo(frequency));
-        assertThat(instance.getSource(), equalTo(source));
+        assertThat(instance.frequency(), equalTo(frequency));
+        assertThat(instance.source(), equalTo(source));
     }
     
     @Test
     public void testFrequencyIsOverThreshold() {
         float threshold = 2.0f;
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 4.0f);
+        Frequency instance = Frequency.of(ESP_AA, 4.0f);
         
         assertThat(instance.isOverThreshold(threshold), is(true));
     }
@@ -68,7 +80,7 @@ public class FrequencyTest {
     @Test
     public void testFrequencyIsNotOverThreshold() {
         float threshold = 2.0f;
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 1.0f);
+        Frequency instance = Frequency.of(ESP_AA, 1.0f);
         
         assertThat(instance.isOverThreshold(threshold), is(false));
     }
@@ -76,7 +88,7 @@ public class FrequencyTest {
     @Test
     public void testNotEqualToOtherFrequencyOfDifferentSource() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
-        Frequency instance = Frequency.of(ESP_AFRICAN_AMERICAN, 1.0f);
+        Frequency instance = Frequency.of(ESP_AA, 1.0f);
         assertThat(instance, not(equalTo(other)));
     }
     
@@ -106,5 +118,7 @@ public class FrequencyTest {
         float frequency = 1.0f;
         Frequency instance = Frequency.of(UNKNOWN, frequency);
         assertThat(instance.toString(), equalTo(String.format(Locale.UK, "Frequency{UNKNOWN=%s}", frequency)));
+
+        assertThat(Frequency.of(GNOMAD_E_AFR, 100, 2000, 1).toString(), equalTo("Frequency{GNOMAD_E_AFR=5.0(100|2000|1)}"));
     }
 }

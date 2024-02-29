@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.nio.file.Path;
 
 /**
@@ -43,6 +43,7 @@ import java.nio.file.Path;
  */
 @Configuration
 @Import({DataDirectoryAutoConfiguration.class})
+@PropertySource("classpath:application-default.properties")
 @PropertySource("classpath:application-default-jdbc.properties")
 @ConditionalOnProperty({"exomiser.hg19.data-version"})
 @EnableConfigurationProperties(Hg19GenomeProperties.class)
@@ -59,7 +60,7 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
 
     @Bean("hg19mvStore")
     public MVStore mvStore() {
-        return mvStore;
+        return allelesMvStore;
     }
 
     /**
@@ -68,7 +69,17 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
      */
     @PreDestroy
     public synchronized void closeMvStore() {
-        mvStore.close();
+        allelesMvStore.close();
+    }
+
+    @Bean("hg19clinVarStore")
+    public MVStore clinVarStore() {
+        return clinVarMvStore;
+    }
+
+    @PreDestroy
+    public synchronized void closeClinVarMvStore() {
+        clinVarMvStore.close();
     }
 
     @Bean("hg19variantAnnotator")
@@ -105,7 +116,7 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg19allelePropertiesDao")
     @Override
     public AllelePropertiesDao allelePropertiesDao() {
-        return new AllelePropertiesDaoMvStore(genomeDataSourceLoader.getMvStore());
+        return new AllelePropertiesDaoMvStore(genomeDataSourceLoader.getAllelePropsMvStore());
     }
 
     @Bean("hg19localFrequencyDao")

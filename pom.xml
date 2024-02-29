@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>13.3.0</version>
+    <version>14.0.0</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -85,7 +85,7 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -94,19 +94,24 @@
         <sonar.organization>exomiser</sonar.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.41</jannovar.version>
-        <svart.version>1.0.2</svart.version>
-        <htsjdk.version>2.24.1</htsjdk.version>
+        <svart.version>2.0.0-RC6</svart.version>
+        <htsjdk.version>3.0.5</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
         <protobuf.version>3.21.12</protobuf.version>
-        <spring-boot.version>2.7.7</spring-boot.version>
+        <spring-boot.version>3.2.3</spring-boot.version>
+        <!-- H2 version 1.4.200 was used for 2309 and below, 2.1.214 is part of Spring boot 3.1.1 the file formats and
+        API for the MVStore are different so consider very hard if this needs updating.-->
+        <h2.version>2.2.224</h2.version>
+        <!-- flway needs to be limited for it to support migrations on the H2 version used above -->
+        <flyway.version>10.6.0</flyway.version>
         <docker.base.image>
             gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
         <!--    These properties are use for the README.md  -->
-        <genome.data.version>2309</genome.data.version>
-        <phenotype.data.version>2309</phenotype.data.version>
+        <genome.data.version>2402</genome.data.version>
+        <phenotype.data.version>2402</phenotype.data.version>
     </properties>
 
     <dependencyManagement>
@@ -153,7 +158,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>${h2.version}</version>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <!--        <dependency>-->
@@ -242,16 +247,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.0.0</version>
                 <!-- Don't enable parallel tests as these will fail in the autoconfigure module due to MVStore
                 only being able to be opened once by any given JVM -->
                 <!--                <configuration>-->
@@ -266,7 +272,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
+                <version>0.8.10</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -293,6 +299,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.10</version>
                         <executions>
                             <execution>
                                 <id>prepare-agent</id>

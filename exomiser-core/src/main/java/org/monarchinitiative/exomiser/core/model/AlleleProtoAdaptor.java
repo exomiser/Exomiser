@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -28,15 +29,17 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.*;
 
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.DBVAR;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -51,8 +54,8 @@ public class AlleleProtoAdaptor {
             .put("TOPMED", TOPMED)
             .put("UK10K", UK10K)
 
-            .put("ESP_AA", ESP_AFRICAN_AMERICAN)
-            .put("ESP_EA", ESP_EUROPEAN_AMERICAN)
+            .put("ESP_AA", ESP_AA)
+            .put("ESP_EA", ESP_EA)
             .put("ESP_ALL", ESP_ALL)
 
             .put("EXAC_AFR", EXAC_AFRICAN_INC_AFRICAN_AMERICAN)
@@ -74,10 +77,12 @@ public class AlleleProtoAdaptor {
 
             .put("GNOMAD_G_AFR", GNOMAD_G_AFR)
             .put("GNOMAD_G_AMR", GNOMAD_G_AMR)
+            .put("GNOMAD_G_AMI", GNOMAD_G_AMI)
             .put("GNOMAD_G_ASJ", GNOMAD_G_ASJ)
             .put("GNOMAD_G_EAS", GNOMAD_G_EAS)
             .put("GNOMAD_G_FIN", GNOMAD_G_FIN)
             .put("GNOMAD_G_NFE", GNOMAD_G_NFE)
+            .put("GNOMAD_G_MID", GNOMAD_G_MID)
             .put("GNOMAD_G_OTH", GNOMAD_G_OTH)
             .put("GNOMAD_G_SAS", GNOMAD_G_SAS)
             .build();
@@ -89,26 +94,24 @@ public class AlleleProtoAdaptor {
             .put("CADD", CADD)
             .put("REMM", REMM)
             .put("REVEL", REVEL)
-            .put("MCAP", M_CAP)
-            .put("MPC", MPC)
             .put("MVP", MVP)
-            .put("PRIMATE_AI", PRIMATE_AI)
             .build();
 
     private AlleleProtoAdaptor() {
         //un-instantiable utility class
     }
 
-    // This would make sense to have this here rather than having similar functionality in the MvStoreUtil
-    // and the VariantKeyGenerator
-    public static AlleleKey toAlleleKey(Variant variant) {
-        // ARGH! I didn't put the frikking genome assembly in the alleleKey!
-        // adding it will probably make the data backwards-incompatible as the MVStore is essentially a TreeMap
+
+    public static AlleleKey toAlleleKey(GenomicVariant variant) {
+        return toAlleleKey(variant.contigId(), variant.start(), variant.ref(), variant.alt());
+    }
+
+    public static AlleleKey toAlleleKey(int contigId, int start, String ref, String alt) {
         return AlleleKey.newBuilder()
-                .setChr(variant.contigId())
-                .setPosition(variant.start())
-                .setRef(variant.ref())
-                .setAlt(variant.alt())
+                .setChr(contigId)
+                .setPosition(start)
+                .setRef(ref)
+                .setAlt(alt)
                 .build();
     }
 
@@ -116,56 +119,145 @@ public class AlleleProtoAdaptor {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return FrequencyData.empty();
         }
-        List<Frequency> frequencies = parseFrequencyData(alleleProperties.getPropertiesMap());
-        return FrequencyData.of(alleleProperties.getRsId(), frequencies);
+        FrequencyData.Builder frequencyDataBuilder = FrequencyData.builder()
+                .rsId(alleleProperties.getRsId());
+        parseFrequencyData(frequencyDataBuilder, alleleProperties);
+        return frequencyDataBuilder.build();
     }
 
-    private static List<Frequency> parseFrequencyData(Map<String, Float> values) {
-        List<Frequency> frequencies = new ArrayList<>(values.size());
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
-                FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
-                float value = field.getValue();
-                frequencies.add(Frequency.of(source, value));
+    private static void parseFrequencyData(FrequencyData.Builder frequencyDataBuilder, AlleleProperties alleleProperties) {
+        int freqsCount = alleleProperties.getFrequenciesCount();
+        for (int i = 0; i < freqsCount; i++) {
+            AlleleProto.Frequency frequency = alleleProperties.getFrequencies(i);
+            var freqSource = toFreqSource(frequency.getFrequencySource());
+            int an = frequency.getAn();
+            if (an == 0) {
+                float af = frequency.getFrequency();
+                frequencyDataBuilder.addFrequency(freqSource, af);
+            } else {
+                int ac = frequency.getAc();
+                int hom = frequency.getHom();
+                frequencyDataBuilder.addFrequency(freqSource, ac, an, hom);
             }
         }
-        return frequencies;
+    }
+
+    private static FrequencySource toFreqSource(AlleleProto.FrequencySource frequencySource) {
+        return switch (frequencySource) {
+            case LOCAL -> LOCAL;
+
+            case KG -> THOUSAND_GENOMES;
+            case TOPMED -> TOPMED;
+            case UK10K -> UK10K;
+
+            case ESP_EA -> ESP_EA;
+            case ESP_AA -> ESP_AA;
+            case ESP_ALL -> ESP_ALL;
+
+            case GNOMAD_E_AFR -> GNOMAD_E_AFR;
+            case GNOMAD_E_AMR -> GNOMAD_E_AMR;
+            case GNOMAD_E_ASJ -> GNOMAD_E_ASJ;
+            case GNOMAD_E_EAS -> GNOMAD_E_EAS;
+            case GNOMAD_E_FIN -> GNOMAD_E_FIN;
+            case GNOMAD_E_NFE -> GNOMAD_E_NFE;
+            case GNOMAD_E_OTH -> GNOMAD_E_OTH;
+            case GNOMAD_E_SAS -> GNOMAD_E_SAS;
+            case GNOMAD_E_MID -> GNOMAD_E_MID;
+
+            case GNOMAD_G_AFR -> GNOMAD_G_AFR;
+            case GNOMAD_G_AMI -> GNOMAD_G_AMI;
+            case GNOMAD_G_AMR -> GNOMAD_G_AMR;
+            case GNOMAD_G_ASJ -> GNOMAD_G_ASJ;
+            case GNOMAD_G_EAS -> GNOMAD_G_EAS;
+            case GNOMAD_G_FIN -> GNOMAD_G_FIN;
+            case GNOMAD_G_MID -> GNOMAD_G_MID;
+            case GNOMAD_G_NFE -> GNOMAD_G_NFE;
+            case GNOMAD_G_OTH -> GNOMAD_G_OTH;
+            case GNOMAD_G_SAS -> GNOMAD_G_SAS;
+
+            case ALFA_AFA -> ALFA_AFA;
+            case ALFA_AFR -> ALFA_AFR;
+            case ALFA_AFO -> ALFA_AFO;
+            case ALFA_EUR -> ALFA_EUR;
+            case ALFA_LAC -> ALFA_LAC;
+            case ALFA_LEN -> ALFA_LEN;
+            case ALFA_EAS -> ALFA_EAS;
+            case ALFA_SAS -> ALFA_SAS;
+            case ALFA_ASN -> ALFA_ASN;
+            case ALFA_OAS -> ALFA_OAS;
+            case ALFA_OTR -> ALFA_OTR;
+            case ALFA_TOT -> ALFA_TOT;
+
+            case UNSPECIFIED_FREQUENCY_SOURCE, UNRECOGNIZED -> UNKNOWN;
+        };
     }
 
     public static PathogenicityData toPathogenicityData(AlleleProperties alleleProperties) {
         if (alleleProperties.equals(AlleleProperties.getDefaultInstance())) {
             return PathogenicityData.empty();
         }
-        List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPropertiesMap());
-        ClinVarData clinVarData = parseClinVarData(alleleProperties.getClinVar());
+        List<PathogenicityScore> pathogenicityScores = parsePathogenicityData(alleleProperties.getPathogenicityScoresList());
+        ClinVarData clinVarData = toClinVarData(alleleProperties.getClinVar());
         return PathogenicityData.of(clinVarData, pathogenicityScores);
     }
 
-    private static List<PathogenicityScore> parsePathogenicityData(Map<String, Float> values) {
-        List<PathogenicityScore> pathogenicityScores = new ArrayList<>();
-        for (Map.Entry<String, Float> field : values.entrySet()) {
-            String key = field.getKey();
-            if(PATHOGENICITY_SOURCE_MAP.containsKey(key)) {
-                PathogenicitySource source = PATHOGENICITY_SOURCE_MAP.get(key);
-                float score = field.getValue();
-                pathogenicityScores.add(PathogenicityScore.of(source, score));
-            }
+    private static List<PathogenicityScore> parsePathogenicityData(List<AlleleProto.PathogenicityScore> pathogenicityScoresList) {
+        List<PathogenicityScore> pathogenicityScores = new ArrayList<>(pathogenicityScoresList.size());
+        for (int i = 0; i < pathogenicityScoresList.size(); i++) {
+            AlleleProto.PathogenicityScore pathogenicityScore = pathogenicityScoresList.get(i);
+            pathogenicityScores.add(PathogenicityScore.of(toPathSource(pathogenicityScore.getPathogenicitySource()), pathogenicityScore.getScore()));
         }
         return pathogenicityScores;
     }
 
-    private static ClinVarData parseClinVarData(ClinVar clinVar) {
+    private static PathogenicitySource toPathSource(AlleleProto.PathogenicitySource pathogenicitySource) {
+        return switch (pathogenicitySource) {
+            case VARIANT_EFFECT -> VARIANT_TYPE;
+            case TEST -> TEST;
+            case POLYPHEN -> POLYPHEN;
+            case MUTATION_TASTER -> MUTATION_TASTER;
+            case SIFT -> SIFT;
+            case CADD -> CADD;
+            case REMM -> REMM;
+            case REVEL -> REVEL;
+            case MVP -> MVP;
+            case SPLICE_AI -> SPLICE_AI;
+            case ALPHA_MISSENSE -> ALPHA_MISSENSE;
+            case EVE -> EVE;
+            case DBVAR -> DBVAR;
+            case CLINVAR -> CLINVAR;
+            case UNRECOGNIZED, UNKNOWN_PATH_SOURCE ->
+                    throw new IllegalStateException("Unexpected value: " + pathogenicitySource);
+        };
+    }
+
+    public static ClinVarData toClinVarData(ClinVar clinVar) {
         if (clinVar.equals(clinVar.getDefaultInstanceForType())) {
             return ClinVarData.empty();
         }
         ClinVarData.Builder builder = ClinVarData.builder();
-        builder.alleleId(clinVar.getAlleleId());
+        builder.variationId(clinVar.getVariationId());
         builder.primaryInterpretation(toClinSig(clinVar.getPrimaryInterpretation()));
+        builder.conflictingInterpretationCounts(toConflictCounts(clinVar.getClinSigCountsMap()));
         builder.secondaryInterpretations(toClinSigSet(clinVar.getSecondaryInterpretationsList()));
         builder.includedAlleles(getToIncludedAlleles(clinVar.getIncludedAllelesMap()));
-        builder.reviewStatus(clinVar.getReviewStatus());
+        builder.reviewStatus(toReviewStatus(clinVar.getReviewStatus()));
+        builder.geneSymbol(clinVar.getGeneSymbol());
+        builder.variantEffect(toVariantEffect(clinVar.getVariantEffect()));
+        builder.hgvsCdna(clinVar.getHgvsCdna());
+        builder.hgvsProtein(clinVar.getHgvsProtein());
         return builder.build();
+    }
+
+    private static Map<ClinVarData.ClinSig, Integer> toConflictCounts(Map<String, Integer> clinSigCountsMap) {
+        if (clinSigCountsMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<ClinVarData.ClinSig, Integer> converted = new EnumMap<>(ClinVarData.ClinSig.class);
+        for (Map.Entry<String, Integer> included : clinSigCountsMap.entrySet()) {
+            converted.put(ClinVarData.ClinSig.valueOf(included.getKey()), included.getValue());
+        }
+        return converted;
     }
 
     private static Map<String, ClinVarData.ClinSig> getToIncludedAlleles(Map<String, ClinVar.ClinSig> includedAllelesMap) {
@@ -193,39 +285,108 @@ public class AlleleProtoAdaptor {
     }
 
     private static ClinVarData.ClinSig toClinSig(ClinVar.ClinSig protoClinSig) {
-        switch (protoClinSig) {
-            case BENIGN:
-                return ClinVarData.ClinSig.BENIGN;
-            case BENIGN_OR_LIKELY_BENIGN:
-                return ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN;
-            case LIKELY_BENIGN:
-                return ClinVarData.ClinSig.LIKELY_BENIGN;
-            case UNCERTAIN_SIGNIFICANCE:
-                return ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE;
-            case LIKELY_PATHOGENIC:
-                return ClinVarData.ClinSig.LIKELY_PATHOGENIC;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case PATHOGENIC:
-                return ClinVarData.ClinSig.PATHOGENIC;
-            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS:
-                return ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case AFFECTS:
-                return ClinVarData.ClinSig.AFFECTS;
-            case ASSOCIATION:
-                return ClinVarData.ClinSig.ASSOCIATION;
-            case DRUG_RESPONSE:
-                return ClinVarData.ClinSig.DRUG_RESPONSE;
-            case OTHER:
-                return ClinVarData.ClinSig.OTHER;
-            case PROTECTIVE:
-                return ClinVarData.ClinSig.PROTECTIVE;
-            case RISK_FACTOR:
-                return ClinVarData.ClinSig.RISK_FACTOR;
-            case NOT_PROVIDED:
-            case UNRECOGNIZED:
-            default:
-                return ClinVarData.ClinSig.NOT_PROVIDED;
-        }
+        return switch (protoClinSig) {
+            case BENIGN -> ClinVarData.ClinSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN -> ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN -> ClinVarData.ClinSig.LIKELY_BENIGN;
+            case UNCERTAIN_SIGNIFICANCE -> ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE;
+            case LIKELY_PATHOGENIC -> ClinVarData.ClinSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC -> ClinVarData.ClinSig.PATHOGENIC;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS ->
+                    ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case AFFECTS -> ClinVarData.ClinSig.AFFECTS;
+            case ASSOCIATION -> ClinVarData.ClinSig.ASSOCIATION;
+            case DRUG_RESPONSE -> ClinVarData.ClinSig.DRUG_RESPONSE;
+            case OTHER -> ClinVarData.ClinSig.OTHER;
+            case PROTECTIVE -> ClinVarData.ClinSig.PROTECTIVE;
+            case RISK_FACTOR -> ClinVarData.ClinSig.RISK_FACTOR;
+            case NOT_PROVIDED, UNRECOGNIZED -> ClinVarData.ClinSig.NOT_PROVIDED;
+        };
+    }
+
+    private static ClinVarData.ReviewStatus toReviewStatus(ClinVar.ReviewStatus protoReviewStatus) {
+        return switch (protoReviewStatus) {
+            case NO_ASSERTION_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED;
+            case NO_ASSERTION_CRITERIA_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED;
+            case NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT -> ClinVarData.ReviewStatus.NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+            case CRITERIA_PROVIDED_SINGLE_SUBMITTER -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_SINGLE_SUBMITTER;
+            case CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+            case CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS -> ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
+            case REVIEWED_BY_EXPERT_PANEL -> ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL;
+            case PRACTICE_GUIDELINE -> ClinVarData.ReviewStatus.PRACTICE_GUIDELINE;
+            case UNRECOGNIZED -> ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED;
+        };
+    }
+
+    private static VariantEffect toVariantEffect(AlleleProto.VariantEffect clinVarVariantEffect) {
+        return switch (clinVarVariantEffect) {
+            case SEQUENCE_VARIANT -> VariantEffect.SEQUENCE_VARIANT;
+            case CHROMOSOME_NUMBER_VARIATION -> VariantEffect.CHROMOSOME_NUMBER_VARIATION;
+            case TRANSCRIPT_ABLATION -> VariantEffect.TRANSCRIPT_ABLATION;
+            case EXON_LOSS_VARIANT -> VariantEffect.EXON_LOSS_VARIANT;
+            case INVERSION -> VariantEffect.INVERSION;
+            case INSERTION -> VariantEffect.INSERTION;
+            case TRANSLOCATION -> VariantEffect.TRANSLOCATION;
+            case FRAMESHIFT_ELONGATION -> VariantEffect.FRAMESHIFT_ELONGATION;
+            case FRAMESHIFT_TRUNCATION -> VariantEffect.FRAMESHIFT_TRUNCATION;
+            case FRAMESHIFT_VARIANT -> VariantEffect.FRAMESHIFT_VARIANT;
+            case INTERNAL_FEATURE_ELONGATION -> VariantEffect.INTERNAL_FEATURE_ELONGATION;
+            case FEATURE_TRUNCATION -> VariantEffect.FEATURE_TRUNCATION;
+            case TRANSCRIPT_AMPLIFICATION -> VariantEffect.TRANSCRIPT_AMPLIFICATION;
+            case COPY_NUMBER_CHANGE -> VariantEffect.COPY_NUMBER_CHANGE;
+            case MNV -> VariantEffect.MNV;
+            case COMPLEX_SUBSTITUTION -> VariantEffect.COMPLEX_SUBSTITUTION;
+            case STOP_GAINED -> VariantEffect.STOP_GAINED;
+            case STOP_LOST -> VariantEffect.STOP_LOST;
+            case START_LOST -> VariantEffect.START_LOST;
+            case SPLICE_ACCEPTOR_VARIANT -> VariantEffect.SPLICE_ACCEPTOR_VARIANT;
+            case SPLICE_DONOR_VARIANT -> VariantEffect.SPLICE_DONOR_VARIANT;
+            case RARE_AMINO_ACID_VARIANT -> VariantEffect.RARE_AMINO_ACID_VARIANT;
+            case MISSENSE_VARIANT -> VariantEffect.MISSENSE_VARIANT;
+            case INFRAME_INSERTION -> VariantEffect.INFRAME_INSERTION;
+            case DISRUPTIVE_INFRAME_INSERTION -> VariantEffect.DISRUPTIVE_INFRAME_INSERTION;
+            case INFRAME_DELETION -> VariantEffect.INFRAME_DELETION;
+            case DISRUPTIVE_INFRAME_DELETION -> VariantEffect.DISRUPTIVE_INFRAME_DELETION;
+            case FIVE_PRIME_UTR_TRUNCATION -> VariantEffect.FIVE_PRIME_UTR_TRUNCATION;
+            case THREE_PRIME_UTR_TRUNCATION -> VariantEffect.THREE_PRIME_UTR_TRUNCATION;
+            case SPLICE_REGION_VARIANT -> VariantEffect.SPLICE_REGION_VARIANT;
+            case STOP_RETAINED_VARIANT -> VariantEffect.STOP_RETAINED_VARIANT;
+            case INITIATOR_CODON_VARIANT -> VariantEffect.INITIATOR_CODON_VARIANT;
+            case SYNONYMOUS_VARIANT -> VariantEffect.SYNONYMOUS_VARIANT;
+            case CODING_TRANSCRIPT_INTRON_VARIANT -> VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT;
+            case FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT ->
+                    VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT;
+            case FIVE_PRIME_UTR_EXON_VARIANT -> VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT;
+            case THREE_PRIME_UTR_EXON_VARIANT -> VariantEffect.THREE_PRIME_UTR_EXON_VARIANT;
+            case FIVE_PRIME_UTR_INTRON_VARIANT -> VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT;
+            case THREE_PRIME_UTR_INTRON_VARIANT -> VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT;
+            case NON_CODING_TRANSCRIPT_EXON_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT;
+            case NON_CODING_TRANSCRIPT_INTRON_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT;
+            case DIRECT_TANDEM_DUPLICATION -> VariantEffect.DIRECT_TANDEM_DUPLICATION;
+            case MOBILE_ELEMENT_DELETION -> VariantEffect.MOBILE_ELEMENT_DELETION;
+            case MOBILE_ELEMENT_INSERTION -> VariantEffect.MOBILE_ELEMENT_INSERTION;
+            case UPSTREAM_GENE_VARIANT -> VariantEffect.UPSTREAM_GENE_VARIANT;
+            case DOWNSTREAM_GENE_VARIANT -> VariantEffect.DOWNSTREAM_GENE_VARIANT;
+            case INTERGENIC_VARIANT -> VariantEffect.INTERGENIC_VARIANT;
+            case TFBS_ABLATION -> VariantEffect.TFBS_ABLATION;
+            case TFBS_AMPLIFICATION -> VariantEffect.TFBS_AMPLIFICATION;
+            case TF_BINDING_SITE_VARIANT -> VariantEffect.TF_BINDING_SITE_VARIANT;
+            case REGULATORY_REGION_VARIANT -> VariantEffect.REGULATORY_REGION_VARIANT;
+            case REGULATORY_REGION_ABLATION -> VariantEffect.REGULATORY_REGION_ABLATION;
+            case REGULATORY_REGION_AMPLIFICATION -> VariantEffect.REGULATORY_REGION_AMPLIFICATION;
+            case CONSERVED_INTRON_VARIANT -> VariantEffect.CONSERVED_INTRON_VARIANT;
+            case INTRAGENIC_VARIANT -> VariantEffect.INTRAGENIC_VARIANT;
+            case CONSERVED_INTERGENIC_VARIANT -> VariantEffect.CONSERVED_INTERGENIC_VARIANT;
+            case STRUCTURAL_VARIANT -> VariantEffect.STRUCTURAL_VARIANT;
+            case CODING_SEQUENCE_VARIANT -> VariantEffect.CODING_SEQUENCE_VARIANT;
+            case INTRON_VARIANT -> VariantEffect.INTRON_VARIANT;
+            case EXON_VARIANT -> VariantEffect.EXON_VARIANT;
+            case SPLICING_VARIANT -> VariantEffect.SPLICING_VARIANT;
+            case MIRNA -> VariantEffect.MIRNA;
+            case CODING_TRANSCRIPT_VARIANT -> VariantEffect.CODING_TRANSCRIPT_VARIANT;
+            case NON_CODING_TRANSCRIPT_VARIANT -> VariantEffect.NON_CODING_TRANSCRIPT_VARIANT;
+            case UNRECOGNIZED -> VariantEffect.SEQUENCE_VARIANT;
+        };
     }
 }

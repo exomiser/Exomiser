@@ -48,9 +48,11 @@ public class Hg19GenomeAnalysisServiceAutoConfigurationTest extends AbstractAuto
 
         assertThat(context.getBean("hg19jannovarData"), instanceOf(JannovarData.class));
         assertThat(context.getBean("hg19mvStore"), instanceOf(MVStore.class));
+        assertThat(context.getBean("hg19clinVarStore"), instanceOf(MVStore.class));
         assertThat(context.getBean("hg19variantAnnotator"), instanceOf(VariantAnnotator.class));
         assertThat(context.getBean("hg19variantDataService"), instanceOf(VariantDataService.class));
         assertThat(context.getBean("hg19genomeDataService"), instanceOf(GenomeDataService.class));
+        assertThat(context.getBean("hg19VariantWhiteList"), instanceOf(VariantWhiteList.class));
 
         assertThat(context.getBean("hg19allelePropertiesDao"), instanceOf(AllelePropertiesDao.class));
 

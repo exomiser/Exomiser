@@ -59,8 +59,8 @@ class AlleleResourceTest {
         long alleles = instance.parseResource()
 //                .peek(System.out::println)
                 .count();
-        //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
-        assertThat(alleles, equalTo(6L));
+        //there are 30 lines in total, but only 5 of them have any relevant information in them, as defined by the DbNsfpColumnIndex. 1 has only an rsID.
+        assertThat(alleles, equalTo(5L));
     }
 
     @Test
@@ -72,8 +72,8 @@ class AlleleResourceTest {
         long alleles = instance.parseResource()
 //                .peek(System.out::println)
                 .count();
-        //there are 30 lines in total, but only 6  of them have any relevant information in them, as defined by the DbNsfpColumnIndex.
-        assertThat(alleles, equalTo(6L));
+        //there are 30 lines in total, but only 5 of them have any relevant information in them, as defined by the DbNsfpColumnIndex. 1 has only an rsID.
+        assertThat(alleles, equalTo(5L));
     }
 
     @Test

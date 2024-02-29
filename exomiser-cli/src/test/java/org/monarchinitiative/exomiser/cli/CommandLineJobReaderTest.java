@@ -52,8 +52,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.MVP;
-import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.REVEL;
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -231,36 +230,38 @@ class CommandLineJobReaderTest {
                             .build()
             ))
             .frequencySources(ImmutableSet.of(
-                    FrequencySource.THOUSAND_GENOMES,
-                    FrequencySource.TOPMED,
+                    // commented out values are legacy/ founder populations and not required.
+                    // Why keep them? I don't know, for historical purposes perhaps?
+//                    FrequencySource.THOUSAND_GENOMES,
+//                    FrequencySource.TOPMED,
                     FrequencySource.UK10K,
 
-                    FrequencySource.ESP_AFRICAN_AMERICAN,
-                    FrequencySource.ESP_EUROPEAN_AMERICAN,
-                    FrequencySource.ESP_ALL,
+//                    FrequencySource.ESP_AA,
+//                    FrequencySource.ESP_EA,
+//                    FrequencySource.ESP_ALL,
 
-                    FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
-                    FrequencySource.EXAC_AMERICAN,
-                    FrequencySource.EXAC_SOUTH_ASIAN,
-                    FrequencySource.EXAC_EAST_ASIAN,
-                    FrequencySource.EXAC_FINNISH,
-                    FrequencySource.EXAC_NON_FINNISH_EUROPEAN,
-                    FrequencySource.EXAC_OTHER,
+//                    FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
+//                    FrequencySource.EXAC_AMERICAN,
+//                    FrequencySource.EXAC_SOUTH_ASIAN,
+//                    FrequencySource.EXAC_EAST_ASIAN,
+//                    FrequencySource.EXAC_FINNISH,
+//                    FrequencySource.EXAC_NON_FINNISH_EUROPEAN,
+//                    FrequencySource.EXAC_OTHER,
 
                     FrequencySource.GNOMAD_E_AFR,
                     FrequencySource.GNOMAD_E_AMR,
                     FrequencySource.GNOMAD_E_EAS,
-                    FrequencySource.GNOMAD_E_FIN,
+//                    FrequencySource.GNOMAD_E_FIN,
                     FrequencySource.GNOMAD_E_NFE,
-                    FrequencySource.GNOMAD_E_OTH,
+//                    FrequencySource.GNOMAD_E_OTH,
                     FrequencySource.GNOMAD_E_SAS,
 
                     FrequencySource.GNOMAD_G_AFR,
                     FrequencySource.GNOMAD_G_AMR,
                     FrequencySource.GNOMAD_G_EAS,
-                    FrequencySource.GNOMAD_G_FIN,
+//                    FrequencySource.GNOMAD_G_FIN,
                     FrequencySource.GNOMAD_G_NFE,
-                    FrequencySource.GNOMAD_G_OTH,
+//                    FrequencySource.GNOMAD_G_OTH,
                     FrequencySource.GNOMAD_G_SAS
             ))
             .pathogenicitySources(ImmutableSet.of(REVEL, MVP))

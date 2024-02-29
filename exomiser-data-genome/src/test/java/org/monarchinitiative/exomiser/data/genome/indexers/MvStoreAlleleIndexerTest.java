@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.ClinVar;
@@ -42,14 +44,12 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -102,7 +102,7 @@ public class MvStoreAlleleIndexerTest {
         MVStore mvStore = newMvStore();
 
         MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
-        assertThat(mvStore.getMapNames(), equalTo(Sets.newHashSet("alleles")));
+        assertThat(mvStore.getMapNames(), equalTo(Set.of("alleles")));
         assertThat(instance.count(), equalTo(0L));
     }
 
@@ -120,7 +120,7 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
-        AlleleProperties alleleProperties = alleleProperties(Collections.emptyMap());
+        AlleleProperties alleleProperties = AlleleProperties.getDefaultInstance();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -141,7 +141,10 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
-        AlleleProperties alleleProperties = alleleProperties("rs12345", Collections.emptyMap());
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs12345")
+                .putAllProperties(Collections.emptyMap())
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -155,7 +158,7 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
-        allele.addValue(AlleleProperty.KG, 0.0023f);
+        allele.addFrequency(AlleleData.frequencyOf(KG, 2, 1000));
 
         instance.write(allele);
 
@@ -178,13 +181,13 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
-        allele.addValue(AlleleProperty.KG, 0.0023f);
+        allele.addFrequency(AlleleData.frequencyOf(KG, 2, 1000));
 
         instance.write(allele);
 
         Allele dupAllele = new Allele(1, 12345, "A", "T");
         dupAllele.setRsId("rs12345");
-        dupAllele.addValue(AlleleProperty.KG, 0.0023f);
+        dupAllele.addFrequency(AlleleData.frequencyOf(KG, 2, 1000));
 
         instance.write(dupAllele);
 
@@ -207,10 +210,12 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12345, "A", "T");
         allele.setRsId("rs12345");
-        allele.addValue(AlleleProperty.KG, 0.0023f);
+        AlleleProto.Frequency kgFreq = AlleleData.frequencyOf(KG, 2, 1000);
+        allele.addFrequency(kgFreq);
 
         Allele other = new Allele(1, 12345, "A", "T");
-        other.addValue(AlleleProperty.EXAC_NFE, 0.12345f);
+        AlleleProto.Frequency nfeFreq = AlleleData.frequencyOf(GNOMAD_E_NFE, 6, 5000);
+        other.addFrequency(nfeFreq);
 
         instance.write(allele);
         instance.write(other);
@@ -220,10 +225,11 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 0.0023f);
-        properties.put("EXAC_NFE", 0.12345f);
-        AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs12345")
+                .addFrequencies(kgFreq)
+                .addFrequencies(nfeFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -236,11 +242,13 @@ public class MvStoreAlleleIndexerTest {
         MvStoreAlleleIndexer instance = new MvStoreAlleleIndexer(mvStore);
 
         Allele allele = new Allele(1, 12345, "A", "T");
-        allele.addValue(AlleleProperty.KG, 0.0023f);
+        AlleleProto.Frequency kgFreq = AlleleData.frequencyOf(KG, 2, 1000);
+        allele.addFrequency(kgFreq);
 
         Allele other = new Allele(1, 12345, "A", "T");
         other.setRsId("rs12345");
-        other.addValue(AlleleProperty.EXAC_NFE, 0.12345f);
+        AlleleProto.Frequency nfeFreq = AlleleData.frequencyOf(GNOMAD_E_NFE, 6, 5000);
+        other.addFrequency(nfeFreq);
 
         instance.write(allele);
         instance.write(other);
@@ -250,10 +258,11 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 0.0023f);
-        properties.put("EXAC_NFE", 0.12345f);
-        AlleleProperties alleleProperties = alleleProperties("rs12345", properties);
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs12345")
+                .addFrequencies(kgFreq)
+                .addFrequencies(nfeFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -267,11 +276,12 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
-        allele.addValue(AlleleProperty.KG, 1.098f);
+        AlleleProto.Frequency freq = AlleleData.frequencyOf(KG, 55, 5008);
+        allele.addFrequency(freq); // 55/5008
         //these are from two different releases and DbSNP changed the rsId for some reason.
         Allele other = new Allele(1, 12618254, "C", "CAAGAAG");
         other.setRsId("rs59874722");
-        other.addValue(AlleleProperty.KG, 1.098f);
+        other.addFrequency(freq); // 55/5008
 
         instance.write(allele);
         instance.write(other);
@@ -281,9 +291,10 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = AlleleConverter.toAlleleKey(allele);
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 1.098f);
-        AlleleProperties alleleProperties = alleleProperties("rs534165942", properties);
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs534165942")
+                .addFrequencies(freq)
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
@@ -297,13 +308,15 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
-        allele.addValue(AlleleProperty.KG, 1.098f);
+        AlleleProto.Frequency kgFreq = AlleleData.frequencyOf(KG, 55, 5008);
+        allele.addFrequency(kgFreq);
 
         Allele other = new Allele(23, 36103454, "A", "G");
-        other.addValue(AlleleProperty.EXAC_AFR, 0.012086052f);
+        AlleleProto.Frequency gnomadFreq = AlleleData.frequencyOf(GNOMAD_E_AFR, 50, 15000);
+        other.addFrequency(gnomadFreq);
 
         Allele duplicateOther = new Allele(23, 36103454, "A", "G");
-        duplicateOther.addValue(AlleleProperty.EXAC_AFR, 0.012086052f);
+        duplicateOther.addFrequency(gnomadFreq);
 
         instance.write(allele);
         instance.write(other);
@@ -314,18 +327,19 @@ public class MvStoreAlleleIndexerTest {
         MVMap<AlleleKey, AlleleProperties> alleleMap = mvStore.openMap("alleles");
 
         AlleleKey alleleKey = alleleKey(1, 12618254, "C", "CAAGAAG");
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 1.098f);
-        AlleleProperties alleleProperties = alleleProperties("rs534165942", properties);
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs534165942")
+                .addFrequencies(kgFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
 
 
         AlleleKey otherAlleleKey = alleleKey(23, 36103454, "A", "G");
-        Map<String, Float> otherProperties = new HashMap<>();
-        otherProperties.put("EXAC_AFR", 0.012086052f);
-        AlleleProperties otherAlleleProperties = alleleProperties(otherProperties);
+        AlleleProperties otherAlleleProperties = AlleleProperties.newBuilder()
+                .addFrequencies(gnomadFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(otherAlleleKey), is(true));
         assertThat(alleleMap.get(otherAlleleKey), equalTo(otherAlleleProperties));
@@ -339,25 +353,30 @@ public class MvStoreAlleleIndexerTest {
 
         Allele allele = new Allele(1, 12618254, "C", "CAAGAAG");
         allele.setRsId("rs534165942");
-        allele.addValue(AlleleProperty.KG, 1.0f);
+        AlleleProto.Frequency kgFreq = AlleleData.frequencyOf(KG, 10, 1000);
+        allele.addFrequency(kgFreq);
         //simulate adding more data from a second datasource
         Allele updateAllele = new Allele(1, 12618254, "C", "CAAGAAG");
         updateAllele.setRsId("rs534165942");
-        updateAllele.addValue(AlleleProperty.EXAC_NFE, 2.0f);
+        AlleleProto.Frequency gnomadFreq = AlleleData.frequencyOf(GNOMAD_E_NFE, 300, 15000);
+        updateAllele.addFrequency(gnomadFreq);
+
         ClinVarData alleleClinVarData = ClinVarData.builder()
-                .alleleId("12345")
+                .variationId("12345")
                 .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
                 .secondaryInterpretations(EnumSet.of(ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, ClinVarData.ClinSig.LIKELY_PATHOGENIC))
-                .includedAlleles(ImmutableMap.of("54321", ClinVarData.ClinSig.PATHOGENIC))
-                .reviewStatus("conflicting interpretations")
+                .includedAlleles(Map.of("54321", ClinVarData.ClinSig.PATHOGENIC))
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 .build();
         updateAllele.setClinVarData(alleleClinVarData);
 
         Allele other = new Allele(23, 36103454, "A", "G");
-        other.addValue(AlleleProperty.EXAC_AFR, 0.01f);
+        AlleleProto.Frequency espEaFreq = AlleleData.frequencyOf(ESP_EA, 1, 6500);
+        other.addFrequency(espEaFreq);
 
         Allele updateOther = new Allele(23, 36103454, "A", "G");
-        updateOther.addValue(AlleleProperty.ESP_ALL, 0.2f);
+        AlleleProto.Frequency espAllFreq = AlleleData.frequencyOf(ESP_ALL, 3, 6500);
+        updateOther.addFrequency(espAllFreq);
 
         instance.write(allele);
         instance.write(other);
@@ -370,20 +389,24 @@ public class MvStoreAlleleIndexerTest {
         assertThat(alleleMap.size(), equalTo(2));
 
         AlleleKey alleleKey = alleleKey(1, 12618254, "C", "CAAGAAG");
-        Map<String, Float> properties = new HashMap<>();
-        properties.put("KG", 1.0f);
-        properties.put("EXAC_NFE", 2.0f);
-        AlleleProperties alleleProperties = alleleProperties("rs534165942", alleleClinVarData, properties);
+        ClinVar clinVar = AlleleConverter.toProtoClinVar(alleleClinVarData);
+
+        AlleleProperties alleleProperties = AlleleProperties.newBuilder()
+                .setRsId("rs534165942")
+                .setClinVar(clinVar)
+                .addFrequencies(kgFreq)
+                .addFrequencies(gnomadFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(alleleKey), is(true));
         assertThat(alleleMap.get(alleleKey), equalTo(alleleProperties));
 
 
         AlleleKey otherAlleleKey = alleleKey(23, 36103454, "A", "G");
-        Map<String, Float> otherProperties = new HashMap<>();
-        otherProperties.put("EXAC_AFR", 0.01f);
-        otherProperties.put("ESP_ALL", 0.2f);
-        AlleleProperties otherAlleleProperties = alleleProperties(otherProperties);
+        AlleleProperties otherAlleleProperties = AlleleProperties.newBuilder()
+                .addFrequencies(espEaFreq)
+                .addFrequencies(espAllFreq)
+                .build();
 
         assertThat(alleleMap.containsKey(otherAlleleKey), is(true));
         assertThat(alleleMap.get(otherAlleleKey), equalTo(otherAlleleProperties));
@@ -408,7 +431,7 @@ public class MvStoreAlleleIndexerTest {
         int originalMapSize = alleleMap.size();
         logger.info("Map contains {} entries:", originalMapSize);
         assertThat(originalMapSize, equalTo(10));
-
+        Map<AlleleKey, AlleleProperties> original = Map.copyOf(alleleMap);
         logger.info("Closing map");
         mvStore.close();
 
@@ -420,28 +443,10 @@ public class MvStoreAlleleIndexerTest {
                 .open();
 
         MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap = reOpened.openMap("alleles", MvStoreUtil.alleleMapBuilder());
-
+        var reopened = Map.copyOf(reOpenedAlleleMap);
+        assertThat(reopened, equalTo(original));
         logger.info("Re-opened map contains {} entries:", reOpenedAlleleMap.size());
-        assertThat(reOpenedAlleleMap.size(), equalTo(originalMapSize));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10019, "TA", "T").getRsId(), equalTo("rs775809821"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10039, "A", "C").getRsId(), equalTo("rs978760828"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10043, "T", "A").getRsId(), equalTo("rs1008829651"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10051, "A", "G").getRsId(), equalTo("rs1052373574"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10055, "T", "A").getRsId(), equalTo("rs892501864"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10055, "T", "TA").getRsId(), equalTo("rs768019142"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10063, "A", "C").getRsId(), equalTo("rs1010989343"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10077, "C", "G").getRsId(), equalTo("rs1022805358"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10109, "A", "T").getRsId(), equalTo("rs376007522"));
-        assertThat(getAlleleProperties(reOpenedAlleleMap, 1, 10108, "C", "T").getRsId(), equalTo("rs62651026"));
-
         reOpened.close();
-    }
-
-    private AlleleProperties getAlleleProperties(MVMap<AlleleKey, AlleleProperties> reOpenedAlleleMap, int chr, int pos, String ref, String alt) {
-        AlleleKey last = alleleKey(chr, pos, ref, alt);
-        AlleleProperties lastProperties = reOpenedAlleleMap.get(last);
-        logger.debug("{}-{}-{}-{} {{} {}}", chr, pos, ref, alt, lastProperties.getRsId(), lastProperties.getPropertiesMap());
-        return lastProperties;
     }
 
 

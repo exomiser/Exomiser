@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,16 +39,22 @@ public class TranscriptDataBuildRunner {
     private final BuildInfo buildInfo;
     private final JannovarDataFactory jannovarDataFactory;
     private final Path outPath;
+    private final List<TranscriptSource> transcriptSources;
 
-    public TranscriptDataBuildRunner(BuildInfo buildInfo, JannovarDataFactory jannovarDataFactory, Path outPath) {
+    public TranscriptDataBuildRunner(BuildInfo buildInfo, JannovarDataFactory jannovarDataFactory, Path outPath, List<TranscriptSource> transcriptSources) {
         this.buildInfo = buildInfo;
         this.jannovarDataFactory = jannovarDataFactory;
         this.outPath = outPath;
+        this.transcriptSources = transcriptSources;
+    }
+
+    public static String transcriptFileName(BuildInfo buildInfo, TranscriptSource transcriptSource) {
+        return buildInfo.getBuildString() + "_transcripts_" + transcriptSource + ".ser";
     }
 
     public void run() {
-        Arrays.stream(TranscriptSource.values()).forEach(transcriptSource -> {
-            String outputName = String.format("%s_transcripts_%s.ser", buildInfo.getBuildString(), transcriptSource);
+        transcriptSources.forEach(transcriptSource -> {
+            String outputName = transcriptFileName(buildInfo, transcriptSource);
             logger.info("Building {}", outputName);
             jannovarDataFactory.buildAndWrite(buildInfo.getAssembly(), transcriptSource, outPath.resolve(outputName));
         });

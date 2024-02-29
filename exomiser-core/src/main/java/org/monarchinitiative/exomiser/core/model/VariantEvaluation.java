@@ -104,8 +104,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.pathogenicityData = builder.pathogenicityData;
     }
 
-    private VariantEvaluation(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
-        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
+    private VariantEvaluation(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations, VariantContext variantContext, int altAlleleId, double phredScore, SampleGenotypes sampleGenotypes, Set<FilterType> passedFilterTypes, Set<FilterType> failedFilterTypes, boolean whiteListed, FrequencyData frequencyData, PathogenicityData pathogenicityData, Set<ModeOfInheritance> contributingModes, Set<ModeOfInheritance> compatibleInheritanceModes) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
         this.variantContext = variantContext;
         this.altAlleleId = altAlleleId;
         this.phredScore = phredScore;
@@ -121,8 +121,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @Override
-    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-        return new VariantEvaluation(contig, id, strand, coordinateSystem, startPosition, endPosition, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
+    protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+        return new VariantEvaluation(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
     }
 
     private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
@@ -304,12 +304,18 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @Override
     public synchronized boolean passedFilters() {
+        // n.b. this is an _extremely_ hot method!
         return failedFilterTypes.isEmpty();
     }
 
     @Override
     public synchronized boolean passedFilter(FilterType filterType) {
         return !failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType);
+    }
+
+    @Override
+    public synchronized boolean failedFilter(FilterType filterType) {
+        return failedFilterTypes.contains(filterType) && !passedFilterTypes.contains(filterType);
     }
 
     private synchronized boolean isUnFiltered() {
@@ -350,7 +356,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return a score between 0 and 1
      */
     public float getFrequencyScore() {
-        return whiteListed ? 1f : frequencyData.getScore();
+        return whiteListed ? 1f : frequencyData.frequencyScore();
     }
 
     /**
@@ -373,8 +379,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (whiteListed) {
             return 1f;
         }
-        float predictedScore = pathogenicityData.getScore();
-        float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        float predictedScore = pathogenicityData.pathogenicityScore();
+        float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
         if (this.isSymbolic()) {
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
             //                                     |             element contains v
@@ -510,7 +516,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        return org.monarchinitiative.svart.Variant.compare(this, other);
+        return GenomicVariant.compare(this, other);
     }
 
     public static class RankBasedComparator implements Comparator<VariantEvaluation> {
@@ -529,7 +535,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (thisScore != otherScore) {
             return -Float.compare(thisScore, otherScore);
         }
-        return org.monarchinitiative.svart.Variant.compare(some, other);
+        return GenomicVariant.compare(some, other);
     }
 
     @Override
@@ -570,20 +576,12 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
-    // TODO - Will Composition make Breakends work?
-    // VariantEvaluation implements Variant, VariantAnnotations,
-    //    Variant
-    //    VariantContext
-    //    VariantAnnotations
-    //    pass/fail filters & priorityResults...
-    // TODO: Delete AbstractVariant add variantAnnotations to Builder
-
     /**
      * @return
      * @since 13.0.0
      */
     public VariantEvaluation.Builder toBuilder() {
-        return new Builder().with(this)
+        return new Builder().variant(this)
                 // VariantContext-derived fields
                 .variantContext(this.variantContext)
                 .altAlleleId(this.altAlleleId)
@@ -607,7 +605,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @since 13.0.0
      */
     public static VariantEvaluation.Builder with(Variant variant) {
-        return new Builder().with(variant);
+        return new Builder().variant(variant);
     }
 
     public static Builder builder() {

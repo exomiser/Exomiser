@@ -12,64 +12,9 @@ cd ../../
 chmod +x owltools/OWLTools-Runner/bin/owltools
 ```
 
-Add ```owltools/OWLTools-Oort/bin/ontology-release-runner``` and ```owltools/OWLTools-Runner/bin/owltools``` to path
-
-1. ```git clone https://github.com/obophenotype/upheno``` or ```git pull```
-2. ```wget http://purl.obolibrary.org/obo/mp.owl```
-3. ```wget http://purl.obolibrary.org/obo/hp.owl``` 
-4. ```wget http://purl.obolibrary.org/obo/zp.owl```
-5. Replace human phenotype annotation files in Monarch git repo as these include common disease and merge together some 
-OMIM and Orphanet entries in a way that does not represent the data in our db. Requires logic like:
-
-```perl
-system("wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_annotation.tab");
-open(IN,"phenotype_annotation.tab");
-open(OUT1,">Hs_disease_phenotype.txt");
-open(OUT2,">Hs_disease_labels.txt");
-my %data;
-while (my $line = <IN>){
-    my @line = split(/\t/,$line);
-    my $id = $line[0].":".$line[1];
-    $id =~ s/ //g;
-    my $label = $line[2];
-    my $hp =  $line[4];
-    $hp =~ s/ //g;
-    $data{$id}{$label}{$hp} = 1;
-}
-close IN;
-foreach my $id(sort keys %data){
-    foreach my $label(sort keys %{$data{$id}}){
-	print OUT2 "$id\t$label\n";
-	foreach my $hp (sort keys %{$data{$id}{$label}}){
-	    print OUT1 "$id\t$hp\n";
-	}
-    }
-}
-close OUT1;
-close OUT2;
-```
-
-6. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_phenotype.txt```
-7. ```wget https://archive.monarchinitiative.org/latest/owlsim/data/Mus_musculus/Mm_gene_labels.txt```
-8. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_phenotype.txt```
-9. ```wget wget https://archive.monarchinitiative.org/latest/owlsim/data/Danio_rerio/Dr_gene_labels.txt```
-10. Run owltools commands:
-
-```
-owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Mm_gene_phenotype.txt --load-labels Mm_gene_labels.txt --merge-support-ontologies -o Mus_musculus-all.owl
-
-owltools --catalog-xml upheno/catalog-v001.xml mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --merge-imports-closure --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies -o Homo_sapiens-all.owl
-
-owltools --catalog-xml upheno/catalog-v001.xml upheno/vertebrate.owl mp.owl hp.owl zp.owl Mm_gene_phenotype.txt Hs_disease_phenotype.txt Dr_gene_phenotype.txt --load-instances Dr_gene_phenotype.txt --load-labels Dr_gene_labels.txt --load-instances Hs_disease_phenotype.txt --load-labels Hs_disease_labels.txt --merge-support-ontologies --merge-imports-closure --remove-disjoints --remove-equivalent-to-nothing-axioms --run-reasoner -r elk --assert-implied --make-super-slim HP,ZP -o hp-zp-all.owl
-
-owltools Homo_sapiens-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Homo_sapiens-all-merged.owl
-
-owltools Mus_musculus-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o Mus_musculus-all-merged.owl
-
-owltools hp-zp-all.owl --merge-import-closure --remove-disjoints --remove-equivalent-to-nothing-axioms -o hp-zp-all-merged.owl
-```
-
-12. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
+1. ```git clone https://github.com/obophenotype/upheno``` or ```cd upheno and git pull```
+2. ```qsub owltools_preprocess1.sh```
+3. Run final commands on high mem machines on apocrita (home folder on login.hpc.qmul.ac.uk)
 
 ```
 qsub owltools_hp_hp.sh
@@ -78,7 +23,7 @@ qsub owltools_hp_zp.sh
 
 ```
 
-13. Running the build. More detail below but essentially
+12. Running the build. More detail below but essentially
 
 ```
 gzip hp-*-mapping-cache.txt

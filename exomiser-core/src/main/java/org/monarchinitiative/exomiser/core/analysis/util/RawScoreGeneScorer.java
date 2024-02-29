@@ -55,6 +55,7 @@ public class RawScoreGeneScorer implements GeneScorer {
     private final ContributingAlleleCalculator contributingAlleleCalculator;
     private final GenePriorityScoreCalculator genePriorityScoreCalculator;
 
+    private final CombinedScorePvalueCalculator pValueCalculator;
     private final AcmgAssignmentCalculator acmgAssignmentCalculator;
 
     /**
@@ -63,25 +64,27 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @throws NullPointerException if any input arguments are null.
      * @since 10.0.0
      */
-    public RawScoreGeneScorer(String probandId, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator) {
+    public RawScoreGeneScorer(String probandId, Sex probandSex, InheritanceModeAnnotator inheritanceModeAnnotator, CombinedScorePvalueCalculator pValueCalculator, AcmgAssignmentCalculator acmgAssignmentCalculator) {
         Objects.requireNonNull(probandId);
         Objects.requireNonNull(inheritanceModeAnnotator);
         this.inheritanceModes = inheritanceModeAnnotator.getDefinedModes();
         this.contributingAlleleCalculator = new ContributingAlleleCalculator(probandId, probandSex, inheritanceModeAnnotator);
         this.genePriorityScoreCalculator = new GenePriorityScoreCalculator();
-        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner(probandId, inheritanceModeAnnotator.getPedigree());
-        AcmgEvidenceClassifier acmgEvidenceClassifier = new Acmg2020PointsBasedClassifier();
-        this.acmgAssignmentCalculator = new AcmgAssignmentCalculator(acmgEvidenceAssigner, acmgEvidenceClassifier);
+        this.pValueCalculator = Objects.requireNonNull(pValueCalculator);
+        this.acmgAssignmentCalculator = Objects.requireNonNull(acmgAssignmentCalculator);
     }
 
     @Override
     public List<Gene> scoreGenes(List<Gene> genes) {
-        for (Gene gene : genes) {
-            List<GeneScore> geneScores = scoreGene().apply(gene);
-            gene.addGeneScores(geneScores);
-        }
-        Collections.sort(genes);
-        return genes;
+        return genes.stream()
+                .parallel()
+                .map(gene -> {
+                    List<GeneScore> geneScores = scoreGene().apply(gene);
+                    gene.addGeneScores(geneScores);
+                    return gene;
+                })
+                .sorted()
+                .toList();
     }
 
     /**
@@ -122,6 +125,15 @@ public class RawScoreGeneScorer implements GeneScorer {
 
         GenePriorityScoreCalculator.GenePriorityScore priorityScore = genePriorityScoreCalculator.calculateGenePriorityScore(gene, modeOfInheritance);
 
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
+
+        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
+
+//        double variantScore = acmgAssignments.stream()
+//                .mapToDouble(acmgAssignment -> acmgAssignment.acmgEvidence().postProbPath())
+//                .average()
+//                .orElse(0.1); // 0.1 is the equivalent of a 0-point VUS
+
         double variantScore = contributingVariants.stream()
                 .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
@@ -129,9 +141,7 @@ public class RawScoreGeneScorer implements GeneScorer {
 
         double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults().keySet());
 
-        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
-
-        List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
+        double pValue = pValueCalculator.calculatePvalueFromCombinedScore(combinedScore);
 
         return GeneScore.builder()
                 .geneIdentifier(gene.getGeneIdentifier())
@@ -139,6 +149,7 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .variantScore(variantScore)
                 .phenotypeScore(priorityScore.getScore())
                 .combinedScore(combinedScore)
+                .pValue(pValue)
                 .contributingVariants(contributingVariants)
                 // TODO this would be a good place to put a contributingModel
                 //  i.e. from HiPhivePrioritiserResult see issue #363

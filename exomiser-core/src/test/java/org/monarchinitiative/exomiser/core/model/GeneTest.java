@@ -37,7 +37,6 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.writers.JsonVariantMixin;
-import org.monarchinitiative.svart.Variant;
 
 import java.util.*;
 

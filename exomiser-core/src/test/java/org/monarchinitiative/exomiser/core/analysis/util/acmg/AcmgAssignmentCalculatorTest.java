@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -73,7 +74,9 @@ class AcmgAssignmentCalculatorTest {
                 .annotations(List.of(startLostAnnotation))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .pathogenicityData(PathogenicityData.of(ClinVarData.builder()
-                                .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC).reviewStatus("reviewed by expert panel").build(),
+                                .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
+                                .reviewStatus(ClinVarData.ReviewStatus.REVIEWED_BY_EXPERT_PANEL)
+                                .build(),
                         PathogenicityScore.of(PathogenicitySource.REVEL, 1.0f), PathogenicityScore.of(PathogenicitySource.MVP, 1.0f)))
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER), FilterResult.pass(FilterType.PATHOGENICITY_FILTER))
                 .build();
@@ -96,11 +99,11 @@ class AcmgAssignmentCalculatorTest {
                 .add(AcmgCriterion.PM2, AcmgCriterion.Evidence.SUPPORTING)
                 .add(AcmgCriterion.PP3, AcmgCriterion.Evidence.STRONG)
                 .add(AcmgCriterion.PP4)
-                .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.STRONG)
+                .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.VERY_STRONG)
                 .build();
         AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.PATHOGENIC);
 
-        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acgs2020Classifier());
         List<AcmgAssignment> acmgAssignments = instance.calculateAcmgAssignments(ModeOfInheritance.AUTOSOMAL_DOMINANT, gene, List.of(variantEvaluation), compatibleDiseaseMatches);
         assertThat(acmgAssignments, equalTo(List.of(acmgAssignment)));
@@ -134,7 +137,7 @@ class AcmgAssignmentCalculatorTest {
         AcmgEvidence acmgEvidence = AcmgEvidence.empty();
         AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.UNCERTAIN_SIGNIFICANCE);
 
-        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acgs2020Classifier());
         List<AcmgAssignment> acmgAssignments = instance.calculateAcmgAssignments(ModeOfInheritance.AUTOSOMAL_DOMINANT, gene, List.of(variantEvaluation), compatibleDiseaseMatches);
         assertThat(acmgAssignments, equalTo(List.of(acmgAssignment)));
@@ -170,7 +173,7 @@ class AcmgAssignmentCalculatorTest {
                 .build();
         AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.BENIGN);
 
-        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE));
+        AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acmg2020PointsBasedClassifier());
         List<AcmgAssignment> acmgAssignments = instance.calculateAcmgAssignments(ModeOfInheritance.AUTOSOMAL_DOMINANT, gene, List.of(variantEvaluation), compatibleDiseaseMatches);
         assertThat(acmgAssignments, equalTo(List.of(acmgAssignment)));

@@ -16,6 +16,11 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
+/**
+ * Utility class for ranking Gene and VariantEvaluation objects for use by ResultsWriters.
+ *
+ * @since 13.1.0
+ */
 class GeneScoreRanker {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneScoreRanker.class);

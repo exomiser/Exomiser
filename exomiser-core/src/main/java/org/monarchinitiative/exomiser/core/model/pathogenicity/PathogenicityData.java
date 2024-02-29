@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -98,7 +99,8 @@ public class PathogenicityData {
      * @return a {@code ClinVarData} object
      * @since 10.1.0
      */
-    public ClinVarData getClinVarData() {
+    @JsonProperty
+    public ClinVarData clinVarData() {
         return clinVarData;
     }
 
@@ -112,7 +114,8 @@ public class PathogenicityData {
         return !clinVarData.isEmpty();
     }
 
-    public List<PathogenicityScore> getPredictedPathogenicityScores() {
+    @JsonProperty
+    public List<PathogenicityScore> pathogenicityScores() {
         return new ArrayList<>(pathogenicityScores.values());
     }
 
@@ -136,27 +139,28 @@ public class PathogenicityData {
      * @param pathogenicitySource
      * @return
      */
-    public PathogenicityScore getPredictedScore(PathogenicitySource pathogenicitySource) {
+    public PathogenicityScore pathogenicityScore(PathogenicitySource pathogenicitySource) {
         return pathogenicityScores.get(pathogenicitySource);
     }
 
     /**
      * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
      */
-    public float getScore() {
+    @JsonProperty
+    public float pathogenicityScore() {
         if (pathogenicityScores.isEmpty()) {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }
-        return getPredictedPathScore();
+        return maxPredictedPathScore();
     }
 
-    private float getPredictedPathScore() {
+    private float maxPredictedPathScore() {
         // Once upon a time we used score-specific cutoffs. These are present in the score classes:
         // Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown
         // Polyphen2 (HVAR): "D" (> 0.956,probably damaging), "P": [0.447-0.955],  possibly damaging, and "B", <0.447, benign.
         // SIFT: "D"<0.05, damaging and "T">0.05, tolerated
         // TODO: re-implement this and add isPredictedPathogenic() to the PathogenicityScore
-        PathogenicityScore mostPathogenicPredictedScore = getMostPathogenicScore();
+        PathogenicityScore mostPathogenicPredictedScore = mostPathogenicScore();
         if (mostPathogenicPredictedScore != null) {
             // As of v12.0.0 scores are normalised internally so SIFT scores no longer need to be inverted here.
             return mostPathogenicPredictedScore.getScore();
@@ -168,7 +172,8 @@ public class PathogenicityData {
      * @return The most pathogenic score or null if there are no predicted scores
      */
     @Nullable
-    public PathogenicityScore getMostPathogenicScore() {
+    @JsonProperty
+    public PathogenicityScore mostPathogenicScore() {
         // Add filter step using PathogenicityScore::isPredictedPathogenic?
         // n.b. here min() is referring to the *first* element in a sorted list, rather than the minimum numeric value
         // PathogenicityScore compareTo returns the most pathogenic first e.g. 1.0, 0.9, 0.8 ... which is the reverse of

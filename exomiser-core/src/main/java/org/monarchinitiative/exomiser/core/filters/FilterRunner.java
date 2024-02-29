@@ -41,4 +41,8 @@ public interface FilterRunner<T extends Filter, U extends Filterable> {
 
     List<U> run(T filter, List<U> filterables);
 
+    FilterResult logFilterResult(FilterResult filterResult);
+
+    List<FilterResultCount> filterCounts();
+
 }

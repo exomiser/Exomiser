@@ -26,6 +26,8 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -36,51 +38,98 @@ public class Frequency {
 
     private final FrequencySource source;
     private final float value;
+    private final int ac;
+    private final int an;
+    private final int homs;
 
     public static Frequency of(FrequencySource source, float value) {
-        return new Frequency(source, value);
+        return new Frequency(source, value, 0, 0, 0);
     }
 
-    private Frequency(FrequencySource source, float value) {
+    public static Frequency of(FrequencySource source, int ac, int an, int homs) {
+        if (an <= 0 || ac > an || homs > ac) {
+            throw new IllegalArgumentException(source + " AN must be > 0, AC must be < AN and HOM must be < AC. Got AC=" + ac + ", AN=" + an + ", hom=" + homs);
+        }
+        return new Frequency(source, percentageFrequency(ac, an), ac, an, homs);
+    }
+
+    // package private to work with FrequencyData *ONLY* where allele frequency has already been calculated and input
+    // values have already been validated
+    static Frequency of(FrequencySource source, float af, int ac, int an, int homs) {
+        return new Frequency(source, af, ac, an, homs);
+    }
+
+    private Frequency(FrequencySource source, float value, int ac, int an, int homs) {
         this.source = source;
         this.value = value;
+        this.ac = ac;
+        this.an = an;
+        this.homs = homs;
     }
 
-    public float getFrequency() {
+    @JsonProperty
+    public FrequencySource source() {
+        return source;
+    }
+
+    @JsonProperty
+    public float frequency() {
         return value;
     }
 
-    public FrequencySource getSource() {
-        return source;
+    @JsonProperty
+    public int ac() {
+        return ac;
     }
-    
+
+    @JsonProperty
+    public int an() {
+        return an;
+    }
+
+    @JsonProperty
+    public int homs() {
+        return homs;
+    }
+
     public boolean isOverThreshold(float threshold) {
         return value > threshold;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(value, source);
+    /**
+     * Returns the frequency of ac/an as a percentage frequency.
+     *
+     * @param ac    Allele Count - the number of observed alleles.
+     * @param an    Allele Number - size of the population in which the AC was observed.
+     * @return the frequency of ac/an as a percentage frequency in the range 0..100
+     */
+    public static float percentageFrequency(int ac, int an) {
+        return 100f * (ac / (float) an);
     }
+
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Frequency)) {
-            return false;
-        }
-        Frequency frequency1 = (Frequency) o;
-        if (source != frequency1.source) {
-            return false;
-        }
-        return Float.compare(frequency1.value, value) == 0;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Frequency frequency = (Frequency) o;
+        return Float.compare(value, frequency.value) == 0 && ac == frequency.ac && an == frequency.an && homs == frequency.homs && source == frequency.source;
     }
 
     @Override
-    public String toString() {
-        return "Frequency{" + source + "=" + value + '}';
+    public int hashCode() {
+        return Objects.hash(source, value, ac, an, homs);
     }
 
+
+    @Override
+    public String toString() {
+        return "Frequency{" + source +
+               '=' + value + (an > 0 ? formatAcAn() : "") +
+               '}';
+    }
+
+    private String formatAcAn() {
+        return "(" + ac + '|' + an + '|' + homs + ')';
+    }
 }

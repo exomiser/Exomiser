@@ -83,6 +83,8 @@ interface FluentAnalysisBuilder<R> {
 
     public FluentAnalysisBuilder addFrequencyFilter(float cutOff);
 
+    public FluentAnalysisBuilder addGeneBlacklistFilter();
+
     /**
      * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this
      * method requires that the {@code inheritanceModes} method has already been called and supplied with a non-empty

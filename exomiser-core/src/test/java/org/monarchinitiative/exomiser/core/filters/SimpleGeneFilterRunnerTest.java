@@ -32,6 +32,8 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -41,6 +43,7 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.filters.FilterType.*;
 
 /**
  *
@@ -95,12 +98,13 @@ public class SimpleGeneFilterRunnerTest {
         for (Gene gene : genes) {
             assertThat(gene.passedFilters(), is(true));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-//                for (GeneFilter filter : geneFilters) {
-//                    assertThat(variantEvaluation.passedFilter(filter.getFilterType()), is(false));
-//                }
+                for (GeneFilter filter : geneFilters) {
+                    assertThat(variantEvaluation.passedFilter(filter.getFilterType()), is(false));
+                }
                 assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
             }
         }
+        assertThat(instance.filterCounts(), equalTo(List.of()));
     }
 
     private void assertFilterStatus(Gene gene, List<GeneFilter> filters, FilterStatus filterStatus) {
@@ -118,8 +122,8 @@ public class SimpleGeneFilterRunnerTest {
             FilterType filterType = filter.getFilterType();
             assertThat(gene.passedFilter(filterType), equalTo(hasPassed));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-//                assertThat(variantEvaluation.passedFilter(filterType), equalTo(hasPassed));
-//                assertThat(variantEvaluation.getFilterStatus(), equalTo(filterStatus));
+                assertThat(variantEvaluation.passedFilter(filterType), equalTo(hasPassed));
+                assertThat(variantEvaluation.getFilterStatus(), equalTo(filterStatus));
             }
         }
     }
@@ -132,6 +136,9 @@ public class SimpleGeneFilterRunnerTest {
 
         assertFilterStatus(passGene, filters, FilterStatus.PASSED);
         assertFilterStatus(failGene, filters, FilterStatus.FAILED);
+
+        FilterResultCount inheritanceFilter = new FilterResultCount(INHERITANCE_FILTER, 2, 2);
+        assertThat(instance.filterCounts(), equalTo(List.of(inheritanceFilter)));
     }
 
     @Test
@@ -142,6 +149,29 @@ public class SimpleGeneFilterRunnerTest {
 
         assertFilterStatus(passGene, filters, FilterStatus.PASSED);
         assertFilterStatus(failGene, filters, FilterStatus.FAILED);
+
+        FilterResultCount inheritanceFilter = new FilterResultCount(INHERITANCE_FILTER, 2, 2);
+        assertThat(instance.filterCounts(), equalTo(List.of(inheritanceFilter)));
     }
 
+    @Test
+    public void testRunMultipleFiltersOverGenesTestGeneOnlyFilter() {
+        filters = List.of(
+                // these are only run in this order as the inheritance filter is ensured to always run last by the analysis runner
+                new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f),
+                inheritanceFilter
+        );
+        passGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, passGene.getEntrezGeneID(), passGene.getGeneSymbol(), 0.8f));
+        failGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, failGene.getEntrezGeneID(), failGene.getGeneSymbol(), 0.6f));
+
+        assertVariantsUnfilteredAndDoNotPassFilter(genes, filters);
+
+        filters.forEach(filter -> instance.run(filter, genes));
+        assertFilterStatus(passGene, filters, FilterStatus.PASSED);
+        assertFilterStatus(failGene, filters, FilterStatus.FAILED);
+
+        FilterResultCount priorityScoreCount = new FilterResultCount(PRIORITY_SCORE_FILTER, 1, 1);
+        FilterResultCount inheritanceCount = new FilterResultCount(INHERITANCE_FILTER, 2, 0);
+        assertThat(instance.filterCounts(), equalTo(List.of(priorityScoreCount, inheritanceCount)));
+    }
 }

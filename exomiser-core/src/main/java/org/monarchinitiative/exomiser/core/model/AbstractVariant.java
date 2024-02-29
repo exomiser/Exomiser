@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.svart.*;
 
 import java.util.List;
@@ -30,9 +31,11 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public abstract class AbstractVariant extends BaseVariant<AbstractVariant> implements Variant {
+public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant> implements Variant {
 
     final GenomeAssembly genomeAssembly;
+
+    final AlleleProto.AlleleKey alleleKey;
 
     final String geneSymbol;
     final String geneId;
@@ -41,6 +44,7 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
 
     AbstractVariant(Builder<?> builder) {
         super(builder);
+        this.alleleKey = AlleleProtoAdaptor.toAlleleKey(this);
         this.genomeAssembly = builder.genomeAssembly;
         this.geneSymbol = builder.geneSymbol;
         this.geneId = builder.geneId;
@@ -48,13 +52,19 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         this.annotations = List.copyOf(builder.annotations);
     }
 
-    AbstractVariant(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position start, Position end, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
-        super(contig, id, strand, coordinateSystem, start, end, ref, alt, changeLength);
+    AbstractVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
+        super(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
+        this.alleleKey = AlleleProtoAdaptor.toAlleleKey(this);
         this.genomeAssembly = genomeAssembly;
         this.geneSymbol = geneSymbol;
         this.geneId = geneId;
         this.variantEffect = variantEffect;
         this.annotations = List.copyOf(annotations);
+    }
+
+    @Override
+    public AlleleProto.AlleleKey alleleKey() {
+        return alleleKey;
     }
 
     public String getGeneSymbol() {
@@ -96,7 +106,7 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         return Objects.hash(super.hashCode(), genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
     }
 
-    abstract static class Builder<T extends Builder<T>> extends BaseVariant.Builder<T> {
+    abstract static class Builder<T extends Builder<T>> extends BaseGenomicVariant.Builder<T> {
 
         private GenomeAssembly genomeAssembly = GenomeAssembly.defaultBuild();
 
@@ -105,8 +115,8 @@ public abstract class AbstractVariant extends BaseVariant<AbstractVariant> imple
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
         private List<TranscriptAnnotation> annotations = List.of();
 
-        public T with(Variant variant) {
-            super.with(variant);
+        public T variant(Variant variant) {
+            super.variant(variant);
             genomeAssembly = variant.getGenomeAssembly();
             geneSymbol = variant.getGeneSymbol();
             geneId = variant.getGeneId();

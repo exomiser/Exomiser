@@ -86,7 +86,7 @@ public class AnalysisParserTest {
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
-        frequencySources = EnumSet.of(FrequencySource.THOUSAND_GENOMES, FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
+        frequencySources = EnumSet.of(FrequencySource.THOUSAND_GENOMES, FrequencySource.ESP_AA, FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
         pathogenicitySources = EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER);
     }
 
@@ -266,7 +266,7 @@ public class AnalysisParserTest {
                         + "        AUTOSOMAL_DOMINANT: 1.0 \n"
                         + "}\n"
                         + "    ");
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0f);
+        Map<SubModeOfInheritance, Float> options = Map.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0f);
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(options)));
     }
 
@@ -281,7 +281,7 @@ public class AnalysisParserTest {
                         + "}\n"
                         + "    ");
 
-        Map<SubModeOfInheritance, Float> options = ImmutableMap.of(
+        Map<SubModeOfInheritance, Float> options = Map.of(
                 SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f,
                 SubModeOfInheritance.ANY, 0.1f
         );
@@ -355,7 +355,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStepIntervalFilterFromList() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("intervalFilter: {intervals: ['chr10:122892600-122892700', 'chr10:122892900-122893000']}"));
-        List<ChromosomalRegion> expectedIntervals = ImmutableList.of(
+        List<ChromosomalRegion> expectedIntervals = List.of(
                 new GeneticInterval(10, 122892600, 122892700),
                 new GeneticInterval(10, 122892900, 122893000)
         );
@@ -488,6 +488,13 @@ public class AnalysisParserTest {
                                 + "    inheritanceModes: {WIBBLE: 0.0}\n"
                 )
         );
+    }
+
+    @Test
+    public void testParseAnalysisGeneBlacklistfilter(){
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("geneBlacklistFilter: {}"));
+        analysisSteps.add(new GeneBlacklistFilter());
+        assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test

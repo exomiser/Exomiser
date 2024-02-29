@@ -20,7 +20,14 @@
   -->
 
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/base.xml" />
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
     <logger name="org.springframework" level="ERROR"/>
     <logger name="org.thymeleaf" level="ERROR"/>
+    <logger name="org.flywaydb" level="ERROR"/>
+    <logger name="com.zaxxer.hikari" level="ERROR"/>
+    <logger name="org.monarchinitiative.exomiser.core" level="ERROR"/>
 </configuration>

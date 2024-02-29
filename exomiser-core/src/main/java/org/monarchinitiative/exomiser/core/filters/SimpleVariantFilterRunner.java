@@ -44,6 +44,12 @@ import java.util.List;
  */
 public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
+    private final FilterResultsCounter filterResultsCounter;
+
+    public SimpleVariantFilterRunner() {
+        filterResultsCounter = new FilterResultsCounter();
+    }
+
     @Override
     public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
@@ -52,4 +58,14 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
         return variantEvaluations;
     }
 
+    @Override
+    public FilterResult logFilterResult(FilterResult filterResult) {
+        filterResultsCounter.logResult(filterResult);
+        return filterResult;
+    }
+
+    @Override
+    public List<FilterResultCount> filterCounts() {
+        return filterResultsCounter.filterResultCounts();
+    }
 }

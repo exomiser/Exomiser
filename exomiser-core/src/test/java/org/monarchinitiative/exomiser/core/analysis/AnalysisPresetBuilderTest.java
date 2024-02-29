@@ -41,18 +41,7 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 
 public class AnalysisPresetBuilderTest {
 
-    private static final Set<FrequencySource> FREQUENCY_SOURCES = FrequencySource.ALL_EXTERNAL_FREQ_SOURCES.stream()
-            .filter(frequencySource -> !(
-                    frequencySource == FrequencySource.EXAC_FINNISH ||
-                    frequencySource == FrequencySource.EXAC_OTHER ||
-                    frequencySource == FrequencySource.GNOMAD_E_ASJ ||
-                    frequencySource == FrequencySource.GNOMAD_G_ASJ ||
-                    frequencySource == FrequencySource.GNOMAD_E_FIN ||
-                    frequencySource == FrequencySource.GNOMAD_G_FIN ||
-                    frequencySource == FrequencySource.GNOMAD_E_OTH ||
-                    frequencySource == FrequencySource.GNOMAD_G_OTH
-            ))
-            .collect(Collectors.toSet());
+    private static final Set<FrequencySource> FREQUENCY_SOURCES = Set.copyOf(FrequencySource.NON_FOUNDER_POPS);
 
     private final AnalysisPresetBuilder instance = new AnalysisPresetBuilder(new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService()), new NoneTypePriorityFactoryStub(), TestOntologyService.builder().build());
@@ -75,7 +64,6 @@ public class AnalysisPresetBuilderTest {
                         OmimPriority.class,
                         HiPhivePriority.class
                 )));
-        System.out.println(analysis.getAnalysisSteps());
     }
 
     @Test

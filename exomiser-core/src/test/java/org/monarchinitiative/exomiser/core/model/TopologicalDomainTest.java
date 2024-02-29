@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,14 +66,14 @@ public class TopologicalDomainTest {
 
     @Test
     public void testVariantIsWithinDomain() {
-        Variant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
+        GenomicVariant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1, 10, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(true));
     }
 
     @Test
     public void testVariantIsOutsideDomain() {
-        Variant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
+        GenomicVariant variant = SimpleVariantCoordinates.of(1, 5, "A", "T");
         instance = new TopologicalDomain(1, 1000, 10000, new HashMap<>());
         assertThat(instance.containsPosition(variant), is(false));
     }

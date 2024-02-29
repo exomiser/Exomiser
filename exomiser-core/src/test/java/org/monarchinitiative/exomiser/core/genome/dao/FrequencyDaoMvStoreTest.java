@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
@@ -28,8 +27,12 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
+
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,14 +49,14 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
     @Test
     public void wrongMapName() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        FrequencyDao instance = newInstanceWithData(ImmutableMap.of());
+        FrequencyDao instance = newInstanceWithData(Map.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void getFrequencyDataNoData() throws Exception {
         Variant variant = buildVariant(1, 123245, "A", "T");
-        FrequencyDao instance = newInstanceWithData(ImmutableMap.of());
+        FrequencyDao instance = newInstanceWithData(Map.of());
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
@@ -62,10 +65,10 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         Variant variant = buildVariant(1, 54321, "C", "G");
         AlleleKey key = AlleleKey.newBuilder().setChr(1).setPosition(12345).setRef("A").setAlt("T").build();
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
-                .putProperties("KG", 0.04f)
-                .putProperties("ESP_AA", 0.003f)
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 4, 1000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.ESP_AA, 1, 30000))
                 .build();
-        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(Map.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.empty()));
     }
 
@@ -74,7 +77,7 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         Variant variant = buildVariant(1, 123245, "A", "T");
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321").build();
-        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(Map.of(key, properties));
         assertThat(instance.getFrequencyData(variant), equalTo(FrequencyData.of("rs54321")));
     }
 
@@ -83,14 +86,14 @@ public class FrequencyDaoMvStoreTest extends AllelePropertiesDaoAdapterTest {
         Variant variant = buildVariant(1, 12345, "A", "T");
         AlleleKey key = AlleleProtoAdaptor.toAlleleKey(variant);
         AlleleProperties properties = AlleleProperties.newBuilder().setRsId("rs54321")
-                .putProperties("KG", 0.04f)
-                .putProperties("ESP_AA", 0.003f)
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.KG, 4, 1000))
+                .addFrequencies(AlleleData.frequencyOf(AlleleProto.FrequencySource.ESP_AA, 3, 6000, 1))
                 .build();
-        FrequencyDao instance = newInstanceWithData(ImmutableMap.of(key, properties));
+        FrequencyDao instance = newInstanceWithData(Map.of(key, properties));
         assertThat(instance.getFrequencyData(variant),
                 equalTo(FrequencyData.of("rs54321",
-                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 0.04f),
-                        Frequency.of(FrequencySource.ESP_AFRICAN_AMERICAN, 0.003f))));
+                        Frequency.of(FrequencySource.THOUSAND_GENOMES, 4, 1000, 0),
+                        Frequency.of(FrequencySource.ESP_AA, 3, 6000, 1))));
     }
 
 }

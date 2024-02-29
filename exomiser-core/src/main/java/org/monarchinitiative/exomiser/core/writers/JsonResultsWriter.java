@@ -23,12 +23,11 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +37,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -59,7 +55,7 @@ public class JsonResultsWriter implements ResultsWriter {
         Sample sample = analysisResults.getSample();
         Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
         ObjectWriter objectWriter = new ObjectMapper()
-                .addMixIn(Variant.class, JsonVariantMixin.class)
+                .addMixIn(GenomicVariant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writer();
         try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
@@ -73,7 +69,7 @@ public class JsonResultsWriter implements ResultsWriter {
     @Override
     public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         ObjectWriter objectWriter = new ObjectMapper()
-                .addMixIn(Variant.class, JsonVariantMixin.class)
+                .addMixIn(GenomicVariant.class, JsonVariantMixin.class)
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
         try (Writer stringWriter = new StringWriter()) {

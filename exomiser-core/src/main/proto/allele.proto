@@ -15,9 +15,130 @@ message AlleleKey {
 
 message AlleleProperties {
     string rs_id = 1;
-    map<string, float> properties = 2;
-    //TODO: move to model or somewhere and then import here - this is also needed for output in results
+    map<string, float> properties = 2 [deprecated = true];
     ClinVar clinVar = 3;
+    repeated Frequency frequencies = 4;
+    repeated PathogenicityScore pathogenicityScores = 5;
+}
+
+message Frequency {
+    FrequencySource frequencySource = 1; // 1 byte (Varint)
+    float frequency = 2; // 4 bytes
+    // AF doesn't need storing as it is calculated as AC/AN
+    int32 ac = 3; // 1 byte (Varint)
+    int32 an = 4; // 1-3 bytes (Varint - 2^24 = 16777216 max)
+    int32 hom = 5; // 1 byte
+}
+    // "GNOMAD_G_EAS" = 12 bytes + float = 4 bytes = 16 bytes
+    //
+// "Strings: A wire type of 2 (length-delimited) means that the value is a varint encoded length followed by the specified
+// number of bytes of data."
+//  1 byte wire type + field number, 1-3 bytes length of field (varint), 1 byte / character (UTF-8)
+
+// "embedded messages are treated in exactly the same way as strings (wire type = 2)."
+//
+// "repeated messages: Otherwise, all of the elements of the field are packed into a single key-value pair with wire type 2 (length-delimited).
+//   Each element is encoded the same way it would be normally, except without a key preceding it."
+// repeated field = 1 byte,
+// no. repeated elements = 1 byte
+//
+
+// !!CAUTION - CHANGING THE INTEGER VALUES OF THE ENUM WILL RESULT IN INCORRECT DATA BEING RETURNED!! ONLY ADD NEW VALUES!!
+// IF REMOVING A VALUE, COMMENT IT OUT AS A VISUAL REMINDER AND ADD THE VALUE TO RESERVED e.g.
+//   message Foo {
+//    reserved 2, 15, 9 to 11;
+//    reserved "foo", "bar";
+//   }
+
+enum FrequencySource {
+    UNSPECIFIED_FREQUENCY_SOURCE = 0;
+    KG = 1;
+    TOPMED = 2;
+    UK10K = 3;
+
+    ESP_EA = 4;
+    ESP_AA = 5;
+    ESP_ALL = 6;
+
+    LOCAL = 7;
+    reserved 8 to 15; // non-gnomAD sources
+
+//  EXAC removed as were merged into GNOMAD
+//    EXAC_AFR = 7;
+//    EXAC_AMR = 8;
+//    EXAC_EAS = 9;
+//    EXAC_FIN = 10;
+//    EXAC_NFE = 11;
+//    EXAC_OTH = 12;
+//    EXAC_SAS = 13;
+
+    //reserved 16-35 GNOMAD_E
+    GNOMAD_E_AFR = 16;
+    GNOMAD_E_AMR = 17;
+    GNOMAD_E_ASJ = 18;
+    GNOMAD_E_EAS = 19;
+    GNOMAD_E_FIN = 20;
+    GNOMAD_E_NFE = 21;
+    GNOMAD_E_OTH = 22;
+    GNOMAD_E_SAS = 23;
+    GNOMAD_E_MID = 24;
+    reserved 25 to 35; // for GNOMAD_E
+
+    //reserved 36-55 GNOMAD_G
+    GNOMAD_G_AFR = 36;
+    GNOMAD_G_AMR = 37;
+    GNOMAD_G_ASJ = 38;
+    GNOMAD_G_EAS = 39;
+    GNOMAD_G_FIN = 40;
+    GNOMAD_G_NFE = 41;
+    GNOMAD_G_OTH = 42;
+    GNOMAD_G_SAS = 43;
+    GNOMAD_G_AMI = 44;
+    GNOMAD_G_MID = 45;
+    reserved 46 to 55; // for GNOMAD_G
+
+    // reserved 68-75 for ALFA
+    ALFA_AFO = 56;
+    ALFA_AFA = 57;
+    ALFA_AFR = 58;
+    ALFA_EUR = 59;
+    ALFA_LAC = 60;
+    ALFA_LEN = 61;
+    ALFA_SAS = 62;
+    ALFA_EAS = 63;
+    ALFA_ASN = 64;
+    ALFA_OAS = 65;
+    ALFA_OTR = 66;
+    ALFA_TOT = 67;
+    reserved 68 to 75; // for ALFA
+
+}
+
+message PathogenicityScore {
+    PathogenicitySource pathogenicitySource = 1;
+    float score = 2;
+}
+
+enum PathogenicitySource {
+    UNKNOWN_PATH_SOURCE = 0;
+    // A default score derived from the predicted variant effect
+    VARIANT_EFFECT = 1;
+    // An unspecified source for use in testing new pathogenicity scores
+    TEST = 2;
+    POLYPHEN = 3;
+    MUTATION_TASTER = 4;
+    SIFT = 5;
+    CADD = 6;
+    REMM = 7;
+    REVEL = 8;
+    MVP = 9;
+    SPLICE_AI = 10;
+    ALPHA_MISSENSE = 11;
+    EVE = 12;
+
+    // SV data sources
+    DBVAR = 14;
+    CLINVAR = 15;
 }
 
 message ClinVar {
@@ -42,9 +163,94 @@ message ClinVar {
         RISK_FACTOR = 14;
     }
 
-    string alleleId = 1;
+    enum ReviewStatus {
+        NO_ASSERTION_PROVIDED = 0; // default value
+        NO_ASSERTION_CRITERIA_PROVIDED = 1;
+        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT = 2;
+        CRITERIA_PROVIDED_SINGLE_SUBMITTER = 3;
+        CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS = 4;
+        CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS = 5;
+        REVIEWED_BY_EXPERT_PANEL = 6;
+        PRACTICE_GUIDELINE = 7;
+    }
+
+    string alleleId = 1 [deprecated = true];
     ClinSig primaryInterpretation = 2;
     repeated ClinSig secondaryInterpretations = 3;
-    string reviewStatus = 4;
+    ReviewStatus reviewStatus = 4;
     map<string, ClinSig> includedAlleles = 5;
+    string variationId = 6;
+    string gene_symbol = 7;
+    string gene_id = 8;
+    VariantEffect variant_effect = 9;
+    string hgvs_cdna = 10;
+    string hgvs_protein = 11;
+    map<string, uint32> clin_sig_counts = 12; //CLNSIGCONF
+}
+
+enum VariantEffect {
+    SEQUENCE_VARIANT = 0; // n.b. this is the LOWEST value in the jannovar enum
+    CHROMOSOME_NUMBER_VARIATION = 1;
+    TRANSCRIPT_ABLATION = 2;
+    EXON_LOSS_VARIANT = 3;
+    INVERSION = 4;
+    INSERTION = 5;
+    TRANSLOCATION = 6;
+    FRAMESHIFT_ELONGATION = 7;
+    FRAMESHIFT_TRUNCATION = 8;
+    FRAMESHIFT_VARIANT = 9;
+    INTERNAL_FEATURE_ELONGATION = 10;
+    FEATURE_TRUNCATION = 11;
+    TRANSCRIPT_AMPLIFICATION = 12;
+    COPY_NUMBER_CHANGE = 13;
+    MNV = 14;
+    COMPLEX_SUBSTITUTION = 15;
+    STOP_GAINED = 16;
+    STOP_LOST = 17;
+    START_LOST = 18;
+    SPLICE_ACCEPTOR_VARIANT = 19;
+    SPLICE_DONOR_VARIANT = 20;
+    RARE_AMINO_ACID_VARIANT = 21;
+    MISSENSE_VARIANT = 22;
+    INFRAME_INSERTION = 23;
+    DISRUPTIVE_INFRAME_INSERTION = 24;
+    INFRAME_DELETION = 25;
+    DISRUPTIVE_INFRAME_DELETION = 26;
+    FIVE_PRIME_UTR_TRUNCATION = 27;
+    THREE_PRIME_UTR_TRUNCATION = 28;
+    SPLICE_REGION_VARIANT = 30;
+    STOP_RETAINED_VARIANT = 31;
+    INITIATOR_CODON_VARIANT = 32;
+    SYNONYMOUS_VARIANT = 33;
+    CODING_TRANSCRIPT_INTRON_VARIANT = 34;
+    FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT = 35;
+    FIVE_PRIME_UTR_EXON_VARIANT = 36;
+    THREE_PRIME_UTR_EXON_VARIANT = 37;
+    FIVE_PRIME_UTR_INTRON_VARIANT = 38;
+    THREE_PRIME_UTR_INTRON_VARIANT = 39;
+    NON_CODING_TRANSCRIPT_EXON_VARIANT = 40;
+    NON_CODING_TRANSCRIPT_INTRON_VARIANT = 41;
+    DIRECT_TANDEM_DUPLICATION = 42;
+    MOBILE_ELEMENT_DELETION = 43;
+    MOBILE_ELEMENT_INSERTION = 44;
+    UPSTREAM_GENE_VARIANT = 45;
+    DOWNSTREAM_GENE_VARIANT = 46;
+    INTERGENIC_VARIANT = 47;
+    TFBS_ABLATION = 48;
+    TFBS_AMPLIFICATION = 49;
+    TF_BINDING_SITE_VARIANT = 50;
+    REGULATORY_REGION_VARIANT = 51;
+    REGULATORY_REGION_ABLATION = 52;
+    REGULATORY_REGION_AMPLIFICATION = 53;
+    CONSERVED_INTRON_VARIANT = 54;
+    INTRAGENIC_VARIANT = 55;
+    CONSERVED_INTERGENIC_VARIANT = 56;
+    STRUCTURAL_VARIANT = 57;
+    CODING_SEQUENCE_VARIANT = 58;
+    INTRON_VARIANT = 59;
+    EXON_VARIANT = 60;
+    SPLICING_VARIANT = 61;
+    MIRNA = 62;
+    CODING_TRANSCRIPT_VARIANT = 63;
+    NON_CODING_TRANSCRIPT_VARIANT = 64;
 }

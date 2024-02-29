@@ -70,7 +70,7 @@ public class CommandLineJobReader {
         if (userOptions.equals(Set.of("analysis-batch"))) {
             Path analysisBatchFile = Path.of(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = BatchFileReader.readPathsFromBatchFile(analysisBatchFile);
-            return analysisScripts.stream().map(JobReader::readJob).collect(Collectors.toList());
+            return analysisScripts.stream().map(JobReader::readJob).toList();
         }
         // new batch option which will parse each line as a cli command
         if (userOptions.equals(Set.of("batch"))) {
@@ -361,16 +361,12 @@ public class CommandLineJobReader {
     }
 
     private AnalysisProto.Preset parsePreset(String presetValue) {
-        switch (presetValue.toLowerCase()) {
-            case "exome":
-                return AnalysisProto.Preset.EXOME;
-            case "genome":
-                return AnalysisProto.Preset.GENOME;
-            case "phenotype-only":
-                return AnalysisProto.Preset.PHENOTYPE_ONLY;
-            default:
-                throw new IllegalArgumentException("Unrecognised preset option: " + presetValue);
-        }
+        return switch (presetValue.toLowerCase()) {
+            case "exome" -> AnalysisProto.Preset.EXOME;
+            case "genome" -> AnalysisProto.Preset.GENOME;
+            case "phenotype-only" -> AnalysisProto.Preset.PHENOTYPE_ONLY;
+            default -> throw new IllegalArgumentException("Unrecognised preset option: " + presetValue);
+        };
     }
 
     private OutputProto.OutputOptions readOutputOptions(Path outputOptionsPath) {

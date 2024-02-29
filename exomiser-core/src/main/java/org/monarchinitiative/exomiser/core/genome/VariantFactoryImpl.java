@@ -32,7 +32,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -159,8 +157,8 @@ public class VariantFactoryImpl implements VariantFactory {
         //  throws an exception when being used with the VariantEvaluation.with constructor. In fact all Exomiser Variant
         //  classes extend BaseVariant which means breakends *cannot* currently be analysed.
 
-        //  VariantContext -> Variant -> VariantAnnotations -> VariantEvaluation
-        Variant variant = variantContextConverter.convertToVariant(variantContext, altAllele);
+        //  VariantContext - (convert) -> GenomicVariant - (annotate) -> VariantAnnotations - (build)-> VariantEvaluation
+        GenomicVariant variant = variantContextConverter.convertToVariant(variantContext, altAllele);
         logger.trace("Converted variant context {} alt allele {} to {}", variantContext, altAlleleId, variant);
         if (variant == null) {
             return List.of();
@@ -176,16 +174,14 @@ public class VariantFactoryImpl implements VariantFactory {
         return variantEvaluations;
     }
 
-    private VariantEvaluation.Builder createVariantBuilder(VariantContext variantContext, int altAlleleId, Variant variant) {
+    private VariantEvaluation.Builder createVariantBuilder(VariantContext variantContext, int altAlleleId, GenomicVariant variant) {
         SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, altAlleleId);
 
         return VariantEvaluation.builder()
-                .with(variant)
-//                .variant(variant)
+                .variant(variant)
                 .genomeAssembly(genomeAssembly)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
-                .id((".".equals(variantContext.getID())) ? "" : variantContext.getID())
                 .sampleGenotypes(sampleGenotypes)
                 //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual());

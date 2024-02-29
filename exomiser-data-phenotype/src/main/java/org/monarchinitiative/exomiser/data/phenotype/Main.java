@@ -34,6 +34,9 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -105,6 +108,15 @@ public class Main implements ApplicationRunner {
             logger.info("Migrating exomiser databases...");
             flyway.clean();
             flyway.migrate();
+            // shutdown and compact the database. This will reduce the file size by about 3GB-4GB (50%)
+            try {
+                DataSource datasource = flyway.getConfiguration().getDataSource();
+                Connection connection = datasource.getConnection();
+                Statement statement = connection.createStatement();
+                statement.execute("SHUTDOWN COMPACT");
+            } catch (Exception e) {
+                logger.error("", e);
+            }
         } else {
             logger.info("Skipping migration of H2 database.");
         }

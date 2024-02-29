@@ -21,14 +21,14 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import org.monarchinitiative.svart.Contig;
-import org.monarchinitiative.svart.GenomicAssemblies;
-import org.monarchinitiative.svart.GenomicAssembly;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.monarchinitiative.svart.SequenceRole.ASSEMBLED_MOLECULE;
+import static org.monarchinitiative.svart.assembly.SequenceRole.ASSEMBLED_MOLECULE;
 
 /**
  * Genome reference assembly version - hg19/hg38.

@@ -38,7 +38,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
-import org.monarchinitiative.svart.Variant;
+import org.monarchinitiative.svart.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -58,7 +57,7 @@ import java.util.function.Function;
  */
 public class VariantFactoryPerformanceTest {
 
-    Logger logger = LoggerFactory.getLogger(VariantFactoryPerformanceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantFactoryPerformanceTest.class);
 
     /**
      * Comparative performance test for loading a full genome. Ignored by default as this takes a few minutes.
@@ -81,6 +80,7 @@ public class VariantFactoryPerformanceTest {
 //        Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/example_sv.vcf");
 
         System.out.println("Read variants with stub annotations, stub data - baseline file reading and VariantEvaluation creation");
+        // about 15s
         runPerfTest(4, new VariantFactoryImpl(stubVariantAnnotator, vcfPath), new StubAllelePropertiesDao());
 
         JannovarData jannovarData = loadJannovarData();
@@ -88,14 +88,21 @@ public class VariantFactoryPerformanceTest {
                 .empty());
         VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator, vcfPath);
 
-        System.out.println("Read variants with real annotations, stub data");
+        System.out.println("Read variants with real jannovar annotations, stub data");
+        // about 35s
         runPerfTest(4, jannovarVariantFactory, new StubAllelePropertiesDao());
-//
-//
-//        VariantAnnotator vittVariantAnnotator = new VittAnnotatator(GenomeAssembly.HG19, loadTranscriptIndex(GenomeAssembly.HG19, jannovarData));
+
+//        VittData vittData = VittDataReader.readVittData(VITT_HG19_DATA_PATH);
+//        List<Transcript> converted = convertJannovarToVitt(vittData.genomicAssembly(), jannovarData);
+//        jannovarData = null;
+//        logger.info("Converted Jannovar data with {} transcripts", converted.size());
+//        GenomicIntervalIndex<Transcript> transcriptIndex = GenomicIntervalIndex.of(converted);
+//        var vittAnnotator = new org.monarchinitiative.vitt.annotation.VariantAnnotator(transcriptIndex);
+//        VariantAnnotator vittVariantAnnotator = new VittAnnotatator(GenomeAssembly.HG19, vittAnnotator);
 //        VariantFactory vittVariantFactory = new VariantFactoryImpl(vittVariantAnnotator, vcfPath);
 //
-//        System.out.println("Read variants with real annotations, stub data");
+//        System.out.println("Read variants with real vitt annotations, stub data");
+//        // about 25s
 //        runPerfTest(4, vittVariantFactory, new StubAllelePropertiesDao());
 
         // This should take about 10-15 mins as it annotates every variant in the file from the database
@@ -104,240 +111,6 @@ public class VariantFactoryPerformanceTest {
 
     }
 
-    //    @Disabled("performance test")
-//    @Test
-//    void rawAnnotatorPerformance() {
-//        Path vcfPath = Paths.get("/home/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
-//        VariantTrimmer vcfStyleTrimmer = VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase());
-//        VariantTrimmer hgvsStyleTrimmer = VariantTrimmer.rightShiftingTrimmer(VariantTrimmer.removingCommonBase());
-//        VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), hgvsStyleTrimmer);
-//
-//        JannovarData jannovarData = loadJannovarData();
-//        JannovarAnnotationService jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
-//
-//        logger.info("Testing VCF read time");
-//        Instant vcfReadStart = Instant.now();
-//        long alleles = VcfFiles.readVariantContexts(vcfPath)
-//                .flatMap(vc -> vc.getAlleles().stream())
-//                .count();
-//        Instant vcfReadEnd = Instant.now();
-//        Duration vcfReadTime = Duration.between(vcfReadStart, vcfReadEnd);
-//        logger.info("Read {} alleles in {}", alleles, vcfReadTime);
-//
-//        logger.info("Testing VCF read time with svart conversion");
-//        Instant svartConvertStart = Instant.now();
-//        long svartAlleles = VcfFiles.readVariantContexts(vcfPath)
-//                .flatMap(vc ->
-//                        vc.getAlleles().stream().map(allele -> variantContextConverter.convertToVariant(vc, allele))
-//                )
-//                .filter(variant -> variant.variantType() == VariantType.SNV)
-//                .count();
-//        Instant svartConvertEnd = Instant.now();
-//        Duration svartConvertTime = Duration.between(svartConvertStart, svartConvertEnd);
-//        logger.info("Read and converted {} alleles in {}", svartAlleles, svartConvertTime);
-//
-//        logger.info("Annotating with Jannovar");
-//        JannovarVariantEffectCounter jannovarVariantEffectCounter = new JannovarVariantEffectCounter();
-//        Instant jannovarStart = Instant.now();
-//        long jannovarAnnotations = VcfFiles.readVariantContexts(vcfPath)
-//                .flatMap(vc ->
-//                        vc.getAlleles().stream().map(allele -> variantContextConverter.convertToVariant(vc, allele))
-//                        )
-//                .filter(variant -> variant.variantType() == VariantType.SNV)
-//                .map(variant -> jannovarAnnotationService
-//                        .annotateVariant(variant.contigName(), variant.start(), variant.ref(), variant.alt()))
-////                .peek(variantAnnotation -> jannovarVariantEffectCounter.countEffect(variantAnnotation.getHighestImpactEffect()))
-//                .count();
-//        Instant jannovarEnd = Instant.now();
-//        Duration jannovarDuration = Duration.between(jannovarEnd, jannovarStart);
-//        logger.info("Finished annotating with Jannovar. {} variants, {} effects took {} sec ({} without VCF read time)", jannovarAnnotations, jannovarVariantEffectCounter.total(), jannovarDuration, jannovarDuration.minus(svartConvertTime));
-//        jannovarVariantEffectCounter.getEffectCounts().forEach((variantEffect, count) -> {
-//            if (count != 0) {
-//                System.out.println(variantEffect + ": " + count);
-//            }
-//        });
-//
-//        org.monarchinitiative.vitt.VariantAnnotator vittVariantAnnotator = new org.monarchinitiative.vitt.VariantAnnotator(loadTranscriptIndex(GenomeAssembly.HG19, jannovarData));
-//        logger.info("Annotating with vitt");
-//        VittVariantEffectCounter vittVariantEffectCounter = new VittVariantEffectCounter();
-//        Instant vittStart = Instant.now();
-//        long vittAnnotations = VcfFiles.readVariantContexts(vcfPath)
-//                .flatMap(vc ->
-//                        vc.getAlleles().stream().map(allele -> variantContextConverter.convertToVariant(vc, allele))
-//                )
-//                .filter(variant -> variant.variantType() == VariantType.SNV)
-//                .map(vittVariantAnnotator::annotate)
-//                .peek(variantAnnotation -> vittVariantEffectCounter.countEffect(variantAnnotation.highestImpactEffect()))
-//                .count();
-//
-//        Instant vittEnd = Instant.now();
-//        Duration vittDuration = Duration.between(vittStart, vittEnd);
-//        logger.info("Finished annotating with vitt. {} variants, {} effects took {} sec ({} without VCF read time)", vittAnnotations, vittVariantEffectCounter.total(), vittDuration, vittDuration.minus(svartConvertTime));
-//        vittVariantEffectCounter.getEffectCounts().forEach((variantEffect, count) -> {
-//            if (count != 0) {
-//                System.out.println(variantEffect + ": " + count);
-//            }
-//        });
-////        logger.info("Vitt took {} less time - {} total having removed VCF read time", vittDuration.minus(jannovarDuration), vittDuration.minus(svartConvertTime));
-//    }
-//
-//    @Disabled("integration test")
-//    @Test
-//    void annotatorComparison() {
-//        Path vcfPath = Paths.get("/home/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
-//        VariantContextConverter variantContextConverter = VariantContextConverter.of(GenomeAssembly.HG19.genomicAssembly(), VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
-//
-//        JannovarData jannovarData = loadJannovarData();
-//        JannovarAnnotationService jannovarAnnotationService = new JannovarAnnotationService(jannovarData);
-//        GenomicRegionIndex<Transcript> transcriptIndex = loadTranscriptIndex(GenomeAssembly.HG19, jannovarData);
-//        org.monarchinitiative.vitt.VariantAnnotator vittVariantAnnotator = new org.monarchinitiative.vitt.VariantAnnotator(transcriptIndex);
-//        logger.info("{} Jannovar transcripts, {} Vitt transcripts", jannovarData.getTmByAccession().size(), transcriptIndex.size());
-//
-//        Iterator<VariantContext> variantContextIterator = VcfFiles.readVariantContexts(vcfPath).iterator();
-//        while (variantContextIterator.hasNext()) {
-//            VariantContext variantContext = variantContextIterator.next();
-//            for (Allele allele : variantContext.getAlternateAlleles()) {
-//                Variant variant = variantContextConverter.convertToVariant(variantContext, allele);
-//                if (variant.variantType() == VariantType.SNV) {
-//                    de.charite.compbio.jannovar.annotation.VariantAnnotations jannovarAnnotations = jannovarAnnotationService.annotateVariant(variant.contigName(), variant.start(), variant.ref(), variant.alt());
-//                    List<String> jannovarTranscriptAccessions = jannovarAnnotations.getAnnotations().stream().map(annotation -> annotation.getTranscript().getAccession()).sorted().collect(Collectors.toList());
-//                    Set<VariantEffect> jannovarEffects = jannovarAnnotations.getAnnotations().stream()
-//                            .flatMap(annotation -> annotation.getEffects().stream().map(effect -> VariantEffect.valueOf(effect.toString())))
-//                            .collect(Sets.toImmutableEnumSet());
-//
-//                    org.monarchinitiative.vitt.VariantAnnotation vittAnnotations = vittVariantAnnotator.annotate(variant);
-//                    List<String> vittTranscriptAccessions = vittAnnotations.transcriptAnnotations().stream().map(transcriptAnnotation -> transcriptAnnotation.transcript().accession()).sorted().collect(Collectors.toList());
-//                    Set<VariantEffect> vittEffects = vittAnnotations.variantEffects();
-//                    if (!jannovarTranscriptAccessions.equals(vittTranscriptAccessions)) {
-//                        logger.info("{} Jannovar: {} Vitt: {}", variant, jannovarTranscriptAccessions, vittTranscriptAccessions);
-//                    }
-//                    if (!jannovarEffects.equals(vittEffects)) {
-//                        logger.info("{}", variant);
-//                        jannovarAnnotations.getAnnotations().stream().sorted(Comparator.comparing(annotation -> annotation.getTranscript().getAccession())).forEach(annotation -> logger.info("Jannovar: {}, {}, {}", annotation.getTranscript().getAccession(), annotation.getEffects(), annotation.getTranscript()));
-//                        vittAnnotations.transcriptAnnotations().stream().sorted(Comparator.comparing(annotation -> annotation.transcript().accession())).forEach(annotation -> logger.info("Vitt: {}, {}, {}", annotation.transcript().accession(), annotation.variantEffects(), annotation.transcript()));
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private static class JannovarVariantEffectCounter {
-//        private final int[] effectCounts;
-//
-//        public JannovarVariantEffectCounter() {
-//            effectCounts = new int[de.charite.compbio.jannovar.annotation.VariantEffect.values().length];
-//            Arrays.fill(effectCounts, 0);
-//        }
-//
-//        public void countEffect(de.charite.compbio.jannovar.annotation.VariantEffect variantEffect) {
-//            effectCounts[variantEffect.ordinal()]++;
-//        }
-//
-//        public Map<de.charite.compbio.jannovar.annotation.VariantEffect, Integer> getEffectCounts() {
-//            Map<de.charite.compbio.jannovar.annotation.VariantEffect, Integer> counts = new EnumMap<>(de.charite.compbio.jannovar.annotation.VariantEffect.class);
-//            for (var variantEffect : de.charite.compbio.jannovar.annotation.VariantEffect.values()) {
-//                counts.put(variantEffect, effectCounts[variantEffect.ordinal()]);
-//            }
-//            return counts;
-//        }
-//
-//        public long total() {
-//            long total = 0;
-//            for (int i = 0; i < effectCounts.length; i++) {
-//                total += effectCounts[i];
-//            }
-//            return total;
-//        }
-//    }
-//
-//    private static class VittVariantEffectCounter {
-//        private final int[] effectCounts;
-//
-//        public VittVariantEffectCounter() {
-//            effectCounts = new int[VariantEffect.values().length];
-//            Arrays.fill(effectCounts, 0);
-//        }
-//
-//        public void countEffect(VariantEffect variantEffect) {
-//            effectCounts[variantEffect.ordinal()]++;
-//        }
-//
-//        public Map<VariantEffect, Integer> getEffectCounts() {
-//            Map<VariantEffect, Integer> counts = new EnumMap<>(VariantEffect.class);
-//            for (VariantEffect variantEffect : VariantEffect.values()) {
-//                counts.put(variantEffect, effectCounts[variantEffect.ordinal()]);
-//            }
-//            return counts;
-//        }
-//
-//        public long total() {
-//            long total = 0;
-//            for (int i = 0; i < effectCounts.length; i++) {
-//                total += effectCounts[i];
-//            }
-//            return total;
-//        }
-//    }
-//
-//    private GenomicRegionIndex<Transcript> loadTranscriptIndex(GenomeAssembly genomeAssembly, JannovarData jannovarData) {
-//        List<Transcript> transcripts = new ArrayList<>(jannovarData.getTmByAccession().size());
-//
-//        for (TranscriptModel transcriptModel : jannovarData.getTmByAccession().values()) {
-//            Contig contig = genomeAssembly.getContigById(transcriptModel.getChr());
-//            Strand strand = transcriptModel.getStrand() == de.charite.compbio.jannovar.reference.Strand.FWD ? Strand.POSITIVE : Strand.NEGATIVE;
-//            try {
-//                Transcript transcript = DefaultTranscript.builder()
-//                        .with(contig, strand, CoordinateSystem.LEFT_OPEN, Position.of(transcriptModel.getTXRegion().getBeginPos()), Position.of(transcriptModel.getTXRegion().getEndPos()))
-//                        .sequence(transcriptModel.getSequence())
-//                        .accession(transcriptModel.getAccession())
-//                        .geneId(transcriptModel.getGeneID())
-//                        .geneSymbol(transcriptModel.getGeneSymbol())
-//                        .cds(Position.of(transcriptModel.getCDSRegion().getBeginPos()), Position.of(transcriptModel.getCDSRegion().getEndPos()))
-//                        .exons(transcriptModel.getExonRegions().stream()
-//                                .map(exon -> Exon.of(contig, strand, CoordinateSystem.LEFT_OPEN, Position.of(exon.getBeginPos()), Position.of(exon.getEndPos())))
-//                                .collect(Collectors.toList()))
-//                        .build();
-//                transcripts.add(transcript);
-//            } catch (CoordinatesOutOfBoundsException coordinatesOutOfBoundsException) {
-//                // ignore these - need to fix the MT length for UCSC hg19
-//            }
-//        }
-//
-//        Map<String, Transcript> transcriptMap = transcripts.stream().collect(toMap(Transcript::accession, Function.identity()));
-//
-//        return GenomicRegionIndex.of(transcripts);
-//    }
-//
-//    private static final class VittAnnotatator implements VariantAnnotator {
-//
-//        private final GenomeAssembly genomeAssembly;
-//        private final GenomicRegionIndex<Transcript> transcriptIndex;
-//
-//        org.monarchinitiative.vitt.VariantAnnotator vittVariantAnnotator;
-//
-//        public VittAnnotatator(GenomeAssembly genomeAssembly, GenomicRegionIndex<Transcript> transcriptIndex) {
-//            this.genomeAssembly = genomeAssembly;
-//            this.transcriptIndex = transcriptIndex;
-//            this.vittVariantAnnotator = new org.monarchinitiative.vitt.VariantAnnotator(transcriptIndex);
-//        }
-//
-//        @Override
-//        public GenomeAssembly genomeAssembly() {
-//            return genomeAssembly;
-//        }
-//
-//        @Override
-//        public List<VariantAnnotation> annotate(@Nullable Variant variant) {
-//            org.monarchinitiative.vitt.VariantAnnotation variantAnnotation = vittVariantAnnotator.annotate(variant);
-////            if (variantAnnotation.hasAnnotation()) {
-////                System.out.println(variantAnnotation);
-////            }
-////            System.out.println(variantAnnotation);
-//            return List.of(VariantAnnotation.builder().with(variant).build());
-//        }
-//
-//    }
-//
     @Disabled
     @Test
     void testVariant() {
@@ -406,8 +179,8 @@ public class VariantFactoryPerformanceTest {
                 variantEvaluation.getTranscriptAnnotations().get(0).getAccession(),
                 variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
                 variantEvaluation.getVariantScore(),
-                variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().getMaxFreq(),
-                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().getPredictedPathogenicityScores()
+                variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().maxFreq(),
+                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().pathogenicityScores()
         );
     }
 
@@ -458,13 +231,13 @@ public class VariantFactoryPerformanceTest {
         }
 
         @Override
-        public List<VariantAnnotation> annotate(Variant variant) {
+        public List<VariantAnnotation> annotate(GenomicVariant variant) {
             return List.of(EMPTY_ANNOTATION);
         }
     }
 
     private JannovarData loadJannovarData() {
-        Path transcriptFilePath = Paths.get("/home/hhx640/Documents/exomiser-data/1902_hg19/1902_hg19_transcripts_ensembl.ser");
+        Path transcriptFilePath = Paths.get("/home/hhx640/Documents/exomiser-data/2302_hg19/2302_hg19_transcripts_ensembl.ser");
         return JannovarDataSourceLoader.loadJannovarData(transcriptFilePath);
     }
 

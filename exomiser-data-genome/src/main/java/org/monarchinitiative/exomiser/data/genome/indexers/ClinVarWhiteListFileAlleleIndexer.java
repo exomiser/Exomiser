@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.data.genome.indexers;
 
+import org.monarchinitiative.exomiser.core.genome.dao.ClinVarWhiteListReader;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.slf4j.Logger;
@@ -34,8 +35,11 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Specialised AlleleIndexer for producing the ClinVar whitelist
  *
+ * @deprecated Replaced by the {@link ClinVarWhiteListReader} which will
+ * read and filter the entire ClinVar database on the fly.
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated
 public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarWhiteListFileAlleleIndexer.class);
@@ -91,21 +95,17 @@ public class ClinVarWhiteListFileAlleleIndexer extends AbstractIndexer<Allele> {
     //   4* practice_guideline,
 
     private boolean isPathOrLikelyPath(ClinVarData clinVarData) {
-        switch (clinVarData.getPrimaryInterpretation()) {
-            case PATHOGENIC:
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-            case LIKELY_PATHOGENIC:
-                return true;
-            default:
-                return false;
-        }
+        return switch (clinVarData.getPrimaryInterpretation()) {
+            case PATHOGENIC, PATHOGENIC_OR_LIKELY_PATHOGENIC, LIKELY_PATHOGENIC -> true;
+            default -> false;
+        };
     }
 
     private StringJoiner createClinVarInfo(ClinVarData clinVarData) {
         StringJoiner stringJoiner = new StringJoiner(";");
-        stringJoiner.add("ALLELEID=" + clinVarData.getAlleleId());
+        stringJoiner.add("VARIATIONID=" + clinVarData.getVariationId());
         stringJoiner.add("CLNSIG=" + clinVarData.getPrimaryInterpretation());
-        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus().replace(" ", "_"));
+        stringJoiner.add("CLNREVSTAT=" + clinVarData.getReviewStatus());
         stringJoiner.add("STARS=" + clinVarData.starRating());
         return stringJoiner;
     }

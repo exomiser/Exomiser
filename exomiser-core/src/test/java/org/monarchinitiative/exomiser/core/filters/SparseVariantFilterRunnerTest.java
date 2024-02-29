@@ -45,6 +45,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.filters.FilterType.*;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -165,6 +166,12 @@ public class SparseVariantFilterRunnerTest {
 
         assertThat(failsAllFilters.passedFilters(), is(false));
         assertThat(failsAllFilters.getPassedFilterTypes().isEmpty(), is(true));
+
+        FilterResultCount pathCount = new FilterResultCount(PATHOGENICITY_FILTER, 1, 3);
+        FilterResultCount effectCount = new FilterResultCount(VARIANT_EFFECT_FILTER, 1, 0);
+        FilterResultCount qualityCount = new FilterResultCount(QUALITY_FILTER, 1, 0);
+        FilterResultCount frequencyCount = new FilterResultCount(FREQUENCY_FILTER, 1, 0);
+        assertThat(instance.filterCounts(), equalTo(List.of(pathCount, effectCount, qualityCount, frequencyCount)));
     }
 
     @Test

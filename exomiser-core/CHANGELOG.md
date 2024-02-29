@@ -1,5 +1,47 @@
 # The Exomiser - Core Library Changelog
 
+## 14.0.0 2024-02-29
+
+This release **requires data version >= 2402** and **Java version >= 17** (the previous LTS release).
+
+- Added new GeneBlacklistFilter [#457](https://github.com/exomiser/Exomiser/issues/457)
+- Enabled independent update of ClinVar data [#501](https://github.com/exomiser/Exomiser/issues/501)
+- Add new ClinVar conflicting evidence counts in HTML output [#535](https://github.com/exomiser/Exomiser/issues/535)
+- Added PS1, PM1, PM5 categories to ACMG assignments
+- Updated gene constraints to use gnomad v4.0 data
+- TSV genes, TSV variants and VCF outputs will only write to a single file where the possible modes of inheritances are now shown together rather than split across separate files.
+- Altered reporting of InheritanceModeFilter to state that the number shown refers to variants rather than genes.
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
+- The `VariantWhiteList` is now dynamically loaded from the ClinVar data provided in the clinvar.mv.db file
+- `VariantDataServiceImpl` now requires a `ClinVarDao`
+- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
+- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity annotations are missing in certain run configurations.
+
+New APIs:
+- New `AnalysisDurationFormatter`
+- New `FilterResultsCounter`
+- New `FilterResultCount` data class
+- New `AnalysisResults.filterResultCounts` field
+- New `FilterRunner.filterCounts()` and `FilterRunner.logFilterResult()` methods
+- New `Filterable.failedFilter()` method
+- New `AlleleData` class to encapsulate building AlleleProto.Frequency and AlleleProto.PathogenicityScore instances
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
+- `Frequency` can either be constructed from a percentage frequency or a set of AC, AN, HOM counts. 
+- Added `AlleleProto.AlleleKey alleleKey()` method to `Variant` to memoise
+- Add PathogenicitySource `ALPHA_MISSENSE`, `EVE`, `SPLICE_AI`
+- Add new `Frequency`, `FrequencySource`, `PathogenicityScore`, `PathogenicitySource`, `VariantEffect` and `ClinVar.ReviewStatus` to proto schema.
+
+API breaking changes:
+- `PathogenicityData` and `FrequencyData` now follow a 'record' rather than 'java bean' pattern for field accessors e.g. `PathogenicityData.clinVarData()` rather than `PathogenicityData.getClinVarData()` 
+- Deleted deprecated `TsvGeneAllMoiResultsWriter`, `TsvVariantAllMoiResultsWriter` and `VcfAllMoiResultsWriter` classes
+- Delete PathogenicitySource `M_CAP`, `MPC`, `PRIMATE_AI`
+- Alter ESP FrequencySource long forms to short e.g. `ESP_AFRICAN_AMERICAN` to `ESP_AA`
+- TSV output column `CLINVAR_ALLELE_ID` has been changed to `CLINVAR_VARIANT_ID` to allow easier reference to ClinVar variants.
+
+
+Other changes:
+- Updated Spring Boot to version 3.2.3
+
 ## 13.3.0 2023-10-17
 
 - Updated Jannovar version to 0.41 to fix incorrect MT codon table usage [#521](https://github.com/exomiser/Exomiser/issues/521)

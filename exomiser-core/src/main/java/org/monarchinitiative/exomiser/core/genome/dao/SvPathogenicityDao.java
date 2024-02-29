@@ -104,18 +104,13 @@ public class SvPathogenicityDao implements PathogenicityDao {
     }
 
     private float mapClinSigToScore(ClinVarData.ClinSig primaryInterpretation) {
-        switch (primaryInterpretation) {
-            case PATHOGENIC:
-                return 1.0f;
-            case PATHOGENIC_OR_LIKELY_PATHOGENIC:
-                return 0.9f;
-            case LIKELY_PATHOGENIC:
-                return 0.8f;
-            case UNCERTAIN_SIGNIFICANCE:
-                return 0.6f;
-            default:
-                return 0f;
-        }
+        return switch (primaryInterpretation) {
+            case PATHOGENIC -> 1.0f;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> 0.9f;
+            case LIKELY_PATHOGENIC -> 0.8f;
+            case UNCERTAIN_SIGNIFICANCE -> 0.6f;
+            default -> 0f;
+        };
     }
 
     private List<SvResult> runQuery(Variant variant) {
@@ -128,7 +123,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
                 "       DBVAR_ID,\n" +
                 "       SOURCE,\n" +
                 "       RCV_ID,\n" +
-                "       ALLELE_ID,\n" +
+                "       VARIATION_ID,\n" +
                 "       CLIN_SIG,\n" +
                 "       CLIN_REV_STAT\n" +
                 "FROM SV_PATH \n" +
@@ -184,7 +179,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
             String svType = rs.getString("VARIANT_TYPE");
             String source = rs.getString("SOURCE");
             String id = rs.getString("RCV_ID");
-            String alleleId = rs.getString("ALLELE_ID");
+            String variationId = rs.getString("VARIATION_ID");
             String clinSig = rs.getString("CLIN_SIG");
             String clinRevStat = rs.getString("CLIN_REV_STAT");
 
@@ -193,26 +188,27 @@ public class SvPathogenicityDao implements PathogenicityDao {
             // lengths all == 2, so there isn't any awkward changeLength fiddling required here.
             if (SvMetaType.isEquivalent(variant.variantType(), variantType)) {
                 ClinVarData.ClinSig sig = ClinVarData.ClinSig.valueOf(clinSig);
+                ClinVarData.ReviewStatus reviewStatus = ClinVarData.ReviewStatus.valueOf(clinRevStat);
                 ClinVarData clinVarData = ClinVarData.builder()
-                        .alleleId(alleleId)
+                        .variationId(variationId)
                         .primaryInterpretation(sig)
-                        .reviewStatus(clinRevStat)
+                        .reviewStatus(reviewStatus)
                         .build();
-                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, alleleId);
+                SvResult svResult = SvResult.of(variant.contig(), start, end, length, variantType, source, id, clinVarData, variationId);
                 results.add(svResult);
             }
         }
         return results;
     }
 
-    private static class SvResult extends BaseVariant<SvResult> {
+    private static class SvResult extends BaseGenomicVariant<SvResult> {
 
         private final String source;
         private final ClinVarData clinVarData;
         private final String clinVarAccession;
 
-        private SvResult(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength, String source, ClinVarData clinVarData, String clinVarAccession) {
-            super(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength);
+        private SvResult(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String source, ClinVarData clinVarData, String clinVarAccession) {
+            super(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
             this.source = source;
             this.clinVarData = clinVarData;
             this.clinVarAccession = clinVarAccession;
@@ -220,12 +216,12 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
         public static SvResult of(Contig contig, int start, int end, int changeLength, VariantType variantType, String source, String id, ClinVarData clinVarData, String clinvarAccession) {
             String alt = '<' + variantType.toString().replace("_", ":") + '>';
-            return new SvResult(contig, id, Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(start), Position.of(end), "", alt, changeLength, source, clinVarData, clinvarAccession);
+            return new SvResult(contig, id, Strand.POSITIVE, Coordinates.oneBased(start, end), "", alt, changeLength, source, clinVarData, clinvarAccession);
         }
 
         @Override
-        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, CoordinateSystem coordinateSystem, Position startPosition, Position endPosition, String ref, String alt, int changeLength) {
-            return new SvResult(contig, id, strand, coordinateSystem, startPosition, endPosition, "", alt, changeLength, source, clinVarData, clinVarAccession);
+        protected SvResult newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
+            return new SvResult(contig, id, strand, coordinates, ref, alt, changeLength, source, clinVarData, clinVarAccession);
         }
 
         @Override

@@ -42,7 +42,6 @@ import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -53,22 +52,20 @@ import java.util.Map;
 @Configuration
 public class Hg38Config extends ResourceConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(Hg19Config.class);
-
-    private final Environment environment;
+    private static final Logger logger = LoggerFactory.getLogger(Hg38Config.class);
 
     public Hg38Config(Environment environment) {
         super(environment);
-        this.environment = environment;
     }
 
     @Bean
     public AssemblyResources hg38AssemblyResources() {
+        ClinVarAlleleResource clinVarAlleleResource = clinVarAlleleResource();
         Path genomeDataPath = genomeDataPath();
         Path genomeProcessPath = genomeProcessPath();
         Map<String, AlleleResource> alleleResources = hg38AlleleResources();
         List<SvResource> svResources = hg38SvResources(genomeProcessPath);
-        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, alleleResources, svResources);
+        return new AssemblyResources(GenomeAssembly.HG38, genomeDataPath, genomeProcessPath, clinVarAlleleResource, alleleResources, svResources);
     }
 
     public Path genomeDataPath() {
@@ -79,36 +76,21 @@ public class Hg38Config extends ResourceConfig {
         return getPathForProperty("hg38.genome-processed-dir");
     }
 
-    private Path getPathForProperty(String propertyKey) {
-        String property = environment.getProperty(propertyKey, "");
-
-        if (property.isEmpty()) {
-            throw new IllegalArgumentException(propertyKey + " has not been specified!");
-        }
-        Path path = Path.of(property);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectory(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            logger.info("Created missing directory {}", path);
-        }
-        return path;
-    }
-
     public Map<String, AlleleResource> hg38AlleleResources() {
         ImmutableMap.Builder<String, AlleleResource> alleleResources = new ImmutableMap.Builder<>();
 
+        // thousand genomes removed as this is part of gnomAD v2.1
         alleleResources.put("gnomad-genome", gnomadGenomeAlleleResource());
         alleleResources.put("gnomad-exome", gnomadExomeAlleleResource());
-        // TOPMed removed as this is now part of dbSNP
-        alleleResources.put("dbsnp", dbSnpAlleleResource());
+        alleleResources.put("gnomad-mito", gnomadMitoAlleleResource());
+        alleleResources.put("alfa", alfaAlleleResource());
+        // TOPMed removed as this is part of gnomAD v2.1
+        // dbSNP removed as this mostly adds a lot of empty data with only rsids
         alleleResources.put("uk10k", uk10kAlleleResource());
-        alleleResources.put("exac", exacAlleleResource());
-        alleleResources.put("esp", espAlleleResource());
+        // ExAC removed as this is part of gnomad-exomes v2.1
+        // ESP removed as this is part of gnomad-exomes v4
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
-        alleleResources.put("clinvar", clinVarAlleleResource());
+        // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
     }
@@ -148,23 +130,32 @@ public class Hg38Config extends ResourceConfig {
         return alleleResource(Uk10kAlleleResource.class, "hg38.uk10k");
     }
 
-    public GnomadGenomeAlleleResource gnomadGenomeAlleleResource() {
-        return alleleResource(GnomadGenomeAlleleResource.class, "hg38.gnomad-genome");
+    public Gnomad4GenomeAlleleResource gnomadGenomeAlleleResource() {
+        return alleleResource(Gnomad4GenomeAlleleResource.class, "hg38.gnomad-genome");
     }
 
-    public GnomadExomeAlleleResource gnomadExomeAlleleResource() {
-        return alleleResource(GnomadExomeAlleleResource.class, "hg38.gnomad-exome");
+    public Gnomad4ExomeAlleleResource gnomadExomeAlleleResource() {
+        return alleleResource(Gnomad4ExomeAlleleResource.class, "hg38.gnomad-exome");
+    }
+
+    public Gnomad3MitoAlleleResource gnomadMitoAlleleResource() {
+        return alleleResource(Gnomad3MitoAlleleResource.class, "hg38.gnomad-mito");
+    }
+
+    public AlfaAlleleResource alfaAlleleResource() {
+        return alleleResource(AlfaAlleleResource.class, "hg38.alfa");
     }
 
     public List<SvResource> hg38SvResources(Path genomeProcessPath) {
-        // GgnomAD hg38 is part of dbVar, GoNL is hg19 only
-        gonlSvFrequencyResource(genomeProcessPath);
-        gnomadSvFrequencyResource(genomeProcessPath);
         return List.of(
                 clinvarSvResource(genomeProcessPath),
                 dbVarFrequencyResource(genomeProcessPath),
                 dgvSvResource(genomeProcessPath),
-                decipherSvResource(genomeProcessPath)
+                decipherSvResource(genomeProcessPath),
+                // GoNL is hg19 only, this is a no-op method to avoid db migration errors
+                gonlSvFrequencyResource(genomeProcessPath),
+                // gnomAD hg38 is part of dbVar, this is a no-op method to avoid db migration errors
+                gnomadSvFrequencyResource(genomeProcessPath)
         );
     }
 
@@ -192,39 +183,31 @@ public class Hg38Config extends ResourceConfig {
         }
     }
 
-    public void gnomadSvFrequencyResource(Path genomeProcessPath) {
-        try {
-            Path path = genomeProcessPath.resolve("gnomad-sv.pg");
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
-            // https://doi.org/10.1038/s41586-020-2287-8
-            //
+    public NoOpSvResource gnomadSvFrequencyResource(Path genomeProcessPath) {
+        // gnomAD hg38 is part of dbVar
+        return new NoOpSvResource("hg38.gnomad-sv",
+                new FileArchive(genomeDataPath().resolve("gnomad-sv.stub")),
+                genomeProcessPath.resolve("gnomad-sv.pg"));
+        // https://doi.org/10.1038/s41586-020-2287-8
+        //
 //            return new GnomadSvResource("hg38.gnomad-sv",
 //                    new URL("https://storage.googleapis.com/gcp-public-data--gnomad/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"),
 //                    new TabixArchive(genomeDataPath().resolve("gnomad_v2.1_sv.sites.vcf.gz")),
 //                    new GnomadSvVcfFreqParser(),
 //                    new OutputFileIndexer<>(genomeProcessPath.resolve("gnomad-sv.pg")));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     // TODO: Externalise these in the application.properties
-    public void gonlSvFrequencyResource(Path genomeProcessPath) {
-        try {
-            Path path = genomeProcessPath.resolve("gonl-sv.pg");
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
+    public NoOpSvResource gonlSvFrequencyResource(Path genomeProcessPath) {
+        // GoNL is hg19 only
+        return new NoOpSvResource("hg38.gonl",
+                new FileArchive(genomeDataPath().resolve("gonl-sv.stub")),
+                genomeProcessPath.resolve("gonl-sv.pg"));
 //            return new GonlSvResource("hg38.gonl",
 //                    new URL("https://molgenis26.gcc.rug.nl/downloads/gonl_public/variants/release6.1/20161013_GoNL_AF_genotyped_SVs.vcf.gz"),
 //                    new FileArchive(genomeDataPath().resolve("20161013_GoNL_AF_genotyped_SVs.vcf.gz")),
 //                    new GonlSvFreqParser(),
 //                    new OutputFileIndexer<>(genomeProcessPath.resolve("gonl-sv.pg")));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public DgvSvResource dgvSvResource(Path genomeProcessPath) {

@@ -92,15 +92,12 @@ class AnalysisSampleValidator {
     }
 
     private static boolean isHpoDependent(AnalysisStep analysisStep) {
-        if (analysisStep instanceof Prioritiser) {
-            Prioritiser<? extends PriorityResult> prioritiser = (Prioritiser<? extends PriorityResult>) analysisStep;
+        if (analysisStep instanceof Prioritiser<? extends PriorityResult> prioritiser) {
             PriorityType priorityType = prioritiser.getPriorityType();
-            switch (priorityType) {
-                case HIPHIVE_PRIORITY:
-                case PHENIX_PRIORITY:
-                case PHIVE_PRIORITY:
-                    return true;
-            }
+            return switch (priorityType) {
+                case HIPHIVE_PRIORITY, PHENIX_PRIORITY, PHIVE_PRIORITY -> true;
+                case EXOMEWALKER_PRIORITY, OMIM_PRIORITY, NONE -> false;
+            };
         }
         return false;
     }

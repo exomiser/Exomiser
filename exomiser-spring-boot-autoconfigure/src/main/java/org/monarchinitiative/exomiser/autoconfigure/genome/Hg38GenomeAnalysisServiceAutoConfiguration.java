@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.nio.file.Path;
 
 /**
@@ -43,6 +43,7 @@ import java.nio.file.Path;
  */
 @Configuration
 @Import({DataDirectoryAutoConfiguration.class})
+@PropertySource("classpath:application-default.properties")
 @PropertySource("classpath:application-default-jdbc.properties")
 @ConditionalOnProperty({"exomiser.hg38.data-version"})
 @EnableConfigurationProperties(Hg38GenomeProperties.class)
@@ -59,7 +60,7 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
 
     @Bean("hg38mvStore")
     public MVStore mvStore() {
-        return mvStore;
+        return allelesMvStore;
     }
 
     /**
@@ -68,7 +69,17 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
      */
     @PreDestroy
     public synchronized void closeMvStore() {
-        mvStore.close();
+        allelesMvStore.close();
+    }
+
+    @Bean("hg38clinVarStore")
+    public MVStore clinVarStore() {
+        return clinVarMvStore;
+    }
+
+    @PreDestroy
+    public synchronized void closeClinVarMvStore() {
+        clinVarMvStore.close();
     }
 
     @Bean("hg38variantAnnotator")

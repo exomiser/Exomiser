@@ -54,7 +54,7 @@ public class ClinVarSvResourceTest {
         clinVarSvResource.indexResource();
 
         List<String> outputLines = Files.readAllLines(outfilePath);
-        assertThat(outputLines, equalTo(List.of("20|25364147|25378237|-14091|DEL|nsv1067853|CLINVAR|RCV000000042|15064|PATHOGENIC|no assertion criteria provided")));
+        assertThat(outputLines, equalTo(List.of("20|25364147|25378237|-14091|DEL|nsv1067853|CLINVAR|RCV000000042|25|PATHOGENIC|NO_ASSERTION_CRITERIA_PROVIDED")));
     }
 
 }

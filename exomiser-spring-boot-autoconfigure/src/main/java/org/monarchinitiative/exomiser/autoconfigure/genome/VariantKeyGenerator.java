@@ -22,6 +22,8 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.SimpleKey;
 
@@ -46,8 +48,14 @@ public class VariantKeyGenerator implements KeyGenerator {
         }
         if (params.length == 1) {
             Object param = params[0];
-            if (param instanceof Variant) {
-                return AlleleProtoAdaptor.toAlleleKey((Variant) param);
+            if (param instanceof AlleleProto.AlleleKey alleleKey) {
+                return alleleKey;
+            }
+            if (param instanceof Variant variant) {
+                return variant.alleleKey();
+            }
+            if (param instanceof GenomicVariant genomicVariant) {
+                return AlleleProtoAdaptor.toAlleleKey(genomicVariant);
             }
         }
         return new SimpleKey(params);

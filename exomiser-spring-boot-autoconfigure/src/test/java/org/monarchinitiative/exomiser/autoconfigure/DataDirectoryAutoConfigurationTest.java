@@ -54,7 +54,7 @@ public class DataDirectoryAutoConfigurationTest extends AbstractAutoConfiguratio
     public void testDataPath() {
         load(DataDirectoryAutoConfiguration.class, "exomiser.data-directory=" + TEST_DATA);
         Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
-        assertThat(exomiserDataDirectory.getFileName(), equalTo(Paths.get("data")));
+        assertThat(exomiserDataDirectory, equalTo(TEST_DATA));
     }
 
     @Test

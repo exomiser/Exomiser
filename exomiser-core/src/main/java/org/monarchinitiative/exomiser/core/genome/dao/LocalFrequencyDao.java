@@ -46,8 +46,8 @@ public class LocalFrequencyDao implements FrequencyDao {
     }
 
     @Caching(cacheable = {
-            @Cacheable(cacheNames = "hg19.local", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
-            @Cacheable(cacheNames = "hg38.local", keyGenerator = "variantKeyGenerator", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
+            @Cacheable(cacheNames = "hg19.local", key = "#variant.alleleKey()", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG19"),
+            @Cacheable(cacheNames = "hg38.local", key = "#variant.alleleKey()", condition = "#variant.genomeAssembly == T(org.monarchinitiative.exomiser.core.genome.GenomeAssembly).HG38"),
     })
     @Override
     public FrequencyData getFrequencyData(Variant variant) {

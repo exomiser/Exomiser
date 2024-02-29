@@ -41,91 +41,91 @@ public class VariantEffectPathogenicityScoreTest {
 
     @Test
     void sequenceVariantScore() {
-        assertThat(getPathogenicityScoreOf(SEQUENCE_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
+        assertThat(pathogenicityScoreOf(SEQUENCE_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {
-        assertThat(getPathogenicityScoreOf(MISSENSE_VARIANT), equalTo(DEFAULT_MISSENSE_SCORE));
+        assertThat(pathogenicityScoreOf(MISSENSE_VARIANT), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
     void synonymousVariantScore() {
-        assertThat(getPathogenicityScoreOf(SYNONYMOUS_VARIANT), equalTo(SYNONYMOUS_SCORE));
+        assertThat(pathogenicityScoreOf(SYNONYMOUS_VARIANT), equalTo(SYNONYMOUS_SCORE));
     }
 
     @Test
     void frameShiftScores() {
-        assertThat(getPathogenicityScoreOf(FRAMESHIFT_ELONGATION), equalTo(FRAMESHIFT_SCORE));
-        assertThat(getPathogenicityScoreOf(FRAMESHIFT_TRUNCATION), equalTo(FRAMESHIFT_SCORE));
-        assertThat(getPathogenicityScoreOf(FRAMESHIFT_VARIANT), equalTo(FRAMESHIFT_SCORE));
+        assertThat(pathogenicityScoreOf(FRAMESHIFT_ELONGATION), equalTo(FRAMESHIFT_SCORE));
+        assertThat(pathogenicityScoreOf(FRAMESHIFT_TRUNCATION), equalTo(FRAMESHIFT_SCORE));
+        assertThat(pathogenicityScoreOf(FRAMESHIFT_VARIANT), equalTo(FRAMESHIFT_SCORE));
     }
 
     @Test
     void nonFrameShiftIndelScores() {
-        assertThat(getPathogenicityScoreOf(MNV), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(FEATURE_TRUNCATION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(DISRUPTIVE_INFRAME_DELETION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(DISRUPTIVE_INFRAME_INSERTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(INFRAME_DELETION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(INFRAME_INSERTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(INTERNAL_FEATURE_ELONGATION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
-        assertThat(getPathogenicityScoreOf(COMPLEX_SUBSTITUTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(MNV), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(FEATURE_TRUNCATION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(DISRUPTIVE_INFRAME_DELETION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(DISRUPTIVE_INFRAME_INSERTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(INFRAME_DELETION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(INFRAME_INSERTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(INTERNAL_FEATURE_ELONGATION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
+        assertThat(pathogenicityScoreOf(COMPLEX_SUBSTITUTION), equalTo(NONFRAMESHIFT_INDEL_SCORE));
     }
 
     @Test
     void spliceAcceptorDonorScore() {
-        assertThat(getPathogenicityScoreOf(SPLICE_ACCEPTOR_VARIANT), equalTo(SPLICE_DONOR_ACCEPTOR_SCORE));
-        assertThat(getPathogenicityScoreOf(SPLICE_DONOR_VARIANT), equalTo(SPLICE_DONOR_ACCEPTOR_SCORE));
+        assertThat(pathogenicityScoreOf(SPLICE_ACCEPTOR_VARIANT), equalTo(SPLICE_DONOR_ACCEPTOR_SCORE));
+        assertThat(pathogenicityScoreOf(SPLICE_DONOR_VARIANT), equalTo(SPLICE_DONOR_ACCEPTOR_SCORE));
     }
 
     @Test
     void testSpliceRegionScore() {
         assertThat(SPLICE_REGION_VARIANT.getImpact(), equalTo(PutativeImpact.LOW));
         // LOW impact scores usually have a score of 0
-        assertThat(getPathogenicityScoreOf(SPLICE_REGION_VARIANT), equalTo(SPLICE_REGION_SCORE));
+        assertThat(pathogenicityScoreOf(SPLICE_REGION_VARIANT), equalTo(SPLICE_REGION_SCORE));
     }
 
     @Test
     void startLossScore() {
-        assertThat(getPathogenicityScoreOf(START_LOST), equalTo(STARTLOSS_SCORE));
+        assertThat(pathogenicityScoreOf(START_LOST), equalTo(STARTLOSS_SCORE));
     }
 
     @Test
     void stopLossScore() {
-        assertThat(getPathogenicityScoreOf(STOP_LOST), equalTo(STOPLOSS_SCORE));
+        assertThat(pathogenicityScoreOf(STOP_LOST), equalTo(STOPLOSS_SCORE));
     }
 
     @Test
     void stopGainScore() {
-        assertThat(getPathogenicityScoreOf(STOP_GAINED), equalTo(NONSENSE_SCORE));
+        assertThat(pathogenicityScoreOf(STOP_GAINED), equalTo(NONSENSE_SCORE));
     }
 
     @Test
     public void inversionScore() {
-        assertThat(getPathogenicityScoreOf(INVERSION), equalTo(INVERSION_SCORE));
+        assertThat(pathogenicityScoreOf(INVERSION), equalTo(INVERSION_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForNonPathogenicVariantType() {
-        assertThat(getPathogenicityScoreOf(DOWNSTREAM_GENE_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
+        assertThat(pathogenicityScoreOf(DOWNSTREAM_GENE_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForUnListedHighImpactVariantEffect() {
         assertThat(COPY_NUMBER_CHANGE.getImpact(), equalTo(PutativeImpact.HIGH));
-        assertThat(getPathogenicityScoreOf(COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
+        assertThat(pathogenicityScoreOf(COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForUnListedModerateImpactVariantEffect() {
         assertThat(THREE_PRIME_UTR_TRUNCATION.getImpact(), equalTo(PutativeImpact.MODERATE));
-        assertThat(getPathogenicityScoreOf(THREE_PRIME_UTR_TRUNCATION), equalTo(DEFAULT_MISSENSE_SCORE));
+        assertThat(pathogenicityScoreOf(THREE_PRIME_UTR_TRUNCATION), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
     public void testGetPathogenicityScoreForUnListedLowImpactVariantEffect() {
         assertThat(CODING_TRANSCRIPT_INTRON_VARIANT.getImpact(), equalTo(PutativeImpact.LOW));
-        assertThat(getPathogenicityScoreOf(CODING_TRANSCRIPT_INTRON_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
+        assertThat(pathogenicityScoreOf(CODING_TRANSCRIPT_INTRON_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
     }
 }

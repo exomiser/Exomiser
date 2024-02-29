@@ -21,10 +21,10 @@
 package org.monarchinitiative.exomiser.data.genome.model;
 
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProtoFormatter;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -39,6 +39,8 @@ public class Allele implements Comparable<Allele> {
     private String rsId = "";
     private ClinVarData clinVarData = null;
     private final Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
+    private final List<AlleleProto.Frequency> frequencies = new ArrayList<>();
+    private final List<AlleleProto.PathogenicityScore> pathogenicityScores = new ArrayList<>();
 
     public Allele(int chr, int pos, String ref, String alt) {
         this.chr = chr;
@@ -83,16 +85,71 @@ public class Allele implements Comparable<Allele> {
         this.clinVarData = clinVarData;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated(since = "14.0.0")
     public Map<AlleleProperty, Float> getValues() {
         return values;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated(since = "14.0.0")
     public void addValue(AlleleProperty key, Float value) {
         values.put(key, value);
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated(since = "14.0.0")
     public Float getValue(AlleleProperty key) {
         return values.get(key);
+    }
+
+
+    /**
+     * @since 14.0.0
+     */
+    public void addFrequency(AlleleProto.Frequency frequency) {
+        frequencies.add(frequency);
+    }
+
+    /**
+     * @since 14.0.0
+     */
+    public void addAllFrequencies(Collection<AlleleProto.Frequency> frequencies) {
+        this.frequencies.addAll(frequencies);
+    }
+
+    /**
+     * @since 14.0.0
+     */
+    public List<AlleleProto.Frequency> getFrequencies() {
+        return frequencies;
+    }
+
+    /**
+     * @since 14.0.0
+     */
+    public void addPathogenicityScore(AlleleProto.PathogenicityScore pathogenicityScore) {
+        pathogenicityScores.add(pathogenicityScore);
+    }
+
+    /**
+     * @since 14.0.0
+     */
+    public void addAllPathogenicityScores(Collection<AlleleProto.PathogenicityScore> pathogenicityScores) {
+        this.pathogenicityScores.addAll(pathogenicityScores);
+    }
+
+    /**
+     * @since 14.0.0
+     */
+    public List<AlleleProto.PathogenicityScore> getPathogenicityScores() {
+        return pathogenicityScores;
     }
 
     @Override
@@ -114,27 +171,26 @@ public class Allele implements Comparable<Allele> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Allele allele = (Allele) o;
-        return chr == allele.chr &&
-                pos == allele.pos &&
-                Objects.equals(ref, allele.ref) &&
-                Objects.equals(alt, allele.alt);
+        return chr == allele.chr && pos == allele.pos && ref.equals(allele.ref) && alt.equals(allele.alt) && Objects.equals(rsId, allele.rsId) && Objects.equals(clinVarData, allele.clinVarData) && values.equals(allele.values) && frequencies.equals(allele.frequencies) && pathogenicityScores.equals(allele.pathogenicityScores);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chr, pos, ref, alt);
+        return Objects.hash(chr, pos, ref, alt, rsId, clinVarData, values, frequencies, pathogenicityScores);
     }
 
     @Override
     public String toString() {
         return "Allele{" +
-                "chr=" + chr +
-                ", pos=" + pos +
-                ", ref='" + ref + '\'' +
-                ", alt='" + alt + '\'' +
-                ", rsId='" + rsId + '\'' +
-                ", clinVarData='" + clinVarData + '\'' +
-                ", values=" + values +
-                '}';
+               "chr=" + chr +
+               ", pos=" + pos +
+               ", ref='" + ref + '\'' +
+               ", alt='" + alt + '\'' +
+               ", rsId='" + rsId + '\'' +
+               ", clinVarData='" + clinVarData + '\'' +
+               ", values=" + values + '\'' +
+               ", frequencies=" + AlleleProtoFormatter.formatFrequencies(frequencies) +
+               ", pathogenicityScores=" + AlleleProtoFormatter.formatPathScores(pathogenicityScores) +
+               '}';
     }
 }

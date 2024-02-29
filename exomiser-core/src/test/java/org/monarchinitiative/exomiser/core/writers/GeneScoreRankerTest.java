@@ -7,28 +7,22 @@ import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
 import org.monarchinitiative.svart.Strand;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.in;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneScoreRankerTest {
 
@@ -86,7 +80,7 @@ public class GeneScoreRankerTest {
         fgfr2.addGeneScore(topGeneScore);
 
         VariantEvaluation failedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(10), Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.fail(FilterType.FREQUENCY_FILTER))
                 .build();
         fgfr2.addVariant(failedVariant);
@@ -101,7 +95,7 @@ public class GeneScoreRankerTest {
         // genes without a variant can have an MOI other than 'ANY'
         var gnrhr2 = TestFactory.newGeneGNRHR2();
         var passedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(1), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(1), Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .build();
         gnrhr2.addVariant(passedVariant);
@@ -138,7 +132,7 @@ public class GeneScoreRankerTest {
         fgfr2.addGeneScore(topGeneScore);
 
         VariantEvaluation fgfr2TopRankedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(10), Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
@@ -147,7 +141,7 @@ public class GeneScoreRankerTest {
 
 
         VariantEvaluation fgfr2FailedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(10), Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.fail(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .build();
@@ -171,7 +165,7 @@ public class GeneScoreRankerTest {
         gnrhr2.addGeneScore(secondGeneScore);
 
         VariantEvaluation gnrhr2TopRankedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(7), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(654321), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(7), Strand.POSITIVE, CoordinateSystem.oneBased(), 654321, "G", "T")
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
@@ -203,7 +197,7 @@ public class GeneScoreRankerTest {
         fgfr2.addGeneScore(topGeneScore);
 
         VariantEvaluation fgfr2TopRankedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(10),  Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
@@ -212,7 +206,7 @@ public class GeneScoreRankerTest {
 
 
         VariantEvaluation fgfr2FailedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(10), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(1234567), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(10), Strand.POSITIVE, CoordinateSystem.oneBased(), 1234567, "G", "T")
                 .filterResults(FilterResult.fail(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .build();
@@ -229,7 +223,7 @@ public class GeneScoreRankerTest {
         gnrhr2.addGeneScore(secondGeneScore);
 
         VariantEvaluation gnrhr2TopRankedVariant = VariantEvaluation.builder()
-                .with(GenomeAssembly.HG19.getContigById(7), "", Strand.POSITIVE, CoordinateSystem.oneBased(), Position.of(654321), "G", "T")
+                .variant(GenomeAssembly.HG19.getContigById(7), Strand.POSITIVE, CoordinateSystem.oneBased(), 654321, "G", "T")
                 .filterResults(FilterResult.pass(FilterType.FREQUENCY_FILTER))
                 .compatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))

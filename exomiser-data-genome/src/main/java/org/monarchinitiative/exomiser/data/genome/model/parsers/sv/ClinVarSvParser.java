@@ -68,10 +68,10 @@ public class ClinVarSvParser implements Parser<SvPathogenicity> {
         }
 
         String rcvId = parseRcv(tokens[11]);
-        String alleleId = tokens[0];
+        String variationId = tokens[30];
         ClinVarData.ClinSig clinSig = parseClinSig(tokens[6]);
-        String clinRevStat = tokens[24];
-        return List.of(new SvPathogenicity(chr, start, end, svLen, variantType, dbVarId, "CLINVAR", rcvId, alleleId, clinSig, clinRevStat));
+        ClinVarData.ReviewStatus clinRevStat = ClinVarData.ReviewStatus.parseReviewStatus(tokens[24]);
+        return List.of(new SvPathogenicity(chr, start, end, svLen, variantType, dbVarId, "CLINVAR", rcvId, variationId, clinSig, clinRevStat));
     }
 
     private String parseRcv(String token) {

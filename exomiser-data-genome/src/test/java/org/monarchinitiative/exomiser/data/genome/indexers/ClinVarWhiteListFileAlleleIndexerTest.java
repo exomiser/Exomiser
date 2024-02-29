@@ -89,24 +89,24 @@ class ClinVarWhiteListFileAlleleIndexerTest {
     @Test
     void testLikelyPathogenicWithAssertionCriteriaOnWhitelist() {
         String line = "1	2338019	555297	CA	C	.	.	ALLELEID=541178;CLNDISDB=MONDO:MONDO:0013936,MedGen:C3553947,OMIM:614870|MONDO:MONDO:0013937,MedGen:C3553948,OMIM:614871;CLNDN=Peroxisome_biogenesis_disorder_6A|Peroxisome_biogenesis_disorder_6B;CLNHGVS=NC_000001.10:g.2338020del;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_pathogenic;CLNVC=Deletion;CLNVCSO=SO:0000159;GENEINFO=PEX10:5192;MC=SO:0001589|frameshift_variant;ORIGIN=0;RS=1553231783";
-        assertThat(indexLine(line), equalTo("1	2338019	CA	C	ALLELEID=541178;CLNSIG=LIKELY_PATHOGENIC;CLNREVSTAT=criteria_provided,_single_submitter;STARS=1\n"));
+        assertThat(indexLine(line), equalTo("1	2338019	CA	C	VARIATIONID=555297;CLNSIG=LIKELY_PATHOGENIC;CLNREVSTAT=CRITERIA_PROVIDED_SINGLE_SUBMITTER;STARS=1\n"));
     }
 
     @Test
     void testPathogenicWithAssertionCriteriaOnWhitelist() {
         String line = "1	156106935	1072048	GC	G	.	.	ALLELEID=1058441;CLNDISDB=MONDO:MONDO:0018993,MedGen:C0270914,Orphanet:ORPHA64746;CLNDN=Charcot-Marie-Tooth_disease,_type_2;CLNHGVS=NC_000001.10:g.156106941del;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Pathogenic;CLNVC=Deletion;CLNVCSO=SO:0000159;CLNVI=Invitae:10194418;GENEINFO=LMNA:4000;MC=SO:0001589|frameshift_variant;ORIGIN=1";
-        assertThat(indexLine(line), equalTo("1	156106935	GC	G	ALLELEID=1058441;CLNSIG=PATHOGENIC;CLNREVSTAT=criteria_provided,_single_submitter;STARS=1\n"));
+        assertThat(indexLine(line), equalTo("1	156106935	GC	G	VARIATIONID=1072048;CLNSIG=PATHOGENIC;CLNREVSTAT=CRITERIA_PROVIDED_SINGLE_SUBMITTER;STARS=1\n"));
     }
 
     @Test
     void testPathogenicWithExpertPAnelReviewOnWhitelist() {
         String line = "11	76895760	179479	G	A	.	.	ALLELEID=178280;CLNDISDB=MONDO:MONDO:0010168,MedGen:C1568247,OMIM:276900,Orphanet:ORPHA231169|MONDO:MONDO:0010807,MedGen:C1838701,OMIM:600060|MONDO:MONDO:0019501,MeSH:D052245,MedGen:C0271097,OMIM:PS276900,Orphanet:ORPHA886|MeSH:D030342,MedGen:C0950123|MedGen:CN169374|MedGen:CN517202;CLNDN=Usher_syndrome_type_1|Deafness,_autosomal_recessive_2|Usher_syndrome|Inborn_genetic_diseases|not_specified|not_provided;CLNHGVS=NC_000011.9:g.76895760G>A;CLNREVSTAT=reviewed_by_expert_panel;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;GENEINFO=MYO7A:4647;MC=SO:0001583|missense_variant;ORIGIN=1;RS=797044516";
-        assertThat(indexLine(line), equalTo("11	76895760	G	A	ALLELEID=178280;CLNSIG=PATHOGENIC;CLNREVSTAT=reviewed_by_expert_panel;STARS=3\n"));
+        assertThat(indexLine(line), equalTo("11	76895760	G	A	VARIATIONID=179479;CLNSIG=PATHOGENIC;CLNREVSTAT=REVIEWED_BY_EXPERT_PANEL;STARS=3\n"));
     }
 
     @Test
     void testPathogenicWithPracticeGuidelineOnWhitelist() {
         String line = "7	117180324	7110	G	C	.	.	ALLELEID=22149;CLNDISDB=MONDO:MONDO:0009061,MedGen:C0010674,OMIM:219700,Orphanet:ORPHA586,SNOMED_CT:190905008|MONDO:MONDO:0010178,MedGen:C0403814,OMIM:277180|MedGen:CN169374|MedGen:CN517202;CLNDN=Cystic_fibrosis|Congenital_bilateral_aplasia_of_vas_deferens_from_CFTR_mutation|not_specified|not_provided;CLNHGVS=NC_000007.13:g.117180324G>C;CLNREVSTAT=practice_guideline;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;CLNVI=ARUP_Laboratories,_Molecular_Genetics_and_Genomics,ARUP_Laboratories:145466|CFTR-France:c.1040G>C|CFTR2:R347P|OMIM_Allelic_Variant:602421.0006|UniProtKB_(protein):P13569#VAR_000155;GENEINFO=CFTR:1080;MC=SO:0001583|missense_variant;ORIGIN=1;RS=77932196";
-        assertThat(indexLine(line), equalTo("7	117180324	G	C	ALLELEID=22149;CLNSIG=PATHOGENIC;CLNREVSTAT=practice_guideline;STARS=4\n"));
+        assertThat(indexLine(line), equalTo("7	117180324	G	C	VARIATIONID=7110;CLNSIG=PATHOGENIC;CLNREVSTAT=PRACTICE_GUIDELINE;STARS=4\n"));
     }
 }

@@ -24,16 +24,16 @@ import org.monarchinitiative.exomiser.autoconfigure.genome.GenomeAnalysisService
 import org.monarchinitiative.exomiser.autoconfigure.phenotype.PrioritiserAutoConfiguration;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass({Exomiser.class, AnalysisFactory.class})
 @EnableConfigurationProperties({ExomiserProperties.class})
 @Import({

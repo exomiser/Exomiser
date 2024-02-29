@@ -20,14 +20,11 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,33 +39,40 @@ public class ClinVarDataTest {
     public void testEmptyBuilder() {
         ClinVarData instance = ClinVarData.builder().build();
 
-        assertThat(instance.getAlleleId(), equalTo(""));
+        assertThat(instance.getVariationId(), equalTo(""));
         assertThat(instance.getPrimaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
         assertThat(instance.getSecondaryInterpretations(), equalTo(Collections.emptySet()));
-        assertThat(instance.getReviewStatus(), equalTo(""));
+        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED));
         assertThat(instance.getIncludedAlleles(), equalTo(Collections.emptyMap()));
     }
 
     @Test
     public void testBuilderWithValues() {
         String alleleId = "12345";
+        String variationId = "23456";
+        String geneSymbol = "GENE1";
+        VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
-        String reviewStatus = "multiple_submitters,_no_conflict";
-        Map<String, ClinSig> included = ImmutableMap.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
-                .alleleId(alleleId)
+                .variationId(variationId)
+                .geneSymbol(geneSymbol)
+                .variantEffect(variantEffect)
                 .primaryInterpretation(clinSig)
                 .secondaryInterpretations(secondaryInterpretations)
-                .reviewStatus(reviewStatus)
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                 .includedAlleles(included)
                 .build();
 
-        assertThat(instance.getAlleleId(), equalTo(alleleId));
+        assertThat(instance.getVariationId(), equalTo(variationId));
+        assertThat(instance.getGeneSymbol(), equalTo(geneSymbol));
+        assertThat(instance.getVariantEffect(), equalTo(variantEffect));
         assertThat(instance.getPrimaryInterpretation(), equalTo(clinSig));
         assertThat(instance.getSecondaryInterpretations(), equalTo(secondaryInterpretations));
-        assertThat(instance.getReviewStatus(), equalTo("multiple submitters, no conflict"));
+        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS));
         assertThat(instance.getIncludedAlleles(), equalTo(included));
+        System.out.println(instance);
     }
 
     @Test
@@ -76,13 +80,11 @@ public class ClinVarDataTest {
         String alleleId = "12345";
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
-        String reviewStatus = "multiple_submitters,_no_conflict";
-        Map<String, ClinSig> included = ImmutableMap.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        Map<String, ClinSig> included = Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC);
         ClinVarData instance = ClinVarData.builder()
-                .alleleId(alleleId)
                 .primaryInterpretation(clinSig)
                 .secondaryInterpretations(secondaryInterpretations)
-                .reviewStatus(reviewStatus)
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
                 .includedAlleles(included)
                 .build();
         assertThat(instance.toString(), containsString("PATHOGENIC"));
@@ -100,10 +102,7 @@ public class ClinVarDataTest {
     }
 
     private int starRating(String clinRevStat) {
-        return ClinVarData.builder()
-                .reviewStatus(clinRevStat)
-                .build()
-                .starRating();
+        return ClinVarData.ReviewStatus.parseReviewStatus(clinRevStat).starRating();
     }
 
     @Test
@@ -122,5 +121,30 @@ public class ClinVarDataTest {
                 .secondaryInterpretations(Set.of(secondaryInterpretations))
                 .build()
                 .isSecondaryAssociationRiskFactorOrOther();
+    }
+
+    @Test
+    void hgvsC() {
+        ClinVarData instance = ClinVarData.builder()
+                .hgvsCdna("c.12345A>G")
+                .build();
+        assertThat(instance.getHgvsCdna(), equalTo("c.12345A>G"));
+    }
+
+    @Test
+    void hgvsP() {
+        ClinVarData instance = ClinVarData.builder()
+                .hgvsProtein("p.(Ser123Gly)")
+                .build();
+        assertThat(instance.getHgvsProtein(), equalTo("p.(Ser123Gly)"));
+    }
+
+    @Test
+    void conflictingInterpretations() {
+        Map<ClinSig, Integer> conflictingInterpretations = Map.of(ClinSig.PATHOGENIC, 3, ClinSig.UNCERTAIN_SIGNIFICANCE, 1);
+        ClinVarData instance = ClinVarData.builder()
+                .conflictingInterpretationCounts(conflictingInterpretations)
+                .build();
+        assertThat(instance.getConflictingInterpretationCounts(), equalTo(conflictingInterpretations));
     }
 }

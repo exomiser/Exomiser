@@ -34,9 +34,8 @@ import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.svart.CoordinateSystem;
-import org.monarchinitiative.svart.Position;
+import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.Variant;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,7 +102,7 @@ class JannovarDataFactoryTest {
             VariantAnnotator variantAnnotator = new JannovarVariantAnnotator(genomeAssembly, roundTripped, ChromosomalRegionIndex
                     .empty());
 
-            Variant variant = Variant.of(GenomeAssembly.HG19.getContigByName("19"), "", Strand.POSITIVE, CoordinateSystem.FULLY_CLOSED, Position.of(36227863), "C", "T");
+            GenomicVariant variant = GenomicVariant.of(GenomeAssembly.HG19.getContigByName("19"), "", Strand.POSITIVE, CoordinateSystem.ONE_BASED, 36227863, "C", "T");
             List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(variant);
             System.out.println(variantAnnotations);
             assertThat(variantAnnotations.size(), equalTo(1));

@@ -136,8 +136,8 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
         assertThat(dataMatrix, not(nullValue()));
-        assertThat(dataMatrix.numRows(), equalTo(10));
-        assertThat(dataMatrix.numColumns(), equalTo(10));
+        assertThat(dataMatrix.numRows(), equalTo(0));
+        assertThat(dataMatrix.numColumns(), equalTo(0));
     }
 
     @Test
@@ -145,8 +145,8 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.random-walk-preload=true");
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
         assertThat(dataMatrix, not(nullValue()));
-        assertThat(dataMatrix.numRows(), equalTo(10));
-        assertThat(dataMatrix.numColumns(), equalTo(10));
+        assertThat(dataMatrix.numRows(), equalTo(0));
+        assertThat(dataMatrix.numColumns(), equalTo(0));
     }
 
     @Test

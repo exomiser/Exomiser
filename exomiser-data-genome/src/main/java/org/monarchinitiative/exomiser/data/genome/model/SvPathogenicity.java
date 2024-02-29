@@ -35,11 +35,11 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
     private final String dbVarId;
     private final String source;
     private final String rcvId;
-    private final String alleleId;
+    private final String variationId;
     private final ClinVarData.ClinSig clinSig;
-    private final String clinRevStat;
+    private final ClinVarData.ReviewStatus clinRevStat;
 
-    public SvPathogenicity(int chr, int start, int end, int svLen, VariantType svType, String dbVarId, String source, String rcvId, String alleleId, ClinVarData.ClinSig clinSig, String clinRevStat) {
+    public SvPathogenicity(int chr, int start, int end, int svLen, VariantType svType, String dbVarId, String source, String rcvId, String variationId, ClinVarData.ClinSig clinSig, ClinVarData.ReviewStatus clinRevStat) {
         this.chr = chr;
         this.start = start;
         this.end = end;
@@ -48,7 +48,7 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
         this.dbVarId = dbVarId;
         this.source = source;
         this.rcvId = rcvId;
-        this.alleleId = alleleId;
+        this.variationId = variationId;
         this.clinSig = clinSig;
         this.clinRevStat = clinRevStat;
     }
@@ -85,21 +85,21 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
         return rcvId;
     }
 
-    public String alleleId() {
-        return alleleId;
+    public String variationId() {
+        return variationId;
     }
 
     public ClinVarData.ClinSig clinSig() {
         return clinSig;
     }
 
-    public String clinRevStat() {
+    public ClinVarData.ReviewStatus clinRevStat() {
         return clinRevStat;
     }
 
     @Override
     public String toOutputLine() {
-        //    CONTIG | START | END | CHANGE_LENGTH | VARIANT_TYPE | SSV_AC | RCV_AC | VARIATION_ID | ALLELE_ID | CLIN_SIG | CLIN_REV_STAT
+        //    CONTIG | START | END | CHANGE_LENGTH | VARIANT_TYPE | SSV_AC | RCV_AC | VARIATION_ID | VARIATION_ID | CLIN_SIG | CLIN_REV_STAT
         return chr + SEP +
                 start + SEP +
                 end + SEP +
@@ -108,7 +108,7 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
                 dbVarId + SEP +
                 source + SEP +
                 rcvId + SEP +
-                alleleId + SEP +
+                variationId + SEP +
                 clinSig + SEP +
                 clinRevStat;
     }
@@ -136,12 +136,12 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SvPathogenicity that = (SvPathogenicity) o;
-        return chr == that.chr && start == that.start && end == that.end && svLen == that.svLen && svType == that.svType && dbVarId.equals(that.dbVarId) && source.equals(that.source) && rcvId.equals(that.rcvId) && alleleId.equals(that.alleleId) && clinSig == that.clinSig && clinRevStat.equals(that.clinRevStat);
+        return chr == that.chr && start == that.start && end == that.end && svLen == that.svLen && svType == that.svType && dbVarId.equals(that.dbVarId) && source.equals(that.source) && rcvId.equals(that.rcvId) && variationId.equals(that.variationId) && clinSig == that.clinSig && clinRevStat.equals(that.clinRevStat);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chr, start, end, svLen, svType, dbVarId, source, rcvId, alleleId, clinSig, clinRevStat);
+        return Objects.hash(chr, start, end, svLen, svType, dbVarId, source, rcvId, variationId, clinSig, clinRevStat);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class SvPathogenicity implements OutputLine, Comparable<SvPathogenicity> 
                 ", dbVarId='" + dbVarId + '\'' +
                 ", source='" + source + '\'' +
                 ", rcvId='" + rcvId + '\'' +
-                ", alleleId='" + alleleId + '\'' +
+                ", variationId='" + variationId + '\'' +
                 ", clinSig='" + clinSig + '\'' +
                 ", clinRevStat='" + clinRevStat + '\'' +
                 '}';

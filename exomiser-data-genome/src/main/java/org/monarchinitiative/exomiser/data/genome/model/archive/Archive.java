@@ -34,5 +34,11 @@ public interface Archive {
 
     public String getDataFileFormat();
 
-    public Stream<String> lines();
+    /**
+     * Reads the the underlying {@link Archive} file and transforms the contents into a stream of lines to parse.
+     */
+    default Stream<String> lines() {
+        return new SimpleArchiveFileReader(this).lines();
+    }
+
 }

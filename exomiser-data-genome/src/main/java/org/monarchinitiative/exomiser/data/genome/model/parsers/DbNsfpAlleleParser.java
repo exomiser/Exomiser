@@ -20,8 +20,9 @@
 
 package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
+import org.monarchinitiative.exomiser.core.proto.AlleleData;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
-import org.monarchinitiative.exomiser.data.genome.model.AlleleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,10 @@ public class DbNsfpAlleleParser implements AlleleParser {
     private static final Logger logger = LoggerFactory.getLogger(DbNsfpAlleleParser.class);
 
     private static final String EMPTY_VALUE = ".";
+
+    private static final String RS_HEADER = "rs_dbSNP";
+    private static final  String REF_HEADER = "ref";
+    private  static final String ALT_HEADER = "alt";
 
     private final DbNsfpColumnIndex columnIndex;
 
@@ -59,7 +64,7 @@ public class DbNsfpAlleleParser implements AlleleParser {
             Map<String, Integer> index = makeHeaderIndex(line);
             setIndexFields(index);
             scoreParsers = makeScoreParsers(index);
-            return Collections.emptyList();
+            return List.of();
         }
         return parseAlleles(line);
     }
@@ -70,8 +75,8 @@ public class DbNsfpAlleleParser implements AlleleParser {
         String[] fields = header.substring(1).split("\t");
         for (int i = 0; i < fields.length; i++) {
             String token = fields[i];
-            if (token.startsWith(columnIndex.getRsPrefix())) {
-                index.put(columnIndex.getRsPrefix(), i);
+            if (token.startsWith(RS_HEADER)) {
+                index.put(RS_HEADER, i);
             }
             index.put(token, i);
         }
@@ -81,9 +86,9 @@ public class DbNsfpAlleleParser implements AlleleParser {
     private void setIndexFields(Map<String, Integer> index) {
         this.chrIndex = index.get(columnIndex.getChrHeader());
         this.posIndex = index.get(columnIndex.getPosHeader());
-        this.rsIndex = index.get(columnIndex.getRsPrefix());
-        this.refIndex = index.get(columnIndex.getRefHeader());
-        this.altIndex = index.get(columnIndex.getAltHeader());
+        this.rsIndex = index.get(RS_HEADER);
+        this.refIndex = index.get(REF_HEADER);
+        this.altIndex = index.get(ALT_HEADER);
     }
 
     private List<DbNsfpScoreParser> makeScoreParsers(Map<String, Integer> index) {
@@ -93,38 +98,33 @@ public class DbNsfpAlleleParser implements AlleleParser {
             String key = entry.getKey();
             int pos = entry.getValue();
             //SIFT
-            if (key.equals(columnIndex.getSiftHeader())) {
+            if (key.equals(SiftScoreParser.COLUMN_HEADER)) {
                 parsers.add(new SiftScoreParser(pos));
             }
             // POLYPHEN
-            else if (key.equals(columnIndex.getPolyPhen2HvarHeader())) {
+            else if (key.equals(PolyPhenScoreParser.COLUMN_HEADER)) {
                 parsers.add(new PolyPhenScoreParser(pos));
             }
             // MUTATION_TASTER
-            else if (key.equals(columnIndex.getMTasterPredHeader())) {
-                int mTasterScorePos = index.get(columnIndex.getMTasterScoreHeader());
+            else if (key.equals(MutatationTasterScoreParser.COLUMN_PRED_HEADER)) {
+                int mTasterScorePos = index.get(MutatationTasterScoreParser.COLUMN_SCORE_HEADER);
                 parsers.add(new MutatationTasterScoreParser(mTasterScorePos, pos));
             }
             // REVEL
-            else if (key.equals(columnIndex.getRevelScoreHeader())) {
+            else if (key.equals(RevelScoreParser.COLUMN_HEADER)) {
                 parsers.add(new RevelScoreParser(pos));
             }
-            // These fields are new in version 4.0.
-            // MCAP
-            else if (key.equals(columnIndex.getMcapScoreHeader())) {
-                parsers.add(new McapParser(pos));
-            }
-            // MPC
-            else if (key.equals(columnIndex.getMpcScoreHeader())) {
-                parsers.add(new MpcParser(pos));
-            }
             // MVP
-            else if (key.equals(columnIndex.getMvpScoreHeader())) {
+            else if (key.equals(MvpParser.COLUMN_HEADER)) {
                 parsers.add(new MvpParser(pos));
             }
-            // PRIMATE_AI
-            else if (key.equals(columnIndex.getPrimateAiScoreHeader())) {
-                parsers.add(new PrimateAiScoreParser(pos));
+            // ALPHA_MISSENSE
+            else if (key.equals(AlphaMissenseParser.COLUMN_HEADER)) {
+                parsers.add(new AlphaMissenseParser(pos));
+            }
+            // EVE
+            else if (key.equals(EveScoreParser.COLUMN_HEADER)) {
+                parsers.add(new EveScoreParser(pos));
             }
         }
         return parsers;
@@ -135,36 +135,34 @@ public class DbNsfpAlleleParser implements AlleleParser {
 
         byte chr = ChromosomeParser.parseChr(fields[chrIndex]);
         if (chr == 0) {
-            return Collections.emptyList();
+            return List.of();
         }
         int pos = Integer.parseInt(fields[posIndex]);
         String rsId = RsIdParser.parseRsId(fields[rsIndex]);
         String ref = fields[refIndex];
         String alt = fields[altIndex];
 
-        Map<AlleleProperty, Float> pathScores = parsePathScores(fields);
+        List<AlleleProto.PathogenicityScore> pathScores = parsePathScores(fields);
 
-        if (rsId.isEmpty() && pathScores.isEmpty()) {
-            return Collections.emptyList();
+        if (pathScores.isEmpty()) {
+            return List.of();
         }
 
         Allele allele = new Allele(chr, pos, ref, alt);
         allele.setRsId(rsId);
-        allele.getValues().putAll(pathScores);
-        return Collections.singletonList(allele);
+        allele.addAllPathogenicityScores(pathScores);
+        return List.of(allele);
     }
 
-    private Map<AlleleProperty, Float> parsePathScores(String[] fields) {
-        Map<AlleleProperty, Float> values = new EnumMap<>(AlleleProperty.class);
-
-        scoreParsers.forEach(scoreParser -> {
-            Float score = scoreParser.parse(fields);
+    private List<AlleleProto.PathogenicityScore> parsePathScores(String[] fields) {
+        var pathScores = new ArrayList<AlleleProto.PathogenicityScore>();
+        for (DbNsfpScoreParser scoreParser : scoreParsers) {
+            var score = scoreParser.parseScore(fields);
             if (score != null) {
-                values.put(scoreParser.getAlleleProperty(), score);
+                pathScores.add(score);
             }
-        });
-
-        return values;
+        }
+        return pathScores;
     }
 
     @Override
@@ -185,23 +183,21 @@ public class DbNsfpAlleleParser implements AlleleParser {
      * more likely the SNP has damaging effect.
      * Multiple scores separated by ";", corresponding to Ensembl_proteinid.
      */
-    private static class SiftScoreParser extends TranscriptValueParser {
+    private record SiftScoreParser(int fieldPosition) implements TranscriptValueParser {
 
-        SiftScoreParser(int fieldPosition) {
-            super(AlleleProperty.SIFT, fieldPosition);
+        static final String COLUMN_HEADER = "SIFT_score";
+
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.SIFT;
         }
 
         @Override
-        public AlleleProperty getAlleleProperty() {
-            return AlleleProperty.SIFT;
-        }
-
-        @Override
-        public Float parse(String[] fields) {
-            String field = getValueOrEmpty(fields, super.fieldPosition, EMPTY_VALUE);
+        public AlleleProto.PathogenicityScore parseScore(String[] fields) {
+            String field = getValueOrEmpty(fields, fieldPosition, EMPTY_VALUE);
             String[] transcriptPredictions = field.split(";");
             if (transcriptPredictions.length == 1) {
-                return parseValue(transcriptPredictions[0]);
+                return parseScore(transcriptPredictions[0]);
             }
             float minValue = 1;
             for (String score : transcriptPredictions) {
@@ -212,30 +208,35 @@ public class DbNsfpAlleleParser implements AlleleParser {
                 }
             }
             if (minValue < 1) {
-                return minValue;
+                return pathScore(minValue);
             }
             return null;
         }
 
     }
 
-    private static class MutatationTasterScoreParser implements DbNsfpScoreParser {
+    /**
+     * 54	MutationTaster_score: MutationTaster p-value (MTori), ranges from 0 to 1.
+     * 		Multiple scores are separated by ";". Information on corresponding transcript(s) can
+     * 		be found by querying http://www.mutationtaster.org/ChrPos.html
+     * 56	MutationTaster_pred: MutationTaster prediction, "A" ("disease_causing_automatic"),
+     * 		"D" ("disease_causing"), "N" ("polymorphism") or "P" ("polymorphism_automatic"). The
+     * 		score cutoff between "D" and "N" is 0.5 for MTnew and 0.31733 for the rankscore.
+     * @param mTasterScorePos
+     * @param mTasterPredPos
+     */
+    private record MutatationTasterScoreParser(int mTasterScorePos, int mTasterPredPos) implements DbNsfpScoreParser {
 
-        private final int mTasterScorePos;
-        private final int mTasterPredPos;
+        public static final String COLUMN_PRED_HEADER = "MutationTaster_pred";
+        public static final String COLUMN_SCORE_HEADER = "MutationTaster_score";
 
-        public MutatationTasterScoreParser(int mTasterScorePos, int mTasterPredPos) {
-            this.mTasterScorePos = mTasterScorePos;
-            this.mTasterPredPos = mTasterPredPos;
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.MUTATION_TASTER;
         }
 
         @Override
-        public AlleleProperty getAlleleProperty() {
-            return AlleleProperty.MUT_TASTER;
-        }
-
-        @Override
-        public Float parse(String[] fields) {
+        public AlleleProto.PathogenicityScore parseScore(String[] fields) {
             String scoreFields = getValueOrEmpty(fields, mTasterScorePos, EMPTY_VALUE);
             String predFields = getValueOrEmpty(fields, mTasterPredPos, EMPTY_VALUE);
             String[] scores = scoreFields.split(";");
@@ -255,32 +256,10 @@ public class DbNsfpAlleleParser implements AlleleParser {
                     }
                 }
                 if (maxValue > 0) {
-                    return maxValue;
+                    return pathScore(maxValue);
                 }
             }
             return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            MutatationTasterScoreParser that = (MutatationTasterScoreParser) o;
-            return mTasterScorePos == that.mTasterScorePos &&
-                    mTasterPredPos == that.mTasterPredPos;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(mTasterScorePos, mTasterPredPos);
-        }
-
-        @Override
-        public String toString() {
-            return "MutatationTasterScoreParser{" +
-                    "mTasterScorePos=" + mTasterScorePos +
-                    ", mTasterPredPos=" + mTasterPredPos +
-                    '}';
         }
     }
 
@@ -289,10 +268,13 @@ public class DbNsfpAlleleParser implements AlleleParser {
      * The score ranges from 0 to 1.
      * Multiple entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
      */
-    private static class PolyPhenScoreParser extends TranscriptValueParser {
+    private record PolyPhenScoreParser(int fieldPosition) implements TranscriptValueParser {
 
-        public PolyPhenScoreParser(int fieldPosition) {
-            super(AlleleProperty.POLYPHEN, fieldPosition);
+        public static final String COLUMN_HEADER = "Polyphen2_HVAR_score";
+
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.POLYPHEN;
         }
     }
 
@@ -302,21 +284,12 @@ public class DbNsfpAlleleParser implements AlleleParser {
      * likely the SNP has damaging effect. "REVEL scores are freely available for non-commercial use.
      * For other uses, please contact Weiva Sieh" (weiva.sieh@mssm.edu)
      */
-    private static class RevelScoreParser extends SingleValueParser {
+    private record RevelScoreParser(int fieldPosition) implements TranscriptValueParser {
+        public static String COLUMN_HEADER = "REVEL_score";
 
-        public RevelScoreParser(int fieldPosition) {
-            super(AlleleProperty.REVEL, fieldPosition);
-        }
-    }
-
-    /**
-     * 70	M-CAP_score: M-CAP score (details in DOI: 10.1038/ng.3703). Scores range from 0 to 1. The larger
-     * the score the more likely the SNP has damaging effect.
-     */
-    private static class McapParser extends SingleValueParser {
-
-        public McapParser(int fieldPosition) {
-            super(AlleleProperty.MCAP, fieldPosition);
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.REVEL;
         }
     }
 
@@ -328,141 +301,67 @@ public class DbNsfpAlleleParser implements AlleleParser {
      * Details see doi: http://dx.doi.org/10.1101/259390
      * Multiple entries are separated by ";", corresponding to Ensembl_transcriptid.
      */
-    private static class MvpParser extends TranscriptValueParser {
-
-        public MvpParser(int fieldPosition) {
-            super(AlleleProperty.MVP, fieldPosition);
+    private record MvpParser(int fieldPosition) implements TranscriptValueParser {
+        public static String COLUMN_HEADER = "MVP_score";
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.MVP;
         }
     }
 
     /**
-     * 82	MPC_score: A deleteriousness prediction score for missense variants based on regional missense
-     * constraint. The range of MPC score is 0 to 5. The larger the score, the more likely the variant is
-     * pathogenic. Details see doi: http://dx.doi.org/10.1101/148353.
-     * Multiple entries are separated by ";", corresponding to Ensembl_transcriptid.
+     * 125	EVE_score: EVE is an unsupervised model designed to predict the clinical relevance of human single amino acid variants
+     * 		by examining the sequences of various organisms throughout evolutionary history. The EVE score ranges from 0 to 1.
+     * 		The larger the score, the more likely the variant is pathogenic. Details see https://doi.org/10.1038/s41586-021-04043-8.
+     * @param fieldPosition
      */
-    private static class MpcParser extends TranscriptValueParser {
-
-        public MpcParser(int fieldPosition) {
-            super(AlleleProperty.MPC, fieldPosition);
+    private record EveScoreParser(int fieldPosition) implements TranscriptValueParser {
+        public static String COLUMN_HEADER = "EVE_score";
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.EVE;
         }
     }
 
     /**
-     * 84	PrimateAI_score: A pathogenicity prediction score for missense variants based on common variants of
-     * non-human primate species using a deep neural network. The range of PrimateAI score is 0 to 1.
-     * The larger the score, the more likely the variant is pathogenic. The authors suggest a threshold
-     * of 0.803 for separating damaging vs tolerant variants.
-     * Details see https://doi.org/10.1038/s41588-018-0167-z
-     **/
-    private class PrimateAiScoreParser extends SingleValueParser {
-
-        public PrimateAiScoreParser(int fieldPosition) {
-            super(AlleleProperty.PRIMATE_AI, fieldPosition);
+     * 138	AlphaMissense_score: AlphaMissense is an unsupervised model for predicting the pathogenicity of human missense variants
+     * 		by incorporating structural context of an AlphaFold-derived system. The AlphaMissense score ranges from 0 to 1.
+     * 		The larger the score, the more likely the variant is pathogenic. Details see https://doi.org/10.1126/science.adg7492.
+     * 		License information: "AlphaMissense Database Copyright (2023) DeepMind Technologies Limited. All predictions are
+     * 		provided for non-commercial research use only under CC BY-NC-SA license." This distribution of AlphaMissense_score,
+     * 		AlphaMissense_rankscore, and AlphaMissense_pred are also under CC BY-NC-SA license. A copy of CC BY-NC-SA license
+     * 		can be found at https://creativecommons.org/licenses/by-nc-sa/4.0/.
+     *
+     * @param fieldPosition
+     */
+    private record AlphaMissenseParser(int fieldPosition) implements TranscriptValueParser {
+        public static String COLUMN_HEADER = "AlphaMissense_score";
+        @Override
+        public AlleleProto.PathogenicitySource pathogenicitySource() {
+            return AlleleProto.PathogenicitySource.ALPHA_MISSENSE;
         }
+
     }
 
-    private static class TranscriptValueParser extends AbstractDbNsfpScoreParser {
+    private interface TranscriptValueParser extends DbNsfpScoreParser {
 
-        private final AlleleProperty alleleProperty;
-        private final int fieldPosition;
-
-        public TranscriptValueParser(AlleleProperty alleleProperty, int fieldPosition) {
-            this.alleleProperty = alleleProperty;
-            this.fieldPosition = fieldPosition;
-        }
+        public int fieldPosition();
 
         @Override
-        public AlleleProperty getAlleleProperty() {
-            return alleleProperty;
-        }
-
-        @Override
-        public Float parse(String[] fields) {
-            String field = getValueOrEmpty(fields, fieldPosition, EMPTY_VALUE);
+        default AlleleProto.PathogenicityScore parseScore(String[] fields) {
+            String field = getValueOrEmpty(fields, fieldPosition(), EMPTY_VALUE);
             return parseTranscriptValues(field);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            TranscriptValueParser that = (TranscriptValueParser) o;
-            return fieldPosition == that.fieldPosition &&
-                    alleleProperty == that.alleleProperty;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(alleleProperty, fieldPosition);
-        }
-
-        @Override
-        public String toString() {
-            return "TranscriptValueParser{" +
-                    "alleleProperty=" + alleleProperty +
-                    ", fieldPosition=" + fieldPosition +
-                    '}';
-        }
-    }
-
-    private static class SingleValueParser extends AbstractDbNsfpScoreParser {
-
-        private final AlleleProperty alleleProperty;
-        private final int fieldPosition;
-
-        public SingleValueParser(AlleleProperty alleleProperty, int fieldPosition) {
-            this.alleleProperty = alleleProperty;
-            this.fieldPosition = fieldPosition;
-        }
-
-        @Override
-        public AlleleProperty getAlleleProperty() {
-            return alleleProperty;
-        }
-
-        @Override
-        public Float parse(String[] fields) {
-            String field = getValueOrEmpty(fields, fieldPosition, EMPTY_VALUE);
-            return parseValue(field);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SingleValueParser that = (SingleValueParser) o;
-            return fieldPosition == that.fieldPosition &&
-                    alleleProperty == that.alleleProperty;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(alleleProperty, fieldPosition);
-        }
-
-        @Override
-        public String toString() {
-            return "SingleValueParser{" +
-                    "alleleProperty=" + alleleProperty +
-                    ", fieldPosition=" + fieldPosition +
-                    '}';
-        }
-    }
-
-    private abstract static class AbstractDbNsfpScoreParser implements DbNsfpScoreParser {
-
-        protected static final String EMPTY_VALUE = ".";
-
         @Nullable
-        protected Float parseTranscriptValues(String field) {
+        private AlleleProto.PathogenicityScore parseTranscriptValues(String field) {
             String[] transcriptPredictions = field.split(";");
             if (transcriptPredictions.length == 1) {
-                return parseValue(transcriptPredictions[0]);
+                return parseScore(transcriptPredictions[0]);
             }
             float maxValue = getMaxValue(transcriptPredictions);
             if (maxValue > 0) {
-                return maxValue;
+                return pathScore(maxValue);
             }
             return null;
         }
@@ -478,21 +377,27 @@ public class DbNsfpAlleleParser implements AlleleParser {
             }
             return maxValue;
         }
+    }
 
-        @Nullable
-        protected Float parseValue(String value) {
-            if (!EMPTY_VALUE.equals(value)) {
-                return Float.valueOf(value);
-            }
-            return null;
+    private interface SingleValueParser extends DbNsfpScoreParser {
+
+        int fieldPosition();
+
+        @Override
+        default AlleleProto.PathogenicityScore parseScore(String[] fields) {
+            String value = fields[fieldPosition()];
+            return parseScore(value);
         }
     }
 
     private interface DbNsfpScoreParser {
 
-        public AlleleProperty getAlleleProperty();
+        static final String EMPTY_VALUE = ".";
 
-        public Float parse(String[] fields);
+        AlleleProto.PathogenicitySource pathogenicitySource();
+
+        @Nullable
+        AlleleProto.PathogenicityScore parseScore(String[] fields);
 
         public default String getValueOrEmpty(String[] fields, int position, String empty) {
             String field = fields[position];
@@ -500,6 +405,19 @@ public class DbNsfpAlleleParser implements AlleleParser {
                 return empty;
             }
             return field;
+        }
+
+        private boolean isNullOrEmptyValue(String field) {
+            return field == null || field.equals(EMPTY_VALUE);
+        }
+
+        @Nullable
+        default AlleleProto.PathogenicityScore parseScore(String value) {
+            return isNullOrEmptyValue(value) ? null : pathScore(Float.parseFloat(value));
+        }
+
+        default AlleleProto.PathogenicityScore pathScore(float score) {
+            return AlleleData.pathogenicityScoreOf(pathogenicitySource(), score);
         }
     }
 }
