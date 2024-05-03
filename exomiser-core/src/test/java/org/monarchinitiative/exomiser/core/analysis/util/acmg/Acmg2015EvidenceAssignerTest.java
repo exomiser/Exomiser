@@ -545,8 +545,12 @@ class Acmg2015EvidenceAssignerTest {
     }
 
     // PP4
-    @Test
-    void testAssignsPP4() {
+    @ParameterizedTest
+    @CsvSource({
+            "0.51, SUPPORTING",
+            "0.7, MODERATE",
+    })
+    void testAssignsPP4(float phenotypeScore, Evidence evidence) {
         Acmg2015EvidenceAssigner instance = acmgEvidenceAssigner("proband", justProband("proband", MALE));
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
@@ -555,10 +559,11 @@ class Acmg2015EvidenceAssignerTest {
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
         // High phenotype match triggers - PP4
-        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.6, cowdenSyndrome, List.of()));
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(phenotypeScore, cowdenSyndrome, List.of()));
 
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
-        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(AcmgCriterion.PP4).build()));
+        AcmgEvidence expected = evidence == null ? AcmgEvidence.empty() : AcmgEvidence.builder().add(PP4, evidence).build();
+        assertThat(acmgEvidence, equalTo(expected));
     }
 
     @Nested

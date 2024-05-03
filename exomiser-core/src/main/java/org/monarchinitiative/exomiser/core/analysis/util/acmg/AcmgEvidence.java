@@ -264,6 +264,10 @@ public class AcmgEvidence {
             return evidence.containsKey(acmgCriterion);
         }
 
+        public boolean containsWithEvidence(AcmgCriterion acmgCriterion, Evidence evidenceStrength) {
+            return evidence.containsKey(acmgCriterion) && evidence.get(acmgCriterion) == evidenceStrength;
+        }
+
         public AcmgEvidence build() {
             return evidence.isEmpty() ? EMPTY : new AcmgEvidence(evidence);
         }

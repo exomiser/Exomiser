@@ -156,11 +156,10 @@ public class VariantDataServiceImpl implements VariantDataService {
             defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
         }
 
-        // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
+        // Previously we deliberately ignored synonymous variants from dbNSFP as these shouldn't be there
         // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
-        if (variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT) {
-            addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
-        }
+        // However, cryptic splice variants can be synonymous variants, so these should be retained.
+        addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
 
         return PathogenicityData.of(clinVarData, allPathScores);
     }

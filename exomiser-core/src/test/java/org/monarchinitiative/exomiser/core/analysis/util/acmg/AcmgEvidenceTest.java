@@ -116,6 +116,15 @@ public class AcmgEvidenceTest {
     }
 
     @Test
+    public void testBuilderContainsEvidenceWithStrength() {
+        AcmgEvidence.Builder instance = AcmgEvidence.builder()
+                .add(PVS1, Evidence.MODERATE);
+        assertThat(instance.containsWithEvidence(PVS1, Evidence.MODERATE), equalTo(true));
+        assertThat(instance.containsWithEvidence(PVS1, Evidence.VERY_STRONG), equalTo(false));
+        assertThat(instance.containsWithEvidence(PM3, Evidence.MODERATE), equalTo(false));
+    }
+
+    @Test
     public void testSizeWhenEmpty() {
         AcmgEvidence instance = AcmgEvidence.builder().build();
         assertThat(instance.size(), equalTo(0));

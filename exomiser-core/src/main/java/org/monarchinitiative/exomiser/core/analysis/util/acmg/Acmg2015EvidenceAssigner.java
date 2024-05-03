@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
 /**
@@ -158,7 +159,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         boolean hasCompatibleDiseaseMatches = !compatibleDiseaseMatches.isEmpty();
 
         // PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
-        assignPVS1(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, knownDiseases);
+        AcmgPVS1EvidenceAssigner.assignPVS1(acmgEvidenceBuilder, variantEvaluation, probandSex, modeOfInheritance, knownDiseases);
 
         // ignore non-missense, truncating, splice or mitochondrial variants
         if (isMissenseOrInframeIndel(variantEvaluation.getVariantEffect()) && variantEvaluation.contigId() != 25) {
@@ -175,6 +176,10 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             assignPM1(acmgEvidenceBuilder, variantEvaluation, localClinVarData);
             // TODO: PM1/BP3 "In-frame deletions/insertions in a repetitive region without a known function" - requires domain information.
         }
+        // apply PVS1, PS1, PP3, BP4, BP7 to splice region variants according to "Using the ACMG/AMP framework to capture
+        // evidence related to predicted and observed impact on splicing: Recommendations from the ClinGen SVI Splicing Subgroup"
+        // https://doi.org/10.1016/j.ajhg.2023.06.002
+        AcmgSpliceEvidenceAssigner.assignSpliceEvidence(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, knownDiseases, clinVarDao);
 
         if (pedigree.containsId(probandId)) {
             Individual proband = pedigree.getIndividualById(probandId);
@@ -210,88 +215,88 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         return acmgEvidenceBuilder.build();
     }
 
-    /**
-     * PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
-     */
-    private void assignPVS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<Disease> knownDiseases) {
-        // TODO: add new method - gene.getAssociatedDiseases()
-        //  also need ClinvarCache.getClinvarDataForGene(GeneIdentifier geneIdentifier)
-
-        // Certain types of variants (e.g., nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single exon or multiexon
-        // deletion) can often be assumed to disrupt gene function by leading to a complete absence of the gene product by lack of tran-
-        // scription or nonsense-mediated decay of an altered transcript. One  must,  however,  exercise  caution  when  classifying  these
-        // variants as pathogenic by considering the following principles:
-        //  (i)  When  classifying  such  variants  as  pathogenic,  one  must ensure  that  null  variants  are  a  known  mechanism  of
-        //  pathogenicity consistent with the established inheritance pattern  for  the  disease.  For  example,  there  are  genes  for
-        //  which only heterozygous missense variants cause disease and null variants are benign in a heterozygous state (e.g.,
-        //  many hypertrophic cardiomyopathy genes). A novel heterozygous  nonsense  variant  in  the  MYH7  gene  would
-        //  not be considered pathogenic for dominant hypertrophic cardiomyopathy based solely on this evidence, whereas a
-        //  novel  heterozygous  nonsense  variant  in  the  CFTR  gene would likely be considered a recessive pathogenic variant.
-        // Caveats:
-        // •  Beware of genes where LOF is not a known disease mechanism (e.g., GFAP, MYH7)
-        // •  Use caution interpreting LOF variants at the extreme 3′ end of a gene
-        // •  Use caution with splice variants that are predicted to lead to exon skipping but leave the remainder of the protein intact
-        // •  Use caution in the presence of multiple transcripts
-
-        GeneConstraint geneContraint = GeneConstraints.geneConstraint(variantEvaluation.getGeneSymbol());
-        // Should this be using the hasCompatibleDiseaseMatches variable?
-        boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
-        if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEvaluation.getVariantEffect())
-            && (modeOfInheritance == ModeOfInheritance.ANY
-                || compatibleWithRecessive(modeOfInheritance)
-                || compatibleWithDominant(modeOfInheritance) && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
-            )
-        ) {
-            if (variantEvaluation.hasTranscriptAnnotations()) {
-                TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
-                if (predictedToLeadToNmd(transcriptAnnotation)) {
-                    acmgEvidenceBuilder.add(PVS1);
-                } else {
-                    // Not predicted to lead to NMD? Downgrade to STRONG
-                    acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
-                }
-            } else {
-                // shouldn't happen that there are no transcript annotations, but just in case...
-                acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
-            }
-        }
-    }
-
-    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
-        return variantEffect == VariantEffect.START_LOST
-               || variantEffect == VariantEffect.STOP_LOST
-               || variantEffect == VariantEffect.STOP_GAINED
-               || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
-               || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
-               || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
-               || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
-               || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
-               || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
-    }
-
-    private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
-        // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
-        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
-        boolean isSingleExonTranscript = transcriptAnnotation.getRankTotal() == 1;
-        return transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON && (notInLastExon || isSingleExonTranscript);
-    }
-
-    private boolean compatibleWithRecessive(ModeOfInheritance modeOfInheritance) {
-        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return true;
-        }
-        return probandSex == Individual.Sex.FEMALE && modeOfInheritance == ModeOfInheritance.X_RECESSIVE;
-    }
-
-    private boolean compatibleWithDominant(ModeOfInheritance modeOfInheritance) {
-        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT) {
-            return true;
-        }
-        if (probandSex == Individual.Sex.MALE && (modeOfInheritance == ModeOfInheritance.X_RECESSIVE || modeOfInheritance == ModeOfInheritance.X_DOMINANT)) {
-            return true;
-        }
-        return (probandSex == Individual.Sex.FEMALE || probandSex == Individual.Sex.UNKNOWN) && modeOfInheritance == ModeOfInheritance.X_DOMINANT;
-    }
+//    /**
+//     * PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
+//     */
+//    private void assignPVS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<Disease> knownDiseases) {
+//        // TODO: add new method - gene.getAssociatedDiseases()
+//        //  also need ClinvarCache.getClinvarDataForGene(GeneIdentifier geneIdentifier)
+//
+//        // Certain types of variants (e.g., nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single exon or multiexon
+//        // deletion) can often be assumed to disrupt gene function by leading to a complete absence of the gene product by lack of tran-
+//        // scription or nonsense-mediated decay of an altered transcript. One  must,  however,  exercise  caution  when  classifying  these
+//        // variants as pathogenic by considering the following principles:
+//        //  (i)  When  classifying  such  variants  as  pathogenic,  one  must ensure  that  null  variants  are  a  known  mechanism  of
+//        //  pathogenicity consistent with the established inheritance pattern  for  the  disease.  For  example,  there  are  genes  for
+//        //  which only heterozygous missense variants cause disease and null variants are benign in a heterozygous state (e.g.,
+//        //  many hypertrophic cardiomyopathy genes). A novel heterozygous  nonsense  variant  in  the  MYH7  gene  would
+//        //  not be considered pathogenic for dominant hypertrophic cardiomyopathy based solely on this evidence, whereas a
+//        //  novel  heterozygous  nonsense  variant  in  the  CFTR  gene would likely be considered a recessive pathogenic variant.
+//        // Caveats:
+//        // •  Beware of genes where LOF is not a known disease mechanism (e.g., GFAP, MYH7)
+//        // •  Use caution interpreting LOF variants at the extreme 3′ end of a gene
+//        // •  Use caution with splice variants that are predicted to lead to exon skipping but leave the remainder of the protein intact
+//        // •  Use caution in the presence of multiple transcripts
+//
+//        GeneConstraint geneContraint = GeneConstraints.geneConstraint(variantEvaluation.getGeneSymbol());
+//        // Should this be using the hasCompatibleDiseaseMatches variable?
+//        boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
+//        if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEvaluation.getVariantEffect())
+//            && (modeOfInheritance == ModeOfInheritance.ANY
+//                || compatibleWithRecessive(modeOfInheritance)
+//                || compatibleWithDominant(modeOfInheritance) && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
+//            )
+//        ) {
+//            if (variantEvaluation.hasTranscriptAnnotations()) {
+//                TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
+//                if (predictedToLeadToNmd(transcriptAnnotation)) {
+//                    acmgEvidenceBuilder.add(PVS1);
+//                } else {
+//                    // Not predicted to lead to NMD? Downgrade to STRONG
+//                    acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
+//                }
+//            } else {
+//                // shouldn't happen that there are no transcript annotations, but just in case...
+//                acmgEvidenceBuilder.add(PVS1, Evidence.STRONG);
+//            }
+//        }
+//    }
+//
+//    private boolean isLossOfFunctionEffect(VariantEffect variantEffect) {
+//        return variantEffect == VariantEffect.START_LOST
+//               || variantEffect == VariantEffect.STOP_LOST
+//               || variantEffect == VariantEffect.STOP_GAINED
+//               || variantEffect == VariantEffect.FRAMESHIFT_ELONGATION
+//               || variantEffect == VariantEffect.FRAMESHIFT_TRUNCATION
+//               || variantEffect == VariantEffect.FRAMESHIFT_VARIANT
+//               || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT
+//               || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT
+//               || variantEffect == VariantEffect.EXON_LOSS_VARIANT;
+//    }
+//
+//    private boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
+//        // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
+//        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
+//        boolean isSingleExonTranscript = transcriptAnnotation.getRankTotal() == 1;
+//        return transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON && (notInLastExon || isSingleExonTranscript);
+//    }
+//
+//    private boolean compatibleWithRecessive(ModeOfInheritance modeOfInheritance) {
+//        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
+//            return true;
+//        }
+//        return probandSex == Individual.Sex.FEMALE && modeOfInheritance == ModeOfInheritance.X_RECESSIVE;
+//    }
+//
+//    private boolean compatibleWithDominant(ModeOfInheritance modeOfInheritance) {
+//        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT) {
+//            return true;
+//        }
+//        if (probandSex == Individual.Sex.MALE && (modeOfInheritance == ModeOfInheritance.X_RECESSIVE || modeOfInheritance == ModeOfInheritance.X_DOMINANT)) {
+//            return true;
+//        }
+//        return (probandSex == Individual.Sex.FEMALE || probandSex == Individual.Sex.UNKNOWN) && modeOfInheritance == ModeOfInheritance.X_DOMINANT;
+//    }
 
     /**
      * PM3 "For recessive disorders, detected in trans with a pathogenic variant"
@@ -380,6 +385,8 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         }
     }
 
+    // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
+    // PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"
     private void assignPS1PM5(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, Map<GenomicVariant, ClinVarData> localClinVarData) {
         if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {
             return;
@@ -434,6 +441,10 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * PP5 "Reputable source recently reports variant as pathogenic, but the evidence is not available to the laboratory to perform an independent evaluation"
      */
     private void assignPP5(AcmgEvidence.Builder acmgEvidenceBuilder, ClinVarData clinVarData) {
+        // avoid double-counting by not assigning if PS1 already assigned
+        if  (acmgEvidenceBuilder.contains(PS1)) {
+            return;
+        }
         ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
         boolean pathOrLikelyPath = isPathOrLikelyPath(primaryInterpretation);
         if (pathOrLikelyPath && clinVarData.starRating() == 1) {
@@ -662,8 +673,10 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         for (ModelPhenotypeMatch<Disease> diseaseModelPhenotypeMatch : compatibleDiseaseMatches) {
             humanGenePhenotypeScoreForMoi = Math.max(humanGenePhenotypeScoreForMoi, diseaseModelPhenotypeMatch.getScore());
         }
-        if (humanGenePhenotypeScoreForMoi >= 0.6) {
-            acmgEvidenceBuilder.add(PP4);
+        if (humanGenePhenotypeScoreForMoi >= 0.7f) {
+            acmgEvidenceBuilder.add(PP4, Evidence.MODERATE);
+        } else if (humanGenePhenotypeScoreForMoi < 0.7f && humanGenePhenotypeScoreForMoi >= 0.51) {
+            acmgEvidenceBuilder.add(PP4, Evidence.SUPPORTING);
         }
     }
 

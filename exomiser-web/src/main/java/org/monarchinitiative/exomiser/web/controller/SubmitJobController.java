@@ -79,8 +79,6 @@ public class SubmitJobController {
             VariantEffect.DOWNSTREAM_GENE_VARIANT,
             VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
             VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-            VariantEffect.SYNONYMOUS_VARIANT,
-            VariantEffect.SPLICE_REGION_VARIANT,
             VariantEffect.REGULATORY_REGION_VARIANT
     );
 
