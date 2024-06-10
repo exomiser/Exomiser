@@ -301,6 +301,9 @@ public class AlleleProtoAdaptor {
             case OTHER -> ClinVarData.ClinSig.OTHER;
             case PROTECTIVE -> ClinVarData.ClinSig.PROTECTIVE;
             case RISK_FACTOR -> ClinVarData.ClinSig.RISK_FACTOR;
+            case UNCERTAIN_RISK_ALLELE -> ClinVarData.ClinSig.UNCERTAIN_RISK_ALLELE;
+            case LIKELY_RISK_ALLELE -> ClinVarData.ClinSig.LIKELY_RISK_ALLELE;
+            case ESTABLISHED_RISK_ALLELE -> ClinVarData.ClinSig.ESTABLISHED_RISK_ALLELE;
             case NOT_PROVIDED, UNRECOGNIZED -> ClinVarData.ClinSig.NOT_PROVIDED;
         };
     }

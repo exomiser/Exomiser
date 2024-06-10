@@ -199,10 +199,14 @@ public class AlleleConverterTest {
     @Test
     public void convertClinVarConflictingInterpretationCounts() {
         ClinVarData clinVarData = ClinVarData.builder()
+                .primaryInterpretation(ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 .conflictingInterpretationCounts(Map.of(ClinVarData.ClinSig.PATHOGENIC, 3, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 2))
                 .build();
 
         ClinVar expected = ClinVar.newBuilder()
+                .setPrimaryInterpretation(ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .setReviewStatus(ClinVar.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
                 .putAllClinSigCounts(Map.of("PATHOGENIC", 3, "UNCERTAIN_SIGNIFICANCE", 2))
                 .build();
 

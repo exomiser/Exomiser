@@ -172,6 +172,9 @@ public class AlleleConverter {
             case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
             case PATHOGENIC -> ClinVar.ClinSig.PATHOGENIC;
             case CONFLICTING_PATHOGENICITY_INTERPRETATIONS -> ClinVar.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+            case UNCERTAIN_RISK_ALLELE -> ClinVar.ClinSig.UNCERTAIN_RISK_ALLELE;
+            case LIKELY_RISK_ALLELE -> ClinVar.ClinSig.LIKELY_RISK_ALLELE;
+            case ESTABLISHED_RISK_ALLELE -> ClinVar.ClinSig.ESTABLISHED_RISK_ALLELE;
             case AFFECTS -> ClinVar.ClinSig.AFFECTS;
             case ASSOCIATION -> ClinVar.ClinSig.ASSOCIATION;
             case DRUG_RESPONSE -> ClinVar.ClinSig.DRUG_RESPONSE;
