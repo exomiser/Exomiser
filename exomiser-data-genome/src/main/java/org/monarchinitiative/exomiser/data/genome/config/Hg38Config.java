@@ -96,7 +96,7 @@ public class Hg38Config extends ResourceConfig {
         return alleleResources.build();
     }
 
-    private AlleleResource spliceAiAlleleResource() {
+    public SpliceAiAlleleResource spliceAiAlleleResource() {
         return alleleResource(SpliceAiAlleleResource.class, "hg38.splice-ai");
     }
 

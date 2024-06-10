@@ -93,7 +93,7 @@ public class Hg19Config extends ResourceConfig {
         return alleleResources.build();
     }
 
-    private AlleleResource spliceAiAlleleResource() {
+    public SpliceAiAlleleResource spliceAiAlleleResource() {
         return alleleResource(SpliceAiAlleleResource.class, "hg19.splice-ai");
     }
 

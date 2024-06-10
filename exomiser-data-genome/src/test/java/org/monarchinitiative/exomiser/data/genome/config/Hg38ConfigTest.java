@@ -88,6 +88,7 @@ public class Hg38ConfigTest {
         // esp removed as this is part of gnomad since v4
         alleleResources.put("dbnsfp", instance.dbnsfpAlleleResource());
         // clinvar removed as this is now standalone
+        alleleResources.put("splice-ai", instance.spliceAiAlleleResource());
 
         Map<String, AlleleResource> expectedResources = alleleResources.build();
 
