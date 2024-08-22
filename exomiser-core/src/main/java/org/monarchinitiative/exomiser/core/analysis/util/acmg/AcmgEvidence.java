@@ -246,6 +246,24 @@ public class AcmgEvidence {
         return '[' + stringJoiner.toString() + ']';
     }
 
+    public static AcmgEvidence parseAcmgEvidence(String criteria) {
+        if (criteria == null || criteria.isEmpty()) {
+            return AcmgEvidence.empty();
+        }
+        AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+        for (String criterion : criteria.replace("[", "").replace("]", "").split("[, ]+")) {
+            String[] criteriaModifier = criterion.trim().split("_");
+            AcmgCriterion acmgCriterion = AcmgCriterion.valueOf(criteriaModifier[0]);
+            if (criteriaModifier.length == 2) {
+                AcmgCriterion.Evidence modifier = AcmgCriterion.Evidence.parseValue(criteriaModifier[1]);
+                acmgEvidenceBuilder.add(acmgCriterion, modifier);
+            } else {
+                acmgEvidenceBuilder.add(acmgCriterion);
+            }
+        }
+        return acmgEvidenceBuilder.build();
+    }
+
     public static class Builder {
 
         private final EnumMap<AcmgCriterion, Evidence> evidence = new EnumMap<>(AcmgCriterion.class);
@@ -266,6 +284,15 @@ public class AcmgEvidence {
 
         public boolean containsWithEvidence(AcmgCriterion acmgCriterion, Evidence evidenceStrength) {
             return evidence.containsKey(acmgCriterion) && evidence.get(acmgCriterion) == evidenceStrength;
+        }
+
+        public void remove(AcmgCriterion acmgCriterion) {
+            evidence.remove(acmgCriterion);
+        }
+
+        @Nullable
+        public Evidence evidenceForCategory(AcmgCriterion acmgCriterion) {
+            return evidence.get(acmgCriterion);
         }
 
         public AcmgEvidence build() {

@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
 
-public class AcmgEvidenceTest {
+class AcmgEvidenceTest {
 
     @Test
     void testEmptyBuilder() {
@@ -50,13 +50,13 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testToStringDefaultEvidence() {
+    void testToStringDefaultEvidence() {
         AcmgEvidence instance = AcmgEvidence.builder().add(PVS1).add(PS1).build();
         assertThat(instance.toString(), equalTo("[PVS1, PS1]"));
     }
 
     @Test
-    public void testToStringModifiedEvidence() {
+    void testToStringModifiedEvidence() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.STRONG)
                 .add(PS1, Evidence.MODERATE)
@@ -65,8 +65,31 @@ public class AcmgEvidenceTest {
         assertThat(instance.toString(), equalTo("[PVS1_Strong, PS1_Moderate, PP3_VeryStrong]"));
     }
 
+    @ParameterizedTest
+    @CsvSource(value = {
+            "'[PVS1, PS1_Moderate, PP3_VeryStrong]'",
+            "'[PVS1,PS1_Moderate,PP3_VeryStrong]'",
+            "'PVS1, PS1_Moderate, PP3_VeryStrong'",
+            "'PVS1 PS1_Moderate PP3_VeryStrong'",
+            "'[PVS1 PS1_Moderate PP3_VeryStrong['",
+            // stupid shit
+            "'PVS1 PS1_Moderate    PP3_VeryStrong'",
+            "'PVS1 PS1_Moderate    PP3_VERYSTRONG'",
+            "'PVS1 PS1_Moderate    PP3_verystrong'",
+            "'PVS1 PS1_Moderate,    PP3_verystrong'",
+            "'PVS1 PS1_Moderate,PP3_verystrong'",
+    })
+    void testParseEvidence(String acmgEvidence) {
+        AcmgEvidence expected = AcmgEvidence.builder()
+                .add(PVS1)
+                .add(PS1, Evidence.MODERATE)
+                .add(PP3, Evidence.VERY_STRONG)
+                .build();
+        assertThat(AcmgEvidence.parseAcmgEvidence(acmgEvidence), equalTo(expected));
+    }
+
     @Test
-    public void testGetEvidenceOverwriteInputInBuilder() {
+    void testGetEvidenceOverwriteInputInBuilder() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.STRONG)
                 .add(PVS1)
@@ -75,7 +98,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testGetEvidenceDefaultValue() {
+    void testGetEvidenceDefaultValue() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1)
                 .build();
@@ -83,7 +106,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testGetEvidenceModifiedValue() {
+    void testGetEvidenceModifiedValue() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.MODERATE)
                 .build();
@@ -91,7 +114,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testGetEvidenceNoValue() {
+    void testGetEvidenceNoValue() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.MODERATE)
                 .build();
@@ -99,7 +122,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testContainsEvidence() {
+    void testContainsEvidence() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.MODERATE)
                 .build();
@@ -108,7 +131,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testBuilderContainsEvidence() {
+    void testBuilderContainsEvidence() {
         AcmgEvidence.Builder instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.MODERATE);
         assertThat(instance.contains(PVS1), equalTo(true));
@@ -116,7 +139,7 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testBuilderContainsEvidenceWithStrength() {
+    void testBuilderContainsEvidenceWithStrength() {
         AcmgEvidence.Builder instance = AcmgEvidence.builder()
                 .add(PVS1, Evidence.MODERATE);
         assertThat(instance.containsWithEvidence(PVS1, Evidence.MODERATE), equalTo(true));
@@ -125,13 +148,13 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testSizeWhenEmpty() {
+    void testSizeWhenEmpty() {
         AcmgEvidence instance = AcmgEvidence.builder().build();
         assertThat(instance.size(), equalTo(0));
     }
 
     @Test
-    public void testSizeWithElement() {
+    void testSizeWithElement() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1)
                 .build();
@@ -139,13 +162,13 @@ public class AcmgEvidenceTest {
     }
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         AcmgEvidence instance = AcmgEvidence.builder().build();
         assertThat(instance.isEmpty(), equalTo(true));
     }
 
     @Test
-    public void testNotEmpty() {
+    void testNotEmpty() {
         AcmgEvidence instance = AcmgEvidence.builder()
                 .add(PVS1)
                 .build();
@@ -253,7 +276,7 @@ public class AcmgEvidenceTest {
             "BA1, -8, 0.000", // BA1 is a bit of an anomaly - it's intended as a hard filter, so doesn't fit into the points system
     })
     void testPosteriorProb(String criteria, int points, double posteriorProb) {
-        AcmgEvidence acmgEvidence = parseAcmgEvidence(criteria);
+        AcmgEvidence acmgEvidence = AcmgEvidence.parseAcmgEvidence(criteria);
         assertThat(acmgEvidence.points(), equalTo(points));
         assertThat(acmgEvidence.postProbPath(), closeTo(posteriorProb, 0.001));
     }
