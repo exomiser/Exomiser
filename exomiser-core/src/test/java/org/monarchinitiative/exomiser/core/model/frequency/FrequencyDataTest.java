@@ -26,12 +26,15 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import org.h2.mvstore.MVStore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
+import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.exomiser.core.proto.AlleleProtoFormatter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -288,6 +291,17 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testGetMaxFrequencyWhenZeroData() {
+        Frequency maxFrequency = Frequency.of(GNOMAD_E_AFR, 0, 1000, 0);
+        Frequency minFrequency = Frequency.of(TOPMED, 0f);
+        FrequencyData instance = FrequencyData.of("rs545662810", minFrequency, maxFrequency);
+
+        assertThat(instance.maxFrequency(), equalTo(null));
+        assertThat(instance.maxFreq(), equalTo(0f));
+        assertThat(instance.frequencies(), equalTo(List.of(minFrequency, maxFrequency)));
+    }
+
+    @Test
     public void testHasFrequencyOverPercentageValue() {
         float maxFreq = 0.05f;
         Frequency upper = Frequency.of(UNKNOWN, maxFreq);
@@ -482,12 +496,12 @@ public class FrequencyDataTest {
         var an = 10000;
         var hom = 10;
         var af = Frequency.percentageFrequency(ac, an);
-        System.out.println("AF=" + af);
+
         data[0] = (float) ac;
         data[1] = (float) an;
         data[2] = (float) hom;
         data[3] = (float) af;
-        System.out.println("dataAF=" + data[3]);
+
         assertThat(Frequency.percentageFrequency((int) data[0], (int) data[1]), equalTo((float) data[3]));
     }
 

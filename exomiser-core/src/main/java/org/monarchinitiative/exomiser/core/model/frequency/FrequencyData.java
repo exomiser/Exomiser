@@ -324,7 +324,7 @@ public class FrequencyData {
     @JsonIgnore
     @Nullable
     public Frequency maxFrequency() {
-        return this.size == 0 ? null : frequency(maxSource);
+        return maxSource == -1 ? null : frequency(maxSource);
     }
 
     /**
@@ -454,10 +454,11 @@ public class FrequencyData {
          */
         private Builder addFrequency(FrequencySource frequencySource, float frequency, int ac, int an, int homCount) {
             frequencySources[frequencySource.ordinal()] = frequencySource;
-            frequencyData[frequencySource.ordinal() * WORD_SIZE + FREQ_OFFSET] = frequency;
-            frequencyData[frequencySource.ordinal() * WORD_SIZE + AC_OFFSET] = ac;
-            frequencyData[frequencySource.ordinal() * WORD_SIZE + AN_OFFSET] = an;
-            frequencyData[frequencySource.ordinal() * WORD_SIZE + HOM_OFFSET] = homCount;
+            int freqIndex = frequencySource.ordinal() * WORD_SIZE;
+            frequencyData[freqIndex + FREQ_OFFSET] = frequency;
+            frequencyData[freqIndex + AC_OFFSET] = ac;
+            frequencyData[freqIndex + AN_OFFSET] = an;
+            frequencyData[freqIndex + HOM_OFFSET] = homCount;
             return this;
         }
 
@@ -517,10 +518,12 @@ public class FrequencyData {
                 FrequencySource source = values[i];
                 if (frequencySources[source.ordinal()] != null) {
                     sources[dataPos] = source;
-                    data[dataPos * WORD_SIZE + FREQ_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + FREQ_OFFSET];
-                    data[dataPos * WORD_SIZE + AC_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + AC_OFFSET];
-                    data[dataPos * WORD_SIZE + AN_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + AN_OFFSET];
-                    data[dataPos * WORD_SIZE + HOM_OFFSET] = frequencyData[source.ordinal() * WORD_SIZE + HOM_OFFSET];
+                    int dataIndex = dataPos * WORD_SIZE;
+                    int freqIndex = source.ordinal() * WORD_SIZE;
+                    data[dataIndex + FREQ_OFFSET] = frequencyData[freqIndex + FREQ_OFFSET];
+                    data[dataIndex + AC_OFFSET] = frequencyData[freqIndex + AC_OFFSET];
+                    data[dataIndex + AN_OFFSET] = frequencyData[freqIndex + AN_OFFSET];
+                    data[dataIndex + HOM_OFFSET] = frequencyData[freqIndex + HOM_OFFSET];
                     dataPos++;
                 }
             }
