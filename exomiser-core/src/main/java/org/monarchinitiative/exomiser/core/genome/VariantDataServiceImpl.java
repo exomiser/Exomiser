@@ -21,7 +21,8 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+import jakarta.annotation.Nonnull;
+import org.monarchinitiative.exomiser.core.model.GeneStatistics;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -182,18 +183,23 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     @Override
-    public ClinVarData getClinVarData(Variant variant) {
+    public ClinVarData getClinVarData(@Nonnull Variant variant) {
         return clinVarDao.getClinVarData(variant);
     }
 
     @Override
-    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+    public ClinVarData getClinVarData(@Nonnull GenomicVariant genomicVariant) {
         return clinVarDao.getClinVarData(genomicVariant);
     }
 
     @Override
-    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(@Nonnull GenomicInterval genomicInterval) {
         return clinVarDao.findClinVarRecordsOverlappingInterval(genomicInterval);
+    }
+
+    @Override
+    public GeneStatistics getGeneStatistics(@Nonnull String geneSymbol) {
+        return clinVarDao.getGeneStatistics(geneSymbol);
     }
 
     public static Builder builder() {
