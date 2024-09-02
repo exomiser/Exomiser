@@ -95,10 +95,10 @@ class AcmgAssignmentCalculatorTest {
         gene.addPriorityResult(omimPriorityResult);
 
         AcmgEvidence acmgEvidence = AcmgEvidence.builder()
-                .add(AcmgCriterion.PVS1)
+                .add(AcmgCriterion.PVS1, AcmgCriterion.Evidence.MODERATE)
                 .add(AcmgCriterion.PM2, AcmgCriterion.Evidence.SUPPORTING)
                 .add(AcmgCriterion.PP3, AcmgCriterion.Evidence.STRONG)
-                .add(AcmgCriterion.PP4)
+                .add(AcmgCriterion.PP4, AcmgCriterion.Evidence.MODERATE)
                 .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.VERY_STRONG)
                 .build();
         AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.PATHOGENIC);

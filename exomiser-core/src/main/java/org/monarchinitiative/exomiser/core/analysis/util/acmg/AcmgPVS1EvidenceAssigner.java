@@ -20,7 +20,7 @@ class AcmgPVS1EvidenceAssigner {
 
     /**
      * Applies PVS1 according to guidelines in <a href="https://doi.org/10.1002/humu.23626">Recommendations for interpreting the loss of function PVS1 ACMG/AMP variant criterion<a/>.
-     *
+     *<p>
      * PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
      */
     static void assignPVS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, Sex probandSex, ModeOfInheritance
@@ -49,12 +49,10 @@ class AcmgPVS1EvidenceAssigner {
         boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
         // TODO should modify the final strength according to ClinGen/GenCC known D2G validity - Table 1 of 10.1002/humu.23626
         VariantEffect variantEffect = variantEvaluation.getVariantEffect();
-        if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEffect)
-            && (modeOfInheritance == ModeOfInheritance.ANY
-                || compatibleWithRecessive(probandSex, modeOfInheritance)
-                || compatibleWithDominant(probandSex, modeOfInheritance) && (geneConstraint != null && geneConstraint.isLossOfFunctionIntolerant())
-            )
-        ) {
+        if (inGeneWithKnownDiseaseAssociations
+            && isLossOfFunctionEffect(variantEffect)
+            && (geneConstraint != null && geneConstraint.isLossOfFunctionIntolerant())
+            ){
             switch (variantEffect) {
                 case STOP_LOST, STOP_GAINED, FRAMESHIFT_ELONGATION, FRAMESHIFT_TRUNCATION, FRAMESHIFT_VARIANT ->
                         assignNonsenseOrFrameshiftPVS1(acmgEvidenceBuilder, variantEvaluation);
@@ -135,11 +133,20 @@ class AcmgPVS1EvidenceAssigner {
         return false;
     }
 
+    // this is a crude method as we don't have the actual transcript coordinates here, so we'll only be able to apply the
+    // last exon and single exon gene rules
     private static boolean predictedToLeadToNmd(TranscriptAnnotation transcriptAnnotation) {
-        // predicted to lead to NMD if in last exon or last 50bp of penultimate exon, or in single exon transcript
-        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal();
-        boolean isSingleExonTranscript = transcriptAnnotation.getRankTotal() == 1;
-        return transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON && (notInLastExon || isSingleExonTranscript);
+        // predicted to lead to NMD if not in last exon or last 50bp of penultimate exon, or is in multi-exon transcript.
+        // In other words a variant does NOT trigger NMD if it is located:
+        //  - in the last exon
+        //  - in the last 50 bases of the penultimate exon
+        //  - in an exon larger than 400 bases
+        //  - within the first 150 (CDS) bases of the transcription start site
+        //  - in a single-exon gene
+        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal(); // will be false for single exon genes where rank == rankTotal
+        VariantEffect variantEffect = transcriptAnnotation.getVariantEffect();
+        boolean isExonicOrCanonicalSpliceSite = (transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON) || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT;
+        return isExonicOrCanonicalSpliceSite && notInLastExon;
     }
 
     private static boolean compatibleWithRecessive(Sex probandSex, ModeOfInheritance modeOfInheritance) {

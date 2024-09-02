@@ -32,13 +32,13 @@ class AcmgSpliceEvidenceAssigner {
      */
     static void assignSpliceEvidence(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<Disease> knownDiseases, ClinVarDao clinVarDao) {
         VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+        PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
         if (isSpliceDonorAcceptorSpliceVariant(variantEffect)) {
             // PVS1 decision tree - this should have been independently added by the PVS1EvidenceAssigner class
             // add PS1 modifier if PVS1 was assigned
             assignDonorAcceptorPS1(acmgEvidenceBuilder, variantEvaluation, clinVarDao);
         } else if (isNonDonorAcceptorSpliceRegionVariant(variantEffect)) {
             // PP3+PS1 or BP4+BP7
-            PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
             // The database only contains SpliceAI scores > 0.1. This means that any SNP with no score in the database can be considered as
             // not impacting splicing.
             PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
@@ -52,6 +52,10 @@ class AcmgSpliceEvidenceAssigner {
                 }
             }
         }
+        // Note - this is independent of the Splicing guidelines BP7 criteria which is for
+        // BP7 "A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved"
+        ClinVarData clinVarData = pathogenicityData.clinVarData();
+        assignSynonymousBP7(acmgEvidenceBuilder, variantEvaluation, pathogenicityData, clinVarData);
     }
 
     private static boolean assignSpliceAiBasedPP3Classification(AcmgEvidence.Builder acmgEvidenceBuilder, float spliceAiScore) {
@@ -72,7 +76,7 @@ class AcmgSpliceEvidenceAssigner {
 
     private static void assignNonDonorAcceptorPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ClinVarDao clinVarDao) {
         var localClinVarData = getClinVarDataSurroundingVariant(variantEvaluation, clinVarDao);
-        Set<AcmgCriterion.Evidence> ps1Evidence = EnumSet.noneOf(AcmgCriterion.Evidence.class);
+        Set<Evidence> ps1Evidence = EnumSet.noneOf(Evidence.class);
         for (var entry : localClinVarData.entrySet()) {
             GenomicVariant clinVarVariant = entry.getKey();
             ClinVarData clinVarData = entry.getValue();
@@ -121,7 +125,23 @@ class AcmgSpliceEvidenceAssigner {
         }
     }
 
+    // BP7 "A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved"
+    private static void assignSynonymousBP7(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, PathogenicityData pathogenicityData, ClinVarData clinVarData) {
+        boolean isReportedPorLP = clinVarData.starRating() >= 1 && isPathOrLikelyPath(clinVarData.getPrimaryInterpretation());
+        if (variantEvaluation.getVariantEffect() == SYNONYMOUS_VARIANT && !isReportedPorLP) {
+            PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
+            if (spliceAiScore == null || spliceAiScore.getScore() < 0.1) {
+                acmgEvidenceBuilder.add(BP7);
+            }
+        }
+    }
+
     private static void assignDonorAcceptorPS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ClinVarDao clinVarDao) {
+        Evidence pvs1Evidence = acmgEvidenceBuilder.evidenceForCategory(PVS1);
+        if (pvs1Evidence == null) {
+            return;
+        }
+        // find other clinvar variants in same splice region...
         var localClinVarData = getClinVarDataSurroundingVariant(variantEvaluation, clinVarDao);
         for (var entry : localClinVarData.entrySet()) {
             ClinVarData clinVarData = entry.getValue();
@@ -129,17 +149,15 @@ class AcmgSpliceEvidenceAssigner {
             // Table 2. PS1 code weights for variants with same predicted splicing event as known (likely) pathogenic variant
             VariantEffect clinVarVariantEffect = clinVarData.getVariantEffect();
             if (isSpliceVariant(clinVarVariantEffect) && isPathOrLikelyPath(primaryInterpretation)) {
-                Set<AcmgCriterion.Evidence> ps1Evidence = EnumSet.noneOf(AcmgCriterion.Evidence.class);
-                if (acmgEvidenceBuilder.containsWithEvidence(PVS1, Evidence.VERY_STRONG)) {
+                Set<Evidence> ps1Evidence = EnumSet.noneOf(Evidence.class);
+                if (pvs1Evidence == Evidence.VERY_STRONG) {
                     // same position in comparison to VUA
                     if (isSpliceDonorAcceptorSpliceVariant(clinVarVariantEffect) && isPath(primaryInterpretation) ||
                         isNonDonorAcceptorSpliceRegionVariant(clinVarVariantEffect) && isLikelyPath(primaryInterpretation)) {
                         ps1Evidence.add(Evidence.SUPPORTING);
                     }
                 }
-                else if (acmgEvidenceBuilder.containsWithEvidence(PVS1, Evidence.STRONG)
-                         || acmgEvidenceBuilder.containsWithEvidence(PVS1, Evidence.MODERATE)
-                         || acmgEvidenceBuilder.containsWithEvidence(PVS1, Evidence.SUPPORTING)) {
+                else if (pvs1Evidence == Evidence.STRONG || pvs1Evidence == Evidence.MODERATE || pvs1Evidence == Evidence.SUPPORTING) {
                     // same splice region as VUA
                     if (isSpliceDonorAcceptorSpliceVariant(clinVarVariantEffect) && isPath(primaryInterpretation)) {
                         ps1Evidence.add(Evidence.STRONG);
@@ -164,11 +182,11 @@ class AcmgSpliceEvidenceAssigner {
     }
 
     private static boolean isPath(ClinVarData.ClinSig clinSig) {
-        return clinSig == ClinVarData.ClinSig.PATHOGENIC;
+        return clinSig == ClinVarData.ClinSig.PATHOGENIC || clinSig == ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
     }
 
     private static boolean isLikelyPath(ClinVarData.ClinSig clinSig) {
-        return clinSig == ClinVarData.ClinSig.LIKELY_PATHOGENIC || clinSig == ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+        return clinSig == ClinVarData.ClinSig.LIKELY_PATHOGENIC;
     }
 
     private static boolean isPathOrLikelyPath(ClinVarData.ClinSig clinSig) {
@@ -194,18 +212,17 @@ class AcmgSpliceEvidenceAssigner {
     }
 
     private static void addPs1Evidence(AcmgEvidence.Builder acmgEvidenceBuilder, Set<Evidence> ps1Evidence) {
-        for (Evidence evidence : ps1Evidence) {
-            switch (evidence) {
-                case STRONG:
-                    acmgEvidenceBuilder.add(PS1);
-                    break;
-                case MODERATE:
-                    acmgEvidenceBuilder.add(PS1, Evidence.MODERATE);
-                    break;
-                case SUPPORTING:
-                    acmgEvidenceBuilder.add(PS1, Evidence.SUPPORTING);
-                    break;
-            }
+        Evidence maxPs1Strength = null;
+        if (ps1Evidence.contains(Evidence.STRONG)) {
+            maxPs1Strength = Evidence.STRONG;
+        } else if (ps1Evidence.contains(Evidence.MODERATE)) {
+            maxPs1Strength = Evidence.MODERATE;
+        } else if (ps1Evidence.contains(Evidence.SUPPORTING)) {
+            maxPs1Strength = Evidence.SUPPORTING;
+        }
+
+        if (maxPs1Strength != null) {
+            acmgEvidenceBuilder.add(PS1, maxPs1Strength);
         }
     }
 
