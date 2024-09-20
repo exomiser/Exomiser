@@ -1,5 +1,13 @@
 # The Exomiser - Core Library Changelog
 
+## 14.0.2 2024-09-20
+
+- Fix for issue #571. This is a bug-fix release to prevent erroneous assignment of `PVS1` to recessive-compatible variants in LOF-tolerant genes.
+
+## 14.0.1 2024-09-03
+
+- Fix for Issue #565. This is a patch release to prevent a possible ArrayIndexOutOfBoundsException being thrown when outputting the variants TSV file. There are no other changes.
+
 ## 14.0.0 2024-02-29
 
 This release **requires data version >= 2402** and **Java version >= 17** (the previous LTS release).
