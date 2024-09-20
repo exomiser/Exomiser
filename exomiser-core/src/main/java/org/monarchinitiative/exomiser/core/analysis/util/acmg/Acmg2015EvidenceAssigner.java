@@ -237,10 +237,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // Should this be using the hasCompatibleDiseaseMatches variable?
         boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
         if (inGeneWithKnownDiseaseAssociations && isLossOfFunctionEffect(variantEvaluation.getVariantEffect())
-            && (modeOfInheritance == ModeOfInheritance.ANY
-                || compatibleWithRecessive(modeOfInheritance)
-                || compatibleWithDominant(modeOfInheritance) && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
-            )
+            && (geneContraint != null && geneContraint.isLossOfFunctionIntolerant())
         ) {
             if (variantEvaluation.hasTranscriptAnnotations()) {
                 TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);

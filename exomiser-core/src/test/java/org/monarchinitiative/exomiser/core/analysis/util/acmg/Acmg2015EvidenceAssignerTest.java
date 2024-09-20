@@ -103,7 +103,7 @@ class Acmg2015EvidenceAssignerTest {
 
             "MALE, X_RECESSIVE, X_RECESSIVE, true",
             "FEMALE, X_RECESSIVE, X_RECESSIVE, true",
-            "UNKNOWN, X_RECESSIVE, X_RECESSIVE, false",
+            "UNKNOWN, X_RECESSIVE, X_RECESSIVE, true",
 
             "MALE, X_DOMINANT, X_DOMINANT, true",
             "FEMALE, X_DOMINANT, X_DOMINANT, true",
