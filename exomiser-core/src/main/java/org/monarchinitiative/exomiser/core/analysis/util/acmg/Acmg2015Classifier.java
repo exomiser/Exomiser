@@ -29,8 +29,10 @@ import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassif
  * Implementation of the 2015 ACMG Standards guidelines for interpretation of sequence variants (Richards et al. doi:10.1038/gim.2015.30).
  * Table 5 'Rules for combining criteria to classify sequence variants'
  *
+ * @deprecated Guidelines now suggest using the {@link Acmg2020PointsBasedClassifier}
  * @since 13.1.0
  */
+@Deprecated(since = "14.1.0", forRemoval = true)
 public final class Acmg2015Classifier implements AcmgEvidenceClassifier {
 
     public AcmgClassification classify(AcmgEvidence acmgEvidence) {

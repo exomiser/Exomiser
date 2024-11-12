@@ -29,8 +29,10 @@ import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassif
  * Implementation of the ACGS v4 guidelines, Table 3 from
  * https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf
  *
+ * @deprecated Guidelines now suggest using the {@link Acmg2020PointsBasedClassifier}
  * @since 13.1.0
  */
+@Deprecated(since = "14.1.0", forRemoval = true)
 public final class Acgs2020Classifier implements AcmgEvidenceClassifier {
 
     public AcmgClassification classify(AcmgEvidence acmgEvidence) {
