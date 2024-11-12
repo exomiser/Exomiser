@@ -266,6 +266,18 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         assertParseLineEquals(line, List.of(expected));
     }
 
+    @Test
+    void clnSigLowPenetrance() {
+        String line = "1\t94473807\t7888\tC\tT\t.\t.\tALLELEID=22927;RS=1800553;CLNREVSTAT=criteria_provided,_multiple_submitters,_no_conflicts;CLNSIG=Pathogenic/Likely_pathogenic/Pathogenic,_low_penetrance;";
+        Allele expected = new Allele(1, 94473807, "C", "T");
+        expected.setRsId("1800553");
+        expected.setClinVarData(ClinVarData.builder()
+                .variationId("7888")
+                .primaryInterpretation(PATHOGENIC_OR_LIKELY_PATHOGENIC)
+                .reviewStatus(CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
 
     // 4	6301479	215392	G	C	.	.	ALLELEID=211061;CLNDISDB=MedGen:CN517202|MONDO:MONDO:0009101,MedGen:C4551693,OMIM:222300,Orphanet:3463;CLNDN=not_provided|Wolfram_syndrome_1;CLNHGVS=NC_000004.12:g.6301479G>C;CLNREVSTAT=criteria_provided,_multiple_submitters,_no_conflicts;CLNSIG=Likely_pathogenic/Likely_risk_allele;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;CLNVI=ClinGen:CA322818;GENEINFO=WFS1:7466;MC=SO:0001583|missense_variant;ORIGIN=1;RS=753237278
 
