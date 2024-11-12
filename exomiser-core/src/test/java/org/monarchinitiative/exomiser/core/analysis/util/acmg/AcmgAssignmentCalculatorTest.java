@@ -66,6 +66,8 @@ class AcmgAssignmentCalculatorTest {
                 .rankType(TranscriptAnnotation.RankType.EXON)
                 .rank(1)
                 .rankTotal(9)
+                .hgvsCdna("c.1A>C")
+                .hgvsProtein("p.0?")
                 .build();
 
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
@@ -97,7 +99,7 @@ class AcmgAssignmentCalculatorTest {
         AcmgEvidence acmgEvidence = AcmgEvidence.builder()
                 .add(AcmgCriterion.PVS1, AcmgCriterion.Evidence.MODERATE)
                 .add(AcmgCriterion.PM2, AcmgCriterion.Evidence.SUPPORTING)
-                .add(AcmgCriterion.PP3, AcmgCriterion.Evidence.STRONG)
+//                .add(AcmgCriterion.PP3, AcmgCriterion.Evidence.STRONG) // not a missense variant
                 .add(AcmgCriterion.PP4, AcmgCriterion.Evidence.MODERATE)
                 .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.VERY_STRONG)
                 .build();

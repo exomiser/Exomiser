@@ -540,7 +540,7 @@ class Acmg2015EvidenceAssignerTest {
                 "MVP, 1.0f, , ",
                 "REVEL, 1.0f, PP3, STRONG",
                 "CADD, 0.0f, , ",
-                "REVEL, 0.0f, BP4, VERY_STRONG"
+                "REVEL, 0.0f, BP4, SUPPORTING"
         })
         void testAssignsPP3BP4_singleScoreIsInsufficientUnlessItsRevel(PathogenicitySource pathogenicitySource, float pathogenicityScore, AcmgCriterion acmgCriterion, Evidence evidence) {
             Acmg2015EvidenceAssigner instance = acmgEvidenceAssigner("proband", justProband("proband", MALE));
@@ -636,9 +636,9 @@ class Acmg2015EvidenceAssignerTest {
                 "0.644f, PP3, SUPPORTING",
 
                 "0.290f, BP4, SUPPORTING",
-                "0.183f, BP4, MODERATE",
-                "0.016f, BP4, STRONG",
-                "0.003f, BP4, VERY_STRONG",
+                "0.183f, BP4, SUPPORTING",
+                "0.016f, BP4, SUPPORTING",
+                "0.003f, BP4, SUPPORTING",
         })
         public void testRevelOverridesAllOtherScores(float revelScore, AcmgCriterion acmgCriterion, Evidence evidence) {
             Acmg2015EvidenceAssigner instance = acmgEvidenceAssigner("proband", justProband("proband", MALE));
@@ -887,16 +887,13 @@ class Acmg2015EvidenceAssignerTest {
 
         @ParameterizedTest
         @CsvSource(value = {
+                // same variant location
                 "SPLICE_REGION_VARIANT, 0.0, '', BP4",
                 "SPLICE_REGION_VARIANT, 0.09, '', BP4",
                 "SPLICE_REGION_VARIANT, 0.1, '', ",
                 "SPLICE_REGION_VARIANT, 0.2, SPLICE_ACCEPTOR_VARIANT|PATHOGENIC, PP3",
                 "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|PATHOGENIC, PP3 PS1_Strong",
                 "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|LIKELY_PATHOGENIC, PP3 PS1_Moderate",
-                // different variant location
-                "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|PATHOGENIC, PP3 PS1_Moderate",
-                "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|LIKELY_PATHOGENIC, PP3 PS1_Supporting",
-
         })
         void testAssignNonDonorAcceptorSpliceRegionPS1(VariantEffect variantEffect, float spliceAiScore, String clinVarVariants, String acmgEvidence) {
             // https://www.ncbi.nlm.nih.gov/clinvar/variation/484600/ 3* PATHOGENIC variant  - reviewed by expert panel
@@ -909,6 +906,36 @@ class Acmg2015EvidenceAssignerTest {
                     .variantEffect(variantEffect)
                     .build();
             Map<Variant, ClinVarData> expectedClinVarData = parseExpectedClinvarData(variantEvaluation, clinVarVariants);
+            Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
+
+            VariantDataService testVariantDataService = TestVariantDataService.builder().expectedClinVarData(expectedClinVarData).build();
+            AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
+            AcmgSpliceEvidenceAssigner.assignSpliceEvidence(acmgEvidenceBuilder, variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(cowdenSyndrome), testVariantDataService);
+
+            AcmgEvidence expected = AcmgEvidence.parseAcmgEvidence(acmgEvidence);
+            assertThat(acmgEvidenceBuilder.build(), equalTo(expected));
+        }
+
+        @ParameterizedTest
+        @CsvSource(value = {
+                // different variant location
+                "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|PATHOGENIC, PP3 PS1_Moderate",
+                "SPLICE_REGION_VARIANT, 0.2, SPLICE_REGION_VARIANT|LIKELY_PATHOGENIC, PP3 PS1_Supporting",
+
+        })
+        void testAssignNonDonorAcceptorSpliceRegionPS1VuaDifferentToExistingClinVarVariant(VariantEffect variantEffect, float spliceAiScore, String clinVarVariants, String acmgEvidence) {
+            VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89693009, "G", "C")
+                    .geneSymbol("PTEN")
+                    .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
+                    .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.SPLICE_AI, spliceAiScore)))
+                    .variantEffect(variantEffect)
+                    .build();
+
+            VariantEvaluation knownSpliceRegionVariant = TestFactory.variantBuilder(10, variantEvaluation.start() + 1, "G", "C")
+                    .geneSymbol("PTEN")
+                    .variantEffect(variantEffect)
+                    .build();
+            Map<Variant, ClinVarData> expectedClinVarData = parseExpectedClinvarData(knownSpliceRegionVariant, clinVarVariants);
             Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
 
             VariantDataService testVariantDataService = TestVariantDataService.builder().expectedClinVarData(expectedClinVarData).build();
