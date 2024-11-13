@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import jakarta.annotation.Nonnull;
+import org.monarchinitiative.exomiser.core.model.GeneStatistics;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -97,17 +99,22 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
     }
 
     @Override
-    public ClinVarData getClinVarData(Variant variant) {
+    public ClinVarData getClinVarData(@Nonnull Variant variant) {
         return variantDataService.getClinVarData(variant);
     }
 
     @Override
-    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+    public ClinVarData getClinVarData(@Nonnull GenomicVariant genomicVariant) {
         return variantDataService.getClinVarData(genomicVariant);
     }
 
     @Override
-    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(@Nonnull GenomicInterval genomicInterval) {
         return variantDataService.findClinVarRecordsOverlappingInterval(genomicInterval);
+    }
+
+    @Override
+    public GeneStatistics getGeneStatistics(@Nonnull String geneSymbol) {
+        return variantDataService.getGeneStatistics(geneSymbol);
     }
 }

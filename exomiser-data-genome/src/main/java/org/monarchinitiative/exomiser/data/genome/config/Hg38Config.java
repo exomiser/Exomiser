@@ -90,9 +90,14 @@ public class Hg38Config extends ResourceConfig {
         // ExAC removed as this is part of gnomad-exomes v2.1
         // ESP removed as this is part of gnomad-exomes v4
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
+        alleleResources.put("splice-ai", spliceAiAlleleResource());
         // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
+    }
+
+    public SpliceAiAlleleResource spliceAiAlleleResource() {
+        return alleleResource(SpliceAiAlleleResource.class, "hg38.splice-ai");
     }
 
     public DbSnpAlleleResource dbSnpAlleleResource() {

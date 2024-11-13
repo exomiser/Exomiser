@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>14.0.2</version>
+    <version>14.1.0-ALPHA</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -172,7 +172,11 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.duckdb</groupId>
+            <artifactId>duckdb_jdbc</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- Need to override guava to version 21.0 which  contains the Java 8 Collectors support on immutable Collections
         used by exomiser-core-->
         <dependency>

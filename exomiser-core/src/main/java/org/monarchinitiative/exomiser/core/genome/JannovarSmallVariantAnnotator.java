@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static de.charite.compbio.jannovar.annotation.VariantEffect.MNV;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
@@ -173,8 +174,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
 
     private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
         AnnotationLocation annoLoc = annotation.getAnnoLoc();
+        // add transcript and other variant effects to TranscriptAnnotation?
+//        annotation.getTranscript()
         return TranscriptAnnotation.builder()
-                .variantEffect(getVariantEffectOrDefault(annotation.getMostPathogenicVarType(), VariantEffect.SEQUENCE_VARIANT))
+                .variantEffect(getVariantEffectOrDefault(annotation.getEffects(), VariantEffect.SEQUENCE_VARIANT))
+//                .variantEffects(annotation.getEffects())
                 .accession(TranscriptModelUtil.getTranscriptAccession(annotation.getTranscript()))
                 .geneSymbol(buildGeneSymbol(annotation))
                 .hgvsGenomic((annotation.getGenomicNTChange() == null) ? "" : annotation.getGenomicNTChangeStr())
@@ -199,8 +203,17 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
         return TranscriptAnnotation.RankType.UNDEFINED;
     }
 
-    private VariantEffect getVariantEffectOrDefault(VariantEffect annotatedEffect, VariantEffect defaultEffect) {
-        return annotatedEffect == null ? defaultEffect : annotatedEffect;
+    private VariantEffect getVariantEffectOrDefault(Collection<VariantEffect> annotatedEffects, VariantEffect defaultEffect) {
+        if (annotatedEffects.isEmpty()) {
+            return defaultEffect;
+        }
+        // remove MNV from annotated effects. Jannovar labels block substitutions as MNVs which will override more damaging
+        // effects such as STOP_LOSS, STOP_GAIN, SPLICE_DONOR, SPLICE_ACCEPTOR and prevent potential assignment of PVS1.
+        // This could be solved by changing TranscriptAnnotation to have a Set<VariantEffect> and methods to interrogate
+        // the state of this e.g. transcriptAnnotation.isStopLoss(), .isStopGain(). n.b. this will also affect
+        // ClinVarData and VariantEvaluation which currently only use a single VariantEffect field.
+        return annotatedEffects.size() == 1 ? annotatedEffects.iterator().next() :
+                annotatedEffects.stream().filter(effect -> effect != MNV).findFirst().orElse(defaultEffect);
     }
 
     private int getDistFromNearestGene(Annotation annotation) {

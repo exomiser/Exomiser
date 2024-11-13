@@ -87,9 +87,14 @@ public class Hg19Config extends ResourceConfig {
         // ExAC removed as this is part of gnomad-exomes
         alleleResources.put("esp", espAlleleResource());
         alleleResources.put("dbnsfp", dbnsfpAlleleResource());
+        alleleResources.put("splice-ai", spliceAiAlleleResource());
         // CLinVar removed - now handled as a separate data source
 
         return alleleResources.build();
+    }
+
+    public SpliceAiAlleleResource spliceAiAlleleResource() {
+        return alleleResource(SpliceAiAlleleResource.class, "hg19.splice-ai");
     }
 
     public DbSnpAlleleResource dbSnpAlleleResource() {

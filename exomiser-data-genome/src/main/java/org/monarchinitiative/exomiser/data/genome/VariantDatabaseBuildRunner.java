@@ -20,12 +20,8 @@
 
 package org.monarchinitiative.exomiser.data.genome;
 
-import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.h2.mvstore.MVStoreTool;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleKey;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto.AlleleProperties;
 import org.monarchinitiative.exomiser.data.genome.indexers.Indexer;
 import org.monarchinitiative.exomiser.data.genome.indexers.MvStoreAlleleIndexer;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
@@ -58,7 +54,7 @@ public class VariantDatabaseBuildRunner {
     }
 
     public void run() {
-        String fileName = buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db").toString();
+        String fileName = variantDatabasePath().toString();
         MVStore mvStore = new MVStore.Builder()
                 .fileName(fileName)
                 .compress()
@@ -77,5 +73,14 @@ public class VariantDatabaseBuildRunner {
         // super-important step for producing as small a store as possible, Could double (or more?) when this is in progress
         logger.info("Compacting store...");
         MVStoreTool.compact(fileName, true);
+    }
+
+    /**
+     * Returns the path to the variant database built as the result of calling the run() method.
+     *
+     * @return
+     */
+    public Path variantDatabasePath() {
+        return buildPath.resolve(buildInfo.getBuildString() + "_variants.mv.db");
     }
 }

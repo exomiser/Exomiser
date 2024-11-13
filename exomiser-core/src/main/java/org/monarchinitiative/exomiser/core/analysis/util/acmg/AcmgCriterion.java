@@ -79,12 +79,12 @@ public enum AcmgCriterion {
             } catch (IllegalArgumentException ex) {
                 // swallow and try the display string
             }
-            return switch (displayString) {
-                case "StandAlone" -> STAND_ALONE;
-                case "VeryStrong" -> VERY_STRONG;
-                case "Strong" -> STRONG;
-                case "Moderate" -> MODERATE;
-                case "Supporting" -> SUPPORTING;
+            return switch (displayString.toLowerCase()) {
+                case "standalone" -> STAND_ALONE;
+                case "verystrong" -> VERY_STRONG;
+                case "strong" -> STRONG;
+                case "moderate" -> MODERATE;
+                case "supporting" -> SUPPORTING;
                 default -> throw new IllegalArgumentException("Unrecognised evidence value '" + displayString + "'");
             };
         }

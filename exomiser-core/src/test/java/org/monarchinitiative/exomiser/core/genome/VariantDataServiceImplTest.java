@@ -202,7 +202,7 @@ public class VariantDataServiceImplTest {
         Mockito.when(defaultPathogenicityDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(MutationTasterScore.of(1f)));
         Mockito.when(clinVarDao.getClinVarData(variant)).thenReturn(ClinVarData.empty());
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.MUTATION_TASTER));
-        assertThat(result, equalTo(PathogenicityData.empty()));
+        assertThat(result, equalTo(PathogenicityData.of(MutationTasterScore.of(1f))));
     }
 
     @Test

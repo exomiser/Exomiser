@@ -161,6 +161,11 @@ message ClinVar {
         OTHER = 12;
         PROTECTIVE = 13;
         RISK_FACTOR = 14;
+        // As recommended by ClinGen (https://pubmed.ncbi.nlm.nih.gov/38054408/) for variants with decreased penetrance
+        // for Mendelian diseases.
+        UNCERTAIN_RISK_ALLELE = 15;
+        LIKELY_RISK_ALLELE = 16;
+        ESTABLISHED_RISK_ALLELE = 17;
     }
 
     enum ReviewStatus {
