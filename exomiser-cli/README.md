@@ -13,7 +13,8 @@
 
 # <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
+The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory
+variants using patient phenotypes as a means of differentiating candidate genes.
 
 To perform an analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO
 terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also
@@ -25,7 +26,7 @@ Further information can be found in the [online documentation](https://exomiser.
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
  - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
  - Any 64-bit operating system
- - Java 11 or above
+ - Java 17 or above
  - At least 50GB free disk space (SSD preferred for best performance)
  - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
   networked database (optional).
@@ -121,7 +122,7 @@ See the test-analysis-exome.yml and test-analysis-genome.yml files located in th
 
     java -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
 
-These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
+These files can also be used to run full-genomes, however they will require substantially more RAM to do so. For example
 a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
 setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
 
@@ -147,7 +148,7 @@ If you get the following error message:
     Exception in thread "main" java.lang.UnsupportedClassVersionError:
     org/monarchinitiative/exomiser/cli/Main : Unsupported major.minor version
 
-You are running an older unsupported version of Java. Exomiser requires java version 11 or higher. This can be checked
+You are running an older unsupported version of Java. Exomiser requires Java version 17 or higher. This can be checked
 by running:
 
     java -version
@@ -158,8 +159,8 @@ You should see something like this in response:
     OpenJDK Runtime Environment (build 11.0.11+9-Ubuntu-0ubuntu2.20.04)
     OpenJDK 64-Bit Server VM (build 11.0.11+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)
 
-versions lower than 11 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10) will not run exomiser, so you will need to install the latest
-java version.
+versions lower than 17 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10, 11...) will not run exomiser, so you will need to install the latest
+LTS Java version. We recommend using the Eclipse Temurin Java releases which you can find here: https://adoptium.net/
 
 ### Zip file reported as too big or corrupted
 
