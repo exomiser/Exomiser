@@ -1,12 +1,46 @@
 # The Exomiser - Core Library Changelog
 
+## 14.1.0 2024-11-14
+
+Further updates to ACMG assignment categories, including implementation of a new AcmgSpliceEvidenceAssigner class which
+applies PS1, PP3, BP4, BP7 to splice region variants according to ClinGen recommendations for splicing variants
+published in
+[Using the ACMG/AMP framework to capture evidence related to predicted and observed impact on splicing: Recommendations
+from the ClinGen SVI Splicing Subgroup](https://doi.org/10.1016/j.ajhg.2023.06.002).
+
+New AcmgPVS1EvidenceAssigner handles assignment of PVS1 to loss of function variants according
+to [Recommendations for interpreting the loss of function PVS1 ACMG/AMP variant criterion](https://doi.org/10.1002/humu.23626)
+
+- Added PS1, PM1, PM5, BS1, BS2 categories to ACMG assignments
+- Downgraded BP4 to have a maximum of `Supporting` evidence for REVEL scores under 0.290
+- Updated gene constraints to use gnomad v4.1 data
+- Deprecate out of date Acmg2015Classifier and Acgs2020Classifier
+- Update JannovarSmallVariantAnnotator to remove `MNV` annotations from effects as these were overriding more damaging
+  functional effects such as STOP_LOSS, STOP_GAIN, SPLICE_DONOR, SPLICE_ACCEPTOR which prevented potential assignment of
+  PVS1.
+- Update Acmg2015EvidenceAssigner to include BS1, BS2 assignments.
+- Refactor Acmg2015EvidenceAssigner missense assignment methods into new AcmgMissenseInFrameIndelEvidenceAssigner class.
+- Add PP2/BP1 assignments to AcmgMissenseInFrameIndelEvidenceAssigner using GeneStatistics
+- Update ClinVarDao with new getGeneStatistics() method.
+- Add new GeneStatistics class for handling aggregated ClinVar gene-level variant effect counts.
+- Add new AcmgEvidence.parseAcmgEvidence() method.
+- Changes to enable SpliceAI PP3 and other splicing-related ACMG assignments.
+- Add new AcmgPVS1EvidenceAssigner class to assign PVS1 to loss of function variants
+- Add new AcmgMissenseInFrameIndelEvidenceAssigner class to assign PS1, PM1, PM5, PP2, BP1, PP3, BP4 to missense and
+  inframe indels
+- Add new AcmgSpliceEvidenceAssigner class to assign PS1, PP3, BP4, BP7 to splice region variants
+- Add new AcmgEvidence.Builder.containsWithEvidence method
+- Add @Nullable to PathogenicityData.pathogenicityScore method
+
 ## 14.0.2 2024-09-20
 
-- Fix for issue #571. This is a bug-fix release to prevent erroneous assignment of `PVS1` to recessive-compatible variants in LOF-tolerant genes.
+- Fix for issue [#571](https://github.com/exomiser/Exomiser/issues/571). This is a bug-fix release to prevent erroneous
+  assignment of `PVS1` to recessive-compatible variants in LOF-tolerant genes.
 
 ## 14.0.1 2024-09-03
 
-- Fix for Issue #565. This is a patch release to prevent a possible ArrayIndexOutOfBoundsException being thrown when outputting the variants TSV file. There are no other changes.
+- Fix for Issue [#565](https://github.com/exomiser/Exomiser/issues/565). This is a patch release to prevent a possible
+  ArrayIndexOutOfBoundsException being thrown when outputting the variants TSV file. There are no other changes.
 
 ## 14.0.0 2024-02-29
 
@@ -17,15 +51,20 @@ This release **requires data version >= 2402** and **Java version >= 17** (the p
 - Add new ClinVar conflicting evidence counts in HTML output [#535](https://github.com/exomiser/Exomiser/issues/535)
 - Added PS1, PM1, PM5 categories to ACMG assignments
 - Updated gene constraints to use gnomad v4.0 data
-- TSV genes, TSV variants and VCF outputs will only write to a single file where the possible modes of inheritances are now shown together rather than split across separate files.
+- TSV genes, TSV variants and VCF outputs will only write to a single file where the possible modes of inheritances are
+  now shown together rather than split across separate files.
 - Altered reporting of InheritanceModeFilter to state that the number shown refers to variants rather than genes.
-- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data
+  files.
 - The `VariantWhiteList` is now dynamically loaded from the ClinVar data provided in the clinvar.mv.db file
 - `VariantDataServiceImpl` now requires a `ClinVarDao`
-- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
-- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity annotations are missing in certain run configurations.
+- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and
+  `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
+- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity
+  annotations are missing in certain run configurations.
 
 New APIs:
+
 - New `AnalysisDurationFormatter`
 - New `FilterResultsCounter`
 - New `FilterResultCount` data class
@@ -33,34 +72,45 @@ New APIs:
 - New `FilterRunner.filterCounts()` and `FilterRunner.logFilterResult()` methods
 - New `Filterable.failedFilter()` method
 - New `AlleleData` class to encapsulate building AlleleProto.Frequency and AlleleProto.PathogenicityScore instances
-- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data files.
-- `Frequency` can either be constructed from a percentage frequency or a set of AC, AN, HOM counts. 
+- Added new `ClinVarDao` and `ClinVarWhiteListReader` to take advantage of the independently upgradeable ClinVar data
+  files.
+- `Frequency` can either be constructed from a percentage frequency or a set of AC, AN, HOM counts.
 - Added `AlleleProto.AlleleKey alleleKey()` method to `Variant` to memoise
 - Add PathogenicitySource `ALPHA_MISSENSE`, `EVE`, `SPLICE_AI`
-- Add new `Frequency`, `FrequencySource`, `PathogenicityScore`, `PathogenicitySource`, `VariantEffect` and `ClinVar.ReviewStatus` to proto schema.
+- Add new `Frequency`, `FrequencySource`, `PathogenicityScore`, `PathogenicitySource`, `VariantEffect` and
+  `ClinVar.ReviewStatus` to proto schema.
 
 API breaking changes:
-- `PathogenicityData` and `FrequencyData` now follow a 'record' rather than 'java bean' pattern for field accessors e.g. `PathogenicityData.clinVarData()` rather than `PathogenicityData.getClinVarData()` 
+
+- `PathogenicityData` and `FrequencyData` now follow a 'record' rather than 'java bean' pattern for field accessors e.g.
+  `PathogenicityData.clinVarData()` rather than `PathogenicityData.getClinVarData()`
 - Deleted deprecated `TsvGeneAllMoiResultsWriter`, `TsvVariantAllMoiResultsWriter` and `VcfAllMoiResultsWriter` classes
 - Delete PathogenicitySource `M_CAP`, `MPC`, `PRIMATE_AI`
 - Alter ESP FrequencySource long forms to short e.g. `ESP_AFRICAN_AMERICAN` to `ESP_AA`
-- TSV output column `CLINVAR_ALLELE_ID` has been changed to `CLINVAR_VARIANT_ID` to allow easier reference to ClinVar variants.
-
+- TSV output column `CLINVAR_ALLELE_ID` has been changed to `CLINVAR_VARIANT_ID` to allow easier reference to ClinVar
+  variants.
 
 Other changes:
+
 - Updated Spring Boot to version 3.2.3
 
 ## 13.3.0 2023-10-17
 
-- Updated Jannovar version to 0.41 to fix incorrect MT codon table usage [#521](https://github.com/exomiser/Exomiser/issues/521)
-- Downgraded PM2 - PM2_Supporting for variants lacking frequency information [#502](https://github.com/exomiser/Exomiser/issues/502).
-- Updated Acgs2020Classifier and Acmg2015Classifier to allow for PVS1 and PM2_Supporting to be sufficient to trigger LIKELY_PATHOGENIC
+- Updated Jannovar version to 0.41 to fix incorrect MT codon table
+  usage [#521](https://github.com/exomiser/Exomiser/issues/521)
+- Downgraded PM2 - PM2_Supporting for variants lacking frequency
+  information [#502](https://github.com/exomiser/Exomiser/issues/502).
+- Updated Acgs2020Classifier and Acmg2015Classifier to allow for PVS1 and PM2_Supporting to be sufficient to trigger
+  LIKELY_PATHOGENIC
 - Updated AcmgEvidence to fit a Bayesian points-based system [#514](https://github.com/exomiser/Exomiser/issues/514)
-- Removed ASJ, FIN, OTH ExAC and gnomAD populations from presets and examples [#513](https://github.com/exomiser/Exomiser/issues/513).
-- Fix for regression causing `<INV>` variants to be incorrectly down-ranked 
-- Fix for issue [#486](https://github.com/exomiser/Exomiser/issues/486) where VCF output includes whitespace in INFO field.
+- Removed ASJ, FIN, OTH ExAC and gnomAD populations from presets and
+  examples [#513](https://github.com/exomiser/Exomiser/issues/513).
+- Fix for regression causing `<INV>` variants to be incorrectly down-ranked
+- Fix for issue [#486](https://github.com/exomiser/Exomiser/issues/486) where VCF output includes whitespace in INFO
+  field.
 - Logs will now display elapsed time correctly if an analysis runs over an hour (!).
-- Updated exomiser-phenotype-data to take annotations from phenotype.hpoa [#351](https://github.com/exomiser/Exomiser/issues/351), [#373](https://github.com/exomiser/Exomiser/issues/373), [#379](https://github.com/exomiser/Exomiser/issues/379)
+- Updated exomiser-phenotype-data to take annotations from
+  phenotype.hpoa [#351](https://github.com/exomiser/Exomiser/issues/351), [#373](https://github.com/exomiser/Exomiser/issues/373), [#379](https://github.com/exomiser/Exomiser/issues/379)
 - Updated application.properties and ResourceConfigurationProperties to remove unused fields.
 - Updated DiseaseInheritanceCacheReader and DiseasePhenotypeReader to parse phenotype.hpoa file
 - Updated DiseaseResourceConfig to use hpoa resource
@@ -76,41 +126,45 @@ New APIs:
 
 ## 13.2.1 2023-06-30
 
-- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
-- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants. 
-- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty. 
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their
+  position on a transcript.
+- Added partial implementation
+  of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding
+  and splice site symbolic variants.
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was
+  empty.
 
-**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require Java 17.*
+**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require
+Java 17.*
 
 ## 13.2.0 2023-02-28
 
 - Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
-- Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running a phenotype only prioritisation.
-- Fixed broken links to OMIM in the phenotypic similarity section of the HTML output [#465](https://github.com/exomiser/Exomiser/issues/465)
+- Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running
+  a phenotype only prioritisation.
+- Fixed broken links to OMIM in the phenotypic similarity section of the HTML
+  output [#465](https://github.com/exomiser/Exomiser/issues/465)
 - Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
-- Fixed broken build due to missing sonumina repository and related artefacts [#460](https://github.com/exomiser/Exomiser/issues/460)
-
+- Fixed broken build due to missing sonumina repository and related
+  artefacts [#460](https://github.com/exomiser/Exomiser/issues/460)
 
 API breaking changes:
 
 - None
-
 
 New APIs:
 
 - New `OutputSettings.getOutputDirectory()`
 - New `OutputSettings.getOutputFileName()`
 
-
 Deprecated methods:
 
-- `OutputSettings.getOutputPrefix()` deprecated in favour of new `OutputSettings.getOutputDirectory()` and `OutputSettings.getOutputFileName()` methods
-
+- `OutputSettings.getOutputPrefix()` deprecated in favour of new `OutputSettings.getOutputDirectory()` and
+  `OutputSettings.getOutputFileName()` methods
 
 Other changes:
 
 - Update Spring boot 2.6.9 -> 2.7.7
-
 
 ## 13.1.0 2022-07-29
 
@@ -120,8 +174,10 @@ p-values for the combined scores and providing new and more interpretable TSV an
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
 - Added new combined score p-value
 - Added new TSV_GENE, TSV_VARIANT and VCF output files containing ranked genes/variants for all the assessed modes of
-  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files which
-  will be removed in the next major release__. See the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
+  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files
+  which
+  will be removed in the next major release__. See
+  the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
 - New update online documentation! See https://exomiser.readthedocs.io/en/latest/
 
 API breaking changes:
@@ -147,13 +203,12 @@ New APIs:
 - New `TsvVariantAllMoiResultsWriter`
 - New `VcfAllMoiResultsWriter`
 
- 
 Other changes:
+
 - Updated Spring Boot to version 2.6.9
 - Added automated docker build for CLI and web
 - Update HtmlResultsWriter to detect transcript data source
 - Fix broken StringDB links in HTML output
-
 
 ## 13.0.0 2021-09-21
 
@@ -312,6 +367,7 @@ Other changes:
   commercial use.
 
 ## 11.0.0 2018-09-21
+
 API breaking changes:
 
 - Removed unused `VariantSerialiser`
@@ -379,6 +435,7 @@ Other changes:
 - Updated HTSJDK library to fix `TribbleException` being thrown when trying to parse bgzipped VCF files
 
 ## 10.0.0 2018-03-07
+
 API breaking changes:
 
 - Removed previously deprecated `Settings` and `SettingsParser` classes - this was only used by the cli which was also
@@ -433,9 +490,11 @@ Other changes:
   web templates
 
 ## 9.0.1 2018-01-15
+
 - Updated the Jannovar library to 0.24 which now enables filtering for mitochondrial inheritance modes.
 
 ## 9.0.0 2017-12-12
+
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
 
 - Maven groupId changed from root `org.monarchinitiative` to more specific `org.monarchinitiative.exomiser`.
@@ -456,6 +515,7 @@ In addition to the user-facing changes listed on the cli, the core has received 
 - Updated classes in `analysis` package to enable analyses with user-defined genome assemblies.
 
 ## 8.0.0 2017-08-08
+
 In addition to the user-facing changes listed on the cli, the core has received extensive refactoring and changes.
 
 - Namespace changed from `de.charite.compbio` to `org.monarchinitiative`.
@@ -472,45 +532,61 @@ In addition to the user-facing changes listed on the cli, the core has received 
 - New `AllelePosition` class for storing POS, REF and ALT and also providing basic variant normalisation/trimming.
 - New `TabixDataSource` interface to abstract the `TabixReader` allowing simpler testing and other benefits.
 
- 
-## 7.2.3 2016-11-02 
-- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+## 7.2.3 2016-11-02
 
-*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be properly fixed in the next major release.
+- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section
+  leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and
+  consistent with autosomal recessive.
 
-## 7.2.2 2016-07-01 
-- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being halved.
-- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like this in the output file.
+*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be
+properly fixed in the next major release.
+
+## 7.2.2 2016-07-01
+
+- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being
+  halved.
+- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the
+  same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond
+  with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like
+  this in the output file.
 
 ## 7.2.1 2016-01-05
-- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
+
+- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF
+  file.
 
 ## 7.2.0 2015-11-25
+
 - Enabled TAD code in AbstractAnalysisRunner
 - Added isNonCodingVariant() method to Variant interface.
 - Deprecated VariantAnnotator and VariantFactory constructor which used this.
 - Added new constructor for VariantFactory which takes a JannovarData object.
-- Substantial tidy-up of test helper code with help of new TestFactory, GeneTranscripModelBuilder and VariantContextBuilder classes.
+- Substantial tidy-up of test helper code with help of new TestFactory, GeneTranscripModelBuilder and
+  VariantContextBuilder classes.
 
 ## 7.1.0 2015-10-21
+
 - Added new ChromosomalRegion interface implemented by TopologicalDomain and RegulatoryRegion classes.
 - Added new ChromosomalRegionIndex class for providing extremely fast lookups of variants in ChromosomalRegions.
 - Removed RegulatoryFilterDataProvider - this functionality is now in the AbstractAnalysisRunner.
 
 ## 7.0.0 2015-10-01
+
 Now requires Java 8 or higher to run.
+
 - API changes:
     - New analysis package contains all high-level concepts for analysing exome/genome data
     - Main Exomiser entry point now accepts an Analysis instead of a SampleData and Settings
     - ExomiserSettings has been renamed to simply Settings and moved to the analysis package, to use these they should
-    be converted by the SettingsParser and the resulting Analysis used in the Exomiser. These will run the Exomiser in
-    the original exome-analysis algorithm, but this is not suitable to genome analysis.
+      be converted by the SettingsParser and the resulting Analysis used in the Exomiser. These will run the Exomiser in
+      the original exome-analysis algorithm, but this is not suitable to genome analysis.
     - An Analysis can be specified either programmatically, or via YAML and read by the AnalysisParser
     - An Analysis can run in FULL, SPARSE or a new PASS_ONLY mode. The latter is much more memory efficient as it will
-    only keep those variants/genes which passed all the required filters.
+      only keep those variants/genes which passed all the required filters.
     - and a LOT more under the hood changes and clean-ups.
 
 ## 6.0.0 2015-01-12
+
 - API changes:
     - Package tidy-up - all packages are now use their maven package name as the root package for that project.
     - PhenixPriority now dies immediately and with an informative message if no HPO terms are supplied.
@@ -526,27 +602,32 @@ Now requires Java 8 or higher to run.
     - Refactored ExomeWalkerPriority and ExomiserAllSpeciesPriority to use new DataMatrix methods.
 
 ## 5.2.0 2014-12-18
+
 - New style HTML output
 
 ## 5.1.0 2014-12-12
+
 - Added ability for the VariantEvaluation to report whether the Variant it is associated with has been annotated by
-Jannovar.
+  Jannovar.
 - VCF output format will now indicate which, if any variants have not been annotated by Jannovar for whatever reason.
 - VariantEvaluation can now report a FilterStatus to indicate whether it has passed, failed or is unfiltered.
 - Further under the hood clean-ups and improved test coverage - now at ~30%
 
 ## 5.0.1 2014-11-14
+
 - Changed Jannovar to version 0.9 to fix a null pointer caused by inability to translate certain variants.
 
 ## 5.0.0 2014-11-14
+
 - Focused on improving test coverage of the Factory and DAO packages in particular.
 - API changes:
-    - FrequencyDao and PathogenicityDao are now interfaces implemented by DefaultFrequencyDao and DefaultPathogenicityDao
+    - FrequencyDao and PathogenicityDao are now interfaces implemented by DefaultFrequencyDao and
+      DefaultPathogenicityDao
     - New PedigreeFactory split out of SampleDataFactory
     - GeneFactory is no longer a static class
     - VariantEvaluationDataFactory renamed to VariantVariantEvaluationDataService
     - Removed unused constructors from SampleData
     - Added getEntrezGeneID method to VariantEvaluation to make API more consistent and lessen direct dependency on
-    Jannovar Variant in the rest of the code.
+      Jannovar Variant in the rest of the code.
     - Removed unused PhredScore class
     - FilterFactory now returns more specific Filter types - VariantFilter and GeneFilter from the relevant methods

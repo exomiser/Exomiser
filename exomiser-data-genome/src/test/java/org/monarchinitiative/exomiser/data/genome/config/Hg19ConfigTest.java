@@ -87,6 +87,7 @@ public class Hg19ConfigTest {
         // exac removed as this is part of gnomad
         alleleResources.put("esp", instance.espAlleleResource());
         alleleResources.put("dbnsfp", instance.dbnsfpAlleleResource());
+        alleleResources.put("splice-ai", instance.spliceAiAlleleResource());
 
         Map<String, AlleleResource> expectedResources = alleleResources.build();
 

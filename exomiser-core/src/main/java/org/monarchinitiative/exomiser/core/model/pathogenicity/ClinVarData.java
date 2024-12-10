@@ -37,6 +37,10 @@ public class ClinVarData {
     private static final ClinVarData EMPTY = new Builder().build();
 
 
+    /**
+     * Based on the categories from the <a href="https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/">ClinVar docs</a> and
+     * what actually shows up in the VCF file.
+     */
     public enum ClinSig {
         // ACMG/AMP-based
         PATHOGENIC,
@@ -47,6 +51,11 @@ public class ClinVarData {
         BENIGN_OR_LIKELY_BENIGN,
         BENIGN,
         CONFLICTING_PATHOGENICITY_INTERPRETATIONS,
+        // As recommended by ClinGen (https://pubmed.ncbi.nlm.nih.gov/38054408/) for variants with decreased penetrance
+        // for Mendelian diseases.
+        UNCERTAIN_RISK_ALLELE,
+        LIKELY_RISK_ALLELE,
+        ESTABLISHED_RISK_ALLELE,
         //Non-ACMG-based
         AFFECTS,
         ASSOCIATION,
@@ -83,11 +92,16 @@ public class ClinVarData {
 
         public static ReviewStatus parseReviewStatus(String reviewStatus) {
             return switch (reviewStatus.replace("_", " ")) {
-                case "no assertion criteria provided" -> NO_ASSERTION_CRITERIA_PROVIDED;
-                case "no interpretation for the single variant", "no interpretation for the individual variant" ->
-                        NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+                case "no assertion provided",
+                     "no assertion criteria provided",
+                     "no classification provided",
+                     "no classifications from unflagged records" -> NO_ASSERTION_CRITERIA_PROVIDED;
+                case "no interpretation for the single variant",
+                     "no interpretation for the individual variant",
+                     "no classification for the single variant"-> NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
                 case "criteria provided, single submitter" -> CRITERIA_PROVIDED_SINGLE_SUBMITTER;
-                case "criteria provided, conflicting interpretations" -> CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
+                case "criteria provided, conflicting interpretations",
+                     "criteria provided, conflicting classifications" -> CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
                 case "criteria provided, multiple submitters, no conflicts" ->
                         CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS;
                 case "reviewed by expert panel" -> REVIEWED_BY_EXPERT_PANEL;

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.*;
 
@@ -37,6 +38,47 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarDat
 public class ClinVarAlleleParser extends VcfAlleleParser {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarAlleleParser.class);
+
+    private static final Map<String, ClinSig> CLINSIG_MAP;
+
+    static {
+        Map<String, ClinSig> temp = new HashMap<>();
+        temp.put("Uncertain_significance", UNCERTAIN_SIGNIFICANCE);
+//        temp.put("Uncertain_significance/Uncertain_risk_allele", UNCERTAIN_SIGNIFICANCE);
+        temp.put("Benign", BENIGN);
+//        temp.put("Benign/Likely_benign", BENIGN_OR_LIKELY_BENIGN);
+        temp.put("Likely_benign", LIKELY_BENIGN);
+        temp.put("Conflicting_interpretations_of_pathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
+        temp.put("Conflicting_classifications_of_pathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
+        temp.put("Likely_pathogenic", LIKELY_PATHOGENIC);
+        temp.put("Likely_pathogenic,_low_penetrance", LIKELY_PATHOGENIC);
+        temp.put("Likely_pathogenic/Likely_risk_allele", LIKELY_PATHOGENIC);
+        temp.put("Likely_pathogenic/Established_risk_allele", LIKELY_PATHOGENIC);
+        temp.put("Pathogenic/Likely_pathogenic", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("Pathogenic/Likely_pathogenic/Likely_risk_allele", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("Pathogenic/Likely_pathogenic/Pathogenic,_low_penetrance", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("Pathogenic/Likely_pathogenic/Pathogenic,_low_penetrance/Established_risk_allele"
+                , PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("Pathogenic", PATHOGENIC);
+        temp.put("Pathogenic,_low_penetrance", PATHOGENIC);
+        temp.put("Pathogenic/Likely_risk_allele", PATHOGENIC);
+        temp.put("Pathogenic/Pathogenic,_low_penetrance", PATHOGENIC);
+        temp.put("Uncertain_risk_allele", UNCERTAIN_RISK_ALLELE);
+        temp.put("Likely_risk_allele", LIKELY_RISK_ALLELE);
+        temp.put("Established_risk_allele", ESTABLISHED_RISK_ALLELE);
+        temp.put("not_provided", NOT_PROVIDED);
+        temp.put("no_classification_for_the_single_variant", NOT_PROVIDED);
+        temp.put("no_classifications_from_unflagged_records", NOT_PROVIDED);
+        temp.put("Affects", AFFECTS);
+        temp.put("association", ASSOCIATION);
+        temp.put("association_not_found", ASSOCIATION); // TODO add ASSOCIATION_NOT_FOUND
+        temp.put("drug_response", DRUG_RESPONSE);
+        temp.put("other", OTHER);
+        temp.put("confers_sensitivity", OTHER);
+        temp.put("protective", PROTECTIVE);
+        temp.put("risk_factor", RISK_FACTOR);
+        CLINSIG_MAP = Map.copyOf(temp);
+    }
 
     @Override
     List<Allele> parseInfoField(List<Allele> alleles, String info) {
@@ -68,11 +110,9 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             String value = keyValue[1];
             switch (key) {
                 case "CLNSIG":
-                    String[] clinsigs = value.split(",_");
-                    ClinSig primary = parseClinSig(clinsigs[0]);
-                    Set<ClinSig> secondary = parseSecondaryClinSig(clinsigs);
-                    clinVarBuilder.primaryInterpretation(primary);
-                    clinVarBuilder.secondaryInterpretations(secondary);
+                    String[] clinsigs = value.split("\\|");
+                    clinVarBuilder.primaryInterpretation(parseClinSig(clinsigs[0]));
+                    clinVarBuilder.secondaryInterpretations(parseSecondaryClinSig(clinsigs));
                     break;
                 case "CLNREVSTAT":
                     //CLNREVSTAT criteria_provided,_conflicting_interpretations, criteria_provided,_multiple_submitters,_no_conflicts, criteria_provided,_single_submitter, no_assertion_criteria_provided, no_assertion_provided, no_interpretation_for_the_single_variant, practice_guideline, reviewed_by_expert_panel
@@ -143,23 +183,33 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         // Likely_benign=52064, Likely_pathogenic=15127, Pathogenic=46803, Pathogenic/Likely_pathogenic=3278,
         // Uncertain_significance=120418, association=148, drug_response=290, not_provided=10980, other=1796, protective=30,
         // risk_factor=411
-        return switch (clinsig) {
-            case "Uncertain_significance" -> UNCERTAIN_SIGNIFICANCE;
-            case "Benign" -> BENIGN;
-            case "Benign/Likely_benign" -> BENIGN_OR_LIKELY_BENIGN;
-            case "Likely_benign" -> LIKELY_BENIGN;
-            case "Conflicting_interpretations_of_pathogenicity" -> CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
-            case "Likely_pathogenic" -> LIKELY_PATHOGENIC;
-            case "Pathogenic/Likely_pathogenic" -> PATHOGENIC_OR_LIKELY_PATHOGENIC;
-            case "Pathogenic" -> PATHOGENIC;
-            case "Affects" -> AFFECTS;
-            case "association" -> ASSOCIATION;
-            case "drug_response" -> DRUG_RESPONSE;
-            case "other" -> OTHER;
-            case "protective" -> PROTECTIVE;
-            case "risk_factor" -> RISK_FACTOR;
-            default -> NOT_PROVIDED;
-        };
+
+        // this is yuk!
+        clinsig = clinsig.replace(",_low_penetrance", "");
+        Set<ClinSig> clinSigs = Arrays.stream(clinsig.split("/"))
+                .map(CLINSIG_MAP::get)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(ClinSig.class)));
+
+        if (clinSigs.isEmpty()) {
+            throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
+        }
+        if (clinSigs.size() == 1) {
+            return clinSigs.iterator().next();
+        }
+        // remove the risk allele if present and try to figure out if it's a P/LP or B/LB
+        clinSigs.removeAll(EnumSet.of(UNCERTAIN_RISK_ALLELE, LIKELY_RISK_ALLELE, ESTABLISHED_RISK_ALLELE));
+
+        if (clinSigs.size() == 1) {
+            return clinSigs.iterator().next();
+        }
+        else if (clinSigs.contains(PATHOGENIC) && clinSigs.contains(LIKELY_PATHOGENIC)) {
+            return PATHOGENIC_OR_LIKELY_PATHOGENIC;
+        }
+        else if (clinSigs.contains(BENIGN) && clinSigs.contains(LIKELY_BENIGN)) {
+            return BENIGN_OR_LIKELY_BENIGN;
+        }
+        // shouldn't get here....
+        throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
     }
 
 }

@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>14.0.2</version>
+        <version>14.1.0</version>
     </parent>
 
     <dependencies>
@@ -138,6 +138,12 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.rocksdb</groupId>
+            <artifactId>rocksdbjni</artifactId>
+            <version>7.6.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

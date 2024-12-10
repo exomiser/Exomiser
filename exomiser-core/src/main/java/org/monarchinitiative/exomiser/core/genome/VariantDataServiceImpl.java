@@ -21,7 +21,8 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+import jakarta.annotation.Nonnull;
+import org.monarchinitiative.exomiser.core.model.GeneStatistics;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -156,11 +157,10 @@ public class VariantDataServiceImpl implements VariantDataService {
             defaultPathogenicityData = defaultPathogenicityDao.getPathogenicityData(variant);
         }
 
-        // we're going to deliberately ignore synonymous variants from dbNSFP as these shouldn't be there
+        // Previously we deliberately ignored synonymous variants from dbNSFP as these shouldn't be there
         // e.g. ?assembly=hg37&chr=1&start=158581087&ref=G&alt=A has a MutationTaster score of 1
-        if (variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT) {
-            addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
-        }
+        // However, cryptic splice variants can be synonymous variants, so these should be retained.
+        addAllWantedScores(pathogenicitySources, defaultPathogenicityData, allPathScores);
 
         return PathogenicityData.of(clinVarData, allPathScores);
     }
@@ -183,18 +183,23 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     @Override
-    public ClinVarData getClinVarData(Variant variant) {
+    public ClinVarData getClinVarData(@Nonnull Variant variant) {
         return clinVarDao.getClinVarData(variant);
     }
 
     @Override
-    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
+    public ClinVarData getClinVarData(@Nonnull GenomicVariant genomicVariant) {
         return clinVarDao.getClinVarData(genomicVariant);
     }
 
     @Override
-    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(@Nonnull GenomicInterval genomicInterval) {
         return clinVarDao.findClinVarRecordsOverlappingInterval(genomicInterval);
+    }
+
+    @Override
+    public GeneStatistics getGeneStatistics(@Nonnull String geneSymbol) {
+        return clinVarDao.getGeneStatistics(geneSymbol);
     }
 
     public static Builder builder() {

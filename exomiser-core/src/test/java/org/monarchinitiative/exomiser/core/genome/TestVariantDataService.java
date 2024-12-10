@@ -25,8 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import jakarta.annotation.Nonnull;
+import org.monarchinitiative.exomiser.core.model.GeneStatistics;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -55,11 +55,15 @@ public class TestVariantDataService implements VariantDataService {
     private final Set<Variant> expectedWhiteList;
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
+    private final Map<Variant, ClinVarData> expectedClinVarData;
+    private final Map<String, GeneStatistics> expectedGeneStats;
 
     private TestVariantDataService(Builder builder) {
-        this.expectedWhiteList = ImmutableSet.copyOf(builder.expectedWhiteList);
-        this.expectedFrequencyData = ImmutableMap.copyOf(builder.expectedFrequencyData);
-        this.expectedPathogenicityData = ImmutableMap.copyOf(builder.expectedPathogenicityData);
+        this.expectedWhiteList = Set.copyOf(builder.expectedWhiteList);
+        this.expectedFrequencyData = Map.copyOf(builder.expectedFrequencyData);
+        this.expectedPathogenicityData = Map.copyOf(builder.expectedPathogenicityData);
+        this.expectedClinVarData = Map.copyOf(builder.expectedClinVarData);
+        this.expectedGeneStats = Map.copyOf(builder.expectedGeneStats);
     }
 
     /**
@@ -105,7 +109,7 @@ public class TestVariantDataService implements VariantDataService {
         List<Frequency> wanted = allFrequencyData.frequencies()
                 .stream()
                 .filter(frequency -> frequencySources.contains(frequency.source()))
-                .collect(Collectors.toList());
+                .toList();
 
         return FrequencyData.of(allFrequencyData.getRsId(), wanted);
     }
@@ -123,18 +127,25 @@ public class TestVariantDataService implements VariantDataService {
     }
 
     @Override
-    public ClinVarData getClinVarData(Variant variant) {
-        return null;
+    public ClinVarData getClinVarData(@Nonnull Variant variant) {
+        return expectedClinVarData.get(variant);
     }
 
     @Override
-    public ClinVarData getClinVarData(GenomicVariant genomicVariant) {
-        return null;
+    public ClinVarData getClinVarData(@Nonnull GenomicVariant genomicVariant) {
+        return expectedClinVarData.get(genomicVariant);
     }
 
     @Override
-    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
-        return null;
+    public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(@Nonnull GenomicInterval genomicInterval) {
+        return expectedClinVarData.entrySet().stream()
+                .filter(entry -> entry.getKey().overlapsWith(genomicInterval))
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public GeneStatistics getGeneStatistics(@Nonnull String geneSymbol) {
+        return expectedGeneStats.getOrDefault(geneSymbol, GeneStatistics.builder(geneSymbol).build());
     }
 
     public static Builder builder() {
@@ -145,6 +156,8 @@ public class TestVariantDataService implements VariantDataService {
         private Set<Variant> expectedWhiteList = new HashSet<>();
         private Map<Variant, FrequencyData> expectedFrequencyData = new HashMap<>();
         private Map<Variant, PathogenicityData> expectedPathogenicityData = new HashMap<>();
+        private Map<Variant, ClinVarData> expectedClinVarData = new HashMap<>();
+        private Map<String, GeneStatistics> expectedGeneStats = new HashMap<>();
 
         public Builder expectedWhiteList(Set<Variant> expectedWhiteList) {
             this.expectedWhiteList = expectedWhiteList;
@@ -173,6 +186,26 @@ public class TestVariantDataService implements VariantDataService {
 
         public Builder put(Variant variant, PathogenicityData expectedPathogenicityData) {
             this.expectedPathogenicityData.put(variant, expectedPathogenicityData);
+            return this;
+        }
+
+        public Builder expectedClinVarData(Map<Variant, ClinVarData> expectedClinVarData) {
+            this.expectedClinVarData = expectedClinVarData;
+            return this;
+        }
+
+        public Builder put(Variant variant, ClinVarData clinVarData) {
+            this.expectedClinVarData.put(variant, clinVarData);
+            return this;
+        }
+
+        public Builder expectedGeneStats(Map<String, GeneStatistics> expectedGeneStats) {
+            this.expectedGeneStats = expectedGeneStats;
+            return this;
+        }
+
+        public Builder put(GeneStatistics geneStatistics) {
+            this.expectedGeneStats.put(geneStatistics.geneSymbol(), geneStatistics);
             return this;
         }
 
@@ -212,6 +245,11 @@ public class TestVariantDataService implements VariantDataService {
         @Override
         public Map<GenomicVariant, ClinVarData> findClinVarRecordsOverlappingInterval(GenomicInterval genomicInterval) {
             return Map.of();
+        }
+
+        @Override
+        public GeneStatistics getGeneStatistics(@Nonnull String geneSymbol) {
+            return GeneStatistics.builder(geneSymbol).build();
         }
     }
 

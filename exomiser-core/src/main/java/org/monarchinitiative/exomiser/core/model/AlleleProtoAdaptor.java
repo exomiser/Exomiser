@@ -284,7 +284,7 @@ public class AlleleProtoAdaptor {
         return converted;
     }
 
-    private static ClinVarData.ClinSig toClinSig(ClinVar.ClinSig protoClinSig) {
+    public static ClinVarData.ClinSig toClinSig(ClinVar.ClinSig protoClinSig) {
         return switch (protoClinSig) {
             case BENIGN -> ClinVarData.ClinSig.BENIGN;
             case BENIGN_OR_LIKELY_BENIGN -> ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN;
@@ -301,11 +301,14 @@ public class AlleleProtoAdaptor {
             case OTHER -> ClinVarData.ClinSig.OTHER;
             case PROTECTIVE -> ClinVarData.ClinSig.PROTECTIVE;
             case RISK_FACTOR -> ClinVarData.ClinSig.RISK_FACTOR;
+            case UNCERTAIN_RISK_ALLELE -> ClinVarData.ClinSig.UNCERTAIN_RISK_ALLELE;
+            case LIKELY_RISK_ALLELE -> ClinVarData.ClinSig.LIKELY_RISK_ALLELE;
+            case ESTABLISHED_RISK_ALLELE -> ClinVarData.ClinSig.ESTABLISHED_RISK_ALLELE;
             case NOT_PROVIDED, UNRECOGNIZED -> ClinVarData.ClinSig.NOT_PROVIDED;
         };
     }
 
-    private static ClinVarData.ReviewStatus toReviewStatus(ClinVar.ReviewStatus protoReviewStatus) {
+    public static ClinVarData.ReviewStatus toReviewStatus(ClinVar.ReviewStatus protoReviewStatus) {
         return switch (protoReviewStatus) {
             case NO_ASSERTION_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED;
             case NO_ASSERTION_CRITERIA_PROVIDED -> ClinVarData.ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED;
@@ -319,7 +322,7 @@ public class AlleleProtoAdaptor {
         };
     }
 
-    private static VariantEffect toVariantEffect(AlleleProto.VariantEffect clinVarVariantEffect) {
+    public static VariantEffect toVariantEffect(AlleleProto.VariantEffect clinVarVariantEffect) {
         return switch (clinVarVariantEffect) {
             case SEQUENCE_VARIANT -> VariantEffect.SEQUENCE_VARIANT;
             case CHROMOSOME_NUMBER_VARIATION -> VariantEffect.CHROMOSOME_NUMBER_VARIATION;

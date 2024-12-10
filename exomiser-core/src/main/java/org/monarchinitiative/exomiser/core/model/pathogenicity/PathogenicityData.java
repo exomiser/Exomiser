@@ -139,6 +139,8 @@ public class PathogenicityData {
      * @param pathogenicitySource
      * @return
      */
+
+    @Nullable
     public PathogenicityScore pathogenicityScore(PathogenicitySource pathogenicitySource) {
         return pathogenicityScores.get(pathogenicitySource);
     }

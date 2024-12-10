@@ -38,6 +38,9 @@ public class TranscriptAnnotation {
 
     private final VariantEffect variantEffect;
 
+//    private final Set<VariantEffect> variantEffects;
+
+
     private final String geneSymbol;
     private final String accession;
 
@@ -74,6 +77,10 @@ public class TranscriptAnnotation {
     public VariantEffect getVariantEffect() {
         return variantEffect;
     }
+
+//    public Set<VariantEffect> getVariantEffects() {
+//        return variantEffects;
+//    }
 
     public String getGeneSymbol() {
         return geneSymbol;
@@ -147,6 +154,8 @@ public class TranscriptAnnotation {
     public static class Builder {
 
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
+
+//        private Set<VariantEffect> variantEffects = EnumSet.noneOf(VariantEffect.class);
 
         private String geneSymbol = "";
         private String accession = "";
