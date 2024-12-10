@@ -1,66 +1,104 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 14.1.0 2024-11-14
+
+Further updates to ACMG assignment categories, including addition of PS1, PM1, PM5, BS1, BS2 categories to ACMG
+assignments.
+
+- New AcmgMissenseInFrameIndelEvidenceAssigner class to assign PS1, PM1, PM5, PP2, BP1, PP3, BP4 to missense and inframe 
+  indels.
+- New AcmgSpliceEvidenceAssigner class which applies PS1, PP3, BP4, BP7 to splice region variants according to ClinGen
+  recommendations for splicing variants published in
+  [Using the ACMG/AMP framework to capture evidence related to predicted and observed impact on splicing: Recommendations
+  from the ClinGen SVI Splicing Subgroup](https://doi.org/10.1016/j.ajhg.2023.06.002).
+- New AcmgPVS1EvidenceAssigner handles assignment of PVS1 to loss of function variants according
+  to [Recommendations for interpreting the loss of function PVS1 ACMG/AMP variant criterion](https://doi.org/10.1002/humu.23626)
+- Downgraded BP4 to have a maximum of `Supporting` evidence for REVEL scores under 0.290
+
 ## 14.0.2 2024-09-20
 
-- Fix for issue #571. This is a bug-fix release to prevent erroneous assignment of `PVS1` to recessive-compatible variants in LOF-tolerant genes.
+- Fix for issue [#571](https://github.com/exomiser/Exomiser/issues/571). This is a bug-fix release to prevent erroneous
+  assignment of `PVS1` to recessive-compatible variants in LOF-tolerant genes.
 
 ## 14.0.1 2024-09-03
- 
-- Fix for Issue #565. This is a patch release to prevent a possible ArrayIndexOutOfBoundsException being thrown when outputting the variants TSV file. There are no other changes.
+
+- Fix for Issue [#565](https://github.com/exomiser/Exomiser/issues/565). This is a patch release to prevent a possible
+  ArrayIndexOutOfBoundsException being thrown when outputting the variants TSV file. There are no other changes.
 
 ## 14.0.0 2024-02-29
 
 - Minimum Java version is now **Java 17**
-- Update database format **REQUIRES DATABASE VERSION 2402** - these are significantly smaller than the previous versions (~50-60% of previous size)
+- Update database format **REQUIRES DATABASE VERSION 2402** - these are significantly smaller than the previous
+  versions (~50-60% of previous size)
 - Added new GeneBlacklistFilter [#457](https://github.com/exomiser/Exomiser/issues/457)
 - Add new ClinVar conflicting evidence counts in HTML output [#535](https://github.com/exomiser/Exomiser/issues/535)
 - Added PS1, PM1, PM5 categories to ACMG assignments
 - Altered reporting of InheritanceModeFilter to state that the number shown refers to variants rather than genes.
 - Updated gene constraints to use gnomad v4.0 data.
-- TSV genes, TSV variants and VCF outputs will only write to a single file where the possible modes of inheritances are now shown together rather than split across separate files.
-- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
-- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity annotations are missing in certain run configurations.
-- Fix for issue [#541](https://github.com/exomiser/Exomiser/issues/541) where logging to /tmp/spring.log causes clashes in shared user environments.
-- TSV output column `CLINVAR_ALLELE_ID` has been changed to `CLINVAR_VARIANT_ID` to allow easier reference to ClinVar variants.
+- TSV genes, TSV variants and VCF outputs will only write to a single file where the possible modes of inheritances are
+  now shown together rather than split across separate files.
+- Fix for issue [#531](https://github.com/exomiser/Exomiser/issues/531) where the `priorityScoreFilter` and
+  `regulatoryFeatureFilter` pass/fail counts were not displayed in the HTML.
+- Fix for issue [#534](https://github.com/exomiser/Exomiser/issues/534) where variant frequency and/or pathogenicity
+  annotations are missing in certain run configurations.
+- Fix for issue [#541](https://github.com/exomiser/Exomiser/issues/541) where logging to /tmp/spring.log causes clashes
+  in shared user environments.
+- TSV output column `CLINVAR_ALLELE_ID` has been changed to `CLINVAR_VARIANT_ID` to allow easier reference to ClinVar
+  variants.
 
 ## 13.3.0 2023-10-17
 
-- Updated Jannovar version to 0.41 to fix incorrect MT codon table usage [#521](https://github.com/exomiser/Exomiser/issues/521)
-- Downgraded PM2 - PM2_Supporting for variants lacking frequency information [#502](https://github.com/exomiser/Exomiser/issues/502).
+- Updated Jannovar version to 0.41 to fix incorrect MT codon table
+  usage [#521](https://github.com/exomiser/Exomiser/issues/521)
+- Downgraded PM2 - PM2_Supporting for variants lacking frequency
+  information [#502](https://github.com/exomiser/Exomiser/issues/502).
 - Updated AcmgEvidence to fit a Bayesian points-based system [#514](https://github.com/exomiser/Exomiser/issues/514)
-- Removed ASJ, FIN, OTH ExAC and gnomAD populations from presets and examples [#513](https://github.com/exomiser/Exomiser/issues/513).
+- Removed ASJ, FIN, OTH ExAC and gnomAD populations from presets and
+  examples [#513](https://github.com/exomiser/Exomiser/issues/513).
 - Fix for regression causing `<INV>` variants to be incorrectly down-ranked
-- Fix for issue [#486](https://github.com/exomiser/Exomiser/issues/486) where VCF output includes whitespace in INFO field.
-- Logs will now display elapsed time correctly if an analysis runs over an hour (!). 
+- Fix for issue [#486](https://github.com/exomiser/Exomiser/issues/486) where VCF output includes whitespace in INFO
+  field.
+- Logs will now display elapsed time correctly if an analysis runs over an hour (!).
 
 ## 13.2.1 2023-06-30
 
-- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their position on a transcript.
-- Added partial implementation of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding and splice site symbolic variants.
-- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was empty.
+- Fix for bug where all `<INS>` structural variants were given a maximal variant score of 1.0 regardless of their
+  position on a transcript.
+- Added partial implementation
+  of [SVanna scoring](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1) for coding
+  and splice site symbolic variants.
+- Fix for issue #481 where TSV and VCF results files would contain no data when the analysis `inheritanceModes` was
+  empty.
 
-**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require Java 17.* 
+**IMPORTANT!** *This will be the last major release to run on Java 11. Subsequent major releases (i.e. 14+) will require
+Java 17.*
 
 ## 13.2.0 2023-02-28
 
- - New multi-architecture docker images with and without bash [#471](https://github.com/exomiser/Exomiser/issues/470)
- - Deprecated of `output-prefix` CLI option (will be removed in next major version) [#469](https://github.com/exomiser/Exomiser/issues/469)
- - Added `output-directory` and `output-filename` CLI options to replace `output-prefix` [#469](https://github.com/exomiser/Exomiser/issues/469)
- - Added `output-format` CLI option [#471](https://github.com/exomiser/Exomiser/issues/471)
- - Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
- - Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running a phenotype only prioritisation.
- - Fixed broken links to OMIM in the phenotypic similarity section of the HTML output [#465](https://github.com/exomiser/Exomiser/issues/465)
- - Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
+- New multi-architecture docker images with and without bash [#471](https://github.com/exomiser/Exomiser/issues/470)
+- Deprecated of `output-prefix` CLI option (will be removed in next major
+  version) [#469](https://github.com/exomiser/Exomiser/issues/469)
+- Added `output-directory` and `output-filename` CLI options to replace
+  `output-prefix` [#469](https://github.com/exomiser/Exomiser/issues/469)
+- Added `output-format` CLI option [#471](https://github.com/exomiser/Exomiser/issues/471)
+- Fixed excessive CPU usage and application hang after variant prioritisation with large number of results
+- Fixed issue [#478](https://github.com/exomiser/Exomiser/issues/478) where gene.tsv output files are empty when running
+  a phenotype only prioritisation.
+- Fixed broken links to OMIM in the phenotypic similarity section of the HTML
+  output [#465](https://github.com/exomiser/Exomiser/issues/465)
+- Added gene symbol as HTML id tag in gene panel HTML results [#422](https://github.com/exomiser/Exomiser/pull/422)
 
 ## 13.1.0 2022-07-29
 
 - Added new automated ACMG annotations for top-scoring variants in known disease-causing genes.
 - Added new combined score p-value
 - Added new TSV_GENE, TSV_VARIANT and VCF output files containing ranked genes/variants for all the assessed modes of
-  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files which
-  will be removed in the next major release__. See the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
+  inheritance. Note that __these new file formats will supersede the existing individual MOI-specific TSV/VCF files
+  which
+  will be removed in the next major release__. See
+  the [online documentation](https://exomiser.readthedocs.io/en/latest/result_interpretation.html) for details.
 - New update online documentation! See https://exomiser.readthedocs.io/en/latest/
-- New Docker hub images for CLI and web on https://hub.docker.com/u/exomiser  
+- New Docker hub images for CLI and web on https://hub.docker.com/u/exomiser
 - Added checks to ensure user specifies genome assembly if user specifies vcf path outside of phenopacket/analysis
 - Added `--output-prefix` option to enable output prefix directly on the command line
 - Updated examples to use the latest recommended settings as per preset derived from 100,000 genomes project
@@ -103,16 +141,21 @@ whitelist and 'second generation' pathogenicity scores.
   status.
 
 ## 11.0.0 2018-09-21
+
 - Removed ```analysisMode: SPARSE``` option - this will default to ```PASS_ONLY```
-- Removed ```phenixPrioritiser: {}``` option - we recommend using ```hiPhivePrioritiser: {runParams: 'human'}``` for human-only model comparisons
-- Changed ```outputPassVariantsOnly``` to ```outputContributingVariantsOnly``` in ```outputOptions```. Enabling this will only report the variants marked as ```CONTRIBUTING_VARIANT```, _i.e._ those variants which contribute to the ```EXOMISER_GENE_VARIANT_SCORE``` and ```EXOMISER_GENE_COMBINED_SCORE``` score. This will default to ```false```.   
+- Removed ```phenixPrioritiser: {}``` option - we recommend using ```hiPhivePrioritiser: {runParams: 'human'}``` for
+  human-only model comparisons
+- Changed ```outputPassVariantsOnly``` to ```outputContributingVariantsOnly``` in ```outputOptions```. Enabling this
+  will only report the variants marked as ```CONTRIBUTING_VARIANT```, _i.e._ those variants which contribute to the
+  ```EXOMISER_GENE_VARIANT_SCORE``` and ```EXOMISER_GENE_COMBINED_SCORE``` score. This will default to ```false```.
     ```yaml
     outputOptions:
          outputContributingVariantsOnly: false
     ```
 
 ## 10.1.0 2018-05-09
-- Added support for filtering multiple intervals in the ```intervalFilter``` 
+
+- Added support for filtering multiple intervals in the ```intervalFilter```
     ```yaml
     # single interval
     intervalFilter: {interval: 'chr10:123256200-123256300'},
@@ -121,18 +164,24 @@ whitelist and 'second generation' pathogenicity scores.
     # or using a BED file - NOTE this should be 0-based, Exomiser otherwise uses 1-based coordinates in line with VCF
     intervalFilter: {bed: /full/path/to/bed_file.bed}
     ```
-- Added support for ClinVar annotations - available in the 1805 variant data release. These will appear automatically and are reported for information only. 
+- Added support for ClinVar annotations - available in the 1805 variant data release. These will appear automatically
+  and are reported for information only.
 - Added ```JSON``` output format
     ```yaml
     outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
     ```
 
 ## 10.0.1 2018-03-20
+
 - Updated HTSJDK library to fix ```TribbleException``` being thrown when trying to parse bgzipped VCF files
 
 ## 10.0.0 2018-03-07
-- Deprecated extended cli options as these were less capable than the analysis file. Options are now ```--analysis``` or ```--analysis-batch``` only. See the ```.yml``` files in the ```examples``` directory for recommended scripts.
-- Exomiser can now analyse samples against multiple inheritance modes in one run using the new ```inheritanceModes``` field. This also allows variants to be considered under a model with a maximum frequency (%) cut-off. See example ```.yml``` files for more details. 
+
+- Deprecated extended cli options as these were less capable than the analysis file. Options are now ```--analysis``` or
+  ```--analysis-batch``` only. See the ```.yml``` files in the ```examples``` directory for recommended scripts.
+- Exomiser can now analyse samples against multiple inheritance modes in one run using the new ```inheritanceModes```
+  field. This also allows variants to be considered under a model with a maximum frequency (%) cut-off. See example
+  ```.yml``` files for more details.
      ```yaml
         inheritanceModes: {
              AUTOSOMAL_DOMINANT: 0.1,
@@ -144,146 +193,199 @@ whitelist and 'second generation' pathogenicity scores.
              MITOCHONDRIAL: 0.2
         }
      ```
-- The old ```modeOfInheritance``` option will still work, although it will only run with default frequency cut-offs and may be removed in a later release, so please update your analyses.
-- The new ```1802_phenotype``` data release will not work on older exomiser versions as the PPI data is now shipped in a much more efficient storage format. This reduces the startup time to zero and reduces the memory footprint by approx 1 GB. We *highly* recommend you update older releases to the latest version in order to benefit from more recent phenotype data.
-- Default variant scores for ```FRAMESHIFT```, ```NONSENSE```, ```SPLICING```, ```STOPLOSS``` and ```STARTLOSS``` have been increased from 0.95 to the maximum score of 1.0 to reflect clinical interpretation of these variant consequences.
+- The old ```modeOfInheritance``` option will still work, although it will only run with default frequency cut-offs and
+  may be removed in a later release, so please update your analyses.
+- The new ```1802_phenotype``` data release will not work on older exomiser versions as the PPI data is now shipped in a
+  much more efficient storage format. This reduces the startup time to zero and reduces the memory footprint by approx 1
+  GB. We *highly* recommend you update older releases to the latest version in order to benefit from more recent
+  phenotype data.
+- Default variant scores for ```FRAMESHIFT```, ```NONSENSE```, ```SPLICING```, ```STOPLOSS``` and ```STARTLOSS``` have
+  been increased from 0.95 to the maximum score of 1.0 to reflect clinical interpretation of these variant consequences.
 
 ## 9.0.1 2018-01-15
+
 - Now able to analyse ```MITOCHONDRIAL``` inheritance mode.
 
 ## 9.0.0 2017-12-12
+
 - Exomiser can now analyse hg19 or hg38 samples - see ```application.properties``` for setup details.
-- Analysis file has new ```genomeAssembly:``` field - see example ```.yml``` files. Will default to hg19 if not specified.
-- Genomic and phenotypic data are now separated to allow for more frequent and smaller updates - see README.md for details
-- Variant alleles are now stored in a new highly-compressed data format enabling much smaller on-disk footprint with minimal loss of read performance.
+- Analysis file has new ```genomeAssembly:``` field - see example ```.yml``` files. Will default to hg19 if not
+  specified.
+- Genomic and phenotypic data are now separated to allow for more frequent and smaller updates - see README.md for
+  details
+- Variant alleles are now stored in a new highly-compressed data format enabling much smaller on-disk footprint with
+  minimal loss of read performance.
 - New variant frequency data-sets: TOPMed, UK10K, gnomAD - see example ```.yml``` files.
 - New caching mechanism - see ```application.properties``` for setup details.
 
 ## 8.0.0 2017-08-08
+
 - See https://github.com/exomiser/Exomiser/projects/2 for a complete list of changes.
-- ```application.properties``` file has changed to use ```exomiser``` namespace prefix. Will allow property placeholder substitution - e.g. ```exomiser.property=foo``` can be used elsewhere in the file as ```${exomiser.property}```. Will support user-defined property values too. 
-- Analysis file now requires ```proband``` id to be specified. Bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+- ```application.properties``` file has changed to use ```exomiser``` namespace prefix. Will allow property placeholder
+  substitution - e.g. ```exomiser.property=foo``` can be used elsewhere in the file as ```${exomiser.property}```. Will
+  support user-defined property values too.
+- Analysis file now requires ```proband``` id to be specified. Bug-fix for multi-sample VCF files where the proband
+  sample is not the first sample in the genotypes section leading to occasional scores of 0 for the
+  exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
 - Analysis file ```scoringMode``` option has now been removed as it was never used.
-- Analysis now supports a new ```failedVariantFilter: {}``` to remove variants without a ```PASS``` or ```.``` in the FILTER field.
+- Analysis now supports a new ```failedVariantFilter: {}``` to remove variants without a ```PASS``` or ```.``` in the
+  FILTER field.
 - Can now filter variants by LOCAL frequency source.
 - It is now possible to use UCSC, ENSEMBL or REFSEQ transcript identifiers.
-- REMM data is no longer bundled with the distribution. If you want to use this for non-coding variant pathogenicity scoring you'll need to manually download and install it.
+- REMM data is no longer bundled with the distribution. If you want to use this for non-coding variant pathogenicity
+  scoring you'll need to manually download and install it.
 - Memory requirements are now reduced.
 - Fixed AR comp-het scoring bug.
 - Now partly normalises incoming variant data enabling better performance for multi-allelic sites.
 - Variants contributing to the exomiser score are now flagged in output files.
 - VCF output now has valid headers for info fields and more informative information.
 - VCF output no longer contain invalid values in FILTER field for failed variants.
-- VCF lines containing multiple alleles now contain the field ```ExContribAltAllele``` with an zero-based integer indicating the ALT allele contributing to the score.
+- VCF lines containing multiple alleles now contain the field ```ExContribAltAllele``` with an zero-based integer
+  indicating the ALT allele contributing to the score.
 - HTML output now shows individual variant scores and flags contributing variants along with displaying them first.
 - HTML output tweaked to display data more clearly in the genes section.
 
+## 7.2.3 2016-11-02
 
-## 7.2.3 2016-11-02 
-- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section
+  leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and
+  consistent with autosomal recessive.
 
-*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be properly fixed in the next major release.
+*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be
+properly fixed in the next major release.
 
-## 7.2.2 2016-07-01 
-- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being halved.
-- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like this in the output file.
+## 7.2.2 2016-07-01
+
+- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being
+  halved.
+- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the
+  same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond
+  with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like
+  this in the output file.
 
 ## 7.2.1 2016-01-05
-- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
+
+- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF
+  file.
 
 ## 7.2.0 2015-11-25
-- Performance in identification of causal regulatory variants as the top candidate of simulated whole genomes now improved to over 80%.
+
+- Performance in identification of causal regulatory variants as the top candidate of simulated whole genomes now
+  improved to over 80%.
 - Enhancer variants are assigned to TADs
 - Variant gene assignment improvements and bug-fixes.
 
 ## 7.1.0 2015-10-21
+
 - Variants in FANTOM5 enhancer and ENSEMBLE regulatory regions are now all marked REGULATORY_REGION_VARIANT even without
- the regulatoryFeatureFilter being run.
+  the regulatoryFeatureFilter being run.
 - Massive performance increase when running regulatoryFeatureFilter.
 - Running Exomiser in exome analysis mode now requires REGULATORY_FEATURE to be included in the variantEffectFilter.
-See test-analysis-exome.yml
+  See test-analysis-exome.yml
 - Added missing regulatoryFeatureFilter step from the analysis steps in test-analysis-genome.yml
 
 ## 7.0.0 2015-10-01
+
 Now requires Java 8 or higher to run.
+
 - The Exomiser is now somewhat inaccurately named as it can now analyse whole-genome samples.
 - Exomiser is now much more customisable with the new analysis YAML configuration files. See test-analysis-exome.yml and
- test-analysis-genome.yml for examples
+  test-analysis-genome.yml for examples
 - Added new --analysis and --analysis-batch commands to be used with the new analysis format.
 - New PASS_ONLY analysis mode. Exomiser will only keep variants which passed filters. This allows for dramatically
-reduced memory requirements which is especially handy for genome-sized analyses.
-- Exomiser now ships with a new pathogenicity score for predicting the deleteriousness of non-coding regulatory mutations,
- the REMM score.
-- It is now possible to specify which pathogenicity score or scores you wish to be run out of, polyphen, SIFT, Mutation Taster,
- CADD and REMM
+  reduced memory requirements which is especially handy for genome-sized analyses.
+- Exomiser now ships with a new pathogenicity score for predicting the deleteriousness of non-coding regulatory
+  mutations,
+  the REMM score.
+- It is now possible to specify which pathogenicity score or scores you wish to be run out of, polyphen, SIFT, Mutation
+  Taster,
+  CADD and REMM
 - We now include the variant frequencies from the ExAC dataset and allow for a subset of all frequency sources to be
-specified in an analysis. For example, this allows only frequencies from a particular population to be taken into account.
+  specified in an analysis. For example, this allows only frequencies from a particular population to be taken into
+  account.
 
 ## 6.0.0 2015-01-12
+
 - Added 'none' type prioritiser for when you really don't want to run any prioritiser.
 - Exomiser will now show the help options when no parameters are supplied.
 - New test settings files for different prioritisers and the batch file.
 - Changed input parameters these are optional switches:
-    --remove-path-filter-cutoff to --keep-non-pathogenic 
-    --remove-off-target-syn to --keep-off-target
+  --remove-path-filter-cutoff to --keep-non-pathogenic
+  --remove-off-target-syn to --keep-off-target
 - Renamed somewhat misleading example.settings to template.settings to reflect it's intended use.
 - TSV output now comes in TSV_GENE and TSV_VARIANT flavours.
 - Added missing ehcache.xml to the distribution.
 - Switched PostgreSQL driver to use pgjdbc-ng which allegedly has better performance.
-- Consolidated JDBC Connection pool to use HikariCP. 
- 
+- Consolidated JDBC Connection pool to use HikariCP.
+
 ## 5.2.0 2014-12-18
+
 - No changes to exomiser-cli
 
 ## 5.1.0 2014-12-12
+
 - No changes to exomiser-cli
 
 ## 5.0.1 2014-11-14
+
 - No changes to exomiser-cli
 
 ## 5.0.0 2014-11-14
-- New filter option --genes-to-keep  Allows filtering by Entrez gene ID to keep only those genes specified.
-- Added caching options which may significantly increase performance at the expense of memory - see application.properties.
-- Changed 'username' in application.properties to 'dbuser' to prevent the current user's username from being used to authenticate against the PostgreSQL database on Windows.
+
+- New filter option --genes-to-keep Allows filtering by Entrez gene ID to keep only those genes specified.
+- Added caching options which may significantly increase performance at the expense of memory - see
+  application.properties.
+- Changed 'username' in application.properties to 'dbuser' to prevent the current user's username from being used to
+  authenticate against the PostgreSQL database on Windows.
 - Added missing full-analysis option to test and example.settings
 - Updated external dependencies
 - Lots of under the hood changes and increased test coverage in exomiser-core.
 
 ## 4.0.1 2014-10-23
+
 - Fixed bug where OMIM prioritiser did not work when inheritance model was not specified
 - Adjustment of the exomiser-allspecies algorithm for PPI hits
 
 ## 4.0.0 2014-09-19
-- Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
-- Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
-- VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
-- PathogenicityData will now return its own most pathogenic score instead of relying on something else to figure this out.
 
-- Major changes to PathogenicityFilter behaviour - Missense variants will always pass the filter regardless of their predicted pathogenicity. Other variant types can now be filtered according to the cutoff score or allowed to pass irrespective of the score.
+- Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters
+  in various ways previously.
+- Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent
+  ways.
+- VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
+- PathogenicityData will now return its own most pathogenic score instead of relying on something else to figure this
+  out.
+
+- Major changes to PathogenicityFilter behaviour - Missense variants will always pass the filter regardless of their
+  predicted pathogenicity. Other variant types can now be filtered according to the cutoff score or allowed to pass
+  irrespective of the score.
 - Command line option changes:
-    -P --remove-path-filter-cutoff command line option added to allow all variant types through pathogenicity filter.
-    -P --keep-non-pathogenic-missense command line option removed.
-    -P option default changed from true to false! Sorry. Check your existing settings carefully!
+  -P --remove-path-filter-cutoff command line option added to allow all variant types through pathogenicity filter.
+  -P --keep-non-pathogenic-missense command line option removed.
+  -P option default changed from true to false! Sorry. Check your existing settings carefully!
 
 - Added GeneFilter functionality
 - Renamed Scorable interface to Score
 - Renamed VariantEvaluation variables and accessor methods:
-    getFilterScoreMap to getFilterResults to match how it is referred to in the code output.
-    getFailedFilters to getFailedFilterTypes
-    passesFilters to passedFilters
+  getFilterScoreMap to getFilterResults to match how it is referred to in the code output.
+  getFailedFilters to getFailedFilterTypes
+  passesFilters to passedFilters
 
 - Bug-fixes
     - Prioritisers now release database connections when finished (affects batch-mode performance)
     - Inheritance filter now performs correctly in all cases.
 
 ## 3.0.2 2014-09-08
+
 - VCF output now contains original VCF INFO field with exomiser info appended onto this.
 - Bug-fix for crash when Jannovar found no annotations for a variant.
 
 ## 3.0.1 2014-09-04
+
 - Bug-fix for duplicate variants in Frequency table where the RSID was different.
 
 ## 3.0.0 2014-08-22
+
 - Completely re-worked under the hood code
 - New extensible API
 - Simplified command-line usage
@@ -293,5 +395,6 @@ specified in an analysis. For example, this allows only frequencies from a parti
 - Zero-config installation
 
 ## 2.1.0 2014-05-06
+
 - Embedded H2 database or PostgreSQL
 - Simplified set-up/installation
