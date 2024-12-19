@@ -1,6 +1,5 @@
 package org.monarchinitiative.exomiser.rest.prioritiser.service;
 
-import io.swagger.v3.oas.annotations.Parameter;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -12,7 +11,6 @@ import org.monarchinitiative.exomiser.rest.prioritiser.api.PrioritiserResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,7 +27,7 @@ public record PrioritiserService(Map<Integer, GeneIdentifier> geneIdentifiers, P
         logger.info("Started PrioritiserService with GeneIdentifier cache of {} entries", geneIdentifiers.size());
     }
 
-    public PrioritiserResultSet prioritise(PrioritiserRequest prioritiserRequest){
+    public PrioritiserResultSet prioritiseGenes(PrioritiserRequest prioritiserRequest){
         logger.info("{}", prioritiserRequest);
 
         Instant start = Instant.now();

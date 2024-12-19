@@ -20,10 +20,8 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,7 +40,7 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RestController
-@RequestMapping("api/v1")
+@RequestMapping("api/v1/prioritise")
 @Tag(name = "Prioritiser", description = "API endpoints for phenotype-based gene prioritisation")
 public class PrioritiserController {
 
@@ -73,8 +71,8 @@ public class PrioritiserController {
                     description = "Invalid input parameters"
             )
     })
-    @GetMapping(value = "prioritise", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PrioritiserResultSet prioritise(
+    @GetMapping(value = "gene", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PrioritiserResultSet prioritiseGenes(
             @Parameter(
                     description = "Set of HPO phenotype identifiers",
                     example = "[\"HP:0001156\", \"HP:0001363\", \"HP:0011304\", \"HP:0010055\"]",
@@ -90,11 +88,15 @@ public class PrioritiserController {
             @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
 
             @Parameter(
-                    description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']",
+                    description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']. " +
+                                  "Defaults to 'hiphive' which allows for cross-species and PPI hits. 'phenix' is a" +
+                                  " legacy prioritiser which will only prioritise human disease-gene associations. It is" +
+                                  " the equivalent of 'hiphive' with prioritiser-params='human'. 'phive' is just the" +
+                                  " mouse subset of hiphive, equivalent to 'hiphive' with prioritiser-params='mouse'.",
                     example = "hiphive",
-                    required = true
+                    required = false
             )
-            @RequestParam(value = "prioritiser") String prioritiserName,
+            @RequestParam(value = "prioritiser", defaultValue = "hiphive") String prioritiserName,
 
             @Parameter(
                     description = "Additional parameters for the prioritiser. This is optional for the 'hiphive' prioritiser." +
@@ -120,7 +122,7 @@ public class PrioritiserController {
                 .limit(limit)
                 .build();
 
-        return prioritise(prioritiserRequest);
+        return prioritiseGenes(prioritiserRequest);
     }
 
     @Operation(
@@ -142,18 +144,18 @@ public class PrioritiserController {
             )
     })
     @PostMapping(
-            value = "prioritise",
+            value = "gene",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public PrioritiserResultSet prioritise(
+    public PrioritiserResultSet prioritiseGenes(
             @Parameter(
                     description = "Prioritisation request parameters",
                     required = true
             )
             @RequestBody PrioritiserRequest prioritiserRequest
     ) {
-        return prioritiserService.prioritise(prioritiserRequest);
+        return prioritiserService.prioritiseGenes(prioritiserRequest);
     }
 
 }

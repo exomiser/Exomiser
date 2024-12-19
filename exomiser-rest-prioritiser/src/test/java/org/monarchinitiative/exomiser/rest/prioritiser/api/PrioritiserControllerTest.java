@@ -24,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PrioritiserController.class)
 class PrioritiserControllerTest {
 
+    private static final String API_V_1_PRIORITISE_GENE = "/api/v1/prioritise/gene";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -90,10 +92,10 @@ class PrioritiserControllerTest {
         @Test
         @DisplayName("Should return prioritised results with valid parameters")
         void shouldReturnPrioritisedResults() throws Exception {
-            when(prioritiserService.prioritise(any()))
+            when(prioritiserService.prioritiseGenes(any()))
                     .thenReturn(sampleResultSet);
 
-            mockMvc.perform(get("/api/v1/prioritise")
+            mockMvc.perform(get(API_V_1_PRIORITISE_GENE)
                             .param("phenotypes", "HP:0001250,HP:0001251")
                             .param("genes", "1234,5678")
                             .param("prioritiser", "phenix")
@@ -110,10 +112,10 @@ class PrioritiserControllerTest {
         @Test
         @DisplayName("Should handle missing optional parameters")
         void shouldHandleMissingOptionalParams() throws Exception {
-            when(prioritiserService.prioritise(any()))
+            when(prioritiserService.prioritiseGenes(any()))
                     .thenReturn(sampleResultSet);
 
-            mockMvc.perform(get("/api/v1/prioritise")
+            mockMvc.perform(get(API_V_1_PRIORITISE_GENE)
                             .param("phenotypes", "HP:0001250")
                             .param("prioritiser", "phenix")
                             .accept(MediaType.APPLICATION_JSON))
@@ -124,7 +126,7 @@ class PrioritiserControllerTest {
         @Test
         @DisplayName("Should return 400 when required parameters are missing")
         void shouldReturn400WhenMissingRequiredParams() throws Exception {
-            mockMvc.perform(get("/api/v1/prioritise")
+            mockMvc.perform(get(API_V_1_PRIORITISE_GENE)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest());
         }
@@ -137,10 +139,10 @@ class PrioritiserControllerTest {
         @Test
         @DisplayName("Should process valid POST request")
         void shouldProcessValidPostRequest() throws Exception {
-            when(prioritiserService.prioritise(any(PrioritiserRequest.class)))
+            when(prioritiserService.prioritiseGenes(any(PrioritiserRequest.class)))
                     .thenReturn(sampleResultSet);
 
-            mockMvc.perform(post("/api/v1/prioritise")
+            mockMvc.perform(post(API_V_1_PRIORITISE_GENE)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sampleRequest))
                             .accept(MediaType.APPLICATION_JSON))
@@ -161,10 +163,10 @@ class PrioritiserControllerTest {
                     0
             );
 
-            when(prioritiserService.prioritise(any(PrioritiserRequest.class)))
+            when(prioritiserService.prioritiseGenes(any(PrioritiserRequest.class)))
                     .thenReturn(new PrioritiserResultSet(minimalRequest, 50L, List.of()));
 
-            mockMvc.perform(post("/api/v1/prioritise")
+            mockMvc.perform(post(API_V_1_PRIORITISE_GENE)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(minimalRequest))
                             .accept(MediaType.APPLICATION_JSON))
@@ -178,7 +180,7 @@ class PrioritiserControllerTest {
         void shouldReturn400ForInvalidRequestBody() throws Exception {
             String invalidJson = "{\"phenotypes\": null, \"prioritiser\": null}";
 
-            mockMvc.perform(post("/api/v1/prioritise")
+            mockMvc.perform(post(API_V_1_PRIORITISE_GENE)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalidJson)
                             .accept(MediaType.APPLICATION_JSON))
@@ -194,10 +196,10 @@ class PrioritiserControllerTest {
                     List.of()
             );
 
-            when(prioritiserService.prioritise(any(PrioritiserRequest.class)))
+            when(prioritiserService.prioritiseGenes(any(PrioritiserRequest.class)))
                     .thenReturn(emptyResultSet);
 
-            mockMvc.perform(post("/api/v1/prioritise")
+            mockMvc.perform(post(API_V_1_PRIORITISE_GENE)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sampleRequest))
                             .accept(MediaType.APPLICATION_JSON))

@@ -51,9 +51,13 @@ public record PrioritiserRequest(
         List<Integer> genes,
 
         @Schema(
-                description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']",
+                description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']. " +
+                              "Defaults to 'hiphive' which allows for cross-species and PPI hits. 'phenix' is a" +
+                              " legacy prioritiser which will only prioritise human disease-gene associations. It is" +
+                              " the equivalent of 'hiphive' with prioritiser-params='human'. 'phive' is just the" +
+                              " mouse subset of hiphive, equivalent to 'hiphive' with prioritiser-params='mouse'.",
                 example = "hiphive",
-                requiredMode = Schema.RequiredMode.REQUIRED
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         String prioritiser,
 
@@ -104,7 +108,7 @@ public record PrioritiserRequest(
     public static class Builder {
         private Collection<String> phenotypes = new ArrayList<>();
         private Collection<Integer> genes = new ArrayList<>();
-        private String prioritiser = "";
+        private String prioritiser = "hiphive";
         private String prioritiserParams = "";
         private int limit;
 

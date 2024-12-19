@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfiguration;
 import org.monarchinitiative.exomiser.autoconfigure.genome.GenomeAnalysisServiceAutoConfiguration;
 import org.springframework.boot.SpringApplication;
@@ -34,6 +36,13 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
         ExomiserAutoConfiguration.class,
         GenomeAnalysisServiceAutoConfiguration.class
 })
+@OpenAPIDefinition(
+        info = @Info(
+                title = "Exomiser Prioritiser API",
+                version = "1.0.0",
+                description = "API for prioritising genes based on phenotype semantic similarity")
+
+)
 public class ExomiserPrioritiserServer {
 
     public static void main(String[] args) {
