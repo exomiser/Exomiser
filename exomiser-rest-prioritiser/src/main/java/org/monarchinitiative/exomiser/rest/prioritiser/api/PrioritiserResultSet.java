@@ -27,28 +27,4 @@ import java.util.List;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PrioritiserResultSet {
-
-    final PrioritiserRequest params;
-    final long queryTime;
-    final List<PriorityResult> results;
-
-    public PrioritiserResultSet(PrioritiserRequest params, long queryTime, List<PriorityResult> results) {
-        this.params = params;
-        this.queryTime = queryTime;
-        this.results = results;
-    }
-
-    public PrioritiserRequest getParams() {
-        return params;
-    }
-
-    public long getQueryTime() {
-        return queryTime;
-    }
-
-    public List<PriorityResult> getResults() {
-        return results;
-    }
-    
-}
+public record PrioritiserResultSet(PrioritiserRequest params, long queryTime, List<PriorityResult> results) {}

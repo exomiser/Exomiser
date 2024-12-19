@@ -20,63 +20,97 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
-import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.monarchinitiative.exomiser.rest.prioritiser.service.PrioritiserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.google.common.collect.ImmutableList.toImmutableList;
+import java.util.Set;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RestController
+@RequestMapping("api/v1")
+@Tag(name = "Prioritiser", description = "API endpoints for phenotype-based gene prioritisation")
 public class PrioritiserController {
 
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserController.class);
 
-    private final Map<Integer, GeneIdentifier> geneIdentifiers;
-    private final PriorityFactory priorityFactory;
+    private final PrioritiserService prioritiserService;
 
     @Autowired
-    public PrioritiserController(Map<Integer, GeneIdentifier> geneIdentifiers, PriorityFactory priorityFactory) {
-        this.geneIdentifiers = geneIdentifiers;
-        this.priorityFactory = priorityFactory;
-        logger.info("Started PrioritiserController with GeneIdentifier cache of {} entries", geneIdentifiers.size());
+    public PrioritiserController(PrioritiserService prioritiserService) {
+        this.prioritiserService = prioritiserService;
     }
 
-    @GetMapping(value = "/about")
-    public String about() {
-        byte[] bytes = new byte[0];
-        try {
-            bytes = new ClassPathResource("about.html").getInputStream().readAllBytes();
-        } catch (IOException e) {
-            logger.error("", e);
-        }
-        return new String(bytes);
-    }
+    @Operation(
+            summary = "Prioritise genes by phenotype",
+            description = "Prioritises genes based on provided phenotypes and other parameters"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully prioritised genes",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = PrioritiserResultSet.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input parameters"
+            )
+    })
+    @GetMapping(value = "prioritise", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PrioritiserResultSet prioritise(
+            @Parameter(
+                    description = "Set of HPO phenotype identifiers",
+                    example = "[\"HP:0001156\", \"HP:0001363\", \"HP:0011304\", \"HP:0010055\"]",
+                    required = true
+            )
+            @RequestParam(value = "phenotypes") Set<String> phenotypes,
 
-    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") Set<String> phenotypes,
-                                           @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
-                                           @RequestParam(value = "prioritiser") String prioritiserName,
-                                           @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
-                                           @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
+            @Parameter(
+                    description = "Set of NCBI gene IDs to consider in prioritisation",
+                    example = "[2263, 2264]",
+                    required = false
+            )
+            @RequestParam(value = "genes", required = false, defaultValue = "") Set<Integer> genesIds,
+
+            @Parameter(
+                    description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']",
+                    example = "hiphive",
+                    required = true
+            )
+            @RequestParam(value = "prioritiser") String prioritiserName,
+
+            @Parameter(
+                    description = "Additional parameters for the prioritiser. This is optional for the 'hiphive' prioritiser." +
+                                  " values can be at least one of 'human,mouse,fish,ppi'. Will default to all, however" +
+                                  " just 'human' will restrict matches to known human disease-gene associations.",
+                    example = "human",
+                    required = false
+            )
+            @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
+
+            @Parameter(
+                    description = "Maximum number of results to return (0 for unlimited)",
+                    required = false,
+                    example = "20"
+            )
+            @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
     ) {
         PrioritiserRequest prioritiserRequest = PrioritiserRequest.builder()
                 .prioritiser(prioritiserName)
@@ -89,76 +123,37 @@ public class PrioritiserController {
         return prioritise(prioritiserRequest);
     }
 
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public PrioritiserResultSet prioritise(@RequestBody PrioritiserRequest prioritiserRequest) {
-        logger.info("{}", prioritiserRequest);
-
-        Instant start = Instant.now();
-
-        Prioritiser<? extends PriorityResult> prioritiser = parsePrioritiser(prioritiserRequest.getPrioritiser(), prioritiserRequest
-                .getPrioritiserParams());
-        List<Gene> genes = makeGenesFromIdentifiers(prioritiserRequest.getGenes());
-
-        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, prioritiserRequest.getPhenotypes(), genes, prioritiserRequest
-                .getLimit());
-
-        Instant end = Instant.now();
-        Duration duration = Duration.between(start, end);
-
-        return new PrioritiserResultSet(prioritiserRequest, duration.toMillis(), results);
-    }
-
-    private Prioritiser<? extends PriorityResult> parsePrioritiser(String prioritiserName, String prioritiserParams) {
-        switch (prioritiserName) {
-            case "phenix":
-                return priorityFactory.makePhenixPrioritiser();
-            case "phive":
-                return priorityFactory.makePhivePrioritiser();
-            case "hiphive":
-            default:
-                HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
-                        .runParams(prioritiserParams)
-                        .build();
-                return priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions);
-        }
-    }
-
-    private List<Gene> makeGenesFromIdentifiers(Collection<Integer> genesIds) {
-        if (genesIds.isEmpty()) {
-            logger.info("Gene identifiers not specified - will compare against all known genes.");
-            //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
-            //n.b. Gene is mutable so these can't be cached and returned.
-            return allGenes();
-        }
-        // This is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as
-        // OmimPrioritiser uses some properties of Gene
-        return genesIds.stream()
-                .map(id -> new Gene(geneIdentifiers.getOrDefault(id, unrecognisedGeneIdentifier(id))))
-                .collect(toImmutableList());
-    }
-
-    private List<Gene> allGenes() {
-        return geneIdentifiers.values().parallelStream()
-                .map(Gene::new)
-                .collect(toImmutableList());
-    }
-
-    private GeneIdentifier unrecognisedGeneIdentifier(Integer id) {
-        return GeneIdentifier.builder().geneSymbol("GENE:" + id).build();
-    }
-
-    private <T extends PriorityResult> List<PriorityResult> runLimitAndCollectResults(Prioritiser<T> prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
-        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(Collectors.toSet());
-
-        Stream<T> resultsStream = prioritiser.prioritise(phenotypes, genes)
-                .filter(result -> wantedGeneIds.contains(result.getGeneId()))
-                .sorted(Comparator.naturalOrder());
-
-        logger.info("Finished {}", prioritiser.getPriorityType());
-        if (limit == 0) {
-            return resultsStream.collect(toImmutableList());
-        }
-        return resultsStream.limit(limit).collect(toImmutableList());
+    @Operation(
+            summary = "Prioritise genes using POST request",
+            description = "Prioritises genes based on provided request body containing phenotypes and configuration"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully prioritised genes",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = PrioritiserResultSet.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request body"
+            )
+    })
+    @PostMapping(
+            value = "prioritise",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public PrioritiserResultSet prioritise(
+            @Parameter(
+                    description = "Prioritisation request parameters",
+                    required = true
+            )
+            @RequestBody PrioritiserRequest prioritiserRequest
+    ) {
+        return prioritiserService.prioritise(prioritiserRequest);
     }
 
 }
