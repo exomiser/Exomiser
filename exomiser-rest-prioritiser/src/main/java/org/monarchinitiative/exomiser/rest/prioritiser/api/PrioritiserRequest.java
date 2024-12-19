@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,57 +34,59 @@ import java.util.Objects;
  * @since 12.1.0
  */
 @JsonDeserialize(builder = PrioritiserRequest.Builder.class)
-public class PrioritiserRequest {
+@Schema(description = "Request parameters for gene prioritisation")
+public record PrioritiserRequest(
+        @Schema(
+                description = "Set of HPO phenotype identifiers",
+                example = "[\"HP:0001156\", \"HP:0001363\", \"HP:0011304\", \"HP:0010055\"]",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        List<String> phenotypes,
 
-    private final List<String> phenotypes;
-    private final List<Integer> genes;
-    private final String prioritiser;
-    private final String prioritiserParams;
-    private final int limit;
+        @Schema(
+                description = "Set of NCBI gene IDs to consider in prioritisation",
+                example = "[2263, 2264]",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        List<Integer> genes,
 
-    private PrioritiserRequest(Builder builder) {
-        this.phenotypes = builder.phenotypes.stream().distinct().toList();
-        this.genes = builder.genes.stream().distinct().toList();
-        this.prioritiser = builder.prioritiser;
-        this.prioritiserParams = builder.prioritiserParams;
-        this.limit = builder.limit;
-    }
+        @Schema(
+                description = "Name of the prioritiser algorithm to use. One of ['hiphive', 'phenix', 'phive']. " +
+                              "Defaults to 'hiphive' which allows for cross-species and PPI hits. 'phenix' is a" +
+                              " legacy prioritiser which will only prioritise human disease-gene associations. It is" +
+                              " the equivalent of 'hiphive' with prioritiser-params='human'. 'phive' is just the" +
+                              " mouse subset of hiphive, equivalent to 'hiphive' with prioritiser-params='mouse'.",
+                example = "hiphive",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        String prioritiser,
 
-    public List<String> getPhenotypes() {
-        return phenotypes;
-    }
+        @Schema(
+                description = "Additional parameters for the prioritiser. This is optional for the 'hiphive' prioritiser." +
+                              " values can be at least one of 'human,mouse,fish,ppi'. Will default to all, however" +
+                              " just 'human' will restrict matches to known human disease-gene associations.",
+                example = "human",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        String prioritiserParams,
 
-    public List<Integer> getGenes() {
-        return genes;
-    }
+        @Schema(
+                description = "Maximum number of results to return (0 for unlimited)",
+                example = "20",
+                defaultValue = "0",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        int limit
+) {
 
-    public String getPrioritiser() {
-        return prioritiser;
-    }
-
-    public String getPrioritiserParams() {
-        return prioritiserParams;
-    }
-
-    public int getLimit() {
-        return limit;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PrioritiserRequest)) return false;
-        PrioritiserRequest that = (PrioritiserRequest) o;
-        return limit == that.limit &&
-                phenotypes.equals(that.phenotypes) &&
-                genes.equals(that.genes) &&
-                prioritiser.equals(that.prioritiser) &&
-                prioritiserParams.equals(that.prioritiserParams);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(phenotypes, genes, prioritiser, prioritiserParams, limit);
+    static PrioritiserRequest from(Builder builder) {
+        Objects.requireNonNull(builder);
+        return new PrioritiserRequest(
+                builder.phenotypes.stream().distinct().toList(),
+                builder.genes.stream().distinct().toList(),
+                builder.prioritiser,
+                builder.prioritiserParams,
+                builder.limit);
     }
 
     @Override
@@ -105,7 +108,7 @@ public class PrioritiserRequest {
     public static class Builder {
         private Collection<String> phenotypes = new ArrayList<>();
         private Collection<Integer> genes = new ArrayList<>();
-        private String prioritiser = "";
+        private String prioritiser = "hiphive";
         private String prioritiserParams = "";
         private int limit;
 
@@ -135,7 +138,7 @@ public class PrioritiserRequest {
         }
 
         public PrioritiserRequest build() {
-            return new PrioritiserRequest(this);
+            return PrioritiserRequest.from(this);
         }
     }
 }
