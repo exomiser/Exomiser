@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>14.1.0</version>
+        <version>15.0.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli-spring-boot-starter</artifactId>
-            <version>4.7.4</version>
+            <version>${picocli.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
