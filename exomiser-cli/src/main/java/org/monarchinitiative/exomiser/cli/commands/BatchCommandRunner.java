@@ -6,6 +6,7 @@ import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileValidationResu
 import org.monarchinitiative.exomiser.cli.commands.batch.SampleValidationError;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisDurationFormatter;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.JobParser;
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
@@ -14,6 +15,7 @@ import org.monarchinitiative.exomiser.core.genome.VcfFileReader;
 import org.monarchinitiative.exomiser.core.genome.VcfReader;
 import org.monarchinitiative.exomiser.core.model.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifiers;
+import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -59,7 +61,9 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
             int counter = 0;
             for (JobProto.Job job : jobs) {
                 logger.info("Running job {} of {}", ++counter, jobs.size());
-                exomiser.run(job);
+                AnalysisResults analysisResults = exomiser.run(job);
+                logger.info("Writing results...");
+                AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
             }
             Duration duration = Duration.between(timeStart, Instant.now());
             long ms = duration.toMillis();
