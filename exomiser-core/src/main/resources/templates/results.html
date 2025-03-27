@@ -376,7 +376,7 @@
                         <div class="me-4 accordion-rank">
                             <h5 class="text-black-50 m-0" th:text="${iterStat.index + 1}"></h5>
                         </div>
-                        <div class="col">
+                        <div class="col-1">
                             <h6 class="m-0" th:text="${gene.getGeneIdentifier().getGeneSymbol()}">
                                 FGFR2
                             </h6>
@@ -393,8 +393,48 @@
                         <div class="col">
                             <span>Variant Score <b th:text="${#numbers.formatDecimal(gene.getVariantScore(), 1, 3)}">1.00</b></span>
                         </div>
-                        <div class="col">
-                            <span th:if="${gene.getTopGeneScore().getAcmgAssignments().size() > 0}" th:text="${gene.getTopGeneScore().getAcmgAssignments().get(0)}"></span>
+                        <div class="col" th:if="${gene.getTopGeneScore().getAcmgAssignments().size() > 0}">
+                            Exomiser ACMG<br>
+                            <th:block th:with="acmgClassification = ${gene.getTopGeneScore().getAcmgAssignments().get(0).acmgClassification()}"
+                                      th:switch="${acmgClassification.toString()}">
+                                <div th:case="'BENIGN'" class="badge rounded-pill text-bg-success"
+                                      th:text="${acmgClassification}">BENIGN</div>
+                                <div th:case="'LIKELY_BENIGN'" class="badge rounded-pill text-bg-success"
+                                     th:text="${acmgClassification}">LIKELY_BENIGN</div>
+                                <div th:case="'LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-warning"
+                                     th:text="${acmgClassification}">LIKELY_PATHOGENIC</div>
+                                <div th:case="'PATHOGENIC'" class="badge rounded-pill text-bg-danger"
+                                     th:text="${acmgClassification}">PATHOGENIC</div>
+                                <div th:case="'UNCERTAIN_SIGNIFICANCE'" class="badge rounded-pill text-bg-info"
+                                     th:text="${acmgClassification}">UNCERTAIN_SIGNIFICANCE</div>
+                                <div th:case="*" class="badge rounded-pill text-bg-info"
+                                     th:text="${acmgClassification}">NOT_AVAILABLE</div>
+                            </th:block>
+                        </div>
+                        <div class="col" th:if="${gene.getTopGeneScore().getAcmgAssignments().size() > 0}">
+                            Clinvar ACMG<br>
+                            <div th:if="${gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().hasClinVarData()}">
+                            <th:block th:with="clinVarData = ${gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().clinVarData()}"
+                                      th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                <div th:case="'BENIGN'" class="badge rounded-pill text-bg-success"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</div>
+                                <div th:case="'BENIGN_OR_LIKELY_BENIGN'" class="badge rounded-pill text-bg-success"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</div>
+                                <div th:case="'LIKELY_BENIGN'" class="badge rounded-pill text-bg-info"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</div>
+                                <div th:case="'LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-warning"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</div>
+                                <div th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-danger"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</div>
+                                <div th:case="'PATHOGENIC'" class="badge rounded-pill text-bg-danger"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</div>
+                                <div th:case="*" class="badge rounded-pill text-bg-info"
+                                     th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</div>
+                            </th:block>
+                            </div>
+                            <div th:if="${!gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().hasClinVarData()}">
+                            <div class="badge rounded-pill text-bg-info">NO_EVIDENCE</div>
+                            </div>
                         </div>
                     </div>
                 </div>
