@@ -1007,7 +1007,7 @@
         })
 
         async function copyToClipboard(el){
-            let text = el.parentNode.parentNode.querySelector('.variant').textContent;
+            let text = el.parentNode.parentNode.querySelector('span').textContent;
             let match = text.match(/\d+-\d+/);
             if (match) {
                 text = match[0];
