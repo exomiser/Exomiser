@@ -69,6 +69,22 @@ public class FilterReport {
         return failed;
     }
 
+    public double getPercentageFilteredFromBeginning(double originalSize) {
+        return ((originalSize - (double) passed) / originalSize) * 100;
+    }
+
+    public double getPercentageFilteredFromReports(double originalSize) {
+        return (failed / originalSize) * 100;
+    }
+
+    public double getPercentageFilteredFromReport(double originalSize) {
+        return (failed / originalSize) * 100;
+    }
+
+    public int getTotalEvaluationCount() {
+        return passed + failed;
+    }
+
     @Override
     public int hashCode() {
         int hash = 5;

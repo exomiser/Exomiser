@@ -115,6 +115,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         //write out the analysis reports section
         List<FilterReport> analysisStepReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
+        context.setVariable("filterReportEvalCount", !analysisStepReports.isEmpty() ? analysisStepReports.get(0).getTotalEvaluationCount() : 0.00);
         //write out the variant type counters
         List<String> sampleNames = analysisResults.getSampleNames();
         List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults

@@ -29,7 +29,7 @@ package org.monarchinitiative.exomiser.core.filters;
  */
 public enum FilterType {
 
-    FAILED_VARIANT_FILTER("filter", "Failed previous VCF filters"),
+    FAILED_VARIANT_FILTER("filter", "VCF Quality Filter"),
     QUALITY_FILTER("quality", "Quality"),
     INTERVAL_FILTER("interval", "Interval"),
     ENTREZ_GENE_ID_FILTER("gene-id", "Gene id"),
