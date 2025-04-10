@@ -92,6 +92,7 @@
                             classpath has the SNAPSHOT instead of the build number prefixed to the dependency -->
                             <useUniqueVersions>false</useUniqueVersions>
                             <mainClass>org.monarchinitiative.exomiser.cli.Main</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
                 </configuration>

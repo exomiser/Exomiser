@@ -3,17 +3,21 @@ package org.monarchinitiative.exomiser.cli;
 import org.monarchinitiative.exomiser.cli.commands.AnalyseCommand;
 import org.monarchinitiative.exomiser.cli.commands.AnnotateCommand;
 import org.monarchinitiative.exomiser.cli.commands.BatchCommand;
+import org.monarchinitiative.exomiser.cli.pico.ManifestVersionProvider;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "exomiser",
         mixinStandardHelpOptions = true,
-        version = "15.0.0",
+        versionProvider = ManifestVersionProvider.class,
         subcommands = {
                 AnalyseCommand.class,
                 AnnotateCommand.class,
                 BatchCommand.class,
         }
 )
+/**
+ * @since 15.0.0
+ */
 public class ExomiserCli {
 
         public static CommandLine newExomiserCommandLine() {
