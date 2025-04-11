@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.cli;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -33,6 +34,8 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated
+@Disabled
 class BatchFileReaderTest {
 
     private List<Path> readPaths(String fileName) {

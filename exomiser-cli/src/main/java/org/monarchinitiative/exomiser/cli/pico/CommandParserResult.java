@@ -55,7 +55,7 @@ public final class CommandParserResult<T> {
         return command;
     }
 
-    public int code() {
+    public int exitCode() {
         return exitCode;
     }
 

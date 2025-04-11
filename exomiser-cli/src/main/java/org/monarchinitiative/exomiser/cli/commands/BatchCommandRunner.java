@@ -152,7 +152,7 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                         AnalyseCommand analyseCommand = parsed.getCommand();
                         job = analyseCommand.readJob();
                     }
-                } catch (CommandLine.ParameterException ex) {
+                } catch (Exception ex) {
                     logger.error(ex.getMessage());
                     try {
                         return Result.err(new SampleValidationError(line, ex.getMessage()));

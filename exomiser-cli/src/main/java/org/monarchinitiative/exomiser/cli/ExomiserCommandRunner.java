@@ -34,7 +34,7 @@ public class ExomiserCommandRunner implements CommandLineRunner, ExitCodeGenerat
             case AnalyseCommand analyseCommand -> analyseCommandRunner.run(analyseCommand);
             case AnnotateCommand annotateCommand -> annotateCommandRunner.run(annotateCommand);
             case BatchCommand batchCommand -> batchCommandRunner.run(batchCommand);
-            case null -> commandParserResult.code();
+            case null -> commandParserResult.exitCode();
         };
         logger.info("Exomising finished - Bye!");
     }

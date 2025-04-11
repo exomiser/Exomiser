@@ -58,11 +58,16 @@ class CommandParserTest {
     class AnalysisCommandTests {
 
         @Test
-        void happyPath() {
+        void failsOnUnknownCommand() {
             var parserResult = commandParser.parseArgs("analyse", "--sample", "sample.phenopacket.json", "--vcf", "variants.vcf", "--assembly", "hg38", "--preset", "exome", "--logging.level=trace");
+            assertThat(parserResult.isError(), is(true));
+        }
+
+        @Test
+        void happyPath() {
+            var parserResult = commandParser.parseArgs("analyse", "--sample", "sample.phenopacket.json", "--vcf", "variants.vcf", "--assembly", "hg38", "--preset", "exome");
             assertThat(parserResult.isCommand(), is(true));
             assertThat(parserResult.command(), instanceOf(AnalyseCommand.class));
-            System.out.println(parserResult.command());
         }
 
         @Test
@@ -99,7 +104,6 @@ class CommandParserTest {
             assertThat(parserResult.isCommand(), is(true));
             assertThat(parserResult.command(), instanceOf(AnnotateCommand.class));
             AnnotateCommand annotateCommand = (AnnotateCommand) parserResult.command();
-            System.out.println(annotateCommand);
             assertThat(annotateCommand.inputOption.variant, equalTo(new AnnotateCommand.VariantCoordinates("1", 12345, 12345, "A", "C")));
             assertThat(annotateCommand.genomeAssembly, equalTo(GenomeAssembly.HG19));
         }

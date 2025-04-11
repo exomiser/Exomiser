@@ -48,7 +48,7 @@ public class Main {
         CommandParserResult<ExomiserCommand> commandParserResult = commandParser.parseArgs(args);
         // all ok so far - try launching the app
         Locale.setDefault(Locale.UK);
-        int exitCode = commandParserResult.isCommand() ? validateAndRun(commandParserResult.command(), args) : commandParserResult.code();
+        int exitCode = commandParserResult.isCommand() ? validateAndRun(commandParserResult.command(), args) : commandParserResult.exitCode();
         System.exit(exitCode);
     }
 
