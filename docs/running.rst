@@ -12,7 +12,7 @@ following command:
 
     # run a test exome analysis
     cd exomiser-cli-|version|
-    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 
 
 This command prioritises variants from the input `VCF <https://samtools.github.io/hts-specs/VCFv4.3.pdf>`_ file, called
@@ -26,7 +26,7 @@ Running a multi-sample VCF for trios also requires a `PED <https://gatk.broadins
 
     # run a test exome family analysis
     cd exomiser-cli-|version|
-    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-family.yml --vcf examples/Pfeiffer-quartet.vcf.gz --assembly hg19 --ped examples/Pfeiffer-quartet.ped
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-family.yml --vcf examples/Pfeiffer-quartet.vcf.gz --assembly hg19 --ped examples/Pfeiffer-quartet.ped
 
 
 By default there will be two output files written to the ``results`` directory using the same filename as the input VCF file but
@@ -61,10 +61,10 @@ you will need to specify the path to the ``application.properties`` file in the 
 
 .. parsed-literal::
 
-     java -Xmx4g -jar /full/path/to/your/exomiser-cli/directory/exomiser-cli-|version|.jar --analysis /full/path/to/your/exomiser-cli/directory/examples/test-analysis-exome.yml --spring.config.location=/full/path/to/your/exomiser-cli/directory/application.properties
+     java -Xmx4g -Dspring.config.location=/full/path/to/your/exomiser-cli/directory/application.properties -jar /full/path/to/your/exomiser-cli/directory/exomiser-cli-|version|.jar analyse --analysis /full/path/to/your/exomiser-cli/directory/examples/test-analysis-exome.yml
 
 
-*n.b.* the ``spring.config.location`` command **must be the last argument in the input commands!**
+*n.b.* the ``spring.config.location`` command **must be provided using `-D` JVM system property before the -jar commands!**
 
 
 Troubleshooting
@@ -90,7 +90,7 @@ or
     only recognizes class file versions up to 52.0
 
 
-You are running an older unsupported version of Java. Exomiser requires java version 17 or higher. This can be checked by running:
+You are running an older unsupported version of Java. Exomiser requires java version 21 or higher. This can be checked by running:
 
 .. code-block:: console
 
@@ -100,9 +100,9 @@ You should see something like this in response:
 
 .. code-block:: console
 
-    openjdk version "17.0.9" 2023-10-17
-    OpenJDK Runtime Environment (build 17.0.9+9-Ubuntu-122.04)
-    OpenJDK 64-Bit Server VM (build 17.0.9+9-Ubuntu-122.04, mixed mode, sharing)
+    openjdk 21.0.6 2025-01-21
+    OpenJDK Runtime Environment (build 21.0.6+7-Ubuntu-124.04.1)
+    OpenJDK 64-Bit Server VM (build 21.0.6+7-Ubuntu-124.04.1, mixed mode, sharing)
 
 
-Versions lower than 17 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10) will not run exomiser, so you will need to install the latest java version.
+Versions lower than 21 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10...) will not run exomiser, so you will need to install the latest java version.

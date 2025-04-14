@@ -10,8 +10,27 @@ flexible input using a `GA4GH Phenopacket <https://phenopacket-schema.readthedoc
 the ability to specify the input pedigree, VCF and genome assembly independently; user-specified, preset or default
 analysis options and a new batch mode.
 
+.. _commands:
 
-Sample, vcf, assembly, ped
+========
+Commands
+========
+
+Exomiser has an `analyse` command for single analyses and a `batch` command for running batches of analyses. Unless you
+are running hundreds of samples, the `analyse` command is what you need. The `analyse` command parameters and options
+are also used in the input file for the `batch` command.
+
+
+analyse
+-------
+
+The `analyse` command is the primary command for performing an analysis with the Exomiser. It has various means of
+providing input data and specifying the analysis requirements and output files and formats. These are detailed below. We
+recommend running with the default settings as generally, these will give you the best performance. See `Evaluation of phenotype-driven gene prioritization methods for Mendelian diseases <https://doi.org/10.1093/bib/bbac188>`_
+for an illustration.
+
+
+sample, vcf, assembly, ped
 ==========================
 
 It is recommended to provide Exomiser with the input sample as a `Phenopacket <https://phenopacket-schema.readthedocs.io/en/1.0.0/phenopacket.html>`_.
@@ -20,7 +39,7 @@ the full path to the phenopacket file:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml
 
 
 Should the phenopacket either not specify a VCF file or specifies a file on another filesystem, the VCF file path can be
@@ -29,14 +48,14 @@ is also specified using the ``assembly`` option:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json --vcf path/to/genome.vcf --assembly hg19
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer.vcf.gz --assembly hg19
 
 
 or for hg38/ GRCh38:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json --vcf path/to/genome.vcf --assembly hg38
+    java -jar exomiser-cli-|version|.jar analyse --sample path/to/phenopacket.json --vcf path/to/genome.vcf --assembly hg38
 
 
 Lastly, when analysing a multi-sample VCF a pedigree is required. This can be provided using a dedicated PED file. This
@@ -44,7 +63,7 @@ uses the ``ped`` switch and a full path to the PED file:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json --vcf path/to/genome.vcf --assembly hg38 --ped path/to/pedigree.ped
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf examples/Pfeiffer-quartet.vcf.gz --ped examples/Pfeiffer-quartet.ped
 
 
 or the pedigree, proband and family members can be provided as a phenopacket `family <https://phenopacket-schema.readthedocs.io/en/1.0.0/family.html>`_ message
@@ -52,7 +71,7 @@ which can encode the pedigree.
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/family.json --vcf path/to/genome.vcf --assembly hg38
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-family.yml
 
 
 Whatever the input used it is essential that the sample names used for the proband and other family members are consistent between the
@@ -60,7 +79,7 @@ pedigree and the sample identifiers used in the VCF file. Exomiser will exit wit
 Examples of these can be found in the `examples` directory of the installation.
 
 
-Preset
+preset
 ======
 
 If no ``analysis`` is provided and no preset is specified, Exomiser will default to running the ``exome`` preset analysis.
@@ -68,14 +87,14 @@ If you want to run Genomiser, which will analyse non-coding regions of a WGS sam
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample path/to/phenopacket.json --preset genome
+    java -jar exomiser-cli-|version|.jar analyse --sample path/to/phenopacket.json --preset genome
 
 
 In order to run a ``genome`` preset you need to first ensure that the REMM score data has been downloaded for the relevant
 genome assembly and is enabled in the ``application.properties`` see the :ref:`remm` section.
 
 
-Analysis
+analysis
 ========
 
 .. important::
@@ -95,20 +114,14 @@ Details can be found in the :ref:`analysis` section.
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --analysis examples/test-analysis-exome.yml
+    java -jar exomiser-cli-|version|.jar analyse --analysis examples/test-analysis-exome.yml
 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by
+a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be reduced to 4GB by
 setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
 
-Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
-.. parsed-literal::
-
-    java -jar exomiser-cli-|version|.jar --analysis-batch examples/test-analysis-batch.txt
-
-
-Output
+output
 ======
 
 By default Exomiser will write out any result files to the exomiser-cli-|version|/results sub-directory of the
@@ -118,7 +131,7 @@ filenames will match the input VCF filename. For example
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --assembly hg19
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --assembly hg19
 
 Would result in two files being output with the filename 'manuel_exomiser' and the '.json' and '.html' extensions:
 
@@ -151,15 +164,16 @@ This file is passed to Exomiser using the ``--output`` switch:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --output path/to/output-options.yml
+    java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --output path/to/output-options.yml
 
 
 The output filename, directory and format can also be specified directly on the CLI (see the --help command for details).
 
-Batch
-=====
 
-The above commands can be added to a batch file for example in the file exomiser-cli-|version|/examples/test-analysis-batch-commands.txt
+batch
+-----
+
+The `analyse` commands can be added to a batch file for example in the file exomiser-cli-|version|/examples/test-analysis-batch-commands.txt
 
 .. parsed-literal::
 
@@ -180,11 +194,11 @@ The above commands can be added to a batch file for example in the file exomiser
     --analysis preset-exome-analysis.yml --sample pfeiffer-phenopacket.yml --vcf Pfeiffer.vcf.gz --output output-options.yml
 
 
-then run using the ``--batch`` command:
+then run using the ``batch`` command:
 
 .. parsed-literal::
 
-    java -jar exomiser-cli-|version|.jar --batch path/to/exomiser-cli-|version|/examples/test-analysis-batch-commands.txt
+    java -jar exomiser-cli-|version|.jar batch path/to/exomiser-cli-|version|/examples/test-analysis-batch-commands.txt
 
 
 The advantage of this is that a single command will be able to analyse many samples in far less time than starting a new

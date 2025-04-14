@@ -127,11 +127,11 @@ requires anything different, it is possible to manually define the data sources 
         GNOMAD_G_OTH,
         GNOMAD_G_SAS
     ]
-    # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+    # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP, ALPHA_MISSENSE), CADD, REMM
     # REMM is trained on non-coding regulatory regions
     # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
     # and updated their location in the application.properties. Exomiser will not run without this.
-    pathogenicitySources: [ REVEL, MVP ]
+    pathogenicitySources: [ REVEL, MVP, ALPHA_MISSENSE ]
     #this is the standard exomiser order.
     steps: [
         failedVariantFilter: { },
@@ -283,10 +283,11 @@ non-coding regulatory regions. **WARNING** if you enable ``CADD``, ensure that y
 tabix files and updated their location in the ``application.properties`` (see :ref:`cadd-install`). Exomiser will not run
 without this.
 
-We recommend using either  ``[REVEL, MVP]`` **OR** ``[POLYPHEN, MUTATION_TASTER, SIFT]`` as REVEL and MVP are newer
-predictors which have been shown to have better performance and are more nuanced. Mixing them with the Polyphen2,
-MutationTaster or SIFT will give worse performance. Testing on GEL solved cases with AlphaMissense slightly increased
-performance when combined with MVP. We advise testing on local cohorts for assessing local performance.
+We recommend using either  ``[REVEL, MVP, ALPHA_MISSENSE]`` **OR** ``[POLYPHEN, MUTATION_TASTER, SIFT]`` as REVEL, MVP
+and ALPHA_MISSENSE are newer predictors which have been shown to have better performance and are more nuanced. Mixing
+them with the Polyphen2, MutationTaster or SIFT will give worse performance. Testing on GEL solved cases with
+AlphaMissense slightly increased performance when combined with MVP. We advise testing on local cohorts for assessing
+local performance.
 
 `REVEL scores are freely available for non-commercial use. For other uses, please contact Weiva Sieh.`
 
@@ -619,15 +620,6 @@ The mimimum gene (combined phenotype and variant) score required to be returned.
 good score however, depending on the proband phenotype and the phenotype of best matching condition although it is not a
 hard-and-fast number. In our testing 0.7 gave the best performance in terms or recall and sensitivity. Not enabled by
 default.
-
-outputPrefix:
--------------
-Specify the path/filename without an extension and this will be added according to the
-:ref:`outputFormats<outputformats>` option. If unspecified this will default to the following:
-``{exomiserDir}/results/input-vcf-name-exomiser-results.html``. Alternatively, specify a fully qualified path
-only. e.g. ``/home/jules/exomes/analysis``.
-**DEPRECATED** - replaced by explicit ``outputDirectory`` and ``outputFileName`` options. Users are strongly advised to
-migrate any existing scripts to use the new options (below), as this will be removed in a future version.
 
 
 .. _outputdirectory:
