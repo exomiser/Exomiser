@@ -255,14 +255,16 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
         VariantAnnotator variantAnnotator = genomeAnalysisService.getVariantAnnotator();
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         VariantAnnotation variantAnnotation = variantAnnotations.isEmpty() ? null : variantAnnotations.get(0);
-        VariantEvaluation variantEvaluation = VariantEvaluation.builder()
-                .variant(genomicVariant)
-                .geneId(variantAnnotation.getGeneId())
-                .geneSymbol(variantAnnotation.getGeneSymbol())
-                .variantEffect(variantAnnotation.getVariantEffect())
-                .annotations(variantAnnotation.getTranscriptAnnotations())
-                .build();
-
+        VariantEvaluation.Builder variantEvaluationBuilder = VariantEvaluation.builder()
+                .variant(genomicVariant);
+        if (variantAnnotation != null) {
+            variantEvaluationBuilder
+                    .geneId(variantAnnotation.getGeneId())
+                    .geneSymbol(variantAnnotation.getGeneSymbol())
+                    .variantEffect(variantAnnotation.getVariantEffect())
+                    .annotations(variantAnnotation.getTranscriptAnnotations());
+        }
+        var variantEvaluation = variantEvaluationBuilder.build();
         FrequencyData frequencyData = genomeAnalysisService.getVariantFrequencyData(variantEvaluation, FrequencySource.NON_FOUNDER_POPS);
         variantEvaluation.setFrequencyData(frequencyData);
         PathogenicityData pathogenicityData = genomeAnalysisService.getVariantPathogenicityData(variantEvaluation, PATHOGENICITY_SOURCES);
