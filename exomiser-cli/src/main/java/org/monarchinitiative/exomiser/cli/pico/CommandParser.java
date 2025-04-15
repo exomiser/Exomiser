@@ -21,16 +21,12 @@ public record CommandParser<T>(CommandLine commandLine) {
         try {
             CommandLine.ParseResult parseResult = commandLine.parseArgs(args);
             var lastParsedCommand = findLastParsedCommandLine(parseResult);
-            if (commandLine.isUsageHelpRequested()) {
+            if (commandLine.isUsageHelpRequested() || lastParsedCommand.isEmpty()) {
                 CommandLine.executeHelpRequest(parseResult);
                 return CommandParserResult.help(0);
             } else if (commandLine.isVersionHelpRequested()) {
                 commandLine.printVersionHelp(System.out);
                 return CommandParserResult.version(0);
-            }
-            else if (parseResult.subcommand() == null && lastParsedCommand.isEmpty()) {
-                commandLine.usage(System.err);
-                return CommandParserResult.error(-1);
             }
             else {
                 var lastCommand = lastParsedCommand.get();
