@@ -39,6 +39,7 @@ import java.util.stream.Stream;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated(forRemoval = true)
 public class BatchFileReader {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchFileReader.class);

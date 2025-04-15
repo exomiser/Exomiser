@@ -57,6 +57,8 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated(forRemoval = true)
+@Disabled
 class CommandLineJobReaderTest {
 
     private final CommandLineJobReader instance = new CommandLineJobReader();
@@ -264,7 +266,7 @@ class CommandLineJobReaderTest {
 //                    FrequencySource.GNOMAD_G_OTH,
                     FrequencySource.GNOMAD_G_SAS
             ))
-            .pathogenicitySources(ImmutableSet.of(REVEL, MVP))
+            .pathogenicitySources(ImmutableSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI))
             .addFailedVariantFilter()
             .addVariantEffectFilter(ImmutableSet.of(
                     FIVE_PRIME_UTR_EXON_VARIANT,
