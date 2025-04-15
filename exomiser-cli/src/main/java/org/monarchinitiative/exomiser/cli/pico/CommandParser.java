@@ -21,7 +21,7 @@ public record CommandParser<T>(CommandLine commandLine) {
         try {
             CommandLine.ParseResult parseResult = commandLine.parseArgs(args);
             var lastParsedCommand = findLastParsedCommandLine(parseResult);
-            if (commandLine.isUsageHelpRequested() || lastParsedCommand.isEmpty()) {
+            if (commandLine.isUsageHelpRequested()) {
                 CommandLine.executeHelpRequest(parseResult);
                 return CommandParserResult.help(0);
             } else if (commandLine.isVersionHelpRequested()) {

@@ -268,6 +268,12 @@
                 <!--                <configuration>-->
                 <!--                    <forkCount>0</forkCount>-->
                 <!--                </configuration>-->
+                <configuration>
+                    <!-- attempt to suppress WARNING: A Java agent has been loaded dynamically (...byte-buddy-agent-1.14.12.jar)
+                    ... this is caused by calling Mockito. But "Dynamic loading of agents will be disallowed by default
+                    in a future release", so this is likely a short-term fix -->
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

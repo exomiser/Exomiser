@@ -20,6 +20,7 @@
 package org.monarchinitiative.exomiser.cli.commands.batch;
 
 import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.cli.CommandLineParseError;
 import org.monarchinitiative.exomiser.cli.commands.AnalyseCommand;
 import org.monarchinitiative.exomiser.cli.pico.CommandParser;
 import org.monarchinitiative.exomiser.cli.pico.CommandParserResult;
@@ -27,11 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -67,10 +66,9 @@ public class BatchFileReader {
                     .filter(Objects::nonNull)
                     .map(AnalyseCommand::readJob)
                     .toList();
-        } catch (IOException ex) {
-            logger.error("Unable to read batch file {}", batchFile, ex);
+        } catch (Exception ex) {
+            throw new CommandLineParseError("Error reading batch file " + batchFile, ex);
         }
-        return Collections.emptyList();
     }
 
     private static Predicate<String> commentLines() {

@@ -1,6 +1,7 @@
 package org.monarchinitiative.exomiser.cli.commands;
 
 import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.cli.CommandLineParseError;
 import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileReader;
 import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileValidationResults;
 import org.monarchinitiative.exomiser.cli.commands.batch.SampleValidationError;
@@ -28,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,30 +47,35 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
 
 
     public BatchCommandRunner(JobParser jobParser, Exomiser exomiser) {
-        this.jobParser = jobParser;
-        this.exomiser = exomiser;
+        this.jobParser = Objects.requireNonNull(jobParser);
+        this.exomiser = Objects.requireNonNull(exomiser);
     }
 
     public Integer run(BatchCommand batchCommand) {
         logger.info("Running command {}", batchCommand);
-        if (batchCommand.dryRun) {
-            return doDryRun(batchCommand);
-        } else {
-            List<JobProto.Job> jobs = BatchFileReader.readJobsFromBatchFile(batchCommand.batchFilePath);
-            Instant timeStart = Instant.now();
-            int counter = 0;
-            for (JobProto.Job job : jobs) {
-                logger.info("Running job {} of {}", ++counter, jobs.size());
-                AnalysisResults analysisResults = exomiser.run(job);
-                logger.info("Writing results...");
-                AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
+        try {
+            if (batchCommand.dryRun) {
+                return doDryRun(batchCommand);
+            } else {
+                List<JobProto.Job> jobs = BatchFileReader.readJobsFromBatchFile(batchCommand.batchFilePath);
+                Instant timeStart = Instant.now();
+                int counter = 0;
+                for (JobProto.Job job : jobs) {
+                    logger.info("Running job {} of {}", ++counter, jobs.size());
+                    AnalysisResults analysisResults = exomiser.run(job);
+                    logger.info("Writing results...");
+                    AnalysisResultsWriter.writeToFile(analysisResults, job.getOutputOptions());
+                }
+                Duration duration = Duration.between(timeStart, Instant.now());
+                long ms = duration.toMillis();
+                String formatted = AnalysisDurationFormatter.format(duration);
+                logger.info("Finished batch of {} samples in {} ({} ms)", jobs.size(), formatted, ms);
             }
-            Duration duration = Duration.between(timeStart, Instant.now());
-            long ms = duration.toMillis();
-            String formatted = AnalysisDurationFormatter.format(duration);
-            logger.info("Finished batch of {} samples in {} ({} ms)", jobs.size(), formatted, ms);
+            return 0;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
-        return 0;
+        return 1;
     }
 
     private int doDryRun(BatchCommand batchCommand) {
@@ -109,11 +114,10 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
     record BatchValidator(JobParser jobParser) {
 
         BatchFileValidationResults validateBatchFile(Path batchFilePath) {
-            AtomicInteger checkedCounter = new AtomicInteger();
-            AtomicInteger errCounter = new AtomicInteger();
-            List<SampleValidationError> sampleValidationErrors = Collections.emptyList();
             try (Stream<String> lines = Files.lines(batchFilePath, StandardCharsets.UTF_8)) {
-                sampleValidationErrors = lines
+                AtomicInteger checkedCounter = new AtomicInteger();
+                AtomicInteger errCounter = new AtomicInteger();
+                List<SampleValidationError> sampleValidationErrors = lines
                         .filter(commentLines())
                         .filter(emptyLines())
                         .map(validateLine(checkedCounter))
@@ -123,13 +127,16 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                             return errorResult.err();
                         })
                         .toList();
-            } catch (IOException ex) {
-                logger.error("Unable to read batch file {}", batchFilePath, ex);
-            }
-            int errors = errCounter.get();
-            int checked = checkedCounter.get();
+                int errors = errCounter.get();
+                int checked = checkedCounter.get();
 
-            return new BatchFileValidationResults(checked, errors, sampleValidationErrors);
+                if (errors == 0 && checked == 0) {
+                    throw new IllegalStateException("Empty batch file: " + batchFilePath);
+                }
+                return new BatchFileValidationResults(checked, errors, sampleValidationErrors);
+            } catch (IOException ex) {
+                throw new CommandLineParseError("Unable to read batch file " + batchFilePath, ex);
+            }
         }
 
         private Predicate<String> commentLines() {
@@ -154,11 +161,7 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                     }
                 } catch (Exception ex) {
                     logger.error(ex.getMessage());
-                    try {
-                        return Result.err(new SampleValidationError(line, ex.getMessage()));
-                    } catch (Exception ex2) {
-                        return Result.err(new SampleValidationError(line, ex2.getMessage()));
-                    }
+                    return Result.err(new SampleValidationError(line, ex.getMessage()));
                 }
                 return validateJob(line, job);
             };
