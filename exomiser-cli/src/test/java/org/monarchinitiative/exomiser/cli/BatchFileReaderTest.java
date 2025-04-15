@@ -34,7 +34,7 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Disabled
 class BatchFileReaderTest {
 

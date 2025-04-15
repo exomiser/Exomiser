@@ -57,7 +57,7 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Disabled
 class CommandLineJobReaderTest {
 
