@@ -45,15 +45,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Generate results in VCF format using HTS-JDK.
@@ -97,11 +97,27 @@ public class VcfResultsWriter implements ResultsWriter {
             return;
         }
         Path outFileName = settings.makeOutputFilePath(vcfPath, OUTPUT_FORMAT);
-        Path outPath = Paths.get(outFileName + ".gz");
+        Path outPath = Path.of(outFileName + ".gz");
         try (VariantContextWriter writer = variantContextWriterBuilder().setOutputPath(outPath).build()) {
             writeData(analysisResults, settings, vcfPath, writer);
+        } catch (Exception e) {
+            logger.error("Unable to write results to file {}", outPath, e);
+            // The VCFWriter will start to write a compressed VCF file. "The gzip header includes an extra sub-field
+            //  with identifier 'BC' and the length of the compressed block, including all headers."
+            //  (see https://www.htslib.org/doc/bgzip.html#BGZF_FORMAT) but the file contents will otherwise be empty as
+            //  it would have thrown an exception. Delete it so as not to cause too much user WTFery
+            cleanUpEmptyFile(outPath);
+            cleanUpEmptyFile(Path.of(outPath + ".tbi"));
         }
         logger.debug("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
+    }
+
+    private static void cleanUpEmptyFile(Path outPath) {
+        try {
+            Files.deleteIfExists(outPath);
+        } catch (IOException ex) {
+            // swallow
+        }
     }
 
     @Override
@@ -117,6 +133,8 @@ public class VcfResultsWriter implements ResultsWriter {
         // don't try to write the string as a BGZipped output.
         try (VariantContextWriter writer = variantContextWriterBuilder().modifyOption(Options.INDEX_ON_THE_FLY, false).setOutputStream(baos).build()) {
             writeData(analysisResults, settings, vcfPath, writer);
+        } catch (Exception e) {
+            logger.error("Unable to write results to string", e);
         }
         logger.debug("{} results written to string buffer", OUTPUT_FORMAT);
         return baos.toString(StandardCharsets.UTF_8);
@@ -127,7 +145,7 @@ public class VcfResultsWriter implements ResultsWriter {
                 .setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER);
     }
 
-    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, Path vcfPath, VariantContextWriter writer){
+    private void writeData(AnalysisResults analysisResults, OutputSettings outputSettings, Path vcfPath, VariantContextWriter writer) {
         // n.b. identity is key here as VariantContext doesn't override equals() or hashCode() so don't change the implementation of this map
         Map<VariantContext, List<String>> variantContextAlleleInfoMap = new IdentityHashMap<>();
 
@@ -191,7 +209,7 @@ public class VcfResultsWriter implements ResultsWriter {
                     return samSequenceRecord;
                 })
                 .sorted(Comparator.comparingInt(SAMSequenceRecord::getSequenceIndex))
-                .collect(toUnmodifiableList());
+                .toList();
         return new SAMSequenceDictionary(contigs);
     }
 
@@ -221,7 +239,7 @@ public class VcfResultsWriter implements ResultsWriter {
         fields.add(assignment.map(acmgAssignment -> toVcfAcmgInfo(acmgAssignment.acmgEvidence())).orElse(""));
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
         fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName().replace(" ", "_")).orElse("") + '"');
-        return "{"+ String.join("|", fields) + "}";
+        return "{" + String.join("|", fields) + "}";
     }
 
     private String toVcfAcmgInfo(AcmgEvidence acmgEvidence) {
@@ -231,7 +249,7 @@ public class VcfResultsWriter implements ResultsWriter {
                     AcmgCriterion.Evidence evidence = entry.getValue();
                     return (acmgCriterion.evidence() == evidence) ? acmgCriterion.toString() : acmgCriterion + "_" + evidence.displayString();
                 })
-                .collect(Collectors.joining(","));
+                .collect(joining(","));
     }
 
     private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {

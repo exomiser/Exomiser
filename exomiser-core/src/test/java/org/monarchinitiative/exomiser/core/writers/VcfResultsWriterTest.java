@@ -55,13 +55,14 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -73,9 +74,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public class VcfResultsWriterTest {
+class VcfResultsWriterTest {
 
-    private final static String METADATA_HEADER = "##fileformat=VCFv4.2\n" +
+    private static final String METADATA_HEADER = "##fileformat=VCFv4.2\n" +
                                                   "##INFO=<ID=Exomiser,Number=.,Type=String,Description=\"A pipe-separated set of values for the proband allele(s) from the record with one per compatible MOI following the format: {RANK|ID|GENE_SYMBOL|ENTREZ_GENE_ID|MOI|P-VALUE|EXOMISER_GENE_COMBINED_SCORE|EXOMISER_GENE_PHENO_SCORE|EXOMISER_GENE_VARIANT_SCORE|EXOMISER_VARIANT_SCORE|CONTRIBUTING_VARIANT|WHITELIST_VARIANT|FUNCTIONAL_CLASS|HGVS|EXOMISER_ACMG_CLASSIFICATION|EXOMISER_ACMG_EVIDENCE|EXOMISER_ACMG_DISEASE_ID|EXOMISER_ACMG_DISEASE_NAME}\">\n";
 
     private static final String CHR_7_CONTIG_HEADER = "##contig=<ID=7,length=159138663,assembly=GRCh37.p13>\n";
@@ -93,12 +94,12 @@ public class VcfResultsWriterTest {
 
     private final VcfResultsWriter instance = new VcfResultsWriter();
 
-    private static VCFFileReader reader;
+    private @TempDir Path outPath;
 
-    //    private Path outPath;
-    private OutputSettings settings = OutputSettings.builder()
+    private final OutputSettings settings = OutputSettings.builder()
             .outputFormats(EnumSet.of(OutputFormat.VCF))
-            .outputPrefix("testWrite")
+            .outputDirectory(outPath)
+            .outputFileName("testWrite")
             .build();
 
     private final Sample sample = Sample.builder()
@@ -118,7 +119,7 @@ public class VcfResultsWriterTest {
     Gene shhGene = setUpShhGene();
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         setUpModel();
     }
 
@@ -162,7 +163,7 @@ public class VcfResultsWriterTest {
 
     /* test that the extended header is written out properly */
     @Test
-    public void testWriteHeaderFile() {
+    void testWriteHeaderFile() {
         AnalysisResults analysisResults = AnalysisResults.builder()
                 .sample(sample)
                 .analysis(analysis)
@@ -220,7 +221,7 @@ public class VcfResultsWriterTest {
 
     /* test writing out annotated variants in two genes */
     @Test
-    public void testWriteAnnotatedVariantsNoFiltersApplied() {
+    void testWriteAnnotatedVariantsNoFiltersApplied() {
 
         AnalysisResults analysisResults = buildAnalysisResults();
 
@@ -236,7 +237,7 @@ public class VcfResultsWriterTest {
     }
 
     @Test
-    public void testAnnotatedVariantGeneSymbolWhitespaceIsReplacedWithUnderscore() {
+    void testAnnotatedVariantGeneSymbolWhitespaceIsReplacedWithUnderscore() {
         GeneIdentifier incorrectGeneSymbol = GeneIdentifier.builder()
                 .geneId("6469")
                 //this should not have spaces in the VCF file
@@ -264,13 +265,13 @@ public class VcfResultsWriterTest {
     }
 
     @Test
-    public void testWritePassVariantsToFile(@TempDir Path tempDir) throws IOException {
+    void testWritePassVariantsToFile(@TempDir Path tempDir) throws IOException {
         AnalysisResults analysisResults = buildAnalysisResults();
 
-        Path vcfOutFilePrefix = tempDir.resolve("test-vcf-writer");
         OutputSettings outputSettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outputPrefix(vcfOutFilePrefix.toString())
+                .outputDirectory(tempDir)
+                .outputFileName("test-vcf-writer")
                 .build();
         instance.writeFile(analysisResults, outputSettings);
 
@@ -286,13 +287,13 @@ public class VcfResultsWriterTest {
         expected.add("10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|1.0000|0.9500|0.9500|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|NOT_AVAILABLE|||\"\"}\tGT:RD\t0/1:30");
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(vcfOutFile.toFile()))))) {
-            List<String> actual = br.lines().collect(Collectors.toUnmodifiableList());
+            List<String> actual = br.lines().toList();
             assertThat(actual, equalTo(expected));
         }
     }
 
     @Test
-    public void testWritePassVariantsWithNoPassingVariants() {
+    void testWritePassVariantsWithNoPassingVariants() {
         fgfr2PassMissenseVariant.addFilterResult(FAIL_TARGET_RESULT);
         fgfr2PassMissenseVariant.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
@@ -314,10 +315,10 @@ public class VcfResultsWriterTest {
     }
 
     @Test
-    public void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
+    void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory(vcfPath);
-        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations().collect(Collectors.toUnmodifiableList());
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations().toList();
         // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
         VariantEvaluation altAlleleOne = variants.get(3).toBuilder()
                 //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
@@ -362,7 +363,7 @@ public class VcfResultsWriterTest {
     }
 
     @Test
-    public void testAnnotatedVariantAcmgDiseaseNameWhitespaceIsReplacedWithUnderscore() {
+    void testAnnotatedVariantAcmgDiseaseNameWhitespaceIsReplacedWithUnderscore() {
         GeneIdentifier geneIdentifier = GeneIdentifier.builder()
                 .geneId("6469")
                 // this should not have spaces in the VCF file
@@ -405,5 +406,64 @@ public class VcfResultsWriterTest {
         final String expected = METADATA_HEADER + CHR_7_CONTIG_HEADER + SAMPLE_HEADER
                 + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_AD|SHH_alpha_spaces|6469|AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|LIKELY_BENIGN|BP1_Moderate|DISEASE:1|\"Name_with_spaces\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
+    }
+
+    @Test
+    void nullVcfPathProducesNoOutfile(@TempDir Path tempDir) throws IOException {
+        Sample vcfv4Dot3Sample = Sample.builder().vcfPath(null).build();
+
+        AnalysisResults analysisResults = buildAnalysisResults(vcfv4Dot3Sample, analysis);
+
+        OutputSettings outputSettings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
+                .outputDirectory(tempDir)
+                .outputFileName("exomiser-vcf")
+                .build();
+
+        instance.writeFile(analysisResults, outputSettings);
+
+        Path outputFile = tempDir.resolve("exomiser-vcf.vcf.gz");
+        assertThat(Files.exists(outputFile), is(false));
+        Path outputFileTabixIndex = Path.of(outputFile + ".tbi");
+        assertThat(Files.exists(outputFileTabixIndex), is(false));
+
+        String result = instance.writeString(analysisResults, outputSettings);
+        assertThat(result, equalTo(""));
+    }
+
+    /**
+     * HTSJDK is currently unable to write VCF v 4.3 or higher.
+     * @throws IOException
+     */
+    @Test
+    void testWriteVcf4_3LogsErrorInsteadOfThrowingException(@TempDir Path tempDir) throws IOException {
+
+        String vcfContents = """
+                ##fileformat=VCFv4.3
+                #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample
+                """;
+
+        Path sampleVcf = tempDir.resolve("sample-vcf-v4_3.vcf");
+        Files.writeString(sampleVcf, vcfContents, StandardCharsets.UTF_8);
+
+        Sample vcfv4Dot3Sample = Sample.builder().vcfPath(sampleVcf).build();
+
+        AnalysisResults analysisResults = buildAnalysisResults(vcfv4Dot3Sample, analysis);
+
+        OutputSettings outputSettings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
+                .outputDirectory(tempDir)
+                .outputFileName("exomiser-vcf-v4_3")
+                .build();
+
+        instance.writeFile(analysisResults, outputSettings);
+
+        Path outputFile = tempDir.resolve("exomiser-vcf-v4_3.vcf.gz");
+        assertThat(Files.exists(outputFile), is(false));
+        Path outputFileTabixIndex = Path.of(outputFile + ".tbi");
+        assertThat(Files.exists(outputFileTabixIndex), is(false));
+
+        String result = instance.writeString(analysisResults, outputSettings);
+        assertThat(result, equalTo(""));
     }
 }
