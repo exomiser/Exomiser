@@ -380,6 +380,22 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             return 1f;
         }
         float predictedScore = pathogenicityData.pathogenicityScore();
+        float variantEffectScore = getVariantEffectScore();
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
+            // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
+            // best to check for a REVEL prediction and defer wholly to that if present rather than do the following.
+
+            // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
+            // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
+            // In order that missense variants are not over-represented if they have poor predicted scores this clause was added here.
+            return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
+        } else {
+            return Math.max(predictedScore, variantEffectScore);
+        }
+    }
+
+    private float getVariantEffectScore() {
         float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
         if (this.isSymbolic()) {
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
@@ -410,18 +426,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
             // transcript, even if it only occurs in an intron or UTR, so we can't give this an outright score of 1.
             // This is the reason the variantEffectScore was downgraded from 1 to 0.6.
         }
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
-            // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
-            // best to check for a REVEL prediction and defer wholly to that if present rather than do the following.
-
-            // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
-            // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
-            // In order that missense variants are not over-represented if they have poor predicted scores this clause was added here.
-            return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
-        } else {
-            return Math.max(predictedScore, variantEffectScore);
-        }
+        return variantEffectScore;
     }
 
     /**
@@ -429,19 +434,9 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
      */
     public boolean isPredictedPathogenic() {
-        if (whiteListed) {
-            return true;
-        }
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            // We're making the assumption that a missense variant is always potentially pathogenic.
-            // Given the prediction scores are predictions, they could fall below the default threshold so
-            // we'll leave it up to the user to decide.
-            // TODO: This might actually be too permissive. Might be best to return pathogenicityData.isPredictedPathogenic()
-            //  which will utilise thresholds for the included scores.
-            return true;
-        } else {
-            return getPathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
-        }
+        // TODO: Might be best to return pathogenicityData.isPredictedPathogenic()
+        //  which will utilise thresholds for the included scores.
+        return whiteListed || getPathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
     }
 
     public FrequencyData getFrequencyData() {
