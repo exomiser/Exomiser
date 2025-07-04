@@ -35,7 +35,11 @@ Windows install
 3. Extract the distribution files by right-clicking exomiser-cli-|version|-distribution.zip and selecting 7-Zip > Extract Here
 4. Extract the data files (e.g. 2402_phenotype.zip, 2402_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files... into the exomiser data directory. By default exomiser expects this to be 'exomiser-cli-\ |version|\/data', but this can be changed in the ``application.properties``
 5. cd exomiser-cli-|version|
-6. java -Xmx4g -jar exomiser-cli-|version|.jar analyse --analysis examples/test-analysis-exome.yml
+6. Check the `application.properties` are pointing to the correct versions:
+     exomiser.hg19.data-version=2402
+     exomiser.hg38.data-version=2402
+     exomiser.phenotype.data-version=2402
+7. java -Xmx4g -jar exomiser-cli-|version|.jar analyse --analysis examples/test-analysis-exome.yml
 
 Linux install
 ~~~~~~~~~~~~~
