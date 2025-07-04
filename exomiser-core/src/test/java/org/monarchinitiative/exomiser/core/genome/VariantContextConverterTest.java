@@ -29,7 +29,7 @@ import org.monarchinitiative.svart.sequence.VariantTrimmer;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -59,8 +59,8 @@ class VariantContextConverterTest {
     @Test
     void warnsAndReturnsNullOnSymbolicError() {
         Contig chr1 = GenomeAssembly.HG19.getContigById(1);
-        // This symbolic variant has been called past the end of the contig, which will cause svart to complain and explode
-        VariantContext variantContext = parseVariantContext("1\t123256215\t.\tT\t<DEL>\t100\tPASS\tSVYTPE=DEL;END=" + (chr1.length() + 1) + "\tGT\t1|0");
+        // This symbolic variant has been called past the end of the contig, and permissible telomeric end, which will cause svart to complain and explode
+        VariantContext variantContext = parseVariantContext("1\t123256215\t.\tT\t<DEL>\t100\tPASS\tSVYTPE=DEL;END=" + (chr1.length() + 2) + "\tGT\t1|0");
         assertThat(instance.convertToVariant(variantContext, variantContext.getAlternateAllele(0)), is(nullValue()));
     }
 
@@ -433,5 +433,11 @@ class VariantContextConverterTest {
         assertThat(variant.ref(), equalTo("G"));
         assertThat(variant.alt(), equalTo(""));
         assertThat(variant.variantType(), equalTo(VariantType.BND));
+    }
+
+    @Test
+    void logsWarningForVcfConverterConvertErrorReturnsNull() {
+        GenomicVariant variant = assertDoesNotThrow(() -> parseVcfRecord("1\t999999999\t.\tA\tTG\t100\tPASS\t.\tGT\t0/1"));
+        assertThat(variant, is(nullValue()));
     }
 }
