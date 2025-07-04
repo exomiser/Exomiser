@@ -136,12 +136,12 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testThatMissenseNonPathogenicVariantsAreStillScoredAndPassFilterWhenPassAllVariantsSetFalse() {
+    public void testThatMissenseNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(predictedNonPathogenicMissense);
 
-        FilterTestHelper.assertPassed(filterResult);
+        FilterTestHelper.assertFailed(filterResult);
     }
 
     @Test
