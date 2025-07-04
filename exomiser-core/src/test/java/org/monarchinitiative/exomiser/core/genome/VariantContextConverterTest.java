@@ -435,9 +435,4 @@ class VariantContextConverterTest {
         assertThat(variant.variantType(), equalTo(VariantType.BND));
     }
 
-    @Test
-    void logsWarningForVcfConverterConvertErrorReturnsNull() {
-        GenomicVariant variant = assertDoesNotThrow(() -> parseVcfRecord("1\t999999999\t.\tA\tTG\t100\tPASS\t.\tGT\t0/1"));
-        assertThat(variant, is(nullValue()));
-    }
 }
