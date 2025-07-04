@@ -45,35 +45,35 @@ public class ProtoParser {
         // uninstantiable - static utility class
     }
 
-    public static <U extends Message.Builder> U parseFromJsonOrYaml(U protoBuilder, Path path) {
+    public static <U extends Message.Builder> U parseFromJsonOrYaml(U protoBuilder, Path path) throws ProtoParseException {
         try (Reader fileReader = Files.newBufferedReader(path)) {
             return parseJson(protoBuilder, fileReader);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.debug("Failed parsing data as JSON from file {}", path, e);
         }
 
         try (Reader fileReader = Files.newBufferedReader(path)) {
             return parseYaml(protoBuilder, fileReader);
-        } catch (IOException e) {
-            throw new ProtoParserException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
+        } catch (Exception e) {
+            throw new ProtoParseException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
                     .getClass()
-                    .getName() + " from file " + path, e);
+                    .getName() + " from file " + path + " caused by: " + e.getMessage(), e);
         }
     }
 
-    public static <U extends Message.Builder> U parseFromJsonOrYaml(U protoBuilder, String inputString) {
+    public static <U extends Message.Builder> U parseFromJsonOrYaml(U protoBuilder, String inputString) throws ProtoParseException {
         try (Reader stringReader = new StringReader(inputString)) {
             return parseJson(protoBuilder, stringReader);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.debug("Failed parsing data as JSON string", e);
         }
 
         try (Reader stringReader = new StringReader(inputString)) {
             return parseYaml(protoBuilder, stringReader);
-        } catch (IOException e) {
-            throw new ProtoParserException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
+        } catch (Exception e) {
+            throw new ProtoParseException("Unable to parse message type " + protoBuilder.getDefaultInstanceForType()
                     .getClass()
-                    .getName() + " from input string " + inputString.substring(20), e);
+                    .getName() + " from input string caused by: " + e.getMessage(), e);
         }
     }
 
@@ -92,12 +92,6 @@ public class ProtoParser {
                 .ignoringUnknownFields()
                 .merge(reader, protoBuilder);
         return protoBuilder;
-    }
-
-    public static class ProtoParserException extends RuntimeException {
-        public ProtoParserException(String message, Throwable cause) {
-            super(message, cause);
-        }
     }
 
 }
