@@ -53,7 +53,7 @@ public class AnalysisPresetBuilderTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP)));
+        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI)));
         assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
                 equalTo(List.of(
                         VariantEffectFilter.class,
@@ -72,7 +72,7 @@ public class AnalysisPresetBuilderTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
         assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM)));
+        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM, ALPHA_MISSENSE, SPLICE_AI)));
         assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
                 equalTo(List.of(
                         HiPhivePriority.class,
