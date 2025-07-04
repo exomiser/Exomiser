@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 import org.monarchinitiative.exomiser.core.genome.Contigs;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

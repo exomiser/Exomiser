@@ -25,8 +25,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.SvMetaType;
 import org.monarchinitiative.svart.*;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
-import org.monarchinitiative.svart.util.VariantTrimmer;
-import org.monarchinitiative.svart.util.VcfConverter;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
+import org.monarchinitiative.svart.vcf.VcfConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

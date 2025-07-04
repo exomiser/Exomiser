@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 
 import java.util.List;
 import java.util.Map;
@@ -60,7 +60,7 @@ public class JannovarVariantAnnotatorTest {
 
     @Test
     void testGetAnnotationsForUnknownContigVariant() {
-        assertThrows(CoordinatesOutOfBoundsException.class, () -> annotate(instance, "UNKNOWN", 1, "A", "T"));
+        assertThrows(CoordinatesOutOfBoundsException.class, () -> annotate(instance, "UNKNOWN", 2, "A", "T"));
     }
 
     @Test

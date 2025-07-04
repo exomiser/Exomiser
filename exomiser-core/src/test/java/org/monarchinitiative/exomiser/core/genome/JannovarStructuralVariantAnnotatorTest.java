@@ -29,7 +29,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoa
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 
 import java.nio.file.Path;
 import java.util.List;
