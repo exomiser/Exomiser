@@ -354,7 +354,7 @@ class AnalyseCommandTest {
                     "--analysis", "src/test/resources/application.properties"
             );
             Throwable throwable = assertThrows(IllegalArgumentException.class, analyseCommand::readJob);
-            assertThat(throwable.getMessage(), equalTo("Unable to parse analysis from file src/test/resources/application.properties please check the format"));
+            assertThat(throwable.getMessage(), equalTo("Unable to parse analysis from file src/test/resources/application.properties please check the format."));
         }
 
         @Test
@@ -364,7 +364,7 @@ class AnalyseCommandTest {
                     "--sample", "src/test/resources/pfeiffer-phenopacket.yml"
             );
             Throwable throwable = assertThrows(IllegalArgumentException.class, analyseCommand::readJob);
-            assertThat(throwable.getMessage(), equalTo("Unable to parse analysis from file src/test/resources/application.properties please check the format"));
+            assertThat(throwable.getMessage(), equalTo("Unable to parse analysis from file src/test/resources/application.properties please check the format."));
         }
 
         @Test
