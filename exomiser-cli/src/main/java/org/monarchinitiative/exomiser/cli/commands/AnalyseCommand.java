@@ -260,13 +260,13 @@ public final class AnalyseCommand implements ExomiserCommand {
     private void handleAnalysisOption(Path analysisPath, JobProto.Job.Builder jobBuilder) {
         AnalysisProto.Analysis analysis = readAnalysis(analysisPath);
         if (!AnalysisProto.Analysis.getDefaultInstance().equals(analysis)) {
-            logger.debug("New analysis format file {} {}", analysisPath, analysis);
+            logger.debug("New analysis format file: {}", analysisPath);
             jobBuilder.setAnalysis(analysis);
         } else {
             try {
                 JobProto.Job job = JobReader.readJob(analysisPath);
                 if (job.hasSample() || job.hasPhenopacket() || job.hasFamily()) {
-                    logger.info("{} is a legacy analysis format", analysisPath);
+                    logger.debug("Legacy analysis format file: {}", analysisPath);
                     jobBuilder.clear().mergeFrom(job);
                 }
             } catch (IllegalArgumentException e) {
