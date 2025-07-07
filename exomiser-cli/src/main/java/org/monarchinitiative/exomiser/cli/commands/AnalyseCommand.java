@@ -258,17 +258,21 @@ public final class AnalyseCommand implements ExomiserCommand {
     }
 
     private void handleAnalysisOption(Path analysisPath, JobProto.Job.Builder jobBuilder) {
-        boolean isLegacyAnalysis = false;
-        try {
-            JobProto.Job job = JobReader.readJob(analysisPath);
-            jobBuilder.clear().mergeFrom(job);
-            isLegacyAnalysis = true;
-            logger.debug("{} is a legacy analysis format", analysisPath);
-        } catch (IllegalArgumentException e) {
-            // not a legacy analysis job
-        }
-        if (!isLegacyAnalysis) {
-            jobBuilder.setAnalysis(readAnalysis(analysisPath));
+        AnalysisProto.Analysis analysis = readAnalysis(analysisPath);
+        if (!AnalysisProto.Analysis.getDefaultInstance().equals(analysis)) {
+            logger.debug("New analysis format file {} {}", analysisPath, analysis);
+            jobBuilder.setAnalysis(analysis);
+        } else {
+            try {
+                JobProto.Job job = JobReader.readJob(analysisPath);
+                if (job.hasSample() || job.hasPhenopacket() || job.hasFamily()) {
+                    logger.info("{} is a legacy analysis format", analysisPath);
+                    jobBuilder.clear().mergeFrom(job);
+                }
+            } catch (IllegalArgumentException e) {
+                // not a legacy analysis job
+                logger.error("{}", e.getMessage());
+            }
         }
     }
 
@@ -380,55 +384,66 @@ public final class AnalyseCommand implements ExomiserCommand {
     }
 
     private AnalysisProto.Analysis readAnalysis(Path analysisPath) {
-        AnalysisProto.Analysis analysis = tryParseJsonOrYaml(AnalysisProto.Analysis.newBuilder(), analysisPath)
-                .build();
-        if (analysis.equals(AnalysisProto.Analysis.getDefaultInstance())) {
-            throw new IllegalArgumentException("Unable to parse analysis from file " + analysisPath + " please check the format");
+        var parseResult = tryParseJsonOrYaml(AnalysisProto.Analysis.newBuilder(), analysisPath);
+        if (parseResult.isErr()) {
+            throw new IllegalArgumentException("Unable to parse analysis from file " + analysisPath + " please check the format.", parseResult.err());
         }
-        return analysis;
+        return parseResult.ok().build();
     }
 
     private JobProto.Job readSampleJob(Path samplePath) {
         logger.debug("Reading sample from {}", samplePath);
         JobProto.Job.Builder jobBuilder = JobProto.Job.newBuilder();
-        SampleProto.Sample sampleProto = tryParseJsonOrYaml(SampleProto.Sample.newBuilder(), samplePath).build();
-        if (!sampleProto.equals(SampleProto.Sample.getDefaultInstance())) {
-            jobBuilder.setSample(sampleProto);
-            return jobBuilder.build();
+        Result<SampleProto.Sample.Builder, Exception> sampleParseResult = tryParseJsonOrYaml(SampleProto.Sample.newBuilder(), samplePath);
+        if (sampleParseResult.isOk()) {
+            SampleProto.Sample sampleProto = sampleParseResult.ok().build();
+            if (!SampleProto.Sample.getDefaultInstance().equals(sampleProto)) {
+                jobBuilder.setSample(sampleProto);
+                return jobBuilder.build();
+            }
         }
         //try phenopacket:
-        Phenopacket phenopacket = tryParseJsonOrYaml(Phenopacket.newBuilder(), samplePath).build();
-        // note that the underlying ProtoParser uses permissive parsing so it is possible to extract an imperfectly
-        // formed phenopacket from a family message so these need to be checked before returning.
-        if (!phenopacket.equals(Phenopacket.getDefaultInstance()) && !phenopacket.getPhenotypicFeaturesList()
-                .isEmpty()) {
-            jobBuilder.setPhenopacket(phenopacket);
-            return jobBuilder.build();
+        var phenopacketResult = tryParseJsonOrYaml(Phenopacket.newBuilder(), samplePath);
+        if (phenopacketResult.isOk()) {
+            Phenopacket phenopacket = phenopacketResult.ok().build();
+            // note that the underlying ProtoParser uses permissive parsing so it is possible to extract an imperfectly
+            // formed phenopacket from a family message so these need to be checked before returning.
+            if (!Phenopacket.getDefaultInstance().equals(phenopacket) && !phenopacket.getPhenotypicFeaturesList()
+                    .isEmpty()) {
+                jobBuilder.setPhenopacket(phenopacket);
+                return jobBuilder.build();
+            }
         }
         //try family:
-        Family family = tryParseJsonOrYaml(Family.newBuilder(), samplePath).build();
-        if (!family.equals(Family.getDefaultInstance())) {
-            jobBuilder.setFamily(family);
-            return jobBuilder.build();
+        var familyResult = tryParseJsonOrYaml(Family.newBuilder(), samplePath);
+        if (familyResult.isOk()) {
+            Family family = familyResult.ok().build();
+            if (!Family.getDefaultInstance().equals(family)) {
+                jobBuilder.setFamily(family);
+                return jobBuilder.build();
+            }
         }
         throw new IllegalArgumentException("Unable to parse sample from file " + samplePath + " please check the format");
     }
 
     private OutputProto.OutputOptions readOutputOptions(Path outputOptionsPath) {
-        OutputProto.OutputOptions outputOptions = tryParseJsonOrYaml(OutputProto.OutputOptions.newBuilder(), outputOptionsPath)
-                .build();
-        if (outputOptions.equals(OutputProto.OutputOptions.getDefaultInstance())) {
-            throw new IllegalArgumentException("Unable to parse outputOptions from file " + outputOptionsPath + " please check the format");
+        var outputOpionsParseResult = tryParseJsonOrYaml(OutputProto.OutputOptions.newBuilder(), outputOptionsPath);
+        if (outputOpionsParseResult.isOk()) {
+            OutputProto.OutputOptions outputOptions = outputOpionsParseResult.ok().build();
+            if (OutputProto.OutputOptions.getDefaultInstance().equals(outputOptions)) {
+                throw new IllegalArgumentException("Unable to parse outputOptions from file " + outputOptionsPath + " please check the format");
+            }
+            return outputOptions;
         }
-        return outputOptions;
+        throw new IllegalArgumentException("Unable to parse outputOptions from file " + outputOptionsPath + " please check the format");
     }
 
-    private <U extends Message.Builder> U tryParseJsonOrYaml(U messageBuilder, Path path) {
+    private <U extends Message.Builder> Result<U, Exception> tryParseJsonOrYaml(U messageBuilder, Path path) {
         try {
-            return ProtoParser.parseFromJsonOrYaml(messageBuilder, path);
+            return Result.ok(ProtoParser.parseFromJsonOrYaml(messageBuilder, path));
         } catch (Exception exception) {
             logger.debug("{} not parsable as a {} ...", path, messageBuilder.getClass().getName());
+            return Result.err(exception);
         }
-        return messageBuilder;
     }
 }
