@@ -187,33 +187,4 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
         }
     }
 
-    record Result<T, E>(T ok, E err) {
-        Result {
-            if (ok != null && err != null) {
-                throw new IllegalStateException();
-            }
-        }
-
-        static <T, E> Result<T, E> ok(T t) {
-            Objects.requireNonNull(t);
-            return new Result<>(t, null);
-        }
-
-        static <T, E> Result<T, E> err(E err) {
-            Objects.requireNonNull(err);
-            return new Result<>(null, err);
-        }
-
-        boolean isOk() {
-            return ok != null;
-        }
-
-        boolean isErr() {
-            return err != null;
-        }
-
-        T get() {
-            return ok;
-        }
-    }
 }
