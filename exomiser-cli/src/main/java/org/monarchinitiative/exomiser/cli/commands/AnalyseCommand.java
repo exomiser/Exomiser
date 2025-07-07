@@ -95,6 +95,8 @@ public final class AnalyseCommand implements ExomiserCommand {
 
     static class OutputOptions {
 
+        static final List<String> DEFAULT_OUTPUT_FORMATS = List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString());
+
         @Option(names = "--output", description = "Path to outputOptions file. This should be in JSON or YAML format.")
         Path outputOptionsPath;
 
@@ -219,8 +221,7 @@ public final class AnalyseCommand implements ExomiserCommand {
         return OutputProto.OutputOptions.newBuilder()
                 .setNumGenes(0)
                 .setOutputContributingVariantsOnly(false)
-                .addOutputFormats(OutputFormat.HTML.toString())
-                .addOutputFormats(OutputFormat.JSON.toString())
+                // Don't add default output options here as this causes issues...
                 .build();
     }
 
@@ -234,6 +235,7 @@ public final class AnalyseCommand implements ExomiserCommand {
     }
 
     private void handleOutputOptions(OutputOptions outputOptions, JobProto.Job.Builder jobBuilder) {
+        logger.debug("Handling output options {}", outputOptions);
         if (outputOptions.outputOptionsPath != null) {
             handleOutputOption(outputOptions.outputOptionsPath, jobBuilder);
         }
@@ -334,15 +336,22 @@ public final class AnalyseCommand implements ExomiserCommand {
     private void handleOutputFormat(List<OutputFormat> outputFormatOptions, JobProto.Job.Builder jobBuilder) {
         // override any settings from an analysis file referring to other output_formats
         OutputProto.OutputOptions.Builder optionsBuilder = jobBuilder.getOutputOptionsBuilder();
-        if (outputFormatOptions == null || outputFormatOptions.isEmpty()) {
-            // should be set as by default
-            return;
+        if (optionsBuilder.getOutputFormatsList().isEmpty() && (outputFormatOptions == null || outputFormatOptions.isEmpty())) {
+            // add defaults as none are present
+            optionsBuilder.addAllOutputFormats(OutputOptions.DEFAULT_OUTPUT_FORMATS);
+            logger.debug("Output formats - none specified, using defaults: {}", optionsBuilder);
+        } else if (outputFormatOptions == null || outputFormatOptions.isEmpty()) {
+            // should be set in YAML
+            logger.debug("Output formats - using YAML specified options: {}", optionsBuilder);
+        } else {
+            // override jobBuilder formats with those provided from CLI
+            optionsBuilder.clearOutputFormats();
+            Set<String> outputFormats = outputFormatOptions.stream()
+                    .map(OutputFormat::toString)
+                    .collect(Collectors.toSet());
+            optionsBuilder.addAllOutputFormats(outputFormats);
+            logger.debug("Output formats - using CLI specified options: {}", optionsBuilder);
         }
-        optionsBuilder.clearOutputFormats();
-        Set<String> outputFormats = outputFormatOptions.stream()
-                .map(OutputFormat::toString)
-                .collect(Collectors.toSet());
-        optionsBuilder.addAllOutputFormats(outputFormats);
     }
 
     private void handleOutputOption(Path outputOptionsPath, JobProto.Job.Builder jobBuilder) {
