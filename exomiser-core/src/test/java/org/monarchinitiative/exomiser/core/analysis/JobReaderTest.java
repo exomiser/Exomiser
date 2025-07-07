@@ -25,7 +25,6 @@ import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
-import org.monarchinitiative.exomiser.core.proto.ProtoParseException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,7 +42,7 @@ class JobReaderTest {
     @Test
     void readNonJobFileThrowsException() {
         Path someRandomVcfFile = Paths.get("src/test/resources/headerOnly.vcf");
-        assertThrows(ProtoParseException.class, () -> JobReader.readJob(someRandomVcfFile));
+        assertThrows(IllegalArgumentException.class, () -> JobReader.readJob(someRandomVcfFile));
     }
 
     @Test
