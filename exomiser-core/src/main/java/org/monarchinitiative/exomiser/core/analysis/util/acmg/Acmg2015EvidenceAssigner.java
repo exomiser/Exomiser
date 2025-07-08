@@ -194,7 +194,13 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             // BP6 "Reputable source recently reports variant as benign, but the evidence is not available to the laboratory to perform an independent evaluation"
             assignBP6(acmgEvidenceBuilder, clinVarData);
         }
+        // TODO: for AR_COMP_HET consider the second variant independently and if this variant is P/LP and the other is VUS/LB/B downgrade this to VUS
+        //  Beware possible infinite loop!
 
+        //TTN: Frameshift, nonsense, and splice-impacting variants in TTN exons with high PSI (see references PMCID: PMC4560092; PMC5201198; http://cardiodb.org/titin)
+        // should be evaluated for pathogenicity and returned as SFs if classified as P/LP for dilated cardiomyopathy.
+        // Distinct pathogenic variants are associated with different forms of both AD and AR muscle disease (see ClinGen
+        // GCEP reports) and are not recommended for return as SFs.
         return acmgEvidenceBuilder.build();
     }
 
