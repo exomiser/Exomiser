@@ -256,8 +256,8 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
                 .setHiPhivePrioritiser(
                         PrioritisersProto.HiPhivePrioritiser.newBuilder()
                                 .setRunParams(hiPhiveOptions.getRunParams())
-                                .setCandidateGeneSymbol(hiPhiveOptions.getCandidateGeneSymbol())
-                                .setDiseaseId(hiPhiveOptions.getDiseaseId())
+                                .setCandidateGeneSymbol(hiPhiveOptions.candidateGeneSymbol())
+                                .setDiseaseId(hiPhiveOptions.diseaseId())
                 )
         );
         return this;

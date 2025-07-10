@@ -149,7 +149,7 @@ public class InheritanceModeAnnotator {
             // Issue #361 Add logic here to ignore a given list of frequency sources when checking against the maxFreqForMode e.g. LOCAL
             // float maxFreq = frequencyData.maxFreqIgnoring(Set.of(LOCAL, ESP))
             // float maxFreq = frequencyData.maxFreqFrom(Set.of(LOCAL, ESP))
-            FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+            FrequencyData frequencyData = variantEvaluation.frequencyData();
             if (frequencyData.maxFreq() <= maxFreqForMode || variantEvaluation.isWhiteListed()) {
                 compatibleVariants.add(variantEvaluation);
             } else {
@@ -172,11 +172,11 @@ public class InheritanceModeAnnotator {
 
             //This could be moved into the VariantFactory and a getSampleGenotypes() method added to the VariantEvaluation
             //then we can mostly discard the VariantContext, apart from writing out again...
-            SampleGenotypes sampleGenotypes = variantEvaluation.getSampleGenotypes();
+            SampleGenotypes sampleGenotypes = variantEvaluation.sampleGenotypes();
             logger.debug("Converting {} {} {}", variantEvaluation.ref(), variantEvaluation.alt(), sampleGenotypes);
             for (SampleData sampleData : sampleGenotypes) {
-                String sampleName = sampleData.getId();
-                SampleGenotype sampleGenotype = sampleData.getSampleGenotype();
+                String sampleName = sampleData.id();
+                SampleGenotype sampleGenotype = sampleData.sampleGenotype();
                 Genotype genotype = toGenotype(sampleGenotype);
                 logger.debug("Converted {} {} to {}", sampleName, sampleGenotype, genotype);
                 genotypeCallsBuilder.getSampleToGenotype().put(sampleName, genotype);
@@ -189,7 +189,7 @@ public class InheritanceModeAnnotator {
 
     private Genotype toGenotype(SampleGenotype sampleGenotype) {
         List<Integer> calls = new ArrayList<>(sampleGenotype.numCalls());
-        for (AlleleCall alleleCall : sampleGenotype.getCalls()) {
+        for (AlleleCall alleleCall : sampleGenotype.calls()) {
             calls.add(toCall(alleleCall));
         }
         return new Genotype(calls);

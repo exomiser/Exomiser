@@ -5,6 +5,8 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 
+import java.util.Set;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.monarchinitiative.exomiser.core.filters.FilterType.GENE_BLACKLIST_FILTER;
@@ -17,14 +19,14 @@ public class GeneBlacklistFilterTest {
     }
 
     @Test
-    public void testGetFilterType() {
-        GeneBlacklistFilter instance = new GeneBlacklistFilter();
-        assertThat(instance.getFilterType(), equalTo(GENE_BLACKLIST_FILTER));
+    public void testFilterType() {
+        GeneBlacklistFilter instance = new GeneBlacklistFilter(Set.of());
+        assertThat(instance.filterType(), equalTo(GENE_BLACKLIST_FILTER));
     }
 
     @Test
     public void testFilterPassesWhenNoBlacklistedGeneInsideAnalysis() {
-        GeneBlacklistFilter instance = new GeneBlacklistFilter();
+        GeneBlacklistFilter instance = new GeneBlacklistFilter(Set.of());
         FilterResult filterResult = instance.runFilter(variantWithGeneSymbol("DEF2"));
 
         FilterTestHelper.assertPassed(filterResult);
@@ -33,7 +35,7 @@ public class GeneBlacklistFilterTest {
     @Test
     public void testFilterFailsWhenBlacklistedGeneInsideAnalysis() {
         VariantEvaluation failVariant = variantWithGeneSymbol("LINC02081");
-        GeneBlacklistFilter instance = new GeneBlacklistFilter();
+        GeneBlacklistFilter instance = new GeneBlacklistFilter(Set.of("LINC02081"));
         FilterResult filterResult = instance.runFilter(failVariant);
 
         FilterTestHelper.assertFailed(filterResult);
@@ -41,15 +43,15 @@ public class GeneBlacklistFilterTest {
     @Test
     public void testFilterPassesWhenNoGeneInsideAnalysis() {
         VariantEvaluation emptyVariant = variantWithGeneSymbol("");
-        GeneBlacklistFilter instance = new GeneBlacklistFilter();
+        GeneBlacklistFilter instance = new GeneBlacklistFilter(Set.of("LINC02081"));
         FilterResult filterResult = instance.runFilter(emptyVariant);
         FilterTestHelper.assertPassed(filterResult);
     }
 
     @Test
     public void testEquals() {
-        GeneBlacklistFilter instance = new GeneBlacklistFilter();
-        GeneBlacklistFilter instance2 = new GeneBlacklistFilter();
+        GeneBlacklistFilter instance = new GeneBlacklistFilter(Set.of("A"));
+        GeneBlacklistFilter instance2 = new GeneBlacklistFilter(Set.of("A"));
 
         assertThat(instance, equalTo(instance2));
     }

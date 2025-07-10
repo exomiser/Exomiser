@@ -73,7 +73,7 @@ class AcmgAssignmentCalculatorTest {
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("PTEN")
                 .variantEffect(VariantEffect.START_LOST)
-                .annotations(List.of(startLostAnnotation))
+                .transcriptAnnotations(List.of(startLostAnnotation))
                 .contributingModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .pathogenicityData(PathogenicityData.of(ClinVarData.builder()
                                 .primaryInterpretation(ClinVarData.ClinSig.PATHOGENIC)
@@ -103,7 +103,7 @@ class AcmgAssignmentCalculatorTest {
                 .add(AcmgCriterion.PP4, AcmgCriterion.Evidence.MODERATE)
                 .add(AcmgCriterion.PP5, AcmgCriterion.Evidence.VERY_STRONG)
                 .build();
-        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.PATHOGENIC);
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.PATHOGENIC);
 
         AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acmg2020PointsBasedClassifier());
@@ -137,7 +137,7 @@ class AcmgAssignmentCalculatorTest {
         gene.addPriorityResult(omimPriorityResult);
 
         AcmgEvidence acmgEvidence = AcmgEvidence.empty();
-        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.UNCERTAIN_SIGNIFICANCE);
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.UNCERTAIN_SIGNIFICANCE);
 
         AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acmg2020PointsBasedClassifier());
@@ -173,7 +173,7 @@ class AcmgAssignmentCalculatorTest {
         AcmgEvidence acmgEvidence = AcmgEvidence.builder()
                 .add(AcmgCriterion.BA1)
                 .build();
-        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.BENIGN);
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(variantEvaluation, gene.geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, cowdenSyndrome, acmgEvidence, AcmgClassification.BENIGN);
 
         AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), TestVariantDataService.stub());
         AcmgAssignmentCalculator instance = new AcmgAssignmentCalculator(acmgEvidenceAssigner, new Acmg2020PointsBasedClassifier());

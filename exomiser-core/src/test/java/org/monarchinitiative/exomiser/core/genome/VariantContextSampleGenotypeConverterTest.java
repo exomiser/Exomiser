@@ -173,7 +173,7 @@ public class VariantContextSampleGenotypeConverterTest {
 
             SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
-            assertThat(sampleGenotypes.getSampleGenotype("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
+            assertThat(sampleGenotypes.sampleGenotype("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
         }
 
         @ParameterizedTest
@@ -194,8 +194,8 @@ public class VariantContextSampleGenotypeConverterTest {
 
             SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
-            assertThat(sampleGenotypes.getSampleGenotype("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
-            assertThat(sampleGenotypes.getSampleCopyNumber("sample"), equalTo(CopyNumber.of(CN)));
+            assertThat(sampleGenotypes.sampleGenotype("sample"), equalTo(SampleGenotype.parseGenotype(expected)));
+            assertThat(sampleGenotypes.sampleCopyNumber("sample"), equalTo(CopyNumber.of(CN)));
         }
 
         @Test
@@ -207,8 +207,8 @@ public class VariantContextSampleGenotypeConverterTest {
 
             SampleGenotypes sampleGenotypes = VariantContextSampleGenotypeConverter.createAlleleSampleGenotypes(variantContext, 0);
 
-            assertThat(sampleGenotypes.getSampleGenotype("sample"), equalTo(SampleGenotype.empty()));
-            assertThat(sampleGenotypes.getSampleCopyNumber("sample"), equalTo(CopyNumber.empty()));
+            assertThat(sampleGenotypes.sampleGenotype("sample"), equalTo(SampleGenotype.empty()));
+            assertThat(sampleGenotypes.sampleCopyNumber("sample"), equalTo(CopyNumber.empty()));
         }
     }
 

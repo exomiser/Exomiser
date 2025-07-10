@@ -100,7 +100,7 @@ public class QueryPhenotypeMatchTest {
     }
 
     @Test
-    void testGetQueryPhenotypeMatches() {
+    void testQueryPhenotypeMatches() {
         assertThat(instance.getQueryTermPhenotypeMatches(), equalTo(queryPhenotypeMatches));
     }
 
@@ -127,7 +127,7 @@ public class QueryPhenotypeMatchTest {
 
     @Test
     public void testGetBestAverageScore() {
-        double expected = (bestToeMatch.getScore() + perfectNoseMatch.getScore()) / 2d;
+        double expected = (bestToeMatch.score() + perfectNoseMatch.score()) / 2d;
         assertThat(instance.getBestAvgScore(), equalTo(expected));
     }
 

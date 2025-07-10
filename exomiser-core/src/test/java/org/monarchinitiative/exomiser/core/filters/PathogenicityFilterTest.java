@@ -156,8 +156,8 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test

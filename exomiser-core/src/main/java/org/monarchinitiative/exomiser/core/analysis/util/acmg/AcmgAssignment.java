@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util.acmg;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.genome.HgvsUtil;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
@@ -34,64 +32,26 @@ import java.util.Objects;
 /**
  * @since 13.1.0
  */
-public class AcmgAssignment {
-
+public record AcmgAssignment(
     // MOI, Disease, Variant(s), transcript, AA change, AcmgCriteria...
-    @JsonProperty
-    private final VariantEvaluation variantEvaluation;
-    @JsonProperty
-    private final GeneIdentifier geneIdentifier;
-    @JsonProperty
-    private final ModeOfInheritance modeOfInheritance;
-    @JsonProperty
-    private final Disease disease;
-    @JsonProperty
-    private final AcmgEvidence acmgEvidence;
-    @JsonProperty
-    private final AcmgClassification acmgClassification;
+    VariantEvaluation variantEvaluation,
+    GeneIdentifier geneIdentifier,
+    ModeOfInheritance modeOfInheritance,
+    Disease disease,
+    AcmgEvidence acmgEvidence,
+    AcmgClassification acmgClassification) {
 
-    private AcmgAssignment(VariantEvaluation variantEvaluation, GeneIdentifier geneIdentifier, ModeOfInheritance modeOfInheritance, Disease disease, AcmgEvidence acmgEvidence, AcmgClassification acmgClassification) {
-        this.variantEvaluation = variantEvaluation;
-        this.geneIdentifier = geneIdentifier;
-        this.modeOfInheritance = modeOfInheritance;
-        this.disease = disease;
-        this.acmgEvidence = acmgEvidence;
-        this.acmgClassification = acmgClassification;
-    }
-
-    @JsonCreator
-    public static AcmgAssignment of(VariantEvaluation variant, GeneIdentifier geneIdentifier, ModeOfInheritance modeOfInheritance, Disease disease, AcmgEvidence acmgEvidence, AcmgClassification acmgClassification) {
-        Objects.requireNonNull(variant);
+    public AcmgAssignment {
+        Objects.requireNonNull(variantEvaluation);
         Objects.requireNonNull(geneIdentifier);
         Objects.requireNonNull(disease);
         Objects.requireNonNull(modeOfInheritance);
         Objects.requireNonNull(acmgEvidence);
         Objects.requireNonNull(acmgClassification);
+    }
+
+    public static AcmgAssignment of(VariantEvaluation variant, GeneIdentifier geneIdentifier, ModeOfInheritance modeOfInheritance, Disease disease, AcmgEvidence acmgEvidence, AcmgClassification acmgClassification) {
         return new AcmgAssignment(variant, geneIdentifier, modeOfInheritance, disease, acmgEvidence, acmgClassification);
-    }
-
-    public VariantEvaluation variantEvaluation() {
-        return variantEvaluation;
-    }
-
-    public GeneIdentifier geneIdentifier() {
-        return geneIdentifier;
-    }
-
-    public Disease disease() {
-        return disease;
-    }
-
-    public ModeOfInheritance modeOfInheritance() {
-        return modeOfInheritance;
-    }
-
-    public AcmgEvidence acmgEvidence() {
-        return acmgEvidence;
-    }
-
-    public AcmgClassification acmgClassification() {
-        return acmgClassification;
     }
 
     public String toDisplayString() {
@@ -100,8 +60,8 @@ public class AcmgAssignment {
         String transcriptinfo = transcriptDisplayString();
 
         String diseaseInfo = "";
-        if (!disease.getDiseaseId().isEmpty()) {
-            diseaseInfo = disease.getDiseaseName() + " (" + disease.getDiseaseId() + "), ";
+        if (!disease.diseaseId().isEmpty()) {
+            diseaseInfo = disease.diseaseName() + " (" + disease.diseaseId() + "), ";
         }
 
         return variantEvaluation.toGnomad() +
@@ -115,26 +75,13 @@ public class AcmgAssignment {
 
     private String transcriptDisplayString() {
         if (variantEvaluation.hasTranscriptAnnotations()) {
-            TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
-            return transcriptAnnotation.getGeneSymbol() +
-                    "(" + transcriptAnnotation.getAccession() + ")" +
-                    ":" + transcriptAnnotation.getHgvsCdna() +
-                    ":" + transcriptAnnotation.getHgvsProtein();
+            TranscriptAnnotation transcriptAnnotation = variantEvaluation.transcriptAnnotations().get(0);
+            return transcriptAnnotation.geneSymbol() +
+                    "(" + transcriptAnnotation.accession() + ")" +
+                    ":" + transcriptAnnotation.hgvsCdna() +
+                    ":" + transcriptAnnotation.hgvsProtein();
         }
         return "";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AcmgAssignment that = (AcmgAssignment) o;
-        return variantEvaluation.equals(that.variantEvaluation) && geneIdentifier.equals(that.geneIdentifier) && disease.equals(that.disease) && modeOfInheritance == that.modeOfInheritance && acmgEvidence.equals(that.acmgEvidence) && acmgClassification == that.acmgClassification;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variantEvaluation, geneIdentifier, disease, modeOfInheritance, acmgEvidence, acmgClassification);
     }
 
     @Override

@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
 /**
  * Non-public helper class for finding contributing alleles.
  *
@@ -124,7 +122,7 @@ class ContributingAlleleCalculator {
 
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
                 .filter(variantIsHomozygousAlt(probandId))
-                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
+                .max(Comparator.comparing(VariantEvaluation::variantScore));
         logger.debug("Best HomAlt: {}", bestHomozygousAlt);
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
@@ -134,7 +132,7 @@ class ContributingAlleleCalculator {
                 .orElse(0.0);
 
         double bestHomAltScore = bestHomozygousAlt
-                .map(VariantEvaluation::getVariantScore)
+                .map(VariantEvaluation::variantScore)
                 .orElse(0f);
 
         double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
@@ -159,7 +157,7 @@ class ContributingAlleleCalculator {
             return Collections.emptyList();
         }
         Optional<VariantEvaluation> bestVariant = variantEvaluations.stream()
-                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
+                .max(Comparator.comparing(VariantEvaluation::variantScore));
 
         bestVariant.ifPresent(variantEvaluation -> variantEvaluation.setContributesToGeneScoreUnderMode(modeOfInheritance));
 
@@ -167,7 +165,7 @@ class ContributingAlleleCalculator {
     }
 
     private Predicate<VariantEvaluation> variantIsHomozygousAlt(String probandId) {
-        return ve -> ve.getSampleGenotype(probandId).isHomAlt();
+        return ve -> ve.sampleGenotype(probandId).isHomAlt();
     }
 
     /**
@@ -186,8 +184,8 @@ class ContributingAlleleCalculator {
         }
 
         double calculateScore(VariantEvaluation allele1, VariantEvaluation allele2) {
-            double allele1Score = allele1 == null ? 0 : allele1.getVariantScore();
-            double allele2Score = allele2 == null ? 0 : allele2.getVariantScore();
+            double allele1Score = allele1 == null ? 0 : allele1.variantScore();
+            double allele2Score = allele2 == null ? 0 : allele2.variantScore();
             return (allele1Score + allele2Score) / 2.0;
         }
 

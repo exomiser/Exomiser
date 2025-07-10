@@ -52,7 +52,7 @@ public class FrequencyDataProvider extends AbstractFilterDataProvider {
     public void provideVariantData(VariantEvaluation variantEvaluation) {
         //check there are no frequencies first - this may be genuine, or possibly the variant hasn't yet had the data added
         //this will cut down on trips to the database if multiple filters require frequency data.
-        if (!variantEvaluation.getFrequencyData().hasKnownFrequency()) {
+        if (!variantEvaluation.frequencyData().hasKnownFrequency()) {
             FrequencyData frequencyData = variantDataService.getVariantFrequencyData(variantEvaluation, frequencySources);
             variantEvaluation.setFrequencyData(frequencyData);
         }

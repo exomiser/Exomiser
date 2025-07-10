@@ -50,13 +50,13 @@ public class AnnotationWriter {
         ModeOfInheritance modeOfInheritance = acmgAssignment.modeOfInheritance();
         Optional<AcmgAssignment> assignment = Optional.of(acmgAssignment);
         fields.add(ve.toGnomad());
-        fields.add(geneIdentifier.getGeneSymbol());
-        fields.add(geneIdentifier.getHgncId());
-        fields.add(geneIdentifier.getEntrezId());
-        fields.add(decimalFormat.format(ve.getVariantScore()));
+        fields.add(geneIdentifier.geneSymbol());
+        fields.add(geneIdentifier.hgncId());
+        fields.add(geneIdentifier.entrezId());
+        fields.add(decimalFormat.format(ve.variantScore()));
         fields.add(ve.isWhiteListed() ? "1" : "0");
         fields.add(ve.id());
-        FrequencyData frequencyData = ve.getFrequencyData();
+        FrequencyData frequencyData = ve.frequencyData();
         fields.add(frequencyData.getRsId());
         fields.add(ve.contigName());
         fields.add(ve.start());
@@ -64,21 +64,21 @@ public class AnnotationWriter {
         fields.add(ve.ref());
         fields.add(ve.alt());
         fields.add(ve.changeLength());
-        fields.add(decimalFormat.format(ve.getPhredScore()));
+        fields.add(decimalFormat.format(ve.phredScore()));
         fields.add(makeFiltersField(modeOfInheritance, ve));
-        fields.add(ve.getGenotypeString());
-        fields.add(ve.getVariantEffect().getSequenceOntologyTerm());
-        fields.add(getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
+        fields.add(ve.genotypeString());
+        fields.add(ve.variantEffect().getSequenceOntologyTerm());
+        fields.add(getRepresentativeAnnotation(ve.transcriptAnnotations()));
         fields.add(assignment.map(AcmgAssignment::acmgClassification).orElse(AcmgClassification.NOT_AVAILABLE));
         fields.add(assignment.map(acmg -> toVcfAcmgInfo(acmg.acmgEvidence())).orElse(""));
-        fields.add(assignment.map(acmg -> acmg.disease().getDiseaseId()).orElse(""));
-        fields.add(assignment.map(acmg -> acmg.disease().getDiseaseName()).orElse(""));
-        PathogenicityData pathogenicityData = ve.getPathogenicityData();
+        fields.add(assignment.map(acmg -> acmg.disease().diseaseId()).orElse(""));
+        fields.add(assignment.map(acmg -> acmg.disease().diseaseName()).orElse(""));
+        PathogenicityData pathogenicityData = ve.pathogenicityData();
         ClinVarData clinVarData = pathogenicityData.clinVarData();
-        fields.add(clinVarData.getVariationId());
-        fields.add(clinVarData.getPrimaryInterpretation());
+        fields.add(clinVarData.variationId());
+        fields.add(clinVarData.primaryInterpretation());
         fields.add(clinVarData.starRating());
-        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneIdentifier.getGeneSymbol());
+        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneIdentifier.geneSymbol());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeuf());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufLower());
         fields.add(geneConstraint == null ? "" : geneConstraint.loeufUpper());
@@ -87,8 +87,8 @@ public class AnnotationWriter {
         fields.add(maxFreq == null ? "" : maxFreq.frequency());
         fields.add(toVcfFreqInfo(frequencyData.frequencies()));
         PathogenicityScore maxPath = pathogenicityData.mostPathogenicScore();
-        fields.add(maxPath == null ? "" : maxPath.getSource());
-        fields.add(maxPath == null ? "" : maxPath.getScore());
+        fields.add(maxPath == null ? "" : maxPath.source());
+        fields.add(maxPath == null ? "" : maxPath.score());
         fields.add(toVcfPathInfo(pathogenicityData.pathogenicityScores()));
         return fields;
     }
@@ -110,16 +110,16 @@ public class AnnotationWriter {
 
     private static String toVcfPathInfo(List<PathogenicityScore> predictedPathogenicityScores) {
         return predictedPathogenicityScores.stream()
-                .map(pathScore -> pathScore.getSource() + "=" + pathScore.getScore())
+                .map(pathScore -> pathScore.source() + "=" + pathScore.score())
                 .collect(joining(","));
     }
 
     private static String makeFiltersField(ModeOfInheritance modeOfInheritance, VariantEvaluation variantEvaluation) {
         //under some modes a variant should not pass, but others it will, so we need to check this here
         //otherwise when running FULL or SPARSE modes alleles will be reported as having passed under the wrong MOI
-        return switch (variantEvaluation.getFilterStatusForMode(modeOfInheritance)) {
+        return switch (variantEvaluation.filterStatusForMode(modeOfInheritance)) {
             case FAILED -> {
-                Set<FilterType> failedFilterTypes = variantEvaluation.getFailedFilterTypesForMode(modeOfInheritance);
+                Set<FilterType> failedFilterTypes = variantEvaluation.failedFilterTypesForMode(modeOfInheritance);
                 yield formatFailedFilters(failedFilterTypes);
             }
             case PASSED -> "PASS";
@@ -146,10 +146,10 @@ public class AnnotationWriter {
         TranscriptAnnotation anno = annotations.get(0);
 
         StringJoiner stringJoiner = new StringJoiner(":");
-        stringJoiner.add(anno.getGeneSymbol());
-        stringJoiner.add(anno.getAccession());
-        stringJoiner.add(anno.getHgvsCdna());
-        stringJoiner.add(anno.getHgvsProtein());
+        stringJoiner.add(anno.geneSymbol());
+        stringJoiner.add(anno.accession());
+        stringJoiner.add(anno.hgvsCdna());
+        stringJoiner.add(anno.hgvsProtein());
         return stringJoiner.toString();
     }
 

@@ -697,7 +697,7 @@ public class InheritanceModeAnnotatorTest {
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        //Set the frequency data to be over that of the default frequency value
+        //Set the frequency data to be over that of the default frequency frequency
         alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
@@ -719,7 +719,7 @@ public class InheritanceModeAnnotatorTest {
 
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         VariantEvaluation alleleOne = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);
-        //Set the frequency data to be over that of the default frequency value
+        //Set the frequency data to be over that of the default frequency frequency
         alleleOne.setFrequencyData(FrequencyData.of(Frequency.of(FrequencySource.LOCAL, 1f)));
 
         VariantEvaluation alleleTwo = filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext);

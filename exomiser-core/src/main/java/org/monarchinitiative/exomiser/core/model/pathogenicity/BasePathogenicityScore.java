@@ -22,60 +22,23 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Objects;
 
 /**
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-class BasePathogenicityScore implements PathogenicityScore {
+record BasePathogenicityScore(PathogenicitySource source, float score) implements PathogenicityScore {
 
-    protected final PathogenicitySource source;
-    protected final float score;
-
-    BasePathogenicityScore(PathogenicitySource source, float score) {
+    BasePathogenicityScore {
         checkBounds(source, score);
-        this.source = source;
-        this.score = score;
     }
-
-    private static void checkBounds(PathogenicitySource source, float score) {
-        if (score < 0f || score > 1f) {
-            String message = String.format("%s score of %.3f is out of range. Must be in the range of 0.0 - 1.0", source, score);
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    @Override
-    public PathogenicitySource getSource() {
-        return source;
-    }
-
-    @Override
-    public float getScore() {
-        return score;
-    }
-
 
     @JsonIgnore
     @Override
-    public float getRawScore() {
+    public float rawScore() {
         return score;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BasePathogenicityScore)) return false;
-        BasePathogenicityScore that = (BasePathogenicityScore) o;
-        return Float.compare(that.score, score) == 0 &&
-                source == that.source;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(source, score);
-    }
 
     @Override
     public String toString() {

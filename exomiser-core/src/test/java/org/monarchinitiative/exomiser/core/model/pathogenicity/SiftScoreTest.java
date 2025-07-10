@@ -51,9 +51,9 @@ public class SiftScoreTest {
     private static final float SIFT_NON_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
        
     @Test
-    public void testGetSource() {
+    public void testSource() {
         instance = SiftScore.of(SIFT_PATHOGENIC_SCORE);
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.SIFT));
+        assertThat(instance.source(), equalTo(PathogenicitySource.SIFT));
     }
     
     @Test

@@ -66,7 +66,7 @@ public class SimpleGeneFilterRunnerTest {
     @BeforeEach
     public void setUp() {
         instance = new SimpleGeneFilterRunner();
-        inheritanceFilter = new InheritanceFilter(PASS_MODE);
+        inheritanceFilter = new InheritanceFilter(EnumSet.of(PASS_MODE));
 
         passGene = makeGeneWithVariants("GENE1", 12345, EnumSet.of(PASS_MODE));
 
@@ -88,7 +88,7 @@ public class SimpleGeneFilterRunnerTest {
         //TODO: change this - mock filter required? We're not trying to test the functionality of the InheritanceFilter here.
         gene.addVariant(TestFactory.variantBuilder(1, 1, "A", "T").build());
         gene.addVariant(TestFactory.variantBuilder(1, 2, "G", "T").build());
-        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+        for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
             variantEvaluation.setCompatibleInheritanceModes(inheritanceModes);
         }
         return gene;
@@ -97,11 +97,11 @@ public class SimpleGeneFilterRunnerTest {
     private void assertVariantsUnfilteredAndDoNotPassFilter(List<Gene> genes, List<GeneFilter> geneFilters) {
         for (Gene gene : genes) {
             assertThat(gene.passedFilters(), is(true));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+            for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
                 for (GeneFilter filter : geneFilters) {
-                    assertThat(variantEvaluation.passedFilter(filter.getFilterType()), is(false));
+                    assertThat(variantEvaluation.passedFilter(filter.filterType()), is(false));
                 }
-                assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+                assertThat(variantEvaluation.filterStatus(), equalTo(FilterStatus.UNFILTERED));
             }
         }
         assertThat(instance.filterCounts(), equalTo(List.of()));
@@ -119,11 +119,11 @@ public class SimpleGeneFilterRunnerTest {
 
         assertThat(gene.passedFilters(), equalTo(hasPassed));
         for (GeneFilter filter : filters) {
-            FilterType filterType = filter.getFilterType();
+            FilterType filterType = filter.filterType();
             assertThat(gene.passedFilter(filterType), equalTo(hasPassed));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+            for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
                 assertThat(variantEvaluation.passedFilter(filterType), equalTo(hasPassed));
-                assertThat(variantEvaluation.getFilterStatus(), equalTo(filterStatus));
+                assertThat(variantEvaluation.filterStatus(), equalTo(filterStatus));
             }
         }
     }
@@ -161,8 +161,8 @@ public class SimpleGeneFilterRunnerTest {
                 new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f),
                 inheritanceFilter
         );
-        passGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, passGene.getEntrezGeneID(), passGene.getGeneSymbol(), 0.8f));
-        failGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, failGene.getEntrezGeneID(), failGene.getGeneSymbol(), 0.6f));
+        passGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, passGene.entrezGeneId(), passGene.geneSymbol(), 0.8f));
+        failGene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, failGene.entrezGeneId(), failGene.geneSymbol(), 0.6f));
 
         assertVariantsUnfilteredAndDoNotPassFilter(genes, filters);
 

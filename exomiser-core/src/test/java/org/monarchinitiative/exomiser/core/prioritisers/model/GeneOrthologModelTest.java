@@ -64,28 +64,28 @@ public class GeneOrthologModelTest {
     }
     
     @Test
-    public void testGetEntrezGeneId() {
-        assertThat(instance.getEntrezGeneId(), equalTo(entrezGeneId));
+    public void testEntrezGeneId() {
+        assertThat(instance.entrezGeneId(), equalTo(entrezGeneId));
     }
 
     @Test
-    public void testGetHumanGeneSymbol() {
-        assertThat(instance.getHumanGeneSymbol(), equalTo(humanGeneSymbol));
+    public void testHumanGeneSymbol() {
+        assertThat(instance.humanGeneSymbol(), equalTo(humanGeneSymbol));
     }
 
     @Test
     public void testGetModelId() {
-        assertThat(instance.getId(), equalTo(modelId));
+        assertThat(instance.id(), equalTo(modelId));
     }
 
     @Test
     public void testGetModelGeneSymbol() {
-        assertThat(instance.getModelGeneSymbol(), equalTo(modelGeneSymbol));
+        assertThat(instance.modelGeneSymbol(), equalTo(modelGeneSymbol));
     }
     
     @Test
-    public void testGetPhenotypeIds() {
-        assertThat(instance.getPhenotypeIds(), equalTo(modelPhenotypeIds));
+    public void testPhenotypeIds() {
+        assertThat(instance.phenotypeIds(), equalTo(modelPhenotypeIds));
     }
 
     @Test

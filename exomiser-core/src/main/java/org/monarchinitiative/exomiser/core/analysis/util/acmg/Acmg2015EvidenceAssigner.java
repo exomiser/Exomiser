@@ -107,7 +107,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         if (proband == null) {
             throw new IllegalArgumentException("Proband '" + probandId + "' not found in pedigree " + pedigree);
         }
-        this.probandSex = proband.getSex();
+        this.probandSex = proband.sex();
         this.clinVarDao = clinVarDao;
     }
 
@@ -132,13 +132,13 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     public AcmgEvidence assignVariantAcmgEvidence(VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, List<Disease> knownDiseases, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
         AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();
 
-        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+        FrequencyData frequencyData = variantEvaluation.frequencyData();
         // BA1 "Allele frequency is >5% in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
         // Updated recommendation: "Allele frequency is >0.05 in any general continental population dataset of at least
         // 2,000 observed alleles and found in a gene without a gene- or variant-specific BA1 modification." i.e. ExAC
         // African, East Asian, European [non-Finnish], Latino, and South Asian
         AlleleProto.AlleleKey alleleKey = variantEvaluation.alleleKey();
-        boolean isBa1ExcludedVariant = variantEvaluation.getGenomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
+        boolean isBa1ExcludedVariant = variantEvaluation.genomeAssembly() == GenomeAssembly.HG19 ? HG19_BA1_EXCLUSION_VARIANTS.contains(alleleKey) : HG38_BA1_EXCLUSION_VARIANTS.contains(alleleKey);
         if (!isBa1ExcludedVariant && frequencyData.maxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS) >= 5.0) {
             acmgEvidenceBuilder.add(BA1);
             // BA1 is supposed to be used as a filtering criterion where no other evidence need be considered.
@@ -148,9 +148,9 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // PM2 "Absent from controls (or at extremely low frequency if recessive) in Exome Sequencing Project, 1000 Genomes Project, or Exome Aggregation Consortium"
         assignPM2(acmgEvidenceBuilder, frequencyData, modeOfInheritance);
         // BS1 "Allele frequency is greater than expected for disorder"
-        assignBS1(acmgEvidenceBuilder, variantEvaluation, frequencyData, variantEvaluation.getPathogenicityData().clinVarData());
+        assignBS1(acmgEvidenceBuilder, variantEvaluation, frequencyData, variantEvaluation.pathogenicityData().clinVarData());
         // BS2 "Observed in a healthy adult individual for a recessive (homozygous), dominant (heterozygous), or X-linked (hemizygous) disorder, with full penetrance expected at an early age"
-        assignBS2(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, knownDiseases, frequencyData, variantEvaluation.getPathogenicityData().clinVarData());
+        assignBS2(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, knownDiseases, frequencyData, variantEvaluation.pathogenicityData().clinVarData());
 
         // PVS1 "null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single or multiexon deletion) in a gene where LOF is a known mechanism of disease"
         // "Recommendations for interpreting the loss of function PVS1 ACMG/AMP variant criterion" https://doi.org/10.1002/humu.23626
@@ -187,7 +187,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         // PP4 "Patient’s phenotype or family history is highly specific for a disease with a single genetic etiology"
         assignPP4(acmgEvidenceBuilder, compatibleDiseaseMatches);
 
-        ClinVarData clinVarData = variantEvaluation.getPathogenicityData().clinVarData();
+        ClinVarData clinVarData = variantEvaluation.pathogenicityData().clinVarData();
         if (!clinVarData.isEmpty()) {
             // PP5 "Reputable source recently reports variant as pathogenic, but the evidence is not available to the laboratory to perform an independent evaluation"
             assignPP5(acmgEvidenceBuilder, clinVarData);
@@ -205,7 +205,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     }
 
     private void assignBS1(AcmgEvidence.Builder acmgEvidenceBuilder, Variant variant, FrequencyData frequencyData, ClinVarData clinVarData) {
-        boolean isReportedPorLP = clinVarData.starRating() >= 1 && isPathOrLikelyPath(clinVarData.getPrimaryInterpretation());
+        boolean isReportedPorLP = clinVarData.starRating() >= 1 && isPathOrLikelyPath(clinVarData.primaryInterpretation());
         if ((acmgEvidenceBuilder.contains(BA1) || acmgEvidenceBuilder.contains(PM2)) && !isReportedPorLP) {
             float maxNonFounderPopFreq = frequencyData.maxFreqForPopulation(FrequencySource.NON_FOUNDER_POPS);
             if (variant.contigId() == 25 && maxNonFounderPopFreq > 0.5) {
@@ -247,12 +247,12 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     private void assignPM3orBP2(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, boolean hasCompatibleDiseaseMatches) {
         if (hasCompatibleDiseaseMatches) {
-            SampleGenotype thisVariantGenotype = variantEvaluation.getSampleGenotype(probandId);
+            SampleGenotype thisVariantGenotype = variantEvaluation.sampleGenotype(probandId);
             if (contributingVariants.size() >= 2 && contributingVariants.contains(variantEvaluation)) {
                 for (VariantEvaluation otherVariant : contributingVariants) {
-                    SampleGenotype otherVariantGenotype = otherVariant.getSampleGenotype(probandId);
-                    ClinVarData otherClinVarData = otherVariant.getPathogenicityData().clinVarData();
-                    if (otherClinVarData.getPrimaryInterpretation() == ClinVarData.ClinSig.PATHOGENIC && !otherVariant.equals(variantEvaluation)) {
+                    SampleGenotype otherVariantGenotype = otherVariant.sampleGenotype(probandId);
+                    ClinVarData otherClinVarData = otherVariant.pathogenicityData().clinVarData();
+                    if (otherClinVarData.primaryInterpretation() == ClinVarData.ClinSig.PATHOGENIC && !otherVariant.equals(variantEvaluation)) {
                         // X = this variant, P = other pathogenic variant
                         boolean inTrans = inTrans(thisVariantGenotype, otherVariantGenotype);
                         boolean inCis = inCis(thisVariantGenotype, otherVariantGenotype);
@@ -299,7 +299,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         if (acmgEvidenceBuilder.contains(PS1)) {
             return;
         }
-        ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+        ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
         boolean pathOrLikelyPath = isPathOrLikelyPath(primaryInterpretation);
         if (pathOrLikelyPath && clinVarData.starRating() == 1) {
             acmgEvidenceBuilder.add(PP5);
@@ -321,7 +321,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     private void assignBP6(AcmgEvidence.Builder acmgEvidenceBuilder, ClinVarData clinVarData) {
         // these are likely never to be triggered as the variants will have been filtered out already
-        ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+        ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
         boolean benignOrLikelyBenign = isBenignOrLikelyBenign(primaryInterpretation);
         if (benignOrLikelyBenign && clinVarData.starRating() == 1) {
             acmgEvidenceBuilder.add(BP6);
@@ -343,13 +343,13 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      */
     private void assignPS2(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<VariantEvaluation> contributingVariants, boolean hasCompatibleDiseaseMatches, Individual proband) {
         if (modeOfInheritance.isDominant() && hasCompatibleDiseaseMatches && contributingVariants.contains(variantEvaluation)) {
-            List<Individual> ancestors = pedigree.anscestorsOf(proband);
+            List<Individual> ancestors = pedigree.ancestorsOf(proband);
             boolean noFamilyHistoryOfDisease = true;
             boolean noFamilyHistoryOfAllele = true;
             if (ancestors.size() >= 2) {
-                SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
+                SampleGenotype probandGenotype = variantEvaluation.sampleGenotype(probandId);
                 for (Individual ancestor : ancestors) {
-                    SampleGenotype ancestorGenotype = variantEvaluation.getSampleGenotype(ancestor.getId());
+                    SampleGenotype ancestorGenotype = variantEvaluation.sampleGenotype(ancestor.id());
                     // It may be the case that the pedigree contains a relative but the relative was not sequenced,
                     // so these are considered independently
                     if (ancestor.isAffected()) {
@@ -397,9 +397,9 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * PM4 Protein length changes as a result of in-frame deletions/insertions in a nonrepeat region or stop-loss variants
      */
     private void assignPM4(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation) {
-        boolean isInFrameInDel = variantEvaluation.getVariantEffect() == VariantEffect.INFRAME_INSERTION || variantEvaluation.getVariantEffect() == VariantEffect.INFRAME_DELETION;
+        boolean isInFrameInDel = variantEvaluation.variantEffect() == VariantEffect.INFRAME_INSERTION || variantEvaluation.variantEffect() == VariantEffect.INFRAME_DELETION;
         // avoid double-counting same affects if PVS1 already applied
-        if (!acmgEvidenceBuilder.contains(PVS1) && variantEvaluation.getVariantEffect() == VariantEffect.STOP_LOST || isInFrameInDel) {
+        if (!acmgEvidenceBuilder.contains(PVS1) && variantEvaluation.variantEffect() == VariantEffect.STOP_LOST || isInFrameInDel) {
             acmgEvidenceBuilder.add(PM4);
         }
         // TODO if can assess whether the variant is an inframe indel in an unconserved or repetitive region then can assign BP3
@@ -420,7 +420,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
 //        nonspecific features such as developmental delay.
         if (hasCompatibleDiseaseMatches && modeOfInheritance.isDominant()
             && contributingVariants.contains(variantEvaluation)
-            && variantEvaluation.getSampleGenotypes().size() == 1 && variantEvaluation.getSampleGenotype(probandId).isHet()) {
+            && variantEvaluation.sampleGenotypes().size() == 1 && variantEvaluation.sampleGenotype(probandId).isHet()) {
             // making an assumption that this could be a de novo
             acmgEvidenceBuilder.add(PM6);
         }
@@ -432,7 +432,7 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
     private void assignPP4(AcmgEvidence.Builder acmgEvidenceBuilder, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
         double humanGenePhenotypeScoreForMoi = 0;
         for (ModelPhenotypeMatch<Disease> diseaseModelPhenotypeMatch : compatibleDiseaseMatches) {
-            humanGenePhenotypeScoreForMoi = Math.max(humanGenePhenotypeScoreForMoi, diseaseModelPhenotypeMatch.getScore());
+            humanGenePhenotypeScoreForMoi = Math.max(humanGenePhenotypeScoreForMoi, diseaseModelPhenotypeMatch.score());
         }
         if (humanGenePhenotypeScoreForMoi >= 0.7f) {
             acmgEvidenceBuilder.add(PP4, Evidence.MODERATE);
@@ -449,14 +449,15 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
         if (pedigree.size() >= 2) {
             List<Individual> affectedFamilyMembers = pedigree.getIndividuals().stream()
                     .filter(Individual::isAffected)
-                    .filter(individual -> !individual.getId().equals(probandId))
-                    .filter(individual -> individual.getFamilyId().equals(proband.getFamilyId()))
+                    .filter(individual -> !individual.id().equals(probandId))
+                    .filter(individual -> individual.familyId().equals(proband.familyId()))
                     .toList();
             boolean segregatesWithAffectedInFamily = true;
-            SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(probandId);
+            SampleGenotype probandGenotype = variantEvaluation.sampleGenotype(probandId);
             if (!affectedFamilyMembers.isEmpty()) {
                 for (Individual affected : affectedFamilyMembers) {
-                    SampleGenotype affectedGenotype = variantEvaluation.getSampleGenotype(affected.getId());
+                    // TODO: XLinked and  compatible with MOI - ? TEST!!
+                    SampleGenotype affectedGenotype = variantEvaluation.sampleGenotype(affected.id());
                     if ((affectedGenotype.isHomRef() || affectedGenotype.isNoCall() || affectedGenotype.isEmpty()) && (probandGenotype.isHet() || probandGenotype.isHomAlt())) {
                         segregatesWithAffectedInFamily = false;
                     }

@@ -26,13 +26,8 @@ import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toList;
 
 public class VariantEffectCounter {
 
@@ -51,10 +46,10 @@ public class VariantEffectCounter {
                     VariantEffect variantEffect = entry.getKey();
                     List<Integer> counts = IntStream.of(entry.getValue())
                             .boxed()
-                            .collect(toList());
+                            .toList();
                     return new VariantEffectCount(variantEffect, counts);
                 })
-                .collect(toList());
+                .toList();
     }
 
     private Map<VariantEffect, int[]> countVariantEffects(int numSamples, List<VariantEvaluation> variantEvaluations) {
@@ -66,12 +61,12 @@ public class VariantEffectCounter {
 
         for (VariantEvaluation variant : variantEvaluations) {
             // this is always in the order of the sample names declared in the VCF header
-            List<SampleData> sampleData = variant.getSampleGenotypes().getSampleData();
-            VariantEffect effect = variant.getVariantEffect();
+            List<SampleData> sampleData = variant.sampleGenotypes().sampleData();
+            VariantEffect effect = variant.variantEffect();
             int[] effectCounts = tempCounts.get(effect);
             for (int i = 0; i < sampleData.size(); i++) {
-                SampleGenotype sampleGenotype = sampleData.get(i).getSampleGenotype();
-                List<AlleleCall> calls = sampleGenotype.getCalls();
+                SampleGenotype sampleGenotype = sampleData.get(i).sampleGenotype();
+                List<AlleleCall> calls = sampleGenotype.calls();
                 if (calls.size() == 2 && calls.contains(AlleleCall.ALT)) {
                     effectCounts[i]++;
                 }
@@ -90,7 +85,7 @@ public class VariantEffectCounter {
 
     public List<VariantEffectCount> getVariantEffectCounts(Set<VariantEffect> variantEffects) {
         return variantEffectCounts.stream()
-                .filter(variantEffectCount -> variantEffects.contains(variantEffectCount.getVariantType()))
-                .collect(toList());
+                .filter(variantEffectCount -> variantEffects.contains(variantEffectCount.variantEffect()))
+                .toList();
     }
 }

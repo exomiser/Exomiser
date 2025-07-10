@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -34,9 +34,9 @@ public class SampleGenotypes implements Iterable<SampleData> {
     }
 
     private Map<String, SampleData> buildSamplesMap(List<SampleData> samples) {
-        Map<String, SampleData> sampleMap = new LinkedHashMap<>(samples.size());
+        Map<String, SampleData> sampleMap = LinkedHashMap.newLinkedHashMap(samples.size());
         for (SampleData sampleData : samples) {
-            sampleMap.put(sampleData.getId(), sampleData);
+            sampleMap.put(sampleData.id(), sampleData);
         }
         return Collections.unmodifiableMap(sampleMap);
     }
@@ -65,23 +65,23 @@ public class SampleGenotypes implements Iterable<SampleData> {
         return of(SampleData.of(s1, g1), SampleData.of(s2, g2), SampleData.of(s3, g3), SampleData.of(s4, g4));
     }
 
-    public List<SampleData> getSampleData() {
+    public List<SampleData> sampleData() {
         return List.copyOf(sampleDataById.values());
     }
 
     @Nullable
-    public SampleData getSampleData(String sampleId) {
+    public SampleData sampleData(String sampleId) {
         return sampleDataById.get(sampleId);
     }
 
-    public SampleGenotype getSampleGenotype(String sampleId) {
+    public SampleGenotype sampleGenotype(String sampleId) {
         SampleData sampleData = sampleDataById.get(sampleId);
-        return sampleData == null ? SampleGenotype.empty() : sampleData.getSampleGenotype();
+        return sampleData == null ? SampleGenotype.empty() : sampleData.sampleGenotype();
     }
 
-    public CopyNumber getSampleCopyNumber(String sampleId) {
+    public CopyNumber sampleCopyNumber(String sampleId) {
         SampleData sampleData = sampleDataById.get(sampleId);
-        return sampleData == null ? CopyNumber.empty() : sampleData.getCopyNumber();
+        return sampleData == null ? CopyNumber.empty() : sampleData.copyNumber();
     }
 
     public boolean isEmpty() {
@@ -118,14 +118,14 @@ public class SampleGenotypes implements Iterable<SampleData> {
     public String toString() {
         StringJoiner commaSeparated = new StringJoiner(", ", "{", "}");
         for (SampleData sampleData : sampleDataById.values()) {
-            commaSeparated.add(sampleData.getId() + "=" + formatValues(sampleData));
+            commaSeparated.add(sampleData.id() + "=" + formatValues(sampleData));
         }
         return commaSeparated.toString();
     }
 
     private String formatValues(SampleData sampleData) {
-        String gt = sampleData.getSampleGenotype().toString();
-        return sampleData.hasCopyNumber() ? gt + ":" + sampleData.getCopyNumber().copies() : gt;
+        String gt = sampleData.sampleGenotype().toString();
+        return sampleData.hasCopyNumber() ? gt + ":" + sampleData.copyNumber().copies() : gt;
     }
 
 
@@ -138,12 +138,12 @@ public class SampleGenotypes implements Iterable<SampleData> {
             this.sampleData = sampleData;
         }
 
-        public SampleGenotype getSampleGenotype(String sampleId) {
-            return sampleData.getId().equals(sampleId) ? sampleData.getSampleGenotype() : SampleGenotype.empty();
+        public SampleGenotype sampleGenotype(String sampleId) {
+            return sampleData.id().equals(sampleId) ? sampleData.sampleGenotype() : SampleGenotype.empty();
         }
 
-        public CopyNumber getSampleCopyNumber(String sampleId) {
-            return sampleData.getId().equals(sampleId) ? sampleData.getCopyNumber() : CopyNumber.empty();
+        public CopyNumber sampleCopyNumber(String sampleId) {
+            return sampleData.id().equals(sampleId) ? sampleData.copyNumber() : CopyNumber.empty();
         }
 
         public boolean isEmpty() {

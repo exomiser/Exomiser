@@ -352,8 +352,8 @@
                             </div>
                             <div class="report-numbers">
                                 <div class="report-percentloss" th:if="${report != null}"
-                                     th:classappend="${report != null ? (#numbers.formatDecimal(report.getPercentageFilteredFromReport(filterReportEvalCount), 1, 0) > 0 ? 'report-text-violetred' : '') : '' } == 'report-text-violetred' ? 'report-text-violetred' : ''"
-                                     th:text="${#numbers.formatDecimal(report.getPercentageFilteredFromReport(filterReportEvalCount), 1, 0)} + '%'"></div>
+                                     th:classappend="${report != null ? (#numbers.formatDecimal(report.percentageFilteredFromReport(filterReportEvalCount), 1, 0) > 0 ? 'report-text-violetred' : '') : '' } == 'report-text-violetred' ? 'report-text-violetred' : ''"
+                                     th:text="${#numbers.formatDecimal(report.percentageFilteredFromReport(filterReportEvalCount), 1, 0)} + '%'"></div>
                                 <div class="text-sm pass-fail text-end">
                                     <span class="text-muted" th:text="${#numbers.formatDecimal(report.passed, 0, 'COMMA', 0, 'POINT')} + ' Passed'"></span><br>
                                     <span class="text-muted" th:text="${#numbers.formatDecimal(report.failed, 0, 'COMMA', 0, 'POINT')}  + ' Failed'"></span>
@@ -372,30 +372,30 @@
             <div class="accordion accordion-flush" id="accordionResults">
             <div class="accordion-item mb-1 mt-1" th:each="gene, iterStat: ${genes}">
                 <div class="accordion-header">
-                    <div th:id="${gene.getGeneIdentifier().getGeneSymbol()}" class="accordion-button collapsed align-items-center" data-bs-toggle="collapse" th:attr="data-bs-target='#' + ${gene.getGeneIdentifier().getGeneSymbol()} + 'Body'" role="button" aria-expanded="false" >
+                    <div th:id="${gene.geneIdentifier().geneSymbol()}" class="accordion-button collapsed align-items-center" data-bs-toggle="collapse" th:attr="data-bs-target='#' + ${gene.geneIdentifier().geneSymbol()} + 'Body'" role="button" aria-expanded="false" >
                         <div class="me-4 accordion-rank">
                             <h5 class="text-black-50 m-0" th:text="${iterStat.index + 1}"></h5>
                         </div>
                         <div class="col-1">
-                            <h6 class="m-0" th:text="${gene.getGeneIdentifier().getGeneSymbol()}">
+                            <h6 class="m-0" th:text="${gene.geneIdentifier().geneSymbol()}">
                                 FGFR2
                             </h6>
                         </div>
                         <div class="col">
                             <span>
-                                Exomiser Score <b th:text="${#numbers.formatDecimal(gene.getCombinedScore(), 1, 3)}">1.00</b>
+                                Exomiser Score <b th:text="${#numbers.formatDecimal(gene.combinedScore(), 1, 3)}">1.00</b>
                                 <data class="pvalue" th:text="'(p=' + ${pValueFormatter.format(gene.pValue())} + ')'">(p=0.1e-4)</data>
                             </span>
                         </div>
                         <div class="col">
-                            <span>Phenotype Score <b th:text="${#numbers.formatDecimal(gene.getPriorityScore(), 1, 3)}">1.00</b></span>
+                            <span>Phenotype Score <b th:text="${#numbers.formatDecimal(gene.priorityScore(), 1, 3)}">1.00</b></span>
                         </div>
                         <div class="col">
-                            <span>Variant Score <b th:text="${#numbers.formatDecimal(gene.getVariantScore(), 1, 3)}">1.00</b></span>
+                            <span>Variant Score <b th:text="${#numbers.formatDecimal(gene.variantScore(), 1, 3)}">1.00</b></span>
                         </div>
-                        <div class="col" th:if="${gene.getTopGeneScore().getAcmgAssignments().size() > 0}">
+                        <div class="col" th:if="${gene.topGeneScore().acmgAssignments().size() > 0}">
                             Exomiser ACMG<br>
-                            <th:block th:with="acmgClassification = ${gene.getTopGeneScore().getAcmgAssignments().get(0).acmgClassification()}"
+                            <th:block th:with="acmgClassification = ${gene.topGeneScore().acmgAssignments().get(0).acmgClassification()}"
                                       th:switch="${acmgClassification.toString()}">
                                 <div th:case="'BENIGN'" class="badge rounded-pill text-bg-success"
                                       th:text="${acmgClassification}">BENIGN</div>
@@ -411,57 +411,57 @@
                                      th:text="${acmgClassification}">NOT_AVAILABLE</div>
                             </th:block>
                         </div>
-                        <div class="col" th:if="${gene.getTopGeneScore().getAcmgAssignments().size() > 0}">
+                        <div class="col" th:if="${gene.topGeneScore().acmgAssignments().size() > 0}">
                             Clinvar ACMG<br>
-                            <div th:if="${gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().hasClinVarData()}">
-                            <th:block th:with="clinVarData = ${gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().clinVarData()}"
-                                      th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                            <div th:if="${gene.topGeneScore().acmgAssignments().get(0).variantEvaluation().pathogenicityData().hasClinVarData()}">
+                            <th:block th:with="clinVarData = ${gene.topGeneScore().acmgAssignments().get(0).variantEvaluation().pathogenicityData().clinVarData()}"
+                                      th:switch="${clinVarData.primaryInterpretation().toString()}">
                                 <div th:case="'BENIGN'" class="badge rounded-pill text-bg-success"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">BENIGN</div>
                                 <div th:case="'BENIGN_OR_LIKELY_BENIGN'" class="badge rounded-pill text-bg-success"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</div>
                                 <div th:case="'LIKELY_BENIGN'" class="badge rounded-pill text-bg-info"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">LIKELY_BENIGN</div>
                                 <div th:case="'LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-warning"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">LIKELY_PATHOGENIC</div>
                                 <div th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-danger"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</div>
                                 <div th:case="'PATHOGENIC'" class="badge rounded-pill text-bg-danger"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC</div>
                                 <div th:case="*" class="badge rounded-pill text-bg-info"
-                                     th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</div>
+                                     th:text="${clinVarData.primaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</div>
                             </th:block>
                             </div>
-                            <div th:if="${!gene.getTopGeneScore().getAcmgAssignments().get(0).variantEvaluation().getPathogenicityData().hasClinVarData()}">
+                            <div th:if="${!gene.topGeneScore().acmgAssignments().get(0).variantEvaluation().pathogenicityData().hasClinVarData()}">
                             <div class="badge rounded-pill text-bg-info">NO_EVIDENCE</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-collapse collapse p-2" th:id="${gene.getGeneIdentifier().getGeneSymbol() + 'Body'}">
+                <div class="accordion-collapse collapse p-2" th:id="${gene.geneIdentifier().geneSymbol() + 'Body'}">
                     <div class="row">
                         <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
                           <li class="nav-item" role="genescores">
-                            <button class="nav-link active" th:id="${'genescores-tab-' + gene.getGeneIdentifier().getGeneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#genescores-body-' + ${gene.getGeneIdentifier().getGeneSymbol()}" type="button" role="tab" aria-controls="genescores-home" aria-selected="true">Gene Scores</button>
+                            <button class="nav-link active" th:id="${'genescores-tab-' + gene.geneIdentifier().geneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#genescores-body-' + ${gene.geneIdentifier().geneSymbol()}" type="button" role="tab" aria-controls="genescores-home" aria-selected="true">Gene Scores</button>
                           </li>
                           <li class="nav-item" role="phenomatches">
-                            <button class="nav-link" th:id="${'phenomatches-tab-' + gene.getGeneIdentifier().getGeneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#phenomatches-body-' + ${gene.getGeneIdentifier().getGeneSymbol()}" type="button" role="tab" aria-controls="phenomatches-body" aria-selected="false">Phenotype Matches</button>
+                            <button class="nav-link" th:id="${'phenomatches-tab-' + gene.geneIdentifier().geneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#phenomatches-body-' + ${gene.geneIdentifier().geneSymbol()}" type="button" role="tab" aria-controls="phenomatches-body" aria-selected="false">Phenotype Matches</button>
                           </li>
                           <li class="nav-item" role="kdiseases">
-                            <button class="nav-link" th:id="${'kdiseases-tab-' + gene.getGeneIdentifier().getGeneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#kdiseases-body-' + ${gene.getGeneIdentifier().getGeneSymbol()}" type="button" role="tab" aria-controls="kdiseases-body" aria-selected="false">Known Diseases</button>
+                            <button class="nav-link" th:id="${'kdiseases-tab-' + gene.geneIdentifier().geneSymbol()}" data-bs-toggle="pill" th:attr="data-bs-target='#kdiseases-body-' + ${gene.geneIdentifier().geneSymbol()}" type="button" role="tab" aria-controls="kdiseases-body" aria-selected="false">Known Diseases</button>
                           </li>
                         </ul>
                         <div class="tab-content" id="pills-tabContent">
-                          <div class="tab-pane fade show active" th:id="${'genescores-body-' + gene.getGeneIdentifier().getGeneSymbol()}" role="tabpanel" aria-labelledby="genescores-tab" tabindex="0">
+                          <div class="tab-pane fade show active" th:id="${'genescores-body-' + gene.geneIdentifier().geneSymbol()}" role="tabpanel" aria-labelledby="genescores-tab" tabindex="0">
                               <div class="genescores-wrapper"
-                                 th:each="geneScore: ${#lists.sort(gene.getGeneScores())}"
-                                 th:if="${not #lists.isEmpty(geneScore.getContributingVariants())}">
+                                 th:each="geneScore: ${#lists.sort(gene.geneScores())}"
+                                 th:if="${not #lists.isEmpty(geneScore.contributingVariants())}">
 
                                 <div class="genescores-title">
                                     <div class="row">
                                         <div class="col-sm-12 col-md-3">
-                                            <span th:text="${geneScore.getModeOfInheritance()}">
+                                            <span th:text="${geneScore.modeOfInheritance()}">
                                                 <b><span th:case="'AUTOSOMAL_DOMINANT'"
                                                       th:text="'AD'">AUTOSOMAL_DOMINANT</span>
                                                 </b>
@@ -469,18 +469,18 @@
                                             </div>
                                         <div class="col-sm-4 col-md-3">
                                                 <span>Exomiser Score:
-                                                    <b th:text="${#numbers.formatDecimal(geneScore.getCombinedScore(), 1, 3)}">1.005</b>
+                                                    <b th:text="${#numbers.formatDecimal(geneScore.combinedScore(), 1, 3)}">1.005</b>
                                                     <data th:text="'(p=' + ${pValueFormatter.format(geneScore.pValue())} + ')'">(p=0.1e-4)</data>
                                                 </span>
                                             </div>
                                         <div class="col-sm-4 col-md-3">
                                                 <span>Phenotype Score: <b
-                                                        th:text="${#numbers.formatDecimal(geneScore.getPhenotypeScore(), 1, 3)}">1.005</b>
+                                                        th:text="${#numbers.formatDecimal(geneScore.phenotypeScore(), 1, 3)}">1.005</b>
                                                 </span>
                                             </div>
                                         <div class="col-sm-4 col-md-3">
                                             <span>Variant Score: <b
-                                                    th:text="${#numbers.formatDecimal(geneScore.getVariantScore(), 1, 3)}">1.005</b>
+                                                    th:text="${#numbers.formatDecimal(geneScore.variantScore(), 1, 3)}">1.005</b>
                                             </span>
                                         </div>
                                     </div>
@@ -489,22 +489,22 @@
                                     <div class="row">
                                         <div class="disease-rank-list col-sm-12 col-md-5 mb-4">
                                             <h5 class="genescores-section-title"><i>Disease Rank List</i></h5>
-                                            <b th:if="${#lists.isEmpty(geneScore.getCompatibleDiseaseMatches())}">
+                                            <b th:if="${#lists.isEmpty(geneScore.compatibleDiseaseMatches())}">
                                                 No phenotype matches to diseases with this MOI.
                                             </b>
-                                            <div th:unless="${#lists.isEmpty(geneScore.getCompatibleDiseaseMatches())}">
-                                                    <div class="disease-rank-wrapper" th:classappend="${#arrays.length(geneScore.getCompatibleDiseaseMatches()) > 3} ? 'disease-rank-gradient' : ''">
+                                            <div th:unless="${#lists.isEmpty(geneScore.compatibleDiseaseMatches())}">
+                                                    <div class="disease-rank-wrapper" th:classappend="${#arrays.length(geneScore.compatibleDiseaseMatches()) > 3} ? 'disease-rank-gradient' : ''">
                                                         <div class="disease-ranks">
-                                                            <div class="disease-rank" th:each="diseaseModel, stat : ${geneScore.getCompatibleDiseaseMatches()}">
-                                                                <span class="badge text-light" th:classappend="${stat.index < stat.size / 3 || stat.size == 1 || stat.size == 2} ? 'hot' : (${stat.index < 2 * stat.size / 3} ? 'warm' : 'cold')" th:text="${#numbers.formatDecimal(diseaseModel.getScore(), 1, 3)} ">
+                                                            <div class="disease-rank" th:each="diseaseModel, stat : ${geneScore.compatibleDiseaseMatches()}">
+                                                                <span class="badge text-light" th:classappend="${stat.index < stat.size / 3 || stat.size == 1 || stat.size == 2} ? 'hot' : (${stat.index < 2 * stat.size / 3} ? 'warm' : 'cold')" th:text="${#numbers.formatDecimal(diseaseModel.score(), 1, 3)} ">
                                                                     0.957
                                                                 </span>
                                                                 <div class="disease-rank-title">
                                                                     <span class="disease-name"
-                                                                          th:text="${diseaseModel.getModel().getDiseaseName()}">
+                                                                          th:text="${diseaseModel.model().diseaseName()}">
                                                                         APERT SYNDROME
                                                                     </span>
-                                                                    <span class="disease-id" th:text="${diseaseModel.getModel().getId()}">
+                                                                    <span class="disease-id" th:text="${diseaseModel.model().id()}">
                                                                         OMIM:101600
                                                                     </span>
                                                                 </div>
@@ -516,7 +516,7 @@
                                         <div class="genescores-variant col-sm-12 col-md-7">
                                             <h5 class="genescores-section-title d-inline-block"><i>Variant Evaluation</i></h5>
                                             <div class="row mb-3"
-                                                 th:each="acmgAssignment: ${geneScore.getAcmgAssignments()}"
+                                                 th:each="acmgAssignment: ${geneScore.acmgAssignments()}"
                                                  th:with="variantEvaluation = ${acmgAssignment.variantEvaluation()}">
                                                 <div class="col-sm-12">
                                                     <div class="label label-danger d-inline"
@@ -557,13 +557,13 @@
                                                              th:switch="${transcriptDb}">
                                                             <a th:case="'UCSC'"
                                                                th:href="@{|https://genome.ucsc.edu/cgi-bin/hgTracks?db=${ucscAssembly}&position=${annotation.accession}|}"
-                                                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                                               th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
                                                             <a th:case="'ENSEMBL'"
                                                                th:href="@{|https://${ensemblAssembly}.ensembl.org/Homo_sapiens/Transcript/Summary?t=${annotation.accession}|}"
-                                                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                                               th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
                                                             <a th:case="'REFSEQ'"
                                                                th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
-                                                               th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+                                                               th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
                                                         </div>
                                                     </div>
 
@@ -596,27 +596,27 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-xs-12 col-lg-6 mt-2">
-                                                        <div class="variant-eval-box " th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}" th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}" th:classappend="${clinVarData.getPrimaryInterpretation().toString() == 'BENIGN' || clinVarData.getPrimaryInterpretation().toString() == 'BENIGN_OR_LIKELY_BENIGN' ? 'border-top-success' : ''} + ${clinVarData.getPrimaryInterpretation().toString() == 'LIKELY_BENIGN' ? 'border-top-success' : ''} + ${clinVarData.getPrimaryInterpretation().toString() == 'LIKELY_PATHOGENIC' ? 'border-top-warning' : ''} + ${clinVarData.getPrimaryInterpretation().toString() == 'PATHOGENIC' || clinVarData.getPrimaryInterpretation().toString() == 'PATHOGENIC_OR_LIKELY_PATHOGENIC' ? 'border-top-danger' : ''} + ${clinVarData.getPrimaryInterpretation().toString() == 'UNCERTAIN_SIGNIFICANCE' ? 'border-top-info' : ''} + ${clinVarData.getPrimaryInterpretation().toString() == 'NOT_AVAILABLE' or clinVarData.getPrimaryInterpretation().toString() == 'NOT_PROVIDED' ? 'border-top-blank' : ''}">
+                                                        <div class="variant-eval-box " th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}" th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}" th:classappend="${clinVarData.primaryInterpretation().toString() == 'BENIGN' || clinVarData.primaryInterpretation().toString() == 'BENIGN_OR_LIKELY_BENIGN' ? 'border-top-success' : ''} + ${clinVarData.primaryInterpretation().toString() == 'LIKELY_BENIGN' ? 'border-top-success' : ''} + ${clinVarData.primaryInterpretation().toString() == 'LIKELY_PATHOGENIC' ? 'border-top-warning' : ''} + ${clinVarData.primaryInterpretation().toString() == 'PATHOGENIC' || clinVarData.primaryInterpretation().toString() == 'PATHOGENIC_OR_LIKELY_PATHOGENIC' ? 'border-top-danger' : ''} + ${clinVarData.primaryInterpretation().toString() == 'UNCERTAIN_SIGNIFICANCE' ? 'border-top-info' : ''} + ${clinVarData.primaryInterpretation().toString() == 'NOT_AVAILABLE' or clinVarData.primaryInterpretation().toString() == 'NOT_PROVIDED' ? 'border-top-blank' : ''}">
                                                             <div class="variant-eval-body">
                                                                 ClinVar
                                                                 <br>
-                                                                <th:block th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                                                <th:block th:switch="${clinVarData.primaryInterpretation().toString()}">
                                                                     <div th:case="'BENIGN'" class="badge rounded-pill text-bg-success"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">BENIGN</div>
                                                                     <div th:case="'BENIGN_OR_LIKELY_BENIGN'" class="badge rounded-pill text-bg-success"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</div>
                                                                     <div th:case="'LIKELY_BENIGN'" class="badge rounded-pill text-bg-info"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">LIKELY_BENIGN</div>
                                                                     <div th:case="'LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-warning"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">LIKELY_PATHOGENIC</div>
                                                                     <div th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="badge rounded-pill text-bg-danger"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</div>
                                                                     <div th:case="'PATHOGENIC'" class="badge rounded-pill text-bg-danger"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</div>
+                                                                         th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC</div>
                                                                     <div th:case="*" class="badge rounded-pill text-bg-info"
-                                                                         th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</div>
-                                                                    <div class="variant-eval-btn" th:if="${clinVarData.getPrimaryInterpretation().toString() != 'NOT_PROVIDED'}">
-                                                                        <a class="text-decoration-none variant-eval-evidence text-break" th:href="@{|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId}|}" target="_blank" th:text="'[' + ${clinVarData.getReviewStatus()} + ']'">
+                                                                         th:text="${clinVarData.primaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</div>
+                                                                    <div class="variant-eval-btn" th:if="${clinVarData.primaryInterpretation().toString() != 'NOT_PROVIDED'}">
+                                                                        <a class="text-decoration-none variant-eval-evidence text-break" th:href="@{|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId}|}" target="_blank" th:text="'[' + ${clinVarData.reviewStatus()} + ']'">
                                                                         </a>
                                                                     </div>
                                                                     <div class="variant-eval-evidence" th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
@@ -693,14 +693,14 @@
                                     </div>
                                 </div>
                               </div>
-                            <th:block th:if="${not #lists.isEmpty(gene.getNonContributingPassedVariantEvaluations)}">
+                            <th:block th:if="${not #lists.isEmpty(gene.nonContributingPassedVariantEvaluations)}">
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <h5 class="genescores-section-title">Other passed variants</h5>
                                     </div>
                                 </div>
                                 <div class="row"
-                                     th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}"
+                                     th:each="variantEvaluation: ${#lists.sort(gene.passedVariantEvaluations(), variantRankComparator)}"
                                      th:if="not ${variantEvaluation.contributesToGeneScore()}">
                                     <div class="col-sm-12">
                                         <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
@@ -734,23 +734,23 @@
                                     <div class="col-sm-12" th:if="${variantEvaluation.pathogenicityData.hasClinVarData()}">
                                         <b>ClinVar: </b>
                                         <th:block th:with="clinVarData = ${variantEvaluation.pathogenicityData.clinVarData()}"
-                                                  th:switch="${clinVarData.getPrimaryInterpretation().toString()}">
+                                                  th:switch="${clinVarData.primaryInterpretation().toString()}">
                                         <span th:case="'BENIGN'" class="label label-success"
-                                              th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN</span>
+                                              th:text="${clinVarData.primaryInterpretation()}">BENIGN</span>
                                             <span th:case="'BENIGN_OR_LIKELY_BENIGN'" class="label label-success"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">BENIGN_OR_LIKELY_BENIGN</span>
                                             <span th:case="'LIKELY_BENIGN'" class="label label-info"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_BENIGN</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">LIKELY_BENIGN</span>
                                             <span th:case="'LIKELY_PATHOGENIC'" class="label label-warning"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">LIKELY_PATHOGENIC</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">LIKELY_PATHOGENIC</span>
                                             <span th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'" class="label label-danger"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC_OR_LIKELY_PATHOGENIC</span>
                                             <span th:case="'PATHOGENIC'" class="label label-danger"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">PATHOGENIC</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">PATHOGENIC</span>
                                             <span th:case="*" class="label label-default"
-                                                  th:text="${clinVarData.getPrimaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
+                                                  th:text="${clinVarData.primaryInterpretation()}">UNCERTAIN_SIGNIFICANCE</span>
                                             <a th:href="@{|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId}|}"
-                                               th:text="'(' + ${clinVarData.getReviewStatus()} + ')'">
+                                               th:text="'(' + ${clinVarData.reviewStatus()} + ')'">
                                             </a>
                                             <span th:with="conflictingInterpretationCounts = ${clinVarData.conflictingInterpretationCounts}"
                                                   th:unless="${#maps.isEmpty(clinVarData.conflictingInterpretationCounts)}"
@@ -759,7 +759,7 @@
                                         </th:block>
                                     </div>
                                     <div class="col-sm-6">
-                                        <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
+                                        <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.variantScore(),1,3)}">Variant
                                             score: 0.600</b>
                                         <span class="label label-danger"
                                               th:if="${variantEvaluation.isWhiteListed()}"
@@ -770,13 +770,13 @@
                                                  th:switch="${transcriptDb}">
                                                 <a th:case="'UCSC'"
                                                    th:href="@{|https://genome.ucsc.edu/cgi-bin/hgTracks?db=${ucscAssembly}&position=${annotation.accession}|}"
-                                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                                   th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
                                                 <a th:case="'ENSEMBL'"
                                                    th:href="@{|https://${ensemblAssembly}.ensembl.org/Homo_sapiens/Transcript/Summary?t=${annotation.accession}|}"
-                                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                                   th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
                                                 <a th:case="'REFSEQ'"
                                                    th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
-                                                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+                                                   th:text="${gene.geneSymbol() + ':' + annotation.accession() + ':' + annotation.hgvsCdna() + ':' + annotation.hgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
                                             </div>
                                         </dl>
                                     </div>
@@ -810,16 +810,16 @@
                                 </div>
                             </th:block>
                           </div>
-                          <div class="tab-pane fade" th:id="${'phenomatches-body-' + gene.getGeneIdentifier().getGeneSymbol()}" role="tabpanel" aria-labelledby="phenomatches-tab" tabindex="0">
+                          <div class="tab-pane fade" th:id="${'phenomatches-body-' + gene.geneIdentifier().geneSymbol()}" role="tabpanel" aria-labelledby="phenomatches-tab" tabindex="0">
                             <div class="row phenomatches-cards" th:each="priorityResult: ${gene.priorityResults}">
-                                <th:block th:if="${priorityResult.value.getPriorityType().toString() != 'OMIM_PRIORITY'}" th:utext="${priorityResult.value.HTMLCode}">
+                                <th:block th:if="${priorityResult.value.priorityType().toString() != 'OMIM_PRIORITY'}" th:utext="${priorityResult.value.HTMLCode}">
                                     <a href="https://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a>
                                 </th:block>
                             </div>
                           </div>
-                          <div class="tab-pane fade" th:id="${'kdiseases-body-' + gene.getGeneIdentifier().getGeneSymbol()}" role="tabpanel" aria-labelledby="kdiseases-tab" tabindex="0">
-                              <div class="col-sm-12" th:each="priorityResult: ${gene.priorityResults}" th:if="${priorityResult.value.getPriorityType().toString() == 'OMIM_PRIORITY'}">
-                                  <th:block th:if="${not #lists.isEmpty(priorityResult.value.getAssociatedDiseases())}">
+                          <div class="tab-pane fade" th:id="${'kdiseases-body-' + gene.geneIdentifier().geneSymbol()}" role="tabpanel" aria-labelledby="kdiseases-tab" tabindex="0">
+                              <div class="col-sm-12" th:each="priorityResult: ${gene.priorityResults}" th:if="${priorityResult.value.priorityType().toString() == 'OMIM_PRIORITY'}">
+                                  <th:block th:if="${not #lists.isEmpty(priorityResult.value.associatedDiseases())}">
                                       <table class="table table-sm">
                                           <thead>
                                             <tr class="table-light">
@@ -829,28 +829,28 @@
                                             </tr>
                                           </thead>
                                           <tbody>
-                                            <tr th:each="disease: ${priorityResult.value.getAssociatedDiseases()}">
+                                            <tr th:each="disease: ${priorityResult.value.associatedDiseases()}">
                                                 <td>
-                                                    <a th:if="${disease.getDiseaseId().contains('OMIM')}"
-                                                       th:href="@{|https://omim.org/entry/${disease.getDiseaseId().split(':')[1]}|}"
+                                                    <a th:if="${disease.diseaseId().contains('OMIM')}"
+                                                       th:href="@{|https://omim.org/entry/${disease.diseaseId().split(':')[1]}|}"
                                                        target="_blank"
-                                                       th:text="${disease.getDiseaseId()}"></a>
-                                                    <a th:if="${disease.getDiseaseId().contains('ORPHA')}"
-                                                       th:href="@{|https://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=EN&Expert=${disease.getDiseaseId().split(':')[1]}|}"
+                                                       th:text="${disease.diseaseId()}"></a>
+                                                    <a th:if="${disease.diseaseId().contains('ORPHA')}"
+                                                       th:href="@{|https://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=EN&Expert=${disease.diseaseId().split(':')[1]}|}"
                                                        target="_blank"
-                                                       th:text="${disease.getDiseaseId()}"></a>
-                                                    <a th:if="${disease.getDiseaseId().contains('MONDO')}"
-                                                       th:href="@{|https://monarchinitiative.org/disease/${disease.getDiseaseId()}|}"
+                                                       th:text="${disease.diseaseId()}"></a>
+                                                    <a th:if="${disease.diseaseId().contains('MONDO')}"
+                                                       th:href="@{|https://monarchinitiative.org/disease/${disease.diseaseId()}|}"
                                                        target="_blank"
-                                                       th:text="${disease.getDiseaseId()}"></a>
+                                                       th:text="${disease.diseaseId()}"></a>
                                                 </td>
-                                                <td th:utext="${disease.getDiseaseName()}"></td>
-                                                <td th:utext="${disease.getInheritanceMode().toString()}"></td>
+                                                <td th:utext="${disease.diseaseName()}"></td>
+                                                <td th:utext="${disease.inheritanceMode().toString()}"></td>
                                             </tr>
                                           </tbody>
                                       </table>
                                   </th:block>
-                                  <p class="text-center" th:if="${#lists.isEmpty(priorityResult.value.getAssociatedDiseases())}">No Known Diseases</p>
+                                  <p class="text-center" th:if="${#lists.isEmpty(priorityResult.value.associatedDiseases())}">No Known Diseases</p>
                               </div>
                           </div>
                         </div>
@@ -888,14 +888,14 @@
         <!-- About -->
         <div class="tab-pane fade" id="about" role="tabpanel">
             <p>
-                 The Exomiser is a powerful software tool designed for variant prioritization in next-generation sequencing (NGS) data analysis.  Exomiser helps researchers prioritize genetic variants based on various factors, such as clinical relevance, population frequency, functional impact, and inheritance patterns. It leverages multiple annotation sources and databases to assist in identifying disease-causing mutations in both rare and common diseases.
+                 The Exomiser is a powerful software tool designed for variant prioritization in next-generation sequencing (NGS) data analysis. Exomiser helps researchers prioritize genetic variants based on various factors, such as clinical relevance, population frequency, functional impact, and inheritance patterns. It leverages multiple annotation sources and databases to assist in identifying disease-causing mutations in both rare and common diseases.
             </p>
             <p>
                 Developed by the Computational Biology and Bioinformatics group at the
                 <a href="https://genetik.charite.de/">Institute for Medical Genetics and Human Genetics</a> of the
                 <a href="https://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a>, the Mouse
                 Informatics Group at the <a href="https://www.sanger.ac.uk/">Sanger Institute</a> and the Smedley group at
-                <a href="https://qmul.ac.uk/whri">Queen Mary University of London</a>.
+                <a href="https://www.qmul.ac.uk/whri/people/academic-staff/items/smedleydamian.html">Queen Mary University of London</a>.
             </p>
             <p>Problems, suggestions, or comments? Please <a href="https://github.com/exomiser/Exomiser/issues" target="_blank">let us know</a></p>
         </div>
@@ -947,13 +947,13 @@
         }
 
         for (var i = 0; i < vtdData.length; i++){
-            const isAllZero = vtdData[i].sampleVariantTypeCounts.every(function(element) {return element === 0;});
-            if(isAllZero || vtdData[i].sampleVariantTypeCounts.length === 0){
+            const isAllZero = vtdData[i].sampleVariantEffectCounts.every(function(element) {return element === 0;});
+            if(isAllZero || vtdData[i].sampleVariantEffectCounts.length === 0){
                 continue
             } else {
-                vtdLabels.push(vtdData[i].variantType);
-                for (var j = 0; j < vtdData[i].sampleVariantTypeCounts.length; j++){
-                    datasets[j].data.push(vtdData[i].sampleVariantTypeCounts[j]);
+                vtdLabels.push(vtdData[i].variantEffect);
+                for (var j = 0; j < vtdData[i].sampleVariantEffectCounts.length; j++){
+                    datasets[j].data.push(vtdData[i].sampleVariantEffectCounts[j]);
                 }
             }
         }

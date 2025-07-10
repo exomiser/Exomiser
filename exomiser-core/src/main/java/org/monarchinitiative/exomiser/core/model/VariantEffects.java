@@ -20,17 +20,17 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public final class VariantEffectUtility {
+public final class VariantEffects {
 
-    private static final Set<VariantEffect> codingVariantEffects = Sets.immutableEnumSet(
+    private static final Set<VariantEffect> codingVariantEffects = EnumSet.of(
             VariantEffect.STOP_LOST,
             VariantEffect.STOP_RETAINED_VARIANT,
             VariantEffect.STOP_GAINED,
@@ -53,7 +53,7 @@ public final class VariantEffectUtility {
             VariantEffect.COMPLEX_SUBSTITUTION
     );
 
-    private static final Set<VariantEffect> regulatoryNonCodingVariantEffects = Sets.immutableEnumSet(
+    private static final Set<VariantEffect> regulatoryNonCodingVariantEffects = EnumSet.of(
             VariantEffect.MIRNA,
             VariantEffect.REGULATORY_REGION_VARIANT,
             VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT,
@@ -64,10 +64,9 @@ public final class VariantEffectUtility {
             VariantEffect.THREE_PRIME_UTR_TRUNCATION,
             VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT,
             VariantEffect.THREE_PRIME_UTR_EXON_VARIANT
-
     );
 
-    private VariantEffectUtility() {
+    private VariantEffects() {
         //not externally instantiable - static utility class
     }
 

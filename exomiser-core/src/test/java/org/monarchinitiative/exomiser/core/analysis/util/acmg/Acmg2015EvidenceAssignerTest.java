@@ -113,7 +113,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("PTEN")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(variantEffect)
-                .annotations(List.of(transcriptAnnotation))
+                .transcriptAnnotations(List.of(transcriptAnnotation))
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
@@ -155,7 +155,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("PTEN")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.SPLICE_DONOR_VARIANT)
-                .annotations(List.of(transcriptAnnotation))
+                .transcriptAnnotations(List.of(transcriptAnnotation))
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(diseaseInheritanceMode).diseaseType(Disease.DiseaseType.DISEASE).build();
         List<Disease> knownDiseases = diseaseInheritanceMode.isCompatibleWith(modeOfInheritance) ? List.of(cowdenSyndrome) : List.of();
@@ -195,7 +195,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("GENE")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(variantEffect)
-                .annotations(List.of(transcriptAnnotation))
+                .transcriptAnnotations(List.of(transcriptAnnotation))
                 .build();
 
         Acmg2015EvidenceAssigner instance = new Acmg2015EvidenceAssigner("proband", justProband("proband", MALE), variantDataService);
@@ -236,7 +236,7 @@ class Acmg2015EvidenceAssignerTest {
                 .geneSymbol("GENE")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .annotations(List.of(TranscriptAnnotation.builder()
+                .transcriptAnnotations(List.of(TranscriptAnnotation.builder()
                         .build()))
                 .build();
 
@@ -506,7 +506,7 @@ class Acmg2015EvidenceAssignerTest {
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 // haploinsufficient gene
                 .geneSymbol("PTEN")
-                .annotations(List.of(startLostAnnotation)) // prevent PM4 as PVS1 already triggered
+                .transcriptAnnotations(List.of(startLostAnnotation)) // prevent PM4 as PVS1 already triggered
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                 .variantEffect(VariantEffect.STOP_LOST)
                 .build();
@@ -968,7 +968,7 @@ class Acmg2015EvidenceAssignerTest {
                     .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
                     .pathogenicityData(PathogenicityData.of(PathogenicityScore.of(PathogenicitySource.SPLICE_AI, spliceAiScore)))
                     .variantEffect(variantEffect)
-                    .annotations(List.of(transcriptAnnotation))
+                    .transcriptAnnotations(List.of(transcriptAnnotation))
                     .build();
             Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
             AcmgEvidence.Builder acmgEvidenceBuilder = AcmgEvidence.builder();

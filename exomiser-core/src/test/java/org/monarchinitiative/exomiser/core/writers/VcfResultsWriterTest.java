@@ -134,7 +134,7 @@ class VcfResultsWriterTest {
 
         Gene shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariant);
-        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.entrezGeneId(), shhGene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         return shhGene;
     }
 
@@ -147,8 +147,8 @@ class VcfResultsWriterTest {
         fgfr2ContributingVariant.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         Gene fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
-        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
-        GeneScore geneScore = GeneScore.builder().combinedScore(1f).phenotypeScore(1f).variantScore(fgfr2ContributingVariant.getVariantScore()).geneIdentifier(fgfr2Gene.getGeneIdentifier()).contributingVariants(List.of(fgfr2ContributingVariant)).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build();
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        GeneScore geneScore = GeneScore.builder().combinedScore(1f).phenotypeScore(1f).variantScore(fgfr2ContributingVariant.variantScore()).geneIdentifier(fgfr2Gene.geneIdentifier()).contributingVariants(List.of(fgfr2ContributingVariant)).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build();
         fgfr2Gene.addGeneScore(geneScore);
         return fgfr2Gene;
     }
@@ -187,12 +187,12 @@ class VcfResultsWriterTest {
         Gene fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
         fgfr2Gene.addVariant(fgfr2ContributingVariant);
-        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         GeneScore geneScore = GeneScore.builder()
                 .combinedScore(1f)
                 .phenotypeScore(1f)
-                .variantScore(fgfr2ContributingVariant.getVariantScore())
-                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
+                .variantScore(fgfr2ContributingVariant.variantScore())
+                .geneIdentifier(fgfr2Gene.geneIdentifier())
                 .contributingVariants(List.of(fgfr2ContributingVariant))
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
@@ -253,7 +253,7 @@ class VcfResultsWriterTest {
         VariantEvaluation shhFailedVariant = TestVariantFactory.buildVariant(7, 155604800, "C", "CT", SampleGenotype.het(), 30, 1.0);
         shhFailedVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
         gene.addVariant(shhFailedVariant);
-        gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        gene.addPriorityResult(new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
@@ -336,8 +336,8 @@ class VcfResultsWriterTest {
         altAlleleTwo.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Gene gene = new Gene(GeneIdentifier.builder()
-                .geneSymbol(altAlleleOne.getGeneSymbol())
-                .geneId(altAlleleOne.getGeneId())
+                .geneSymbol(altAlleleOne.geneSymbol())
+                .geneId(altAlleleOne.geneId())
                 .build());
         gene.addVariant(altAlleleOne);
         gene.addVariant(altAlleleTwo);
@@ -346,7 +346,7 @@ class VcfResultsWriterTest {
         GeneScore geneScore = GeneScore.builder()
                 .combinedScore(1d)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .contributingVariants(List.of(altAlleleOne, altAlleleTwo))
                 .build();
         gene.addGeneScore(geneScore);
@@ -382,7 +382,7 @@ class VcfResultsWriterTest {
         shhFailedVariant.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         shhFailedVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         gene.addVariant(shhFailedVariant);
-        gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        gene.addPriorityResult(new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Disease diseaseNameWithSpaces = Disease.builder()

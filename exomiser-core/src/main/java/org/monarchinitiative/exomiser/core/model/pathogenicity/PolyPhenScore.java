@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PolyPhenScore extends BasePathogenicityScore {
+public record PolyPhenScore(float score) implements PathogenicityScore {
     
     /**
      * Possibly damaging is > 0.446 with Polyphen2 (this is an intermediate
@@ -46,8 +46,13 @@ public class PolyPhenScore extends BasePathogenicityScore {
         return new PolyPhenScore(score);
     }
 
-    private PolyPhenScore(float score) {
-        super(PathogenicitySource.POLYPHEN, score);
+    public PolyPhenScore {
+        checkBounds(source(), score);
+    }
+
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.POLYPHEN;
     }
 
     @Override

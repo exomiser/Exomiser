@@ -32,18 +32,17 @@ import java.util.Objects;
  * @since 13.0.0
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class Age {
+public record Age(int years, int months, int days) {
 
     private static final Age UNKNOWN = new Age(0, 0, 0);
 
-    private final int years;
-    private final int months;
-    private final int days;
-
-    private Age(int years, int months, int days) {
-        this.years = years;
-        this.months = months;
-        this.days = days;
+    public Age {
+        if (months > 12 || days > 365) {
+            Period period = Period.of(years, months, days).normalized();
+            years = period.getYears();
+            months = period.getMonths();
+            days = period.getDays();
+        }
     }
 
     public static Age unknown() {
@@ -60,8 +59,10 @@ public class Age {
      * @return a normalised Age instance
      */
     public static Age of(int years, int months, int days) {
-        Period period = Period.of(years, months, days);
-        return Age.of(period);
+        if (years == 0 && months == 0 && days == 0) {
+            return UNKNOWN;
+        }
+        return new Age(years, months, days);
     }
 
     // TODO - how to define Ante/Post-natal ages? Need a pre/post natal flag or use a negative value?
@@ -108,39 +109,12 @@ public class Age {
         return Age.of(period);
     }
 
-    public int getYears() {
-        return years;
-    }
-
-    public int getMonths() {
-        return months;
-    }
-
-    public int getDays() {
-        return days;
-    }
-
     public Period toPeriod() {
         return Period.of(years, months, days);
     }
 
     public boolean isUnknown() {
         return this == UNKNOWN;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Age)) return false;
-        Age age = (Age) o;
-        return years == age.years &&
-                months == age.months &&
-                days == age.days;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(years, months, days);
     }
 
     @Override

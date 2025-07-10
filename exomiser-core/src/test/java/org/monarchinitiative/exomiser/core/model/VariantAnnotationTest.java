@@ -43,10 +43,10 @@ public class VariantAnnotationTest {
     @Test
     public void notEmpty() {
         VariantAnnotation instance = VariantAnnotation.of("GENE1", "HGNC:12345", VariantEffect.SEQUENCE_VARIANT, List.of());
-        assertThat(instance.getGeneSymbol(), equalTo("GENE1"));
-        assertThat(instance.getGeneId(), equalTo("HGNC:12345"));
-        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
-        assertThat(instance.getTranscriptAnnotations(), equalTo(List.of()));
+        assertThat(instance.geneSymbol(), equalTo("GENE1"));
+        assertThat(instance.geneId(), equalTo("HGNC:12345"));
+        assertThat(instance.variantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
+        assertThat(instance.transcriptAnnotations(), equalTo(List.of()));
         assertThat(instance.hasTranscriptAnnotations(), equalTo(false));
     }
 

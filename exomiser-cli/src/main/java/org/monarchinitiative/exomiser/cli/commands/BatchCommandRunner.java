@@ -175,11 +175,10 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                 return Result.err(new SampleValidationError(line, ex.getMessage()));
             }
             try {
-                Path vcfPath = sample.getVcfPath();
-                VcfReader vcfReader = vcfPath == null ? new NoOpVcfReader() : new VcfFileReader(vcfPath);
+                VcfReader vcfReader = sample.hasVcf() ? new VcfFileReader(sample.vcfPath()) : new NoOpVcfReader();
                 List<String> sampleNames = vcfReader.readSampleIdentifiers();
-                String probandIdentifier = SampleIdentifiers.checkProbandIdentifier(sample.getProbandSampleName(), sampleNames);
-                Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.getPedigree(), probandIdentifier, sampleNames);
+                String probandIdentifier = SampleIdentifiers.checkProbandIdentifier(sample.probandSampleName(), sampleNames);
+                Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.pedigree(), probandIdentifier, sampleNames);
                 return Result.ok(sample);
             } catch (Exception ex) {
                 return Result.err(new SampleValidationError(line, ex.getMessage()));

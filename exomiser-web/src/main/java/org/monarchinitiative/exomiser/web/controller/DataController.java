@@ -92,14 +92,10 @@ public class DataController {
 
     
     private List<SelectOption> findSelectOptionContainingTerm(String term, Set<SelectOption> selectOptions) {
-        List<SelectOption> matches = new ArrayList<>();
-        
-        for (SelectOption selectOption : selectOptions) {
-            if (selectOption.getText().toLowerCase().contains(term.toLowerCase())) {
-                matches.add(selectOption);
-            }
-        }
-        Collections.sort(matches);
+        List<SelectOption> matches = selectOptions.stream()
+                .filter(selectOption -> selectOption.text().toLowerCase().contains(term.toLowerCase()))
+                .sorted()
+                .toList();
         logger.info("Returning {}", matches);
         return matches;
     }

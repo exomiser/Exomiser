@@ -42,13 +42,13 @@ public class OutputSettingsProtoConverter implements ProtoConverter<OutputSettin
     @Override
     public OutputProto.OutputOptions toProto(OutputSettings outputOptions) {
         return OutputProto.OutputOptions.newBuilder()
-                .setOutputFileName(outputOptions.getOutputFileName())
-                .setOutputDirectory(outputOptions.getOutputDirectory().toString())
-                .setNumGenes(outputOptions.getNumberOfGenesToShow())
-                .setMinExomiserGeneScore(outputOptions.getMinExomiserGeneScore())
+                .setOutputFileName(outputOptions.outputFileName())
+                .setOutputDirectory(outputOptions.outputDirectory().toString())
+                .setNumGenes(outputOptions.numberOfGenesToShow())
+                .setMinExomiserGeneScore(outputOptions.minExomiserGeneScore())
                 .setOutputContributingVariantsOnly(outputOptions.outputContributingVariantsOnly())
                 .addAllOutputFormats(outputOptions
-                        .getOutputFormats()
+                        .outputFormats()
                         .stream()
                         .map(OutputFormat::toString)
                         .collect(Collectors.toList()))

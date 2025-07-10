@@ -28,7 +28,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @since 13.1.0
@@ -67,14 +66,14 @@ public class AcmgAssignmentCalculator {
     private Disease findTopDiseaseMatch(List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
         return compatibleDiseaseMatches.stream()
                 .sorted(ModelPhenotypeMatch::compareTo)
-                .map(ModelPhenotypeMatch::getModel)
+                .map(ModelPhenotypeMatch::model)
                 .findFirst()
                 .orElse(EMPTY_DISEASE);
     }
 
     private List<Disease> findKnownDiseasesCompatibleWithMoi(ModeOfInheritance modeOfInheritance, Gene gene) {
-        return gene.getAssociatedDiseases().stream()
-                .filter(disease -> disease.getInheritanceMode().isCompatibleWith(modeOfInheritance))
+        return gene.associatedDiseases().stream()
+                .filter(disease -> disease.inheritanceMode().isCompatibleWith(modeOfInheritance))
                 .toList();
     }
 
@@ -82,7 +81,7 @@ public class AcmgAssignmentCalculator {
         return variantEvaluation -> {
             AcmgEvidence acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, contributingVariants, knownDiseases, compatibleDiseaseMatches);
             AcmgClassification acmgClassification = acmgEvidenceClassifier.classify(acmgEvidence);
-            return AcmgAssignment.of(variantEvaluation, gene.getGeneIdentifier(), modeOfInheritance, disease, acmgEvidence, acmgClassification);
+            return AcmgAssignment.of(variantEvaluation, gene.geneIdentifier(), modeOfInheritance, disease, acmgEvidence, acmgClassification);
         };
     }
 }

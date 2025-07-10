@@ -31,7 +31,7 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
 
     static void assignMissenseEvidence(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<Disease> knownDiseases, ClinVarDao clinVarDao) {
         // ignore non-missense, truncating, splice or mitochondrial variants
-        if (isMissenseOrInframeIndel(variantEvaluation.getVariantEffect()) && variantEvaluation.contigId() != 25) {
+        if (isMissenseOrInframeIndel(variantEvaluation.variantEffect()) && variantEvaluation.contigId() != 25) {
             // ensure region is within contig bounds
             Contig contig = variantEvaluation.contig();
             var upStream = Math.max(1, variantEvaluation.start() - 25);
@@ -50,15 +50,15 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
             assignPP2orBP1(acmgEvidenceBuilder, variantEvaluation, clinVarDao);
             // PP3 "Multiple lines of computational evidence support a deleterious effect on the gene or gene product (conservation, evolutionary, splicing impact, etc.)"
             // BP4 "Multiple lines of computational evidence suggest no impact on gene or gene product (conservation, evolutionary, splicing impact, etc.)"
-            assignPP3orBP4(acmgEvidenceBuilder, variantEvaluation.getPathogenicityData());
+            assignPP3orBP4(acmgEvidenceBuilder, variantEvaluation.pathogenicityData());
         }
     }
 
     // PP2 - Missense variant in a gene that has a low rate of benign missense variation and in which missense variants are a common mechanism of disease.
     // BP1 - Missense variant in a gene for which primarily truncating variants are known to cause disease.
     private static void assignPP2orBP1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ClinVarDao clinVarDao) {
-        GeneStatistics geneStatistics = clinVarDao.getGeneStatistics(variantEvaluation.getGeneSymbol());
-        boolean missenseOrInframeIndel = isMissenseOrInframeIndel(variantEvaluation.getVariantEffect());
+        GeneStatistics geneStatistics = clinVarDao.getGeneStatistics(variantEvaluation.geneSymbol());
+        boolean missenseOrInframeIndel = isMissenseOrInframeIndel(variantEvaluation.variantEffect());
         if (missenseOrInframeIndel && isPP2Gene(geneStatistics)) {
             acmgEvidenceBuilder.add(PP2);
         } else if (missenseOrInframeIndel && isBP1Gene(geneStatistics)) {
@@ -82,22 +82,22 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
     // PS1 "Same amino acid change as a previously established pathogenic variant regardless of nucleotide change"
     // PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"
     private static void assignPS1PM5(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, Map<GenomicVariant, ClinVarData> localClinVarData) {
-        if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {
+        if (variantEvaluation.transcriptAnnotations().isEmpty()) {
             return;
         }
-        String variantProteinChange = variantEvaluation.getTranscriptAnnotations().get(0).getHgvsProtein();
+        String variantProteinChange = variantEvaluation.transcriptAnnotations().getFirst().hgvsProtein();
         Matcher queryVariantMatcher = MISSENSE_HGVS_P.matcher(variantProteinChange);
         boolean matches = queryVariantMatcher.matches();
         String aaRefPos = matches ? queryVariantMatcher.group("refPos") : "";
         String aaAlt = matches ? queryVariantMatcher.group("alt") : "";
         for (var entry : localClinVarData.entrySet()) {
             ClinVarData clinVarData = entry.getValue();
-            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
-            if (isMissenseOrInframeIndel(clinVarData.getVariantEffect()) && isPathOrLikelyPath(primaryInterpretation)) {
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
+            if (isMissenseOrInframeIndel(clinVarData.variantEffect()) && isPathOrLikelyPath(primaryInterpretation)) {
                 GenomicVariant clinVarVariant = entry.getKey();
                 if (Math.abs(clinVarVariant.distanceTo(variantEvaluation)) <= 2 && GenomicVariant.compare(clinVarVariant, variantEvaluation) != 0) {
                     // within codon so check for same AA change or different AA change
-                    Matcher clinvarMatcher = MISSENSE_HGVS_P.matcher(clinVarData.getHgvsProtein());
+                    Matcher clinvarMatcher = MISSENSE_HGVS_P.matcher(clinVarData.hgvsProtein());
                     if (clinvarMatcher.matches()) {
                         String clnAaRefPos = clinvarMatcher.group("refPos");
                         String clnAaAlt = clinvarMatcher.group("alt");
@@ -112,11 +112,11 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
                                 } else {
                                     evidence = AcmgCriterion.Evidence.SUPPORTING;
                                 }
-                                logger.debug("{} -> {}_{}", clinVarData.getHgvsProtein(), PS1, evidence);
+                                logger.debug("{} -> {}_{}", clinVarData.hgvsProtein(), PS1, evidence);
                                 acmgEvidenceBuilder.add(PS1, evidence);
                             } else {
                                 AcmgCriterion.Evidence evidence = clinVarData.starRating() >= 2 ? AcmgCriterion.Evidence.MODERATE : AcmgCriterion.Evidence.SUPPORTING;
-                                logger.debug("{} -> {}_{}", clinVarData.getHgvsProtein(), PM5, evidence);
+                                logger.debug("{} -> {}_{}", clinVarData.hgvsProtein(), PM5, evidence);
                                 // PM5 "Novel missense change at an amino acid residue where a different missense change determined to be pathogenic has been seen before"
                                 acmgEvidenceBuilder.add(PM5, evidence);
                             }
@@ -137,8 +137,8 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
         int benignCount = 0;
         for (var entry : localClinVarData.entrySet()) {
             ClinVarData clinVarData = entry.getValue();
-            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
-            if (isMissenseOrInframeIndel(clinVarData.getVariantEffect())) {
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
+            if (isMissenseOrInframeIndel(clinVarData.variantEffect())) {
                 if (isPathOrLikelyPath(primaryInterpretation)) {
                     pathCount++;
                 }
@@ -150,7 +150,7 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
                 }
             }
         }
-        logger.debug("PM1 evidence for region {} {}:{}-{} Paths: {} VUSs: {} Benigns: {}", variantEvaluation.getGenomeAssembly(), variantEvaluation.contigId(), variantEvaluation.start() - 25, variantEvaluation.end() + 25, pathCount, vusCount, benignCount);
+        logger.debug("PM1 evidence for region {} {}:{}-{} Paths: {} VUSs: {} Benigns: {}", variantEvaluation.genomeAssembly(), variantEvaluation.contigId(), variantEvaluation.start() - 25, variantEvaluation.end() + 25, pathCount, vusCount, benignCount);
         if (pathCount >= 4 && benignCount == 0) {
             // could do funkier thing to score other path variants by severity/star rating and distance to variant
             if (pathCount > vusCount) {
@@ -206,7 +206,7 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
      * This method provided much better
      */
     private static void assignRevelBasedPP3BP4Classification(AcmgEvidence.Builder acmgEvidenceBuilder, PathogenicityScore revelScore) {
-        var revel = revelScore.getRawScore();
+        var revel = revelScore.rawScore();
         // Taken from table 2 of https://doi.org/10.1016/j.ajhg.2022.10.013
         // P_Strong   P_Moderate   P_Supporting       B_Supporting   B_Moderate     B_Strong      B_Very Strong
         // ≥ 0.932 [0.773, 0.932) [0.644, 0.773)    (0.183, 0.290] (0.016, 0.183] (0.003, 0.016] ≤ 0.003
@@ -276,19 +276,19 @@ class AcmgMissenseInFrameIndelEvidenceAssigner {
 
     private static boolean isPathogenic(PathogenicityScore pathogenicityScore) {
         if (pathogenicityScore instanceof SiftScore score) {
-            return score.getRawScore() < SiftScore.SIFT_THRESHOLD;
+            return score.rawScore() < SiftScore.SIFT_THRESHOLD;
         }
         if (pathogenicityScore instanceof MutationTasterScore score) {
-            return score.getScore() > MutationTasterScore.MTASTER_THRESHOLD;
+            return score.score() > MutationTasterScore.MTASTER_THRESHOLD;
         }
         if (pathogenicityScore instanceof PolyPhenScore score) {
-            return score.getScore() > PolyPhenScore.POLYPHEN_PROB_DAMAGING_THRESHOLD;
+            return score.score() > PolyPhenScore.POLYPHEN_PROB_DAMAGING_THRESHOLD;
         }
         if (pathogenicityScore instanceof CaddScore score) {
             // 95-99% most deleterious.
-            return score.getRawScore() >= 13.0f;
+            return score.rawScore() >= 13.0f;
         }
-        return pathogenicityScore.getScore() > 0.5f;
+        return pathogenicityScore.score() > 0.5f;
     }
 
 }

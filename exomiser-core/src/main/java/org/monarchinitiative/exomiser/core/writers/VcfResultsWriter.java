@@ -90,8 +90,8 @@ public class VcfResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
-        Sample sample = analysisResults.getSample();
-        Path vcfPath = sample.getVcfPath();
+        Sample sample = analysisResults.sample();
+        Path vcfPath = sample.vcfPath();
         if (vcfPath == null) {
             logger.info("Skipping writing VCF results as no input VCF has been defined");
             return;
@@ -122,8 +122,8 @@ public class VcfResultsWriter implements ResultsWriter {
 
     @Override
     public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
-        Sample sample = analysisResults.getSample();
-        Path vcfPath = sample.getVcfPath();
+        Sample sample = analysisResults.sample();
+        Path vcfPath = sample.vcfPath();
         if (vcfPath == null) {
             logger.info("Skipping writing VCF results as no input VCF has been defined. Returning empty string.");
             return "";
@@ -153,12 +153,12 @@ public class VcfResultsWriter implements ResultsWriter {
         geneScoreRanker.rankedVariants().forEach(rankedVariant -> {
             VariantEvaluation ve = rankedVariant.variantEvaluation();
             String alleleInfo = this.buildVariantRecord(rankedVariant.rank(), ve, rankedVariant.geneScore());
-            if (variantContextAlleleInfoMap.containsKey(ve.getVariantContext())) {
-                variantContextAlleleInfoMap.get(ve.getVariantContext()).add(alleleInfo);
+            if (variantContextAlleleInfoMap.containsKey(ve.variantContext())) {
+                variantContextAlleleInfoMap.get(ve.variantContext()).add(alleleInfo);
             } else {
                 var alleleInfoList = new ArrayList<String>();
                 alleleInfoList.add(alleleInfo);
-                variantContextAlleleInfoMap.put(ve.getVariantContext(), alleleInfoList);
+                variantContextAlleleInfoMap.put(ve.variantContext(), alleleInfoList);
             }
         });
 
@@ -170,9 +170,9 @@ public class VcfResultsWriter implements ResultsWriter {
             Map<GeneIdentifier, Gene> genesById = geneScoreRanker.mapGenesByGeneIdentifier();
             var genomicAssembly = genesById.values().stream()
                     .filter(Gene::hasVariants)
-                    .flatMap(gene -> gene.getVariantEvaluations().stream())
+                    .flatMap(gene -> gene.variantEvaluations().stream())
                     .findFirst()
-                    .map(Variant::getGenomeAssembly)
+                    .map(Variant::genomeAssembly)
                     .orElse(GenomeAssembly.UNKNOWN)
                     .genomicAssembly();
             samSequenceDictionary = createSamSequenceDictionary(genomicAssembly, variantContextAlleleInfoMap.keySet());
@@ -215,31 +215,31 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private String buildVariantRecord(int rank, VariantEvaluation ve, GeneScore geneScore) {
         List<String> fields = new ArrayList<>();
-        GeneIdentifier geneIdentifier = geneScore.getGeneIdentifier();
-        ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
+        GeneIdentifier geneIdentifier = geneScore.geneIdentifier();
+        ModeOfInheritance modeOfInheritance = geneScore.modeOfInheritance();
         String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
-        List<AcmgAssignment> acmgAssignments = geneScore.getAcmgAssignments();
+        List<AcmgAssignment> acmgAssignments = geneScore.acmgAssignments();
         Optional<AcmgAssignment> assignment = acmgAssignments.stream().filter(acmgAssignment -> acmgAssignment.variantEvaluation().equals(ve)).findFirst();
         fields.add(String.valueOf(rank));
         String gnomadString = ve.toGnomad();
         fields.add(gnomadString + "_" + moiAbbreviation);
-        fields.add(geneIdentifier.getGeneSymbol().replace(" ", "_"));
-        fields.add(geneIdentifier.getEntrezId());
+        fields.add(geneIdentifier.geneSymbol().replace(" ", "_"));
+        fields.add(geneIdentifier.entrezId());
         fields.add(moiAbbreviation);
         fields.add(decimalFormat.format(geneScore.pValue()));
-        fields.add(decimalFormat.format(geneScore.getCombinedScore()));
-        fields.add(decimalFormat.format(geneScore.getPhenotypeScore()));
-        fields.add(decimalFormat.format(geneScore.getVariantScore()));
-        fields.add(decimalFormat.format(ve.getVariantScore()));
+        fields.add(decimalFormat.format(geneScore.combinedScore()));
+        fields.add(decimalFormat.format(geneScore.phenotypeScore()));
+        fields.add(decimalFormat.format(geneScore.variantScore()));
+        fields.add(decimalFormat.format(ve.variantScore()));
         fields.add(ve.contributesToGeneScoreUnderMode(modeOfInheritance) ? "1" : "0");
         fields.add(ve.isWhiteListed() ? "1" : "0");
-        fields.add(ve.getVariantEffect().getSequenceOntologyTerm());
-        fields.add(this.getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
+        fields.add(ve.variantEffect().getSequenceOntologyTerm());
+        fields.add(this.getRepresentativeAnnotation(ve.transcriptAnnotations()));
         fields.add(assignment.map(AcmgAssignment::acmgClassification).orElse(AcmgClassification.NOT_AVAILABLE).toString());
         fields.add(assignment.map(acmgAssignment -> toVcfAcmgInfo(acmgAssignment.acmgEvidence())).orElse(""));
-        fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseId()).orElse(""));
-        fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().getDiseaseName().replace(" ", "_")).orElse("") + '"');
-        return "{" + String.join("|", fields) + "}";
+        fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().diseaseId()).orElse(""));
+        fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().diseaseName().replace(" ", "_")).orElse("") + '"');
+        return "{"+ String.join("|", fields) + "}";
     }
 
     private String toVcfAcmgInfo(AcmgEvidence acmgEvidence) {
@@ -258,10 +258,10 @@ public class VcfResultsWriter implements ResultsWriter {
         } else {
             TranscriptAnnotation anno = annotations.get(0);
             StringJoiner stringJoiner = new StringJoiner(":");
-            stringJoiner.add(anno.getGeneSymbol());
-            stringJoiner.add(anno.getAccession());
-            stringJoiner.add(anno.getHgvsCdna());
-            stringJoiner.add(anno.getHgvsProtein());
+            stringJoiner.add(anno.geneSymbol());
+            stringJoiner.add(anno.accession());
+            stringJoiner.add(anno.hgvsCdna());
+            stringJoiner.add(anno.hgvsProtein());
             return stringJoiner.toString();
         }
     }

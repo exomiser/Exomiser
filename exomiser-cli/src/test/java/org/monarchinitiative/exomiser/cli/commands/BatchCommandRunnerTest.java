@@ -40,9 +40,10 @@ class BatchCommandRunnerTest {
         when(exomiser.run(jobs.getFirst())).thenReturn(AnalysisResults.builder().build());
         Integer exitCode = instance.run(batchCommand);
         assertThat(exitCode, equalTo(0));
-        assertThat(resultsDir.toFile().listFiles().length, equalTo(2));
+        assertThat(resultsDir.toFile().listFiles().length, equalTo(3));
         assertThat(Files.exists(resultsDir.resolve("exomiser.html")), equalTo(true));
         assertThat(Files.exists(resultsDir.resolve("exomiser.variants.tsv")), equalTo(true));
+        assertThat(Files.exists(resultsDir.resolve("exomiser.variants.parquet")), equalTo(true));
     }
 
     @Test

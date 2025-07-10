@@ -30,20 +30,15 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantAnnotation implements VariantAnnotations {
+public record VariantAnnotation(String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) implements VariantAnnotations {
 
     private static final VariantAnnotation EMPTY = new VariantAnnotation("", "", VariantEffect.SEQUENCE_VARIANT, List.of());
 
-    private final String geneSymbol;
-    private final String geneId;
-    private final VariantEffect variantEffect;
-    private final List<TranscriptAnnotation> transcriptAnnotations;
-
-    private VariantAnnotation(String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
-        this.geneSymbol = Objects.requireNonNull(geneSymbol);
-        this.geneId = Objects.requireNonNull(geneId);
-        this.variantEffect = Objects.requireNonNull(variantEffect);
-        this.transcriptAnnotations = Objects.requireNonNull(transcriptAnnotations);
+    public VariantAnnotation {
+        Objects.requireNonNull(geneSymbol);
+        Objects.requireNonNull(geneId);
+        Objects.requireNonNull(variantEffect);
+        Objects.requireNonNull(transcriptAnnotations);
     }
 
     public static VariantAnnotation of(String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
@@ -58,41 +53,8 @@ public class VariantAnnotation implements VariantAnnotations {
     }
 
     @Override
-    public String getGeneSymbol() {
-        return geneSymbol;
-    }
-
-    @Override
-    public String getGeneId() {
-        return geneId;
-    }
-
-    @Override
-    public VariantEffect getVariantEffect() {
-        return variantEffect;
-    }
-
-    @Override
-    public List<TranscriptAnnotation> getTranscriptAnnotations() {
-        return transcriptAnnotations;
-    }
-
-    @Override
     public boolean hasTranscriptAnnotations() {
         return !transcriptAnnotations.isEmpty();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VariantAnnotation that = (VariantAnnotation) o;
-        return geneSymbol.equals(that.geneSymbol) && geneId.equals(that.geneId) && variantEffect == that.variantEffect && transcriptAnnotations.equals(that.transcriptAnnotations);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     @Override

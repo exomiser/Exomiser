@@ -112,8 +112,8 @@ class JannovarDataFactoryTest {
             List<Gene> knownGenes = geneFactory.createKnownGenes();
 
             for (Gene gene : knownGenes) {
-                if (gene.getGeneSymbol().equals(variantAnnotation.getGeneSymbol())) {
-                    System.out.println(gene.getGeneIdentifier());
+                if (gene.geneSymbol().equals(variantAnnotation.geneSymbol())) {
+                    System.out.println(gene.geneIdentifier());
                 }
             }
         });

@@ -163,7 +163,7 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
     }
     @Override
     public AnalysisBuilder addGeneBlacklistFilter() {
-        analysisSteps.add(new GeneBlacklistFilter());
+        analysisSteps.add(GeneBlacklistFilter.defaultInstance());
         return this;
     }
 

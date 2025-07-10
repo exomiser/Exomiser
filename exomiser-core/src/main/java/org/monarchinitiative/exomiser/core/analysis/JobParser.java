@@ -82,7 +82,7 @@ public class JobParser {
     public Sample parseSample(JobProto.Job protoJob) {
         Objects.requireNonNull(protoJob);
         Sample sample = getSample(protoJob);
-        checkAssemblySupportedOrThrowException(sample.getGenomeAssembly());
+        checkAssemblySupportedOrThrowException(sample.genomeAssembly());
         return sampleWithUpdatedHpoIds(sample);
     }
 
@@ -137,8 +137,8 @@ public class JobParser {
     }
 
     private Sample sampleWithUpdatedHpoIds(Sample sample) {
-        List<String> originalHpoIds = sample.getHpoIds();
-        List<String> currentHpoIds = ontologyService.getCurrentHpoIds(sample.getHpoIds());
+        List<String> originalHpoIds = sample.hpoIds();
+        List<String> currentHpoIds = ontologyService.getCurrentHpoIds(sample.hpoIds());
         if (originalHpoIds.equals(currentHpoIds)) {
             return sample;
         }
@@ -294,12 +294,12 @@ public class JobParser {
     private List<ChromosomalRegion> parseIntervalFilterOptions(FiltersProto.IntervalFilter intervalFilter) {
         if (!intervalFilter.getInterval().isEmpty()) {
             String interval = intervalFilter.getInterval();
-            return List.of(GeneticInterval.parseString(interval));
+            return List.of(GeneticInterval.parseGeneticInterval(interval));
         }
         if (!intervalFilter.getIntervalsList().isEmpty()) {
             List<String> intervalStrings = intervalFilter.getIntervalsList();
             List<ChromosomalRegion> intervals = new ArrayList<>();
-            intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(string)));
+            intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseGeneticInterval(string)));
             return intervals;
         }
         if (!intervalFilter.getBed().isEmpty()) {

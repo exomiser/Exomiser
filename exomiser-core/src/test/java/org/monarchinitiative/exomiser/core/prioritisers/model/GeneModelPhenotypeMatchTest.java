@@ -21,18 +21,19 @@
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
-import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GeneModelPhenotypeMatchTest {
+class GeneModelPhenotypeMatchTest {
 
     @Test
-    public void testCreateType() {
-        GeneModelPhenotypeMatch mouseGeneOrthologMatch = new GeneModelPhenotypeMatch(1.0, null, Collections.emptyList());
-        GeneModelPhenotypeMatch diseaseGeneOrthologMatch = new GeneModelPhenotypeMatch(1.0, null, Collections.emptyList());
+    void testCreateType() {
+        GeneModelPhenotypeMatch mouseGeneOrthologMatch = new GeneModelPhenotypeMatch(0f, new GeneOrthologModel("", Organism.MOUSE, 0, "", "", "", List.of()), List.of());
+        GeneModelPhenotypeMatch diseaseGeneOrthologMatch = new GeneModelPhenotypeMatch(0f, new GeneDiseaseModel("", Organism.HUMAN, Disease.builder().build()), List.of());
     }
 
 }

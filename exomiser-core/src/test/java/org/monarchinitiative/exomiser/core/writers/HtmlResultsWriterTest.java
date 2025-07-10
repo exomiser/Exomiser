@@ -101,8 +101,8 @@ public class HtmlResultsWriterTest {
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariantEvaluation);
 
-        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
-        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.entrezGeneId(), shhGene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
 
         unAnnotatedVariantEvaluation1 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
         unAnnotatedVariantEvaluation2 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);

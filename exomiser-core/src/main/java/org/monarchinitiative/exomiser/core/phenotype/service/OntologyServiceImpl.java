@@ -78,7 +78,7 @@ public class OntologyServiceImpl implements OntologyService {
             Map<String, PhenotypeTerm> alternateIdToPhenotypeTerms = new LinkedHashMap<>();
             Set<PhenotypeTerm> allTerms = hpoDao.getAllTerms();
             for (PhenotypeTerm term : allTerms) {
-                alternateIdToPhenotypeTerms.put(term.getId(), term);
+                alternateIdToPhenotypeTerms.put(term.id(), term);
             }
             return alternateIdToPhenotypeTerms;
         }

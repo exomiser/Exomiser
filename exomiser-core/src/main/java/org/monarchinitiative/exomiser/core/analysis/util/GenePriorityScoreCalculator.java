@@ -32,7 +32,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -46,13 +45,13 @@ class GenePriorityScoreCalculator {
     GenePriorityScore calculateGenePriorityScore(Gene gene, ModeOfInheritance modeOfInheritance) {
         // Don't take the OmimPrioritiser score into account here as this is dependent on the known disease inheritance
         // modes and the current inheritance mode model
-        double phenotypePrioritiserScore = gene.getPriorityResults().values().stream()
+        double phenotypePrioritiserScore = gene.priorityResults().values().stream()
                 .filter(isNonOmimPriorityResult())
                 //In the original implementation this used to average the scores of all the priority results
                 //but here we're going to just take the first - there should only be one at this stage
                 .findFirst()
                 .orElseGet(ZeroScorePrioritserResult::new)
-                .getScore();
+                .score();
 
         // Get the modifier from OmimPrioritiser to down-rank genes where the mode of inheritance of known diseases doesn't match
         // that of the gene, based on the filtered variants or the current inheritance mode.
@@ -70,8 +69,8 @@ class GenePriorityScoreCalculator {
     }
 
     private GenePriorityScore hiPhiveAdjustedGenePriorityScore(ModeOfInheritance modeOfInheritance, double knownDiseaseInheritanceModeModifier, HiPhivePriorityResult hiPhivePriorityResult) {
-        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = hiPhivePriorityResult.getCompatibleDiseaseMatches(modeOfInheritance);
-        double topNonDiseaseModelScore = Math.max(Math.max(hiPhivePriorityResult.getMouseScore(), hiPhivePriorityResult.getFishScore()), hiPhivePriorityResult.getPpiScore());
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = hiPhivePriorityResult.compatibleDiseaseMatches(modeOfInheritance);
+        double topNonDiseaseModelScore = Math.max(Math.max(hiPhivePriorityResult.mouseScore(), hiPhivePriorityResult.fishScore()), hiPhivePriorityResult.ppiScore());
         if (compatibleDiseaseMatches.isEmpty()) {
             // No compatible diseases for this MOI - use the best model, but apply the knownDiseaseInheritanceModeModifier
             double moiAdjustedNonDiseaseModelScore = topNonDiseaseModelScore * knownDiseaseInheritanceModeModifier;
@@ -80,56 +79,22 @@ class GenePriorityScoreCalculator {
         ModelPhenotypeMatch<Disease> topDiseaseHitForMoi = compatibleDiseaseMatches.get(0);
         // if top score is a mouse or fish model use the existing score
         // otherwise use the compatible disease model score
-        double topCompatibleDiseaseScore = topDiseaseHitForMoi.getScore();
+        double topCompatibleDiseaseScore = topDiseaseHitForMoi.score();
         double topMoiScore = Math.max(topNonDiseaseModelScore, topCompatibleDiseaseScore);
         return new GenePriorityScore(topMoiScore, modeOfInheritance, compatibleDiseaseMatches);
     }
 
-    static class GenePriorityScore {
-        private final double score;
-        private final ModeOfInheritance modeOfInheritance;
-        private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
-
-        public GenePriorityScore(double score, ModeOfInheritance modeOfInheritance, List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
-            this.score = score;
-            this.modeOfInheritance = modeOfInheritance;
-            this.compatibleDiseaseMatches = compatibleDiseaseMatches;
-        }
-
-        public double getScore() {
-            return score;
-        }
-
-        public ModeOfInheritance getModeOfInheritance() {
-            return modeOfInheritance;
-        }
-
-        public List<ModelPhenotypeMatch<Disease>> getCompatibleDiseaseMatches() {
-            return compatibleDiseaseMatches;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof GenePriorityScore)) return false;
-            GenePriorityScore that = (GenePriorityScore) o;
-            return Double.compare(that.score, score) == 0 &&
-                    modeOfInheritance == that.modeOfInheritance &&
-                    compatibleDiseaseMatches.equals(that.compatibleDiseaseMatches);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(score, modeOfInheritance, compatibleDiseaseMatches);
-        }
+    record GenePriorityScore(double score,
+                             ModeOfInheritance modeOfInheritance,
+                             List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
 
         @Override
         public String toString() {
             return "GenePriorityScore{" +
-                    "score=" + score +
-                    ", modeOfInheritance=" + modeOfInheritance +
-                    ", compatibleDiseaseMatches=" + compatibleDiseaseMatches +
-                    '}';
+                   "score=" + score +
+                   ", modeOfInheritance=" + modeOfInheritance +
+                   ", compatibleDiseaseMatches=" + compatibleDiseaseMatches +
+                   '}';
         }
     }
 
@@ -145,13 +110,13 @@ class GenePriorityScoreCalculator {
     double calculateGenePriorityScoreForMode(Gene gene, ModeOfInheritance modeOfInheritance) {
         // Don't take the OmimPrioritiser score into account here as this is dependent on the known disease inheritance
         // modes and the current inheritance mode model
-        double phenotypePrioritiserScore = gene.getPriorityResults().values().stream()
+        double phenotypePrioritiserScore = gene.priorityResults().values().stream()
                 .filter(isNonOmimPriorityResult())
                 //In the original implementation this used to average the scores of all the priority results
                 //but here we're going to just take the first - there should only be one at this stage
                 .findFirst()
                 .orElseGet(ZeroScorePrioritserResult::new)
-                .getScore();
+                .score();
 
         // Get the modifier from OmimPrioritiser to down-rank genes where the mode of inheritance of known diseases doesn't match
         // that of the gene, based on the filtered variants or the current inheritance mode.
@@ -162,12 +127,11 @@ class GenePriorityScoreCalculator {
     }
 
     private Map<ModeOfInheritance, Double> getOmimPriorityResultScoresOrEmpty(Gene gene) {
-        PriorityResult omimPrioritiserResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-        if (!(omimPrioritiserResult instanceof OmimPriorityResult)) {
-            return Collections.emptyMap();
+        PriorityResult priorityResult = gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        if (priorityResult instanceof OmimPriorityResult omimPriorityResult) {
+            return omimPriorityResult.scoresByMode();
         }
-        OmimPriorityResult omimPriorityResult = (OmimPriorityResult) omimPrioritiserResult;
-        return omimPriorityResult.getScoresByMode();
+        return Collections.emptyMap();
     }
 
     private Predicate<PriorityResult> isNonOmimPriorityResult() {
@@ -179,22 +143,22 @@ class GenePriorityScoreCalculator {
      */
     private static class ZeroScorePrioritserResult implements PriorityResult {
         @Override
-        public int getGeneId() {
+        public int geneId() {
             return 0;
         }
 
         @Override
-        public String getGeneSymbol() {
+        public String geneSymbol() {
             return null;
         }
 
         @Override
-        public double getScore() {
+        public double score() {
             return 0;
         }
 
         @Override
-        public PriorityType getPriorityType() {
+        public PriorityType priorityType() {
             return PriorityType.NONE;
         }
     }

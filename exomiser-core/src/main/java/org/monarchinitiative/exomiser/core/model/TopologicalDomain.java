@@ -23,47 +23,25 @@ package org.monarchinitiative.exomiser.core.model;
 import org.monarchinitiative.svart.GenomicInterval;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a topological domain of a piece of chromatin
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TopologicalDomain implements ChromosomalRegion {
+public record TopologicalDomain(int contigId, int start, int end, Map<String, Integer> genes) implements ChromosomalRegion {
 
-    private final int chromosome;
-    private final int start;
-    private final int end;
-    private final Map<String, Integer> genes;
-
-    public TopologicalDomain(int chromosome, int start, int end, Map<String, Integer> genes) {
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
-        this.genes = genes;
-    }
-
-    @Override
-    public int contigId() {
-        return chromosome;
-    }
-
-    @Override
-    public int start() {
-        return start;
-    }
-
-    @Override
-    public int end() {
-        return end;
-    }
-
-    public Map<String, Integer> getGenes() {
-        return genes;
+    public TopologicalDomain {
+        Objects.requireNonNull(genes, "genes cannot be null");
+        genes = Map.copyOf(genes);
+        if (start > end) {
+            throw new IllegalArgumentException(String.format("Start %d position defined as occurring after end position %d. Please check your positions", start, end));
+        }
     }
 
     public boolean containsPosition(GenomicInterval variant) {
-        if (variant.contigId() == chromosome) {
+        if (variant.contigId() == contigId) {
             int variantPosition = variant.start();
             return start <= variantPosition && end >= variantPosition;
         }
@@ -71,31 +49,9 @@ public class TopologicalDomain implements ChromosomalRegion {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TopologicalDomain that = (TopologicalDomain) o;
-
-        if (chromosome != that.chromosome) return false;
-        if (start != that.start) return false;
-        if (end != that.end) return false;
-        return genes.equals(that.genes);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = chromosome;
-        result = 31 * result + start;
-        result = 31 * result + end;
-        result = 31 * result + genes.hashCode();
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "TopologicalDomain{" +
-                "chromosome=" + chromosome +
+                "contigId=" + contigId +
                 ", start=" + start +
                 ", end=" + end +
                 ", genes=" + genes +

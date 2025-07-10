@@ -37,11 +37,11 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
     @Override
     public AnalysisProto.Analysis toProto(Analysis analysis) {
         return AnalysisProto.Analysis.newBuilder()
-                .setAnalysisMode(analysis.getAnalysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
-                .putAllInheritanceModes(analysis.getInheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
-                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).toList())
-                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).toList())
-                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
+                .setAnalysisMode(analysis.analysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
+                .putAllInheritanceModes(analysis.inheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
+                .addAllFrequencySources(analysis.frequencySources().stream().map(Objects::toString).toList())
+                .addAllPathogenicitySources(analysis.pathogenicitySources().stream().map(Objects::toString).toList())
+                .addAllSteps(analysis.analysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
                 .build();
     }
 
@@ -65,14 +65,14 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                             .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).toList()))
                     .build();
         }
-        if (analysisStep instanceof FrequencyFilter frequencyFilter) {
+        if (analysisStep instanceof FrequencyFilter(float maxFreq)) {
             return stepBuilder
-                    .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(frequencyFilter.getMaxFreq()))
+                    .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(maxFreq))
                     .build();
         }
-        if (analysisStep instanceof PathogenicityFilter pathogenicityFilter) {
+        if (analysisStep instanceof PathogenicityFilter(boolean keepNonPathogenic)) {
             return stepBuilder
-                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(pathogenicityFilter.keepNonPathogenic()))
+                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(keepNonPathogenic))
                     .build();
         }
         if (analysisStep instanceof FailedVariantFilter) {
@@ -85,9 +85,9 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                     .setKnownVariantFilter(FiltersProto.KnownVariantFilter.newBuilder())
                     .build();
         }
-        if (analysisStep instanceof QualityFilter qualityFilter) {
+        if (analysisStep instanceof QualityFilter(double mimimumQualityThreshold)) {
             return stepBuilder
-                    .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) qualityFilter.getMimimumQualityThreshold()))
+                    .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) mimimumQualityThreshold))
                     .build();
         }
         if (analysisStep instanceof IntervalFilter intervalFilter) {
@@ -110,17 +110,19 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
 
         if (analysisStep instanceof InheritanceFilter) {
             return stepBuilder
-                    .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder().build())
+                    .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder())
                     .build();
         }
         if (analysisStep instanceof RegulatoryFeatureFilter) {
-            return stepBuilder.setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()).build();
+            return stepBuilder
+                    .setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder())
+                    .build();
         }
-        if (analysisStep instanceof PriorityScoreFilter priorityScoreFilter) {
+        if (analysisStep instanceof PriorityScoreFilter(PriorityType priorityType, double minPriorityScore)) {
             return stepBuilder
                     .setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder()
-                            .setMinPriorityScore((float) priorityScoreFilter.getMinPriorityScore())
-                            .setPriorityType(priorityScoreFilter.getPriorityType().toString()))
+                            .setMinPriorityScore((float) minPriorityScore)
+                            .setPriorityType(priorityType.toString()))
                     .build();
         }
         return null;
@@ -138,8 +140,8 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
             return stepBuilder
                     .setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder()
                             .setRunParams(hiPhiveOptions.getRunParams())
-                            .setDiseaseId(hiPhiveOptions.getDiseaseId())
-                            .setCandidateGeneSymbol(hiPhiveOptions.getCandidateGeneSymbol()))
+                            .setDiseaseId(hiPhiveOptions.diseaseId())
+                            .setCandidateGeneSymbol(hiPhiveOptions.candidateGeneSymbol()))
                     .build();
         }
         if (analysisStep instanceof PhenixPriority) {

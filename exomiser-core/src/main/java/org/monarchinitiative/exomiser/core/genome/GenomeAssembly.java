@@ -93,17 +93,12 @@ public enum GenomeAssembly {
 
     public static GenomeAssembly parseAssembly(String value) {
         Objects.requireNonNull(value, "Genome build cannot be null");
-        switch (value.toLowerCase()) {
-            case "hg19":
-            case "hg37":
-            case "grch37":
-                return HG19;
-            case "hg38":
-            case "grch38":
-                return HG38;
-            default:
-                throw new InvalidGenomeAssemblyException(String.format("'%s' is not a valid/supported genome assembly.", value));
-        }
+        return switch (value.toLowerCase()) {
+            case "hg19", "hg37", "grch37" -> HG19;
+            case "hg38", "grch38" -> HG38;
+            default ->
+                    throw new InvalidGenomeAssemblyException(String.format("'%s' is not a valid/supported genome assembly.", value));
+        };
     }
 
     public GenomicAssembly genomicAssembly() {
@@ -121,11 +116,11 @@ public enum GenomeAssembly {
 
     // https://www.ncbi.nlm.nih.gov/genome/?term=txid9606[orgn]
     // Returns the RefSeq id for the given chromosome number for the assembly.
-    public String getRefSeqAccession(int chr) {
+    public String refSeqAccession(int chr) {
         return getContigById(chr).refSeqAccession();
     }
 
-    public String getGenBankAccession(int chr) {
+    public String genBankAccession(int chr) {
         return getContigById(chr).genBankAccession();
     }
 
@@ -133,7 +128,7 @@ public enum GenomeAssembly {
         return contigs;
     }
 
-    public String getName() {
+    public String assemblyName() {
         return genomicAssembly.name();
     }
 

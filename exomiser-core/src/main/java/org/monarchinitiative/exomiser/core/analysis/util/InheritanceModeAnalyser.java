@@ -90,15 +90,15 @@ public class InheritanceModeAnalyser {
 
     private void checkInheritanceCompatibilityOfPassedVariants(Gene gene) {
         //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.
-        List<VariantEvaluation> passedVariantEvaluations = gene.getPassedVariantEvaluations();
+        List<VariantEvaluation> passedVariantEvaluations = gene.passedVariantEvaluations();
         if (passedVariantEvaluations.isEmpty()) {
-            logger.trace("Gene {} has no passed variants - skipping MOI compatibility check", gene.getGeneSymbol());
+            logger.trace("Gene {} has no passed variants - skipping MOI compatibility check", gene.geneSymbol());
             return;
         }
-        logger.debug("Checking {} passed variants in gene {} for MOI compatibility", passedVariantEvaluations.size(), gene.getGeneSymbol());
+        logger.debug("Checking {} passed variants in gene {} for MOI compatibility", passedVariantEvaluations.size(), gene.geneSymbol());
         if (passedVariantEvaluations.size() > 1000) {
             logger.info("Warning - this will take a while. Testing gene {} with {} passed variants for inheritance mode compatibility!", gene
-                    .getGeneSymbol(), passedVariantEvaluations.size());
+                    .geneSymbol(), passedVariantEvaluations.size());
         }
 
         Map<ModeOfInheritance, List<VariantEvaluation>> compatibleInheritanceModes = inheritanceAnnotator
@@ -116,7 +116,7 @@ public class InheritanceModeAnalyser {
     }
 
     private void setCompatibleInheritanceModes(Gene gene, Map<ModeOfInheritance, List<VariantEvaluation>> filteredModes) {
-        logger.debug("Gene {} has variants compatible with {}:", gene.getGeneSymbol(), filteredModes.keySet());
+        logger.debug("Gene {} has variants compatible with {}:", gene.geneSymbol(), filteredModes.keySet());
         gene.setCompatibleInheritanceModes(filteredModes.keySet());
         Map<VariantEvaluation, Set<ModeOfInheritance>> variantCompatibilities = mapVariantsToCompatibleModes(filteredModes);
         variantCompatibilities.forEach(VariantEvaluation::setCompatibleInheritanceModes);

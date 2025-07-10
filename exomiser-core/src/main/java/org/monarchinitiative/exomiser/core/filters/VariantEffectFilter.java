@@ -20,14 +20,10 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Filters variants according to their {@link VariantEffect}. The filter will mark variants as failed if they are contained
@@ -36,19 +32,15 @@ import java.util.Set;
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantEffectFilter implements VariantFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(VariantEffectFilter.class);
+public record VariantEffectFilter(Set<VariantEffect> offTargetVariantTypes) implements VariantFilter {
 
     private static final FilterType filterType = FilterType.VARIANT_EFFECT_FILTER;
 
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final Set<VariantEffect> offTargetVariantTypes;
-    
-    public VariantEffectFilter(Set<VariantEffect> notWanted) {
-        offTargetVariantTypes = Sets.immutableEnumSet(notWanted);
+    public VariantEffectFilter {
+        offTargetVariantTypes = Collections.unmodifiableSet(EnumSet.copyOf(offTargetVariantTypes));
     }
 
     public Set<VariantEffect> getOffTargetVariantTypes() {
@@ -56,7 +48,7 @@ public class VariantEffectFilter implements VariantFilter {
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 
@@ -65,31 +57,11 @@ public class VariantEffectFilter implements VariantFilter {
         if (variantEvaluation.isWhiteListed()) {
             return PASS;
         }
-        VariantEffect effect = variantEvaluation.getVariantEffect();
+        VariantEffect effect = variantEvaluation.variantEffect();
         if (offTargetVariantTypes.contains(effect)) {
             return FAIL;
         }
         return PASS;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + Objects.hashCode(VariantEffectFilter.filterType);
-        hash = 37 * hash + Objects.hashCode(this.offTargetVariantTypes);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final VariantEffectFilter other = (VariantEffectFilter) obj;
-        return Objects.equals(this.offTargetVariantTypes, other.offTargetVariantTypes);
     }
 
     @Override

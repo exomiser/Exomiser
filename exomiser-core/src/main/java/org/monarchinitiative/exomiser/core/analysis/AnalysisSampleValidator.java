@@ -53,29 +53,29 @@ class AnalysisSampleValidator {
     public static void validate(Sample sample, Analysis analysis) throws IllegalStateException {
         Objects.requireNonNull(sample);
         Objects.requireNonNull(analysis);
-        if (analysis.getAnalysisSteps().isEmpty()) {
+        if (analysis.analysisSteps().isEmpty()) {
             throw new IllegalStateException("No analysis steps specified!");
         }
         // TODO: decide if VCF only filtering is OK
         // Guard against people running the new analysis.yml which has no sample information.
         // As of 13.0.0 it is possible to run a phenotype-only prioritisation, so we're only checking that the analysis
         // is in the correct state with respect to the input sample
-        for (AnalysisStep analysisStep : analysis.getAnalysisSteps()) {
+        for (AnalysisStep analysisStep : analysis.analysisSteps()) {
             if (analysisStep.isVariantFilter() && !sample.hasVcf()) {
                 throw new IllegalStateException("No VCF has been specified! VCF file required to run " + analysisStep.getClass()
                         .getSimpleName());
             }
-            if (isFrequencyDependent(analysisStep) && analysis.getFrequencySources().isEmpty()) {
+            if (isFrequencyDependent(analysisStep) && analysis.frequencySources().isEmpty()) {
                 throw new IllegalStateException("Frequency sources have not been defined. Frequency sources required to run " + analysisStep
                         .getClass()
                         .getSimpleName());
             }
-            if (isPathogenicityDependent(analysisStep) && analysis.getPathogenicitySources().isEmpty()) {
+            if (isPathogenicityDependent(analysisStep) && analysis.pathogenicitySources().isEmpty()) {
                 throw new IllegalStateException("Pathogenicity sources have not been defined. Pathogenicity sources required to run " + analysisStep
                         .getClass()
                         .getSimpleName());
             }
-            if (isHpoDependent(analysisStep) && sample.getHpoIds().isEmpty()) {
+            if (isHpoDependent(analysisStep) && sample.hpoIds().isEmpty()) {
                 throw new IllegalStateException("HPO IDs not defined. Define some sample phenotypes before adding prioritiser: " + analysisStep
                         .getClass()
                         .getSimpleName());
@@ -93,7 +93,7 @@ class AnalysisSampleValidator {
 
     private static boolean isHpoDependent(AnalysisStep analysisStep) {
         if (analysisStep instanceof Prioritiser<? extends PriorityResult> prioritiser) {
-            PriorityType priorityType = prioritiser.getPriorityType();
+            PriorityType priorityType = prioritiser.priorityType();
             return switch (priorityType) {
                 case HIPHIVE_PRIORITY, PHENIX_PRIORITY, PHIVE_PRIORITY -> true;
                 case EXOMEWALKER_PRIORITY, OMIM_PRIORITY, NONE -> false;

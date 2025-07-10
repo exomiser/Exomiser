@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import jakarta.annotation.Nonnull;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
@@ -33,80 +33,52 @@ import java.util.Objects;
  * Immutable class for collecting information about a gene's score under a particular inheritance mode and the alleles
  * contributing to the score.
  *
+ * @param geneIdentifier           The gene identifier of the gene being scored
+ * @param modeOfInheritance        The mode of inheritance this gene score was considered
+ * @param combinedScore            The final score for this combination of gene/variants/diseases/ACMG assignments
+ * @param phenotypeScore           The phenotype match for this gene under the mode of inheritance
+ * @param variantScore             The score generated from the variant components
+ * @param pValue                   The p-value of this score
+ * @param contributingVariants     The variants contributing to this gene score
+ * @param compatibleDiseaseMatches A list of diseases associated with the Gene under the mode of inheritance for the GeneScore.
+ * @param acmgAssignments          A list of ACMG assignments generated for the variants based on the matching diseases and mode of inheritance
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.0.0
  */
-public final class GeneScore implements Comparable<GeneScore> {
+public record GeneScore(
+        GeneIdentifier geneIdentifier,
+        ModeOfInheritance modeOfInheritance,
+        double combinedScore,
+        double phenotypeScore,
+        double variantScore,
+        double pValue,
+        List<VariantEvaluation> contributingVariants,
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches,
+        List<AcmgAssignment> acmgAssignments
+) implements Comparable<GeneScore> {
 
     private static final GeneScore EMPTY = new Builder().build();
 
-    private final GeneIdentifier geneIdentifier;
-    private final ModeOfInheritance modeOfInheritance;
-    private final double combinedScore;
-    private final double phenotypeScore;
-    private final double variantScore;
-    @JsonProperty
-    private final double pValue;
-    private final List<VariantEvaluation> contributingVariants;
-    private final List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches;
-    private final List<AcmgAssignment> acmgAssignments;
+    public GeneScore {
+        Objects.requireNonNull(geneIdentifier);
+        Objects.requireNonNull(modeOfInheritance);
+        Objects.requireNonNull(contributingVariants);
 
-    private GeneScore(Builder builder) {
-        this.geneIdentifier = builder.geneIdentifier;
-        this.modeOfInheritance = builder.modeOfInheritance;
-        this.pValue = builder.pValue;
-        this.combinedScore = builder.combinedScore;
-        this.phenotypeScore = builder.phenotypeScore;
-        this.variantScore = builder.variantScore;
-        this.contributingVariants = List.copyOf(builder.contributingVariants);
-        this.compatibleDiseaseMatches = List.copyOf(builder.compatibleDiseaseMatches);
-        this.acmgAssignments = List.copyOf(builder.acmgAssignments);
-    }
-
-    public GeneIdentifier getGeneIdentifier() {
-        return geneIdentifier;
-    }
-
-    public ModeOfInheritance getModeOfInheritance() {
-        return modeOfInheritance;
-    }
-
-    public double pValue() {
-        return pValue;
-    }
-
-    public double getCombinedScore() {
-        return combinedScore;
-    }
-
-    public double getPhenotypeScore() {
-        return phenotypeScore;
-    }
-
-    public double getVariantScore() {
-        return variantScore;
-    }
-
-    public List<VariantEvaluation> getContributingVariants() {
-        return contributingVariants;
+        contributingVariants = List.copyOf(contributingVariants);
+        Objects.requireNonNull(compatibleDiseaseMatches);
+        compatibleDiseaseMatches = List.copyOf(compatibleDiseaseMatches);
+        Objects.requireNonNull(acmgAssignments);
+        acmgAssignments = List.copyOf(acmgAssignments);
     }
 
     /**
-     * Whether or not the {@code GeneScore} has any contributing variants.
+     * Tests if the {@code GeneScore} has any contributing variants.
      *
-     * @return whether or not the {@code GeneScore} has any contributing variants.
+     * @return true if the {@code GeneScore} has any contributing variants.
      * @since 10.1.0
      */
     public boolean hasContributingVariants() {
         return !contributingVariants.isEmpty();
-    }
-
-    /**
-     * @return A list of diseases associated with the Gene under the mode of inheritance for the GeneScore.
-     * @since 13.0.0
-     */
-    public List<ModelPhenotypeMatch<Disease>> getCompatibleDiseaseMatches() {
-        return compatibleDiseaseMatches;
     }
 
     /**
@@ -117,14 +89,6 @@ public final class GeneScore implements Comparable<GeneScore> {
         return !compatibleDiseaseMatches.isEmpty();
     }
 
-    /**
-     * @return A list of {@link AcmgAssignment} for variants associated with the Gene under the mode of inheritance for
-     * the GeneScore.
-     * @since 13.1.0
-     */
-    public List<AcmgAssignment> getAcmgAssignments() {
-        return acmgAssignments;
-    }
 
     /**
      * Compares the combined score of two {@code GeneScore} objects. Will return the {@code GeneScore} with the highest
@@ -135,7 +99,7 @@ public final class GeneScore implements Comparable<GeneScore> {
      * @return the {@code GeneScore} with the highest combined score.
      */
     public static GeneScore max(GeneScore s1, GeneScore s2) {
-        return (Double.compare(s1.getCombinedScore(), s2.getCombinedScore()) >= 0) ? s1 : s2;
+        return (Double.compare(s1.combinedScore(), s2.combinedScore()) >= 0) ? s1 : s2;
     }
 
     /**
@@ -144,12 +108,12 @@ public final class GeneScore implements Comparable<GeneScore> {
      *
      * @param anotherGeneScore the other {@code GeneScore} against which this is compared
      * @return a value less than {@code 0} if this {@code combinedScore} is numerically greater than
-     *          {@code anotherGeneScore.combinedScore}; and a value greater than {@code 0} if this {@code combinedScore} is numerically
-     *          less than {@code anotherGeneScore.combinedScore}. Should {@code combinedScore} be numerically equal to
-     *          {@code anotherGeneScore.combinedScore} the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
+     * {@code anotherGeneScore.combinedScore}; and a value greater than {@code 0} if this {@code combinedScore} is numerically
+     * less than {@code anotherGeneScore.combinedScore}. Should {@code combinedScore} be numerically equal to
+     * {@code anotherGeneScore.combinedScore} the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
      * @throws NullPointerException if an argument is null
      */
-    public int compareTo(GeneScore anotherGeneScore) {
+    public int compareTo(@Nonnull GeneScore anotherGeneScore) {
         return GeneScore.compare(this, anotherGeneScore);
     }
 
@@ -160,11 +124,11 @@ public final class GeneScore implements Comparable<GeneScore> {
      *
      * @param s1 the fist score to be compared.
      * @param s2 the second score to be compared.
-     * @return  a value less than {@code 0} if this {@code s1.combinedScore} is numerically greater than
-     *          {@code s2.combinedScore}; and a value greater than {@code 0} if {@code s1.combinedScore} is numerically
-     *          less than {@code s2.combinedScore}. Should {@code s1.combinedScore} be numerically equal to
-     *          {@code s2.combinedScore} the scores will be compared reverse order of phenotypeScore or if equal
-     *          the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
+     * @return a value less than {@code 0} if this {@code s1.combinedScore} is numerically greater than
+     * {@code s2.combinedScore}; and a value greater than {@code 0} if {@code s1.combinedScore} is numerically
+     * less than {@code s2.combinedScore}. Should {@code s1.combinedScore} be numerically equal to
+     * {@code s2.combinedScore} the scores will be compared reverse order of phenotypeScore or if equal
+     * the return value will be equivalent to the comparison of the {@code GeneIdentifier}.
      * @throws NullPointerException if an argument is null
      */
     public static int compare(GeneScore s1, GeneScore s2) {
@@ -176,7 +140,7 @@ public final class GeneScore implements Comparable<GeneScore> {
         }
         if (result == 0) {
             //if the scores are equal then return an alphabetised list based on gene symbol
-            result = GeneIdentifier.compare(s1.getGeneIdentifier(), s2.getGeneIdentifier());
+            result = GeneIdentifier.compare(s1.geneIdentifier(), s2.geneIdentifier());
         }
         return result;
     }
@@ -187,11 +151,11 @@ public final class GeneScore implements Comparable<GeneScore> {
         if (o == null || getClass() != o.getClass()) return false;
         GeneScore geneScore = (GeneScore) o;
         return Double.compare(geneScore.combinedScore, combinedScore) == 0 &&
-                Double.compare(geneScore.phenotypeScore, phenotypeScore) == 0 &&
-                Double.compare(geneScore.variantScore, variantScore) == 0 &&
-                Objects.equals(geneIdentifier, geneScore.geneIdentifier) &&
-                modeOfInheritance == geneScore.modeOfInheritance &&
-                Objects.equals(contributingVariants, geneScore.contributingVariants);
+               Double.compare(geneScore.phenotypeScore, phenotypeScore) == 0 &&
+               Double.compare(geneScore.variantScore, variantScore) == 0 &&
+               Objects.equals(geneIdentifier, geneScore.geneIdentifier) &&
+               modeOfInheritance == geneScore.modeOfInheritance &&
+               Objects.equals(contributingVariants, geneScore.contributingVariants);
     }
 
     @Override
@@ -202,14 +166,14 @@ public final class GeneScore implements Comparable<GeneScore> {
     @Override
     public String toString() {
         return "GeneScore{" +
-                "geneIdentifier=" + geneIdentifier +
-                ", modeOfInheritance=" + modeOfInheritance +
-                ", combinedScore=" + combinedScore +
-                ", phenotypeScore=" + phenotypeScore +
-                ", variantScore=" + variantScore +
-                ", pValue=" + pValue +
-                ", contributingVariants=" + contributingVariants +
-                '}';
+               "geneIdentifier=" + geneIdentifier +
+               ", modeOfInheritance=" + modeOfInheritance +
+               ", combinedScore=" + combinedScore +
+               ", phenotypeScore=" + phenotypeScore +
+               ", variantScore=" + variantScore +
+               ", pValue=" + pValue +
+               ", contributingVariants=" + contributingVariants +
+               '}';
     }
 
     public static GeneScore empty() {
@@ -232,12 +196,12 @@ public final class GeneScore implements Comparable<GeneScore> {
         private List<AcmgAssignment> acmgAssignments = List.of();
 
         public Builder geneIdentifier(GeneIdentifier geneIdentifier) {
-            this.geneIdentifier = geneIdentifier;
+            this.geneIdentifier = Objects.requireNonNullElse(geneIdentifier, this.geneIdentifier);
             return this;
         }
 
         public Builder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-            this.modeOfInheritance = modeOfInheritance;
+            this.modeOfInheritance = Objects.requireNonNullElse(modeOfInheritance, ModeOfInheritance.ANY);
             return this;
         }
 
@@ -262,22 +226,32 @@ public final class GeneScore implements Comparable<GeneScore> {
         }
 
         public Builder contributingVariants(List<VariantEvaluation> contributingVariants) {
-            this.contributingVariants = contributingVariants;
+            this.contributingVariants = Objects.requireNonNullElse(contributingVariants, List.of());
             return this;
         }
 
         public Builder compatibleDiseaseMatches(List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches) {
-            this.compatibleDiseaseMatches = compatibleDiseaseMatches;
+            this.compatibleDiseaseMatches = Objects.requireNonNullElse(compatibleDiseaseMatches, List.of());
+            return this;
+        }
+
+        public Builder acmgAssignments(List<AcmgAssignment> acmgAssignments) {
+            this.acmgAssignments = Objects.requireNonNullElse(acmgAssignments, List.of());
             return this;
         }
 
         public GeneScore build() {
-            return new GeneScore(this);
-        }
-
-        public Builder acmgAssignments(List<AcmgAssignment> acmgAssignments) {
-            this.acmgAssignments = Objects.requireNonNull(acmgAssignments);
-            return this;
+            return new GeneScore(
+                    geneIdentifier,
+                    modeOfInheritance,
+                    combinedScore,
+                    phenotypeScore,
+                    variantScore,
+                    pValue,
+                    contributingVariants,
+                    compatibleDiseaseMatches,
+                    acmgAssignments
+            );
         }
     }
 }

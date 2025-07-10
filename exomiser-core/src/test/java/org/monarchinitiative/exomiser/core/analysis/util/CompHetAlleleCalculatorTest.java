@@ -106,7 +106,7 @@ public class CompHetAlleleCalculatorTest {
         Pedigree pedigree = Pedigree.of(probandIndividual, motherIndividual, brotherIndividual);
 
         CompHetAlleleCalculator instance = new CompHetAlleleCalculator(new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults()));
-        List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.getPassedVariantEvaluations());
+        List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.passedVariantEvaluations());
 
         assertThat(compHetAlleles.size(), equalTo(2));
         assertThat(compHetAlleles.get(0), equalTo(Arrays.asList(var98518687, var97723020)));

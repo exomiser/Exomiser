@@ -50,7 +50,7 @@ public abstract class AbstractFilterDataProvider implements VariantFilterDataPro
     }
 
     @Override
-    public VariantFilter getDecoratedFilter() {
+    public VariantFilter variantFilter() {
         return variantFilter;
     }
 
@@ -61,8 +61,8 @@ public abstract class AbstractFilterDataProvider implements VariantFilterDataPro
     }
 
     @Override
-    public FilterType getFilterType() {
-        return variantFilter.getFilterType();
+    public FilterType filterType() {
+        return variantFilter.filterType();
     }
 
     //TODO: is this a good idea to make this class 'invisible' like this?

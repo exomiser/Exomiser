@@ -51,7 +51,7 @@ public class AnalysisTest {
     private List<AnalysisStep> getAnalysisSteps() {
         VariantFilter geneIdFilter = new GeneSymbolFilter(new HashSet<>());
         Prioritiser<?> noneTypePrioritiser = new NoneTypePrioritiser();
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.ANY);
+        GeneFilter inheritanceFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.ANY));
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
         return List.of(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
@@ -59,7 +59,7 @@ public class AnalysisTest {
 
     @Test
     public void modeOfInheritanceDefaultsToEmpty() {
-        assertThat(DEFAULT_ANALYSIS.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
+        assertThat(DEFAULT_ANALYSIS.inheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
                 .build();
-        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+        assertThat(instance.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class AnalysisTest {
                 .inheritanceModeOptions(inheritanceMap)
                 .build();
 
-        assertThat(instance.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(inheritanceMap)));
+        assertThat(instance.inheritanceModeOptions(), equalTo(InheritanceModeOptions.of(inheritanceMap)));
     }
 
     @Test
@@ -90,12 +90,12 @@ public class AnalysisTest {
                 .inheritanceModeOptions(inheritanceModeOptions)
                 .build();
 
-        assertThat(instance.getInheritanceModeOptions(), equalTo(inheritanceModeOptions));
+        assertThat(instance.inheritanceModeOptions(), equalTo(inheritanceModeOptions));
     }
 
     @Test
     public void analysisModeDefaultsToPassOnly() {
-        assertThat(DEFAULT_ANALYSIS.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(DEFAULT_ANALYSIS.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
 
     @Test
@@ -103,12 +103,12 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .analysisMode(AnalysisMode.FULL)
                 .build();
-        assertThat(instance.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+        assertThat(instance.analysisMode(), equalTo(AnalysisMode.FULL));
     }
 
     @Test
     public void testFrequencySourcesAreEmptyByDefault() {
-        assertThat(DEFAULT_ANALYSIS.getFrequencySources().isEmpty(), is(true));
+        assertThat(DEFAULT_ANALYSIS.frequencySources().isEmpty(), is(true));
     }
 
     @Test
@@ -117,12 +117,12 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .frequencySources(sources)
                 .build();
-        assertThat(instance.getFrequencySources(), equalTo(sources));
+        assertThat(instance.frequencySources(), equalTo(sources));
     }
 
     @Test
     public void testPathogenicitySourcesAreEmptyByDefault() {
-        assertThat(DEFAULT_ANALYSIS.getPathogenicitySources().isEmpty(), is(true));
+        assertThat(DEFAULT_ANALYSIS.pathogenicitySources().isEmpty(), is(true));
     }
 
     @Test
@@ -131,13 +131,13 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .pathogenicitySources(sources)
                 .build();
-        assertThat(instance.getPathogenicitySources(), equalTo(sources));
+        assertThat(instance.pathogenicitySources(), equalTo(sources));
     }
 
     @Test
     public void testGetAnalysisStepsReturnsEmptyListWhenNoStepsHaveBeenAdded() {
         List<AnalysisStep> steps = Collections.emptyList();
-        assertThat(DEFAULT_ANALYSIS.getAnalysisSteps(), equalTo(steps));
+        assertThat(DEFAULT_ANALYSIS.analysisSteps(), equalTo(steps));
     }
 
     @Test
@@ -146,16 +146,16 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .addStep(variantFilter)
                 .build();
-        assertThat(instance.getAnalysisSteps(), hasItem(variantFilter));
+        assertThat(instance.analysisSteps(), hasItem(variantFilter));
     }
 
     @Test
     public void testCanAddGeneFilterAsAnAnalysisStep() {
-        GeneFilter geneFilter = new InheritanceFilter(ModeOfInheritance.ANY);
+        GeneFilter geneFilter = InheritanceFilter.of(ModeOfInheritance.ANY);
         Analysis instance = newBuilder()
                 .addStep(geneFilter)
                 .build();
-        assertThat(instance.getAnalysisSteps(), hasItem(geneFilter));
+        assertThat(instance.analysisSteps(), hasItem(geneFilter));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class AnalysisTest {
         Analysis instance = newBuilder()
                 .addStep(prioritiser)
                 .build();
-        assertThat(instance.getAnalysisSteps(), hasItem(prioritiser));
+        assertThat(instance.analysisSteps(), hasItem(prioritiser));
     }
 
     @Test
@@ -174,14 +174,14 @@ public class AnalysisTest {
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .addStep(prioritiser)
                 .build();
-        assertThat(instance.getMainPrioritiserType(), equalTo(prioritiser.getPriorityType()));
+        assertThat(instance.mainPrioritiserType(), equalTo(prioritiser.priorityType()));
     }
 
     @Test
     public void testGetMainPrioritiserTypeNoPrioritisersSet() {
         Analysis instance = newBuilder()
                 .build();
-        assertThat(instance.getMainPrioritiserType(), equalTo(PriorityType.NONE));
+        assertThat(instance.mainPrioritiserType(), equalTo(PriorityType.NONE));
     }
 
     @Test
@@ -191,14 +191,14 @@ public class AnalysisTest {
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .addStep(prioritiser)
                 .build();
-        assertThat(instance.getMainPrioritiser(), equalTo(prioritiser));
+        assertThat(instance.mainPrioritiser(), equalTo(prioritiser));
     }
 
     @Test
     public void testGetMainPrioritiserNoPrioritisersSet() {
         Analysis instance = newBuilder()
                 .build();
-        assertThat(instance.getMainPrioritiser(), equalTo(null));
+        assertThat(instance.mainPrioritiser(), equalTo(null));
     }
 
     @Test
@@ -210,7 +210,7 @@ public class AnalysisTest {
 
         Analysis instance = builder.build();
 
-        assertThat(instance.getAnalysisSteps(), equalTo(steps));
+        assertThat(instance.analysisSteps(), equalTo(steps));
     }
 
     @Test
@@ -221,7 +221,7 @@ public class AnalysisTest {
                 .steps(steps)
                 .build();
 
-        assertThat(instance.getAnalysisSteps(), equalTo(steps));
+        assertThat(instance.analysisSteps(), equalTo(steps));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class AnalysisTest {
         Analysis copy = analysisBuilder
                 .frequencySources(EnumSet.of(FrequencySource.ESP_ALL))
                 .build();
-        assertThat(copy.getFrequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL)));
+        assertThat(copy.frequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL)));
     }
 
     @Test
@@ -255,6 +255,6 @@ public class AnalysisTest {
         Analysis copy = DEFAULT_ANALYSIS.copy()
                 .steps(newSteps)
                 .build();
-        assertThat(copy.getAnalysisSteps(), equalTo(newSteps));
+        assertThat(copy.analysisSteps(), equalTo(newSteps));
     }
 }

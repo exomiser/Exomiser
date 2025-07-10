@@ -33,19 +33,19 @@ public class SampleGenotypesTest {
     public void testMapConstructorSingleSample() {
         SampleGenotypes instance = SampleGenotypes.of("Bart", SampleGenotype.het());
         assertThat(instance.size(), equalTo(1));
-        assertThat(instance.getSampleGenotype("Bart"), equalTo(SampleGenotype.het()));
-        assertThat(instance.getSampleCopyNumber("Bart"), equalTo(CopyNumber.empty()));
+        assertThat(instance.sampleGenotype("Bart"), equalTo(SampleGenotype.het()));
+        assertThat(instance.sampleCopyNumber("Bart"), equalTo(CopyNumber.empty()));
     }
 
     @Test
     public void testMapConstructorMultiSample() {
         SampleGenotypes instance = SampleGenotypes.of("Bart", SampleGenotype.het(), "Lisa", SampleGenotype.homRef());
         assertThat(instance.size(), equalTo(2));
-        assertThat(instance.getSampleGenotype("Bart"), equalTo(SampleGenotype.het()));
-        assertThat(instance.getSampleCopyNumber("Bart"), equalTo(CopyNumber.empty()));
+        assertThat(instance.sampleGenotype("Bart"), equalTo(SampleGenotype.het()));
+        assertThat(instance.sampleCopyNumber("Bart"), equalTo(CopyNumber.empty()));
 
-        assertThat(instance.getSampleGenotype("Lisa"), equalTo(SampleGenotype.homRef()));
-        assertThat(instance.getSampleCopyNumber("Lisa"), equalTo(CopyNumber.empty()));
+        assertThat(instance.sampleGenotype("Lisa"), equalTo(SampleGenotype.homRef()));
+        assertThat(instance.sampleCopyNumber("Lisa"), equalTo(CopyNumber.empty()));
     }
 
     @Test
@@ -55,22 +55,22 @@ public class SampleGenotypesTest {
         SampleGenotypes instance = SampleGenotypes.of(bart, lisa);
 
         assertThat(instance.size(), equalTo(2));
-        assertThat(instance.getSampleGenotype("Bart"), equalTo(SampleGenotype.het()));
-        assertThat(instance.getSampleCopyNumber("Bart"), equalTo(CopyNumber.of(4)));
+        assertThat(instance.sampleGenotype("Bart"), equalTo(SampleGenotype.het()));
+        assertThat(instance.sampleCopyNumber("Bart"), equalTo(CopyNumber.of(4)));
 
-        assertThat(instance.getSampleGenotype("Lisa"), equalTo(SampleGenotype.homRef()));
-        assertThat(instance.getSampleCopyNumber("Lisa"), equalTo(CopyNumber.of(2)));
+        assertThat(instance.sampleGenotype("Lisa"), equalTo(SampleGenotype.homRef()));
+        assertThat(instance.sampleCopyNumber("Lisa"), equalTo(CopyNumber.of(2)));
 
 
     }
 
     @Test
-    void testGetSampleData() {
+    void testSampleData() {
         SampleData bart = SampleData.of("Bart", SampleGenotype.het(), 4);
         SampleData lisa = SampleData.of("Lisa", SampleGenotype.homRef(), 2);
         SampleGenotypes instance = SampleGenotypes.of(bart, lisa);
 
-        assertThat(instance.getSampleData(), equalTo(List.of(bart, lisa)));
-        assertThat(instance.getSampleData("Bart"), equalTo(bart));
+        assertThat(instance.sampleData(), equalTo(List.of(bart, lisa)));
+        assertThat(instance.sampleData("Bart"), equalTo(bart));
     }
 }

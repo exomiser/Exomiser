@@ -72,7 +72,7 @@ public class DefaultDiseaseDaoTest {
 
     @Test
     public void testGetHpoIdsForDiseaseId() {
-        Set<String> omim101600HpoIds = Sets.newTreeSet(disease.getPhenotypeIds());
+        Set<String> omim101600HpoIds = Sets.newTreeSet(disease.phenotypeIds());
         assertThat(instance.getHpoIdsForDiseaseId("OMIM:101600"), equalTo(omim101600HpoIds));
     }
 

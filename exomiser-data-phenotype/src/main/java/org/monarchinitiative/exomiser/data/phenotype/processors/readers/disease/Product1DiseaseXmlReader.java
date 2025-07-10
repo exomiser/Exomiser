@@ -87,8 +87,6 @@ public class Product1DiseaseXmlReader implements ResourceReader<ListMultimap<Str
         List<OrphaOmimMapping> tempOmimMappings = new ArrayList<>();
 
         XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        xmlInputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         try (InputStream inputStream = Files.newInputStream(product1XmlResource.getResourcePath())) {
             XMLEventReader eventReader = xmlInputFactory.createXMLEventReader(inputStream);
 

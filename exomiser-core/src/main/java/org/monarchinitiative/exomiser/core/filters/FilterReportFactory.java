@@ -60,7 +60,7 @@ public class FilterReportFactory {
      * @return a List of {@code FilterReport}
      */
     public List<FilterReport> makeFilterReports(Analysis analysis, AnalysisResults analysisResults) {
-        return analysis.getAnalysisSteps().stream()
+        return analysis.analysisSteps().stream()
                 .filter(Filter.class::isInstance)
                 .map(Filter.class::cast)
                 .map(filter -> makeFilterReport(filter, analysisResults))
@@ -78,14 +78,14 @@ public class FilterReportFactory {
      */
     protected FilterReport makeFilterReport(Filter<?> filter, AnalysisResults analysisResults) {
         Filter<?> baseFilter = unWrapVariantFilterDataProvider(filter);
-        FilterType filterType = filter.getFilterType();
-        FilterResultCount filterResultCount = analysisResults.getFilterCount(filterType);
+        FilterType filterType = filter.filterType();
+        FilterResultCount filterResultCount = analysisResults.filterCountForType(filterType);
         return switch (filterType) {
             case FAILED_VARIANT_FILTER ->
                     filterReport(filterResultCount, failedVariantFilterMessages((FailedVariantFilter) baseFilter));
             case VARIANT_EFFECT_FILTER -> filterReport(filterResultCount, messages((VariantEffectFilter) baseFilter));
             case KNOWN_VARIANT_FILTER ->
-                    filterReport(filterResultCount, messages((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations()));
+                    filterReport(filterResultCount, messages((KnownVariantFilter) baseFilter, analysisResults.variantEvaluations()));
             case FREQUENCY_FILTER -> filterReport(filterResultCount, messages((FrequencyFilter) baseFilter));
             case QUALITY_FILTER -> filterReport(filterResultCount, messages((QualityFilter) baseFilter));
             case ENTREZ_GENE_ID_FILTER -> filterReport(filterResultCount, messages((GeneSymbolFilter) baseFilter));
@@ -105,7 +105,7 @@ public class FilterReportFactory {
     }
 
     private Filter<?> unWrapVariantFilterDataProvider(Filter<?> filter) {
-        return filter instanceof VariantFilterDataProvider decorator ? decorator.getDecoratedFilter() : filter;
+        return filter instanceof VariantFilterDataProvider decorator ? decorator.variantFilter() : filter;
     }
 
     private List<String> failedVariantFilterMessages(FailedVariantFilter baseFilter) {
@@ -124,7 +124,7 @@ public class FilterReportFactory {
         int numExaCFreqData = 0;
 
         for (VariantEvaluation ve : variantEvaluations) {
-            FrequencyData frequencyData = ve.getFrequencyData();
+            FrequencyData frequencyData = ve.frequencyData();
 
             if (!frequencyData.isRepresentedInDatabase()) {
                 numNotInDatabase++;
@@ -159,11 +159,11 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(FrequencyFilter frequencyFilter) {
-        return List.of(String.format("Variants filtered for maximum allele frequency of %.2f%%", frequencyFilter.getMaxFreq()));
+        return List.of(String.format("Variants filtered for maximum allele frequency of %.2f%%", frequencyFilter.maxFreq()));
     }
 
     private List<String> messages(QualityFilter qualityFilter) {
-        return List.of(String.format("Variants filtered for mimimum PHRED quality of %.1f", qualityFilter.getMimimumQualityThreshold()));
+        return List.of(String.format("Variants filtered for mimimum PHRED quality of %.1f", qualityFilter.mimimumQualityThreshold()));
     }
 
     private List<String> messages(PathogenicityFilter pathogenicityFilter) {
@@ -182,7 +182,7 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(GeneBlacklistFilter baseFilter) {
-        return List.of(String.format("Removed variants in blacklisted genes including pseudogenes, HLA genes, and others that have a high degree of variants called in healthy individuals: %s", baseFilter.getBlacklist().stream().sorted().toList()));
+        return List.of(String.format("Removed variants in blacklisted genes including pseudogenes, HLA genes, and others that have a high degree of variants called in healthy individuals: %s", baseFilter.blackList().stream().sorted().toList()));
     }
 
     private List<String> messages(IntervalFilter intervalFilter) {
@@ -217,7 +217,7 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(InheritanceFilter inheritanceFilter) {
-        String inheritanceModes = inheritanceFilter.getCompatibleModes()
+        String inheritanceModes = inheritanceFilter.compatibleModes()
                 .stream()
                 .map(ModeOfInheritance::toString)
                 .collect(Collectors.joining(", "));
@@ -226,7 +226,7 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(PriorityScoreFilter priorityScoreFilter) {
-        return List.of(String.format("Genes filtered for minimum %s score of %s", priorityScoreFilter.getPriorityType(), priorityScoreFilter.getMinPriorityScore()));
+        return List.of(String.format("Genes filtered for minimum %s score of %s", priorityScoreFilter.priorityType(), priorityScoreFilter.minPriorityScore()));
     }
 
 }

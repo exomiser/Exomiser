@@ -33,104 +33,45 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneDiseaseModel implements GeneModel {
+public record GeneDiseaseModel(String modelId, Organism organism, Disease disease) implements GeneModel {
 
-    private final String modelId;
-    private final Organism organism;
-
-    private Disease disease;
-
-    private final int entrezGeneId;
-    private final String humanGeneSymbol;
-
-    private final String diseaseId;
-    private final String diseaseTerm;
-
-    private final List<String> phenotypeIds;
-
-    public GeneDiseaseModel(String modelId, Organism organism, Disease disease) {
-        this.modelId = modelId;
-        this.organism = organism;
-
-        this.disease = disease;
-
-        this.entrezGeneId = disease.getAssociatedGeneId();
-        this.humanGeneSymbol = disease.getAssociatedGeneSymbol();
-
-        this.diseaseId = disease.getDiseaseId();
-        this.diseaseTerm = disease.getDiseaseName();
-
-        this.phenotypeIds = disease.getPhenotypeIds();
+    public GeneDiseaseModel {
+        Objects.requireNonNull(modelId, "modelId cannot be null");
+        Objects.requireNonNull(organism, "organism cannot be null");
+        Objects.requireNonNull(disease, "disease cannot be null");
     }
 
-    // TODO - only used in test migrate code to remove this and delegate to Disease class for Model/GeneModel methods
-    public GeneDiseaseModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String diseaseId, String diseaseTerm, List<String> phenotypeIds) {
-        this.modelId = modelId;
-        this.organism = organism;
-
-        this.entrezGeneId = entrezGeneId;
-        this.humanGeneSymbol = humanGeneSymbol;
-
-        this.diseaseId = diseaseId;
-        this.diseaseTerm = diseaseTerm;
-
-        this.phenotypeIds = phenotypeIds;
+    public String diseaseId() {
+        return disease.diseaseId();
     }
 
-    public Disease getDisease() {
-        return this.disease;
-    }
-
-    public String getDiseaseId() {
-        return diseaseId;
-    }
-
-    public String getDiseaseTerm() {
-        return diseaseTerm;
+    public String diseaseTerm() {
+        return disease.diseaseName();
     }
 
     @Override
-    public Organism getOrganism() {
+    public Organism organism() {
         return organism;
     }
 
     @Override
-    public int getEntrezGeneId() {
-        return entrezGeneId;
+    public int entrezGeneId() {
+        return disease.associatedGeneId();
     }
 
     @Override
-    public String getHumanGeneSymbol() {
-        return humanGeneSymbol;
+    public String humanGeneSymbol() {
+        return disease.associateGeneSymbol();
     }
 
     @Override
-    public String getId() {
+    public String id() {
         return modelId;
     }
 
     @Override
-    public List<String> getPhenotypeIds() {
-        return phenotypeIds;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GeneDiseaseModel)) return false;
-        GeneDiseaseModel that = (GeneDiseaseModel) o;
-        return entrezGeneId == that.entrezGeneId &&
-                Objects.equals(modelId, that.modelId) &&
-                organism == that.organism &&
-                Objects.equals(humanGeneSymbol, that.humanGeneSymbol) &&
-                Objects.equals(diseaseId, that.diseaseId) &&
-                Objects.equals(diseaseTerm, that.diseaseTerm) &&
-                Objects.equals(phenotypeIds, that.phenotypeIds);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(modelId, organism, entrezGeneId, humanGeneSymbol, diseaseId, diseaseTerm, phenotypeIds);
+    public List<String> phenotypeIds() {
+        return disease.phenotypeIds();
     }
 
     @Override
@@ -146,11 +87,11 @@ public class GeneDiseaseModel implements GeneModel {
         return "GeneDiseaseModel{" +
                 "modelId='" + modelId + '\'' +
                 ", organism=" + organism +
-                ", entrezGeneId=" + entrezGeneId +
-                ", humanGeneSymbol='" + humanGeneSymbol + '\'' +
-                ", diseaseId='" + diseaseId + '\'' +
-                ", diseaseTerm='" + diseaseTerm + '\'' +
-                ", phenotypeIds=" + phenotypeIds +
+                ", entrezGeneId=" + entrezGeneId() +
+                ", humanGeneSymbol='" + humanGeneSymbol() + '\'' +
+                ", diseaseId='" + diseaseId() + '\'' +
+                ", diseaseTerm='" + diseaseTerm() + '\'' +
+                ", phenotypeIds=" + phenotypeIds() +
                 '}';
     }
 }

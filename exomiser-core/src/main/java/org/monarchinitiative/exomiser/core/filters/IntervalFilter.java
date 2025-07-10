@@ -92,7 +92,7 @@ public class IntervalFilter implements VariantFilter {
         return geneticIntervals.stream()
                 .distinct()
                 .sorted(ChromosomalRegion::compare)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     /**
@@ -111,7 +111,7 @@ public class IntervalFilter implements VariantFilter {
      * on the filters that the user has chosen.
      */
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 

@@ -47,12 +47,12 @@ public class Pedigree {
     private Pedigree(Collection<Individual> individuals) {
         Objects.requireNonNull(individuals);
         this.individuals = ImmutableSet.copyOf(individuals);
-        this.individualsById = this.individuals.stream().collect(ImmutableMap.toImmutableMap(Individual::getId, Function.identity()));
+        this.individualsById = this.individuals.stream().collect(ImmutableMap.toImmutableMap(Individual::id, Function.identity()));
         validate();
     }
 
     private void validate() {
-        if (individualsById.keySet().size() != individuals.size()){
+        if (individualsById.size() != individuals.size()) {
             //this should already be caught by the ImmutableMap constructor
             throw new IllegalArgumentException("Duplicate individual");
         }
@@ -60,21 +60,20 @@ public class Pedigree {
             if (!individual.motherId.isEmpty()) {
                 checkParent(individual, individual.motherId, Individual.Sex.FEMALE);
             }
-            if (!individual.fatherId.isEmpty()){
+            if (!individual.fatherId.isEmpty()) {
                 checkParent(individual, individual.fatherId, Individual.Sex.MALE);
             }
         }
-
     }
 
     private void checkParent(Individual individual, String parentId, Individual.Sex sex) {
         if (!parentId.isEmpty()) {
-            if(!individualsById.containsKey(parentId)) {
+            if (!individualsById.containsKey(parentId)) {
                 throw new IllegalArgumentException(String.format("Parent '%s' not found for individual '%s'", parentId, individual.id));
             }
             Individual parent = individualsById.get(parentId);
-            if (parent.getSex() != sex) {
-                throw new IllegalArgumentException(String.format("Individual '%s' listed as %s parent of '%s', but should be %s", parentId, parent.getSex(), individual.id, sex));
+            if (parent.sex() != sex) {
+                throw new IllegalArgumentException(String.format("Individual '%s' listed as %s parent of '%s', but should be %s", parentId, parent.sex(), individual.id, sex));
             }
         }
     }
@@ -136,15 +135,15 @@ public class Pedigree {
 
     @JsonIgnore
     public int numFamilies() {
-        return (int) individuals.stream().map(Individual::getFamilyId).distinct().count();
+        return (int) individuals.stream().map(Individual::familyId).distinct().count();
     }
 
-    public List<Pedigree.Individual> anscestorsOf(Pedigree.Individual individual) {
+    public List<Pedigree.Individual> ancestorsOf(Pedigree.Individual individual) {
         if (individual == null) {
             return List.of();
         }
-        String motherId = individual.getMotherId();
-        String fatherId = individual.getFatherId();
+        String motherId = individual.motherId();
+        String fatherId = individual.fatherId();
         if (motherId.isEmpty() && fatherId.isEmpty()) {
             return List.of();
         }
@@ -152,12 +151,12 @@ public class Pedigree {
         Individual mother = getIndividualById(motherId);
         if (mother != null) {
             ancestors.add(mother);
-            ancestors.addAll(anscestorsOf(mother));
+            ancestors.addAll(ancestorsOf(mother));
         }
         Individual father = getIndividualById(fatherId);
         if (father != null) {
             ancestors.add(father);
-            ancestors.addAll(anscestorsOf(father));
+            ancestors.addAll(ancestorsOf(father));
         }
         return List.copyOf(ancestors);
     }
@@ -178,11 +177,18 @@ public class Pedigree {
     @Override
     public String toString() {
         return "Pedigree{" +
-                "individuals=" + individuals +
-                '}';
+               "individuals=" + individuals +
+               '}';
     }
 
-    public static class Individual {
+    public record Individual(
+            String familyId,
+            String id,
+            String motherId,
+            String fatherId,
+            Sex sex,
+            Status status
+    ) {
 
         public enum Sex {
             UNKNOWN,
@@ -196,44 +202,13 @@ public class Pedigree {
             AFFECTED
         }
 
-        private final String familyId;
-        private final String id;
-        private final String motherId;
-        private final String fatherId;
-        private final Sex sex;
-        private final Status status;
-
-        private Individual(Builder builder) {
-            this.familyId = builder.familyId;
-            this.id = builder.id;
-            this.motherId = builder.motherId;
-            this.fatherId = builder.fatherId;
-            this.sex = builder.sex;
-            this.status = builder.status;
-        }
-
-        public String getFamilyId() {
-            return familyId;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getMotherId() {
-            return motherId;
-        }
-
-        public String getFatherId() {
-            return fatherId;
-        }
-
-        public Sex getSex() {
-            return sex;
-        }
-
-        public Status getStatus() {
-            return status;
+        public Individual {
+            Objects.requireNonNull(familyId);
+            Objects.requireNonNull(id);
+            Objects.requireNonNull(motherId);
+            Objects.requireNonNull(fatherId);
+            Objects.requireNonNull(sex);
+            Objects.requireNonNull(status);
         }
 
         @JsonIgnore
@@ -268,62 +243,47 @@ public class Pedigree {
             }
 
             public Builder motherId(String motherId) {
-                Objects.requireNonNull(motherId);
-                this.motherId = motherId;
+                this.motherId = Objects.requireNonNull(motherId);
                 return this;
             }
 
             public Builder fatherId(String fatherId) {
-                Objects.requireNonNull(fatherId);
-                this.fatherId = fatherId;
+                this.fatherId = Objects.requireNonNull(fatherId);
                 return this;
             }
 
             public Builder sex(Sex sex) {
-                Objects.requireNonNull(sex);
-                this.sex = sex;
+                this.sex = Objects.requireNonNull(sex);
                 return this;
             }
 
             public Builder status(Status status) {
-                Objects.requireNonNull(status);
-                this.status = status;
+                this.status = Objects.requireNonNull(status);
                 return this;
             }
 
             public Individual build() {
-                return new Individual(this);
+                return new Individual(
+                        familyId,
+                        id,
+                        motherId,
+                        fatherId,
+                        sex,
+                        status
+                );
             }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Individual that = (Individual) o;
-            return Objects.equals(familyId, that.familyId) &&
-                    Objects.equals(id, that.id) &&
-                    Objects.equals(motherId, that.motherId) &&
-                    Objects.equals(fatherId, that.fatherId) &&
-                    sex == that.sex &&
-                    status == that.status;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(familyId, id, motherId, fatherId, sex, status);
         }
 
         @Override
         public String toString() {
             return "Individual{" +
-                    "familyId='" + familyId + '\'' +
-                    ", id='" + id + '\'' +
-                    ", motherId='" + motherId + '\'' +
-                    ", fatherId='" + fatherId + '\'' +
-                    ", sex=" + sex +
-                    ", affectedStatus=" + status +
-                    '}';
+                   "familyId='" + familyId + '\'' +
+                   ", id='" + id + '\'' +
+                   ", motherId='" + motherId + '\'' +
+                   ", fatherId='" + fatherId + '\'' +
+                   ", sex=" + sex +
+                   ", affectedStatus=" + status +
+                   '}';
         }
     }
 }

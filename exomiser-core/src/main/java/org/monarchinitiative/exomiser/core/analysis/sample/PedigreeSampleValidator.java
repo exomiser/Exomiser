@@ -102,7 +102,7 @@ public class PedigreeSampleValidator {
 
     private static void checkOnlyOneFamilyIsPresent(Pedigree pedigree) {
         List<String> familyNames = pedigree.getIndividuals().stream()
-                .map(Individual::getFamilyId)
+                .map(Individual::familyId)
                 .distinct()
                 .collect(toList());
         if (familyNames.size() > 1) {

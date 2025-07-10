@@ -32,10 +32,18 @@ import java.util.*;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.1.0
  */
-public class ClinVarData {
+public record ClinVarData(String variationId,
+                          ClinSig primaryInterpretation,
+                          Map<ClinSig, Integer> conflictingInterpretationCounts,
+                          Set<ClinSig> secondaryInterpretations,
+                          ReviewStatus reviewStatus,
+                          Map<String, ClinSig> includedAlleles,
+                          String geneSymbol,
+                          VariantEffect variantEffect,
+                          String hgvsCdna,
+                          String hgvsProtein) {
 
-    private static final ClinVarData EMPTY = new Builder().build();
-
+    private static final ClinVarData EMPTY = new ClinVarData("", ClinSig.NOT_PROVIDED, Map.of(), Set.of(), ReviewStatus.NO_ASSERTION_PROVIDED, Map.of(), "", VariantEffect.SEQUENCE_VARIANT, "", "");
 
     /**
      * Based on the categories from the <a href="https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/">ClinVar docs</a> and
@@ -68,6 +76,7 @@ public class ClinVarData {
 
     /**
      * Enum for the ClinVar <a href=https://www.ncbi.nlm.nih.gov/clinvar/docs/review_status/>review status</a> field.
+     *
      * @since 14.0.0
      */
     public enum ReviewStatus {
@@ -98,7 +107,7 @@ public class ClinVarData {
                      "no classifications from unflagged records" -> NO_ASSERTION_CRITERIA_PROVIDED;
                 case "no interpretation for the single variant",
                      "no interpretation for the individual variant",
-                     "no classification for the single variant"-> NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
+                     "no classification for the single variant" -> NO_INTERPRETATION_FOR_THE_SINGLE_VARIANT;
                 case "criteria provided, single submitter" -> CRITERIA_PROVIDED_SINGLE_SUBMITTER;
                 case "criteria provided, conflicting interpretations",
                      "criteria provided, conflicting classifications" -> CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS;
@@ -111,19 +120,26 @@ public class ClinVarData {
         }
     }
     //https://www.ncbi.nlm.nih.gov/clinvar/variation/99222
-    private final String variationId;
-    private final ClinSig primaryInterpretation;
-    private final Map<ClinSig, Integer> conflictingInterpretationCounts;
 
-    private final Set<ClinSig> secondaryInterpretations;
-    private final ReviewStatus reviewStatus;
-    private final Map<String, ClinSig> includedAlleles;
-    private final String geneSymbol;
+    public ClinVarData {
+        Objects.requireNonNull(variationId);
+        Objects.requireNonNull(primaryInterpretation);
+        Objects.requireNonNull(conflictingInterpretationCounts);
+        Objects.requireNonNull(secondaryInterpretations);
+        Objects.requireNonNull(reviewStatus);
+        Objects.requireNonNull(includedAlleles);
+        Objects.requireNonNull(geneSymbol);
+        Objects.requireNonNull(variantEffect);
+        Objects.requireNonNull(hgvsCdna);
+        Objects.requireNonNull(hgvsProtein);
 
-    private final VariantEffect variantEffect;
-    private final String hgvsCdna;
+        Map<ClinSig, Integer> map = new EnumMap<>(ClinSig.class);
+        map.putAll(conflictingInterpretationCounts);
+        conflictingInterpretationCounts = Collections.unmodifiableMap(map);
+        secondaryInterpretations = secondaryInterpretations.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(secondaryInterpretations));
+        includedAlleles = Map.copyOf(includedAlleles);
+    }
 
-    private final String hgvsProtein;
     // https://www.medschool.umaryland.edu/Genetic_Variant_Interpretation_Tool1.html/
     // BP1, Missense variant in a gene for which primarily truncating variants are known to cause disease
     // BP2, Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern
@@ -170,20 +186,6 @@ public class ClinVarData {
 
     //##INFO=<ID=SSR,Number=1,Type=Integer,Description="Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other">
 
-    private ClinVarData(Builder builder) {
-        this.variationId = builder.variationId;
-        this.primaryInterpretation = builder.primaryInterpretation;
-        Map<ClinSig, Integer> map = new EnumMap<>(ClinSig.class);
-        map.putAll(builder.conflictingInterpretationCounts);
-        this.conflictingInterpretationCounts = Collections.unmodifiableMap(map);
-        this.secondaryInterpretations = Collections.unmodifiableSet(builder.secondaryInterpretations);
-        this.reviewStatus = builder.reviewStatus;
-        this.includedAlleles = Collections.unmodifiableMap(builder.includedAlleles);
-        this.geneSymbol = builder.geneSymbol;
-        this.variantEffect = builder.variantEffect;
-        this.hgvsCdna = builder.hgvsCdna;
-        this.hgvsProtein = builder.hgvsProtein;
-    }
 
     public static ClinVarData empty() {
         return EMPTY;
@@ -192,46 +194,6 @@ public class ClinVarData {
     @JsonIgnore
     public boolean isEmpty() {
         return this.equals(EMPTY);
-    }
-
-    public String getVariationId() {
-        return variationId;
-    }
-
-    public ClinSig getPrimaryInterpretation() {
-        return primaryInterpretation;
-    }
-
-    public Map<ClinSig, Integer> getConflictingInterpretationCounts() {
-        return conflictingInterpretationCounts;
-    }
-
-    public Set<ClinSig> getSecondaryInterpretations() {
-        return secondaryInterpretations;
-    }
-
-    public ReviewStatus getReviewStatus() {
-        return reviewStatus;
-    }
-
-    public Map<String, ClinSig> getIncludedAlleles() {
-        return includedAlleles;
-    }
-
-    public String getGeneSymbol() {
-        return geneSymbol;
-    }
-
-    public VariantEffect getVariantEffect() {
-        return variantEffect;
-    }
-
-    public String getHgvsCdna() {
-        return hgvsCdna;
-    }
-
-    public String getHgvsProtein() {
-        return hgvsProtein;
     }
 
     /**
@@ -271,23 +233,6 @@ public class ClinVarData {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ClinVarData that = (ClinVarData) o;
-        return Objects.equals(variationId, that.variationId) &&
-               primaryInterpretation == that.primaryInterpretation &&
-               Objects.equals(secondaryInterpretations, that.secondaryInterpretations) &&
-               reviewStatus == that.reviewStatus &&
-               Objects.equals(includedAlleles, that.includedAlleles);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variationId, primaryInterpretation, secondaryInterpretations, reviewStatus, includedAlleles);
-    }
-
-    @Override
     public String toString() {
         return "ClinVarData{" +
                "variationId='" + variationId + '\'' +
@@ -314,8 +259,7 @@ public class ClinVarData {
                 .variantEffect(variantEffect)
                 .hgvsCdna(hgvsCdna)
                 .hgvsProtein(hgvsProtein)
-                .conflictingInterpretationCounts(conflictingInterpretationCounts)
-                ;
+                .conflictingInterpretationCounts(conflictingInterpretationCounts);
     }
 
     public static Builder builder() {
@@ -391,7 +335,18 @@ public class ClinVarData {
         }
 
         public ClinVarData build() {
-            return new ClinVarData(this);
+            return new ClinVarData(
+                    variationId,
+                    primaryInterpretation,
+                    conflictingInterpretationCounts,
+                    secondaryInterpretations,
+                    reviewStatus,
+                    includedAlleles,
+                    geneSymbol,
+                    variantEffect,
+                    hgvsCdna,
+                    hgvsProtein
+            );
         }
 
     }

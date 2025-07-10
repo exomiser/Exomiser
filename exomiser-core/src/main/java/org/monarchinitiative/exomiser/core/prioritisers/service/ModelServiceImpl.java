@@ -110,7 +110,7 @@ public class ModelServiceImpl implements ModelService {
                         .phenotypeIds(phenotypes)
                         .build();
 
-                String modelId = disease.getDiseaseId() + "_" + disease.getAssociatedGeneId();
+                String modelId = disease.diseaseId() + "_" + disease.associatedGeneId();
 
                 GeneDiseaseModel model = new GeneDiseaseModel(modelId, Organism.HUMAN, disease);
                 models.add(model);

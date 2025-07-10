@@ -30,7 +30,7 @@ import org.phenopackets.schema.v1.core.Individual;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.PhenotypicFeature;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;

@@ -75,21 +75,21 @@ public class PedFilesTest {
     public void parsePedigreeUnknownStatus() {
         Pedigree.Individual zero = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t0"))
                 .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
-        assertThat(zero.getStatus(), equalTo(Status.UNKNOWN));
+        assertThat(zero.status(), equalTo(Status.UNKNOWN));
 
         Pedigree.Individual minusNine = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t1\t-9"))
                 .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
-        assertThat(minusNine.getStatus(), equalTo(Status.UNKNOWN));
+        assertThat(minusNine.status(), equalTo(Status.UNKNOWN));
     }
     @Test
     public void parsePedigreeUnknownSex() {
         Pedigree.Individual zero = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t0\t0"))
                 .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
-        assertThat(zero.getSex(), equalTo(Sex.UNKNOWN));
+        assertThat(zero.sex(), equalTo(Sex.UNKNOWN));
 
         Pedigree.Individual minusNine = PedFiles.parsePedigree(Stream.of("1\tManuel\t0\t0\t42\t0"))
                 .getIndividuals().stream().findFirst().orElse(Pedigree.Individual.builder().build());
-        assertThat(minusNine.getSex(), equalTo(Sex.UNKNOWN));
+        assertThat(minusNine.sex(), equalTo(Sex.UNKNOWN));
     }
 
     @Test

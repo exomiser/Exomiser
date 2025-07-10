@@ -59,19 +59,21 @@ public class AnalysisResultsWriter {
         Path outputDir = createOutputDirectoriesIfNotExists(outputSettings);
         logger.debug("Writing results to directory {}", outputDir);
 
-        var outputFormats = outputSettings.getOutputFormats().isEmpty()
+        var outputFormats = outputSettings.outputFormats().isEmpty()
                 ? DEFAULT_OUTPUT_FORMATS
-                : outputSettings.getOutputFormats();
+                : outputSettings.outputFormats();
 
         for (OutputFormat outputFormat : outputFormats) {
             var resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
             logger.debug("Writing {} results", outputFormat);
             resultsWriter.writeFile(analysisResults, outputSettings);
         }
+        // TODO: Change this to a general writer, like the JSON one.
+        new ParquetVariantResultsWriter().writeFile(analysisResults, outputSettings);
     }
 
     private static Path createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {
-        Path outputDir = outputSettings.getOutputDirectory();
+        Path outputDir = outputSettings.outputDirectory();
         if (Files.notExists(outputDir)) {
             try {
                 return Files.createDirectories(outputDir);

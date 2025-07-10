@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

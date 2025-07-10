@@ -121,33 +121,35 @@ public class RawScoreGeneScorer implements GeneScorer {
 
     private GeneScore calculateGeneScore(Gene gene, ModeOfInheritance modeOfInheritance) {
         //It is critical only the PASS variants are used in the scoring
-        List<VariantEvaluation> contributingVariants = contributingAlleleCalculator.findContributingVariantsForInheritanceMode(modeOfInheritance, gene.getPassedVariantEvaluations());
+        List<VariantEvaluation> contributingVariants = contributingAlleleCalculator.findContributingVariantsForInheritanceMode(modeOfInheritance, gene.passedVariantEvaluations());
 
         GenePriorityScoreCalculator.GenePriorityScore priorityScore = genePriorityScoreCalculator.calculateGenePriorityScore(gene, modeOfInheritance);
 
-        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.getCompatibleDiseaseMatches();
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = priorityScore.compatibleDiseaseMatches();
 
         List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
 
-//        double variantScore = acmgAssignments.stream()
-//                .mapToDouble(acmgAssignment -> acmgAssignment.acmgEvidence().postProbPath())
-//                .average()
-//                .orElse(0.1); // 0.1 is the equivalent of a 0-point VUS
+        double acmgScore = acmgAssignments.stream()
+                .mapToDouble(acmgAssignment -> acmgAssignment.acmgEvidence().postProbPath())
+                .average()
+                .orElse(0.1); // 0.1 is the equivalent of a 0-point VUS
 
         double variantScore = contributingVariants.stream()
-                .mapToDouble(VariantEvaluation::getVariantScore)
+                .mapToDouble(VariantEvaluation::variantScore)
                 .average()
                 .orElse(0);
 
-        double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.getScore(), gene.getPriorityResults().keySet());
+        double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.score(), gene.priorityResults().keySet());
+//        double combinedScore = (priorityScore.getScore() + acmgScore + variantScore) / 3.0; # this gave slightly worse performance compared to the original Logistic regression combined score
+//        combinedScore = (combinedScore + acmgScore) / 2.0;
 
         double pValue = pValueCalculator.calculatePvalueFromCombinedScore(combinedScore);
 
         return GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
                 .variantScore(variantScore)
-                .phenotypeScore(priorityScore.getScore())
+                .phenotypeScore(priorityScore.score())
                 .combinedScore(combinedScore)
                 .pValue(pValue)
                 .contributingVariants(contributingVariants)

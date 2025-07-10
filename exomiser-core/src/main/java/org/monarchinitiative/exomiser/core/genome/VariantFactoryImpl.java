@@ -189,10 +189,10 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private VariantEvaluation.Builder addAnnotations(VariantEvaluation.Builder variantBuilder, VariantAnnotation variantAnnotation) {
         return variantBuilder
-                .geneId(variantAnnotation.getGeneId())
-                .geneSymbol(variantAnnotation.getGeneSymbol())
-                .variantEffect(variantAnnotation.getVariantEffect())
-                .annotations(variantAnnotation.getTranscriptAnnotations());
+                .geneId(variantAnnotation.geneId())
+                .geneSymbol(variantAnnotation.geneSymbol())
+                .variantEffect(variantAnnotation.variantEffect())
+                .transcriptAnnotations(variantAnnotation.transcriptAnnotations());
     }
 
     /**

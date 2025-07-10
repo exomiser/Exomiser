@@ -55,9 +55,9 @@ class PedigreeConverter {
     private static Function<Pedigree.Individual, PedPerson> toPedPerson() {
         return individual -> {
             logger.debug("Converting individual {}", individual);
-            Sex sex = mapSex(individual.getSex());
-            Disease disease = mapDisease(individual.getStatus());
-            return new PedPerson(individual.getFamilyId(), individual.getId(), mapParentId(individual.getFatherId()), mapParentId(individual.getMotherId()), sex, disease);
+            Sex sex = mapSex(individual.sex());
+            Disease disease = mapDisease(individual.status());
+            return new PedPerson(individual.familyId(), individual.id(), mapParentId(individual.fatherId()), mapParentId(individual.motherId()), sex, disease);
         };
     }
 

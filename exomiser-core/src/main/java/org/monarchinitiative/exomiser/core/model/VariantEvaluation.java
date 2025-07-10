@@ -38,7 +38,7 @@ import java.util.*;
 
 /**
  * This class is a wrapper for the {@code Variant} class from the jannovar
- * hierarchy, and additionally includes all of the information on pathogenicity
+ * hierarchy, and additionally includes all the information on pathogenicity
  * and frequency that is added to each variant by the Exomizer program.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -58,9 +58,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     private final VariantContext variantContext;
 
     // numeric index of the alternative allele in {@link #vc}.
+    @JsonProperty
     private final int altAlleleId;
 
     // Variant variables, for a richer more VCF-like experience
+    @JsonProperty
     private final double phredScore;
 
     private final SampleGenotypes sampleGenotypes;
@@ -70,15 +72,21 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     // results from filters
     // mutable
+    @JsonProperty
     private final Set<FilterType> passedFilterTypes;
+    @JsonProperty
     private final Set<FilterType> failedFilterTypes;
 
     // score-related stuff - these are mutable
+    @JsonProperty
     private boolean whiteListed;
+    @JsonProperty
     private FrequencyData frequencyData;
+    @JsonProperty
     private PathogenicityData pathogenicityData;
     @JsonProperty("contributingInheritanceModes")
     private final Set<ModeOfInheritance> contributingModes;
+    @JsonProperty
     private Set<ModeOfInheritance> compatibleInheritanceModes;
 
 
@@ -122,7 +130,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     @Override
     protected VariantEvaluation newVariantInstance(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, String mateId, String eventId) {
-        return new VariantEvaluation(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, annotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
+        return new VariantEvaluation(contig, id, strand, coordinates, ref, alt, changeLength, genomeAssembly, geneSymbol, geneId, variantEffect, transcriptAnnotations, variantContext, altAlleleId, phredScore, sampleGenotypes, passedFilterTypes, failedFilterTypes, whiteListed, frequencyData, pathogenicityData, contributingModes, compatibleInheritanceModes);
     }
 
     private String inputOrFirstValueInCommaSeparatedString(String geneSymbol) {
@@ -131,15 +139,15 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @JsonIgnore
-    public VariantContext getVariantContext() {
+    public VariantContext variantContext() {
         return variantContext;
     }
 
-    public int getAltAlleleId() {
+    public int altAlleleId() {
         return altAlleleId;
     }
 
-    public double getPhredScore() {
+    public double phredScore() {
         return phredScore;
     }
 
@@ -148,13 +156,13 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      */
     @JsonIgnore
     @Override
-    public String getGeneSymbol() {
+    public String geneSymbol() {
         return geneSymbol;
     }
 
     @JsonIgnore
     @Override
-    public String getGeneId() {
+    public String geneId() {
         return geneId;
     }
 
@@ -197,10 +205,10 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @JsonIgnore
-    public String getGenotypeString() {
+    public String genotypeString() {
         StringJoiner genotypeStrings = new StringJoiner(":");
         for (SampleData sampleData : sampleGenotypes) {
-            SampleGenotype sampleGenotype = sampleData.getSampleGenotype();
+            SampleGenotype sampleGenotype = sampleData.sampleGenotype();
             if (sampleGenotype.isEmpty()) {
                 genotypeStrings.add(SampleGenotype.noCall().toString());
             } else {
@@ -215,7 +223,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @since 13.0.0
      */
     @JsonIgnore
-    public SampleGenotypes getSampleGenotypes() {
+    public SampleGenotypes sampleGenotypes() {
         return sampleGenotypes;
     }
 
@@ -228,8 +236,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * sample is not represented
      * @since 11.0.0
      */
-    public SampleGenotype getSampleGenotype(String sampleId) {
-        return sampleGenotypes.getSampleGenotype(sampleId);
+    public SampleGenotype sampleGenotype(String sampleId) {
+        return sampleGenotypes.sampleGenotype(sampleId);
     }
 
     /**
@@ -248,12 +256,12 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     private synchronized boolean addPassedFilterResult(FilterResult filterResult) {
-        passedFilterTypes.add(filterResult.getFilterType());
+        passedFilterTypes.add(filterResult.filterType());
         return true;
     }
 
     private synchronized boolean addFailedFilterResult(FilterResult filterResult) {
-        failedFilterTypes.add(filterResult.getFilterType());
+        failedFilterTypes.add(filterResult.filterType());
         return false;
     }
 
@@ -261,7 +269,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return the set of FilterResult objects that represent the result of
      * filtering
      */
-    public Set<FilterType> getPassedFilterTypes() {
+    public Set<FilterType> passedFilterTypes() {
         return EnumSet.copyOf(passedFilterTypes);
     }
 
@@ -269,7 +277,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @return the Set of {@code FilterType} which the {@code VariantEvaluation}
      * failed to pass.
      */
-    public Set<FilterType> getFailedFilterTypes() {
+    public Set<FilterType> failedFilterTypes() {
         return EnumSet.copyOf(failedFilterTypes);
     }
 
@@ -282,7 +290,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      * @param modeOfInheritance the mode of inheritance under which the failed filters are required.
      * @return a set of failed {@code FilterType} for the variant under the {@code ModeOfInheritance} input model.
      */
-    public synchronized Set<FilterType> getFailedFilterTypesForMode(ModeOfInheritance modeOfInheritance) {
+    public synchronized Set<FilterType> failedFilterTypesForMode(ModeOfInheritance modeOfInheritance) {
         EnumSet<FilterType> failedFiltersCopy = EnumSet.copyOf(failedFilterTypes);
         if (!isCompatibleWith(modeOfInheritance)) {
             failedFiltersCopy.add(FilterType.INHERITANCE_FILTER);
@@ -322,7 +330,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return failedFilterTypes.isEmpty() && passedFilterTypes.isEmpty();
     }
 
-    public FilterStatus getFilterStatus() {
+    @JsonProperty
+    public FilterStatus filterStatus() {
         if (isUnFiltered()) {
             return FilterStatus.UNFILTERED;
         }
@@ -332,7 +341,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         return FilterStatus.FAILED;
     }
 
-    public FilterStatus getFilterStatusForMode(ModeOfInheritance modeOfInheritance) {
+    public FilterStatus filterStatusForMode(ModeOfInheritance modeOfInheritance) {
         if (isUnFiltered()) {
             return FilterStatus.UNFILTERED;
         }
@@ -348,14 +357,16 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      *
      * @return a score between 0 and 1
      */
-    public float getVariantScore() {
-        return whiteListed ? 1f : getFrequencyScore() * getPathogenicityScore();
+    @JsonProperty
+    public float variantScore() {
+        return whiteListed ? 1f : frequencyScore() * pathogenicityScore();
     }
 
     /**
      * @return a score between 0 and 1
      */
-    public float getFrequencyScore() {
+    @JsonProperty
+    public float frequencyScore() {
         return whiteListed ? 1f : frequencyData.frequencyScore();
     }
 
@@ -375,12 +386,13 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
      *
      * @return a score between 0 and 1
      */
-    public float getPathogenicityScore() {
+    @JsonProperty
+    public float pathogenicityScore() {
         if (whiteListed) {
             return 1f;
         }
         float predictedScore = pathogenicityData.pathogenicityScore();
-        float variantEffectScore = getVariantEffectScore();
+        float variantEffectScore = variantEffectScore();
         if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             // CAUTION! REVEL scores tend to be more nuanced and frequently lower thant either the default variant effect score
             // or the other predicted path scores, yet apparently are more concordant with ClinVar. For this reason it might be
@@ -395,7 +407,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         }
     }
 
-    private float getVariantEffectScore() {
+    private float variantEffectScore() {
         float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
         if (this.isSymbolic()) {
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
@@ -436,10 +448,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     public boolean isPredictedPathogenic() {
         // TODO: Might be best to return pathogenicityData.isPredictedPathogenic()
         //  which will utilise thresholds for the included scores.
-        return whiteListed || getPathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
+        return whiteListed || pathogenicityScore() >= DEFAULT_PATHOGENICITY_THRESHOLD;
     }
 
-    public FrequencyData getFrequencyData() {
+    @JsonProperty
+    public FrequencyData frequencyData() {
         return frequencyData;
     }
 
@@ -447,7 +460,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         this.frequencyData = frequencyData;
     }
 
-    public PathogenicityData getPathogenicityData() {
+    @JsonProperty
+    public PathogenicityData pathogenicityData() {
         return pathogenicityData;
     }
 
@@ -493,7 +507,7 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
     }
 
     @Override
-    public Set<ModeOfInheritance> getCompatibleInheritanceModes() {
+    public Set<ModeOfInheritance> compatibleInheritanceModes() {
         return EnumSet.copyOf(compatibleInheritanceModes);
     }
 
@@ -525,8 +539,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         if (some.contributesToGeneScore() != other.contributesToGeneScore()) {
             return -Boolean.compare(some.contributesToGeneScore(), other.contributesToGeneScore());
         }
-        float thisScore = some.getVariantScore();
-        float otherScore = other.getVariantScore();
+        float thisScore = some.variantScore();
+        float otherScore = other.variantScore();
         if (thisScore != otherScore) {
             return -Float.compare(thisScore, otherScore);
         }
@@ -564,11 +578,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         // expose frequency and pathogenicity scores?
         if (contributesToGeneScore()) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                    + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
+            return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " * score=" + variantScore() + " freqScore=" + frequencyScore() + " pathScore=" + pathogenicityScore() + " " + filterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+                   + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
         }
-        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + getVariantScore() + " freqScore=" + getFrequencyScore() + " pathScore=" + getPathogenicityScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
-                + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
+        return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + contigId() + " strand=" + strand() + " start=" + start() + " end=" + end() + " length=" + length() + " ref=" + ref() + " alt=" + alt() + " id=" + id() + " qual=" + phredScore + " " + variantType() + " " + variantEffect + " gene=" + geneSymbol + " score=" + variantScore() + " freqScore=" + frequencyScore() + " pathScore=" + pathogenicityScore() + " " + filterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+               + " compatibleWith=" + compatibleInheritanceModes + " sampleGenotypes=" + sampleGenotypes + "}";
     }
 
     /**
@@ -673,9 +687,9 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
         Builder filterResults(Collection<FilterResult> filterResults) {
             for (FilterResult filterResult : filterResults) {
                 if (filterResult.passed()) {
-                    this.passedFilterTypes.add(filterResult.getFilterType());
+                    this.passedFilterTypes.add(filterResult.filterType());
                 } else {
-                    this.failedFilterTypes.add(filterResult.getFilterType());
+                    this.failedFilterTypes.add(filterResult.filterType());
                 }
             }
             return this;

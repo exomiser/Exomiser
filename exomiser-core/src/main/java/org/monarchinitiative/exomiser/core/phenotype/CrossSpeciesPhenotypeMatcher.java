@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -62,12 +62,12 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
 
         this.matchedOrganismPhenotypeIds = termPhenotypeMatches.values()
                 .stream()
-                .flatMap(set -> set.stream().map(PhenotypeMatch::getMatchPhenotypeId))
+                .flatMap(set -> set.stream().map(PhenotypeMatch::matchPhenotypeId))
                 .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
 
         this.matchedQueryPhenotypeIds = queryPhenotypeMatch.getBestPhenotypeMatches()
                 .stream()
-                .map(PhenotypeMatch::getQueryPhenotypeId)
+                .map(PhenotypeMatch::queryPhenotypeId)
                 .collect(toCollection(TreeSet::new));
 
         //'hpId + mpId' : phenotypeMatch
@@ -80,7 +80,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     }
 
     private Function<PhenotypeMatch, String> makeKey() {
-        return match -> KeyGenerator.forwardKey(match.getQueryPhenotypeId(), match.getMatchPhenotypeId());
+        return match -> KeyGenerator.forwardKey(match.queryPhenotypeId(), match.matchPhenotypeId());
     }
 
     @Override
@@ -136,7 +136,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 String matchIds = hpId + mpId;
                 if (mappedTerms.containsKey(matchIds)) {
                     PhenotypeMatch match = mappedTerms.get(matchIds);
-                    double matchScore = match.getScore();
+                    double matchScore = match.score();
                     // identify best match
                     bestMatchScore = Math.max(matchScore, bestMatchScore);
                     if (matchScore > 0) {
@@ -156,7 +156,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
                 String matchIds = hpId + mpId;
                 if (mappedTerms.containsKey(matchIds)) {
                     PhenotypeMatch match = mappedTerms.get(matchIds);
-                    double matchScore = match.getScore();
+                    double matchScore = match.score();
                     // identify best match
                     bestMatchScore = Math.max(matchScore, bestMatchScore);
                     if (matchScore > 0) {
@@ -185,7 +185,7 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
 
         List<PhenotypeMatch> bestForwardReverseMatches = findBestForwardAndReverseMatches(matchedModelPhenotypeIds);
         for (PhenotypeMatch match : bestForwardReverseMatches) {
-            double score = match.getScore();
+            double score = match.score();
             if (score > 0) {
                 addMatchIfAbsentOrBetterThanCurrent(match, bestPhenotypeMatchForTerms);
                 maxModelMatchScore = Math.max(score, maxModelMatchScore);
@@ -208,9 +208,9 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
     }
 
     private void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match, Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms) {
-        PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
+        PhenotypeTerm matchQueryTerm = match.queryPhenotype();
         PhenotypeMatch currentBestMatch = bestPhenotypeMatchForTerms.get(matchQueryTerm);
-        if (currentBestMatch == null || currentBestMatch.getScore() < match.getScore()) {
+        if (currentBestMatch == null || currentBestMatch.score() < match.score()) {
             bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
         }
     }
@@ -256,10 +256,8 @@ class CrossSpeciesPhenotypeMatcher implements PhenotypeMatcher {
             // correct key depending on which way were comparing the terms. This is handled by the relevant KeyGenerator.
             String key = keyGenerator.getKey(hp, mp);
             PhenotypeMatch match = mappedTerms.get(key);
-            if (match != null) {
-                if (best == null || match.getScore() > best.getScore()) {
-                    best = match;
-                }
+            if (match != null && (best == null || match.score() > best.score())) {
+                best = match;
             }
         }
         return best;

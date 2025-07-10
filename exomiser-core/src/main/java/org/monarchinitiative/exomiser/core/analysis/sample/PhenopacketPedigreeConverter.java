@@ -91,12 +91,12 @@ class PhenopacketPedigreeConverter {
 
     private static Function<Individual, Person> toPerson() {
         return individual -> Person.newBuilder()
-                .setFamilyId(individual.getFamilyId())
-                .setIndividualId(individual.getId())
-                .setMaternalId(individual.getMotherId())
-                .setPaternalId(individual.getFatherId())
-                .setSex(toPhenopacketSex(individual.getSex()))
-                .setAffectedStatus(toPhenopacketStatus(individual.getStatus()))
+                .setFamilyId(individual.familyId())
+                .setIndividualId(individual.id())
+                .setMaternalId(individual.motherId())
+                .setPaternalId(individual.fatherId())
+                .setSex(toPhenopacketSex(individual.sex()))
+                .setAffectedStatus(toPhenopacketStatus(individual.status()))
                 .build();
     }
 

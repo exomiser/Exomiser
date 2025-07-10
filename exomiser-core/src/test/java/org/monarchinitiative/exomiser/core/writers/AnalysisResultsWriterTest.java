@@ -54,12 +54,12 @@ class AnalysisResultsWriterTest {
     private Path tempFile;
 
     @BeforeEach
-    private void getTempFile() throws IOException {
+    public void getTempFile() throws IOException {
         tempFile = Files.createTempFile("exomiser_test", "");
     }
 
     @AfterEach
-    private void deleteTempFile() throws Exception {
+    public void deleteTempFile() throws Exception {
         Files.delete(tempFile);
     }
 
@@ -92,7 +92,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : Arrays.asList(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF)) {
-            String fileExtension = outputFormat.getFileExtension();
+            String fileExtension = outputFormat.fileExtension();
             Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
             assertThat(outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toFile().delete(), is(true));
@@ -112,7 +112,7 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
         assertThat(outputPath.toFile().delete(), is(true));
     }
@@ -130,7 +130,7 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
         assertThat(outputPath.toFile().delete(), is(true));
     }
@@ -150,7 +150,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : singleFileFormats) {
-            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
+            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.fileExtension()));
             assertThat(outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toFile().delete(), is(true));
         }
@@ -169,7 +169,7 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
     }
 
@@ -185,7 +185,7 @@ class AnalysisResultsWriterTest {
                 .build();
 
         Sample sample = Sample.builder()
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .pedigree(TestPedigrees.trioChildAffected())
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"))
@@ -195,7 +195,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), outputOptions);
 
         for (OutputFormat outputFormat : OutputFormat.values()) {
-            String fileExtension = outputFormat.getFileExtension();
+            String fileExtension = outputFormat.fileExtension();
             Path outputPath = Paths.get(String.format("%s.%s", tempFile, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
             assertThat(outputPath.toString(), outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toString(), outputPath.toFile().delete(), is(true));

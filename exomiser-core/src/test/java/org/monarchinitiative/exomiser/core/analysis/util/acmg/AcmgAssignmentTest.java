@@ -39,7 +39,7 @@ class AcmgAssignmentTest {
     @Test
     void testAutosomalDominant() {
         TranscriptAnnotation transcriptAnnotation = TranscriptAnnotation.builder().accession("ENST12345678").geneSymbol("GENE1").hgvsProtein("p.1234A>-").hgvsCdna("c.2346A>T").variantEffect(VariantEffect.STOP_GAINED).build();
-        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12335, "A", "T").annotations(List.of(transcriptAnnotation)).build();
+        VariantEvaluation variantEvaluation = TestFactory.variantBuilder(1, 12335, "A", "T").transcriptAnnotations(List.of(transcriptAnnotation)).build();
         GeneIdentifier geneIdentifier = GeneIdentifier.builder().geneId("HGNC:1").geneSymbol("GENE1").build();
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Disease").build();
         AcmgEvidence acmgEvidence = AcmgEvidence.builder().add(AcmgCriterion.PVS1).add(AcmgCriterion.PS1).add(AcmgCriterion.PP4, AcmgCriterion.Evidence.STRONG).build();

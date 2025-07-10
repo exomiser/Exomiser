@@ -25,13 +25,11 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.Objects;
-
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonRootName("regulatoryFeatureFilter")
-public class RegulatoryFeatureFilter implements VariantFilter {
+public record RegulatoryFeatureFilter() implements VariantFilter {
 
     private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
@@ -39,17 +37,17 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        VariantEffect effect = variantEvaluation.getVariantEffect();
+        VariantEffect effect = variantEvaluation.variantEffect();
         // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_REGION_VARIANT if in a known region
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
             // GeneReassigner can assign a new empty list
-            if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {
+            if (variantEvaluation.transcriptAnnotations().isEmpty()) {
                 return FAIL;
             }
             int dist = getDistFromNearestGene(variantEvaluation);
@@ -62,27 +60,8 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     }
 
     private int getDistFromNearestGene(VariantEvaluation variantEvaluation) {
-        TranscriptAnnotation annotation = variantEvaluation.getTranscriptAnnotations().get(0);
-        return Math.abs(annotation.getDistanceFromNearestGene());
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + Objects.hashCode(RegulatoryFeatureFilter.filterType);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RegulatoryFeatureFilter other = (RegulatoryFeatureFilter) obj;
-        return Objects.equals(this.getFilterType(), other.getFilterType());
+        TranscriptAnnotation annotation = variantEvaluation.transcriptAnnotations().getFirst();
+        return Math.abs(annotation.distanceFromNearestGene());
     }
 
     @Override

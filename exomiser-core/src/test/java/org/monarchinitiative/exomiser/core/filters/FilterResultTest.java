@@ -34,69 +34,77 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class AbstractFilterResultTest {
+class FilterResultTest {
 
     @Test
-    public void testGetFilterType() {
+    void testFilterType() {
         FilterType expResult = FilterType.FREQUENCY_FILTER;
 
-        FilterResult instance = new PassFilterResult(expResult);
+        FilterResult instance = FilterResult.pass(expResult);
 
-        FilterType result = instance.getFilterType();
+        FilterType result = instance.filterType();
         assertThat(result, equalTo(expResult));
     }
 
     @Test
-    public void testPassedFilterIsTrueWhenFilterResultStatusIsPass() {
-        FilterResult instance = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+    void testPassedFilterIsTrueWhenFilterResultStatusIsPass() {
+        FilterResult instance = FilterResult.pass(FilterType.FREQUENCY_FILTER);
         assertThat(instance.passed(), is(true));
     }
 
     @Test
-    public void testPassedFilterIsFalseWhenFilterResultStatusIsFail() {
-        FilterResult instance = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    void testPassedFilterIsFalseWhenFilterResultStatusIsFail() {
+        FilterResult instance = FilterResult.fail(FilterType.FREQUENCY_FILTER);
         assertThat(instance.passed(), is(false));
     }
 
     @Test
-    public void testGetResultStatus() {
-        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
+    void testGetResultStatus() {
+        FilterResult instance = FilterResult.pass(FilterType.INTERVAL_FILTER);
         assertThat(instance.passed(), equalTo(true));
     }
 
     @Test
-    public void testHashCode() {
-        FilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER);
-        FilterResult another = new FailFilterResult(FilterType.INTERVAL_FILTER);
+    void testNotRunFilterResult() {
+        FilterResult instance = FilterResult.notRun(FilterType.INTERVAL_FILTER);
+        assertThat(instance.passed(), equalTo(false));
+        assertThat(instance.failed(), equalTo(false));
+        assertThat(instance.wasRun(), equalTo(false));
+    }
+
+    @Test
+    void testHashCode() {
+        FilterResult instance = FilterResult.fail(FilterType.INTERVAL_FILTER);
+        FilterResult another = FilterResult.fail(FilterType.INTERVAL_FILTER);
         int expResult = another.hashCode();
         int result = instance.hashCode();
         assertThat(result, equalTo(expResult));
     }
 
     @Test
-    public void testNotEqualToNullObject() {
+    void testNotEqualToNullObject() {
         Object obj = null;
-        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER);
+        FilterResult instance = FilterResult.fail(FilterType.INTERVAL_FILTER);
         assertThat(instance, not(equalTo(obj)));
     }
     
     @Test
-    public void testNotEqualToDifferentFilterType() {
-        AbstractFilterResult other = new FailFilterResult(FilterType.BED_FILTER);
-        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER);
+    void testNotEqualToDifferentFilterType() {
+        FilterResult other = FilterResult.fail(FilterType.BED_FILTER);
+        FilterResult instance = FilterResult.fail(FilterType.INTERVAL_FILTER);
         assertThat(instance, not(equalTo(other)));
     }
     
     @Test
-    public void testEqualToOtherFilterResult() {
-        AbstractFilterResult other = new FailFilterResult(FilterType.INTERVAL_FILTER);
-        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER);
+    void testEqualToOtherFilterResult() {
+        FilterResult other = FilterResult.fail(FilterType.INTERVAL_FILTER);
+        FilterResult instance = FilterResult.fail(FilterType.INTERVAL_FILTER);
         assertThat(instance, equalTo(other));
     }
 
     @Test
-    public void testToString() {
-        AbstractFilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
+    void testToString() {
+        FilterResult instance = FilterResult.pass(FilterType.INTERVAL_FILTER);
         String expResult = "Filter=INTERVAL_FILTER status=PASS";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));

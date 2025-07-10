@@ -25,14 +25,19 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class RemmScore extends BasePathogenicityScore {
+public record RemmScore(float score) implements PathogenicityScore {
 
     public static RemmScore of(float score) {
         return new RemmScore(score);
     }
 
-    private RemmScore(float score) {
-        super(PathogenicitySource.REMM, score);
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.REMM;
     }
-    
+
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f", source(), score);
+    }
 }

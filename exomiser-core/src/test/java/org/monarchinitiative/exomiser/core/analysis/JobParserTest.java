@@ -89,7 +89,7 @@ class JobParserTest {
                 .setVcf("")
                 .build();
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getVcfPath(), equalTo(null));
+        assertThat(sample.vcfPath(), equalTo(null));
     }
 
     @Test
@@ -98,7 +98,7 @@ class JobParserTest {
                 .setVcf("pfeiffer.vcf")
                 .build();
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getVcfPath(), equalTo(Paths.get("pfeiffer.vcf")));
+        assertThat(sample.vcfPath(), equalTo(Paths.get("pfeiffer.vcf")));
     }
 
     @Test
@@ -107,7 +107,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+        assertThat(sample.genomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
     }
 
     @Test
@@ -138,17 +138,17 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(sample.genomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
     void testPed() {
         SampleProto.Sample protoSample = SampleProto.Sample.newBuilder()
-                .setProband(TestPedigrees.affectedChild().getId())
+                .setProband(TestPedigrees.affectedChild().id())
                 .setPed(TestPedigrees.trioChildAffectedPedPath().toString())
                 .build();
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getPedigree(), equalTo(TestPedigrees.trioChildAffected()));
+        assertThat(sample.pedigree(), equalTo(TestPedigrees.trioChildAffected()));
     }
 
     @Test
@@ -157,7 +157,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getPedigree(), equalTo(Pedigree.empty()));
+        assertThat(sample.pedigree(), equalTo(Pedigree.empty()));
     }
 
     @Test
@@ -166,7 +166,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getProbandSampleName(), equalTo(""));
+        assertThat(sample.probandSampleName(), equalTo(""));
     }
 
     @Test
@@ -176,7 +176,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getProbandSampleName(), equalTo("Bod"));
+        assertThat(sample.probandSampleName(), equalTo("Bod"));
     }
 
     @Test
@@ -185,7 +185,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getHpoIds(), equalTo(Collections.emptyList()));
+        assertThat(sample.hpoIds(), equalTo(Collections.emptyList()));
     }
 
     @Test
@@ -195,7 +195,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getHpoIds(), equalTo(List.of("HP:0000001", "HP:0000002")));
+        assertThat(sample.hpoIds(), equalTo(List.of("HP:0000001", "HP:0000002")));
     }
 
     @Test
@@ -212,7 +212,7 @@ class JobParserTest {
                 .build();
 
         Sample sample = instance.parseSample(jobWith(protoSample));
-        assertThat(sample.getHpoIds(), equalTo(List.of(currentId, "HP:0000002")));
+        assertThat(sample.hpoIds(), equalTo(List.of(currentId, "HP:0000002")));
     }
 
     // test with phenopacket
@@ -227,7 +227,7 @@ class JobParserTest {
         AnalysisProto.Analysis legacyAnalysis = AnalysisProto.Analysis.newBuilder()
                 .setGenomeAssembly("hg19")
                 .setVcf(TestPedigrees.trioVcfPath().toString())
-                .setProband(TestPedigrees.affectedChild().getId())
+                .setProband(TestPedigrees.affectedChild().id())
                 .setPed(TestPedigrees.trioChildAffectedPedPath().toString())
                 .addAllHpoIds(List.of("HP:0000001", "HP:0000002"))
                 .build();
@@ -235,7 +235,7 @@ class JobParserTest {
         Sample expected = Sample.builder()
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(TestPedigrees.trioVcfPath())
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .pedigree(TestPedigrees.trioChildAffected())
                 .hpoIds(List.of("HP:0000001", "HP:0000002"))
                 .build();
@@ -271,7 +271,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.of(Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2f))));
+        assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.of(Map.of(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET, 2f))));
     }
 
     @Test
@@ -290,7 +290,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(analysis.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
 
     @Test
@@ -300,7 +300,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+        assertThat(analysis.analysisMode(), equalTo(AnalysisMode.FULL));
     }
 
     @Test
@@ -309,7 +309,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getFrequencySources().isEmpty(), is(true));
+        assertThat(analysis.frequencySources().isEmpty(), is(true));
     }
 
     @Test
@@ -330,7 +330,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getFrequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.GNOMAD_E_AFR)));
+        assertThat(analysis.frequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.GNOMAD_E_AFR)));
     }
 
     @Test
@@ -339,7 +339,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getPathogenicitySources().isEmpty(), is(true));
+        assertThat(analysis.pathogenicitySources().isEmpty(), is(true));
     }
 
     @Test
@@ -360,7 +360,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getPathogenicitySources(), equalTo(EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN)));
+        assertThat(analysis.pathogenicitySources(), equalTo(EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN)));
     }
 
     @Test
@@ -370,7 +370,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new FailedVariantFilter())));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new FailedVariantFilter())));
     }
 
     @Test
@@ -393,7 +393,7 @@ class JobParserTest {
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
         List<IntervalFilter> expected = List.of(new IntervalFilter(new GeneticInterval(10, 122892600, 122892700)));
-        assertThat(analysis.getAnalysisSteps(), equalTo(expected));
+        assertThat(analysis.analysisSteps(), equalTo(expected));
     }
 
     @Test
@@ -411,7 +411,7 @@ class JobParserTest {
                 new GeneticInterval(10, 122892900, 122893000)
         );
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new IntervalFilter(expectedIntervals))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new IntervalFilter(expectedIntervals))));
     }
 
     @Test
@@ -430,7 +430,7 @@ class JobParserTest {
         expectedIntervals.add(new GeneticInterval(7, 127479366, 127480532));
         expectedIntervals.add(new GeneticInterval(7, 127480533, 127481699));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new IntervalFilter(expectedIntervals))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new IntervalFilter(expectedIntervals))));
     }
 
     @Test
@@ -452,7 +452,7 @@ class JobParserTest {
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))))));
     }
 
     @Test
@@ -462,7 +462,7 @@ class JobParserTest {
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new GeneBlacklistFilter())));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(GeneBlacklistFilter.defaultInstance())));
     }
 
     @Test
@@ -493,7 +493,7 @@ class JobParserTest {
                         .build())
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new VariantEffectFilter(
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new VariantEffectFilter(
                 EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT))))
         );
     }
@@ -515,7 +515,7 @@ class JobParserTest {
                         .build())
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new QualityFilter(50))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new QualityFilter(50))));
     }
 
     @Test
@@ -541,7 +541,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new KnownVariantFilter())));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new KnownVariantFilter())));
     }
 
     @Test
@@ -584,7 +584,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new FrequencyFilter(0.1f))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new FrequencyFilter(0.1f))));
     }
 
     @Test
@@ -602,7 +602,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new FrequencyFilter(2f))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new FrequencyFilter(2f))));
     }
 
     @Test
@@ -621,7 +621,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new FrequencyFilter(2f))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new FrequencyFilter(2f))));
     }
 
     @Test
@@ -640,7 +640,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new FrequencyFilter(0.01f))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new FrequencyFilter(0.01f))));
     }
 
     @Test
@@ -670,7 +670,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new PathogenicityFilter(false))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PathogenicityFilter(false))));
     }
 
     @Test
@@ -687,7 +687,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new PathogenicityFilter(true))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PathogenicityFilter(true))));
     }
 
     @Test
@@ -704,7 +704,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new PathogenicityFilter(false))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PathogenicityFilter(false))));
     }
 
     @Test
@@ -715,7 +715,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of()));
+        assertThat(analysis.analysisSteps(), equalTo(List.of()));
     }
 
     @Test
@@ -732,7 +732,7 @@ class JobParserTest {
 
         Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
 
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))));
     }
 
     @Test
@@ -784,7 +784,7 @@ class JobParserTest {
                         .build())
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))));
     }
 
     @Test
@@ -794,7 +794,7 @@ class JobParserTest {
                         .build())
                 .build();
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new RegulatoryFeatureFilter())));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new RegulatoryFeatureFilter())));
     }
 
     @Test
@@ -805,7 +805,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new OmimPriority(priorityService))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new OmimPriority(priorityService))));
     }
 
     @Test
@@ -816,7 +816,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix
                 .empty(), priorityService))));
     }
 
@@ -828,7 +828,7 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps(), equalTo(List.of(new PhivePriority(priorityService))));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PhivePriority(priorityService))));
     }
 
     @Test
@@ -839,6 +839,6 @@ class JobParserTest {
                 .build();
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
-        assertThat(analysis.getAnalysisSteps().get(0) instanceof PhenixPriority, is(true));
+        assertThat(analysis.analysisSteps().get(0) instanceof PhenixPriority, is(true));
     }
 }

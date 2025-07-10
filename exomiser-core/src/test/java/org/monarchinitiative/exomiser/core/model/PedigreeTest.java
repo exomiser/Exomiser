@@ -53,8 +53,8 @@ public class PedigreeTest {
 
     private static final Individual PROBAND = Individual.builder()
             .id("proband")
-            .fatherId(FATHER.getId())
-            .motherId(MOTHER.getId())
+            .fatherId(FATHER.id())
+            .motherId(MOTHER.id())
             .status(Status.AFFECTED)
             .build();
 
@@ -107,7 +107,7 @@ public class PedigreeTest {
 
     @Test
     public void duplicateIndividualId() {
-        Individual duplicatedId = Individual.builder().id(PROBAND.getId()).build();
+        Individual duplicatedId = Individual.builder().id(PROBAND.id()).build();
         assertThrows(IllegalArgumentException.class, () -> Pedigree.of(PROBAND, duplicatedId));
     }
 
@@ -145,7 +145,7 @@ public class PedigreeTest {
     @Test
     public void testGetIdentifiers() {
         Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
-        assertThat(instance.getIdentifiers(), equalTo(ImmutableSet.of(PROBAND.getId(), MOTHER.getId(), FATHER.getId())));
+        assertThat(instance.getIdentifiers(), equalTo(ImmutableSet.of(PROBAND.id(), MOTHER.id(), FATHER.id())));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class PedigreeTest {
     @Test
     public void testGetIndividualById() {
         Pedigree instance = Pedigree.of(PROBAND, MOTHER, FATHER);
-        assertThat(instance.getIndividualById(MOTHER.getId()), equalTo(MOTHER));
+        assertThat(instance.getIndividualById(MOTHER.id()), equalTo(MOTHER));
     }
 
     @Test
@@ -182,8 +182,8 @@ public class PedigreeTest {
         Individual proband = Individual.builder().id("Bro").fatherId("Far").motherId("Mor").sex(Sex.MALE).build();
 
         Pedigree instance = Pedigree.of(proband, brother, mother, father, brother, maternalFather, maternalMother, paternalMother);
-        assertThat(instance.anscestorsOf(mother), equalTo(List.of(maternalMother, maternalFather)));
-        assertThat(instance.anscestorsOf(father), equalTo(List.of(paternalMother)));
-        assertThat(instance.anscestorsOf(proband), equalTo(List.of(mother, maternalMother, maternalFather, father, paternalMother)));
+        assertThat(instance.ancestorsOf(mother), equalTo(List.of(maternalMother, maternalFather)));
+        assertThat(instance.ancestorsOf(father), equalTo(List.of(paternalMother)));
+        assertThat(instance.ancestorsOf(proband), equalTo(List.of(mother, maternalMother, maternalFather, father, paternalMother)));
     }
 }

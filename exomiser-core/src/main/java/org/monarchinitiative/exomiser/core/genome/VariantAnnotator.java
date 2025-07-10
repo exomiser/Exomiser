@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.genome;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.svart.GenomicVariant;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

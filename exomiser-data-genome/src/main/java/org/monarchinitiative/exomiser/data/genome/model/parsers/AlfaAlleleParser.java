@@ -15,7 +15,7 @@ import org.monarchinitiative.svart.sequence.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 
 /**

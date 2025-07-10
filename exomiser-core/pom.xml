@@ -32,7 +32,9 @@
         <artifactId>exomiser</artifactId>
         <version>15.0.0-SNAPSHOT</version>
     </parent>
-
+    <properties>
+        <arrow.version>18.2.0</arrow.version>
+    </properties>
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -118,7 +120,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.1</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -144,6 +146,11 @@
             <artifactId>rocksdbjni</artifactId>
             <version>7.6.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jerolba</groupId>
+            <artifactId>carpet-record</artifactId>
+            <version>0.2.2</version>
         </dependency>
     </dependencies>
 

@@ -191,7 +191,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(ClinSig.class)));
 
         if (clinSigs.isEmpty()) {
-            throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
+            throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG frequency");
         }
         if (clinSigs.size() == 1) {
             return clinSigs.iterator().next();
@@ -209,7 +209,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             return BENIGN_OR_LIKELY_BENIGN;
         }
         // shouldn't get here....
-        throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
+        throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG frequency");
     }
 
 }

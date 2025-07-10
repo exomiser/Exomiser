@@ -31,16 +31,56 @@ import java.util.Locale;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 
 /**
  *
  * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FrequencyTest {
+class FrequencyTest {
 
     @Test
-    public void testFrequencyOnlyConstructor(){
+    void createNullType() {
+        Frequency emptyAnAc = Frequency.of(UNKNOWN, 0, 0, 0);
+        assertThat(emptyAnAc.frequency(), is(0f));
+
+        Frequency emptyFreq = Frequency.of(UNKNOWN, 0f);
+        assertThat(emptyFreq.frequency(), is(0f));
+
+        Frequency emptyAnAcFreqFactory = Frequency.of(UNKNOWN, 0f, 0 , 0 , 0);
+        assertThat(emptyAnAcFreqFactory.frequency(), is(0f));
+
+        Frequency emptyAnAcFreq = new Frequency(UNKNOWN, 0f, 0 , 0 , 0);
+        assertThat(emptyAnAcFreq.frequency(), is(0f));
+    }
+
+    @Test
+    void testRecordConstructorFrequencyCountMismatch() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                Frequency.of(UNKNOWN, 1.0f, 2, 100, 0)
+        );
+        assertThat(exception.getMessage(), equalTo("UNKNOWN frequency does not match given AC/AN! Expected 2/100 = 2.0%, got 1.0%"));
+    }
+
+    @Test
+    void testRecordConstructorAcGreaterThanAnMismatch() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                Frequency.of(UNKNOWN, 0f, 100, 2, 0)
+        );
+        assertThat(exception.getMessage(), equalTo("UNKNOWN AN must be >= 0, AC must be < AN and HOM must be < AC. Got AC=100, AN=2, hom=0"));
+    }
+
+    @Test
+    void testRecordConstructorMoreHomsThanAcMismatch() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                Frequency.of(UNKNOWN, 0f, 0, 2, 1)
+        );
+        assertThat(exception.getMessage(), equalTo("UNKNOWN AN must be >= 0, AC must be < AN and HOM must be < AC. Got AC=0, AN=2, hom=1"));
+    }
+
+    @Test
+    void testFrequencyOnlyConstructor(){
         float frequency = 1.0f;
         Frequency instance = Frequency.of(UNKNOWN, frequency);
         assertThat(instance.frequency(), equalTo(frequency));
@@ -50,7 +90,7 @@ public class FrequencyTest {
         assertThat(instance.homs(), equalTo(0));}
 
     @Test
-    public void testFrequencyAcAnHomConstructor(){
+    void testFrequencyAcAnHomConstructor(){
         Frequency instance = Frequency.of(UNKNOWN, 2, 200, 1);
         assertThat(instance.frequency(), equalTo(1.0f));
         assertThat(instance.source(), equalTo(FrequencySource.UNKNOWN));
@@ -58,9 +98,25 @@ public class FrequencyTest {
         assertThat(instance.an(), equalTo(200));
         assertThat(instance.homs(), equalTo(1));
     }
-    
+
+//    @Test
+//    void testFrequencyAcAnHomConstructorAcGreaterThanAn() {
+//        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+//                Frequency.of(UNKNOWN, 100, 2, 0)
+//        );
+//        assertThat(exception.getMessage(), equalTo("UNKNOWN AN must be >= 0, AC must be < AN and HOM must be < AC. Got AC=100, AN=2, hom=0"));
+//    }
+//
+//    @Test
+//    void testFrequencyAcAnHomConstructorHomsGreaterThanAn() {
+//        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+//                Frequency.of(UNKNOWN, 2, 3, 4)
+//        );
+//        assertThat(exception.getMessage(), equalTo("UNKNOWN AN must be >= 0, AC must be < AN and HOM must be < AC. Got AC=2, AN=3, hom=4"));
+//    }
+
     @Test
-    public void testFrequencySourceInConstructor(){
+    void testFrequencySourceInConstructor(){
         float frequency = 1.0f;
         FrequencySource source = EXAC_NON_FINNISH_EUROPEAN;
 
@@ -70,7 +126,7 @@ public class FrequencyTest {
     }
     
     @Test
-    public void testFrequencyIsOverThreshold() {
+    void testFrequencyIsOverThreshold() {
         float threshold = 2.0f;
         Frequency instance = Frequency.of(ESP_AA, 4.0f);
         
@@ -78,7 +134,7 @@ public class FrequencyTest {
     }
     
     @Test
-    public void testFrequencyIsNotOverThreshold() {
+    void testFrequencyIsNotOverThreshold() {
         float threshold = 2.0f;
         Frequency instance = Frequency.of(ESP_AA, 1.0f);
         
@@ -86,35 +142,35 @@ public class FrequencyTest {
     }
     
     @Test
-    public void testNotEqualToOtherFrequencyOfDifferentSource() {
+    void testNotEqualToOtherFrequencyOfDifferentSource() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
         Frequency instance = Frequency.of(ESP_AA, 1.0f);
         assertThat(instance, not(equalTo(other)));
     }
     
     @Test
-    public void testEqualToOtherFrequencyOfSameSourceAndFrequecy() {
+    void testEqualToOtherFrequencyOfSameSourceAndFrequecy() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
         Frequency instance = Frequency.of(UNKNOWN, 1.0f);
         assertThat(instance, equalTo(other));
     }
     
     @Test
-    public void testHashCodeEqual() {
+    void testHashCodeEqual() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
         Frequency instance = Frequency.of(UNKNOWN, 1.0f);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test
-    public void testHashCodeNotEqual() {
+    void testHashCodeNotEqual() {
         Frequency other = Frequency.of(UNKNOWN, 1.0f);
         Frequency instance = Frequency.of(UNKNOWN, 1.1f);
         assertThat(instance.hashCode(), not(equalTo(other.hashCode())));
     }
-    
+
     @Test
-    public void testToString() {
+    void testToString() {
         float frequency = 1.0f;
         Frequency instance = Frequency.of(UNKNOWN, frequency);
         assertThat(instance.toString(), equalTo(String.format(Locale.UK, "Frequency{UNKNOWN=%s}", frequency)));

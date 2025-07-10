@@ -105,7 +105,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     public void testGetBestForwardAndReciprocalMatches() throws Exception {
-        List<String> modelPhenotypes = ImmutableList.of(littleNose.getId(), longToe.getId());
+        List<String> modelPhenotypes = ImmutableList.of(littleNose.id(), longToe.id());
         List<PhenotypeMatch> expected = ImmutableList.of(noseMatch, bigToeLogToeMatch, noseMatch, bigToeLogToeMatch);
 //        expected.forEach(match -> System.out.printf("%s-%s=%f%n", match.getQueryPhenotypeId(), match.getMatchPhenotypeId(), match
 //                .getScore()));
@@ -119,7 +119,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     void testGetPhenodigmRawScoreImperfectMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(littleNose.getId(), longToe.getId());
+        List<String> modelPhenotypes = ImmutableList.of(littleNose.id(), longToe.id());
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
@@ -130,7 +130,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     void testGetPhenodigmRawScorePerfectMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(bigNose.getId(), bigToe.getId());
+        List<String> modelPhenotypes = ImmutableList.of(bigNose.id(), bigToe.id());
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
@@ -141,12 +141,12 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
     @Test
     void testGetPhenodigmRawScoreMissingTermMatch() {
-        List<String> modelPhenotypes = ImmutableList.of(bigNose.getId(), "HP:0000100");
+        List<String> modelPhenotypes = ImmutableList.of(bigNose.id(), "HP:0000100");
 
         PhenodigmMatchRawScore result = instance.matchPhenotypeIds(modelPhenotypes);
 
         List<PhenotypeMatch> bestPhenotypeMatches = ImmutableList.of(bigNoseSelfMatch);
-        PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 8.0, ImmutableList.of(bigNose.getId()), bestPhenotypeMatches);
+        PhenodigmMatchRawScore expected = new PhenodigmMatchRawScore(4.0, 8.0, ImmutableList.of(bigNose.id()), bestPhenotypeMatches);
         assertThat(result, equalTo(expected));
     }
 }

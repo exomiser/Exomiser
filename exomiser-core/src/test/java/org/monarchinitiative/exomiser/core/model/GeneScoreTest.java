@@ -46,27 +46,27 @@ public class GeneScoreTest {
     }
 
     @Test
-    public void getGeneIdentifier() {
+    public void geneIdentifier() {
         GeneIdentifier testIdentifier = GeneIdentifier.builder().geneSymbol("GENE:1").geneId("HGNC:12345").build();
 
         GeneScore instance = GeneScore.builder().geneIdentifier(testIdentifier).build();
-        assertThat(instance.getGeneIdentifier(), equalTo(testIdentifier));
+        assertThat(instance.geneIdentifier(), equalTo(testIdentifier));
     }
 
     @Test
-    public void getModeOfInheritance() {
+    public void godeOfInheritance() {
         GeneScore instance = GeneScore.builder()
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
-        assertThat(instance.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(instance.modeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
     }
 
     @Test
-    public void getCombinedScore() {
+    public void combinedScore() {
         GeneScore instance = GeneScore.builder()
                 .combinedScore(1d)
                 .build();
-        assertThat(instance.getCombinedScore(), equalTo(1d));
+        assertThat(instance.combinedScore(), equalTo(1d));
     }
 
     @Test
@@ -78,23 +78,23 @@ public class GeneScoreTest {
     }
 
     @Test
-    public void getPhenotypeScore() {
+    public void phenotypeScore() {
         GeneScore instance = GeneScore.builder()
                 .phenotypeScore(1d)
                 .build();
-        assertThat(instance.getPhenotypeScore(), equalTo(1d));
+        assertThat(instance.phenotypeScore(), equalTo(1d));
     }
 
     @Test
-    public void getVariantScore() {
+    public void variantScore() {
         GeneScore instance = GeneScore.builder()
                 .variantScore(1d)
                 .build();
-        assertThat(instance.getVariantScore(), equalTo(1d));
+        assertThat(instance.variantScore(), equalTo(1d));
     }
 
     @Test
-    public void getContributingVariants() {
+    public void contributingVariants() {
         List<VariantEvaluation> contributingVariants = List.of(
                 TestFactory.variantBuilder(1, 12335, "T", "C").build(),
                 TestFactory.variantBuilder(1, 23446, "A", "T").build()
@@ -103,17 +103,17 @@ public class GeneScoreTest {
         GeneScore instance = GeneScore.builder()
                 .contributingVariants(contributingVariants)
                 .build();
-        assertThat(instance.getContributingVariants(), equalTo(contributingVariants));
+        assertThat(instance.contributingVariants(), equalTo(contributingVariants));
     }
 
     @Test
     void testAcmgAssignment() {
-        AcmgAssignment acmgAssignment = AcmgAssignment.of(TestFactory.variantBuilder(1, 12335, "T", "C").build(), TestFactory.newGeneFGFR2().getGeneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, Disease.builder().build(), AcmgEvidence.builder().build(), AcmgClassification.PATHOGENIC);
+        AcmgAssignment acmgAssignment = AcmgAssignment.of(TestFactory.variantBuilder(1, 12335, "T", "C").build(), TestFactory.newGeneFGFR2().geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, Disease.builder().build(), AcmgEvidence.builder().build(), AcmgClassification.PATHOGENIC);
 
         GeneScore instance = GeneScore.builder()
                 .acmgAssignments(List.of(acmgAssignment))
                 .build();
-        assertThat(instance.getAcmgAssignments(), equalTo(List.of(acmgAssignment)));
+        assertThat(instance.acmgAssignments(), equalTo(List.of(acmgAssignment)));
     }
 
     @Test

@@ -71,24 +71,24 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
 
             System.out.println();
 
-            TranscriptAnnotation transcriptAnnotation = variantEvaluation.hasTranscriptAnnotations() ? variantEvaluation.getTranscriptAnnotations().get(0) : null;
-            Set<VariantEffect> varEffects = variantEvaluation.hasTranscriptAnnotations() ? variantEvaluation.getTranscriptAnnotations().stream().map(TranscriptAnnotation::getVariantEffect).collect(Collectors.toUnmodifiableSet()) : Set.of();
-            FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-            System.out.println(variantCoordinates + " " + (frequencyData.getRsId().isEmpty() ? "-" : frequencyData.getRsId()) + " " + (variantEvaluation.getGeneSymbol() + (transcriptAnnotation == null ? "" : ":" + transcriptAnnotation.getAccession() + ":" + transcriptAnnotation.getHgvsCdna() + ":" + transcriptAnnotation.getHgvsProtein() + " " + transcriptAnnotation.getRankType() + " " + transcriptAnnotation.getRank() + "/" + transcriptAnnotation.getRankTotal()) + " " + varEffects));
-            String geneSymbol = variantEvaluation.getGeneSymbol();
+            TranscriptAnnotation transcriptAnnotation = variantEvaluation.hasTranscriptAnnotations() ? variantEvaluation.transcriptAnnotations().getFirst() : null;
+            Set<VariantEffect> varEffects = variantEvaluation.hasTranscriptAnnotations() ? variantEvaluation.transcriptAnnotations().stream().map(TranscriptAnnotation::variantEffect).collect(Collectors.toUnmodifiableSet()) : Set.of();
+            FrequencyData frequencyData = variantEvaluation.frequencyData();
+            System.out.println(variantCoordinates + " " + (frequencyData.getRsId().isEmpty() ? "-" : frequencyData.getRsId()) + " " + (variantEvaluation.geneSymbol() + (transcriptAnnotation == null ? "" : ":" + transcriptAnnotation.accession() + ":" + transcriptAnnotation.hgvsCdna() + ":" + transcriptAnnotation.hgvsProtein() + " " + transcriptAnnotation.rankType() + " " + transcriptAnnotation.rank() + "/" + transcriptAnnotation.rankTotal()) + " " + varEffects));
+            String geneSymbol = variantEvaluation.geneSymbol();
             Map<String, GeneIdentifier> knownGeneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
-                    .collect(toMap(GeneIdentifier::getGeneSymbol, Function.identity()));
+                    .collect(toMap(GeneIdentifier::geneSymbol, Function.identity()));
             GeneIdentifier EMPTY_GENE_IDENTIFIER = GeneIdentifier.builder().build();
 
-            GeneIdentifier geneIdentifier = knownGeneIdentifiers.getOrDefault(variantEvaluation.getGeneSymbol(), EMPTY_GENE_IDENTIFIER);
+            GeneIdentifier geneIdentifier = knownGeneIdentifiers.getOrDefault(variantEvaluation.geneSymbol(), EMPTY_GENE_IDENTIFIER);
             GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneSymbol);
             if (geneIdentifier.hasEntrezId()) {
-                System.out.println(geneSymbol + " " + geneIdentifier.getHgncId() + " " + (geneConstraint == null ? "" : geneConstraint + (geneConstraint.isLossOfFunctionIntolerant() ? (" (LOF INTOLERANT)") : "")));
+                System.out.println(geneSymbol + " " + geneIdentifier.hgncId() + " " + (geneConstraint == null ? "" : geneConstraint + (geneConstraint.isLossOfFunctionIntolerant() ? (" (LOF INTOLERANT)") : "")));
             }
-            PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
+            PathogenicityData pathogenicityData = variantEvaluation.pathogenicityData();
             ClinVarData clinVarData = pathogenicityData.clinVarData();
             System.out.println("ClinVar: " + (clinVarData.isEmpty() ? "-" : formatClinVarData(clinVarData)));
-            System.out.println("Variant score: " + variantEvaluation.getVariantScore() + " Frequency score: " + variantEvaluation.getFrequencyScore() + " Pathogenicity score: " + variantEvaluation.getPathogenicityScore() + (variantEvaluation.isWhiteListed() ? " (WHITELIST VARIANT - all scores set to 1.0)" : ""));
+            System.out.println("Variant score: " + variantEvaluation.variantScore() + " Frequency score: " + variantEvaluation.frequencyScore() + " Pathogenicity score: " + variantEvaluation.pathogenicityScore() + (variantEvaluation.isWhiteListed() ? " (WHITELIST VARIANT - all scores set to 1.0)" : ""));
             System.out.println("Frequency score: " + frequencyData.frequencyScore());
             if (frequencyData.isEmpty()) {
                 System.out.println("\t(no frequency data)");
@@ -104,7 +104,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
             // Exomiser ACMG
             AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("sample", Pedigree.justProband("sample"), genomeAnalysisService);
             Disease EMPTY_DISEASE = Disease.builder().build();
-            List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(geneIdentifier.getEntrezIdAsInteger());
+            List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
             ModeOfInheritance modeOfInheritance = findMoiForGene(diseases);
             AcmgEvidence acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, List.of(variantEvaluation), diseases, List.of());
             AcmgEvidenceClassifier classifier = new Acmg2020PointsBasedClassifier();
@@ -133,9 +133,9 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
             System.out.println();
             // G2D associations
             if (geneIdentifier.hasEntrezId()) {
-                System.out.println("Known diseases associated with " + variantEvaluation.getGeneSymbol() + ":");
+                System.out.println("Known diseases associated with " + variantEvaluation.geneSymbol() + ":");
                 for (Disease disease1 : diseases) {
-                    System.out.printf("%s\t%s\t%s%n", disease1.getDiseaseId(), formatMoi(disease1.getInheritanceMode()), disease1.getDiseaseName());
+                    System.out.printf("%s\t%s\t%s%n", disease1.diseaseId(), formatMoi(disease1.inheritanceMode()), disease1.diseaseName());
                 }
             }
             return 0;
@@ -152,7 +152,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
             GenomicAssembly genomicAssembly = genomeAssembly.genomicAssembly();
             VariantContextConverter variantContextConverter = VariantContextConverter.of(genomicAssembly, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
             Map<String, GeneIdentifier> knownGeneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
-                    .collect(toMap(GeneIdentifier::getGeneSymbol, Function.identity()));
+                    .collect(toMap(GeneIdentifier::geneSymbol, Function.identity()));
             GeneIdentifier EMPTY_GENE_IDENTIFIER = GeneIdentifier.builder().build();
             Disease EMPTY_DISEASE = Disease.builder().build();
             Locale.setDefault(Locale.UK);
@@ -177,9 +177,9 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
                     for (Allele allele : variantContext.getAlternateAlleles()) {
                         GenomicVariant genomicVariant = variantContextConverter.convertToVariant(variantContext, allele);
                         VariantEvaluation variantEvaluation = buildAndAnnotateVariantEvaluation(genomeAnalysisService, genomicVariant);
-                        GeneIdentifier geneIdentifier = knownGeneIdentifiers.getOrDefault(variantEvaluation.getGeneSymbol(), EMPTY_GENE_IDENTIFIER);
+                        GeneIdentifier geneIdentifier = knownGeneIdentifiers.getOrDefault(variantEvaluation.geneSymbol(), EMPTY_GENE_IDENTIFIER);
                         // Exomiser ACMG
-                        List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(geneIdentifier.getEntrezIdAsInteger());
+                        List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
                         ModeOfInheritance modeOfInheritance = findMoiForGene(diseases);
                         AcmgEvidence acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, List.of(variantEvaluation), diseases, List.of());
                         AcmgClassification acmgClassification = acmgClassifier.classify(acmgEvidence);
@@ -220,20 +220,14 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
         Set<ModeOfInheritance> mois = EnumSet.noneOf(ModeOfInheritance.class);
         for (Disease disease : diseases) {
             // diseases can be AD and AR
-            InheritanceMode inheritanceMode = disease.getInheritanceMode();
+            InheritanceMode inheritanceMode = disease.inheritanceMode();
             switch (inheritanceMode) {
-                case UNKNOWN -> mois.add(ModeOfInheritance.ANY);
-                case AUTOSOMAL_RECESSIVE -> mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-                case AUTOSOMAL_DOMINANT -> mois.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-                case AUTOSOMAL_DOMINANT_AND_RECESSIVE -> mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-                case X_LINKED -> mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-                case X_RECESSIVE -> mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-                case X_DOMINANT -> mois.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-                case Y_LINKED ->
-                        mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE); //this is DOMINANT in males, however given gnomAD has male and female together in the counts, we'll expect a very low AF
-                case SOMATIC -> mois.add(ModeOfInheritance.ANY);
+                case AUTOSOMAL_DOMINANT, X_DOMINANT -> mois.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+                case AUTOSOMAL_RECESSIVE, X_LINKED, X_RECESSIVE, AUTOSOMAL_DOMINANT_AND_RECESSIVE, Y_LINKED ->
+                    //Y_LINKED is DOMINANT in males, however given gnomAD has male and female together in the counts, we'll expect a very low AF
+                        mois.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
                 case MITOCHONDRIAL -> mois.add(ModeOfInheritance.MITOCHONDRIAL);
-                case POLYGENIC -> mois.add(ModeOfInheritance.ANY);
+                case UNKNOWN, SOMATIC, POLYGENIC -> mois.add(ModeOfInheritance.ANY);
             }
         }
         if (mois.isEmpty()) {
@@ -259,10 +253,10 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
                 .variant(genomicVariant);
         if (variantAnnotation != null) {
             variantEvaluationBuilder
-                    .geneId(variantAnnotation.getGeneId())
-                    .geneSymbol(variantAnnotation.getGeneSymbol())
-                    .variantEffect(variantAnnotation.getVariantEffect())
-                    .annotations(variantAnnotation.getTranscriptAnnotations());
+                    .geneId(variantAnnotation.geneId())
+                    .geneSymbol(variantAnnotation.geneSymbol())
+                    .variantEffect(variantAnnotation.variantEffect())
+                    .transcriptAnnotations(variantAnnotation.transcriptAnnotations());
         }
         var variantEvaluation = variantEvaluationBuilder.build();
         FrequencyData frequencyData = genomeAnalysisService.getVariantFrequencyData(variantEvaluation, FrequencySource.NON_FOUNDER_POPS);
@@ -289,7 +283,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
     }
 
     private String formatClinVarData(ClinVarData clinVarData) {
-        return clinVarData.getPrimaryInterpretation() + (clinVarData.getPrimaryInterpretation() == ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? " " + clinVarData.getConflictingInterpretationCounts() : "") + " (" + clinVarData.starRating() + "*) " + clinVarData.getVariationId() + " " + clinVarData.getGeneSymbol() + ":" + clinVarData.getHgvsCdna() + ":" + clinVarData.getHgvsProtein() + " " + clinVarData.getVariantEffect() + " (" + clinVarData.getReviewStatus() + ")";
+        return clinVarData.primaryInterpretation() + (clinVarData.primaryInterpretation() == ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? " " + clinVarData.conflictingInterpretationCounts() : "") + " (" + clinVarData.starRating() + "*) " + clinVarData.variationId() + " " + clinVarData.geneSymbol() + ":" + clinVarData.hgvsCdna() + ":" + clinVarData.hgvsProtein() + " " + clinVarData.variantEffect() + " (" + clinVarData.reviewStatus() + ")";
     }
 
     private String toBroad(GenomicVariant genomicVariant) {

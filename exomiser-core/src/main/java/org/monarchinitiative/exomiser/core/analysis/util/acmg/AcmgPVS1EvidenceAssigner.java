@@ -44,11 +44,11 @@ class AcmgPVS1EvidenceAssigner {
         // •  Use caution with splice variants that are predicted to lead to exon skipping but leave the remainder of the protein intact
         // •  Use caution in the presence of multiple transcripts
 
-        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(variantEvaluation.getGeneSymbol());
+        GeneConstraint geneConstraint = GeneConstraints.geneConstraint(variantEvaluation.geneSymbol());
         // Should this be using the hasCompatibleDiseaseMatches variable?
         boolean inGeneWithKnownDiseaseAssociations = !knownDiseases.isEmpty();
         // TODO should modify the final strength according to ClinGen/GenCC known D2G validity - Table 1 of 10.1002/humu.23626
-        VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+        VariantEffect variantEffect = variantEvaluation.variantEffect();
         if (inGeneWithKnownDiseaseAssociations
             && isLossOfFunctionEffect(variantEffect)
             && (geneConstraint != null && geneConstraint.isLossOfFunctionIntolerant())
@@ -85,7 +85,7 @@ class AcmgPVS1EvidenceAssigner {
 
     private static void assignDeletionPVS1(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation) {
         // full gene deletion -> PVS1 (Full gene deletion of haploinsufficient gene should be considered P (PVS1_StandAlone?) given absence of conflicting data)
-        VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+        VariantEffect variantEffect = variantEvaluation.variantEffect();
         if (variantEffect == VariantEffect.TRANSCRIPT_ABLATION || variantEffect == VariantEffect.EXON_LOSS_VARIANT && predictedToLeadToNmd(variantEvaluation)) {
             // deletion of entire transcript
             acmgEvidenceBuilder.add(PVS1);
@@ -127,7 +127,7 @@ class AcmgPVS1EvidenceAssigner {
 
     private static boolean predictedToLeadToNmd(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.hasTranscriptAnnotations()) {
-            TranscriptAnnotation transcriptAnnotation = variantEvaluation.getTranscriptAnnotations().get(0);
+            TranscriptAnnotation transcriptAnnotation = variantEvaluation.transcriptAnnotations().get(0);
             return predictedToLeadToNmd(transcriptAnnotation);
         }
         return false;
@@ -143,9 +143,9 @@ class AcmgPVS1EvidenceAssigner {
         //  - in an exon larger than 400 bases
         //  - within the first 150 (CDS) bases of the transcription start site
         //  - in a single-exon gene
-        boolean notInLastExon = transcriptAnnotation.getRank() < transcriptAnnotation.getRankTotal(); // will be false for single exon genes where rank == rankTotal
-        VariantEffect variantEffect = transcriptAnnotation.getVariantEffect();
-        boolean isExonicOrCanonicalSpliceSite = (transcriptAnnotation.getRankType() == TranscriptAnnotation.RankType.EXON) || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT;
+        boolean notInLastExon = transcriptAnnotation.rank() < transcriptAnnotation.rankTotal(); // will be false for single exon genes where rank == rankTotal
+        VariantEffect variantEffect = transcriptAnnotation.variantEffect();
+        boolean isExonicOrCanonicalSpliceSite = (transcriptAnnotation.rankType() == TranscriptAnnotation.RankType.EXON) || variantEffect == VariantEffect.SPLICE_ACCEPTOR_VARIANT || variantEffect == VariantEffect.SPLICE_DONOR_VARIANT;
         return isExonicOrCanonicalSpliceSite && notInLastExon;
     }
 

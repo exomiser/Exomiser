@@ -79,13 +79,13 @@ public class FilterReportFactoryTest {
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {
         return TestFactory.variantBuilder(6, 1000000, "C", "T")
-                .filterResults(new FailFilterResult(filterType))
+                .filterResults(FilterResult.fail(filterType))
                 .build();
     }
 
     private VariantEvaluation makePassedVariant(FilterType filterType) {
         return TestFactory.variantBuilder(6, 1000000, "C", "T")
-                .filterResults(new PassFilterResult(filterType))
+                .filterResults(FilterResult.pass(filterType))
                 .build();
     }
     
@@ -121,7 +121,7 @@ public class FilterReportFactoryTest {
         
         List<FilterReport> reports = instance.makeFilterReports(analysis, analysisResults);
 
-        assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
+        assertThat(reports.size(), equalTo(analysis.analysisSteps().size()));
     }
     
     @Test
@@ -134,22 +134,22 @@ public class FilterReportFactoryTest {
         
         List<FilterReport> reports = instance.makeFilterReports(analysis, analysisResults);
 
-        assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
-        assertThat(reports.get(0).getFilterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
-        assertThat(reports.get(1).getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
-        assertThat(reports.get(2).getFilterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
+        assertThat(reports.size(), equalTo(analysis.analysisSteps().size()));
+        assertThat(reports.get(0).filterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
+        assertThat(reports.get(1).filterType(), equalTo(FilterType.FREQUENCY_FILTER));
+        assertThat(reports.get(2).filterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test
     public void testMakeDefaultGeneFilterReportContainsCorrectNumberOfPassedAndFailedGenes() {
-        Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);    
-        FilterType filterType = filter.getFilterType();
+        Filter filter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        FilterType filterType = filter.filterType();
 
         List<FilterResultCount> filterResultCounts = List.of(new FilterResultCount(filterType, 25, 100));
         FilterReport report = instance.makeFilterReport(filter, analysisResults(filterResultCounts));
 
-        assertThat(report.getPassed(), equalTo(25));
-        assertThat(report.getFailed(), equalTo(100));
+        assertThat(report.passed(), equalTo(25));
+        assertThat(report.failed(), equalTo(100));
     }
 
     @Test
@@ -157,7 +157,7 @@ public class FilterReportFactoryTest {
         VariantEffectFilter filter = new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class));      
 
         List<String> messages = List.of(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
-        FilterReport report = new FilterReport(filter.getFilterType(), 0, 0, messages);
+        FilterReport report = new FilterReport(filter.filterType(), 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
 
@@ -167,7 +167,7 @@ public class FilterReportFactoryTest {
     @Test
     public void testMakeFrequencyFilterReportCanCopeWithNullFrequencyData() {
         Filter filter = new FrequencyFilter(0.1f);
-        FilterType filterType = filter.getFilterType();
+        FilterType filterType = filter.filterType();
 
         VariantEvaluation variantEvalWithNullFrequencyData = makeFailedVariant(filterType);
         variantEvalWithNullFrequencyData.setFrequencyData(null);
@@ -181,7 +181,7 @@ public class FilterReportFactoryTest {
     @Test
     public void testMakeFrequencyFilterReport() {
         Filter filter = new FrequencyFilter(0.0f);
-        FilterType filterType = filter.getFilterType();
+        FilterType filterType = filter.filterType();
 
         VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
         completelyNovelVariantEval.setFrequencyData(FrequencyData.empty());
@@ -193,16 +193,16 @@ public class FilterReportFactoryTest {
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
 
         List<String> messages = List.of("Variants filtered for maximum allele frequency of 0.00%");
-        FilterReport report = new FilterReport(filter.getFilterType(), 1, 1, messages);
+        FilterReport report = new FilterReport(filter.filterType(), 1, 1, messages);
 
-        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.getFilterType(), 1, 1))));
+        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.filterType(), 1, 1))));
         assertThat(result, equalTo(report));
     }
     
     @Test
     public void testMakeKnownVariantFilterReportProducesCorrectStatistics() {
         Filter filter = new KnownVariantFilter();
-        FilterType filterType = filter.getFilterType();
+        FilterType filterType = filter.filterType();
 
         VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
         completelyNovelVariantEval.setFrequencyData(FrequencyData.empty());
@@ -224,8 +224,8 @@ public class FilterReportFactoryTest {
         messages.add("Data available in Exome Server Project for 1 variants (50.0%)");
         messages.add("Data available from ExAC Project for 1 variants (50.0%)");
 
-        FilterReport report = new FilterReport(filter.getFilterType(), 1, 1, messages);
-        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.getFilterType(), 1, 1))));
+        FilterReport report = new FilterReport(filter.filterType(), 1, 1, messages);
+        FilterReport result = instance.makeFilterReport(filter, analysisResults(List.of(new FilterResultCount(filter.filterType(), 1, 1))));
 
         assertThat(result, equalTo(report));
     }
@@ -233,7 +233,7 @@ public class FilterReportFactoryTest {
     @Test
     public void testMakeQualityFilterReport() {
         Filter filter = new QualityFilter(100.0f);
-        FilterType filterType = filter.getFilterType();
+        FilterType filterType = filter.filterType();
 
         List<String> messages = List.of("Variants filtered for mimimum PHRED quality of 100.0");
         FilterReport report = new FilterReport(filterType, 0, 0, messages);
@@ -304,7 +304,7 @@ public class FilterReportFactoryTest {
                 "...",
                 "7:2-3"
                 );
-        FilterReport expected = new FilterReport(filter.getFilterType(), 0, 0, messages);
+        FilterReport expected = new FilterReport(filter.filterType(), 0, 0, messages);
 
         FilterReport result = instance.makeFilterReport(filter, analysisResults);
 
@@ -313,7 +313,7 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeInheritanceFilterReport() {
-        Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        Filter filter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
         List<String> messages = List.of("Variants filtered for compatibility with AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE inheritance.");

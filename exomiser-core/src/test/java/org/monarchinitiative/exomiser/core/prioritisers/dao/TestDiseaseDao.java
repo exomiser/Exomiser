@@ -37,14 +37,14 @@ public class TestDiseaseDao implements DiseaseDao {
 
     public TestDiseaseDao(List<Disease> diseases) {
         this.diseases = new LinkedHashSet<>(diseases);
-        geneDiseaseAssociations = diseases.stream().collect(groupingBy(Disease::getAssociatedGeneId));
+        geneDiseaseAssociations = diseases.stream().collect(groupingBy(Disease::associatedGeneId));
     }
 
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
         return diseases.stream()
-                .filter(entry -> entry.getDiseaseId().equals(diseaseId))
-                .flatMap(entry -> entry.getPhenotypeIds().stream())
+                .filter(entry -> entry.diseaseId().equals(diseaseId))
+                .flatMap(entry -> entry.phenotypeIds().stream())
                 .collect(ImmutableSet.toImmutableSet());
     }
 

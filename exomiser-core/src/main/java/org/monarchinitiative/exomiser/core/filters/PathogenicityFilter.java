@@ -22,51 +22,31 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Filters variants according to their predicted pathogenicity.
+ * <p>
+ * The keepNonPathogenic parameter will apply the pathogenicity
+ * scoring, but no further filtering will be applied so all variants will
+ * pass irrespective of their score.
  *
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (29 December, 2012).
  */
-public class PathogenicityFilter implements VariantFilter {
+public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final boolean keepNonPathogenic;
-
-    /**
-     * Produces a Pathogenicity filter using a user-defined pathogenicity
-     * threshold. The keepNonPathogenic parameter will apply the pathogenicity
-     * scoring, but no further filtering will be applied so all variants will
-     * pass irrespective of their score.
-     *
-     * @param keepNonPathogenic
-     */
-    public PathogenicityFilter(boolean keepNonPathogenic) {
-        this.keepNonPathogenic = keepNonPathogenic;
-    }
-
-    @JsonProperty
-    public boolean keepNonPathogenic() {
-        return keepNonPathogenic;
-    }
-    
     /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
      * taster.
      */
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 
@@ -74,8 +54,7 @@ public class PathogenicityFilter implements VariantFilter {
      * VariantFilter variants based on their calculated pathogenicity. Those
      * that pass have a pathogenicity score assigned to them. The failed ones
      * are deemed to be non-pathogenic and marked as such.
-     *     
-*/
+     */
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (keepNonPathogenic) {
@@ -85,26 +64,6 @@ public class PathogenicityFilter implements VariantFilter {
             return PASS;
         }
         return FAIL;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + Objects.hashCode(PathogenicityFilter.filterType);
-        hash = 97 * hash + (this.keepNonPathogenic ? 1 : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PathogenicityFilter other = (PathogenicityFilter) obj;
-        return this.keepNonPathogenic == other.keepNonPathogenic;
     }
 
     @Override

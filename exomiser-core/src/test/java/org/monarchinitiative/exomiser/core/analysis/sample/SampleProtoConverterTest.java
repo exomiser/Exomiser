@@ -40,7 +40,7 @@ class SampleProtoConverterTest {
     private final SampleProtoConverter instance = new SampleProtoConverter();
 
     private final SampleProto.Sample.Builder protoSample = SampleProto.Sample.newBuilder()
-            .setProband(TestPedigrees.affectedChild().getId())
+            .setProband(TestPedigrees.affectedChild().id())
             .addAllHpoIds(List.of("HP:0000001"))
             .setGenomeAssembly("hg19")
             .setVcf("")
@@ -49,7 +49,7 @@ class SampleProtoConverterTest {
             .setPed(TestPedigrees.trioChildAffectedPedPath().toString());
 
     private final Sample.Builder sample = Sample.builder()
-            .probandSampleName(TestPedigrees.affectedChild().getId())
+            .probandSampleName(TestPedigrees.affectedChild().id())
             .hpoIds(List.of("HP:0000001"))
             .genomeAssembly(GenomeAssembly.HG19)
             .sex(Pedigree.Individual.Sex.MALE)
@@ -109,6 +109,6 @@ class SampleProtoConverterTest {
         assertThat(protoSampleNoGenomeAssembly.getGenomeAssembly(), equalTo(""));
 
         Sample converted = instance.toDomain(protoSampleNoGenomeAssembly);
-        assertThat(converted.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+        assertThat(converted.genomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
     }
 }

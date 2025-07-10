@@ -41,10 +41,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GenePriorityScoreCalculatorTest {
+class GenePriorityScoreCalculatorTest {
 
     private final GenePriorityScoreCalculator instance = new GenePriorityScoreCalculator();
-    // Just a placeholder decent-ish score. The actual value isn't particularly important.
+    // Just a placeholder decent-ish score. The actual frequency isn't particularly important.
     private static final double PHENOTYPE_SCORE = 0.75;
 
     private Gene newGene() {
@@ -63,13 +63,13 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     private PriorityResult hiPhiveResult(Gene gene, double score) {
-        return new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
+        return new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, gene.entrezGeneId(), gene.geneSymbol(), score);
     }
 
     private void addOmimResultToGene(Gene gene, Map<ModeOfInheritance, Double> scores, InheritanceMode... inheritanceModes) {
         double maxScore = scores.values().stream().max(Comparator.naturalOrder()).orElse(1.0);
         List<Disease> knownDiseases = diseasesCompatibleWith(inheritanceModes);
-        PriorityResult omimResult = new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), maxScore, knownDiseases, scores);
+        PriorityResult omimResult = new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), maxScore, knownDiseases, scores);
         gene.addPriorityResult(omimResult);
     }
 
@@ -85,7 +85,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void emptyGeneWithAnyInheritance() {
+    void emptyGeneWithAnyInheritance() {
         Gene empty = newGene();
 
         double score = instance.calculateGenePriorityScoreForMode(empty, ModeOfInheritance.ANY);
@@ -93,7 +93,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithAnyInheritance() {
+    void prioritisedGeneWithAnyInheritance() {
         Gene gene = newGene();
 
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
@@ -104,7 +104,7 @@ public class GenePriorityScoreCalculatorTest {
 
 
     @Test
-    public void omimPrioritisedOnlyGeneWithKnownDiseaseCurrentInheritanceMatchesOneDiseaseInheritance() {
+    void omimPrioritisedOnlyGeneWithKnownDiseaseCurrentInheritanceMatchesOneDiseaseInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         InheritanceMode[] inheritanceModes = {InheritanceMode.AUTOSOMAL_RECESSIVE, InheritanceMode.AUTOSOMAL_DOMINANT};
@@ -121,7 +121,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithNoKnownDiseasesAnyInheritance() {
+    void prioritisedGeneWithNoKnownDiseasesAnyInheritance() {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -135,7 +135,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithNoKnownDiseasesIncompatibleWithCurrentInheritance() {
+    void prioritisedGeneWithNoKnownDiseasesIncompatibleWithCurrentInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -153,7 +153,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithNoOmimPrioritiserCompatibleWithCurrentInheritance() {
+    void prioritisedGeneWithNoOmimPrioritiserCompatibleWithCurrentInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -162,7 +162,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseasesUnknownInheritance() {
+    void prioritisedGeneWithKnownDiseasesUnknownInheritance() {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -175,7 +175,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseasesAnyInheritance() {
+    void prioritisedGeneWithKnownDiseasesAnyInheritance() {
         Gene gene = newGene();
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -191,7 +191,7 @@ public class GenePriorityScoreCalculatorTest {
     // in conjunction with the rest of the gene scoring. Now it's much simpler internally, but still depends on the output
     // of the OmimPrioritiser
     @Test
-    public void prioritisedGeneWithInheritanceModesKnownDiseasesUnknownInheritance() {
+    void prioritisedGeneWithInheritanceModesKnownDiseasesUnknownInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -209,7 +209,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceMatchesDiseaseAndGeneInheritance() {
+    void prioritisedGeneWithKnownDiseaseCurrentInheritanceMatchesDiseaseAndGeneInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -228,7 +228,7 @@ public class GenePriorityScoreCalculatorTest {
 
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesGeneInheritance() {
+    void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesGeneInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -246,7 +246,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesDiseaseInheritance() {
+    void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesDiseaseInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -264,7 +264,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceMatchesOneDiseaseInheritance() {
+    void prioritisedGeneWithKnownDiseaseCurrentInheritanceMatchesOneDiseaseInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -285,7 +285,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesDiseaseWithUnknownGeneInheritance() {
+    void prioritisedGeneWithKnownDiseaseCurrentInheritanceNotMatchesDiseaseWithUnknownGeneInheritance() {
         // Here we have a gene with a possible dominant or compound het compatible set of variants
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
@@ -312,7 +312,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseasePolygenicInheritance() {
+    void prioritisedGeneWithKnownDiseasePolygenicInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -330,7 +330,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseSomaticInheritance() {
+    void prioritisedGeneWithKnownDiseaseSomaticInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -348,7 +348,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseYlinkedInheritance() {
+    void prioritisedGeneWithKnownDiseaseYlinkedInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -366,7 +366,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseMitochondrialInheritance() {
+    void prioritisedGeneWithKnownDiseaseMitochondrialInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.MITOCHONDRIAL);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -384,7 +384,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseAdAndArInheritance() {
+    void prioritisedGeneWithKnownDiseaseAdAndArInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -402,7 +402,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseXlinkedInheritance() {
+    void prioritisedGeneWithKnownDiseaseXlinkedInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -420,7 +420,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseXlinkedDominantInheritance() {
+    void prioritisedGeneWithKnownDiseaseXlinkedDominantInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_DOMINANT);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -438,7 +438,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseXlinkedRecessiveInheritance() {
+    void prioritisedGeneWithKnownDiseaseXlinkedRecessiveInheritance() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 
@@ -456,7 +456,7 @@ public class GenePriorityScoreCalculatorTest {
     }
 
     @Test
-    public void prioritisedGeneWithKnownDiseaseNoInheritanceModes() {
+    void prioritisedGeneWithKnownDiseaseNoInheritanceModes() {
         Gene gene = newGeneCompatibleWith(ModeOfInheritance.X_RECESSIVE);
         addHiPhiveResultWithScore(gene, PHENOTYPE_SCORE);
 

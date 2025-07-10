@@ -46,13 +46,13 @@ public class ExomeWalkerPriorityScoreTest {
     }
 
     @Test
-    public void testGetPriorityType() {
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.EXOMEWALKER_PRIORITY));
+    public void testPriorityType() {
+        assertThat(instance.priorityType(), equalTo(PriorityType.EXOMEWALKER_PRIORITY));
     }
 
     @Test
     public void testGetScore() {
-        assertThat(instance.getScore(), equalTo(score));
+        assertThat(instance.score(), equalTo(score));
     }
 
     @Test

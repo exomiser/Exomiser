@@ -60,13 +60,13 @@ public class TsvGeneResultsWriterTest {
         Gene fgfr2 = TestFactory.newGeneFGFR2();
         fgfr2.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 //        fgfr2.addPriorityResult(new HiPhivePriorityResult());
-        fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1d, List.of(), Map.of()));
-        fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
+        fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.entrezGeneId(), fgfr2.geneSymbol(), 1d, List.of(), Map.of()));
+        fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.geneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
         fgfr2.addVariant(TestVariantFactory.buildVariant(10, 12345, "G", "T", SampleGenotype.het(), 24, 300.0));
 
         Gene rbm8a = TestFactory.newGeneRBM8A();
         rbm8a.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
+        rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.geneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).build());
         rbm8a.addVariant(TestVariantFactory.buildVariant(1, 12345, "G", "T", SampleGenotype.het(), 24, 300.0));
 
         analysisResults = AnalysisResults.builder()
@@ -109,12 +109,12 @@ public class TsvGeneResultsWriterTest {
                 .build();
 
         Gene fgfr2 = TestFactory.newGeneFGFR2();
-        fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1d, List.of(), Map.of()));
-        fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
+        fgfr2.addPriorityResult(new OmimPriorityResult(fgfr2.entrezGeneId(), fgfr2.geneSymbol(), 1d, List.of(), Map.of()));
+        fgfr2.addGeneScore(GeneScore.builder().geneIdentifier(fgfr2.geneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
                 .combinedScore(0.12).phenotypeScore(1.0).variantScore(0).build());
 
         Gene rbm8a = TestFactory.newGeneRBM8A();
-        rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.getGeneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
+        rbm8a.addGeneScore(GeneScore.builder().geneIdentifier(rbm8a.geneIdentifier()).modeOfInheritance(ModeOfInheritance.ANY)
                 .combinedScore(0).phenotypeScore(0).variantScore(0).build());
 
         var analysisResults = AnalysisResults.builder()

@@ -22,22 +22,33 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
  * Container for Pathogenicity data about a variant.
  *
+ * @param clinVarData Returns a {@link ClinVarData} object. It is highly likely that this field will contain a {@code ClinVarData.empty()}
+ *                    object. For this reason the companion method {@code hasClinVarData()} can be used to check whether there is any real
+ *                    data. Alternatively {@code clinVarData.isEmpty()} can be called on the object returned from this method. @since 10.1.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @since 3.0.0
  */
-public class PathogenicityData {
+public record PathogenicityData(ClinVarData clinVarData,
+                                @JsonIgnore Map<PathogenicitySource, PathogenicityScore> scores) {
 
-    private static final PathogenicityData EMPTY_DATA = new PathogenicityData(ClinVarData.empty(), Collections.emptyList());
+    private static final PathogenicityData EMPTY_DATA = new PathogenicityData(ClinVarData.empty(), Collections.emptyMap());
 
-    private final ClinVarData clinVarData;
-    private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
+    public PathogenicityData {
+        Objects.requireNonNull(clinVarData);
+        Objects.requireNonNull(scores);
+        var map = new EnumMap<PathogenicitySource, PathogenicityScore>(PathogenicitySource.class);
+        if (!scores.isEmpty()) {
+            map.putAll(scores);
+        }
+        scores = Collections.unmodifiableMap(map);
+    }
 
     public static PathogenicityData of(PathogenicityScore pathScore) {
         return of(ClinVarData.empty(), Collections.singletonList(pathScore));
@@ -72,36 +83,17 @@ public class PathogenicityData {
         if (clinVarData.isEmpty() && pathScores.isEmpty()) {
             return EMPTY_DATA;
         }
-        return new PathogenicityData(clinVarData, pathScores);
+        EnumMap<PathogenicitySource, PathogenicityScore> pathogenicityScores = new EnumMap<>(PathogenicitySource.class);
+        for (PathogenicityScore pathScore : pathScores) {
+            if (pathScore != null) {
+                pathogenicityScores.put(pathScore.source(), pathScore);
+            }
+        }
+        return new PathogenicityData(clinVarData, pathogenicityScores);
     }
 
     public static PathogenicityData empty() {
         return EMPTY_DATA;
-    }
-
-    private PathogenicityData(ClinVarData clinVarData, Collection<PathogenicityScore> pathScores) {
-        Objects.requireNonNull(clinVarData);
-        Objects.requireNonNull(pathScores);
-        this.clinVarData = clinVarData;
-        pathogenicityScores = new EnumMap<>(PathogenicitySource.class);
-        for (PathogenicityScore pathScore : pathScores) {
-            if (pathScore != null) {
-                pathogenicityScores.put(pathScore.getSource(), pathScore);
-            }
-        }
-    }
-
-    /**
-     * Returns a {@link ClinVarData} object. It is highly likely that this field will contain a {@code ClinVarData.empty()}
-     * object. For this reason the companion method {@code hasClinVarData()} can be used to check whether there is any real
-     * data. Alternatively {@code clinVarData.isEmpty()} can be called on the object returned from this method.
-     *
-     * @return a {@code ClinVarData} object
-     * @since 10.1.0
-     */
-    @JsonProperty
-    public ClinVarData clinVarData() {
-        return clinVarData;
     }
 
     /**
@@ -116,7 +108,7 @@ public class PathogenicityData {
 
     @JsonProperty
     public List<PathogenicityScore> pathogenicityScores() {
-        return new ArrayList<>(pathogenicityScores.values());
+        return List.copyOf(scores.values());
     }
 
     @JsonIgnore
@@ -126,11 +118,11 @@ public class PathogenicityData {
 
     @JsonIgnore
     public boolean hasPredictedScore() {
-        return !pathogenicityScores.isEmpty();
+        return !scores.isEmpty();
     }
 
     public boolean hasPredictedScore(PathogenicitySource pathogenicitySource) {
-        return pathogenicityScores.containsKey(pathogenicitySource);
+        return scores.containsKey(pathogenicitySource);
     }
 
     /**
@@ -139,10 +131,9 @@ public class PathogenicityData {
      * @param pathogenicitySource
      * @return
      */
-
     @Nullable
     public PathogenicityScore pathogenicityScore(PathogenicitySource pathogenicitySource) {
-        return pathogenicityScores.get(pathogenicitySource);
+        return scores.get(pathogenicitySource);
     }
 
     /**
@@ -150,7 +141,7 @@ public class PathogenicityData {
      */
     @JsonProperty
     public float pathogenicityScore() {
-        if (pathogenicityScores.isEmpty()) {
+        if (scores.isEmpty()) {
             return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
         }
         return maxPredictedPathScore();
@@ -165,7 +156,7 @@ public class PathogenicityData {
         PathogenicityScore mostPathogenicPredictedScore = mostPathogenicScore();
         if (mostPathogenicPredictedScore != null) {
             // As of v12.0.0 scores are normalised internally so SIFT scores no longer need to be inverted here.
-            return mostPathogenicPredictedScore.getScore();
+            return mostPathogenicPredictedScore.score();
         }
         return VariantEffectPathogenicityScore.NON_PATHOGENIC_SCORE;
     }
@@ -174,34 +165,20 @@ public class PathogenicityData {
      * @return The most pathogenic score or null if there are no predicted scores
      */
     @Nullable
-    @JsonProperty
+    @JsonIgnore
     public PathogenicityScore mostPathogenicScore() {
         // Add filter step using PathogenicityScore::isPredictedPathogenic?
         // n.b. here min() is referring to the *first* element in a sorted list, rather than the minimum numeric value
         // PathogenicityScore compareTo returns the most pathogenic first e.g. 1.0, 0.9, 0.8 ... which is the reverse of
         // natural numeric ordering.
-        return pathogenicityScores.values().stream().min(PathogenicityScore::compareTo).orElse(null);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PathogenicityData that = (PathogenicityData) o;
-        return Objects.equals(clinVarData, that.clinVarData) &&
-                Objects.equals(pathogenicityScores, that.pathogenicityScores);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(clinVarData, pathogenicityScores);
+        return scores.values().stream().min(PathogenicityScore::compareTo).orElse(null);
     }
 
     @Override
     public String toString() {
         return "PathogenicityData{" +
-                "clinVarData=" + clinVarData +
-                ", pathogenicityScores=" + pathogenicityScores +
-                '}';
+               "clinVarData=" + clinVarData +
+               ", pathogenicityScores=" + scores +
+               '}';
     }
 }

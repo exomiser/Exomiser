@@ -25,14 +25,11 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AgeRange {
+public record AgeRange(Age lower, Age upper) {
 
-    private final Age lower;
-    private final Age upper;
-
-    private AgeRange(Age lower, Age upper) {
-        this.lower = lower;
-        this.upper = upper;
+    public AgeRange {
+        Objects.requireNonNull(lower);
+        Objects.requireNonNull(upper);
     }
 
     public static AgeRange between(Age lower, Age upper) {
@@ -48,20 +45,6 @@ public class AgeRange {
 
     public static AgeRange under(Age limit) {
         return new AgeRange(Age.unknown(), limit);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AgeRange)) return false;
-        AgeRange ageRange = (AgeRange) o;
-        return lower.equals(ageRange.lower) &&
-                upper.equals(ageRange.upper);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lower, upper);
     }
 
     @Override

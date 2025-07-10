@@ -40,7 +40,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SiftScore extends ScaledPathogenicityScore {
+public record SiftScore(float rawScore, float scaledScore) implements PathogenicityScore {
 
     /**
      * A SIFT score below this threshold is considered to be pathogenic
@@ -48,11 +48,17 @@ public class SiftScore extends ScaledPathogenicityScore {
     public static final float SIFT_THRESHOLD = 0.06f;
 
     public static SiftScore of(float score) {
-        return new SiftScore(score);
+        return new SiftScore(score, 1 - score);
     }
 
-    private SiftScore(float score) {
-        super(PathogenicitySource.SIFT, score, 1 - score);
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.SIFT;
+    }
+
+    @Override
+    public float score() {
+        return scaledScore;
     }
 
     @Override

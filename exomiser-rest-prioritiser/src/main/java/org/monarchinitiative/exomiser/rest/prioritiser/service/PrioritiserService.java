@@ -84,10 +84,10 @@ public record PrioritiserService(Map<Integer, GeneIdentifier> geneIdentifiers, P
 
     @SuppressWarnings("unchecked")
     private <T extends PriorityResult> List<PriorityResult> runLimitAndCollectResults(Prioritiser<T> prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
-        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(Collectors.toSet());
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::entrezGeneId).collect(Collectors.toSet());
 
         Stream<T> resultsStream = prioritiser.prioritise(phenotypes, genes)
-                .filter(result -> wantedGeneIds.contains(result.getGeneId()))
+                .filter(result -> wantedGeneIds.contains(result.geneId()))
                 .sorted(Comparator.naturalOrder());
 
         return limit == 0 ? (List<PriorityResult>) resultsStream.toList() : (List<PriorityResult>) resultsStream.limit(limit).toList();

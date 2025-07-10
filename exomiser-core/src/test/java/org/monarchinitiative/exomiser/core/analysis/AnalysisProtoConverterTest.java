@@ -38,6 +38,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -73,10 +74,10 @@ class AnalysisProtoConverterTest {
     @Test
     void testToProtoExomeAnalysisSteps() {
         Analysis analysis = Analysis.builder()
-                .addStep((new GeneBlacklistFilter()))
+                .addStep((new GeneBlacklistFilter(Set.of())))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
+                .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .addStep(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService()))
                 .build();
@@ -99,10 +100,10 @@ class AnalysisProtoConverterTest {
                 .addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))
                 .addStep(new FailedVariantFilter())
                 .addStep(new RegulatoryFeatureFilter())
-                .addStep(new GeneBlacklistFilter())
+                .addStep(new GeneBlacklistFilter(Set.of()))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
+                .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);

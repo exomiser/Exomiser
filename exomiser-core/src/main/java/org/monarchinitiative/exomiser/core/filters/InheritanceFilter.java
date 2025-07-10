@@ -25,24 +25,22 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A Gene runFilter for filtering against a particular inheritance mode.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class InheritanceFilter implements GeneFilter {
+public record InheritanceFilter(Set<ModeOfInheritance> compatibleModes) implements GeneFilter {
 
-    public static final Set<ModeOfInheritance> JUST_ANY = Sets.immutableEnumSet(ModeOfInheritance.ANY);
+    private static final InheritanceFilter EMPTY = new InheritanceFilter(EnumSet.noneOf(ModeOfInheritance.class));
+
+    public static final Set<ModeOfInheritance> JUST_ANY = Collections.unmodifiableSet(EnumSet.of(ModeOfInheritance.ANY));
 
     private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
 
@@ -51,24 +49,25 @@ public class InheritanceFilter implements GeneFilter {
     private static final FilterResult NOT_RUN = FilterResult.notRun(filterType);
 
 
-    private final Set<ModeOfInheritance> compatibleModes;
-
-    public InheritanceFilter(ModeOfInheritance compatibleMode) {
-        this.compatibleModes = Sets.immutableEnumSet(compatibleMode);
+    public InheritanceFilter {
+        Objects.requireNonNull(compatibleModes);
+        compatibleModes = Collections.unmodifiableSet(EnumSet.copyOf(compatibleModes));
     }
 
-    public InheritanceFilter(ModeOfInheritance... compatibleModes) {
-        this.compatibleModes = Sets.immutableEnumSet(Arrays.asList(compatibleModes));
+    public static InheritanceFilter of(ModeOfInheritance compatibleMode) {
+        Objects.requireNonNull(compatibleMode);
+        return new InheritanceFilter(Collections.unmodifiableSet(EnumSet.of(compatibleMode)));
     }
 
-    public InheritanceFilter(Set<ModeOfInheritance> compatibleModes) {
-        this.compatibleModes = Sets.immutableEnumSet(compatibleModes);
+    public static InheritanceFilter of(ModeOfInheritance... compatibleModes) {
+        return compatibleModes.length == 0 ? EMPTY : new InheritanceFilter(EnumSet.copyOf(List.of(compatibleModes)));
     }
 
-    public Set<ModeOfInheritance> getCompatibleModes() {
-        return compatibleModes;
+    public static InheritanceFilter of(Set<ModeOfInheritance> compatibleModes) {
+        Objects.requireNonNull(compatibleModes);
+        return new InheritanceFilter(compatibleModes);
     }
-    
+
     @Override
     public FilterResult runFilter(Gene gene) {
         if (compatibleModes.isEmpty() || compatibleModes.equals(JUST_ANY)) {
@@ -76,7 +75,7 @@ public class InheritanceFilter implements GeneFilter {
             return NOT_RUN;
         }
 
-        addFilterResultToVariants(gene.getVariantEvaluations());
+        addFilterResultToVariants(gene.variantEvaluations());
 
         //If we're going to score against multiple inheritance models we're going to want to keep them and filter when scoring.
         //On the other hand - if there is only one or two modes it makes sense to filter them out if incompatible.
@@ -108,27 +107,14 @@ public class InheritanceFilter implements GeneFilter {
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        InheritanceFilter that = (InheritanceFilter) o;
-        return Objects.equals(compatibleModes, that.compatibleModes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(compatibleModes);
     }
 
     @Override
     public String toString() {
         return "InheritanceFilter{" +
-                "compatibleModes=" + compatibleModes +
-                '}';
+               "compatibleModes=" + compatibleModes +
+               '}';
     }
 }

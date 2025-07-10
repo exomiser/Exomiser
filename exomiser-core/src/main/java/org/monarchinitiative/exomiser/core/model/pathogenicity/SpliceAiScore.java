@@ -12,7 +12,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * </cite>
  * <a href="https://github.com/Illumina/SpliceAI">https://github.com/Illumina/SpliceAI</a>
  **/
-public class SpliceAiScore extends BasePathogenicityScore {
+public record SpliceAiScore(float score) implements PathogenicityScore {
 
     public static float NON_SPLICEOGENIC_SCORE = 0.1f;
     public static float PERMISSIVE_SPLICEOGENIC_SCORE = 0.2f;
@@ -23,7 +23,13 @@ public class SpliceAiScore extends BasePathogenicityScore {
         return new SpliceAiScore(score);
     }
 
-    private SpliceAiScore(float score) {
-        super(PathogenicitySource.SPLICE_AI, score);
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.SPLICE_AI;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f", source(), score);
     }
 }

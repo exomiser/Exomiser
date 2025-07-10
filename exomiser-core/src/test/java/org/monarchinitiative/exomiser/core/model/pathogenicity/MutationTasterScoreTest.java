@@ -40,8 +40,8 @@ public class MutationTasterScoreTest {
     private final MutationTasterScore instance = MutationTasterScore.of(1.0f);
 
     @Test
-    public void testGetSource() {
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.MUTATION_TASTER));
+    public void testSource() {
+        assertThat(instance.source(), equalTo(PathogenicitySource.MUTATION_TASTER));
     }
 
     @Test

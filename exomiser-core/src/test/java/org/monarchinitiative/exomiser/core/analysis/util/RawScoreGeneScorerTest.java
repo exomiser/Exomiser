@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2015EvidenceAssigner;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.Acmg2020PointsBasedClassifier;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignmentCalculator;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidenceAssigner;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -164,7 +163,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .variantScore(0f)
                 .phenotypeScore(0f)
                 .combinedScore(0f)
@@ -179,7 +178,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -196,7 +195,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -213,7 +212,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -230,7 +229,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -247,7 +246,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -264,10 +263,10 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -286,10 +285,10 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -329,14 +328,14 @@ public class RawScoreGeneScorerTest {
 
         Gene gene = newGene(probandHomAlt);
 
-        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, probandIndividual.getId(), pedigree);
+        List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, probandIndividual.id(), pedigree);
 
-        float variantScore = probandHomAlt.getVariantScore();
+        float variantScore = probandHomAlt.variantScore();
 
         assertThat(probandHomAlt.contributesToGeneScore(), is(true));
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -357,7 +356,7 @@ public class RawScoreGeneScorerTest {
         assertThat(passAllFrameShift.contributesToGeneScore(), is(false));
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -375,12 +374,12 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllFrameshift, failFreq());
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -399,12 +398,12 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllFrameshift, passAllMissense);
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -427,13 +426,13 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
         assertThat(passAllFrameshift.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -456,10 +455,10 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.X_DOMINANT);
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.X_DOMINANT)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -484,10 +483,10 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.X_RECESSIVE, Sex.FEMALE);
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.X_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -520,10 +519,10 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.X_RECESSIVE, Sex.FEMALE);
 
-        float variantScore = (passAllMissense.getVariantScore() + passAllFrameshift.getVariantScore()) / 2;
+        float variantScore = (passAllMissense.variantScore() + passAllFrameshift.variantScore()) / 2;
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.X_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -556,10 +555,10 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.X_RECESSIVE, Sex.MALE);
 
-        float variantScore = passAllFrameshift.getVariantScore();
+        float variantScore = passAllFrameshift.variantScore();
         // Given the X-linked MOI here it is a dominant pattern for a male, even under the X-recessive model.
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.X_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -593,7 +592,7 @@ public class RawScoreGeneScorerTest {
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, Sex.FEMALE);
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .variantScore(0f)
                 .phenotypeScore(0f)
@@ -615,10 +614,10 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllMissense, passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        float variantScore = (passAllFrameshift.getVariantScore() + passAllMissense.getVariantScore()) / 2f;
+        float variantScore = (passAllFrameshift.variantScore() + passAllMissense.variantScore()) / 2f;
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -643,7 +642,7 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllMissense, passAllSynonymous, passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        float variantScore = (passAllFrameshift.getVariantScore() + passAllMissense.getVariantScore()) / 2f;
+        float variantScore = (passAllFrameshift.variantScore() + passAllMissense.variantScore()) / 2f;
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
         assertThat(passAllFrameshift.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -655,7 +654,7 @@ public class RawScoreGeneScorerTest {
 
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -685,7 +684,7 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene(passAllMissense, passAllSynonymous, passAllFrameshift);
         List<GeneScore> geneScores = scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        float variantScore = passAllMissense.getVariantScore();
+        float variantScore = passAllMissense.variantScore();
         assertThat(passAllMissense.contributesToGeneScore(), is(true));
         assertThat(passAllMissense.contributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -697,7 +696,7 @@ public class RawScoreGeneScorerTest {
 
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .variantScore(variantScore)
                 .phenotypeScore(0f)
@@ -712,15 +711,15 @@ public class RawScoreGeneScorerTest {
     public void testGenesAreRankedAccordingToScore() {
         Gene first = new Gene("FIRST", 1111);
         first.addVariant(passAllFrameShift());
-        first.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, first.getEntrezGeneID(), first.getGeneSymbol(), 1d));
+        first.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, first.entrezGeneId(), first.geneSymbol(), 1d));
 
         Gene middle = new Gene("MIDDLE", 2222);
         middle.addVariant(passAllMissense());
-        middle.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, middle.getEntrezGeneID(), middle.getGeneSymbol(), 1d));
+        middle.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, middle.entrezGeneId(), middle.geneSymbol(), 1d));
 
         Gene last = new Gene("LAST", 3333);
         last.addVariant(passAllSynonymous());
-        last.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, last.getEntrezGeneID(), last.getGeneSymbol(), 1d));
+        last.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, last.entrezGeneId(), last.geneSymbol(), 1d));
 
         List<Gene> genes = new ArrayList(Arrays.asList(last, first, middle));
         Collections.shuffle(genes);
@@ -740,12 +739,12 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testCalculateCombinedScoreFromUnoptimisedPrioritiser() {
         Gene gene = newGene();
-        gene.addPriorityResult(new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), 1d));
+        gene.addPriorityResult(new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.entrezGeneId(), gene.geneSymbol(), 1d));
 
         List<GeneScore> geneScores = scoreGene(gene, InheritanceModeOptions.empty());
 
         GeneScore expected = GeneScore.builder()
-                .geneIdentifier(gene.getGeneIdentifier())
+                .geneIdentifier(gene.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .variantScore(0f)
                 .phenotypeScore(1f)
@@ -763,7 +762,7 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> expected = inheritanceModes.stream()
                 .map(mode ->  GeneScore.builder()
-                    .geneIdentifier(gene.getGeneIdentifier())
+                    .geneIdentifier(gene.geneIdentifier())
                     .modeOfInheritance(mode)
                     .variantScore(0f)
                     .phenotypeScore(0f)
@@ -782,7 +781,7 @@ public class RawScoreGeneScorerTest {
 
         List<GeneScore> expected = List.of(
                 GeneScore.builder()
-                        .geneIdentifier(gene.getGeneIdentifier())
+                        .geneIdentifier(gene.geneIdentifier())
                         .modeOfInheritance(ModeOfInheritance.ANY)
                         .variantScore(0f)
                         .phenotypeScore(0f)

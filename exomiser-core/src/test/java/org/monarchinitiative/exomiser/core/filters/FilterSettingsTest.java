@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
+import org.monarchinitiative.exomiser.core.filters.FilterSettings.FilterSettingsBuilder;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
 import java.util.LinkedHashSet;
@@ -41,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FilterSettingsImplTest {
+class FilterSettingsTest {
 
     private FilterSettings instance;
     private FilterSettingsBuilder builder;
@@ -57,107 +57,107 @@ public class FilterSettingsImplTest {
     private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.ANY;
 
     @BeforeEach
-    public void setUp() {
-        builder = FilterSettingsImpl.builder();
+    void setUp() {
+        builder = FilterSettings.builder();
     }
 
     @Test
-    public void testDefaultValues() {
+    void testDefaultValues() {
         instance = builder.build();
-        assertThat(instance.getMaximumFrequency(), equalTo(MAX_FREQ_DEFAULT));
-        assertThat(instance.getMinimumQuality(), equalTo(MIN_QUAL_DEFAULT));
-        assertThat(instance.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
+        assertThat(instance.maximumFrequency(), equalTo(MAX_FREQ_DEFAULT));
+        assertThat(instance.minimumQuality(), equalTo(MIN_QUAL_DEFAULT));
+        assertThat(instance.geneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(instance.keepNonPathogenicVariants(), equalTo(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
         assertThat(instance.removeFailedVariants(), equalTo(REMOVE_FAILED_VARIANTS_DEFAULT));
         assertThat(instance.removeKnownVariants(), equalTo(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(instance.keepOffTargetVariants(), equalTo(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
-        assertThat(instance.getGenesToKeep(), equalTo(GENE_IDS_TO_KEEP_DEFAULT));
-        assertThat(instance.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
+        assertThat(instance.genesToKeep(), equalTo(GENE_IDS_TO_KEEP_DEFAULT));
+        assertThat(instance.modeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
     }
     
     @Test
-    public void testMaximumFrequency() {
+    void testMaximumFrequency() {
         float maxFreq = 0.5f;
         instance = builder.maximumFrequency(maxFreq).build();
-        assertThat(instance.getMaximumFrequency(), equalTo(maxFreq));
+        assertThat(instance.maximumFrequency(), equalTo(maxFreq));
     }
 
     @Test
-    public void testMinimumQuality() {
+    void testMinimumQuality() {
         float minQual = 10f;
         instance = builder.minimumQuality(minQual).build();
-        assertThat(instance.getMinimumQuality(), equalTo(minQual));
+        assertThat(instance.minimumQuality(), equalTo(minQual));
     }
 
     @Test
-    public void testGeneticInterval() {
+    void testGeneticInterval() {
         GeneticInterval interval = null;
         instance = builder.geneticInterval(interval).build();
-        assertThat(instance.getGeneticInterval(), nullValue());
+        assertThat(instance.geneticInterval(), nullValue());
     }
     
     @Test
-    public void testKeepNonPathogenic() {
+    void testKeepNonPathogenic() {
         boolean keepNonPathogenic = false;
         instance = builder.keepNonPathogenic(keepNonPathogenic).build();
         assertThat(instance.keepNonPathogenicVariants(), equalTo(keepNonPathogenic));
     }
 
     @Test
-    public void testRemoveFailedVariants() {
+    void testRemoveFailedVariants() {
         boolean expected = true;
         instance = builder.removeFailedVariants(expected).build();
         assertThat(instance.removeFailedVariants(), equalTo(expected));
     }
 
     @Test
-    public void testRemoveKnownVariants() {
+    void testRemoveKnownVariants() {
         boolean removeKnownVariants = true;
         instance = builder.removeKnownVariants(removeKnownVariants).build();
         assertThat(instance.removeKnownVariants(), equalTo(removeKnownVariants));
     }
     
     @Test
-    public void testKeepOffTargetVariants() {
+    void testKeepOffTargetVariants() {
         boolean keepOffTargetVariants = true;
         instance = builder.keepOffTargetVariants(keepOffTargetVariants).build();
         assertThat(instance.keepOffTargetVariants(), equalTo(keepOffTargetVariants));
     }
     
     @Test
-    public void testGenesToKeep() {
+    void testGenesToKeep() {
         Set<String> genesToKeep = new LinkedHashSet<>();
         genesToKeep.add("1");
         genesToKeep.add("2");
         genesToKeep.add("3");
         instance = builder.genesToKeep(genesToKeep).build();
-        assertThat(instance.getGenesToKeep(), equalTo(genesToKeep));        
+        assertThat(instance.genesToKeep(), equalTo(genesToKeep));
     }
     
     @Test
-    public void testModeOfInheritance() {
+    void testModeOfInheritance() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
         instance = builder.modeOfInheritance(modeOfInheritance).build();
-        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(instance.modeOfInheritance(), equalTo(modeOfInheritance));
     }
     
     @Test
-    public void testHashCode() {
-        FilterSettings other = FilterSettingsImpl.builder().build();
+    void testHashCode() {
+        FilterSettings other = FilterSettings.builder().build();
         instance = builder.build();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test
-    public void testEquals() {
-        FilterSettings other = FilterSettingsImpl.builder().build();
+    void testEquals() {
+        FilterSettings other = FilterSettings.builder().build();
         instance = builder.build();
         assertThat(instance, equalTo(other));
     }
     
     @Test
-    public void testNotEquals() {
-        FilterSettings other = FilterSettingsImpl.builder().minimumQuality(Float.MAX_VALUE).build();
+    void testNotEquals() {
+        FilterSettings other = FilterSettings.builder().minimumQuality(Float.MAX_VALUE).build();
         instance = builder.build();
         assertThat(instance.equals(other), is(false));
     }

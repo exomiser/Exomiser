@@ -57,21 +57,21 @@ class AnalysisGroupTest {
     @Test
     void throwsErrorWhenStepsAreNotOfSameGroupType() {
         AnalysisStep filterStep = new PathogenicityFilter(true);
-        AnalysisStep inheritanceModeDependant = new InheritanceFilter();
+        AnalysisStep inheritanceModeDependant = InheritanceFilter.of();
         assertThrows(IllegalArgumentException.class, () -> AnalysisGroup.of(filterStep, inheritanceModeDependant));
     }
 
     @Test
     void createSingleStepGroup() {
         AnalysisStep filterStep = new PathogenicityFilter(true);
-        assertThat(AnalysisGroup.of(filterStep).getAnalysisSteps(), equalTo(List.of(filterStep)));
+        assertThat(AnalysisGroup.of(filterStep).analysisSteps(), equalTo(List.of(filterStep)));
     }
 
     @Test
     void createMultiStepGroup() {
         AnalysisStep frequencyFilter = new FrequencyFilter(0.1f);
         AnalysisStep pathogenicityFilter = new PathogenicityFilter(true);
-        assertThat(AnalysisGroup.of(frequencyFilter, pathogenicityFilter).getAnalysisSteps(),
+        assertThat(AnalysisGroup.of(frequencyFilter, pathogenicityFilter).analysisSteps(),
                 equalTo(List.of(frequencyFilter, pathogenicityFilter)));
     }
 
@@ -83,7 +83,7 @@ class AnalysisGroupTest {
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.MVP))
                 .addStep(new FrequencyFilter(2f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
+                .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .addStep(new NoneTypePrioritiser())
                 .build();
@@ -92,11 +92,11 @@ class AnalysisGroupTest {
         // variant dependent
         expected.add(AnalysisGroup.of(new FrequencyFilter(2f), new PathogenicityFilter(true)));
         // inheritance mode dependent
-        expected.add(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())));
+        expected.add(AnalysisGroup.of(InheritanceFilter.of(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())));
         // gene only dependent
         expected.add(AnalysisGroup.of(new NoneTypePrioritiser()));
 
-        List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.getAnalysisSteps());
+        List<AnalysisGroup> analysisStepGroups = AnalysisGroup.groupAnalysisSteps(analysis.analysisSteps());
         assertThat(analysisStepGroups, equalTo(expected));
     }
 
@@ -104,7 +104,7 @@ class AnalysisGroupTest {
     void testIsVariantFilterGroup() {
         assertThat(AnalysisGroup.of(new FrequencyFilter(2f), new PathogenicityFilter(true)).isVariantFilterGroup(), equalTo(true));
         // inheritance mode dependent
-        assertThat(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).isVariantFilterGroup(), equalTo(false));
+        assertThat(AnalysisGroup.of(InheritanceFilter.of(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).isVariantFilterGroup(), equalTo(false));
         // gene only dependent
         assertThat(AnalysisGroup.of(new NoneTypePrioritiser()).isVariantFilterGroup(), equalTo(false));
     }
@@ -117,6 +117,6 @@ class AnalysisGroupTest {
         AnalysisStep prioritiserStep = new NoneTypePrioritiser();
         assertThat(AnalysisGroup.of(prioritiserStep).hasPrioritiserStep(), equalTo(true));
 
-        assertThat(AnalysisGroup.of(new InheritanceFilter(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).hasPrioritiserStep(), equalTo(true));
+        assertThat(AnalysisGroup.of(InheritanceFilter.of(), new OmimPriority(TestPriorityServiceFactory.stubPriorityService())).hasPrioritiserStep(), equalTo(true));
     }
 }

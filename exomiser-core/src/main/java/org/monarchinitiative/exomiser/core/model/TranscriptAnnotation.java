@@ -22,13 +22,27 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TranscriptAnnotation {
+public record TranscriptAnnotation(VariantEffect variantEffect,
+                                   // Set<VariantEffect> variantEffects,
+                                   String geneSymbol,
+                                   String accession,
+
+                                   String hgvsGenomic,
+                                   String hgvsCdna,
+                                   String hgvsProtein,
+                                   // exon / intron 'rank' e.g. lies in Exon (rank) 3 of (totalRank) 4
+                                   RankType rankType,
+                                   // 1-based intron/exon rank
+                                   int rank,
+                                   // total number of introns/exons for this transcript
+                                   int rankTotal,
+                                   int distanceFromNearestGene) {
 
     public enum RankType {
         EXON, INTRON, UNDEFINED
@@ -36,115 +50,13 @@ public class TranscriptAnnotation {
 
     private static final TranscriptAnnotation EMPTY = TranscriptAnnotation.builder().build();
 
-    private final VariantEffect variantEffect;
-
-//    private final Set<VariantEffect> variantEffects;
-
-
-    private final String geneSymbol;
-    private final String accession;
-
-    private final String hgvsGenomic;
-    private final String hgvsCdna;
-    private final String hgvsProtein;
-
-    // exon / intron 'rank' e.g. lies in Exon (rank) 3 of (totalRank) 4
-    private final RankType rankType;
-    // 1-based intron/exon rank
-    private final int rank;
-    // total number of introns/exons for this transcript
-    private final int rankTotal;
-
-    private final int distanceFromNearestGene;
-
-    private TranscriptAnnotation(Builder builder) {
-        this.variantEffect = builder.variantEffect;
-        this.geneSymbol = builder.geneSymbol;
-        this.accession = builder.accession;
-        this.hgvsGenomic = builder.hgvsGenomic;
-        this.hgvsCdna = builder.hgvsCdna;
-        this.hgvsProtein = builder.hgvsProtein;
-        this.rankType = builder.rankType;
-        this.rank = builder.rank;
-        this.rankTotal = builder.rankTotal;
-        this.distanceFromNearestGene = builder.distanceFromNearestGene;
-    }
-
     public static TranscriptAnnotation empty() {
         return EMPTY;
     }
 
-    public VariantEffect getVariantEffect() {
-        return variantEffect;
-    }
-
-//    public Set<VariantEffect> getVariantEffects() {
-//        return variantEffects;
-//    }
-
-    public String getGeneSymbol() {
-        return geneSymbol;
-    }
-
-    public String getAccession() {
-        return accession;
-    }
-
-    public String getHgvsGenomic() {
-        return hgvsGenomic;
-    }
-
-    public String getHgvsCdna() {
-        return hgvsCdna;
-    }
-
-    public String getHgvsProtein() {
-        return hgvsProtein;
-    }
-
-    public RankType getRankType() {
-        return rankType;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public int getRankTotal() {
-        return rankTotal;
-    }
-
-    public int getDistanceFromNearestGene() {
-        return distanceFromNearestGene;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TranscriptAnnotation that = (TranscriptAnnotation) o;
-        return rank == that.rank && rankTotal == that.rankTotal && distanceFromNearestGene == that.distanceFromNearestGene && variantEffect == that.variantEffect && geneSymbol.equals(that.geneSymbol) && accession.equals(that.accession) && hgvsGenomic.equals(that.hgvsGenomic) && hgvsCdna.equals(that.hgvsCdna) && hgvsProtein.equals(that.hgvsProtein) && rankType == that.rankType;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variantEffect, geneSymbol, accession, hgvsGenomic, hgvsCdna, hgvsProtein, rankType, rank, rankTotal, distanceFromNearestGene);
-    }
-
     @Override
     public String toString() {
-        return "TranscriptAnnotation{" +
-                "variantEffect=" + variantEffect +
-                ", geneSymbol='" + geneSymbol + '\'' +
-                ", accession='" + accession + '\'' +
-                ", hgvsGenomic='" + hgvsGenomic + '\'' +
-                ", hgvsCdna='" + hgvsCdna + '\'' +
-                ", hgvsProtein='" + hgvsProtein + '\'' +
-                ", rankType='" + rankType + '\'' +
-                ", rank='" + rank + '\'' +
-                ", rankTotal='" + rankTotal + '\'' +
-                ", distanceFromNearestGene=" + distanceFromNearestGene +
-                '}';
+        return "TranscriptAnnotation{" + "variantEffect=" + variantEffect + ", geneSymbol='" + geneSymbol + '\'' + ", accession='" + accession + '\'' + ", hgvsGenomic='" + hgvsGenomic + '\'' + ", hgvsCdna='" + hgvsCdna + '\'' + ", hgvsProtein='" + hgvsProtein + '\'' + ", rankType='" + rankType + '\'' + ", rank='" + rank + '\'' + ", rankTotal='" + rankTotal + '\'' + ", distanceFromNearestGene=" + distanceFromNearestGene + '}';
     }
 
     public static Builder builder() {
@@ -176,32 +88,32 @@ public class TranscriptAnnotation {
         }
 
         public Builder geneSymbol(String geneSymbol) {
-            this.geneSymbol = geneSymbol;
+            this.geneSymbol = Objects.requireNonNullElse(geneSymbol, "");
             return this;
         }
 
         public Builder accession(String accession) {
-            this.accession = accession;
+            this.accession = Objects.requireNonNullElse(accession, "");
             return this;
         }
 
         public Builder hgvsGenomic(String hgvsGenomic) {
-            this.hgvsGenomic = hgvsGenomic;
+            this.hgvsGenomic = Objects.requireNonNullElse(hgvsGenomic, "");
             return this;
         }
 
         public Builder hgvsCdna(String hgvsCdna) {
-            this.hgvsCdna = hgvsCdna;
+            this.hgvsCdna = Objects.requireNonNullElse(hgvsCdna, "");
             return this;
         }
 
         public Builder hgvsProtein(String hgvsProtein) {
-            this.hgvsProtein = hgvsProtein;
+            this.hgvsProtein = Objects.requireNonNullElse(hgvsProtein, "");
             return this;
         }
 
         public Builder rankType(RankType rankType) {
-            this.rankType = rankType;
+            this.rankType = Objects.requireNonNullElse(rankType, RankType.UNDEFINED);
             return this;
         }
 
@@ -221,7 +133,18 @@ public class TranscriptAnnotation {
         }
 
         public TranscriptAnnotation build() {
-            return new TranscriptAnnotation(this);
+            return new TranscriptAnnotation(
+                    variantEffect,
+                    geneSymbol,
+                    accession,
+                    hgvsGenomic,
+                    hgvsCdna,
+                    hgvsProtein,
+                    rankType,
+                    rank,
+                    rankTotal,
+                    distanceFromNearestGene
+            );
         }
     }
 

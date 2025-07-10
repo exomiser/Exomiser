@@ -41,22 +41,22 @@ abstract class AbstractPriorityResult implements PriorityResult {
     }
 
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return priorityType;
     }
 
     @Override
-    public int getGeneId() {
+    public int geneId() {
         return geneId;
     }
 
     @Override
-    public String getGeneSymbol() {
+    public String geneSymbol() {
         return geneSymbol;
     }
 
     @Override
-    public double getScore() {
+    public double score() {
         return score;
     }
 

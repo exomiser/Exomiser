@@ -31,8 +31,8 @@ class AcmgSpliceEvidenceAssigner {
      * @param clinVarDao
      */
     static void assignSpliceEvidence(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, ModeOfInheritance modeOfInheritance, List<Disease> knownDiseases, ClinVarDao clinVarDao) {
-        VariantEffect variantEffect = variantEvaluation.getVariantEffect();
-        PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
+        VariantEffect variantEffect = variantEvaluation.variantEffect();
+        PathogenicityData pathogenicityData = variantEvaluation.pathogenicityData();
         if (isSpliceDonorAcceptorSpliceVariant(variantEffect)) {
             // PVS1 decision tree - this should have been independently added by the PVS1EvidenceAssigner class
             // add PS1 modifier if PVS1 was assigned
@@ -43,7 +43,7 @@ class AcmgSpliceEvidenceAssigner {
             // not impacting splicing.
             PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
             if (variantEvaluation.variantType() == VariantType.SNV) {
-                float score = spliceAiScore == null ? 0 : spliceAiScore.getScore();
+                float score = spliceAiScore == null ? 0 : spliceAiScore.score();
                 assignSpliceAiBasedPP3Classification(acmgEvidenceBuilder, score);
                 if (acmgEvidenceBuilder.contains(PP3)) {
                     assignNonDonorAcceptorPS1(acmgEvidenceBuilder, variantEvaluation, clinVarDao);
@@ -80,8 +80,8 @@ class AcmgSpliceEvidenceAssigner {
         for (var entry : localClinVarData.entrySet()) {
             GenomicVariant clinVarVariant = entry.getKey();
             ClinVarData clinVarData = entry.getValue();
-            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
-            if (isNonDonorAcceptorSpliceRegionVariant(clinVarData.getVariantEffect()) && isPathOrLikelyPath(primaryInterpretation)) {
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
+            if (isNonDonorAcceptorSpliceRegionVariant(clinVarData.variantEffect()) && isPathOrLikelyPath(primaryInterpretation)) {
                 // same position in comparison to VUA
                 if (clinVarVariant.contains(variantEvaluation)) {
                     if (isPath(primaryInterpretation)) {
@@ -113,7 +113,7 @@ class AcmgSpliceEvidenceAssigner {
         // currently we can't use the actual transcript to calculate the variant's position in the intron/exon,
         // so we need to use the HGVS expression instead.
         if (variantEvaluation.hasTranscriptAnnotations()) {
-            String hgvsc = variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna();
+            String hgvsc = variantEvaluation.transcriptAnnotations().getFirst().hgvsCdna();
             Matcher matcher = CDS_INTRONIC_HGVS.matcher(hgvsc);
             if (matcher.matches()) {
                 String intronEnd = matcher.group("intronEnd");
@@ -127,10 +127,10 @@ class AcmgSpliceEvidenceAssigner {
 
     // BP7 "A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved"
     private static void assignSynonymousBP7(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation, PathogenicityData pathogenicityData, ClinVarData clinVarData) {
-        boolean isReportedPorLP = clinVarData.starRating() >= 1 && isPathOrLikelyPath(clinVarData.getPrimaryInterpretation());
-        if (variantEvaluation.getVariantEffect() == SYNONYMOUS_VARIANT && !isReportedPorLP) {
+        boolean isReportedPorLP = clinVarData.starRating() >= 1 && isPathOrLikelyPath(clinVarData.primaryInterpretation());
+        if (variantEvaluation.variantEffect() == SYNONYMOUS_VARIANT && !isReportedPorLP) {
             PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
-            if (spliceAiScore == null || spliceAiScore.getScore() < 0.1) {
+            if (spliceAiScore == null || spliceAiScore.score() < 0.1) {
                 acmgEvidenceBuilder.add(BP7);
             }
         }
@@ -145,9 +145,9 @@ class AcmgSpliceEvidenceAssigner {
         var localClinVarData = getClinVarDataSurroundingVariant(variantEvaluation, clinVarDao);
         for (var entry : localClinVarData.entrySet()) {
             ClinVarData clinVarData = entry.getValue();
-            ClinVarData.ClinSig primaryInterpretation = clinVarData.getPrimaryInterpretation();
+            ClinVarData.ClinSig primaryInterpretation = clinVarData.primaryInterpretation();
             // Table 2. PS1 code weights for variants with same predicted splicing event as known (likely) pathogenic variant
-            VariantEffect clinVarVariantEffect = clinVarData.getVariantEffect();
+            VariantEffect clinVarVariantEffect = clinVarData.variantEffect();
             if (isSpliceVariant(clinVarVariantEffect) && isPathOrLikelyPath(primaryInterpretation)) {
                 Set<Evidence> ps1Evidence = EnumSet.noneOf(Evidence.class);
                 if (pvs1Evidence == Evidence.VERY_STRONG) {

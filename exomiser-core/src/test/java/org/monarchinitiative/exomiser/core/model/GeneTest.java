@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneTest {
+class GeneTest {
 
     private Gene instance;
 
@@ -72,7 +72,7 @@ public class GeneTest {
     private static final FilterResult FAIL_GENE_FILTER_RESULT = FilterResult.fail(FilterType.INHERITANCE_FILTER);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // variant1 is the first one in in FGFR2 gene
         variantEvaluation1 = TestFactory.variantBuilder(10, 123353320, "C", "G").build();
         // variant2 is the second one in in FGFR2 gene
@@ -95,102 +95,102 @@ public class GeneTest {
     }
 
     @Test
-    public void testConstructorWithGeneIdentifier() {
+    void testConstructorWithGeneIdentifier() {
         Gene gene = new Gene(GENE1_GENE_IDENTIFIER);
-        assertThat(gene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
-        assertThat(gene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
-        assertThat(gene.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+        assertThat(gene.geneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(gene.entrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(gene.geneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
     }
 
     @Test
-    public void testAlternateConstructor() {
+    void testAlternateConstructor() {
         Gene gene = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
-        assertThat(gene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
-        assertThat(gene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
-        assertThat(gene.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+        assertThat(gene.geneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(gene.entrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(gene.geneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
     }
 
     @Test
-    public void testConstructorChecksForNull() {
+    void testConstructorChecksForNull() {
         assertThrows(NullPointerException.class, () -> new Gene(null));
     }
 
     @Test
-    public void testConstructorChecksForNullGeneIdentifierGeneSymbol() {
+    void testConstructorChecksForNullGeneIdentifierGeneSymbol() {
         assertThrows(NullPointerException.class, () ->
                 new Gene(GeneIdentifier.builder().geneSymbol(null).entrezId(GENE1_GENE_ID).geneId(GENE1_GENE_ID).build())
         );
     }
 
     @Test
-    public void testConstructorChecksForNullGeneIdentifierGeneId() {
+    void testConstructorChecksForNullGeneIdentifierGeneId() {
         assertThrows(NullPointerException.class, () ->
                 new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(null).entrezId(GENE1_GENE_ID).build())
         );
     }
 
     @Test
-    public void testConstructorChecksForNullGeneIdentifierEntrezId() {
+    void testConstructorChecksForNullGeneIdentifierEntrezId() {
         assertThrows(NullPointerException.class, () ->
                 new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(GENE1_GENE_ID).entrezId(null).build())
         );
     }
 
     @Test
-    public void testConstructorChecksForEmptyGeneIdentifierGeneSymbol() {
+    void testConstructorChecksForEmptyGeneIdentifierGeneSymbol() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Gene(GeneIdentifier.builder().geneSymbol("").geneId(GENE1_GENE_ID).entrezId(GENE1_GENE_ID).build())
         );
     }
 
     @Test
-    public void canGetGeneIdentifier() {
-        assertThat(instance.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+    void canGeneIdentifier() {
+        assertThat(instance.geneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
     }
 
     @Test
-    public void canGetGeneId() {
-        assertThat(instance.getGeneId(), equalTo(String.valueOf(GENE1_ENTREZ_GENE_ID)));
+    void canGeneId() {
+        assertThat(instance.geneId(), equalTo(String.valueOf(GENE1_ENTREZ_GENE_ID)));
     }
 
     @Test
-    public void testConstructorSetsInstanceVariables() {
+    void testConstructorSetsInstanceVariables() {
         instance.addVariant(variantEvaluation1);
 
         List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
         expectedVariantEvaluations.add(variantEvaluation1);
 
-        assertThat(instance.getGeneSymbol(), equalTo(GENE1_SYMBOL));
-        assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
-        assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
-        assertThat(instance.getNumberOfVariants(), equalTo(1));
+        assertThat(instance.geneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(instance.entrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(instance.variantEvaluations(), equalTo(expectedVariantEvaluations));
+        assertThat(instance.numberOfVariants(), equalTo(1));
         assertThat(instance.hasVariants(), is(true));
 
         assertThat(instance.passedFilters(), is(true));
-        assertThat(instance.getPriorityResults().isEmpty(), is(true));
+        assertThat(instance.priorityResults().isEmpty(), is(true));
 
-        assertThat(instance.getGeneScores().isEmpty(), is(true));
+        assertThat(instance.geneScores().isEmpty(), is(true));
     }
 
     @Test
-    public void testConstructorSetsInstanceVariablesNoVariant() {
+    void testConstructorSetsInstanceVariablesNoVariant() {
         Gene emptyGene = new Gene(GENE1_GENE_IDENTIFIER);
         List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
 
-        assertThat(emptyGene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
-        assertThat(emptyGene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
-        assertThat(emptyGene.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
-        assertThat(emptyGene.getNumberOfVariants(), equalTo(0));
+        assertThat(emptyGene.geneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(emptyGene.entrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(emptyGene.variantEvaluations(), equalTo(expectedVariantEvaluations));
+        assertThat(emptyGene.numberOfVariants(), equalTo(0));
         assertThat(emptyGene.hasVariants(), is(false));
 
         assertThat(emptyGene.passedFilters(), is(true));
-        assertThat(emptyGene.getPriorityResults().isEmpty(), is(true));
+        assertThat(emptyGene.priorityResults().isEmpty(), is(true));
 
-        assertThat(instance.getGeneScores().isEmpty(), is(true));
+        assertThat(instance.geneScores().isEmpty(), is(true));
     }
 
     @Test
-    public void testGenesWithDifferentGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
+    void testGenesWithDifferentGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneTwo();
 
@@ -199,7 +199,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testGenesWithDifferentGeneSymbolsAreComparedByCombinedScore() {
+    void testGenesWithDifferentGeneSymbolsAreComparedByCombinedScore() {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneTwo();
 
@@ -211,7 +211,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testGenesWithSameGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
+    void testGenesWithSameGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneOne();
 
@@ -220,7 +220,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testGenesWithSameGeneSymbolsAreComparedByCombinedScore() {
+    void testGenesWithSameGeneSymbolsAreComparedByCombinedScore() {
         Gene gene1 = newGeneOne();
         Gene gene2 = newGeneOne();
 
@@ -232,24 +232,24 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassesFiltersTrueWhenNoFiltersHaveBeenApplied() {
+    void testPassesFiltersTrueWhenNoFiltersHaveBeenApplied() {
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassedFiltersTrueWhenPassesGeneFilterOnly() {
+    void testPassedFiltersTrueWhenPassesGeneFilterOnly() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassedFiltersFalseWhenFailsGeneFilterOnly() {
+    void testPassedFiltersFalseWhenFailsGeneFilterOnly() {
         instance.addFilterResult(FAIL_GENE_FILTER_RESULT);
         assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
-    public void testPassedFiltersTrueWhenPassesGeneAndVariantFilters() {
+    void testPassedFiltersTrueWhenPassesGeneAndVariantFilters() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -257,7 +257,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassedFiltersFalseWhenFailsGeneFilterButPassesVariantFilter() {
+    void testPassedFiltersFalseWhenFailsGeneFilterButPassesVariantFilter() {
         instance.addFilterResult(FAIL_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -265,7 +265,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassedFiltersFalseWhenPassesGeneFilterButFailsVariantFilters() {
+    void testPassedFiltersFalseWhenPassesGeneFilterButFailsVariantFilters() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -273,7 +273,7 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassedFiltersTrueWhenPassesGeneFilterAndAtLeastOneVariantFilter() {
+    void testPassedFiltersTrueWhenPassesGeneFilterAndAtLeastOneVariantFilter() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
@@ -283,45 +283,45 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassedFilterTrueWhenGenePassesAndVariantsFailFilterOfThatType() {
+    void testPassedFilterTrueWhenGenePassesAndVariantsFailFilterOfThatType() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         variantEvaluation1.addFilterResult(FAIL_GENE_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
-        assertThat(instance.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(instance.passedFilter(PASS_GENE_FILTER_RESULT.filterType()), is(true));
     }
 
     @Test
-    public void testPassedFilterTrueWhenGeneUnfilteredAndVariantPassesFilterOfThatType() {
+    void testPassedFilterTrueWhenGeneUnfilteredAndVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
-        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.filterType()), is(true));
     }
 
     @Test
-    public void testPassedFilterFalseWhenGeneUnfilteredAndVariantsFailFilterOfThatType() {
+    void testPassedFilterFalseWhenGeneUnfilteredAndVariantsFailFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
-        assertThat(instance.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
+        assertThat(instance.passedFilter(FAIL_VARIANT_FILTER_RESULT.filterType()), is(false));
     }
 
     @Test
-    public void testPassedFilterTrueWhenGeneUnfilteredAndAtLeastOneVariantPassesFilterOfThatType() {
+    void testPassedFilterTrueWhenGeneUnfilteredAndAtLeastOneVariantPassesFilterOfThatType() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         variantEvaluation2.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation2);
-        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.filterType()), is(true));
     }
 
     @Test
-    public void testPassesFiltersTrueWhenVariantPassesFilter() {
+    void testPassesFiltersTrueWhenVariantPassesFilter() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassesFiltersTrueWhenAtLeastOneVariantPassesFilter() {
+    void testPassesFiltersTrueWhenAtLeastOneVariantPassesFilter() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
 
@@ -332,21 +332,21 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassesFiltersFalseWhenVariantFailsFilter() {
+    void testPassesFiltersFalseWhenVariantFailsFilter() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
-    public void testGetPassedVariantEvaluationsIsEmptyWhenVariantFailsFilter() {
+    void testPassedVariantEvaluationsIsEmptyWhenVariantFailsFilter() {
         variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
-        assertThat(instance.getPassedVariantEvaluations().isEmpty(), is(true));
+        assertThat(instance.passedVariantEvaluations().isEmpty(), is(true));
     }
 
     @Test
-    public void testGetPassedVariantEvaluations() {
+    void testPassedVariantEvaluations() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation1);
 
@@ -355,11 +355,11 @@ public class GeneTest {
 
         List<VariantEvaluation> passedVariantEvaluations = List.of(variantEvaluation1);
 
-        assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
+        assertThat(instance.passedVariantEvaluations(), equalTo(passedVariantEvaluations));
     }
 
     @Test
-    public void testGetNonContributingPassedVariantEvaluations() {
+    void testNonContributingPassedVariantEvaluations() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         variantEvaluation1.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.addVariant(variantEvaluation1);
@@ -369,12 +369,12 @@ public class GeneTest {
 
         List<VariantEvaluation> nonContributingPassedVariantEvaluations = List.of(variantEvaluation2);
 
-        assertThat(instance.getNonContributingPassedVariantEvaluations(), equalTo(nonContributingPassedVariantEvaluations));
+        assertThat(instance.nonContributingPassedVariantEvaluations(), equalTo(nonContributingPassedVariantEvaluations));
     }
 
 
     @Test
-    public void testAddVariantAfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
+    void testAddVariantAfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
 
@@ -385,19 +385,19 @@ public class GeneTest {
     }
 
     @Test
-    public void testAddVariantAfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
+    void testAddVariantAfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         instance.addFilterResult(FilterResult.fail(FilterType.PRIORITY_SCORE_FILTER));
 
         instance.addVariant(variantEvaluation1);
 
         assertThat(variantEvaluation1.passedFilters(), is(false));
-        assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.filterType()), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
     }
 
     @Test
-    public void testAddVariantAfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
+    void testAddVariantAfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
 
         instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
@@ -407,23 +407,23 @@ public class GeneTest {
 
         assertThat(variantEvaluation1.passedFilters(), is(true));
         assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
-        assertThat(variantEvaluation1.getFailedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
+        assertThat(variantEvaluation1.failedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
     }
 
     @Test
-    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
+    void testCanAddAndRetrievePriorityScoreByPriorityType() {
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
-        PriorityResult omimPriorityResult = new MockPriorityResult(priorityType, instance.getEntrezGeneID(), instance.getGeneSymbol(), 0f);
+        PriorityResult omimPriorityResult = new MockPriorityResult(priorityType, instance.entrezGeneId(), instance.geneSymbol(), 0f);
 
         instance.addPriorityResult(omimPriorityResult);
-        instance.addPriorityResult(new ExomeWalkerPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 0.0d));
+        instance.addPriorityResult(new ExomeWalkerPriorityResult(instance.entrezGeneId(), instance.geneSymbol(), 0.0d));
         assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
     }
 
     @Test
-    public void testCanAddAndRetrievePriorityScoreByPriorityClass() {
-        MockPriorityResult mockPriorityResult = new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, instance.getEntrezGeneID(), instance
-                .getGeneSymbol(), 1d);
+    void testCanAddAndRetrievePriorityScoreByPriorityClass() {
+        MockPriorityResult mockPriorityResult = new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, instance.entrezGeneId(), instance
+                .geneSymbol(), 1d);
         instance.addPriorityResult(mockPriorityResult);
 
         assertThat(instance.getPriorityResult(MockPriorityResult.class), equalTo(mockPriorityResult));
@@ -431,22 +431,22 @@ public class GeneTest {
     }
 
     @Test
-    public void defaultInheritanceModesAreEmpty() {
-        assertThat(instance.getCompatibleInheritanceModes(), notNullValue());
-        assertThat(instance.getCompatibleInheritanceModes().isEmpty(), is(true));
+    void defaultInheritanceModesAreEmpty() {
+        assertThat(instance.compatibleInheritanceModes(), notNullValue());
+        assertThat(instance.compatibleInheritanceModes().isEmpty(), is(true));
     }
 
     @Test
-    public void canSetAndGetInheritanceModes() {
+    void canSetAndGetInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
 
         instance.setCompatibleInheritanceModes(inheritanceModes);
 
-        assertThat(instance.getCompatibleInheritanceModes(), equalTo(inheritanceModes));
+        assertThat(instance.compatibleInheritanceModes(), equalTo(inheritanceModes));
     }
 
     @Test
-    public void isConsistentWithInheritanceModes() {
+    void isConsistentWithInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
                 ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
 
@@ -463,7 +463,7 @@ public class GeneTest {
     }
 
     @Test
-    public void isConsistentWithDominantInheritanceModes() {
+    void isConsistentWithDominantInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         instance.setCompatibleInheritanceModes(inheritanceModes);
@@ -479,7 +479,7 @@ public class GeneTest {
     }
 
     @Test
-    public void isConsistentWithRecessiveInheritanceModes() {
+    void isConsistentWithRecessiveInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         instance.setCompatibleInheritanceModes(inheritanceModes);
@@ -495,7 +495,7 @@ public class GeneTest {
     }
 
     @Test
-    public void isConsistentWithXRecessiveInheritanceModes() {
+    void isConsistentWithXRecessiveInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
 
         instance.setCompatibleInheritanceModes(inheritanceModes);
@@ -511,7 +511,7 @@ public class GeneTest {
     }
 
     @Test
-    public void isConsistentWithXDominantInheritanceModes() {
+    void isConsistentWithXDominantInheritanceModes() {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.of(ModeOfInheritance.X_DOMINANT);
 
         instance.setCompatibleInheritanceModes(inheritanceModes);
@@ -527,20 +527,20 @@ public class GeneTest {
     }
 
     @Test
-    public void testIsCompatibleWithXfalseWhenVariantsIsEmpty() {
+    void testIsCompatibleWithXfalseWhenVariantsIsEmpty() {
         instance = newGeneOne();
         assertThat(instance.isXChromosomal(), is(false));
     }
 
     @Test
-    public void testIsCompatibleWithXfalseWhenVariantIsNotCompatibleWithX() {
+    void testIsCompatibleWithXfalseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
         instance.addVariant(TestFactory.variantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(false));
     }
 
     @Test
-    public void testIsCompatibleWithXtrueWhenVariantIsCompatibleWithX() {
+    void testIsCompatibleWithXtrueWhenVariantIsCompatibleWithX() {
         int X_CHROMOSOME = 23;
         instance = newGeneOne();
         instance.addVariant(TestFactory.variantBuilder(X_CHROMOSOME, 1, "A", "T").build());
@@ -548,20 +548,20 @@ public class GeneTest {
     }
 
     @Test
-    public void testIsCompatibleWithYisFalseWhenVariantsIsEmpty() {
+    void testIsCompatibleWithYisFalseWhenVariantsIsEmpty() {
         instance = newGeneOne();
         assertThat(instance.isYChromosomal(), is(false));
     }
 
     @Test
-    public void testIsCompatibleWithYisFalseWhenVariantIsNotCompatibleWithX() {
+    void testIsCompatibleWithYisFalseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
         instance.addVariant(TestFactory.variantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(false));
     }
 
     @Test
-    public void testIsCompatibleWithYisTrueWhenVariantIsCompatibleWithX() {
+    void testIsCompatibleWithYisTrueWhenVariantIsCompatibleWithX() {
         int Y_CHROMOSOME = 24;
         instance = newGeneOne();
         instance.addVariant(TestFactory.variantBuilder(Y_CHROMOSOME, 1, "A", "T").build());
@@ -569,53 +569,53 @@ public class GeneTest {
     }
 
     @Test
-    public void testGetGeneScoreForMode() {
-        assertThat(instance.getGeneScores().isEmpty(), is(true));
+    void testGeneScoreForMode() {
+        assertThat(instance.geneScores().isEmpty(), is(true));
 
         ModeOfInheritance modeOfInheritanceAD = ModeOfInheritance.AUTOSOMAL_DOMINANT;
         GeneScore geneScoreAD = GeneScore.builder()
                 .combinedScore(1f)
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(modeOfInheritanceAD)
                 .build();
         instance.addGeneScore(geneScoreAD);
 
-        assertThat(instance.getGeneScoreForMode(modeOfInheritanceAD), equalTo(geneScoreAD));
-        assertThat(instance.getGeneScores(), equalTo(List.of(geneScoreAD)));
+        assertThat(instance.geneScoreForMode(modeOfInheritanceAD), equalTo(geneScoreAD));
+        assertThat(instance.geneScores(), equalTo(List.of(geneScoreAD)));
 
         ModeOfInheritance modeOfInheritanceAR = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
         GeneScore geneScoreAR = GeneScore.builder()
                 .combinedScore(1f)
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(modeOfInheritanceAR)
                 .build();
         instance.addGeneScore(geneScoreAR);
 
-        assertThat(instance.getGeneScores(), equalTo(List.of(geneScoreAD, geneScoreAR)));
+        assertThat(instance.geneScores(), equalTo(List.of(geneScoreAD, geneScoreAR)));
 
     }
 
     @Test
-    public void testScoresChangeWhenHigherGeneScoreAdded() {
+    void testScoresChangeWhenHigherGeneScoreAdded() {
 
         GeneScore defaultGeneScore = GeneScore.builder()
                 .modeOfInheritance(ModeOfInheritance.ANY)
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .build();
 
-        assertThat(instance.getTopGeneScore(), equalTo(defaultGeneScore));
+        assertThat(instance.topGeneScore(), equalTo(defaultGeneScore));
 
-        assertThat(instance.getVariantScore(), equalTo(defaultGeneScore.getVariantScore()));
-        assertThat(instance.getPriorityScore(), equalTo(defaultGeneScore.getPhenotypeScore()));
-        assertThat(instance.getCombinedScore(), equalTo(defaultGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(List.of()));
+        assertThat(instance.variantScore(), equalTo(defaultGeneScore.variantScore()));
+        assertThat(instance.priorityScore(), equalTo(defaultGeneScore.phenotypeScore()));
+        assertThat(instance.combinedScore(), equalTo(defaultGeneScore.combinedScore()));
+        assertThat(instance.geneScores(), equalTo(List.of()));
 
         //test returns zero with no score
-        assertThat(instance.getPriorityScoreForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(0d));
+        assertThat(instance.priorityScoreForMode(ModeOfInheritance.AUTOSOMAL_DOMINANT), equalTo(0d));
 
         double phenotypeScore = 1d;
         GeneScore firstGeneScore = GeneScore.builder()
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .phenotypeScore(0.5d)
                 .variantScore(0.5d)
@@ -623,15 +623,15 @@ public class GeneTest {
                 .build();
         instance.addGeneScore(firstGeneScore);
 
-        assertThat(instance.getTopGeneScore(), equalTo(firstGeneScore));
+        assertThat(instance.topGeneScore(), equalTo(firstGeneScore));
 
-        assertThat(instance.getVariantScore(), equalTo(firstGeneScore.getVariantScore()));
-        assertThat(instance.getPriorityScore(), equalTo(firstGeneScore.getPhenotypeScore()));
-        assertThat(instance.getCombinedScore(), equalTo(firstGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(List.of(firstGeneScore)));
+        assertThat(instance.variantScore(), equalTo(firstGeneScore.variantScore()));
+        assertThat(instance.priorityScore(), equalTo(firstGeneScore.phenotypeScore()));
+        assertThat(instance.combinedScore(), equalTo(firstGeneScore.combinedScore()));
+        assertThat(instance.geneScores(), equalTo(List.of(firstGeneScore)));
 
         GeneScore secondGeneScore = GeneScore.builder()
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .phenotypeScore(1d)
                 .variantScore(1d)
@@ -639,64 +639,64 @@ public class GeneTest {
                 .build();
         instance.addGeneScore(secondGeneScore);
 
-        assertThat(instance.getTopGeneScore(), equalTo(secondGeneScore));
+        assertThat(instance.topGeneScore(), equalTo(secondGeneScore));
 
-        assertThat(instance.getVariantScore(), equalTo(secondGeneScore.getVariantScore()));
-        assertThat(instance.getPriorityScore(), equalTo(secondGeneScore.getPhenotypeScore()));
-        assertThat(instance.getCombinedScore(), equalTo(secondGeneScore.getCombinedScore()));
-        assertThat(instance.getGeneScores(), equalTo(List.of(firstGeneScore, secondGeneScore)));
+        assertThat(instance.variantScore(), equalTo(secondGeneScore.variantScore()));
+        assertThat(instance.priorityScore(), equalTo(secondGeneScore.phenotypeScore()));
+        assertThat(instance.combinedScore(), equalTo(secondGeneScore.combinedScore()));
+        assertThat(instance.geneScores(), equalTo(List.of(firstGeneScore, secondGeneScore)));
     }
 
     @Test
-    public void testCanSetAndChangeGeneScore() {
+    void testCanSetAndChangeGeneScore() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        assertThat(instance.getGeneScores().isEmpty(), is(true));
+        assertThat(instance.geneScores().isEmpty(), is(true));
         //test returns zero with no score
-        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(0d));
+        assertThat(instance.priorityScoreForMode(modeOfInheritance), equalTo(0d));
 
         double phenotypeScore = 1d;
         GeneScore firstGeneScore = GeneScore.builder()
                 .phenotypeScore(phenotypeScore)
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
                 .build();
         instance.addGeneScore(firstGeneScore);
-        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(phenotypeScore));
+        assertThat(instance.priorityScoreForMode(modeOfInheritance), equalTo(phenotypeScore));
 
         double secondScore = 1d;
         GeneScore secondGeneScore = GeneScore.builder()
                 .phenotypeScore(phenotypeScore)
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(modeOfInheritance)
                 .build();
         instance.addGeneScore(secondGeneScore);
-        assertThat(instance.getPriorityScoreForMode(modeOfInheritance), equalTo(secondScore));
+        assertThat(instance.priorityScoreForMode(modeOfInheritance), equalTo(secondScore));
     }
 
     @Test
-    public void testInheritanceModeComparator() {
+    void testInheritanceModeComparator() {
         Gene topAutosomalDominant = TestFactory.newGeneFGFR2();
         //add gene scores for mois
-        GeneScore fgfr2AutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+        GeneScore fgfr2AutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.geneIdentifier())
                 .combinedScore(1f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         topAutosomalDominant.addGeneScore(fgfr2AutoDomScore);
 
-        GeneScore fgfr2AutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.getGeneIdentifier())
+        GeneScore fgfr2AutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalDominant.geneIdentifier())
                 .combinedScore(0.5f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
         topAutosomalDominant.addGeneScore(fgfr2AutoRecScore);
 
         Gene topAutosomalRecessive = TestFactory.newGeneRBM8A();
-        GeneScore rbm8aAutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+        GeneScore rbm8aAutoDomScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.geneIdentifier())
                 .combinedScore(0.5f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         topAutosomalRecessive.addGeneScore(rbm8aAutoDomScore);
 
-        GeneScore rbm8aAutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.getGeneIdentifier())
+        GeneScore rbm8aAutoRecScore = GeneScore.builder().geneIdentifier(topAutosomalRecessive.geneIdentifier())
                 .combinedScore(1f)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
@@ -720,30 +720,30 @@ public class GeneTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertThat(instance.toString(), equalTo("Gene{geneSymbol='GENE1', entrezGeneId=1234567, compatibleWith=[], filterStatus=PASSED, failedFilterTypes=[], passedFilterTypes=[], combinedScore=0.0, phenotypeScore=0.0, variantScore=0.0, variants=0}"));
     }
 
     @Test
-    void testGetAssociatedDiseases() {
+    void testAssociatedDiseases() {
         Gene instance = TestFactory.newGeneFGFR2();
-        assertThat(instance.getAssociatedDiseases().isEmpty(), is(true));
+        assertThat(instance.associatedDiseases().isEmpty(), is(true));
         Disease pfeifferSyndrome = Disease.builder().diseaseId("OMIM:101600").diseaseName("Pfeiffer syndrome").build();
-        OmimPriorityResult priorityResult = new OmimPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 1.0, List.of(pfeifferSyndrome), Map.of());
+        OmimPriorityResult priorityResult = new OmimPriorityResult(instance.entrezGeneId(), instance.geneSymbol(), 1.0, List.of(pfeifferSyndrome), Map.of());
         instance.addPriorityResult(priorityResult);
-        assertThat(instance.getAssociatedDiseases(), equalTo(List.of(pfeifferSyndrome)));
+        assertThat(instance.associatedDiseases(), equalTo(List.of(pfeifferSyndrome)));
     }
 
     @Test
-    public void testGetCompatibleGeneScores() throws Exception {
+    void testCompatibleGeneScores() throws Exception {
         Gene instance = TestFactory.newGeneFGFR2();
         // Hmm... this is a bit of a WFT - why does this need to be set rather than computed from the variants?
         //  ... because it gets set once by the InheritanceModeAnalyser after all the variants have been filtered
         instance.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        assertThat(instance.getCompatibleGeneScores().isEmpty(), is(true));
+        assertThat(instance.compatibleGeneScores().isEmpty(), is(true));
 
         GeneScore adGeneScore = GeneScore.builder()
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .phenotypeScore(0.5d)
                 .variantScore(0.5d)
@@ -758,20 +758,20 @@ public class GeneTest {
                 .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
                 .writerWithDefaultPrettyPrinter();
 
-        assertThat(instance.getCompatibleInheritanceModes(), equalTo(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
-        assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(adGeneScore)));
+        assertThat(instance.compatibleInheritanceModes(), equalTo(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(instance.compatibleGeneScores(), equalTo(List.of(adGeneScore)));
     }
 
     @Test
-    public void testGetCompatibleGeneScoresNoCompatibleMoi() throws Exception {
+    void testCompatibleMoi() throws Exception {
         Gene instance = TestFactory.newGeneFGFR2();
         // Hmm... this is a bit of a WFT - why does this need to be set rather than computed from the variants?
         //  ... because it gets set once by the InheritanceModeAnalyser after all the variants have been filtered
 //        instance.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        assertThat(instance.getCompatibleGeneScores().isEmpty(), is(true));
+        assertThat(instance.compatibleGeneScores().isEmpty(), is(true));
 
         GeneScore anyGeneScore = GeneScore.builder()
-                .geneIdentifier(instance.getGeneIdentifier())
+                .geneIdentifier(instance.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .phenotypeScore(0.5d)
                 .variantScore(0.5d)
@@ -781,7 +781,7 @@ public class GeneTest {
 
         instance.addGeneScore(anyGeneScore);
 
-        assertThat(instance.getCompatibleInheritanceModes().isEmpty(), is(true));
-        assertThat(instance.getCompatibleGeneScores(), equalTo(List.of(anyGeneScore)));
+        assertThat(instance.compatibleInheritanceModes().isEmpty(), is(true));
+        assertThat(instance.compatibleGeneScores(), equalTo(List.of(anyGeneScore)));
     }
 }

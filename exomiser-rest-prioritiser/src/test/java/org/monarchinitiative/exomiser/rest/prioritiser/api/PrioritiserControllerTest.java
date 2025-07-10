@@ -3,13 +3,14 @@ package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.rest.prioritiser.service.PrioritiserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -32,7 +33,7 @@ class PrioritiserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private PrioritiserService prioritiserService;
 
     private PrioritiserResultSet sampleResultSet;
@@ -62,27 +63,12 @@ class PrioritiserControllerTest {
         );
     }
 
-    private record MockPriorityResult(PriorityType priorityType, int geneId, String geneSymbol,
-                                      double score) implements PriorityResult {
-        @Override
-        public int getGeneId() {
-            return geneId;
-        }
-
-        @Override
-        public String getGeneSymbol() {
-            return geneSymbol;
-        }
-
-        @Override
-        public double getScore() {
-            return score;
-        }
-
-        @Override
-        public PriorityType getPriorityType() {
-            return priorityType;
-        }
+    private record MockPriorityResult(
+            PriorityType priorityType,
+            int geneId,
+            String geneSymbol,
+            double score
+    ) implements PriorityResult {
     }
 
     @Nested

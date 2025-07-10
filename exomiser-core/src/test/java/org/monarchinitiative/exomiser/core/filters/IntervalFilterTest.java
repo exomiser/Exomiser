@@ -31,6 +31,8 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 
 import java.util.List;
 
@@ -40,23 +42,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class IntervalFilterTest {
 
     IntervalFilter instance = new IntervalFilter(SEARCH_INTERVAL);
-    
+
     private static final byte RIGHT_CHR = 7;
     private static final byte WRONG_CHR = 3;
     private static final int START_REGION = 155595590;
     private static final int END_REGION = 155604810;
-    
+
     private static final int INSIDE_REGION = START_REGION + 20;
     private static final int BEFORE_REGION = START_REGION - 20;
     private static final int AFTER_REGION = END_REGION + 20;
 
-    
+
     private static final GeneticInterval SEARCH_INTERVAL = new GeneticInterval(RIGHT_CHR, START_REGION, END_REGION);
 
     private final VariantEvaluation rightChromosomeRightPosition = TestFactory.variantBuilder(RIGHT_CHR, INSIDE_REGION, "A", "T")
@@ -119,8 +120,8 @@ public class IntervalFilterTest {
     }
 
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.INTERVAL_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.INTERVAL_FILTER));
     }
 
     @Test
@@ -131,7 +132,7 @@ public class IntervalFilterTest {
 
     @Test
     public void testNotEqualsIntervalDifferent() {
-        IntervalFilter otherFilter = new IntervalFilter(GeneticInterval.parseString("chr3:12334-67850"));
+        IntervalFilter otherFilter = new IntervalFilter(GeneticInterval.parseGeneticInterval("chr3:12334-67850"));
         assertThat(instance.equals(otherFilter), is(false));
     }
 
@@ -139,5 +140,39 @@ public class IntervalFilterTest {
     public void testIsEquals() {
         IntervalFilter otherFilter = new IntervalFilter(SEARCH_INTERVAL);
         assertThat(instance.equals(otherFilter), is(true));
+    }
+
+    @Test
+    void bedCoordinates() {
+        // https://github.com/samtools/hts-specs/blob/master/BEDv1.pdf
+        // [0-based, half-open coordinate system:]
+        //  A coordinate system where the first base starts at position~0, and the start of the interval is included but the end is not.
+        //  For example, for a sequence of bases {ACTGCG}, the bases given by the interval [2,4) are {TG}.
+        String sequence = "ACTGCG";
+        assertThat(sequence.substring(2, 4), equalTo("TG"));
+
+        // 1-based    1 2 3 4 5 6
+        // sequence   A C T G C G
+        // 0-based   0 1 2 3 4 5 6
+
+        // 1-based here is [start, end] and zero-based is [start, end). Numerically zero-based here it is identical to
+        // zero-start interbase (shown above) which is easier to grok. 1-based is used by humans as we learn to count on
+        // fingers.
+
+        Contig contig = GenomicAssemblies.GRCh38p13().contigById(1);
+        GenomicVariant variant = GenomicVariant.of(contig, Strand.POSITIVE, Coordinates.oneBased(3, 4), "TG", "T"); //acTGcg
+        System.out.println(variant.toOneBased());
+        // GenomicVariant{contig=1, id='', strand=+, coordinateSystem=ONE_BASED, start=3, end=4, ref='TG', alt='T', variantType=DEL, length=2, changeLength=-1}
+        GenomicRegion bedInterval = GenomicRegion.of(contig, Strand.POSITIVE, Coordinates.zeroBased(3, 5)); // actGCg
+        System.out.println(bedInterval.toOneBased());
+        // GenomicRegion{contig=1, strand=+, coordinateSystem=ONE_BASED, start=4, end=5}
+        assertThat(variant.overlapsWith(bedInterval), is(true)); // overlapping actGcg
+
+        // This is how the setup works in the IntervalFilter. It uses an older API, which ought to be updated...
+        ChromosomalRegion chromosomalRegion = new GeneticInterval(contig.id(), bedInterval.startOneBased(), bedInterval.endOneBased()); // this uses 1-based coordinates
+        IntervalFilter intervalFilter = new IntervalFilter(chromosomalRegion);
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder().variant(variant).build();
+        // check that deletion starting downstream is considered as overlapping with the interval and therefore passes the filter
+        assertThat(intervalFilter.runFilter(variantEvaluation), equalTo(FilterResult.pass(FilterType.INTERVAL_FILTER)));
     }
 }

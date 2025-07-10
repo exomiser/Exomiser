@@ -44,10 +44,10 @@ import org.monarchinitiative.exomiser.core.phenotype.Organism;
  */
 public interface GeneModel extends Model {
 
-    Organism getOrganism();
+    Organism organism();
 
-    int getEntrezGeneId();
+    int entrezGeneId();
 
-    String getHumanGeneSymbol();
+    String humanGeneSymbol();
 
 }

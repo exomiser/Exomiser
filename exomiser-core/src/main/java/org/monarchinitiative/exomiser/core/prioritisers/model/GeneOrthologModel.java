@@ -48,82 +48,23 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneOrthologModel implements GeneModel {
-    
-    private final String modelId;
-    private final Organism organism;
-    
-    private final int entrezGeneId;
-    private final String humanGeneSymbol;
-    
-    private final String modelGeneId;
-    private final String modelGeneSymbol;
-    
-    private final List<String> phenotypeIds;
-    
-    public GeneOrthologModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) {
-        this.modelId = modelId;
-        this.organism = organism;
-        
-        this.entrezGeneId = entrezGeneId;
-        this.humanGeneSymbol = humanGeneSymbol;
-        
-        this.modelGeneId = modelGeneId;
-        this.modelGeneSymbol = modelGeneSymbol;
-        
-        this.phenotypeIds = List.copyOf(phenotypeIds);
-    }
+public record GeneOrthologModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) implements GeneModel {
 
-    public String getModelGeneId() {
-        return modelGeneId;
-    }
+    public GeneOrthologModel {
+        Objects.requireNonNull(modelId);
+        Objects.requireNonNull(organism);
 
-    public String getModelGeneSymbol() {
-        return modelGeneSymbol;
+        Objects.requireNonNull(humanGeneSymbol);
+
+        Objects.requireNonNull(modelGeneSymbol);
+
+        Objects.requireNonNull(phenotypeIds);
+        phenotypeIds = List.copyOf(phenotypeIds);
     }
 
     @Override
-    public Organism getOrganism() {
-        return organism;
-    }
-
-    @Override
-    public int getEntrezGeneId() {
-        return entrezGeneId;
-    }
-
-    @Override
-    public String getHumanGeneSymbol() {
-        return humanGeneSymbol;
-    }
-
-    @Override
-    public String getId() {
+    public String id() {
         return modelId;
-    }
-
-    @Override
-    public List<String> getPhenotypeIds() {
-        return phenotypeIds;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GeneOrthologModel)) return false;
-        GeneOrthologModel geneOrthologModel = (GeneOrthologModel) o;
-        return entrezGeneId == geneOrthologModel.entrezGeneId &&
-                Objects.equals(modelId, geneOrthologModel.modelId) &&
-                organism == geneOrthologModel.organism &&
-                Objects.equals(humanGeneSymbol, geneOrthologModel.humanGeneSymbol) &&
-                Objects.equals(modelGeneId, geneOrthologModel.modelGeneId) &&
-                Objects.equals(modelGeneSymbol, geneOrthologModel.modelGeneSymbol) &&
-                Objects.equals(phenotypeIds, geneOrthologModel.phenotypeIds);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, phenotypeIds);
     }
 
     @Override

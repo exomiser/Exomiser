@@ -25,31 +25,26 @@ import java.util.Objects;
 /**
  * Semantic Similarity in HPO
  *
+ * @param hpoSemSimScore The semantic similarity score as implemented in PhenIX (also known as Phenomizer). Note
+ *                       that this is not the p-value methodology in that paper, but merely the simple
+ *                       semantic similarity score.
+ * @param negativeLogP   The negative logarithm of the p-value. e.g., 10 means p=10^{-10}
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @author Jules Jacobsen
  * @version 0.05 (6 January, 2014).
  */
-public class PhenixPriorityResult extends AbstractPriorityResult {
+public record PhenixPriorityResult(int geneId, String geneSymbol, double score, double hpoSemSimScore,
+                                   double negativeLogP) implements PriorityResult {
 
-    /**
-     * The semantic similarity score as implemented in PhenIX (also know as
-     * Phenomizer). Note that this is not the p-value methodology in that paper,
-     * but merely the simple semantic similarity score.
-     */
-    private final double hpoSemSimScore;
-    /**
-     * The negative logarithm of the p-value. e.g., 10 means p=10^{-10}
-     */
-    private final double negativeLogP;
-
-    public PhenixPriorityResult(int geneId, String geneSymbol, double score, double semanticSimilarityScore, double negLogP) {
-        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, score);
-        this.hpoSemSimScore = semanticSimilarityScore;
-        this.negativeLogP = negLogP;
+    public PhenixPriorityResult {
+        Objects.requireNonNull(geneSymbol);
     }
 
-    /**
-     */
+    @Override
+    public PriorityType priorityType() {
+        return PriorityType.PHENIX_PRIORITY;
+    }
+
     @Override
     public String getHTMLCode() {
         return String.format("<dl><dt>PhenIX semantic similarity score: %.2f (p-value: %f)</dt></dl>",
@@ -57,28 +52,13 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        PhenixPriorityResult that = (PhenixPriorityResult) o;
-        return Double.compare(that.hpoSemSimScore, hpoSemSimScore) == 0 &&
-                Double.compare(that.negativeLogP, negativeLogP) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), hpoSemSimScore, negativeLogP);
-    }
-
-    @Override
     public String toString() {
         return "PhenixPriorityResult{" +
-                "geneId=" + geneId +
-                ", geneSymbol='" + geneSymbol + '\'' +
-                ", score=" + score +
-                ", hpoSemSimScore=" + hpoSemSimScore +
-                ", negativeLogP=" + negativeLogP +
-                '}';
+               "geneId=" + geneId +
+               ", geneSymbol='" + geneSymbol + '\'' +
+               ", score=" + score +
+               ", hpoSemSimScore=" + hpoSemSimScore +
+               ", negativeLogP=" + negativeLogP +
+               '}';
     }
 }

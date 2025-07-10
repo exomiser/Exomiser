@@ -42,7 +42,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .variantEffect(value)
                 .build();
-        assertThat(annotation.getVariantEffect(), equalTo(value));
+        assertThat(annotation.variantEffect(), equalTo(value));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .geneSymbol(value)
                 .build();
-        assertThat(annotation.getGeneSymbol(), equalTo(value));
+        assertThat(annotation.geneSymbol(), equalTo(value));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .accession(value)
                 .build();
-        assertThat(annotation.getAccession(), equalTo(value));
+        assertThat(annotation.accession(), equalTo(value));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .hgvsGenomic(value)
                 .build();
-        assertThat(annotation.getHgvsGenomic(), equalTo(value));
+        assertThat(annotation.hgvsGenomic(), equalTo(value));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .hgvsCdna(value)
                 .build();
-        assertThat(annotation.getHgvsCdna(), equalTo(value));
+        assertThat(annotation.hgvsCdna(), equalTo(value));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .hgvsProtein(value)
                 .build();
-        assertThat(annotation.getHgvsProtein(), equalTo(value));
+        assertThat(annotation.hgvsProtein(), equalTo(value));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .distanceFromNearestGene(value)
                 .build();
-        assertThat(annotation.getDistanceFromNearestGene(), equalTo(value));
+        assertThat(annotation.distanceFromNearestGene(), equalTo(value));
     }
 
     @Test
@@ -107,8 +107,8 @@ public class TranscriptAnnotationTest {
                 .rankTotal(5)
                 .build();
         // i.e. Exon 2 of 5
-        assertThat(annotation.getRankType(), equalTo(TranscriptAnnotation.RankType.EXON));
-        assertThat(annotation.getRank(), equalTo(2));
-        assertThat(annotation.getRankTotal(), equalTo(5));
+        assertThat(annotation.rankType(), equalTo(TranscriptAnnotation.RankType.EXON));
+        assertThat(annotation.rank(), equalTo(2));
+        assertThat(annotation.rankTotal(), equalTo(5));
     }
 }

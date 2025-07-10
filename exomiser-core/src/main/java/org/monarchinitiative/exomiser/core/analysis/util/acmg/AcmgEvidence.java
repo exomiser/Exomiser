@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 
 /**

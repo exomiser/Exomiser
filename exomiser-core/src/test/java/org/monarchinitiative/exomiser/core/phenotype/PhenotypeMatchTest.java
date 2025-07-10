@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PhenotypeMatchTest {
+class PhenotypeMatchTest {
     
     private PhenotypeMatch instance;
     
@@ -51,7 +51,7 @@ public class PhenotypeMatchTest {
     private double score;
     
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         lcs = PhenotypeTerm.of("ID:12345", "nose");
         queryPhenotype = PhenotypeTerm.of("ID:12344", "big nose");
         matchPhenotype = PhenotypeTerm.of("ID:12355", "little nose");
@@ -63,74 +63,74 @@ public class PhenotypeMatchTest {
     }
 
     @Test
-    public void testGetQueryPhenotypeId() {
-        assertThat(instance.getQueryPhenotypeId(), equalTo(queryPhenotype.getId()));
+    void testQueryPhenotypeId() {
+        assertThat(instance.queryPhenotypeId(), equalTo(queryPhenotype.id()));
     }
     
     @Test
-    public void testGetQueryPhenotypeIdForNullInstance() {
+    void testQueryPhenotypeIdForNullInstance() {
         instance = PhenotypeMatch.builder().query(null).match(matchPhenotype).lcs(lcs).ic(ic).simj(simJ).score(score).build();
-        assertThat(instance.getQueryPhenotypeId(), equalTo("null"));
+        assertThat(instance.queryPhenotypeId(), equalTo("null"));
     }
     
     @Test
-    public void testGetQueryPhenotype() {
-        assertThat(instance.getQueryPhenotype(), equalTo(queryPhenotype));
+    void testQueryPhenotype() {
+        assertThat(instance.queryPhenotype(), equalTo(queryPhenotype));
     }
 
     @Test
-    public void testGetMatchPhenotypeId() {
-        assertThat(instance.getMatchPhenotypeId(), equalTo(matchPhenotype.getId()));
+    void testMatchPhenotypeId() {
+        assertThat(instance.matchPhenotypeId(), equalTo(matchPhenotype.id()));
     }
     
     @Test
-    public void testGetMatchPhenotypeIdForNullInstance() {
+    void testMatchPhenotypeIdForNullInstance() {
         instance = PhenotypeMatch.builder().query(queryPhenotype).match(null).lcs(lcs).ic(ic).simj(simJ).score(score).build();
-        assertThat(instance.getMatchPhenotypeId(), equalTo("null"));
+        assertThat(instance.matchPhenotypeId(), equalTo("null"));
     }
     
     @Test
-    public void testGetMatchPhenotype() {
-        assertThat(instance.getMatchPhenotype(), equalTo(matchPhenotype));
+    void testMatchPhenotype() {
+        assertThat(instance.matchPhenotype(), equalTo(matchPhenotype));
     }
 
     @Test
-    public void testGetLcs() {
-        assertThat(instance.getLcs(), equalTo(lcs));
+    void testLcs() {
+        assertThat(instance.lcs(), equalTo(lcs));
     }
 
     @Test
-    public void testGetIc() {
-        assertThat(instance.getIc(), equalTo(ic));
+    void testIc() {
+        assertThat(instance.ic(), equalTo(ic));
     }
 
     @Test
-    public void testGetSimJ() {
-        assertThat(instance.getSimJ(), equalTo(simJ));
+    void testSimJ() {
+        assertThat(instance.simJ(), equalTo(simJ));
     }
     
     @Test
-    public void testGetScore() {
-        assertThat(instance.getScore(), equalTo(score));
+    void testScore() {
+        assertThat(instance.score(), equalTo(score));
     }
     
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertThat(instance.hashCode(), equalTo(instance.hashCode()));
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         assertThat(instance, equalTo(instance));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertThat(instance.toString().isEmpty(), is(false));
     }
     
     @Test
-    public void testJsonOutput() throws JsonProcessingException {
+    void testJsonOutput() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);

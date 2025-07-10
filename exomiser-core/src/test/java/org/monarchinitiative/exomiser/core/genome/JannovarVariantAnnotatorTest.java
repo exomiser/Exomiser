@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class JannovarVariantAnnotatorTest {
+class JannovarVariantAnnotatorTest {
 
     private final JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
             .buildDefaultJannovarData(), ChromosomalRegionIndex.empty());
@@ -73,17 +73,17 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
-        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.123256215T>G"));
-        assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.1694A>C"));
-        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Glu565Ala)"));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(transcriptAnnotation.accession(), equalTo("uc021pzz.1"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(0));
+        assertThat(transcriptAnnotation.hgvsGenomic(), equalTo("g.123256215T>G"));
+        assertThat(transcriptAnnotation.hgvsCdna(), equalTo("c.1694A>C"));
+        assertThat(transcriptAnnotation.hgvsProtein(), equalTo("p.(Glu565Ala)"));
     }
 
     @Test
@@ -96,17 +96,17 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.SPLICE_ACCEPTOR_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.SPLICE_ACCEPTOR_VARIANT));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
-        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.123243319T>G"));
-        assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.2196-2A>C"));
-        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.?"));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(transcriptAnnotation.accession(), equalTo("uc021pzz.1"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(0));
+        assertThat(transcriptAnnotation.hgvsGenomic(), equalTo("g.123243319T>G"));
+        assertThat(transcriptAnnotation.hgvsCdna(), equalTo("c.2196-2A>C"));
+        assertThat(transcriptAnnotation.hgvsProtein(), equalTo("p.?"));
     }
 
     @Test
@@ -148,17 +148,17 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("HGNC:7427"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("MT-CYB"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STOP_GAINED));
+        assertThat(variantAnnotation.geneId(), equalTo("HGNC:7427"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("MT-CYB"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.STOP_GAINED));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("MT-CYB"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("ENST00000361789.2"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(0));
-        assertThat(transcriptAnnotation.getHgvsGenomic(), equalTo("g.15150G>A")); // should be NC_012920.1:m.15150G>A
-        assertThat(transcriptAnnotation.getHgvsCdna(), equalTo("c.404G>A"));
-        assertThat(transcriptAnnotation.getHgvsProtein(), equalTo("p.(Trp135*)")); // p.(Ter135=) using the standard eukaryotic codon table
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("MT-CYB"));
+        assertThat(transcriptAnnotation.accession(), equalTo("ENST00000361789.2"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(0));
+        assertThat(transcriptAnnotation.hgvsGenomic(), equalTo("g.15150G>A")); // should be NC_012920.1:m.15150G>A
+        assertThat(transcriptAnnotation.hgvsCdna(), equalTo("c.404G>A"));
+        assertThat(transcriptAnnotation.hgvsProtein(), equalTo("p.(Trp135*)")); // p.(Ter135=) using the standard eukaryotic codon table
     }
 
     @Test
@@ -171,14 +171,14 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(-120171));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(transcriptAnnotation.accession(), equalTo("uc021pzz.1"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(-120171));
     }
 
     @Test
@@ -191,14 +191,14 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(120130));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(transcriptAnnotation.accession(), equalTo("uc021pzz.1"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(120130));
     }
 
     @Test
@@ -211,14 +211,14 @@ public class JannovarVariantAnnotatorTest {
 
         VariantAnnotation variantAnnotation = annotations.get(0);
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
-        assertThat(transcriptAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(transcriptAnnotation.getAccession(), equalTo("uc021pzz.1"));
-        assertThat(transcriptAnnotation.getDistanceFromNearestGene(), equalTo(123458888 - 123237843));
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().get(0);
+        assertThat(transcriptAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(transcriptAnnotation.accession(), equalTo("uc021pzz.1"));
+        assertThat(transcriptAnnotation.distanceFromNearestGene(), equalTo(123458888 - 123237843));
     }
 
     @Test
@@ -229,14 +229,14 @@ public class JannovarVariantAnnotatorTest {
         assertThat(upstreamVariantAnnots.size(), equalTo(1));
         VariantAnnotation upstreamAnnotations = upstreamVariantAnnots.get(0);
 
-        assertThat(upstreamAnnotations.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(upstreamAnnotations.variantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
 
         GenomicVariant intergenicVariant = variant("10", 123458888, "T", "G");
         List<VariantAnnotation> intergenicVariantAnnots = annotate(instance, "10", 123458888, "T", "G");
         assertThat(intergenicVariantAnnots.size(), equalTo(1));
         VariantAnnotation intergenicAnnotations = intergenicVariantAnnots.get(0);
 
-        assertThat(intergenicAnnotations.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
+        assertThat(intergenicAnnotations.variantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
 
         //Regulatory regions containing the variants
         RegulatoryFeature enhancer = new RegulatoryFeature(10, upstreamVariant.start(), upstreamVariant.end(), RegulatoryFeature.FeatureType.ENHANCER);
@@ -251,11 +251,11 @@ public class JannovarVariantAnnotatorTest {
         //Annotate the original positions using the new annotator...
         List<VariantAnnotation> wasUpstream = annotate(annotatorWithRegulatoryRegions, upstreamVariant.contigName(), upstreamVariant
                 .start(), upstreamVariant.ref(), upstreamVariant.alt());
-        assertThat(wasUpstream.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        assertThat(wasUpstream.get(0).variantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
         //... and lo! They are designated as regulatory region variants!
         List<VariantAnnotation> wasIntergenic = annotate(annotatorWithRegulatoryRegions, intergenicVariant.contigName(), intergenicVariant
                 .start(), intergenicVariant.ref(), intergenicVariant.alt());
-        assertThat(wasIntergenic.get(0).getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        assertThat(wasIntergenic.get(0).variantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
     @Test
@@ -326,7 +326,7 @@ public class JannovarVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
 
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(false));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.STRUCTURAL_VARIANT));
     }
 
     @Test
@@ -356,28 +356,28 @@ public class JannovarVariantAnnotatorTest {
         List<VariantAnnotation> overlappingMissenseAnnotations = annotate(variantAnnotator, "16", 89935214, "G", "A");
         assertThat(overlappingMissenseAnnotations.size(), equalTo(2));
         overlappingMissenseAnnotations.forEach(variantAnnotation -> {
-            assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+            assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
             // the transcript annotations should be split into new variant annotations for each gene
-            assertThat(variantAnnotation.getTranscriptAnnotations().size(), equalTo(1));
+            assertThat(variantAnnotation.transcriptAnnotations().size(), equalTo(1));
         });
 
         List<VariantAnnotation> annotations = annotate(variantAnnotator, "16", 89923407, "G", "TA");
         assertThat(annotations.size(), equalTo(1));
         annotations.forEach(variantAnnotation -> {
-            assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION));
+            assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION));
             // the transcript annotations should remain together as the position on the AC092143 transcript
-            assertThat(variantAnnotation.getTranscriptAnnotations().size(), equalTo(2));
+            assertThat(variantAnnotation.transcriptAnnotations().size(), equalTo(2));
         });
 
         Map<String, List<TranscriptAnnotation>> annotationsByGeneSymbol = annotations.stream()
-                .flatMap(variantAnnotation -> variantAnnotation.getTranscriptAnnotations().stream())
-                .collect(groupingBy(TranscriptAnnotation::getGeneSymbol));
+                .flatMap(variantAnnotation -> variantAnnotation.transcriptAnnotations().stream())
+                .collect(groupingBy(TranscriptAnnotation::geneSymbol));
 
         annotationsByGeneSymbol.get("TUBB3")
-                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.getVariantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION)));
+                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.variantEffect(), equalTo(VariantEffect.FRAMESHIFT_ELONGATION)));
 
         annotationsByGeneSymbol.get("AC092143.1")
-                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)));
+                .forEach(transcriptAnnotation -> assertThat(transcriptAnnotation.variantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)));
 
     }
 
@@ -390,7 +390,7 @@ public class JannovarVariantAnnotatorTest {
         List<VariantAnnotation> variantAnnotations = instance.annotate(variant);
 
         assertThat(variantAnnotations.size(), equalTo(1));
-        assertThat(variantAnnotations.get(0).getVariantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
+        assertThat(variantAnnotations.get(0).variantEffect(), equalTo(VariantEffect.EXON_LOSS_VARIANT));
     }
 
     @Test
@@ -402,6 +402,6 @@ public class JannovarVariantAnnotatorTest {
         List<VariantAnnotation> variantAnnotations = instance.annotate(variant);
 
         assertThat(variantAnnotations.size(), equalTo(1));
-        assertThat(variantAnnotations.get(0).getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotations.get(0).variantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
     }
 }

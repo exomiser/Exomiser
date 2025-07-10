@@ -20,59 +20,19 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneMatch {
+public record GeneMatch(int queryGeneId, int matchGeneId, double score, List<GeneModelPhenotypeMatch> bestMatchModels) {
 
-    public static final GeneMatch NO_HIT = new GeneMatch(0, 0, 0, Collections.emptyList());
+    public static final GeneMatch NO_HIT = new GeneMatch(0, 0, 0, List.of());
 
-    private final Integer queryGeneId;
-    private final Integer matchGeneId;
-    private final double score;
-    private final List<GeneModelPhenotypeMatch> bestMatchModels;
-
-    private GeneMatch(Integer queryGeneId, Integer matchGeneId, double score, List<GeneModelPhenotypeMatch> bestMatchModels) {
-        this.queryGeneId = queryGeneId;
-        this.matchGeneId = matchGeneId;
-        this.score = score;
-        this.bestMatchModels = List.copyOf(bestMatchModels);
-    }
-
-    public Integer getQueryGeneId() {
-        return queryGeneId;
-    }
-
-    public Integer getMatchGeneId() {
-        return matchGeneId;
-    }
-
-    public double getScore() {
-        return score;
-    }
-
-    public List<GeneModelPhenotypeMatch> getBestMatchModels() {
-        return bestMatchModels;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GeneMatch)) return false;
-        GeneMatch geneMatch = (GeneMatch) o;
-        return Double.compare(geneMatch.score, score) == 0 &&
-                Objects.equals(queryGeneId, geneMatch.queryGeneId) &&
-                Objects.equals(matchGeneId, geneMatch.matchGeneId) &&
-                Objects.equals(bestMatchModels, geneMatch.bestMatchModels);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(queryGeneId, matchGeneId, score, bestMatchModels);
+    public GeneMatch {
+        Objects.requireNonNull(bestMatchModels);
+        bestMatchModels = List.copyOf(bestMatchModels);
     }
 
     @Override
@@ -91,18 +51,18 @@ public class GeneMatch {
 
     public static class Builder {
 
-        private Integer queryGeneId = 0;
-        private Integer matchGeneId = 0;
+        private int queryGeneId = 0;
+        private int matchGeneId = 0;
         private double score = 0;
         private List<GeneModelPhenotypeMatch> bestMatchModels = List.of();
 
 
-        public Builder queryGeneId(Integer queryGeneId) {
+        public Builder queryGeneId(int queryGeneId) {
             this.queryGeneId = queryGeneId;
             return this;
         }
 
-        public Builder matchGeneId(Integer matchGeneId) {
+        public Builder matchGeneId(int matchGeneId) {
             this.matchGeneId = matchGeneId;
             return this;
         }

@@ -97,8 +97,8 @@
         <svart.version>2.0.0-RC7</svart.version>
         <htsjdk.version>3.0.5</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
-        <protobuf.version>3.21.12</protobuf.version>
-        <spring-boot.version>3.2.3</spring-boot.version> <!-- TODO: update to 3.4.3 / 3.5.0-->
+        <protobuf.version>4.28.2</protobuf.version>
+        <spring-boot.version>3.4.3</spring-boot.version>
         <picocli.version>4.7.6</picocli.version>
         <!-- H2 version 1.4.200 was used for 2309 and below, 2.1.214 is part of Spring boot 3.1.1 the file formats and
         API for the MVStore are different so consider very hard if this needs updating.-->

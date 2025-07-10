@@ -38,11 +38,11 @@ public class HgncParserTest {
     @Test
     public void testParseGeneIdentifiers() {
         HgncParser hgncParser = new HgncParser(Paths.get("src/test/resources/data/hgnc_complete_set.txt"));
-        List<GeneIdentifier> geneIdentifiers = hgncParser.parseGeneIdentifiers().collect(toList());
+        List<GeneIdentifier> geneIdentifiers = hgncParser.parseGeneIdentifiers().toList();
         assertThat(geneIdentifiers.size(), equalTo(41054));
 
         GeneIdentifier fgfr2Identifier = geneIdentifiers.stream()
-                .filter(geneIdentifier -> geneIdentifier.getGeneSymbol().equals("FGFR2"))
+                .filter(geneIdentifier -> geneIdentifier.geneSymbol().equals("FGFR2"))
                 .findFirst()
                 .get();
         System.out.println(fgfr2Identifier);
@@ -60,7 +60,7 @@ public class HgncParserTest {
         assertThat(fgfr2Identifier, equalTo(expectedFgfr2Identifier));
 
         GeneIdentifier withdrawnIdentifier = geneIdentifiers.stream()
-                .filter(geneIdentifier -> geneIdentifier.getHgncId().equals("HGNC:1"))
+                .filter(geneIdentifier -> geneIdentifier.hgncId().equals("HGNC:1"))
                 .findFirst()
                 .get();
         System.out.println(withdrawnIdentifier);

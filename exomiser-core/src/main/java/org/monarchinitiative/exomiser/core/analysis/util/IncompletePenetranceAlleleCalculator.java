@@ -42,7 +42,7 @@ public class IncompletePenetranceAlleleCalculator {
     public IncompletePenetranceAlleleCalculator(Pedigree pedigree) {
         this.affectedSampleIdentifiers = pedigree.getIndividuals().stream()
                 .filter(Pedigree.Individual::isAffected)
-                .map(Pedigree.Individual::getId)
+                .map(Pedigree.Individual::id)
                 .collect(toUnmodifiableSet());
     }
 
@@ -55,10 +55,10 @@ public class IncompletePenetranceAlleleCalculator {
     private Predicate<VariantEvaluation> inAllAffected() {
         return variantEvaluation -> {
             boolean inAllAffected = true;
-            for (SampleData sampleData : variantEvaluation.getSampleGenotypes()) {
-                SampleGenotype genotype = sampleData.getSampleGenotype();
+            for (SampleData sampleData : variantEvaluation.sampleGenotypes()) {
+                SampleGenotype genotype = sampleData.sampleGenotype();
                 // ALL affected MUST contain the variant to be compatible with incomplete penetrance. However, it can also be present in unaffected.
-                if (affectedSampleIdentifiers.contains(sampleData.getId()) && (genotype.isNoCall() || genotype.isHomRef() || genotype.isEmpty())) {
+                if (affectedSampleIdentifiers.contains(sampleData.id()) && (genotype.isNoCall() || genotype.isHomRef() || genotype.isEmpty())) {
                     inAllAffected = false;
                 }
             }

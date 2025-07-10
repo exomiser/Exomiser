@@ -64,7 +64,7 @@ public class AllelePropertiesDaoMvStore implements AllelePropertiesDao {
 
     @Override
     public AlleleProto.AlleleProperties getAlleleProperties(Variant variant) {
-        return getAlleleProperties(variant.alleleKey(), variant.getGenomeAssembly());
+        return getAlleleProperties(variant.alleleKey(), variant.genomeAssembly());
     }
 
 }

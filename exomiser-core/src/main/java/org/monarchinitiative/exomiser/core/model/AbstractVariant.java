@@ -40,7 +40,7 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
     final String geneSymbol;
     final String geneId;
     final VariantEffect variantEffect;
-    final List<TranscriptAnnotation> annotations;
+    final List<TranscriptAnnotation> transcriptAnnotations;
 
     AbstractVariant(Builder<?> builder) {
         super(builder);
@@ -49,17 +49,17 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
         this.geneSymbol = builder.geneSymbol;
         this.geneId = builder.geneId;
         this.variantEffect = builder.variantEffect;
-        this.annotations = List.copyOf(builder.annotations);
+        this.transcriptAnnotations = List.copyOf(builder.transcriptAnnotations);
     }
 
-    AbstractVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> annotations) {
+    AbstractVariant(Contig contig, String id, Strand strand, Coordinates coordinates, String ref, String alt, int changeLength, GenomeAssembly genomeAssembly, String geneSymbol, String geneId, VariantEffect variantEffect, List<TranscriptAnnotation> transcriptAnnotations) {
         super(contig, id, strand, coordinates, ref, alt, changeLength, "", "");
         this.alleleKey = AlleleProtoAdaptor.toAlleleKey(this);
         this.genomeAssembly = genomeAssembly;
         this.geneSymbol = geneSymbol;
         this.geneId = geneId;
         this.variantEffect = variantEffect;
-        this.annotations = List.copyOf(annotations);
+        this.transcriptAnnotations = List.copyOf(transcriptAnnotations);
     }
 
     @Override
@@ -67,25 +67,25 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
         return alleleKey;
     }
 
-    public String getGeneSymbol() {
+    public String geneSymbol() {
         return geneSymbol;
     }
 
-    public String getGeneId() {
+    public String geneId() {
         return geneId;
     }
 
-    public VariantEffect getVariantEffect() {
+    public VariantEffect variantEffect() {
         return variantEffect;
     }
 
-    public List<TranscriptAnnotation> getTranscriptAnnotations() {
-        return annotations;
+    public List<TranscriptAnnotation> transcriptAnnotations() {
+        return transcriptAnnotations;
     }
 
     @Override
     public boolean hasTranscriptAnnotations() {
-        return !annotations.isEmpty();
+        return !transcriptAnnotations.isEmpty();
     }
 
     @Override
@@ -95,15 +95,15 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
         if (!super.equals(o)) return false;
         AbstractVariant that = (AbstractVariant) o;
         return genomeAssembly == that.genomeAssembly &&
-                geneSymbol.equals(that.geneSymbol) &&
-                geneId.equals(that.geneId) &&
+               geneSymbol.equals(that.geneSymbol) &&
+               geneId.equals(that.geneId) &&
                 variantEffect == that.variantEffect &&
-                annotations.equals(that.annotations);
+               transcriptAnnotations.equals(that.transcriptAnnotations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), genomeAssembly, geneSymbol, geneId, variantEffect, annotations);
+        return Objects.hash(super.hashCode(), genomeAssembly, geneSymbol, geneId, variantEffect, transcriptAnnotations);
     }
 
     abstract static class Builder<T extends Builder<T>> extends BaseGenomicVariant.Builder<T> {
@@ -113,15 +113,15 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
         private String geneSymbol = "";
         private String geneId = "";
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
-        private List<TranscriptAnnotation> annotations = List.of();
+        private List<TranscriptAnnotation> transcriptAnnotations = List.of();
 
         public T variant(Variant variant) {
             super.variant(variant);
-            genomeAssembly = variant.getGenomeAssembly();
-            geneSymbol = variant.getGeneSymbol();
-            geneId = variant.getGeneId();
-            variantEffect = variant.getVariantEffect();
-            annotations = variant.getTranscriptAnnotations();
+            genomeAssembly = variant.genomeAssembly();
+            geneSymbol = variant.geneSymbol();
+            geneId = variant.geneId();
+            variantEffect = variant.variantEffect();
+            transcriptAnnotations = variant.transcriptAnnotations();
             return self();
         }
 
@@ -145,8 +145,8 @@ public abstract class AbstractVariant extends BaseGenomicVariant<AbstractVariant
             return self();
         }
 
-        public T annotations(List<TranscriptAnnotation> annotations) {
-            this.annotations = Objects.requireNonNull(annotations);
+        public T transcriptAnnotations(List<TranscriptAnnotation> transcriptAnnotations) {
+            this.transcriptAnnotations = Objects.requireNonNull(transcriptAnnotations);
             return self();
         }
 

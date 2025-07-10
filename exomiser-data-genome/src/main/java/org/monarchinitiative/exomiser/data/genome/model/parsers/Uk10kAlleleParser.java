@@ -36,7 +36,7 @@ public class Uk10kAlleleParser extends VcfAlleleParser {
     private static final Logger logger = LoggerFactory.getLogger(Uk10kAlleleParser.class);
 
     /**
-     * Parses the AF value form the INFO line and adds it to the {@link Allele}. The AF is pre-calculated as the AC/AN.
+     * Parses the AF frequency form the INFO line and adds it to the {@link Allele}. The AF is pre-calculated as the AC/AN.
      * AC and AN are the aggregated values of the ALSPAC and TWINSUK cohorts. These are non-rare disease cohorts so should
      * be suitable for rare disease analysis.
      * <p>

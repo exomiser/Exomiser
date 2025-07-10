@@ -87,35 +87,35 @@ public class GenomeAssemblyTest {
 
     @Test
     void testGetReferenceIdUnknown() {
-        assertThat(HG19.getRefSeqAccession(-1), equalTo(""));
-        assertThat(HG38.getRefSeqAccession(-1), equalTo(""));
+        assertThat(HG19.refSeqAccession(-1), equalTo(""));
+        assertThat(HG38.refSeqAccession(-1), equalTo(""));
 
-        assertThat(HG19.getRefSeqAccession(999), equalTo(""));
-        assertThat(HG38.getRefSeqAccession(999), equalTo(""));
+        assertThat(HG19.refSeqAccession(999), equalTo(""));
+        assertThat(HG38.refSeqAccession(999), equalTo(""));
     }
 
     @Test
     void testGetReferenceIdUnplaced() {
-        assertThat(HG19.getRefSeqAccession(0), equalTo(""));
-        assertThat(HG38.getRefSeqAccession(0), equalTo(""));
+        assertThat(HG19.refSeqAccession(0), equalTo(""));
+        assertThat(HG38.refSeqAccession(0), equalTo(""));
     }
 
     @Test
     void testGetReferenceIdChr1() {
-        assertThat(HG19.getRefSeqAccession(1), equalTo("NC_000001.10"));
-        assertThat(HG38.getRefSeqAccession(1), equalTo("NC_000001.11"));
+        assertThat(HG19.refSeqAccession(1), equalTo("NC_000001.10"));
+        assertThat(HG38.refSeqAccession(1), equalTo("NC_000001.11"));
     }
 
     @Test
     void testGetReferenceIdChrX() {
-        assertThat(HG19.getRefSeqAccession(23), equalTo("NC_000023.10"));
-        assertThat(HG38.getRefSeqAccession(23), equalTo("NC_000023.11"));
+        assertThat(HG19.refSeqAccession(23), equalTo("NC_000023.10"));
+        assertThat(HG38.refSeqAccession(23), equalTo("NC_000023.11"));
     }
 
     @Test
     void testGetReferenceIdChrM() {
-        assertThat(HG19.getRefSeqAccession(25), equalTo("NC_012920.1"));
-        assertThat(HG38.getRefSeqAccession(25), equalTo("NC_012920.1"));
+        assertThat(HG19.refSeqAccession(25), equalTo("NC_012920.1"));
+        assertThat(HG38.refSeqAccession(25), equalTo("NC_012920.1"));
     }
 
     @Test

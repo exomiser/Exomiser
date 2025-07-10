@@ -38,7 +38,7 @@ import org.monarchinitiative.svart.GenomicVariant;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public interface Variant extends GenomicVariant, VariantAnnotations {
 
-    default GenomeAssembly getGenomeAssembly() {
+    default GenomeAssembly genomeAssembly() {
         return GenomeAssembly.assemblyOfContig(contig());
     }
 

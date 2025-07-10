@@ -67,7 +67,7 @@ public class CombinedScorePvalueCalculator {
         logger.debug("Setting up phenotype score cache on {} genes", unscoredGenes.size());
         var phenoScoreCache = generatePhenoScoreCache(prioritiser, sampleHpoIds, unscoredGenes);
         logger.debug("Creating bootstrapped combined scores...");
-        return new CombinedScorePvalueCalculator(prioritiser.getPriorityType(), phenoScoreCache);
+        return new CombinedScorePvalueCalculator(prioritiser.priorityType(), phenoScoreCache);
     }
 
     /**
@@ -81,12 +81,12 @@ public class CombinedScorePvalueCalculator {
 
     private static double[] generatePhenoScoreCache(Prioritiser<?> prioritiser, List<String> hpoIds, List<Gene> genes) {
         prioritiser.prioritizeGenes(hpoIds, genes);
-        PriorityType priorityType = prioritiser.getPriorityType();
+        PriorityType priorityType = prioritiser.priorityType();
         return genes.stream()
                 .mapToDouble(gene -> {
                     PriorityResult priorityResult = gene.getPriorityResult(priorityType);
                     if (priorityResult != null) {
-                        return priorityResult.getScore();
+                        return priorityResult.score();
                     }
                     return 0.0;
                 })

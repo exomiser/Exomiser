@@ -50,6 +50,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
@@ -71,7 +72,7 @@ public class InheritanceModeAnalyserTest {
 
     private String variantString(VariantEvaluation variant) {
         return String.format("%s\t%d\t%s\t%s\t%s\t%s\tcompatibleWith=%s", variant.contigId(), variant.start(), variant.ref(), variant
-                .alt(), variant.getAltAlleleId(), variant.getGenotypeString(), variant.getCompatibleInheritanceModes());
+                .alt(), variant.altAlleleId(), variant.genotypeString(), variant.compatibleInheritanceModes());
     }
 
     private InheritanceModeAnalyser newInheritanceModeAnalyser(Pedigree pedigree) {
@@ -172,8 +173,8 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-        gene.getPassedVariantEvaluations()
-                .forEach(variant -> assertThat(variant.getCompatibleInheritanceModes().isEmpty(), is(true)));
+        gene.passedVariantEvaluations()
+                .forEach(variant -> assertThat(variant.compatibleInheritanceModes().isEmpty(), is(true)));
     }
 
     @Test
@@ -196,8 +197,8 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-        gene.getPassedVariantEvaluations()
-                .forEach(variant -> assertThat(variant.getCompatibleInheritanceModes().isEmpty(), is(true)));
+        gene.passedVariantEvaluations()
+                .forEach(variant -> assertThat(variant.compatibleInheritanceModes().isEmpty(), is(true)));
     }
 
     @Nested
@@ -234,7 +235,7 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> assertThat(variant.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true)));
         }
 
@@ -270,8 +271,8 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-            gene.getPassedVariantEvaluations()
-                    .forEach(variant -> assertThat(variant.getCompatibleInheritanceModes().isEmpty(), is(true)));
+            gene.passedVariantEvaluations()
+                    .forEach(variant -> assertThat(variant.compatibleInheritanceModes().isEmpty(), is(true)));
         }
 
         @Test
@@ -305,7 +306,7 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> assertThat(variant.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true)));
         }
 
@@ -342,7 +343,7 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> {
                         assertThat(variant.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
                     });
@@ -384,9 +385,9 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> {
-                        assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+                        assertThat(variant.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                     });
         }
 
@@ -430,9 +431,9 @@ public class InheritanceModeAnalyserTest {
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
             assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> {
-                        assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+                        assertThat(variant.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
                     });
         }
     }
@@ -481,7 +482,7 @@ public class InheritanceModeAnalyserTest {
 //            assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(true));
 //            assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
 //            assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> {
 //                        assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                     });
@@ -523,7 +524,7 @@ public class InheritanceModeAnalyserTest {
 //            assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
 //            assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-            gene.getPassedVariantEvaluations()
+            gene.passedVariantEvaluations()
                     .forEach(variant -> {
 //                        assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                     });
@@ -551,9 +552,9 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-        gene.getPassedVariantEvaluations()
+        gene.passedVariantEvaluations()
                 .forEach(variant -> {
-                    assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+                    assertTrue(variant.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT));
                 });
     }
 
@@ -578,9 +579,9 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
-        gene.getPassedVariantEvaluations()
+        gene.passedVariantEvaluations()
                 .forEach(variant -> {
-                    assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+                    assertThat(variant.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
                 });
     }
 
@@ -605,9 +606,9 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-        gene.getPassedVariantEvaluations()
+        gene.passedVariantEvaluations()
                 .forEach(variant -> {
-                    assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+                    assertThat(variant.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                 });
     }
 
@@ -632,9 +633,9 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-        gene.getPassedVariantEvaluations()
+        gene.passedVariantEvaluations()
                 .forEach(variant -> {
-                    assertThat(variant.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+                    assertThat(variant.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                 });
     }
 
@@ -678,13 +679,13 @@ public class InheritanceModeAnalyserTest {
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
-        assertThat(hetAltVar1.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
-        assertThat(hetAltVar2.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetAltVar1.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetAltVar2.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
 
-        assertThat(homAltVar.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(homAltVar.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
 
-        assertThat(hetVar1.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
-        assertThat(hetVar2.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetVar1.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetVar2.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
     }
 
 
@@ -746,8 +747,8 @@ public class InheritanceModeAnalyserTest {
         assertThat(geneRecessiveAutosomal.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
         assertThat(geneRecessiveAutosomal.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(false));
 
-        assertThat(hetAltVar1.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
-        assertThat(hetAltVar2.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetAltVar1.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+        assertThat(hetAltVar2.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
 
 
         assertThat(geneRecessiveX.isCompatibleWith(ModeOfInheritance.ANY), is(true));
@@ -757,7 +758,7 @@ public class InheritanceModeAnalyserTest {
         assertThat(geneRecessiveX.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
         assertThat(geneRecessiveX.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(false));
 
-        assertThat(homAltXVar.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT)));
+        assertThat(homAltXVar.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT)));
 
 
         assertThat(geneDominantAutosomal.isCompatibleWith(ModeOfInheritance.ANY), is(true));
@@ -767,7 +768,7 @@ public class InheritanceModeAnalyserTest {
         assertThat(geneDominantAutosomal.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
         assertThat(geneDominantAutosomal.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(false));
 
-        assertThat(autoHetVar.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(autoHetVar.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
 
         assertThat(geneMitochondrial.isCompatibleWith(ModeOfInheritance.ANY), is(true));
         assertThat(geneMitochondrial.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -776,6 +777,6 @@ public class InheritanceModeAnalyserTest {
         assertThat(geneMitochondrial.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
         assertThat(geneMitochondrial.isCompatibleWith(ModeOfInheritance.MITOCHONDRIAL), is(true));
 
-        assertThat(mitoHetVar.getCompatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.MITOCHONDRIAL)));
+        assertThat(mitoHetVar.compatibleInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.MITOCHONDRIAL)));
     }
 }

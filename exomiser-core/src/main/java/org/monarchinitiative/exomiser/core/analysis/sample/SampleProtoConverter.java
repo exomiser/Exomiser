@@ -40,21 +40,21 @@ public class SampleProtoConverter implements ProtoConverter<Sample, SampleProto.
     @Override
     public SampleProto.Sample toProto(Sample sample) {
         return SampleProto.Sample.newBuilder()
-                .setProband(sample.getProbandSampleName())
-                .setSex(toPhenopacketSex(sample.getSex()))
-                .setAge(toProtoAge(sample.getAge()))
-                .addAllHpoIds(sample.getHpoIds())
-                .setGenomeAssembly(sample.getGenomeAssembly().toString())
-                .setVcf(sample.hasVcf() ? sample.getVcfPath().toString() : "")
-                .setPedigree(toProtoPedigree(sample.getPedigree()))
+                .setProband(sample.probandSampleName())
+                .setSex(toPhenopacketSex(sample.sex()))
+                .setAge(toProtoAge(sample.age()))
+                .addAllHpoIds(sample.hpoIds())
+                .setGenomeAssembly(sample.genomeAssembly().toString())
+                .setVcf(sample.hasVcf() ? sample.vcfPath().toString() : "")
+                .setPedigree(toProtoPedigree(sample.pedigree()))
                 .build();
     }
 
     private SampleProto.Age toProtoAge(Age age) {
         return SampleProto.Age.newBuilder()
-                .setYears(age.getYears())
-                .setMonths(age.getMonths())
-                .setDays(age.getDays())
+                .setYears(age.years())
+                .setMonths(age.months())
+                .setDays(age.days())
                 .build();
     }
 

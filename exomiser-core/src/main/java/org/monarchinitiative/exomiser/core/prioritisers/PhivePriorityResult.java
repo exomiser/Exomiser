@@ -39,36 +39,26 @@ import java.util.Objects;
  * This code was extended on Feb 1, 2013 to show links to the MGI webpage for
  * the model in question.
  *
+ * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
+ * @param score the phenodigm score for this gene as calculated by OWLsim. This score indicates the
+ * similarity between a humam disease and the phenotype of a genetically
+ * modified mouse model.
+ * @param geneModelPhenotypeMatch the mouse model evidence for this result.
+ *
  * @author Damian Smedley
  * @author Jules Jacobsen
  * @version 0.06 (April 22, 2013).
  */
-public class PhivePriorityResult extends AbstractPriorityResult {
+public record PhivePriorityResult(int geneId, String geneSymbol, double score, GeneModelPhenotypeMatch geneModelPhenotypeMatch) implements PriorityResult {
 
-    /**
-     * The MGI id of the model most similar to the gene being analysed. For
-     * instance, the MGI id MGI:101757 corresponding to the webpage
-     * {@code http://www.informatics.jax.org/marker/MGI:101757} describes the
-     * gene Cfl1 (cofilin 1, non-muscle) and the phenotypic features associated
-     * with the several mouse models that have been made to investigate this
-     * gene.
-     */
-    private final GeneModelPhenotypeMatch geneModelPhenotypeMatch;
-
-    /**
-     * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
-     * @param score the phenodigm score for this gene as calculated by OWLsim. This score indicates the
-     * similarity between a humam disease and the phenotype of a genetically
-     * modified mouse model.
-     * @param geneModelPhenotypeMatch the mouse model evidence for this result.
-     */
-    public PhivePriorityResult(int geneId, String geneSymbol, double score, GeneModelPhenotypeMatch geneModelPhenotypeMatch) {
-        super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, score);
-        this.geneModelPhenotypeMatch = geneModelPhenotypeMatch;
+    public PhivePriorityResult {
+        Objects.requireNonNull(geneSymbol);
+        Objects.requireNonNull(geneModelPhenotypeMatch);
     }
 
-    public GeneModelPhenotypeMatch getGeneModelPhenotypeMatch() {
-        return geneModelPhenotypeMatch;
+    @Override
+    public PriorityType priorityType() {
+        return PriorityType.PHIVE_PRIORITY;
     }
 
     /**
@@ -81,7 +71,7 @@ public class PhivePriorityResult extends AbstractPriorityResult {
         if (geneModelPhenotypeMatch == null) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
-            String link = makeMgiGeneLink((GeneOrthologModel) geneModelPhenotypeMatch.getModel());
+            String link = makeMgiGeneLink((GeneOrthologModel) geneModelPhenotypeMatch.model());
             return String.format("<dl><dt>Mouse phenotype data for %s</dt></dl>", link);
         }
     }
@@ -92,22 +82,8 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * {@code http://www.informatics.jax.org/marker/MGI:101757}.
      */
     private String makeMgiGeneLink(GeneOrthologModel geneOrthologModel) {
-        String url = String.format("http://www.informatics.jax.org/marker/%s", geneOrthologModel.getModelGeneId());
-        return String.format("<a href=\"%s\">%s</a>", url, geneOrthologModel.getModelGeneSymbol());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PhivePriorityResult)) return false;
-        if (!super.equals(o)) return false;
-        PhivePriorityResult that = (PhivePriorityResult) o;
-        return Objects.equals(geneModelPhenotypeMatch, that.geneModelPhenotypeMatch);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), geneModelPhenotypeMatch);
+        String url = String.format("http://www.informatics.jax.org/marker/%s", geneOrthologModel.modelGeneId());
+        return String.format("<a href=\"%s\">%s</a>", url, geneOrthologModel.modelGeneSymbol());
     }
 
     @Override

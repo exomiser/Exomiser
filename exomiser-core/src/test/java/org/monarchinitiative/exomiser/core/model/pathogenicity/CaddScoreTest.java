@@ -38,15 +38,15 @@ import static org.hamcrest.Matchers.closeTo;
 public class CaddScoreTest {
 
     @Test
-    public void testGetSource() {
-        assertThat(CaddScore.of(1.0f).getSource(), equalTo(PathogenicitySource.CADD));
+    public void testSource() {
+        assertThat(CaddScore.of(1.0f).source(), equalTo(PathogenicitySource.CADD));
     }
 
     @Test
     void testScaling() {
-        assertThat(CaddScore.of(10f).getScore(), equalTo(0.90f));
-        assertThat((double) CaddScore.of(13f).getScore(), closeTo(0.95f, 0.1f));
-        assertThat(CaddScore.of(20f).getScore(), equalTo(0.99f));
+        assertThat(CaddScore.of(10f).score(), equalTo(0.90f));
+        assertThat((double) CaddScore.of(13f).score(), closeTo(0.95f, 0.1f));
+        assertThat(CaddScore.of(20f).score(), equalTo(0.99f));
     }
 
     @Test

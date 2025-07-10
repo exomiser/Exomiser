@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +29,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -163,7 +163,7 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScores() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = List.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
 
         List<PathogenicityScore> result = instance.pathogenicityScores();
         assertThat(result, equalTo(expResult));
@@ -172,9 +172,9 @@ public class PathogenicityDataTest {
     @Test
     public void testGetPredictedPathogenicityScoresIsImmutable() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
-        List<PathogenicityScore> expResult = ImmutableList.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = List.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
         //try and add another score to the instance post-construction
-        instance.pathogenicityScores().add(SIFT_PASS);
+        assertThrows(UnsupportedOperationException.class, () -> instance.pathogenicityScores().add(SIFT_PASS));
         
         List<PathogenicityScore> result = instance.pathogenicityScores();
         assertThat(result, equalTo(expResult));
@@ -201,8 +201,8 @@ public class PathogenicityDataTest {
     public void testGetPredictedScoreWhenScorePresent() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_PASS);
         PathogenicityScore result =  instance.pathogenicityScore(PathogenicitySource.POLYPHEN);
-        assertThat(result.getScore(), equalTo(POLYPHEN_PASS.getScore()));
-        assertThat(result.getSource(), equalTo(POLYPHEN_PASS.getSource()));
+        assertThat(result.score(), equalTo(POLYPHEN_PASS.score()));
+        assertThat(result.source(), equalTo(POLYPHEN_PASS.source()));
         assertThat(result, equalTo(POLYPHEN_PASS));
     }
     

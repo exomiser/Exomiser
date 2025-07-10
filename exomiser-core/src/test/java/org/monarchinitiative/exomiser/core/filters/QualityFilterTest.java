@@ -62,12 +62,12 @@ public class QualityFilterTest {
 
     @Test
     public void testGetMimimumQualityThreshold() {
-        assertThat(instance.getMimimumQualityThreshold(), equalTo(MIN_QUAL_THRESHOLD));
+        assertThat(instance.mimimumQualityThreshold(), equalTo(MIN_QUAL_THRESHOLD));
     }   
 
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.QUALITY_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.QUALITY_FILTER));
     }
 
     @Test
