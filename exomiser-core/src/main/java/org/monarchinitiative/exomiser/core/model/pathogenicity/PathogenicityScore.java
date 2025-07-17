@@ -52,7 +52,7 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
             case REMM -> RemmScore.of(score);
             case REVEL -> RevelScore.of(score);
             case SPLICE_AI -> SpliceAiScore.of(score);
-            default -> new BasePathogenicityScore(source, score);
+            default -> new DefaultPathogenicityScore(source, score);
         };
     }
 

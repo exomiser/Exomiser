@@ -24,12 +24,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 /**
+ * A simple, untyped pathogenicity score container.
+ *
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-record BasePathogenicityScore(PathogenicitySource source, float score) implements PathogenicityScore {
+record DefaultPathogenicityScore(PathogenicitySource source, float score) implements PathogenicityScore {
 
-    BasePathogenicityScore {
+    DefaultPathogenicityScore {
         checkBounds(source, score);
     }
 
