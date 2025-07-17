@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
@@ -79,6 +78,6 @@ public class ResourceChecker {
         return resourceStates.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(State.ABSENT))
                 .map(Map.Entry::getKey)
-                .collect(ImmutableList.toImmutableList());
+                .toList();
     }
 }

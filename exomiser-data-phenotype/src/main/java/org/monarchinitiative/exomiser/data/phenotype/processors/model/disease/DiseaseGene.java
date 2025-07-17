@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.model.disease;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLine;
@@ -58,7 +57,7 @@ public class DiseaseGene implements OutputLine {
         this.diseaseType = builder.diseaseType;
         this.geneSymbol = builder.geneSymbol;
         this.geneName = builder.geneName;
-        this.geneSynonyms = builder.geneSynonyms.build();
+        this.geneSynonyms = List.copyOf(builder.geneSynonyms);
         this.hgncId = builder.hgncId;
         this.ensemblGeneId = builder.ensemblGeneId;
         this.entrezGeneId = builder.entrezGeneId;
@@ -165,7 +164,7 @@ public class DiseaseGene implements OutputLine {
         private Disease.DiseaseType diseaseType = Disease.DiseaseType.UNCONFIRMED;
         private String geneSymbol = "";
         private String geneName = "";
-        private final ImmutableList.Builder<String> geneSynonyms = new ImmutableList.Builder<>();
+        private List<String> geneSynonyms = List.of();
         private String hgncId = "";
         private String ensemblGeneId = "";
         private int entrezGeneId = 0;
@@ -198,7 +197,7 @@ public class DiseaseGene implements OutputLine {
         }
 
         public Builder synonyms(List<String> synonyms) {
-            this.geneSynonyms.addAll(synonyms);
+            this.geneSynonyms = List.copyOf(Objects.requireNonNull(synonyms));
             return this;
         }
 

@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology;
 
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
 
@@ -86,7 +85,7 @@ class OboOntologyParserTest {
         OboOntologyTerm currentTerm = OboOntologyTerm.builder()
                 .id("HP:0000005")
                 .label("Mode of inheritance")
-                .altIds(ImmutableList.of("HP:0001453", "HP:0001461"))
+                .altIds(List.of("HP:0001453", "HP:0001461"))
                 .build();
         currentTerm.getAltIds().forEach(altId -> assertThat(termIds.get(altId), equalTo(currentTerm)));
     }
@@ -116,7 +115,7 @@ class OboOntologyParserTest {
                 .id("HP:0009449")
                 .label("Hypoplastic/small phalanges of the 3rd finger")
                 .obsolete(true)
-                .altIds(ImmutableList.of("HP:0004158", "HP:0004164", "HP:0004165"))
+                .altIds(List.of("HP:0004158", "HP:0004164", "HP:0004165"))
                 .replacedBy("HP:0009447")
                 .build();
         assertTrue(OBO_ONTOLOGY.getObsoleteOntologyTerms().contains(obsoleteTerm));
