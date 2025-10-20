@@ -818,7 +818,8 @@ class Acmg2015EvidenceAssignerTest {
         List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = List.of(ModelPhenotypeMatch.of(0.5, cowdenSyndrome, List.of()));
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), compatibleDiseaseMatches);
 
-        assertThat(acmgEvidence, equalTo(AcmgEvidence.builder().add(BS4).build()));
+        // BS4 has been deliberately disabled. See notes in production code.
+        assertThat(acmgEvidence, equalTo(AcmgEvidence.empty()));
     }
 
     @Nested

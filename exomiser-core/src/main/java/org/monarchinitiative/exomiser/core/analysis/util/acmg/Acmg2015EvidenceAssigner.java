@@ -176,7 +176,9 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
             // PM6 "Assumed de novo, but without confirmation of paternity and maternity"
 //            assignPM6(acmgEvidenceBuilder, variantEvaluation, modeOfInheritance, contributingVariants, hasCompatibleDiseaseMatches);
             // BS4 "Lack of segregation in affected members of a family"
-            assignBS4(acmgEvidenceBuilder, variantEvaluation, proband);
+            // n.b. Not used as there are many cases, especially in DDD, where the effected status in the pedigree doesn't
+            // agree with that of the proband and this led to reduced performance.
+//            assignBS4(acmgEvidenceBuilder, variantEvaluation, proband);
         }
 
         // PM3 "For recessive disorders, detected in trans with a pathogenic variant"
