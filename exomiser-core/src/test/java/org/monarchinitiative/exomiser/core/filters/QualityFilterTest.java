@@ -25,10 +25,17 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.TestVcfReader;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -129,4 +136,18 @@ public class QualityFilterTest {
         assertThat(instance.equals(obj), is(true));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "PASS, '1       47607851        rs2056899       A       T       1826.78 VQSRTrancheSNP99.00to99.90      ABHet=0.589;ABHom=1;AC=6;AF=0.75;AN=8;BaseQRankSum=0.561;    GT:AD:DP:GQ:PL   1/1:0,45:45:99:1253,132,0    0/1:6,8:14:99:197,0,182    0/1:12,4:16:66:66,0,346    1/1:0,13:13:36:357,36,0'",
+            "FAIL, '1       63735   .       CCTA    C       193.23  PASS    AC=3;AF=0.5;AN=6;     GT:AD:DP:GQ:PL  ./.:.:.:.:.     1/1:6,2:4:6:116,6,0     0/1:8,4:8:99:128,0,301       0/0:18,2:15:30:0,30,666'",
+            "FAIL, '1       47123898        rs67089539      TAAA    TAAAA,T 382.01  PASS    AC=1,2;AF=0.125,0.25;AN=8;BaseQRankSum=-2.349;DB;DP=66       GT:AD:DP:GQ:PL  0/0:1,0,0:4:5:0,5,20,6,23,31    0/0:18,0,0:21:13:0,13,306,51,356,783    0/2:14,0,3:20:99:116,140,259,0,102,280  1/2:8,0,4:21:99:362,206,248,163,0,482'",
+            "FAIL, '1       70904523        rs112004441     T       TTG,TTGTG       1285.02 PASS    AC=3,4;AF=0.375,0.5;AN=8     GT:AD:DP:GQ:PL  1/2:10,5,6:23:99:555,231,199,192,0,162    1/2:12,1,4:17:30:272,146,131,44,0,30    1/2:6,1,4:11:28:288,148,133,42,0,28    0/2:15,0,2:20:99:297,180,279,0,120,156'",
+    })
+    void multiSampleGenotypesTest(FilterResult.Status filterStatus, String vcfRecord) {
+        TestVcfReader testVcfReader = TestVcfReader.of(List.of("sample1", "sample2", "sample3", "sample4"));
+        VariantContext variantContext = testVcfReader.readVariantContext(vcfRecord);
+        System.out.println(variantContext);
+        QualityFilter qualityFilter = new QualityFilter(MIN_QUAL_THRESHOLD);
+        assertThat(qualityFilter.runQualityFilter(variantContext).status(), equalTo(filterStatus));
+    }
 }
