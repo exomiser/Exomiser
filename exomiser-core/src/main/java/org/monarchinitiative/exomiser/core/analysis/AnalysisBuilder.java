@@ -245,6 +245,12 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
         return this;
     }
 
+    @Override
+    public AnalysisBuilder addBoqaPrioritiser() {
+        analysisSteps.add(priorityFactory.makeBoqaPrioritiser());
+        return this;
+    }
+
     public AnalysisBuilder addAnalysisStep(AnalysisStep analysisStep) {
         analysisSteps.add(analysisStep);
         return this;

@@ -141,7 +141,7 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
         chromosomalRegions.stream()
                 .map(region -> new GeneticInterval(region.contigId(), region.start(), region.end()))
                 .forEach(geneticInterval -> intervalFilterBuilder.addIntervals(geneticInterval.toString()));
-        this.builder.addSteps(stepBuilder().setIntervalFilter(intervalFilterBuilder));
+        builder.addSteps(stepBuilder().setIntervalFilter(intervalFilterBuilder));
         return this;
     }
 
@@ -271,6 +271,12 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
     public AnalysisProtoBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
         builder.addSteps(stepBuilder()
                 .setExomeWalkerPrioritiser(PrioritisersProto.ExomeWalkerPrioritiser.newBuilder().addAllSeedGeneIds(seedGenes)));
+        return this;
+    }
+
+    @Override
+    public AnalysisProtoBuilder addBoqaPrioritiser() {
+        builder.addSteps(stepBuilder().setBoqaPrioritiser(PrioritisersProto.BoqaPrioritiser.getDefaultInstance()));
         return this;
     }
 

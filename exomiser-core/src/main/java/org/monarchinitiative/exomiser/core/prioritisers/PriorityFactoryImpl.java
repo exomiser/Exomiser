@@ -27,6 +27,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.p2gx.boqa.core.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +49,14 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private final PriorityService priorityService;
     private final DataMatrix randomWalkMatrix;
     private final Path phenixDataDirectory;
+    private final Counter counter;
 
     @Autowired
-    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory) {
+    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory, Counter boqaCounter) {
         this.priorityService = priorityService;
         this.randomWalkMatrix = randomWalkMatrix;
         this.phenixDataDirectory = phenixDataDirectory;
+        this.counter = boqaCounter;
     }
 
     @Override
@@ -82,4 +85,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
         return new HiPhivePriority(hiPhiveOptions, randomWalkMatrix, priorityService);
     }
 
+    @Override
+    public BoqaPrioritiser makeBoqaPrioritiser() {
+        return new BoqaPrioritiser(priorityService, counter);
+    }
 }

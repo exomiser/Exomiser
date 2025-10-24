@@ -117,4 +117,6 @@ interface FluentAnalysisBuilder<R> {
 
     public FluentAnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes);
 
+    public FluentAnalysisBuilder addBoqaPrioritiser();
+
 }

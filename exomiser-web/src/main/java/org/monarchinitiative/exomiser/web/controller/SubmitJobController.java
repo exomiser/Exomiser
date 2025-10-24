@@ -246,14 +246,14 @@ public class SubmitJobController {
     private void addPrioritiser(AnalysisBuilder analysisBuilder, String prioritiser) {
         PriorityType priorityType = PriorityType.valueOf(prioritiser);
 
-        if (priorityType == PHENIX_PRIORITY) {
-            analysisBuilder.addPhenixPrioritiser();
-        }
-        else if (priorityType == HIPHIVE_PRIORITY) {
-            analysisBuilder.addHiPhivePrioritiser();
-        }
-        else if (priorityType == PHIVE_PRIORITY) {
-            analysisBuilder.addPhivePrioritiser();
+        switch (priorityType) {
+            case PHENIX_PRIORITY -> analysisBuilder.addPhenixPrioritiser();
+            case HIPHIVE_PRIORITY -> analysisBuilder.addHiPhivePrioritiser();
+            case PHIVE_PRIORITY -> analysisBuilder.addPhivePrioritiser();
+            case BOQA_PRIORITY -> analysisBuilder.addBoqaPrioritiser();
+            case EXOMEWALKER_PRIORITY, OMIM_PRIORITY, NONE -> {
+                // Not HPO dependant
+            }
         }
     }
 

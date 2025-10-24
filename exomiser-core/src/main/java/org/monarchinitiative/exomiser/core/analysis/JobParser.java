@@ -288,6 +288,8 @@ public class JobParser {
             analysisBuilder.addPhenixPrioritiser();
         } else if (protoAnalysisStep.hasExomeWalkerPrioritiser()) {
             analysisBuilder.addExomeWalkerPrioritiser(protoAnalysisStep.getExomeWalkerPrioritiser().getSeedGeneIdsList());
+        } else if (protoAnalysisStep.hasBoqaPrioritiser()) {
+            analysisBuilder.addBoqaPrioritiser();
         }
     }
 
