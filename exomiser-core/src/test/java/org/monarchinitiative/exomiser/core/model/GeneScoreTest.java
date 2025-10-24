@@ -155,7 +155,7 @@ public class GeneScoreTest {
 
         List<GeneScore> geneScores = Stream.of(two, three, six, one, five, four, eight, seven)
                 .sorted()
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         assertThat(geneScores, equalTo(List.of(one, two, three, four, five, six, seven, eight)));
     }

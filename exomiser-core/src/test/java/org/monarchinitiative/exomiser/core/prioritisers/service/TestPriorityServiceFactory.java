@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
