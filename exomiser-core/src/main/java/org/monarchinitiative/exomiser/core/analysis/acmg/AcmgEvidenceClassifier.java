@@ -18,11 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.core.analysis.util.acmg;
+package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 /**
  * @since 13.1.0
  */
-public enum AcmgClassification {
-    PATHOGENIC, LIKELY_PATHOGENIC, UNCERTAIN_SIGNIFICANCE, LIKELY_BENIGN, BENIGN, NOT_AVAILABLE;
+public interface AcmgEvidenceClassifier {
+
+    AcmgClassification classify(AcmgEvidence acmgEvidence);
 }

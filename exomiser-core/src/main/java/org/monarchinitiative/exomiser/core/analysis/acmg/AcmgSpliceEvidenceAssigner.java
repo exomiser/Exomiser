@@ -1,4 +1,4 @@
-package org.monarchinitiative.exomiser.core.analysis.util.acmg;
+package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;

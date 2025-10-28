@@ -1,4 +1,4 @@
-package org.monarchinitiative.exomiser.core.analysis.util.acmg;
+package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 /**
  * A points-based classification recommended by the ClinGen <a href = "https://clinicalgenome.org/working-groups/sequence-variant-interpretation/">Sequence Variant Interpretation (SVI)</a> group.
