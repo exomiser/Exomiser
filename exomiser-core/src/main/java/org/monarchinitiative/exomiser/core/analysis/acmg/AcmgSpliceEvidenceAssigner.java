@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
 
 class AcmgSpliceEvidenceAssigner {
 

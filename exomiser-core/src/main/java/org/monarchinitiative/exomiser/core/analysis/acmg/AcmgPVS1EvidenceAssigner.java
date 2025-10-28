@@ -11,7 +11,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.List;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.PVS1;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.PVS1;
 
 class AcmgPVS1EvidenceAssigner {
 

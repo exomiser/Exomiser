@@ -1,4 +1,4 @@
-package org.monarchinitiative.exomiser.core.analysis.util.acmg;
+package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

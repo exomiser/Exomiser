@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.Evidence;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.Evidence;
 
 import jakarta.annotation.Nullable;
 import java.util.*;

@@ -26,7 +26,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
+import org.monarchinitiative.exomiser.core.analysis.acmg.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
 
 /**
  * @since 13.1.0

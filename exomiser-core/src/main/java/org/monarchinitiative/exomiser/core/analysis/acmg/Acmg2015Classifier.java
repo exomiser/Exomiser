@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis.acmg;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgClassification.*;
 
 /**
  * Implementation of the 2015 ACMG Standards guidelines for interpretation of sequence variants (Richards et al. doi:10.1038/gim.2015.30).

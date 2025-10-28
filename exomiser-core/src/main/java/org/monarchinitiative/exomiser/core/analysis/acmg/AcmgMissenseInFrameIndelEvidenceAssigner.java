@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
 
 class AcmgMissenseInFrameIndelEvidenceAssigner {
 

@@ -11,7 +11,7 @@ import org.monarchinitiative.exomiser.cli.commands.annotate.AnnotationWriter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisDurationFormatter;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
+import org.monarchinitiative.exomiser.core.analysis.acmg.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;

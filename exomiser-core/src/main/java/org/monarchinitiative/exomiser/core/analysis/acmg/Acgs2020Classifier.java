@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis.acmg;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgClassification.*;
 
 /**
  * Implementation of the ACGS v4 guidelines, Table 3 from

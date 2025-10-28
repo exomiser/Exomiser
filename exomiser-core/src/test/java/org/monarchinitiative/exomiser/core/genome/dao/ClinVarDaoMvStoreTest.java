@@ -7,6 +7,7 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.analysis.acmg.*;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
 import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
