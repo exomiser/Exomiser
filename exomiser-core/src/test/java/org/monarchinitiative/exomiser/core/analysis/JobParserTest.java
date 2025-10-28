@@ -374,6 +374,16 @@ class JobParserTest {
     }
 
     @Test
+    void testAddAlleleBalanceVariantFilter() {
+        AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
+                .setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder().build())
+                .build();
+
+        Analysis analysis = initialiseAnalysisWithStep(analysisStep);
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new AlleleBalanceFilter())));
+    }
+
+    @Test
     public void testIntervalFilterEmpty() {
         AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
                 .setIntervalFilter(FiltersProto.IntervalFilter.newBuilder()

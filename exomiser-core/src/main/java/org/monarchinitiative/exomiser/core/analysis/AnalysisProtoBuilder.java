@@ -165,6 +165,12 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
         return this;
     }
 
+    @Override
+    public AnalysisProtoBuilder addAlleleBalanceFilter() {
+        builder.addSteps(stepBuilder().setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.getDefaultInstance()));
+        return this;
+    }
+
     public AnalysisProtoBuilder addKnownVariantFilter() {
         builder.addSteps(stepBuilder().setKnownVariantFilter(FiltersProto.KnownVariantFilter.getDefaultInstance()));
         return this;

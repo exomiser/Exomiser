@@ -79,6 +79,8 @@ interface FluentAnalysisBuilder<R> {
 
     public FluentAnalysisBuilder addQualityFilter(double cutoff);
 
+    public FluentAnalysisBuilder addAlleleBalanceFilter();
+
     public FluentAnalysisBuilder addKnownVariantFilter();
 
     public FluentAnalysisBuilder addFrequencyFilter(float cutOff);

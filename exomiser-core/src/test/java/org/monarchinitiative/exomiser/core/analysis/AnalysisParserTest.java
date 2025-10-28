@@ -398,6 +398,13 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisStepAlleleBalanceFilter() {
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("alleleBalanceFilter: { }"));
+        analysisSteps.add(new AlleleBalanceFilter());
+        assertThat(analysis.analysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
     public void testParseAnalysisStepVariantEffectFilter() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("variantEffectFilter: {remove: [SYNONYMOUS_VARIANT, INTERGENIC_VARIANT]}"));
         analysisSteps.add(new VariantEffectFilter(EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.INTERGENIC_VARIANT)));
