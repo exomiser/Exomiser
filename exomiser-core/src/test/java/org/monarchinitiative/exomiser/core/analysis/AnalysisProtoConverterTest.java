@@ -74,7 +74,8 @@ class AnalysisProtoConverterTest {
     @Test
     void testToProtoExomeAnalysisSteps() {
         Analysis analysis = Analysis.builder()
-                .addStep((new GeneBlacklistFilter(Set.of())))
+                .addStep(new AlleleBalanceFilter())
+                .addStep(new GeneBlacklistFilter(Set.of()))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
                 .addStep(InheritanceFilter.of())
@@ -83,6 +84,7 @@ class AnalysisProtoConverterTest {
                 .build();
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
         AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))

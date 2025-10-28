@@ -177,6 +177,12 @@ public class AnalysisBuilderTest {
     }
 
     @Test
+    public void testAddAlleleBalanceFilter() {
+        analysisBuilder.addAlleleBalanceFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new AlleleBalanceFilter())));
+    }
+
+    @Test
     public void testAddKnownVariantFilterThrowsExceptionWhenFrequencySourcesAreNotDefined() {
         assertThrows(IllegalArgumentException.class, () -> analysisBuilder.addKnownVariantFilter());
     }

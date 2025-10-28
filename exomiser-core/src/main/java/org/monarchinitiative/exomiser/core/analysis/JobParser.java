@@ -249,6 +249,8 @@ public class JobParser {
         } else if (protoAnalysisStep.hasQualityFilter()) {
             double quality = parseQualityFilterOptions(protoAnalysisStep.getQualityFilter());
             analysisBuilder.addQualityFilter(quality);
+        } else if (protoAnalysisStep.hasAlleleBalanceFilter()) {
+            analysisBuilder.addAlleleBalanceFilter();
         } else if (protoAnalysisStep.hasKnownVariantFilter()) {
             if (frequencySources.isEmpty()) {
                 throw new IllegalStateException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]");

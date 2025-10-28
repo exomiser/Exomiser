@@ -146,6 +146,11 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
         return this;
     }
 
+    public AnalysisBuilder addAlleleBalanceFilter() {
+        analysisSteps.add(new AlleleBalanceFilter());
+        return this;
+    }
+
     public AnalysisBuilder addKnownVariantFilter() {
         if (frequencySources.isEmpty()) {
             throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");

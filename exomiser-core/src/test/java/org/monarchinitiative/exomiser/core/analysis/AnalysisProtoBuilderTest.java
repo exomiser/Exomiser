@@ -72,6 +72,10 @@ class AnalysisProtoBuilderTest {
                 .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.getDefaultInstance())
                 .build();
 
+        AnalysisProto.AnalysisStep alleleBalanceFilter = AnalysisProto.AnalysisStep.newBuilder()
+                .setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.getDefaultInstance())
+                .build();
+
         PriorityType priorityType = PriorityType.PHIVE_PRIORITY;
         float minPriorityScore = 0.501f;
 
@@ -98,6 +102,7 @@ class AnalysisProtoBuilderTest {
                 .addPriorityScoreFilter(priorityType, minPriorityScore)
                 .addRegulatoryFeatureFilter()
                 .addGeneBlacklistFilter()
+                .addAlleleBalanceFilter()
                 .addFrequencyFilter(frequencyCutOff)
                 .addInheritanceFilter()
                 .build();
@@ -111,12 +116,12 @@ class AnalysisProtoBuilderTest {
 
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisProto.AnalysisMode.FULL));
 
-        List<String> freqSourceStrings = frequencySources.stream().map(FrequencySource::toString).collect(toList());
+        List<String> freqSourceStrings = frequencySources.stream().map(FrequencySource::toString).toList();
         assertThat(analysis.getFrequencySourcesList(), equalTo(freqSourceStrings));
 
         List<String> pathSourceStrings = pathogenicitySources.stream()
                 .map(PathogenicitySource::toString)
-                .collect(toList());
+                .toList();
         assertThat(analysis.getPathogenicitySourcesList(), equalTo(pathSourceStrings));
 
         //check that the order of analysis steps is preserved
@@ -125,6 +130,7 @@ class AnalysisProtoBuilderTest {
                 priorityScoreFilter,
                 regulatoryFeatureFilter,
                 blacklistFilter,
+                alleleBalanceFilter,
                 frequencyFilter,
                 inheritanceFilter
         )));
