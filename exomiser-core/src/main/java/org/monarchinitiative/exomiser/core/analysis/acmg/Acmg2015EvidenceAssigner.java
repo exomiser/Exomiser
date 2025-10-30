@@ -22,11 +22,12 @@ package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
+import org.monarchinitiative.exomiser.core.analysis.score.InheritanceModeAnalyser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.dao.ClinVarDao;
 import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;

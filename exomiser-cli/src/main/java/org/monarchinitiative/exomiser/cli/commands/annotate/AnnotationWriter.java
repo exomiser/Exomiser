@@ -2,8 +2,8 @@ package org.monarchinitiative.exomiser.cli.commands.annotate;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.csv.CSVFormat;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraint;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraints;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgClassification;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion;

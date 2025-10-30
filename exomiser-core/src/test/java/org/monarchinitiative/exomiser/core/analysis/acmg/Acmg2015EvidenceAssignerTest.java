@@ -30,7 +30,8 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantDataService;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Status;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -50,10 +51,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.FEMALE;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.justProband;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.FEMALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.MALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.justProband;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.*;
 
 class Acmg2015EvidenceAssignerTest {

@@ -25,7 +25,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FailedVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;

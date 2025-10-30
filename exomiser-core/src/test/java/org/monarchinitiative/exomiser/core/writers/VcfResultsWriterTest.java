@@ -30,7 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgClassification;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion;

@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import com.google.common.collect.ImmutableSet;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
 import org.phenopackets.schema.v1.core.Pedigree.Person;
 import org.phenopackets.schema.v1.core.Pedigree.Person.AffectedStatus;
 import org.phenopackets.schema.v1.core.Sex;

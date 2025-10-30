@@ -14,7 +14,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.genome.NoOpVcfReader;
 import org.monarchinitiative.exomiser.core.genome.VcfFileReader;
 import org.monarchinitiative.exomiser.core.genome.VcfReader;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifiers;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
 import org.slf4j.Logger;

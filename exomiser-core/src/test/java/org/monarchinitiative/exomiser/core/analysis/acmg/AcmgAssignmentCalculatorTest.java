@@ -48,8 +48,8 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.justProband;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.MALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.justProband;
 
 /**
  * This is not a unit test - it is a full integration test of the ACMG assignment process

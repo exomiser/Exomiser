@@ -24,7 +24,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;

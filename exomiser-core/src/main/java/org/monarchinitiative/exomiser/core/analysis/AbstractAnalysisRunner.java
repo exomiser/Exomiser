@@ -22,11 +22,12 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.*;
+import org.monarchinitiative.exomiser.core.analysis.score.*;
 import org.monarchinitiative.exomiser.core.analysis.acmg.*;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;

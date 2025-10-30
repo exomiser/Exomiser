@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -34,7 +33,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

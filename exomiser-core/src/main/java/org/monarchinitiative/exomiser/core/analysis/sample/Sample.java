@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 

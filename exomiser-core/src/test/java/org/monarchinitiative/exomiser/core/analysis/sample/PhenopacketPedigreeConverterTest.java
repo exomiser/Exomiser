@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Status;
 import org.phenopackets.schema.v1.core.Pedigree;
 import org.phenopackets.schema.v1.core.Sex;
 
@@ -36,7 +36,7 @@ class PhenopacketPedigreeConverterTest {
 
     @Test
     void emptyPedigree() {
-        assertThat(PhenopacketPedigreeConverter.toExomiserPedigree(Pedigree.getDefaultInstance()), equalTo(org.monarchinitiative.exomiser.core.model.Pedigree
+        assertThat(PhenopacketPedigreeConverter.toExomiserPedigree(Pedigree.getDefaultInstance()), equalTo(org.monarchinitiative.exomiser.core.pedigree.Pedigree
                 .empty()));
     }
 
@@ -83,7 +83,7 @@ class PhenopacketPedigreeConverterTest {
                 .status(Status.UNKNOWN)
                 .id("Other")
                 .build();
-        var exPedigree = org.monarchinitiative.exomiser.core.model.Pedigree.of(exProband, exFemale, exOther);
+        var exPedigree = org.monarchinitiative.exomiser.core.pedigree.Pedigree.of(exProband, exFemale, exOther);
 
         assertThat(PhenopacketPedigreeConverter.toExomiserPedigree(pedigree), equalTo(exPedigree));
     }
@@ -102,6 +102,6 @@ class PhenopacketPedigreeConverterTest {
                 .build();
 
         assertThat(PhenopacketPedigreeConverter.createSingleSamplePedigree(phenopacketProband),
-                equalTo(org.monarchinitiative.exomiser.core.model.Pedigree.of(exomiserProband)));
+                equalTo(org.monarchinitiative.exomiser.core.pedigree.Pedigree.of(exomiserProband)));
     }
 }

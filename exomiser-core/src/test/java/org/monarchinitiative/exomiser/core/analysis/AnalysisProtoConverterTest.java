@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
