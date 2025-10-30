@@ -22,9 +22,9 @@ package org.monarchinitiative.exomiser.core.analysis.acmg;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.Evidence;
 
-import jakarta.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -73,6 +73,9 @@ public class AcmgEvidence {
 
     @JsonCreator
     public static AcmgEvidence of(Map<AcmgCriterion, Evidence> evidence) {
+        if (evidence == null || evidence.isEmpty()) {
+            return EMPTY;
+        }
         return new AcmgEvidence(evidence);
     }
 
@@ -86,44 +89,23 @@ public class AcmgEvidence {
             Evidence evidenceStrength = entry.getValue();
             if (acmgCriterion.isPathogenic()) {
                 switch (evidenceStrength) {
-                    case VERY_STRONG:
-                        pvs++;
-                        break;
-                    case STRONG:
-                        ps++;
-                        break;
-                    case MODERATE:
-                        pm++;
-                        break;
-                    case SUPPORTING:
-                        pp++;
-                        break;
-                    default:
-                        // do nothing
-                        break;
+                    case STAND_ALONE -> {
+                        // there is no stand-alone pathogenic
+                    }
+                    case VERY_STRONG -> pvs++;
+                    case STRONG -> ps++;
+                    case MODERATE -> pm++;
+                    case SUPPORTING -> pp++;
                 }
             }
 
             if (acmgCriterion.isBenign()) {
                 switch (evidenceStrength) {
-                    case STAND_ALONE:
-                        ba++;
-                        break;
-                    case VERY_STRONG:
-                        bvs++;
-                        break;
-                    case STRONG:
-                        bs++;
-                        break;
-                    case MODERATE:
-                        bm++;
-                        break;
-                    case SUPPORTING:
-                        bp++;
-                        break;
-                    default:
-                        // do nothing
-                        break;
+                    case STAND_ALONE -> ba++;
+                    case VERY_STRONG -> bvs++;
+                    case STRONG -> bs++;
+                    case MODERATE -> bm++;
+                    case SUPPORTING -> bp++;
                 }
             }
         }
@@ -262,6 +244,15 @@ public class AcmgEvidence {
             }
         }
         return acmgEvidenceBuilder.build();
+    }
+
+    public AcmgEvidence removeAll(Set<AcmgCriterion> acmgCriteriaToRemove) {
+        if (acmgCriteriaToRemove == null || acmgCriteriaToRemove.isEmpty()) {
+            return this;
+        }
+        EnumMap<AcmgCriterion, Evidence> retainedEvidence = new EnumMap<>(evidence);
+        retainedEvidence.keySet().removeAll(acmgCriteriaToRemove);
+        return AcmgEvidence.of(retainedEvidence);
     }
 
     public static class Builder {

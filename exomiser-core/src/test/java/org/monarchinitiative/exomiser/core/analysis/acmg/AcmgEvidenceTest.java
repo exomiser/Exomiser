@@ -24,11 +24,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
 
 class AcmgEvidenceTest {
@@ -145,6 +145,20 @@ class AcmgEvidenceTest {
         assertThat(instance.containsWithEvidence(PVS1, Evidence.MODERATE), equalTo(true));
         assertThat(instance.containsWithEvidence(PVS1, Evidence.VERY_STRONG), equalTo(false));
         assertThat(instance.containsWithEvidence(PM3, Evidence.MODERATE), equalTo(false));
+    }
+
+
+    @Test
+    void removeAllEvidence() {
+        AcmgEvidence initial = AcmgEvidence.builder()
+                .add(PVS1)
+                .add(PM2, Evidence.SUPPORTING)
+                .add(BS4)
+                .add(PP5)
+                .add(BP6)
+                .build();
+        AcmgEvidence actual = initial.removeAll(EnumSet.of(BS4, BP6, PP5));
+        assertThat(actual, equalTo(AcmgEvidence.builder().add(PVS1).add(PM2, Evidence.SUPPORTING).build()));
     }
 
     @Test
