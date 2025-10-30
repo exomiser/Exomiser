@@ -39,6 +39,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Function;
 
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.*;
+import static org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion.BP6;
+
 /**
  * Class for scoring Genes according to their phenotype similarity to the proband, the filtered variants and the
  * inheritance mode under which these would have an effect.
@@ -49,6 +52,7 @@ public class RawScoreGeneScorer implements GeneScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(RawScoreGeneScorer.class);
     private static final EnumSet<ModeOfInheritance> JUST_ANY = EnumSet.of(ModeOfInheritance.ANY);
+    private static final Set<AcmgCriterion> UNSCORED_ACMG_CRITERIA = EnumSet.of(BS4, PP4, PP5, BP6);
 
     private final Set<ModeOfInheritance> inheritanceModes;
 
@@ -130,7 +134,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         List<AcmgAssignment> acmgAssignments = acmgAssignmentCalculator.calculateAcmgAssignments(modeOfInheritance, gene, contributingVariants, compatibleDiseaseMatches);
 
         double acmgScore = acmgAssignments.stream()
-                .mapToDouble(acmgAssignment -> acmgAssignment.acmgEvidence().postProbPath())
+                .mapToDouble(RawScoreGeneScorer::computeAdjustedPostProbPathScore)
                 .average()
                 .orElse(0.1); // 0.1 is the equivalent of a 0-point VUS
 
@@ -139,7 +143,7 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .average()
                 .orElse(0);
 
-        double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.score(), gene.priorityResults().keySet());
+        double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.score(), acmgScore, gene.priorityResults().keySet());
 //        double combinedScore = (priorityScore.getScore() + acmgScore + variantScore) / 3.0; # this gave slightly worse performance compared to the original Logistic regression combined score
 //        combinedScore = (combinedScore + acmgScore) / 2.0;
 
@@ -161,4 +165,16 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .build();
     }
 
+
+    /**
+     * Recompute the ACMG posterior probability of pathogenicity score without these criteria:
+     * <ul>
+     *  <li>BS4 - dodgy pedigrees where affected status of an individual didn't match the proband</li>
+     *  <li>PP4 - avoid double-counting the phenotype (priority) score</li>
+     *  <li>PP5 & BP6 - avoid double-counting the ClinVar component of the variant score</li>
+     * </ul>
+     */
+    private static double computeAdjustedPostProbPathScore(AcmgAssignment acmgAssignment) {
+        return acmgAssignment.acmgEvidence().removeAll(UNSCORED_ACMG_CRITERIA).postProbPath();
+    }
 }

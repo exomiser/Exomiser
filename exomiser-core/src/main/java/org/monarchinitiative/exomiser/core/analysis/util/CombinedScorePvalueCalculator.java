@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
 
 /**
@@ -27,14 +28,15 @@ public class CombinedScorePvalueCalculator {
         // will have a significant population to be compared with.
         this.priorityTypes = Set.of(prioritiserType);
         long population = 500_000L;
-        // TODO: Replace Random with java.util.random.RandomGenerator when upgrading java version >= 17
-        this.bootstrappedScores = phenoScoreCache.length == 0 ? new double[]{} : new Random()
+        RandomGenerator randomGenerator = ThreadLocalRandom.current();
+        this.bootstrappedScores = phenoScoreCache.length == 0 ? new double[]{} : randomGenerator
                 .ints(population, 0, phenoScoreCache.length)
                 .parallel()
                 .mapToDouble(index -> {
                     double randomPhenoScore = phenoScoreCache[index];
-                    double randomVariantScore = ThreadLocalRandom.current().nextDouble();
-                    return GeneScorer.calculateCombinedScore(randomVariantScore, randomPhenoScore, priorityTypes);
+                    double randomVariantScore = randomGenerator.nextDouble();
+                    double randomAcmgScore = randomGenerator.nextDouble();
+                    return GeneScorer.calculateCombinedScore(randomVariantScore, randomPhenoScore, randomAcmgScore, priorityTypes);
                 })
                 .toArray();
         logger.debug("Created bootstrapped population of {}", bootstrappedScores.length);

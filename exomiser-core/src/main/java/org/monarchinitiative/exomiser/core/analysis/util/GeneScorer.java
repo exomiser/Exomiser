@@ -29,9 +29,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -54,11 +52,16 @@ public interface GeneScorer {
         return genes;
     }
 
-    static double calculateCombinedScore(double variantScore, double priorityScore, Set<PriorityType> prioritiesRun) {
+    /**
+     * Calculates the Exomiser score based on the gene phenotype score, the variant score and the ACMG posterior
+     * probability of pathogenicity. <em>CAUTION!</em> the acmgPostProbPath will likely need adjusting to remove the
+     * components included in the phenotype and variant scores.
+     */
+    static double calculateCombinedScore(double variantScore, double priorityScore, double acmgPostProbPath, Set<PriorityType> prioritiesRun) {
         if (variantScore == 0.0 && priorityScore == 0.0) {
             return 0.0;
         } else if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
-            return hiPhiveLogitScore(variantScore, priorityScore);
+            return hiPhiveLogitScore(variantScore, priorityScore, acmgPostProbPath);
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
             return walkerLogitScore(variantScore, priorityScore);
         } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
@@ -67,8 +70,9 @@ public interface GeneScorer {
         return (priorityScore + variantScore) / 2.0;
     }
 
-    private static double hiPhiveLogitScore(double variantScore, double priorityScore) {
-        return 1.0 / (1.0 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
+    // acmgPostProbPath (WITH PP4, BS4, CLINVAR (PP5 & BP6) FILTERED OUT)
+    private static double hiPhiveLogitScore(double variantScore, double priorityScore, double acmgPostProbPath) {
+        return 1.0 / (1.0 + Math.exp(-(-16.77298504593164 + 10.70564586 * priorityScore + 6.72562836 * variantScore + 3.59194801 * acmgPostProbPath)));
     }
 
     private static double walkerLogitScore(double variantScore, double priorityScore) {
