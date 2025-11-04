@@ -247,7 +247,7 @@ public class AcmgEvidence {
     }
 
     public AcmgEvidence removeAll(Set<AcmgCriterion> acmgCriteriaToRemove) {
-        if (acmgCriteriaToRemove == null || acmgCriteriaToRemove.isEmpty()) {
+        if (acmgCriteriaToRemove == null || acmgCriteriaToRemove.isEmpty() || evidence.isEmpty()) {
             return this;
         }
         EnumMap<AcmgCriterion, Evidence> retainedEvidence = new EnumMap<>(evidence);

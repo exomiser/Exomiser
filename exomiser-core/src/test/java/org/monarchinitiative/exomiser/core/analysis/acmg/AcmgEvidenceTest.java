@@ -162,6 +162,13 @@ class AcmgEvidenceTest {
     }
 
     @Test
+    void removeAllEvidenceFromEmptyEvidence() {
+        AcmgEvidence initial = AcmgEvidence.empty();
+        AcmgEvidence actual = initial.removeAll(EnumSet.of(BS4, BP6, PP5));
+        assertThat(actual, equalTo(AcmgEvidence.empty()));
+    }
+
+    @Test
     void testSizeWhenEmpty() {
         AcmgEvidence instance = AcmgEvidence.builder().build();
         assertThat(instance.size(), equalTo(0));
