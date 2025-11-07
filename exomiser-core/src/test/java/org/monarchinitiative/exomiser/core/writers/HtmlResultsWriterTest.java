@@ -37,6 +37,7 @@ import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -102,6 +103,7 @@ public class HtmlResultsWriterTest {
         shhGene.addVariant(shhIndelVariantEvaluation);
 
         fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addGeneScore(new GeneScore(fgfr2Gene.geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0, 1.0, 1.0, 0.0, List.of(fgfr2MissenseVariantEvaluation), List.of(), List.of()));
         shhGene.addPriorityResult(new OmimPriorityResult(shhGene.entrezGeneId(), shhGene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
 
         unAnnotatedVariantEvaluation1 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
@@ -129,7 +131,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(outputPrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path testOutFile = Paths.get(outputPrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
@@ -148,7 +150,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(testOutFilePrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
@@ -167,7 +169,7 @@ public class HtmlResultsWriterTest {
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(ModeOfInheritance.ANY, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
 
         List<String> lines = Files.readAllLines(testOutFile);
@@ -194,7 +196,7 @@ public class HtmlResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String output = instance.writeString(analysisResults, settings);
         assertFalse(output.isEmpty());
     }
 
@@ -220,7 +222,7 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String output = instance.writeString(analysisResults, settings);
         assertTrue(output.contains("Exomiser Analysis Results for"));
         assertTrue(output.contains("FGFR2"));
         assertTrue(output.contains("SHH"));

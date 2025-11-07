@@ -85,7 +85,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         Path outFile = settings.makeOutputFilePath(sample.vcfPath(), OUTPUT_FORMAT);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             Context context = buildContext(analysisResults, settings);
-            templateEngine.process("results", context, writer);
+            templateEngine.process("results_bootstrap_5", context, writer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFile, ex);
         }
