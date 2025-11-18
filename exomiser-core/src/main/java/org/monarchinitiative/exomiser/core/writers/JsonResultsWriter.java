@@ -87,7 +87,7 @@ public class JsonResultsWriter implements ResultsWriter {
         // see https://cowtowncoder.medium.com/line-delimited-json-with-jackson-69c9e4cb6c00
 
         Path jsonlPath = Path.of(outFile.toString().replace(".json", ".jsonl"));
-        try (OutputStream outputStream = Files.newOutputStream(outFile);
+        try (OutputStream outputStream = Files.newOutputStream(jsonlPath);
              SequenceWriter seq = objectWriter
                      .withRootValueSeparator("\n") // Important! Default value separator is single space
                      .writeValues(objectMapper.createGenerator(outputStream, JsonEncoding.UTF8))) {
