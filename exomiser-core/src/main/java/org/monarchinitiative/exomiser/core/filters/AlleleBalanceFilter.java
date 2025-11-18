@@ -5,6 +5,7 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ public record AlleleBalanceFilter() implements VariantFilter {
         if (variantContext.hasGenotypes()) {
             List<Allele> alleles = variantContext.getAlleles();
             GenotypesContext genotypes = variantContext.getGenotypes();
+            boolean isMitochondrial = variantEvaluation.contig().assignedMoleculeType() == AssignedMoleculeType.MITOCHONDRION;
             for (Genotype genotype : genotypes) {
                 if (genotype.hasGQ() && genotype.getGQ() < MIN_GQ) {
                     logger.debug("GQ {} < {} for {}", genotype.getGQ(), MIN_GQ, genotype);
@@ -58,7 +60,7 @@ public record AlleleBalanceFilter() implements VariantFilter {
                     logger.debug("DP {} < {} for {}", genotype.getDP(), MIN_DP, genotype);
                     return FAIL;
                 }
-                if (!passesAlleleBalanceFilter(alleles, genotype)) {
+                if (!passesAlleleBalanceFilter(isMitochondrial, alleles, genotype)) {
                     return FAIL;
                 }
             }
@@ -66,7 +68,7 @@ public record AlleleBalanceFilter() implements VariantFilter {
         return PASS;
     }
 
-    private boolean passesAlleleBalanceFilter(List<Allele> allAlleles, Genotype genotype) {
+    private boolean passesAlleleBalanceFilter(boolean isMitochondrial, List<Allele> allAlleles, Genotype genotype) {
         // AB (allele balance) = alternate reads / (alternate reads + reference reads)
         // AB = AD / DP (where AD needs to match the allele according to GT)
         // ##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency, for each ALT allele, in the same order as listed">
@@ -77,14 +79,16 @@ public record AlleleBalanceFilter() implements VariantFilter {
         }
         boolean passesABCheck = true;
         if (genotype.isHet() || genotype.isHetNonRef()) {
-            // fail if AF < 0.2 or AF > 0.8
-            passesABCheck = ab >= 0.2 && ab <= 0.8;
+            if (isMitochondrial) {
+                // GEL tiering heteroplasmy filter set to pass MT HET variants with ab >= 5% (0.05)
+                passesABCheck = ab >= 0.05;
+            } else {
+                // fail if AF < 0.2 or AF > 0.8 (Quinlan recommended, but for GEL solved cases the UDN recommended 0.15-0.85 removed fewer diagnosed cases)
+                passesABCheck = ab >= 0.15 && ab <= 0.85;
+            }
         } else if (genotype.isHomRef()) {
-            // fail if AF > 0.02
-            passesABCheck = ab <= 0.02;
-        } else if (genotype.isHomVar()) {
-            // fail if AF < 0.98
-            passesABCheck = ab >= 0.98;
+            // fail if AF > 0.02 (Quinlan recommended, but for GEL solved cases where the NR was close to 30 a single read would remove the diagnosis)
+            passesABCheck = ab <= 0.03;
         }
         logger.debug("{} AB {} for {}", (passesABCheck ? "PASS" : "FAIL"), ab, genotype);
         return passesABCheck;
