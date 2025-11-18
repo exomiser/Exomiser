@@ -150,7 +150,7 @@
         <dependency>
             <groupId>com.jerolba</groupId>
             <artifactId>carpet-record</artifactId>
-            <version>0.2.2</version>
+            <version>0.5.0</version>
         </dependency>
     </dependencies>
 
