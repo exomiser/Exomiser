@@ -84,7 +84,7 @@ public class HtmlResultsWriterTest {
     }
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         TestVariantFactory varFactory = new TestVariantFactory();
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
@@ -225,7 +225,29 @@ public class HtmlResultsWriterTest {
         String output = instance.writeString(analysisResults, settings);
         assertTrue(output.contains("Exomiser Analysis Results for"));
         assertTrue(output.contains("FGFR2"));
-        assertTrue(output.contains("SHH"));
     }
 
+    @Test
+    void testWriteTemplateWithPhenotypeOnlyAnalysis() throws Exception {
+        Gene rbma8Gene = TestFactory.newGeneRBM8A();
+        rbma8Gene.addGeneScore(GeneScore.builder().geneIdentifier(rbma8Gene.geneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).combinedScore(0.85).build());
+
+        List<Gene> genes = List.of(fgfr2Gene, rbma8Gene, shhGene);
+
+        Sample sample = Sample.builder()
+                .hpoIds(List.of("HP:000001", "HP:000002"))
+                .build();
+
+        Analysis analysis = Analysis.builder()
+                .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
+                .build();
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, genes, List.of());
+
+        OutputSettings settings = OutputSettings.builder().build();
+
+        String output = instance.writeString(analysisResults, settings);
+        assertTrue(output.contains("Exomiser Analysis Results for"));
+        assertTrue(output.contains("FGFR2"));
+        assertTrue(output.contains("RBM8A"));
+    }
 }

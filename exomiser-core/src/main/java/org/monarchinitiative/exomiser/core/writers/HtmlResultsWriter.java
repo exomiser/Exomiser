@@ -128,7 +128,9 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
 
-        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.genes());
+        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.genes())
+                .stream().filter(gene -> gene.combinedScore() != 0)
+                .toList();
         context.setVariable("genes", filteredGenes);
 
         //this will change the links to the relevant resource.
