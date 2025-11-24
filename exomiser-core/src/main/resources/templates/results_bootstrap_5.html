@@ -572,6 +572,16 @@
                                                 aria-selected="false"
                                                 th:text="|${geneSymbol} ${modeOfInheritance} Gene Score|">FGFR2 AD Gene Score</button>
                                     </li>
+                                    <li class="nav-item" th:if="${!gene.nonContributingPassedVariantEvaluations().isEmpty()}">
+                                        <button class="nav-link"
+                                                th:with="geneScoreId = ${geneSymbol} + '-' + NON_CONTRIBUTING"
+                                                th:id="|genescores-tab-${geneScoreId}|"
+                                                th:attr="data-bs-target='#genescores-body-' + ${geneScoreId}"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#genescores-body-FGFR2-NON_CONTRIBUTING"
+                                                aria-selected="false"
+                                                th:text="|${geneSymbol} non-contributing variants|">FGFR2 non-contributing variants</button>
+                                    </li>
                                     <li class="nav-item">
                                         <button class="nav-link"
                                                 th:id="|genedisease-tab-${geneSymbol}|"
@@ -946,7 +956,316 @@
                                                 </table>
                                             </div>
                                     </div>
-                                    <!-- TODO: add gene.nonContributingPassedVariantEvaluations() -->
+                                </div>
+                                <div class="tab-pane fade" th:if="${!gene.nonContributingPassedVariantEvaluations().isEmpty()}"
+                                     th:id="|genescores-body-${geneSymbol}-NON_CONTRIBUTING|"
+                                     id="genescores-body-FGFR2-NON_CONTRIBUTING">
+                                    <div class="card-body">
+                                        <div class="row">
+                                        </div>
+                                        <div>
+                                            <table class="table table-sm table-striped">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Variant</th>
+                                                    <th scope="col">HGVS</th>
+                                                    <th scope="col">Variant Effect</th>
+                                                    <th scope="col">Allelic State</th>
+                                                    <th scope="col">Variant Score</th>
+                                                    <th scope="col">Max Path</th>
+                                                    <th scope="col">Max Freq</th>
+                                                    <th scope="col">Whitelisted</th>
+                                                    <th scope="col">Exomiser ACMG</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
+                                                <th:block th:each="variant : ${gene.nonContributingPassedVariantEvaluations()}">
+                                                    <tr
+                                                        th:with="variantId = |${variant.toGnomad()}|" th:id="|variant-summary-${variantId}|" id="variant-summary-10-123256215-T-G"
+                                                        th:attr="data-bs-target='#variant-details-'+ ${variantId}" data-bs-target="#variant-details-10-123256215-T-G"
+                                                        data-bs-toggle="collapse"
+                                                        aria-expanded="false"
+                                                        style="cursor: pointer;">
+                                                        <td>
+                                                            <dl><b th:text="${variant.toGnomad()}">10-123256215-T-G</b>
+                                                            </dl>
+                                                            <dl th:unless="${variant.id().isEmpty()}"
+                                                                th:with="varId = ${variant.id()}"
+                                                                th:switch="${#strings.substring(varId, 0, 2)}">
+                                                                <a th:case="'rs'"
+                                                                   th:href="@{|https://www.ncbi.nlm.nih.gov/snp/${varId}|}"
+                                                                   th:text="${varId}">rs141235720
+                                                                </a>
+                                                                <a th:case="'es'"
+                                                                   th:href="@{|https://www.ncbi.nlm.nih.gov/dbvar/variants/${varId}|}"
+                                                                   th:text="${varId}">esv3097123
+                                                                </a>
+                                                                <a th:case="'ns'"
+                                                                   th:href="@{|https://www.ncbi.nlm.nih.gov/dbvar/variants/${varId}|}"
+                                                                   th:text="${varId}">nsv819538
+                                                                </a>
+                                                                <a th:case="'dg'"
+                                                                   th:href="@{|https://dgv.tcag.ca/dgv/app/variant(id=${varId})|}"
+                                                                   th:text="${varId}">dgv1891n106
+                                                                </a>
+                                                                <span th:case="*"
+                                                                      th:text="${varId}">12345
+                                                                    </span>
+                                                            </dl>
+                                                        </td>
+                                                        <th:block th:unless="${variant.hasTranscriptAnnotations()}">
+                                                            <td></td>
+                                                        </th:block>
+                                                        <th:block th:if="${variant.hasTranscriptAnnotations()}"
+                                                                  th:with="transcriptAnnoatation = ${variant.transcriptAnnotations().get(0)}">
+                                                            <td nowrap>
+                                                                <dl th:text="${transcriptAnnoatation.accession()} + ':' + ${transcriptAnnoatation.hgvsCdna()}">
+                                                                    ENST00000346997.2:c.1688A>C
+                                                                </dl>
+                                                                <dl th:text="${transcriptAnnoatation.hgvsProtein()}">
+                                                                    p.(Glu563Ala)
+                                                                </dl>
+                                                            </td>
+                                                        </th:block>
+                                                        <td th:text="${variant.variantEffect().getSequenceOntologyTerm()}">
+                                                            missense_variant
+                                                        </td>
+                                                        <td th:text="${variant.genotypeString()}">0/1</td>
+                                                        <td th:text="${#numbers.formatDecimal(variant.variantScore(), 1, 3)}">
+                                                            1.0
+                                                        </td>
+                                                        <!-- max path-->
+                                                        <td th:with="pathScore = ${variant.pathogenicityData().mostPathogenicScore()}">
+                                                            <dl th:if="${pathScore} == null">-</dl>
+                                                            <dl th:if="${pathScore} != null" th:text="${#numbers.formatDecimal(pathScore.score(), 1, 3)}">1.0</dl>
+                                                            <dl th:if="${pathScore} != null" th:text="${pathScore.source()}">REVEL</dl>
+                                                        </td>
+                                                        <!-- max freq-->
+                                                        <td th:with="maxFreq = ${variant.frequencyData().maxFrequency()}">
+                                                            <dl th:if="${maxFreq} == null">-</dl>
+                                                            <dl th:if="${maxFreq} != null" th:text="${#numbers.formatDecimal(maxFreq.frequency(), 1, 3)}">1.0</dl>
+                                                            <dl th:if="${maxFreq} != null" th:text="${maxFreq.source()}">GNOMAD_E_EUR</dl>
+                                                        </td>
+                                                        <td th:text="${variant.isWhiteListed() ? 'true' : 'false'}">true
+                                                        </td>
+                                                        <td class="uncertain-significance">NOT_PROVIDED
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="collapse" th:id="|variant-details-${variant.toGnomad()}|" id="variant-details-10-123256215-T-G">
+                                                        <td colspan="10">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col" colspan="4">Pathogenicity Scores</th>
+                                                                    <th scope="col" colspan="8">Frequency Data</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr>
+                                                                    <td colspan="4">
+                                                                        <table class="table table-sm"
+                                                                               th:with="pathData = ${variant.pathogenicityData()}">
+                                                                            <tr th:unless="${pathData.hasPredictedScore()}">No Path
+                                                                                Scores
+                                                                            </tr>
+                                                                            <th:block th:if="${pathData.hasPredictedScore()}">
+                                                                                <thead>
+                                                                                <tr>
+                                                                                    <th scope="col">Source</th>
+                                                                                    <th scope="col">Score</th>
+                                                                                </tr>
+                                                                                </thead>
+                                                                                <tr th:each="pathScore: ${pathData.pathogenicityScores()}">
+                                                                                    <td th:text="${pathScore.source()}">REVEL</td>
+                                                                                    <td th:text="${pathScore.score()}">0.965</td>
+                                                                                </tr>
+                                                                            </th:block>
+                                                                        </table>
+                                                                    </td>
+                                                                    <td colspan="8">
+                                                                        <table class="table table-sm"
+                                                                               th:with="freqData = ${variant.frequencyData()}">
+                                                                            <tr th:unless="${freqData.hasKnownFrequency()}">No Freq
+                                                                                Data
+                                                                            </tr>
+                                                                            <th:block th:if="${freqData.hasKnownFrequency()}">
+                                                                                <thead>
+                                                                                <tr>
+                                                                                    <th scope="col">Source</th>
+                                                                                    <th scope="col">Frequency (%)</th>
+                                                                                    <th scope="col">AC</th>
+                                                                                    <th scope="col">AN</th>
+                                                                                    <th scope="col">HOMS</th>
+                                                                                </tr>
+                                                                                </thead>
+                                                                                <tr th:each="freq: ${freqData.frequencies()}">
+                                                                                    <td th:text="${freq.source()}">GNOMAD_E_EUR</td>
+                                                                                    <td th:text="${freq.frequency()}">0.965</td>
+                                                                                    <th:block th:if="${freq.ac()} > 0">
+                                                                                        <td th:text="${freq.ac()}">1245400</td>
+                                                                                        <td th:text="${freq.an()}">1246512</td>
+                                                                                        <td th:text="${freq.homs()}">2000</td>
+                                                                                    </th:block>
+                                                                                    <th:block th:if="${freq.ac()} == 0">
+                                                                                        <td>-</td>
+                                                                                        <td>-</td>
+                                                                                        <td>-</td>
+                                                                                    </th:block>
+                                                                                </tr>
+                                                                            </th:block>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <table class="table table-sm caption-top">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Source</th>
+                                                                    <th scope="col">Classification</th>
+                                                                    <th scope="col">Points</th>
+                                                                    <th scope="col">Description</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <th:block
+                                                                        th:if="${variant.pathogenicityData().clinVarData().isEmpty()}">
+                                                                    <tr th:with="clinVarData = ${variant.pathogenicityData().clinVarData()}">
+                                                                        <td><b>ClinVar</b></td>
+                                                                        <td class="uncertain-significance">No ClinVar data</td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                </th:block>
+                                                                <th:block
+                                                                        th:unless="${variant.pathogenicityData().clinVarData().isEmpty()}">
+                                                                    <tr th:with="clinVarData = ${variant.pathogenicityData().clinVarData()}">
+                                                                        <td><b>ClinVar</b></td>
+                                                                        <th:block
+                                                                                th:switch="${clinVarData.primaryInterpretation().toString()}">
+                                                                            <td th:case="'BENIGN'" class="benign">BENIGN</td>
+                                                                            <td th:case="'BENIGN_OR_LIKELY_BENIGN'" class="benign">
+                                                                                BENIGN / LIKELY
+                                                                                BENIGN
+                                                                            </td>
+                                                                            <td th:case="'LIKELY_BENIGN'" class="likely-benign">
+                                                                                LIKELY
+                                                                                BENIGN
+                                                                            </td>
+                                                                            <td th:case="'LIKELY_PATHOGENIC'"
+                                                                                class="likely-pathogenic">
+                                                                                LIKELY
+                                                                                PATHOGENIC
+                                                                            </td>
+                                                                            <td th:case="'PATHOGENIC_OR_LIKELY_PATHOGENIC'"
+                                                                                class="pathogenic">
+                                                                                PATHOGENIC / LIKELY PATHOGENIC
+                                                                            </td>
+                                                                            <td th:case="'PATHOGENIC'" class="pathogenic">PATHOGENIC
+                                                                            </td>
+                                                                            <td th:case="'UNCERTAIN_SIGNIFICANCE'"
+                                                                                class="uncertain-significance">
+                                                                                VUS
+                                                                            </td>
+                                                                            <td th:case="'NOT_PROVIDED'"
+                                                                                class="uncertain-significance">
+                                                                                NOT PROVIDED
+                                                                            </td>
+                                                                            <td th:case="*" class="uncertain-significance"
+                                                                                th:text="${clinVarData.primaryInterpretation()}">
+                                                                                SOMETHING ELSE
+                                                                            </td>
+                                                                        </th:block>
+                                                                        <th:block th:switch="${clinVarData.starRating()}">
+                                                                            <td th:case="0"></td>
+                                                                            <td th:case="1">⭐</td>
+                                                                            <td th:case="2">⭐⭐</td>
+                                                                            <td th:case="3">⭐⭐⭐</td>
+                                                                            <td th:case="4">⭐⭐⭐⭐</td>
+                                                                        </th:block>
+                                                                        <td><b><a
+                                                                                th:href="|https://www.ncbi.nlm.nih.gov/clinvar/variation/${clinVarData.variationId()}|"
+                                                                                th:text="${clinVarData.reviewStatus()}">CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS</a></b>
+                                                                        </td>
+                                                                    </tr>
+                                                                </th:block>
+<!--                                                                <tr th:with="acmgEvidence = ${acmgAssignment.acmgEvidence()}">-->
+<!--                                                                    <td><b>Exomiser</b></td>-->
+<!--                                                                    <th:block-->
+<!--                                                                            th:switch="${acmgAssignment.acmgClassification().toString()}">-->
+<!--                                                                        <td th:case="'BENIGN'" class="benign">BENIGN</td>-->
+<!--                                                                        <td th:case="'LIKELY_BENIGN'" class="likely-benign">LIKELY-->
+<!--                                                                            BENIGN-->
+<!--                                                                        </td>-->
+<!--                                                                        <td th:case="'LIKELY_PATHOGENIC'" class="likely-pathogenic">-->
+<!--                                                                            LIKELY-->
+<!--                                                                            PATHOGENIC-->
+<!--                                                                        </td>-->
+<!--                                                                        <td th:case="'PATHOGENIC'" class="pathogenic">PATHOGENIC-->
+<!--                                                                        </td>-->
+<!--                                                                        <td th:case="'UNCERTAIN_SIGNIFICANCE'"-->
+<!--                                                                            class="uncertain-significance">VUS-->
+<!--                                                                        </td>-->
+<!--                                                                        <td th:case="*" class="uncertain-significance"-->
+<!--                                                                            th:text="${acmgClassification}">NOT AVAILABLE-->
+<!--                                                                        </td>-->
+<!--                                                                    </th:block>-->
+<!--                                                                    <td><b th:text="${acmgEvidence.points()}">11</b></td>-->
+<!--                                                                    <td>-->
+<!--                                                                        <b th:text="'Posterior Prob Path: ' + ${#numbers.formatDecimal(acmgEvidence.postProbPath(), 1, 3)}">0.997</b>-->
+<!--                                                                    </td>-->
+<!--                                                                </tr>-->
+                                                                </tbody>
+                                                            </table>
+<!--                                                            <table class="table table-sm"-->
+<!--                                                                   th:unless="${acmgAssignment.acmgEvidence().isEmpty()}">-->
+<!--                                                                <thead>-->
+<!--                                                                <tr>-->
+<!--                                                                    <th scope="col">ACMG Category</th>-->
+<!--                                                                    <th scope="col">Strength</th>-->
+<!--                                                                    <th scope="col">Points</th>-->
+<!--                                                                    <th scope="col">Description</th>-->
+<!--                                                                </tr>-->
+<!--                                                                </thead>-->
+<!--                                                                <tbody th:with="acmgEvidence = ${acmgAssignment.acmgEvidence()}">-->
+<!--                                                                <tr th:each="entry: ${acmgEvidence.evidence().entrySet()}">-->
+<!--                                                                    <td th:text="${entry.getKey()}">PM2</td>-->
+<!--                                                                    <td th:text="${entry.getValue()}">Supporting</td>-->
+<!--                                                                    <th:block th:if="${entry.getKey().isPathogenic()}"-->
+<!--                                                                              th:switch="${entry.getValue().toString()}">-->
+<!--                                                                        <td th:case="'STAND_ALONE'">16</td>-->
+<!--                                                                        <td th:case="'VERY_STRONG'">8</td>-->
+<!--                                                                        <td th:case="'STRONG'">4</td>-->
+<!--                                                                        <td th:case="'MODERATE'">2</td>-->
+<!--                                                                        <td th:case="'SUPPORTING'">1</td>-->
+<!--                                                                    </th:block>-->
+<!--                                                                    <th:block th:if="${entry.getKey().isBenign()}"-->
+<!--                                                                              th:switch="${entry.getValue().toString()}">-->
+<!--                                                                        <td th:case="'STAND_ALONE'">-16</td>-->
+<!--                                                                        <td th:case="'VERY_STRONG'">-8</td>-->
+<!--                                                                        <td th:case="'STRONG'">-4</td>-->
+<!--                                                                        <td th:case="'MODERATE'">-2</td>-->
+<!--                                                                        <td th:case="'SUPPORTING'">-1</td>-->
+<!--                                                                    </th:block>-->
+<!--                                                                    <td th:text="${entry.getKey().description()}">Absent from-->
+<!--                                                                        controls-->
+<!--                                                                        (or at-->
+<!--                                                                        extremely-->
+<!--                                                                        low frequency if recessive) in Exome-->
+<!--                                                                        Sequencing Project, 1000 Genomes Project, or Exome-->
+<!--                                                                        Aggregation-->
+<!--                                                                        Consortium-->
+<!--                                                                    </td>-->
+<!--                                                                </tr>-->
+<!--                                                                </tbody>-->
+<!--                                                            </table>-->
+                                                        </td>
+                                                    </tr>
+                                                </th:block>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="tab-pane fade" th:with="diseases = ${gene.associatedDiseases()}"
                                      th:id="|genedisease-body-${geneSymbol}|" id="genedisease-body-FGFR2">
