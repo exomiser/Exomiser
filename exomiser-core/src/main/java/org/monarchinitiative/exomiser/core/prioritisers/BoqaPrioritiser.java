@@ -7,6 +7,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
+import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.BoqaResult;
@@ -46,13 +47,47 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         logger.info("Running BOQA prioritiser...");
         var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
-        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(patientData, counter, Integer.MAX_VALUE);
-        List<BoqaResult> rescaledBoqaResults = softMaxScaledBoqaResultScores(boqaAnalysisResult.boqaResults());
+        double alpha = 1.0/19077;
+        double beta = 0.9;
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
+        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaExomiserResults(patientData, counter, params);
+        List<BoqaResult> rescaledBoqaResults = reScaledRawLogExomiserScores(boqaAnalysisResult.boqaResults());
         logger.debug("Top 10 BOQA results:");
         rescaledBoqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).limit(10).forEach(b -> logger.debug("BOQA score: {} {} {}", b.counts().diseaseId(), b.boqaScore(), b.counts().diseaseLabel()));
         Map<String, BoqaResult> boqaResultsByDiseaseId = rescaledBoqaResults.stream()
                 .collect(toUnmodifiableMap(boqaResult -> boqaResult.counts().diseaseId(), Function.identity()));
         return genes.stream().map(prioritiseGene(boqaResultsByDiseaseId));
+    }
+
+    /**
+     * Takes a list of BOQA results and transforms the raw BOQA log scores as follows:
+     *
+     *      boqaExomiserScore_i = (boqaRawLogScore_i + abs(min(boqaRawLogScore))) / (max(boqaRawLogScore) + abs(min(boqaRawLogScore)))
+     *
+     * @param boqaResults
+     * @return reScaledBoqaResults
+     */
+    private static List<BoqaResult> reScaledRawLogExomiserScores(List<BoqaResult> boqaResults) {
+
+        int numBoqaResults = boqaResults.size();
+        List<BoqaResult> rankedBoqaResults = boqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).toList();
+        List<BoqaResult> rescaledBoqaResults = new ArrayList<>(numBoqaResults);
+
+        List<Double> rawLogBoqaScores = new ArrayList<>(numBoqaResults);
+        for (int i = 0; i < numBoqaResults; i++) {
+            BoqaResult boqaResult = rankedBoqaResults.get(i);
+            double rawLogBoqaScore = boqaResult.boqaScore();
+            rawLogBoqaScores.add(rawLogBoqaScore);
+        }
+        double x = Math.abs(Collections.min(rawLogBoqaScores));
+        double y = Collections.max(rawLogBoqaScores) + x;
+        for (int i = 0; i < numBoqaResults; i++) {
+            BoqaResult boqaResult = rankedBoqaResults.get(i);
+            double rawLogBoqaScore = rawLogBoqaScores.get(i);
+            double boqaExomiserScore = (rawLogBoqaScore + x) / y;
+            rescaledBoqaResults.add(new BoqaResult(boqaResult.counts(), boqaExomiserScore));
+        }
+        return rescaledBoqaResults;
     }
 
     /**
@@ -95,7 +130,7 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
 
 //        return (Math.exp(input) / total) == (Math.expt(score) * ( 1 / total))
         return boqaResults.stream()
-                .map(boqaResult -> new BoqaResult(boqaResult.counts(), Math.exp(boqaResult.boqaScore() - maxScore) * scaleFactor))
+                .map(boqaResult -> new BoqaResult(boqaResult.counts(), 0.5))
                 .toList();
     }
 
