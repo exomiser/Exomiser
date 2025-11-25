@@ -14,7 +14,6 @@ import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -27,6 +26,8 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
 
     private final PriorityService priorityService;
     private final Counter counter;
+    private final double alpha;
+    private final double beta;
 
     public BoqaPrioritiser(PriorityService priorityService, Counter counter) {
         // TODO: add getCounter(): Counter to Priority Service, then initialise the Counter @Lazy in the exomiser-config
@@ -35,6 +36,8 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         // it. The Counter now takes ~ 300ms to create, but still, it would be best to move it's creation into the config code.
         this.priorityService = priorityService;
         this.counter = counter;
+        this.alpha = 1.0/19077; // TODO: Make alpha and beta constructor parameters
+        this.beta = 0.9;
     }
 
     @Override
@@ -47,11 +50,9 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         logger.info("Running BOQA prioritiser...");
         var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
-        double alpha = 1.0/19077;
-        double beta = 0.9;
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaExomiserResults(patientData, counter, params);
-        List<BoqaResult> rescaledBoqaResults = reScaledRawLogExomiserScores(boqaAnalysisResult.boqaResults());
+        List<BoqaResult> rescaledBoqaResults = reScaledRawLogBoqaExomiserScores(boqaAnalysisResult.boqaResults());
         logger.debug("Top 10 BOQA results:");
         rescaledBoqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).limit(10).forEach(b -> logger.debug("BOQA score: {} {} {}", b.counts().diseaseId(), b.boqaScore(), b.counts().diseaseLabel()));
         Map<String, BoqaResult> boqaResultsByDiseaseId = rescaledBoqaResults.stream()
@@ -59,35 +60,41 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         return genes.stream().map(prioritiseGene(boqaResultsByDiseaseId));
     }
 
+
     /**
-     * Takes a list of BOQA results and transforms the raw BOQA log scores as follows:
+     * Transforms a list of BOQA results by rescaling their raw log scores into the range [0, 1].
      *
-     *      boqaExomiserScore_i = (boqaRawLogScore_i + abs(min(boqaRawLogScore))) / (max(boqaRawLogScore) + abs(min(boqaRawLogScore)))
+     * <p>The transformation is done as follows:</p>
+     * <pre>
+     * boqaExomiserScore_i =
+     *     (boqaRawLogScore_i + abs(min(boqaRawLogScore)))
+     *     / (max(boqaRawLogScore) + abs(min(boqaRawLogScore)))
+     * </pre>
      *
-     * @param boqaResults
-     * @return reScaledBoqaResults
+     * <p>This ensures that the minimum raw score maps to 0, and the maximum maps to 1.</p>
+     *
+     * @param boqaResults the list of BOQA results to rescale
+     * @return a list of BOQA results with rescaled scores
      */
-    private static List<BoqaResult> reScaledRawLogExomiserScores(List<BoqaResult> boqaResults) {
+    private static List<BoqaResult> reScaledRawLogBoqaExomiserScores(List<BoqaResult> boqaResults) {
 
-        int numBoqaResults = boqaResults.size();
-        List<BoqaResult> rankedBoqaResults = boqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).toList();
-        List<BoqaResult> rescaledBoqaResults = new ArrayList<>(numBoqaResults);
+        // Extract raw BOQA log scores
+        List<Double> rawLogBoqaScores =
+                boqaResults.stream()
+                        .map(BoqaResult::boqaScore)
+                        .toList();
 
-        List<Double> rawLogBoqaScores = new ArrayList<>(numBoqaResults);
-        for (int i = 0; i < numBoqaResults; i++) {
-            BoqaResult boqaResult = rankedBoqaResults.get(i);
-            double rawLogBoqaScore = boqaResult.boqaScore();
-            rawLogBoqaScores.add(rawLogBoqaScore);
-        }
-        double x = Math.abs(Collections.min(rawLogBoqaScores));
-        double y = Collections.max(rawLogBoqaScores) + x;
-        for (int i = 0; i < numBoqaResults; i++) {
-            BoqaResult boqaResult = rankedBoqaResults.get(i);
-            double rawLogBoqaScore = rawLogBoqaScores.get(i);
-            double boqaExomiserScore = (rawLogBoqaScore + x) / y;
-            rescaledBoqaResults.add(new BoqaResult(boqaResult.counts(), boqaExomiserScore));
-        }
-        return rescaledBoqaResults;
+        // Compute offset and normalization factor
+        double offset = Math.abs(Collections.min(rawLogBoqaScores));
+        double scale = Collections.max(rawLogBoqaScores) + offset;
+
+        // Rescale
+        return boqaResults.stream()
+                .map(br -> {
+                    double boqaExomiserScore = (br.boqaScore() + offset) / scale;
+                    return new BoqaResult(br.counts(), boqaExomiserScore);
+                })
+                .toList();
     }
 
     /**
@@ -135,6 +142,7 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
     }
 
     // 1 - ( rank / numTotalDiseases) // rank-scaled score
+    // TODO: Produces slightly different phenotype scores when run multiple times in a row.
     private static List<BoqaResult> rankScaledBoqaResultScores(List<BoqaResult> boqaResults) {
         int numBoqaResults = boqaResults.size();
         List<BoqaResult> rankedBoqaResults = boqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).toList();
@@ -145,7 +153,6 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         }
         return rankScaledResults;
     }
-
 
     /**
      * If the gene is not contained in the database, we return an empty
@@ -259,5 +266,4 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
             return diseaseIdToLabel;
         }
     }
-
 }
