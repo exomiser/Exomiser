@@ -25,12 +25,17 @@ import org.monarchinitiative.exomiser.autoconfigure.UndefinedDataDirectoryExcept
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrixIO;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -45,6 +50,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -166,9 +172,16 @@ public class PrioritiserAutoConfiguration {
         // Parse disease-HPO associations into DiseaseData object
         Path hpoaFilePath = phenotypeDataDirectory().resolve("phenotype.hpoa");
         logger.debug("Importing disease phenotype associations from file: {} ...", hpoaFilePath);
-        DiseaseData diseaseData = null;
+        DiseaseData diseaseData;
         try {
-            diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoaFilePath);
+            //diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoaFilePath);
+            Set<DiseaseDatabase> diseaseDatabase = Set.of("OMIM").stream()
+                    .map(DiseaseDatabase::fromString)
+                    .collect(Collectors.toSet());
+            HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(diseaseDatabase,false, 100);
+            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpoOntology(), options);
+            HpoDiseases diseases = loader.load(hpoaFilePath);
+            diseaseData = DiseaseDataPhenolIngest.of(hpoOntology(), diseases);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
