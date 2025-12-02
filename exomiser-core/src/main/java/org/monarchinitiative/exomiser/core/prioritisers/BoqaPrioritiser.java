@@ -47,11 +47,11 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
 
     @Override
     public Stream<BoqaPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
-        logger.info("Running BOQA prioritiser...");
+        logger.info("Running BOQA prioritiser...XXX");
         var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
-        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaExomiserResults(patientData, counter, params);
+        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResultsRawLog(patientData, counter, params);
         List<BoqaResult> rescaledBoqaResults = reScaledRawLogBoqaExomiserScores(boqaAnalysisResult.boqaResults());
         logger.debug("Top 10 BOQA results:");
         rescaledBoqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).limit(10).forEach(b -> logger.debug("BOQA score: {} {} {}", b.counts().diseaseId(), b.boqaScore(), b.counts().diseaseLabel()));
