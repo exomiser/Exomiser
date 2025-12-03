@@ -170,7 +170,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             int openParenIndex = category.indexOf("(");
             ClinSig clinSig = parseClinSig(category.substring(0, openParenIndex));
             int count = Integer.parseInt(category.substring(openParenIndex + 1, category.length() - 1));
-            confMap.put(clinSig, count);
+            confMap.compute(clinSig, (k, v) -> (v == null) ? count : v + count);
         }
         return confMap;
     }

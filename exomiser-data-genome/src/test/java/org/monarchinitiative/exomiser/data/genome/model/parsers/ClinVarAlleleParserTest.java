@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.dao.ClinVarWhiteListReader;
 import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
@@ -275,6 +276,20 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .variationId("7888")
                 .primaryInterpretation(PATHOGENIC_OR_LIKELY_PATHOGENIC)
                 .reviewStatus(CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
+
+    @Test
+    void conflictingInterpretationCounts() {
+        String line = "1\t94051698\t7879\tC\tG\t.\t.\tCLNREVSTAT=criteria_provided,_conflicting_classifications;CLNSIG=Conflicting_classifications_of_pathogenicity;CLNSIGCONF=Pathogenic(19)|Likely_pathogenic(4)|Pathogenic,_low_penetrance(1)|Uncertain_significance(1);RS=1660844326";
+        Allele expected = new Allele(1, 94051698, "C", "G");
+        expected.setRsId("1660844326");
+        expected.setClinVarData(ClinVarData.builder()
+                .variationId("7879")
+                .primaryInterpretation(CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .reviewStatus(CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
+                .conflictingInterpretationCounts(Map.of(PATHOGENIC, 20, LIKELY_PATHOGENIC, 4, UNCERTAIN_SIGNIFICANCE, 1))
                 .build());
         assertParseLineEquals(line, List.of(expected));
     }
