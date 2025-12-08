@@ -90,6 +90,9 @@ public final class AnalyseCommand implements ExomiserCommand {
         }
     }
 
+    @Option(names = "--analysis-mode", hidden=true, description = "Overrides the analysis mode specified in the analysis yaml file.")
+    AnalysisProto.AnalysisMode analysisMode = AnalysisProto.AnalysisMode.UNRECOGNIZED;
+
     @ArgGroup(validate = false, heading = "Output options%n--------------%nSpecifies where and in what format Exomiser should output any analysis results. Optional. Will default to writing output files to the `results` directory of the exomiser installation.%n")
     OutputOptions outputOptions = new OutputOptions();
 
@@ -202,6 +205,11 @@ public final class AnalyseCommand implements ExomiserCommand {
         // Make sure Exomiser will return some results!
         handleOutputOptions(outputOptions, jobBuilder);
 
+        if (analysisMode != AnalysisProto.AnalysisMode.UNRECOGNIZED) {
+            //the user has specified an override analysis mode
+            handleAnalysisModeOverride(analysisMode, jobBuilder);
+        }
+
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new ParameterException(spec.commandLine(), "Missing --sample option!");
         }
@@ -249,6 +257,11 @@ public final class AnalyseCommand implements ExomiserCommand {
             logger.warn("Use of deprecated --output-prefix option - ignoring value");
         }
         handleOutputFormat(outputOptions.outputFormats, jobBuilder);
+    }
+
+
+    private void handleAnalysisModeOverride(AnalysisProto.AnalysisMode analysisMode, JobProto.Job.Builder jobBuilder) {
+        jobBuilder.getAnalysisBuilder().setAnalysisMode(analysisMode);
     }
 
     private void handleSampleOption(Path samplePath, JobProto.Job.Builder jobBuilder) {

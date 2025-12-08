@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
@@ -143,6 +145,21 @@ class AnalyseCommandTest {
         assertThat(parseResult.matchedOptions().size(), equalTo(1));
         assertTrue(parseResult.hasMatchedOption("analysis"));
         assertThat(parseResult.matchedOptionValue("analysis", Path.of("")), equalTo(Path.of(resource("exome-analysis.yml"))));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "FULL",
+            "PASS_ONLY",
+            "full",
+            "pass_only",
+            })
+    void parseAnalysisModeFull(String mode) {
+        var parseResult = commandLine.parseArgs(
+                "--analysis-mode", mode);
+        assertThat(parseResult.matchedOptions().size(), equalTo(1));
+        assertTrue(parseResult.hasMatchedOption("analysis-mode"));
+        assertThat(parseResult.matchedOptionValue("analysis-mode", AnalysisProto.AnalysisMode.UNRECOGNIZED), equalTo(AnalysisProto.AnalysisMode.valueOf(mode.toUpperCase())));
     }
 
     @Test
