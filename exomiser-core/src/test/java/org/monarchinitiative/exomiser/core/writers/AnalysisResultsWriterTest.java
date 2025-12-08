@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -175,8 +174,7 @@ class AnalysisResultsWriterTest {
 
     @Test
     void testWriteToFileWithOutputOptions() {
-
-        List<String> outputFormats = Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).collect(Collectors.toList());
+        List<String> outputFormats = Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).toList();
 
         OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
                 .setOutputDirectory(tempFile.getParent().toString())

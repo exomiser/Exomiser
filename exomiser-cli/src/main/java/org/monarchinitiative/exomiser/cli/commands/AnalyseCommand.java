@@ -95,7 +95,7 @@ public final class AnalyseCommand implements ExomiserCommand {
 
     static class OutputOptions {
 
-        static final List<String> DEFAULT_OUTPUT_FORMATS = List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString());
+        static final List<String> DEFAULT_OUTPUT_FORMATS = List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString(), OutputFormat.PARQUET.toString());
 
         @Option(names = "--output", description = "Path to outputOptions file. This should be in JSON or YAML format.")
         Path outputOptionsPath;

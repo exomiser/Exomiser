@@ -41,13 +41,13 @@ class AnalyseCommandRunnerTest {
         Path resultsDir = tempDir.resolve("results");
         analyseCommand.outputOptions.outputDirectory = resultsDir;
         // --output-format HTML,TSV_VARIANT"
-        analyseCommand.outputOptions.outputFormats = List.of(OutputFormat.HTML, OutputFormat.TSV_VARIANT);
+        analyseCommand.outputOptions.outputFormats = List.of(OutputFormat.HTML, OutputFormat.TSV_VARIANT, OutputFormat.PARQUET);
         when(exomiser.run(analyseCommand.readJob())).thenReturn(AnalysisResults.builder().build());
         Integer exitCode = instance.run(analyseCommand);
         assertThat(exitCode, equalTo(0));
         assertThat(resultsDir.toFile().listFiles().length, equalTo(3));
         assertThat(Files.exists(resultsDir.resolve("exomiser.html")), equalTo(true));
         assertThat(Files.exists(resultsDir.resolve("exomiser.variants.tsv")), equalTo(true));
-        assertThat(Files.exists(resultsDir.resolve("exomiser.variants.parquet")), equalTo(true));
+        assertThat(Files.exists(resultsDir.resolve("exomiser.parquet")), equalTo(true));
     }
 }

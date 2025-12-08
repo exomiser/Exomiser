@@ -35,7 +35,7 @@ class BatchCommandRunnerTest {
         BatchCommand batchCommand = new BatchCommand();
         batchCommand.batchFilePath = Files.createFile(tempDir.resolve("batch.txt"));
         Path resultsDir = tempDir.resolve("results");
-        writeToBatchFile(batchCommand.batchFilePath, "--sample src/test/resources/pfeiffer-phenopacket.yml --vcf src/test/resources/Pfeiffer.vcf --assembly hg19 --output-directory " + resultsDir.toAbsolutePath() + " --output-format HTML,TSV_VARIANT");
+        writeToBatchFile(batchCommand.batchFilePath, "--sample src/test/resources/pfeiffer-phenopacket.yml --vcf src/test/resources/Pfeiffer.vcf --assembly hg19 --output-directory " + resultsDir.toAbsolutePath() + " --output-format HTML,TSV_VARIANT,PARQUET");
         List<JobProto.Job> jobs = BatchFileReader.readJobsFromBatchFile(batchCommand.batchFilePath);
         when(exomiser.run(jobs.getFirst())).thenReturn(AnalysisResults.builder().build());
         Integer exitCode = instance.run(batchCommand);
@@ -43,7 +43,7 @@ class BatchCommandRunnerTest {
         assertThat(resultsDir.toFile().listFiles().length, equalTo(3));
         assertThat(Files.exists(resultsDir.resolve("exomiser.html")), equalTo(true));
         assertThat(Files.exists(resultsDir.resolve("exomiser.variants.tsv")), equalTo(true));
-        assertThat(Files.exists(resultsDir.resolve("exomiser.variants.parquet")), equalTo(true));
+        assertThat(Files.exists(resultsDir.resolve("exomiser.parquet")), equalTo(true));
     }
 
     @Test

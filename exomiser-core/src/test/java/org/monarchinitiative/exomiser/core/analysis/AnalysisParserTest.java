@@ -634,8 +634,8 @@ public class AnalysisParserTest {
                 + "    outputPassVariantsOnly: true\n"
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
-                + "    outputFormats: [HTML, JSON, TSV-GENE, TSV-VARIANT, VCF]\n");
-        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
+                + "    outputFormats: [HTML, JSON, TSV-GENE, TSV-VARIANT, VCF, PARQUET]\n");
+        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF, OutputFormat.PARQUET);
         assertThat(outputSettings.outputFormats(), equalTo((outputFormats)));
     }
 

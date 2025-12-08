@@ -176,7 +176,7 @@ public class TestData {
     public static final OutputProto.OutputOptions DEFAULT_OUTPUT_OPTIONS = OutputProto.OutputOptions.newBuilder()
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
-            .addAllOutputFormats(List.of("HTML", "JSON"))
+            .addAllOutputFormats(List.of("HTML", "JSON", "PARQUET"))
             .build();
 
     public static final AnalysisProto.Analysis ANALYSIS = AnalysisProtoBuilder.builder()

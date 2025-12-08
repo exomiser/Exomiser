@@ -205,15 +205,15 @@ class AnalyseCommandTest {
                 "--sample", resource("exome-analysis.yml"),
                 "--vcf", resource("Pfeiffer.vcf"),
                 "--assembly", "hg19",
-                "--output-format", "TSV_GENE,JSON,HTML,TSV_VARIANT");
+                "--output-format", "TSV_GENE,JSON,HTML,TSV_VARIANT,PARQUET");
         assertTrue(parseResult.hasMatchedOption("output-format"));
-        assertThat(parseResult.matchedOptionValue("output-format", List.of()), containsInAnyOrder(TSV_GENE, JSON, HTML, TSV_VARIANT));
+        assertThat(parseResult.matchedOptionValue("output-format", List.of()), containsInAnyOrder(TSV_GENE, JSON, HTML, TSV_VARIANT, PARQUET));
     }
 
     @Test
     void testIllegalOutputFormatArguments() {
         Throwable error = assertThrows(ParameterException.class, () -> commandLine.parseArgs("--analysis", "src/test/resources/test-analysis-exome.yml", "--output-format", "HTML,FOO,BAR"));
-        assertThat(error.getMessage(), equalTo("Invalid value for option '--output-format' (<outputFormats>): expected one of [HTML, VCF, TSV_GENE, TSV_VARIANT, JSON] (case-insensitive) but was 'FOO'"));
+        assertThat(error.getMessage(), equalTo("Invalid value for option '--output-format' (<outputFormats>): expected one of [HTML, VCF, TSV_GENE, TSV_VARIANT, JSON, PARQUET] (case-insensitive) but was 'FOO'"));
     }
 
     @Disabled("--output-prefix option has been *deprecated*")

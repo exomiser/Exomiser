@@ -191,7 +191,8 @@ public class CommandLineJobReader {
         if (jobBuilder.getOutputOptions().getOutputFormatsList().isEmpty()) {
             jobBuilder.getOutputOptionsBuilder()
                     .addOutputFormats(OutputFormat.HTML.toString())
-                    .addOutputFormats(OutputFormat.JSON.toString());
+                    .addOutputFormats(OutputFormat.JSON.toString())
+                    .addOutputFormats(OutputFormat.PARQUET.toString());
         }
     }
 

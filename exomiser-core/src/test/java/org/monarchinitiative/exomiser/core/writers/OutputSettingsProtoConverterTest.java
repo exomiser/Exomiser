@@ -43,6 +43,7 @@ class OutputSettingsProtoConverterTest {
             .setOutputDirectory("hoopy")
             .addOutputFormats(OutputFormat.HTML.toString())
             .addOutputFormats(OutputFormat.JSON.toString())
+            .addOutputFormats(OutputFormat.PARQUET.toString())
             .build();
 
     private final OutputSettings domain = OutputSettings.builder()
@@ -51,7 +52,7 @@ class OutputSettingsProtoConverterTest {
             .outputPrefix("hoopy/frood")
             .outputFileName("frood")
             .outputDirectory(Path.of("hoopy"))
-            .outputFormats(Set.of(OutputFormat.HTML, OutputFormat.JSON))
+            .outputFormats(Set.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.PARQUET))
             .build();
 
     @Test
@@ -75,13 +76,13 @@ class OutputSettingsProtoConverterTest {
                 .addOutputFormats(OutputFormat.JSON.toString())
                 .build();
 
-        OutputSettings domain = OutputSettings.builder()
+        OutputSettings expected = OutputSettings.builder()
                 .outputContributingVariantsOnly(true)
                 .numberOfGenesToShow(10)
                 .outputDirectory(OutputSettings.DEFAULT_OUTPUT_DIR)
                 .outputFileName("frood")
                 .outputFormats(Set.of(OutputFormat.HTML, OutputFormat.JSON))
                 .build();
-        assertThat(instance.toDomain(emptyOutputDir), equalTo(domain));
+        assertThat(instance.toDomain(emptyOutputDir), equalTo(expected));
     }
 }

@@ -53,7 +53,7 @@ public class ParquetVariantResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Sample sample = analysisResults.sample();
-        String outFile = outputSettings.makeOutputFilePath(sample.vcfPath(), OutputFormat.JSON).toString().replace("json", "parquet");
+        String outFile = outputSettings.makeOutputFilePath(sample.vcfPath(), OutputFormat.PARQUET).toString();
 
         try (OutputStream outputStream = Files.newOutputStream(Path.of(outFile));
              CarpetWriter<VariantResult> writer = new CarpetWriter.Builder<>(outputStream, VariantResult.class)
