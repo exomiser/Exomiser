@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.data.phenotype.processors.readers.disease
 import com.google.common.collect.ListMultimap;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.disease.DiseaseGene;
+import org.monarchinitiative.exomiser.data.phenotype.processors.readers.disease.OrphaOmimMapping.MappingType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,10 +96,11 @@ public class OrphanetDiseaseGeneFactory {
                 for (OrphaOmimMapping omimMapping : entry.getValue()) {
                     String omimKey = omimMapping.getId() + "_" + orphaDiseaseGene.getOmimGeneId();
                     DiseaseGene omimDiseaseGene = omimDiseaseGenes.get(omimKey);
-                    if (omimDiseaseGene != null) {
+                    MappingType omimMappingType = omimMapping.getType();
+                    if (omimDiseaseGene != null && (omimMappingType == MappingType.EXACT || omimMappingType == MappingType.BTNT)) {
                         hasMatch = true;
                         mappedOrphaDiseaseGenes++;
-                        logger.debug("D-G match! {}", omimKey);
+                        logger.debug("D-G match! {} {}", omimKey, omimMappingType);
                         logger.debug("  {}", omimDiseaseGene);
                         logger.debug("  {}", orphaDiseaseGene);
                         // merge the OMIM annotations with the Orphanet ones and return a new DiseaseGene
@@ -117,7 +119,8 @@ public class OrphanetDiseaseGeneFactory {
                         orphanetDiseaseGenes.add(merged);
                     }
                 }
-                if (!hasMatch) {
+                if (!hasMatch && orphanetMois.size() == 1) {
+                    // only include entries where there is a single disease-gene-moi
                     logger.debug("No OMIM D-G match found for " + orphaDiseaseGene + " - using Orpha MOI mapping, if present");
                     InheritanceMode inheritanceMode = decideInheritanceMode(InheritanceMode.UNKNOWN, orphanetMois);
                     // *IF* there is only one OMIM disease-Gene association
@@ -135,9 +138,10 @@ public class OrphanetDiseaseGeneFactory {
                     if (orphaDiseaseGene.getOmimGeneId().isEmpty()) {
                         // These might have a salvageable Entrez ID, but only via the ORPHA HGNC ID or they could
                         //  be mapped to a locus in OMIM
-                        logger.debug("Missing OMIM Gene ID {}", merged);
+                        logger.debug("Skipping due to missing OMIM Gene ID {}", merged);
                     } else {
                         // add it if there is a OMIM gene ID
+                        logger.debug("Adding ORPHA with OMIM Gene ID {}", merged);
                         orphanetDiseaseGenes.add(merged);
                     }
                 }
