@@ -400,7 +400,10 @@ public class Acmg2015EvidenceAssigner implements AcmgEvidenceAssigner {
      * PM4 Protein length changes as a result of in-frame deletions/insertions in a nonrepeat region or stop-loss variants
      */
     private void assignPM4(AcmgEvidence.Builder acmgEvidenceBuilder, VariantEvaluation variantEvaluation) {
-        boolean isInFrameInDel = variantEvaluation.variantEffect() == VariantEffect.INFRAME_INSERTION || variantEvaluation.variantEffect() == VariantEffect.INFRAME_DELETION;
+        boolean isInFrameInDel = variantEvaluation.variantEffect() == VariantEffect.INFRAME_INSERTION
+                                || variantEvaluation.variantEffect() == VariantEffect.INFRAME_DELETION
+                                || variantEvaluation.variantEffect() == VariantEffect.DISRUPTIVE_INFRAME_DELETION
+                                || variantEvaluation.variantEffect() == VariantEffect.DISRUPTIVE_INFRAME_INSERTION;
         // avoid double-counting same affects if PVS1 already applied
         if (!acmgEvidenceBuilder.contains(PVS1) && variantEvaluation.variantEffect() == VariantEffect.STOP_LOST || isInFrameInDel) {
             acmgEvidenceBuilder.add(PM4);

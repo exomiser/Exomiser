@@ -478,13 +478,20 @@ class Acmg2015EvidenceAssignerTest {
         assertThat(acmgEvidence, equalTo(expected));
     }
 
-    @Test
-    void testAssignsPM4() {
+    @ParameterizedTest
+    @CsvSource({
+            "STOP_LOST",
+            "INFRAME_INSERTION",
+            "INFRAME_DELETION",
+            "DISRUPTIVE_INFRAME_INSERTION",
+            "DISRUPTIVE_INFRAME_DELETION",
+    })
+    void testAssignsPM4(VariantEffect variantEffect) {
         Acmg2015EvidenceAssigner instance = acmgEvidenceAssigner("proband", justProband("proband", MALE));
         VariantEvaluation variantEvaluation = TestFactory.variantBuilder(10, 89624227, "A", "G")
                 .geneSymbol("MUC6")
                 .frequencyData(FrequencyData.of(Frequency.of(FrequencySource.EXAC_AMERICAN, 0.1f))) // prevent PM2 assignment
-                .variantEffect(VariantEffect.STOP_LOST)
+                .variantEffect(variantEffect)
                 .build();
         Disease cowdenSyndrome = Disease.builder().diseaseId("OMIM:158350").diseaseName("COWDEN SYNDROME 1; CWS1").inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT).diseaseType(Disease.DiseaseType.DISEASE).build();
         AcmgEvidence acmgEvidence = instance.assignVariantAcmgEvidence(variantEvaluation, ModeOfInheritance.AUTOSOMAL_DOMINANT, List.of(variantEvaluation), List.of(cowdenSyndrome), List.of());
