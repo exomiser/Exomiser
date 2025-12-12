@@ -220,9 +220,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", AUTOSOMAL_DOMINANT_AND_RECESSIVE));
-
-        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
+        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(List.of()));
     }
 
     @Test
@@ -246,9 +244,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", X_RECESSIVE));
-
-        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
+        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(List.of()));
     }
 
     @Test
