@@ -72,6 +72,7 @@ public interface GeneScorer {
 
     // acmgPostProbPath (WITH PP4, BS4, CLINVAR (PP5 & BP6) FILTERED OUT)
     private static double hiPhiveLogitScore(double variantScore, double priorityScore, double acmgPostProbPath) {
+//        return 1.0 / (1.0 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
         return 1.0 / (1.0 + Math.exp(-(-16.77298504593164 + 10.70564586 * priorityScore + 6.72562836 * variantScore + 3.59194801 * acmgPostProbPath)));
     }
 

@@ -144,8 +144,6 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .orElse(0);
 
         double combinedScore = GeneScorer.calculateCombinedScore(variantScore, priorityScore.score(), acmgScore, gene.priorityResults().keySet());
-//        double combinedScore = (priorityScore.getScore() + acmgScore + variantScore) / 3.0; # this gave slightly worse performance compared to the original Logistic regression combined score
-//        combinedScore = (combinedScore + acmgScore) / 2.0;
 
         double pValue = pValueCalculator.calculatePvalueFromCombinedScore(combinedScore);
 
