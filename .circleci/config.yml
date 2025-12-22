@@ -1,6 +1,6 @@
 version: 2.1
-#orbs:
-#  codecov: codecov/codecov@5.4.3
+orbs:
+  codecov: codecov/codecov@5.4.3
 jobs:
   build:
     working_directory: ~/exomiser
@@ -21,26 +21,29 @@ jobs:
           paths:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
+#      - run:
+#          name: Analyze on SonarQube Cloud
+#          command: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=org.monarchinitiative.exomiser:exomiser
+#      #Save junit xml
+#      - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
+#      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
+#      #Save jars
+#      - run: mkdir -p $CIRCLE_ARTIFACTS/
+#      - run: find . -type f -regex ".*/target/exomiser.*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
+#      - run: find . -type f -regex ".*/target/exomiser.*zip" -exec cp {} $CIRCLE_ARTIFACTS/ \;
+#      # Save test results
+#      - store_test_results:
+#          path: /tmp/circleci-test-results
+#      # Save artifacts
+#      - store_artifacts:
+#          path: /tmp/circleci-artifacts
+#      - store_artifacts:
+#          path: /tmp/circleci-test-results
+#      - run: bash <(curl -s https://codecov.io/bash)
       - run:
-          name: Analyze on SonarQube Cloud
-          command: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=org.monarchinitiative.exomiser:exomiser
-      #Save junit xml
-      - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
-      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
-      #Save jars
-      - run: mkdir -p $CIRCLE_ARTIFACTS/
-      - run: find . -type f -regex ".*/target/exomiser.*jar" -exec cp {} $CIRCLE_ARTIFACTS/ \;
-      - run: find . -type f -regex ".*/target/exomiser.*zip" -exec cp {} $CIRCLE_ARTIFACTS/ \;
-      # Save test results
-      - store_test_results:
-          path: /tmp/circleci-test-results
-      # Save artifacts
-      - store_artifacts:
-          path: /tmp/circleci-artifacts
-      - store_artifacts:
-          path: /tmp/circleci-test-results
-      - run: bash <(curl -s https://codecov.io/bash)
-#      - codecov/upload
+          name: Run tests and collect coverage
+          command: mvn -B test
+      - codecov/upload
 workflows:
   version: 2
   build:
