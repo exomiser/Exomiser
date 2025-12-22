@@ -22,11 +22,10 @@ jobs:
           paths:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
-      - sonarcloud/scan
       - codecov/upload
-#      - run:
-#          name: Analyze on SonarQube Cloud
-#          command: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=org.monarchinitiative.exomiser:exomiser
+      - run:
+          name: Analyze on SonarQube Cloud
+          command: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=exomiser -Dsonar.projectKey=org.monarchinitiative.exomiser:exomiser
 #      #Save junit xml
 #      - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
 #      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
