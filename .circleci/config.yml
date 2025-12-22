@@ -11,7 +11,9 @@ jobs:
     docker:
       - image: cimg/openjdk:21.0
     steps:
-      - checkout
+#      - checkout
+      # shallow clones cause SonarQube to break
+      - run: git clone --depth 0 "$CIRCLE_REPOSITORY_URL" --branch "$CIRCLE_BRANCH"
       - run:
           name: make executable
           command: chmod +x mvnw
