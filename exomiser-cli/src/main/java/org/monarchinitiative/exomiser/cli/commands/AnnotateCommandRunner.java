@@ -105,7 +105,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
             // Exomiser ACMG
             AcmgEvidenceAssigner acmgEvidenceAssigner = new Acmg2015EvidenceAssigner("sample", Pedigree.justProband("sample"), genomeAnalysisService);
             Disease EMPTY_DISEASE = Disease.builder().build();
-            List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
+            List<Disease> diseases = geneIdentifier.entrezId().isEmpty() ? List.of(): diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
             ModeOfInheritance modeOfInheritance = findMoiForGene(diseases);
             AcmgEvidence acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, List.of(variantEvaluation), diseases, List.of());
             AcmgEvidenceClassifier classifier = new Acmg2020PointsBasedClassifier();
