@@ -45,24 +45,30 @@ class PhenopacketPedigreeConverterTest {
         Pedigree.Person proband = Pedigree.Person.newBuilder()
                 .setSex(Sex.MALE)
                 .setAffectedStatus(Pedigree.Person.AffectedStatus.AFFECTED)
+                .setMaternalId("Mother")
+                .setPaternalId("0")
                 .setIndividualId("Zaphod")
                 .build();
 
-        Pedigree.Person female = Pedigree.Person.newBuilder()
+        Pedigree.Person mother = Pedigree.Person.newBuilder()
                 .setSex(Sex.FEMALE)
                 .setAffectedStatus(Pedigree.Person.AffectedStatus.UNAFFECTED)
-                .setIndividualId("Female")
+                .setIndividualId("Mother")
+                .setMaternalId("0")
+                .setPaternalId("0")
                 .build();
 
         Pedigree.Person other = Pedigree.Person.newBuilder()
                 .setSex(Sex.OTHER_SEX)
                 .setAffectedStatus(Pedigree.Person.AffectedStatus.MISSING)
                 .setIndividualId("Other")
+                .setMaternalId("0")
+                .setPaternalId("0")
                 .build();
 
         Pedigree pedigree = Pedigree.newBuilder()
                 .addPersons(proband)
-                .addPersons(female)
+                .addPersons(mother)
                 .addPersons(other)
                 .build();
 
@@ -70,12 +76,13 @@ class PhenopacketPedigreeConverterTest {
                 .sex(Individual.Sex.MALE)
                 .status(Status.AFFECTED)
                 .id("Zaphod")
+                .motherId("Mother")
                 .build();
 
-        Individual exFemale = Individual.builder()
+        Individual exMother = Individual.builder()
                 .sex(Individual.Sex.FEMALE)
                 .status(Status.UNAFFECTED)
-                .id("Female")
+                .id("Mother")
                 .build();
 
         Individual exOther = Individual.builder()
@@ -83,7 +90,7 @@ class PhenopacketPedigreeConverterTest {
                 .status(Status.UNKNOWN)
                 .id("Other")
                 .build();
-        var exPedigree = org.monarchinitiative.exomiser.core.pedigree.Pedigree.of(exProband, exFemale, exOther);
+        var exPedigree = org.monarchinitiative.exomiser.core.pedigree.Pedigree.of(exProband, exMother, exOther);
 
         assertThat(PhenopacketPedigreeConverter.toExomiserPedigree(pedigree), equalTo(exPedigree));
     }

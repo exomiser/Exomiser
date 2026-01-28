@@ -60,23 +60,20 @@ class PhenopacketPedigreeConverter {
         return person -> Individual.builder()
                 .familyId(person.getFamilyId())
                 .id(person.getIndividualId())
-                .motherId(person.getMaternalId())
-                .fatherId(person.getPaternalId())
+                // PED and the phenopacket schema require a "0" value for missing relations
+                .motherId(person.getMaternalId().equals("0") ? "" : person.getMaternalId())
+                .fatherId(person.getPaternalId().equals("0") ? "" : person.getPaternalId())
                 .sex(toExomiserSex(person.getSex()))
                 .status(toExomiserStatus(person.getAffectedStatus()))
                 .build();
     }
 
     private static Individual.Status toExomiserStatus(AffectedStatus affectedStatus) {
-        switch (affectedStatus) {
-            case AFFECTED:
-                return Individual.Status.AFFECTED;
-            case UNAFFECTED:
-                return Individual.Status.UNAFFECTED;
-            case MISSING:
-            default:
-                return Individual.Status.UNKNOWN;
-        }
+        return switch (affectedStatus) {
+            case AFFECTED -> Individual.Status.AFFECTED;
+            case UNAFFECTED -> Individual.Status.UNAFFECTED;
+            default -> Individual.Status.UNKNOWN;
+        };
     }
 
     public static org.phenopackets.schema.v1.core.Pedigree toPhenopacketPedigree(Pedigree pedigree) {
@@ -93,48 +90,36 @@ class PhenopacketPedigreeConverter {
         return individual -> Person.newBuilder()
                 .setFamilyId(individual.familyId())
                 .setIndividualId(individual.id())
-                .setMaternalId(individual.motherId())
-                .setPaternalId(individual.fatherId())
+                // PED and the phenopacket schema require a "0" value for missing relations
+                .setMaternalId(individual.motherId().isEmpty() ?  "0" : individual.motherId())
+                .setPaternalId(individual.fatherId().isEmpty() ?  "0" : individual.fatherId())
                 .setSex(toPhenopacketSex(individual.sex()))
                 .setAffectedStatus(toPhenopacketStatus(individual.status()))
                 .build();
     }
 
     private static AffectedStatus toPhenopacketStatus(Individual.Status status) {
-        switch (status) {
-            case UNAFFECTED:
-                return AffectedStatus.UNAFFECTED;
-            case AFFECTED:
-                return AffectedStatus.AFFECTED;
-            case UNKNOWN:
-            default:
-                return AffectedStatus.MISSING;
-        }
+        return switch (status) {
+            case UNAFFECTED -> AffectedStatus.UNAFFECTED;
+            case AFFECTED -> AffectedStatus.AFFECTED;
+            default -> AffectedStatus.MISSING;
+        };
     }
 
     public static Sex toPhenopacketSex(Individual.Sex sex) {
-        switch (sex) {
-            case FEMALE:
-                return Sex.FEMALE;
-            case MALE:
-                return Sex.MALE;
-            case UNKNOWN:
-            default:
-                return Sex.UNKNOWN_SEX;
-        }
+        return switch (sex) {
+            case FEMALE -> Sex.FEMALE;
+            case MALE -> Sex.MALE;
+            default -> Sex.UNKNOWN_SEX;
+        };
     }
 
     public static Individual.Sex toExomiserSex(Sex sex) {
-        switch (sex) {
-            case FEMALE:
-                return Individual.Sex.FEMALE;
-            case MALE:
-                return Individual.Sex.MALE;
-            case OTHER_SEX:
-            case UNKNOWN_SEX:
-            default:
-                return Individual.Sex.UNKNOWN;
-        }
+        return switch (sex) {
+            case FEMALE -> Individual.Sex.FEMALE;
+            case MALE -> Individual.Sex.MALE;
+            default -> Individual.Sex.UNKNOWN;
+        };
     }
 
 }
