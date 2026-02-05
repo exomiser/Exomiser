@@ -61,7 +61,7 @@ public interface GeneScorer {
         if (variantScore == 0.0 && priorityScore == 0.0) {
             return 0.0;
         } else if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
-            return hiPhiveLogitScore(variantScore, priorityScore, acmgPostProbPath);
+            return hiPhiveWithAcmgLogitScore(variantScore, priorityScore, acmgPostProbPath);
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
             return walkerLogitScore(variantScore, priorityScore);
         } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
@@ -70,10 +70,14 @@ public interface GeneScorer {
         return (priorityScore + variantScore) / 2.0;
     }
 
-    // acmgPostProbPath (WITH PP4, BS4, CLINVAR (PP5 & BP6) FILTERED OUT)
-    private static double hiPhiveLogitScore(double variantScore, double priorityScore, double acmgPostProbPath) {
-//        return 1.0 / (1.0 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
-        return 1.0 / (1.0 + Math.exp(-(-16.77298504593164 + 10.70564586 * priorityScore + 6.72562836 * variantScore + 3.59194801 * acmgPostProbPath)));
+    // Newly trained score for use with acmgPostProbPath (WITH PP4, BS4 FILTERED OUT)
+    private static double hiPhiveWithAcmgLogitScore(double variantScore, double priorityScore, double acmgPostProbPath) {
+        return 1.0 / (1.0 + Math.exp(-(-16.64975766487485 + (10.04400174 * priorityScore) + (6.49073924 * variantScore) + (4.85807901 * acmgPostProbPath))));
+    }
+
+    // This is the original trained score used pre-15.0.0
+    private static double hiPhiveLogitScore(double variantScore, double priorityScore) {
+        return 1.0 / (1.0 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * variantScore)));
     }
 
     private static double walkerLogitScore(double variantScore, double priorityScore) {

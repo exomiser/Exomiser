@@ -165,7 +165,7 @@ public class RawScoreGeneScorer implements GeneScorer {
 
 
     // avoid double-counting of phenotype (PP4) and remove unreliable BS4 (pedigrees can lie about who is affected)
-    private static final Set<AcmgCriterion> UNSCORED_ACMG_CRITERIA = EnumSet.of(BS4, PP4, PP5, BP6);
+    private static final Set<AcmgCriterion> UNSCORED_ACMG_CRITERIA = EnumSet.of(PP4, BS4);
 
     /**
      * Recompute the ACMG posterior probability of pathogenicity score without these criteria:
