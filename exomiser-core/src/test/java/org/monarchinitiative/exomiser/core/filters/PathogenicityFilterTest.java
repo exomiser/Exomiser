@@ -28,12 +28,14 @@ package org.monarchinitiative.exomiser.core.filters;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.MutationTasterScore;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.SiftScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,7 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PathogenicityFilterTest {
+class PathogenicityFilterTest {
 
     private PathogenicityFilter instance;
 
@@ -73,7 +75,7 @@ public class PathogenicityFilterTest {
     private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.of(MTASTER_FAIL_SCORE);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
@@ -104,12 +106,12 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         assertThat(instance.keepNonPathogenic(), equalTo(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS));
     }
 
     @Test
-    public void testThatOffTargetNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
+    void testThatOffTargetNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
@@ -118,7 +120,7 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testThatOffTargetNonPathogenicVariantsAreStillScoredAndPassFilterWhenPassAllVariantsSetTrue() {
+    void testThatOffTargetNonPathogenicVariantsAreStillScoredAndPassFilterWhenPassAllVariantsSetTrue() {
         instance = new PathogenicityFilter(PASS_ALL_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
@@ -127,7 +129,7 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testThatMissenseNonPathogenicVariantsAreStillScoredAndPassFilterWhenPassAllVariantsSetTrue() {
+    void testThatMissenseNonPathogenicVariantsAreStillScoredAndPassFilterWhenPassAllVariantsSetTrue() {
         instance = new PathogenicityFilter(PASS_ALL_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(predictedNonPathogenicMissense);
@@ -136,7 +138,7 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testThatMissenseNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
+    void testThatMissenseNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(predictedNonPathogenicMissense);
@@ -155,53 +157,102 @@ public class PathogenicityFilterTest {
         FilterTestHelper.assertPassed(instance.runFilter(downstreamFailsFilter));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "DOWNSTREAM_GENE_VARIANT, false, '', FAIL",
+            "DOWNSTREAM_GENE_VARIANT, true, '', PASS",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, '', FAIL",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.1, FAIL",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.11, PASS",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;SPLICE_AI=0.11, PASS",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12, FAIL",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=15, PASS",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9;SPLICE_AI=0.11, PASS",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9, FAIL",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.901, PASS",
+            "THREE_PRIME_UTR_EXON_VARIANT, false, CADD=12;REMM=0.901, PASS",
+            "THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.901, PASS",
+            "NON_CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;REMM=0.901, PASS",
+            "MISSENSE_VARIANT, false, CADD=12;REVEL=0.8, PASS",
+            "MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
+            "MISSENSE_VARIANT, false, '', PASS",
+            "SYNONYMOUS_VARIANT, false, '', FAIL",
+            "SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, FAIL", // spliceAI permissive
+            "SYNONYMOUS_VARIANT, false, SPLICE_AI=0.5, PASS", // spliceAI default
+            "SPLICE_REGION_VARIANT, false, SPLICE_AI=0.2, PASS", // splice region variants have a default path score of 0.8
+            "SPLICE_REGION_VARIANT, false, '', PASS", // splice region variants have a default path score of 0.8
+            "FRAMESHIFT_TRUNCATION, false, '', PASS",
+    })
+    void whenFilterSetToRemoveNonPathogenic(VariantEffect variantEffect, boolean isWhitelisted, String pathScoreStrings, FilterResult.Status expected) {
+        PathogenicityFilter filter = new PathogenicityFilter(false);
+
+        var variant = testVariantBuilder()
+                .variantEffect(variantEffect)
+                .whiteListed(isWhitelisted)
+                .pathogenicityData(PathogenicityData.of(parsePathScores(pathScoreStrings)))
+                .build();
+        assertThat(filter.runFilter(variant).status(), equalTo(expected));
+    }
+
+    private List<PathogenicityScore> parsePathScores(String pathScoreStrings) {
+        if (pathScoreStrings.isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(pathScoreStrings.split(";"))
+                .map(scoreValue -> {
+                    String[] tokens = scoreValue.split("=");
+                    return PathogenicityScore.of(PathogenicitySource.valueOf(tokens[0]), Float.parseFloat(tokens[1]));
+                })
+                .toList();
+    }
+
     @Test
-    public void testFilterType() {
+    void testFilterType() {
         assertThat(instance.filterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         String expResult = "PathogenicityFilter{keepNonPathogenic=false}";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));
     }
 
     @Test
-    public void testEqualToOtherPathogenicityFilter() {
+    void testEqualToOtherPathogenicityFilter() {
         instance = new PathogenicityFilter(false);
         PathogenicityFilter other = new PathogenicityFilter(false);
         assertThat(instance.equals(other), is(true));
     }
 
     @Test
-    public void testNotEqualToOtherPathogenicityFilter() {
+    void testNotEqualToOtherPathogenicityFilter() {
         instance = new PathogenicityFilter(false);
         PathogenicityFilter other = new PathogenicityFilter(true);
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
-    public void testNotEqualToOtherFilterType() {
+    void testNotEqualToOtherFilterType() {
         instance = new PathogenicityFilter(false);
         Filter other = new FrequencyFilter(0.1f);
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
-    public void testNotEqualToObjectOfDifferentType() {
+    void testNotEqualToObjectOfDifferentType() {
         Object other = "a string";
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
-    public void testNotEqualToNullObject() {
+    void testNotEqualToNullObject() {
         Object other = null;
         assertThat(instance.equals(other), is(false));
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         instance = new PathogenicityFilter(false);
         PathogenicityFilter other = new PathogenicityFilter(false);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
