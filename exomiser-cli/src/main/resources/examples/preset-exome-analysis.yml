@@ -1,6 +1,7 @@
 ## Exomiser Analysis Template.
-# These are all the possible options for running exomiser. Use this as a template for
-# your own set-up.
+##
+# This is the standard exomiser analysis for coding sequence variants. If you also want to look at non-coding variants,
+# use the preset-genome-analysis.yml
 ---
 analysisMode: PASS_ONLY
 inheritanceModes: {
@@ -40,8 +41,10 @@ frequencySources: [
 pathogenicitySources: [ REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI ]
 #this is the standard exomiser order.
 steps: [
-    failedVariantFilter: { },
-    variantEffectFilter: {
+  geneBlacklistFilter: { },
+  failedVariantFilter: { },
+  alleleBalanceFilter: { },
+  variantEffectFilter: {
       remove: [
           FIVE_PRIME_UTR_EXON_VARIANT,
           FIVE_PRIME_UTR_INTRON_VARIANT,
