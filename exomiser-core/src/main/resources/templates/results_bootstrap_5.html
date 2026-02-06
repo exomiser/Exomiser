@@ -558,7 +558,7 @@
                             ➕
                         </td>
                     </tr>
-                    <tr class="collapse" th:id="'details-' + ${geneSymbol}" id="test">
+                    <tr class="border-bottom border-secondary collapse" th:id="'details-' + ${geneSymbol}" id="test" >
                         <td colspan="10">
                                 <ul class="nav nav-tabs mb-2 justify-content-center">
                                     <li class="nav-item" th:each="geneScore: ${gene.compatibleGeneScores()}" th:with="modeOfInheritance = ${geneScore.modeOfInheritance().getAbbreviation()}">
