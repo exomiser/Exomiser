@@ -23,11 +23,7 @@ package org.monarchinitiative.exomiser.core.filters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.SpliceAiScore;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.svart.VariantType;
 
 import java.util.EnumSet;
@@ -84,7 +80,7 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
                 return PASS;
             }
             PathogenicityScore remmScore = pathogenicityData.pathogenicityScore(PathogenicitySource.REMM);
-            if (remmScore != null && remmScore.score() > 0.9) {
+            if (remmScore != null && remmScore.score() > RemmScore.LIKELY_PATHOGENIC_THRESHOLD) {
                 return PASS;
             }
             return FAIL;
