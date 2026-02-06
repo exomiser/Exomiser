@@ -608,11 +608,11 @@
                                      th:id="|genescores-body-${geneSymbol}-${geneScore.modeOfInheritance().getAbbreviation()}|"
                                      id="genescores-body-FGFR2-AD">
                                     <div class="card-body">
-                                        <div class="card-title text-center p-2 text-primary bg-tertiary-subtle rounded-3">
+                                        <div class="card-title text-center p-2 text-tertiary bg-tertiary-subtle border-bottom border-secondary-subtle">
                                             <div class="row">
                                                 <div class="col"></div>
-                                                <div class="col" th:text="${geneScore.modeOfInheritance()}">
-                                                    AUTOSOMAL_DOMINANT
+                                                <div class="col">
+                                                    <b th:text="${geneScore.modeOfInheritance()}">AUTOSOMAL_DOMINANT</b>
                                                 </div>
                                                 <div class="col">Exomiser Score: <b
                                                         th:text="${#numbers.formatDecimal(geneScore.combinedScore(), 1, 3)}">0.992</b>
@@ -634,7 +634,7 @@
                                         </div>
                                             <div>
                                                 <table class="table table-sm table-striped">
-                                                    <thead>
+                                                    <thead class="border-bottom border-secondary">
                                                     <tr>
                                                         <th scope="col">Variant</th>
                                                         <th scope="col">HGVS</th>
@@ -647,7 +647,7 @@
                                                         <th scope="col">Exomiser ACMG</th>
                                                     </tr>
                                                     </thead>
-                                                    <tbody class="table-group-divider">
+                                                    <tbody>
                                                     <th:block th:each="acmgAssignment: ${geneScore.acmgAssignments()}"
                                                               th:with="variant = ${acmgAssignment.variantEvaluation()}">
                                                         <tr th:with="variantId = |${variant.toGnomad()}_${geneScore.modeOfInheritance().getAbbreviation()}|" th:id="|variant-summary-${variantId}|" id="variant-summary-10-123256215-T-G_AD"
@@ -965,7 +965,7 @@
                                         </div>
                                         <div>
                                             <table class="table table-sm table-striped">
-                                                <thead>
+                                                <thead class="border-bottom border-secondary">
                                                 <tr>
                                                     <th scope="col">Variant</th>
                                                     <th scope="col">HGVS</th>
@@ -978,7 +978,7 @@
                                                     <th scope="col">Exomiser ACMG</th>
                                                 </tr>
                                                 </thead>
-                                                <tbody class="table-group-divider">
+                                                <tbody>
                                                 <th:block th:each="variant : ${gene.nonContributingPassedVariantEvaluations()}">
                                                     <tr
                                                         th:with="variantId = |${variant.toGnomad()}|" th:id="|variant-summary-${variantId}|" id="variant-summary-10-123256215-T-G"
@@ -1278,7 +1278,7 @@
                                         </div>
                                         <table th:unless="${diseases.isEmpty()}"
                                                class="table table-striped caption-top">
-                                            <thead>
+                                            <thead class="border-bottom border-secondary">
                                             <tr>
                                                 <th scope="col">Disease ID</th>
                                                 <th scope="col">Mode of Inheritance</th>
