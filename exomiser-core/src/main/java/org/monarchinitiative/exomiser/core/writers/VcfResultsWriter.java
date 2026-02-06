@@ -231,7 +231,7 @@ public class VcfResultsWriter implements ResultsWriter {
                     AcmgCriterion.Evidence evidence = entry.getValue();
                     return (acmgCriterion.evidence() == evidence) ? acmgCriterion.toString() : acmgCriterion + "_" + evidence.displayString();
                 })
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining("&"));
     }
 
     private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
