@@ -406,4 +406,52 @@ public class VcfResultsWriterTest {
                 + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_AD|SHH_alpha_spaces|6469|AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|LIKELY_BENIGN|BP1_Moderate|DISEASE:1|\"Name_with_spaces\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
+
+    @Test
+    public void testMultipleAcmgEvidenceInstancesAreJoinedByAmpersand() {
+        GeneIdentifier geneIdentifier = GeneIdentifier.builder()
+                .geneId("2263")
+                .geneSymbol("FGFR2")
+                .hgncId("HGNC:3689")
+                .hgncSymbol("FGFR2")
+                .entrezId("2263")
+                .ensemblId("ENSG00000066468")
+                .ucscId("uc021pzz.1")
+                .build();
+
+        Gene gene = new Gene(geneIdentifier);
+        VariantEvaluation variant = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
+        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        variant.addFilterResult(FilterResult.pass(FilterType.INHERITANCE_FILTER));
+        variant.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        variant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        gene.addVariant(variant);
+        gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+
+        Disease disease = Disease.builder()
+                .diseaseId("OMIM:101600")
+                .diseaseName("Pfeiffer syndrome")
+                .build();
+
+        GeneScore adScore = GeneScore.builder()
+                .acmgAssignments(List.of(AcmgAssignment.of(variant, geneIdentifier, ModeOfInheritance.AUTOSOMAL_DOMINANT, disease, AcmgEvidence.of(Map.of(
+                        AcmgCriterion.PS3, AcmgCriterion.Evidence.STRONG,
+                        AcmgCriterion.PM2, AcmgCriterion.Evidence.MODERATE,
+                        AcmgCriterion.PP3, AcmgCriterion.Evidence.SUPPORTING
+                )), AcmgClassification.PATHOGENIC)))
+                .contributingVariants(List.of(variant))
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .geneIdentifier(geneIdentifier)
+                .combinedScore(1.0)
+                .build();
+        gene.addGeneScore(adScore);
+
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, gene);
+
+        String vcf = instance.writeString(analysisResults, settings);
+        final String expected = METADATA_HEADER + CHR_10_CONTIG_HEADER + SAMPLE_HEADER
+                + "10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|0.0000|0.0000|0.6000|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|PATHOGENIC|PS3&PM2&PP3|OMIM:101600|\"Pfeiffer_syndrome\"}\tGT:RD\t0/1:30\n";
+        assertThat(vcf, equalTo(expected));
+    }
 }
