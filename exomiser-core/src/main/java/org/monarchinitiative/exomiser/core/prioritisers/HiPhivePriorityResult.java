@@ -467,7 +467,7 @@ public class HiPhivePriorityResult implements PriorityResult {
         String id = databaseNameAndIdentifier[1];
         String target = switch (databaseName) {
             case "OMIM" -> "https://www.omim.org/entry/" + id;
-            case "ORPHA" -> "https://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id;
+            case "ORPHA" -> "https://www.orpha.net/en/disease/detail/" + id;
             case "MONDO" -> "https://monarchinitiative.org/MONDO:" + id;
             default -> id;
         };
