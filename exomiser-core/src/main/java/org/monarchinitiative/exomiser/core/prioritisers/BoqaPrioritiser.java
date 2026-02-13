@@ -47,7 +47,7 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
 
     @Override
     public Stream<BoqaPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
-        logger.info("Running BOQA prioritiser...XXX");
+        logger.info("Running BOQA prioritiser...");
         var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
@@ -95,63 +95,6 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
                     return new BoqaResult(br.counts(), boqaExomiserScore);
                 })
                 .toList();
-    }
-
-    /**
-     * Rescales the BOQA result scores to adjust their range. The method normalizes the scores so that
-     * the highest scoring result is scaled to 1.0, while preserving the relative differences between
-     * score values.
-     *
-     * @return the list of rescaled BOQA results with updated scores
-     * @param boqaResults
-     */
-    private static List<BoqaResult> minMaxScaledBoqaResultScores(List<BoqaResult> boqaResults) {
-        // BoqaResult scores are normalised so that they sum to 1 across all results. This leads to tiny, tiny scores.
-        // This uses min-max scaling, which doesn't perform well with outliers. It seems like BOQA produces data with
-        // extreme outliers, so this needs to use a different scaling method.
-        // Min-max scaled score:
-        //   scaled_score = (score - min_score) / (max_score - min_score)
-        // Equivalent to:
-        //   scale_factor = 1 / (max_score - min_score)
-        //   scaled_score = (score - min_score) * scale_factor
-        double minScore = boqaResults.stream().mapToDouble(BoqaResult::boqaScore).min().orElse(0d);
-        double maxScore = boqaResults.stream().mapToDouble(BoqaResult::boqaScore).max().orElse(0d);
-        double scaleFactor = 1 / (maxScore - minScore);
-        return boqaResults.stream()
-                .map(boqaResult -> new BoqaResult(boqaResult.counts(), (boqaResult.boqaScore() - minScore) * scaleFactor))
-                .toList();
-    }
-
-    // TODO: use softmax?
-    private static List<BoqaResult> softMaxScaledBoqaResultScores(List<BoqaResult> boqaResults) {
-        // Apply temperature scaling first
-        double maxScore = boqaResults.stream()
-                .mapToDouble(BoqaResult::boqaScore)
-                .max()
-                .orElse(0.0);
-
-        double total = boqaResults.stream()
-                .mapToDouble(b -> Math.exp(b.boqaScore() - maxScore))
-                .sum();
-        double scaleFactor = 1 / total;
-
-//        return (Math.exp(input) / total) == (Math.expt(score) * ( 1 / total))
-        return boqaResults.stream()
-                .map(boqaResult -> new BoqaResult(boqaResult.counts(), 0.5))
-                .toList();
-    }
-
-    // 1 - ( rank / numTotalDiseases) // rank-scaled score
-    // TODO: Produces slightly different phenotype scores when run multiple times in a row.
-    private static List<BoqaResult> rankScaledBoqaResultScores(List<BoqaResult> boqaResults) {
-        int numBoqaResults = boqaResults.size();
-        List<BoqaResult> rankedBoqaResults = boqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).toList();
-        List<BoqaResult> rankScaledResults = new ArrayList<>(numBoqaResults);
-        for (int i = 0; i < numBoqaResults; i++) {
-            BoqaResult boqaResult = rankedBoqaResults.get(i);
-            rankScaledResults.add(new BoqaResult(boqaResult.counts(), 1.0 - (i / (double) numBoqaResults)));
-        }
-        return rankScaledResults;
     }
 
     /**
