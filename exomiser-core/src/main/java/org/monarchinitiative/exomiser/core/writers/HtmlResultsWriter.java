@@ -42,6 +42,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.DiseaseIdentifiers;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -158,7 +159,14 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         context.setVariable("pValueFormatter", new ScientificDecimalFormat("0.0E0"));
         context.setVariable("conflictingInterpretationsFormatter", new ConflictingInterpretationsFormatter());
+        context.setVariable("diseaseIdentifiers", new DiseaseIdentifer());
         return context;
+    }
+
+    public static class DiseaseIdentifer {
+        public String toUrl(String diseaseId) {
+            return DiseaseIdentifiers.toURLString(diseaseId);
+        }
     }
 
     /**

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.core.model.DiseaseIdentifiers;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
@@ -458,19 +459,7 @@ public class HiPhivePriorityResult implements PriorityResult {
     }
 
     private String makePicoDiseaseLink(String diseaseId, String diseaseTerm) {
-        if (diseaseId.startsWith("G2P")) {
-            // e.g. G2P01586 https://www.ebi.ac.uk/gene2phenotype/lgd/G2P01586
-            return "<a href=\"https://www.ebi.ac.uk/gene2phenotype/lgd/" + diseaseId + "\">" + diseaseTerm + "</a>";
-        }
-        String[] databaseNameAndIdentifier = diseaseId.split(":");
-        String databaseName = databaseNameAndIdentifier[0];
-        String id = databaseNameAndIdentifier[1];
-        String target = switch (databaseName) {
-            case "OMIM" -> "https://www.omim.org/entry/" + id;
-            case "ORPHA" -> "https://www.orpha.net/en/disease/detail/" + id;
-            case "MONDO" -> "https://monarchinitiative.org/MONDO:" + id;
-            default -> id;
-        };
+        String target = DiseaseIdentifiers.toURLString(diseaseId);
         return "<a href=\""+ target + "\">" + diseaseTerm + "</a>";
     }
 
