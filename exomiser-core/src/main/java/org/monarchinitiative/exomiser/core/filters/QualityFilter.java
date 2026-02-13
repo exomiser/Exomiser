@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * VariantFilter Variants on the basis of the PHRED quality score for the
@@ -33,6 +35,8 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
  * @version 0.09 (18 December, 2013).
  */
 public record QualityFilter(double mimimumQualityThreshold) implements VariantFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(QualityFilter.class);
 
     private static final FilterType filterType = FilterType.QUALITY_FILTER;
 

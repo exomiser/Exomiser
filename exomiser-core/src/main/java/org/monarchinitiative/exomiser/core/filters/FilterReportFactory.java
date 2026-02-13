@@ -88,6 +88,7 @@ public class FilterReportFactory {
                     filterReport(filterResultCount, messages((KnownVariantFilter) baseFilter, analysisResults.variantEvaluations()));
             case FREQUENCY_FILTER -> filterReport(filterResultCount, messages((FrequencyFilter) baseFilter));
             case QUALITY_FILTER -> filterReport(filterResultCount, messages((QualityFilter) baseFilter));
+            case ALLELE_BALANCE_FILTER -> filterReport(filterResultCount, messages((AlleleBalanceFilter) baseFilter));
             case ENTREZ_GENE_ID_FILTER -> filterReport(filterResultCount, messages((GeneSymbolFilter) baseFilter));
             case PATHOGENICITY_FILTER -> filterReport(filterResultCount, messages((PathogenicityFilter) baseFilter));
             case INTERVAL_FILTER -> filterReport(filterResultCount, messages((IntervalFilter) baseFilter));
@@ -163,7 +164,11 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(QualityFilter qualityFilter) {
-        return List.of(String.format("Variants filtered for mimimum PHRED quality of %.1f", qualityFilter.mimimumQualityThreshold()));
+        return List.of(String.format("Variants filtered for minimum PHRED quality of %.1f", qualityFilter.mimimumQualityThreshold()));
+    }
+
+    private List<String> messages(AlleleBalanceFilter alleleBalanceFilter) {
+        return List.of(String.format("Variants filtered for all alleles having GQ > %d, DP > %d, and AB (0/1 [0.2, 0.8], 0/0 <= 0.02, 1/1 >= 0.98)", alleleBalanceFilter.minimumGenotypeQuality(), alleleBalanceFilter.minimumDepth()));
     }
 
     private List<String> messages(PathogenicityFilter pathogenicityFilter) {

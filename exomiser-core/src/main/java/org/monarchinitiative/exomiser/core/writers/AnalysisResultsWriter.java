@@ -40,7 +40,7 @@ import java.util.Set;
 public class AnalysisResultsWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisResultsWriter.class);
-    private static final Set<OutputFormat> DEFAULT_OUTPUT_FORMATS = Collections.unmodifiableSet(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON));
+    private static final Set<OutputFormat> DEFAULT_OUTPUT_FORMATS = Collections.unmodifiableSet(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.PARQUET));
 
     private AnalysisResultsWriter() {
     }
@@ -68,8 +68,6 @@ public class AnalysisResultsWriter {
             logger.debug("Writing {} results", outputFormat);
             resultsWriter.writeFile(analysisResults, outputSettings);
         }
-        // TODO: Change this to a general writer, like the JSON one.
-        new ParquetVariantResultsWriter().writeFile(analysisResults, outputSettings);
     }
 
     private static Path createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {

@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;

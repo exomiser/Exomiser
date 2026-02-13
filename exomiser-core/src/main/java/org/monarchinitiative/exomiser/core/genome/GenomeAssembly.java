@@ -84,7 +84,7 @@ public enum GenomeAssembly {
         this.contigs = genomicAssembly.contigs().stream()
                 // only want 1-25, X, Y, MT
                 .filter(contig -> contig.sequenceRole() == ASSEMBLED_MOLECULE)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     public static GenomeAssembly defaultBuild() {

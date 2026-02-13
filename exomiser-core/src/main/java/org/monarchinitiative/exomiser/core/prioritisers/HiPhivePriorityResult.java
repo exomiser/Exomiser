@@ -35,7 +35,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotype
 import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -304,67 +303,6 @@ public class HiPhivePriorityResult implements PriorityResult {
                 .collect(toMap(PhenotypeMatch::queryPhenotype, Function.identity()));
     }
 
-    /**
-     */
-    @JsonIgnore
-    @Override
-    public String getHTMLCode() {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : phenotypeEvidence.values()) {
-            stringBuilder.append("<div class=\"pheno-match-card card col-sm-5\">");
-            switch (geneModelPhenotypeMatch.organism()) {
-                case HUMAN:
-                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.model();
-                    String diseaseLink = makeDiseaseLink(geneDiseaseModel.diseaseId(), geneDiseaseModel.diseaseTerm());
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span>%s <a href=\"https://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=%s\" target=\"_blank\" class=\"text-decoration-none\">%s</a></h5>", geneModelPhenotypeMatch
-                            .score(), diseaseLink, geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
-                    break;
-                case MOUSE:
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span><span>Mouse Mutant</span> <a class=\"text-decoration-none\" target=\"_blank\" href=\"https://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a></h5>", geneModelPhenotypeMatch
-                            .score(), geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
-                    break;
-                case FISH:
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span><span>Zebrafish Mutant</span> <a class=\"text-decoration-none\" target=\"_blank\" href=\"https://zfin.org/action/quicksearch/query?query=%s\">%s</a></h5>", geneModelPhenotypeMatch
-                            .score(), geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
-                    break;
-            }
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
-            makeBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);
-            stringBuilder.append("</div>");
-        }
-
-        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : ppiEvidence) {
-            String stringDbLink = "http://version10.string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + geneModelPhenotypeMatch
-                    .humanGeneSymbol() + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
-            stringBuilder.append("<div class=\"pheno-match-card card col-sm-5\">");
-            switch (geneModelPhenotypeMatch.organism()) {
-                case HUMAN:
-                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.model();
-                    String diseaseLink = makeDiseaseLink(geneDiseaseModel.diseaseId(), geneDiseaseModel.diseaseTerm());
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span>&nbsp;&nbsp;%s</div> via <div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Proximity Score\">%.3f</span>&nbsp;&nbsp;<a class=\"text-decoration-none\" target=\"_blank\" href=\"%s\">Interactome Proximity</a></div> to <a href=\"https://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=%s\" target=\"_blank\" class=\"text-decoration-none\">%s</a></h5>", geneModelPhenotypeMatch.score(), diseaseLink, ppiScore, stringDbLink, geneModelPhenotypeMatch
-                            .humanGeneSymbol(), geneModelPhenotypeMatch
-                            .humanGeneSymbol()));
-                    break;
-                case MOUSE:
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span><span>&nbsp;&nbsp;Mouse Mutant</span></div> via <div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Proximity Score\">%.3f</span>&nbsp;&nbsp;<a class=\"text-decoration-none\" target=\"_blank\" href=\"%s\">Interactome Proximity</a></div> to <a href=\"https://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=%s\" target=\"_blank\" class=\"text-decoration-none\">%s</a></h5>", geneModelPhenotypeMatch.score(), ppiScore, stringDbLink,  geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
-                    break;
-                case FISH:
-                    stringBuilder.append(String.format("<h5 class=\"card-header\"><div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Phenotype Score\">%.3f</span>&nbsp;&nbsp;<span>Zebrafish</span></div> via <div class=\"d-flex ai-c\"><span class=\"badge bg-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Proximity Score\">%.3f</span>&nbsp;&nbsp;<a class=\"text-decoration-none\" target=\"_blank\" href=\"%s\">Interactome Proximity</a></div> to <a href=\"https://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=%s\" target=\"_blank\" class=\"text-decoration-none\">%s</a></h5>", geneModelPhenotypeMatch.score(), ppiScore, stringDbLink, geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch
-                            .humanGeneSymbol()));
-                    break;
-            }
-            Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
-            makeBestPhenotypeMatchHtml(stringBuilder, bestModelPhenotypeMatches);
-            stringBuilder.append("</div>");
-        }
-        String html = stringBuilder.toString();
-        if (html.isEmpty()) {
-            return "<dl><dt>No phenotype or PPI evidence</dt></dl>";
-        }
-        return html;
-    }
-
     private void makeBestPhenotypeMatchText(StringBuilder stringBuilder, Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches) {
         for (PhenotypeTerm queryTerm : queryPhenotypeTerms) {
             if (bestModelPhenotypeMatches.containsKey(queryTerm)) {// && bestModelPhenotypeMatches.get(queryTerm).score() > 1.75) {// RESTRICT TO HIGH QUALITY MATCHES
@@ -375,11 +313,110 @@ public class HiPhivePriorityResult implements PriorityResult {
         }
     }
 
-    private void makeBestPhenotypeMatchHtml(StringBuilder stringBuilder, Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches) {
+    /**
+     */
+    @JsonIgnore
+    @Override
+    public String getHTMLCode() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (!phenotypeEvidence.isEmpty()) {
+            stringBuilder.append("<div class=\"container container-fluid text-center\">");
+            stringBuilder.append("<div class=\"row\">");
+            for (GeneModelPhenotypeMatch match : phenotypeEvidence.values()) {
+                stringBuilder.append("<div class=\"col\">");
+                stringBuilder.append("<table class=\"table table-striped caption-top\">");
+                stringBuilder.append("<caption class=\"card-title text-center text-primary border border-primary-subtle rounded-3\">");
+                switch (match.organism()) {
+                    case HUMAN:
+                        GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) match.model();
+                        String diseaseLink = makePicoDiseaseLink(geneDiseaseModel.diseaseId(), geneDiseaseModel.diseaseTerm());
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> %s <a href=\"https://ensembl.org/Homo_sapiens/Gene/Summary?g=%s\">%s</a>",
+                                match.score(), diseaseLink, match.humanGeneSymbol(), match.humanGeneSymbol()));
+                        break;
+                    case MOUSE:
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> Mouse Mutant <a href=\"https://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>",
+                                match.score(), match.humanGeneSymbol(), match.model().id()));
+                        break;
+                    case FISH:
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> Zebrafish Mutant <a href=\"https://zfin.org/action/quicksearch/query?query=%s\">%s</a>",
+                                match.score(), match.humanGeneSymbol(), match.model().id()));
+                        break;
+                }
+                stringBuilder.append("</caption>");
+                stringBuilder.append("""
+                                     <thead>
+                                         <tr>
+                                             <th scope="col">Sample Phenotype</th>
+                                             <th scope="col">Score</th>
+                                             <th scope="col">Match Phenotype</th>
+                                         </tr>
+                                     </thead>
+                                     """);
+                Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(match);
+                stringBuilder.append("<tbody>");
+                makePicoBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);
+                stringBuilder.append("</tbody>");
+                stringBuilder.append("</table>");
+                stringBuilder.append("</div>");
+            }
+            stringBuilder.append("</div>");
+            stringBuilder.append("</div>");
+        }
+        if (!ppiEvidence.isEmpty()) {
+            stringBuilder.append("<div class=\"container container-fluid text-center\">");
+            stringBuilder.append("<div class=\"row\">");
+            for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : ppiEvidence) {
+                String stringDbLink = "http://version10.string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + geneModelPhenotypeMatch
+                        .humanGeneSymbol() + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
+                stringBuilder.append("<div class=\"col\">");
+                stringBuilder.append("<table class=\"table table-striped caption-top\">");
+                stringBuilder.append("<caption class=\"card-title text-center text-info border border-info-subtle rounded-3\">");
+                switch (geneModelPhenotypeMatch.organism()) {
+                    case HUMAN:
+                        GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.model();
+                        String diseaseLink = makePicoDiseaseLink(geneDiseaseModel.diseaseId(), geneDiseaseModel.diseaseTerm());
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> %s via Proximity Score <b>%.3f</b> <a href=\"%s\">Interactome Proximity</a> to <a href=\"https://ensembl.org/Homo_sapiens/Gene/Summary?g=%s\">%s</a>",
+                                geneModelPhenotypeMatch.score(), diseaseLink, ppiScore, stringDbLink, geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
+                        break;
+                    case MOUSE:
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> Mouse Mutant via Proximity Score <b>%.3f</b> <a href=\"%s\">Interactome Proximity</a> to <a href=\"https://ensembl.org/Homo_sapiens/Gene/Summary?g=%s\">%s</a>",
+                                geneModelPhenotypeMatch.score(), ppiScore, stringDbLink,  geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
+                        break;
+                    case FISH:
+                        stringBuilder.append(String.format("Phenotype Score <b>%.3f</b> Zebrafish via Proximity Score <b>%.3f</b> <a href=\"%s\">Interactome Proximity</a> to <a href=\"https://ensembl.org/Homo_sapiens/Gene/Summary?g=%s\">%s</a>",
+                                geneModelPhenotypeMatch.score(), ppiScore, stringDbLink, geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch.humanGeneSymbol()));
+                        break;
+                }
+                stringBuilder.append("</caption>");
+                stringBuilder.append("""
+                                     <thead>
+                                         <tr>
+                                             <th scope="col">Sample Phenotype</th>
+                                             <th scope="col">Score</th>
+                                             <th scope="col">Match Phenotype</th>
+                                         </tr>
+                                     </thead>
+                                     """);
+                Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = getPhenotypeTermPhenotypeMatchMap(geneModelPhenotypeMatch);
+                stringBuilder.append("<tbody>");
+                makePicoBestPhenotypeMatchHtml(stringBuilder, bestModelPhenotypeMatches);
+                stringBuilder.append("</tbody>");
+                stringBuilder.append("</table>");
+                stringBuilder.append("</div>");
+            }
+            stringBuilder.append("</div>");
+            stringBuilder.append("</div>");
+        }
+        String html = stringBuilder.toString();
+        if (html.isEmpty()) {
+            return "<dl><dt>No phenotype or PPI evidence</dt></dl>";
+        }
+        return html;
+    }
+
+    private void makePicoBestPhenotypeMatchHtml(StringBuilder stringBuilder, Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches) {
         Collection<PhenotypeMatch> matches = new ArrayList<>();
         Collection<PhenotypeTerm> unmatched = new ArrayList<>();
-        stringBuilder.append("<div class=\"card-body\">");
-        stringBuilder.append("<div class=\"d-flex px-2\"><div class=\"flex-grow-1 fw-bold\">Sample</div><div class=\"fw-bold\">Reference</div></div>");
         for (PhenotypeTerm queryTerm : queryPhenotypeTerms) {
             if (bestModelPhenotypeMatches.containsKey(queryTerm)) {
                 PhenotypeMatch match = bestModelPhenotypeMatches.get(queryTerm);
@@ -399,33 +436,37 @@ public class HiPhivePriorityResult implements PriorityResult {
                     }
                     return compare;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         for (PhenotypeMatch match: matches){
+            stringBuilder.append("<tr>");
             stringBuilder.append(String.format(
-                    "<div class=\"matched-set\"><div class=\"match\"><div class=\"match-left text-sm\"><div class=\"match-id\">%s</div><div class=\"match-name px-2\">%s</div></div>" +
-                    "<div class=\"align-self-center\"><span class=\"badge bg-secondary\">%.2f</span></div>" +
-                    "<div class=\"match-right text-sm\"><div class=\"match-id\">%s</div><div class=\"match-name px-2\">%s</div></div></div></div>", match.queryPhenotypeId(), match.queryPhenotype().label(), match.simJ(), match.matchPhenotype().id(), match.matchPhenotype().label()));
+                    "<td><div class=\"secondary-text-emphasis\">%s</div>\n%s</td>" +
+                    "<td>%.2f</td>" +
+                    "<td><div class=\"secondary-text-emphasis\">%s</div>\n%s</td>", match.queryPhenotypeId(), match.queryPhenotype().label(), match.score(), match.matchPhenotype().id(), match.matchPhenotype().label()));
+            stringBuilder.append("</tr>");
         }
 
         for (PhenotypeTerm term: unmatched){
+            stringBuilder.append("<tr>");
             stringBuilder.append(String.format(
-                    "<div class=\"unmatched-set hidden\"><div class=\"match\"><div class=\"match-left text-sm\"><div class=\"match-id\">%s</div><div class=\"match-name px-2\">%s</div></div>" +
-                            "<div class=\"align-self-center\"><span class=\"badge bg-warning\">%.2f</span></div>" +
-                            "<div class=\"match-right text-sm\"><div class=\"match-id\">%s</div><div class=\"match-name px-2\">%s</div></div></div></div>", term.id(), term.label(), 0.00, "", ""));
+                    "<td><div class=\"secondary-text-emphasis\">%s</div>\n%s</td>" +
+                    "<td>%.2f</td>" +
+                    "<td><div class=\"secondary-text-emphasis\">%s</div>\n%s</td>", term.id(), term.label(), 0.00, "", ""));
+            stringBuilder.append("</tr>");
         }
-        stringBuilder.append("</div>");
     }
 
-    private String makeDiseaseLink(String diseaseId, String diseaseTerm) {
+    private String makePicoDiseaseLink(String diseaseId, String diseaseTerm) {
         String[] databaseNameAndIdentifier = diseaseId.split(":");
         String databaseName = databaseNameAndIdentifier[0];
         String id = databaseNameAndIdentifier[1];
-        if (databaseName.equals("OMIM")) {
-            return "<a class=\"text-decoration-none\" href=\"http://www.omim.org/entry/" + id + "\" target=\"_blank\">" + diseaseTerm + "</a>";
-        } else {
-            return "<a class=\"text-decoration-none\" href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id + "\" target=\"_blank\">" + diseaseTerm + "</a>";
-        }
+        String target = switch (databaseName) {
+            case "OMIM" -> "https://www.omim.org/entry/" + id;
+            case "ORPHA" -> "https://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id;
+            default -> id;
+        };
+        return "<a href=\""+ target + "\">" + diseaseTerm + "</a>";
     }
 
     @Override

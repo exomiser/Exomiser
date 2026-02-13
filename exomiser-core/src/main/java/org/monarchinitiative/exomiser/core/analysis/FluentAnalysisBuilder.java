@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.FailedVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
@@ -78,6 +77,8 @@ interface FluentAnalysisBuilder<R> {
     public FluentAnalysisBuilder addVariantEffectFilter(Set<VariantEffect> variantEffects);
 
     public FluentAnalysisBuilder addQualityFilter(double cutoff);
+
+    public FluentAnalysisBuilder addAlleleBalanceFilter();
 
     public FluentAnalysisBuilder addKnownVariantFilter();
 

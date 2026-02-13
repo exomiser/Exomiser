@@ -10,7 +10,7 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoBuilder;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
@@ -176,7 +176,7 @@ public class TestData {
     public static final OutputProto.OutputOptions DEFAULT_OUTPUT_OPTIONS = OutputProto.OutputOptions.newBuilder()
             .setOutputContributingVariantsOnly(false)
             .setNumGenes(0)
-            .addAllOutputFormats(List.of("HTML", "JSON"))
+            .addAllOutputFormats(List.of("HTML", "JSON", "PARQUET"))
             .build();
 
     public static final AnalysisProto.Analysis ANALYSIS = AnalysisProtoBuilder.builder()

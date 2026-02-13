@@ -1,6 +1,6 @@
-## Exomiser genome analysis template.
-# These are all the possible options for running exomiser. Use this as a template for
-# your own set-up.
+## Genomiser genome analysis template.
+# This is the standard genomiser analysis for all sequence variants. If you just want to look at coding sequence variants,
+# use the preset-exome-analysis.yml
 ---
 analysisMode: PASS_ONLY
 inheritanceModes: {
@@ -46,10 +46,12 @@ steps: [
   # dramatically reduce the time and memory required to analyse a genome.
   # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
     priorityScoreFilter: { priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501 },
+    geneBlacklistFilter: { },
     failedVariantFilter: { },
+    alleleBalanceFilter: { },
     regulatoryFeatureFilter: { },
     frequencyFilter: { maxFrequency: 2.0 },
-    pathogenicityFilter: { keepNonPathogenic: true },
+    pathogenicityFilter: { keepNonPathogenic: false },
     inheritanceFilter: { },
     omimPrioritiser: { }
 ]

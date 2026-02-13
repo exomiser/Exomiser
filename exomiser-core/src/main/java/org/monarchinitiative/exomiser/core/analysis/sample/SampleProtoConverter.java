@@ -21,9 +21,9 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
-import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
+import org.monarchinitiative.exomiser.core.pedigree.PedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.proto.ProtoConverter;
 
 import java.nio.file.Paths;

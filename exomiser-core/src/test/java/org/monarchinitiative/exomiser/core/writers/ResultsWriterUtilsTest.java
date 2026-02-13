@@ -85,7 +85,7 @@ public class ResultsWriterUtilsTest {
     @Test
     void testNullVcfAndEmptyOutputPrefixUsesVcfFileName() {
         String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/exomiser.json"));
+        assertThat(result, equalTo("results/exomiser.jsonl"));
     }
 
     @Test

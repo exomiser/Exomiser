@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>15.0.0-SNAPSHOT</version>
+    <version>15.0.0-RC5</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -92,6 +92,7 @@
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>exomiser</sonar.organization>
+        <sonar.projectKey>org.monarchinitiative.exomiser:exomiser</sonar.projectKey>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.41</jannovar.version>
         <svart.version>2.0.0-RC7</svart.version>
@@ -310,7 +311,7 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.7.0.1746</version>
+                <version>5.5.0.6356</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

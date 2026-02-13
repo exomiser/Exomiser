@@ -21,8 +21,8 @@
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifiers;
 
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Status.AFFECTED;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Status.AFFECTED;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -55,7 +55,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserTest {
+class ExomiserTest {
 
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
@@ -88,21 +88,21 @@ public class ExomiserTest {
     }
 
     @Test
-    public void canRunAnalysisFull() {
+    void canRunAnalysisFull() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         assertThat(analysisResults.genes().size(), equalTo(3));
     }
     
     @Test
-    public void canRunAnalysisPassOnly() {
+    void canRunAnalysisPassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         assertThat(analysisResults.genes().size(), equalTo(3));
     }
 
     @Test
-    public void canRunAnalysisUsingAlternateGenomeAssemblyPassOnly() {
+    void canRunAnalysisUsingAlternateGenomeAssemblyPassOnly() {
         GenomeAnalysisService grch37Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
         GenomeAnalysisService grch38Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
@@ -135,7 +135,7 @@ public class ExomiserTest {
     }
 
     @Test
-    public void canGetAnalysisBuilder() {
+    void canGetAnalysisBuilder() {
         AnalysisBuilder analysisBuilder = instance.getAnalysisBuilder();
         assertThat(analysisBuilder, instanceOf(AnalysisBuilder.class));
     }

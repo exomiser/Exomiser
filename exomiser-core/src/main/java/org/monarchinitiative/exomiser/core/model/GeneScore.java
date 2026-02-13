@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import jakarta.annotation.Nonnull;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgAssignment;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 

@@ -27,7 +27,6 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -174,6 +173,12 @@ public class AnalysisBuilderTest {
         double cutoff = 500.0;
         analysisBuilder.addQualityFilter(cutoff);
         assertThat(buildAndGetSteps(), equalTo(singletonList(new QualityFilter(cutoff))));
+    }
+
+    @Test
+    public void testAddAlleleBalanceFilter() {
+        analysisBuilder.addAlleleBalanceFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new AlleleBalanceFilter())));
     }
 
     @Test

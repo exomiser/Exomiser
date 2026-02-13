@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -143,6 +142,11 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
 
     public AnalysisBuilder addQualityFilter(double cutoff) {
         analysisSteps.add(new QualityFilter(cutoff));
+        return this;
+    }
+
+    public AnalysisBuilder addAlleleBalanceFilter() {
+        analysisSteps.add(new AlleleBalanceFilter());
         return this;
     }
 
