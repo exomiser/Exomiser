@@ -96,7 +96,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
         Context context = buildContext(analysisResults, settings);
-        return templateEngine.process("results", context);
+        return templateEngine.process("results_bootstrap_5", context);
     }
 
     private Context buildContext(AnalysisResults analysisResults, OutputSettings outputSettings) {
