@@ -1248,7 +1248,26 @@
                                             </thead>
                                             <tbody>
                                             <tr th:each="disease: ${diseases}">
-                                                <td th:text="${disease.diseaseId()}">OMIM:101600</td>
+                                                <th:block th:with="diseaseId = ${disease.diseaseId()}"
+                                                          th:switch="${diseaseId.substring(0, 3)}">
+                                                    <td th:case="'OMI'">
+                                                        <a th:href="@{|https://www.omim.org/entry/${diseaseId.split(':')[1]}|}"
+                                                           th:text="${diseaseId}">OMIM:101600</a>
+                                                    </td>
+                                                    <td th:case="'ORP'">
+                                                        <a th:href="@{|https://www.orpha.net/en/disease/detail/${diseaseId.split(':')[1]}|}"
+                                                            th:text="${diseaseId}">ORPHA:132262</a>
+                                                    </td>
+                                                    <td th:case="'MON'">
+                                                        <a th:href="@{|https://monarchinitiative.org/${diseaseId}|}"
+                                                            th:text="${diseaseId}">MONDO:0007043</a>
+                                                    </td>
+                                                    <td th:case="'G2P'">
+                                                        <a th:href="@{|https://www.ebi.ac.uk/gene2phenotype/lgd/${diseaseId}|}"
+                                                            th:text="${diseaseId}">G2P01586</a>
+                                                    </td>
+                                                    <td th:case="*" th:text="${diseaseId}">MEDGEN:67390</td>
+                                                </th:block>
                                                 <td th:text="${disease.inheritanceMode()}">
                                                     AUTOSOMAL_DOMINANT
                                                 </td>
