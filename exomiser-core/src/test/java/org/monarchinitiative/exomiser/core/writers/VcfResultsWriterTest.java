@@ -409,7 +409,7 @@ class VcfResultsWriterTest {
     }
 
     @Test
-    public void testMultipleAcmgEvidenceInstancesAreJoinedByAmpersand() {
+    void testMultipleAcmgEvidenceInstancesAreJoinedByAmpersand() {
         GeneIdentifier geneIdentifier = GeneIdentifier.builder()
                 .geneId("2263")
                 .geneSymbol("FGFR2")
@@ -427,7 +427,7 @@ class VcfResultsWriterTest {
         variant.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         variant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         gene.addVariant(variant);
-        gene.addPriorityResult(new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        gene.addPriorityResult(new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         gene.setCompatibleInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
         Disease disease = Disease.builder()
@@ -452,8 +452,11 @@ class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysisResults, settings);
         final String expected = METADATA_HEADER + CHR_10_CONTIG_HEADER + SAMPLE_HEADER
-                + "10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|0.0000|0.0000|0.6000|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|PATHOGENIC|PS3&PM2&PP3|OMIM:101600|\"Pfeiffer_syndrome\"}\tGT:RD\t0/1:30\n";
+                                + "10\t123256215\t.\tT\tG\t2.20\tPASS\tExomiser={1|10-123256215-T-G_AD|FGFR2|2263|AD|1.0000|1.0000|0.0000|0.0000|0.6000|1|0|missense_variant|FGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)|PATHOGENIC|PS3&PM2&PP3|OMIM:101600|\"Pfeiffer_syndrome\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
+    }
+
+    @Test
     void nullVcfPathProducesNoOutfile(@TempDir Path tempDir) throws IOException {
         Sample vcfv4Dot3Sample = Sample.builder().vcfPath(null).build();
 
