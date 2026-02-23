@@ -100,8 +100,6 @@ public class Product6DiseaseGeneXmlReader implements ResourceReader<ListMultimap
 
         try (InputStream inputStream = Files.newInputStream(product6XmlResource.getResourcePath())) {
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            inputFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             XMLEventReader eventReader = inputFactory.createXMLEventReader(inputStream);
 
             while (eventReader.hasNext()) {

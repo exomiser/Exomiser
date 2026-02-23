@@ -69,9 +69,9 @@ public class PathogenicityDataProviderTest {
     public void testProvideVariantData() {
         instance = new PathogenicityDataProvider(variantDataService, EnumSet.of(POLYPHEN, SIFT, MUTATION_TASTER), new StubPassAllVariantFilter(FilterType.PATHOGENICITY_FILTER));
                 
-        assertThat(variant.getPathogenicityData(), equalTo(EMPTY_PATH_DATA));
+        assertThat(variant.pathogenicityData(), equalTo(EMPTY_PATH_DATA));
         instance.provideVariantData(variant);
-        assertThat(variant.getPathogenicityData(), equalTo(EXPECTED_PATH_DATA));
+        assertThat(variant.pathogenicityData(), equalTo(EXPECTED_PATH_DATA));
     }
     
     @Test
@@ -79,26 +79,26 @@ public class PathogenicityDataProviderTest {
         FilterType variantFilterType = FilterType.PATHOGENICITY_FILTER;
         instance = new PathogenicityDataProvider(variantDataService, EnumSet.of(POLYPHEN, SIFT, MUTATION_TASTER), new StubPassAllVariantFilter(variantFilterType));
                 
-        assertThat(variant.getPathogenicityData(), equalTo(EMPTY_PATH_DATA));
-        assertThat(variant.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+        assertThat(variant.pathogenicityData(), equalTo(EMPTY_PATH_DATA));
+        assertThat(variant.filterStatus(), equalTo(FilterStatus.UNFILTERED));
         
         FilterResult filterResult = instance.runFilter(variant);
         
-        assertThat(variant.getPathogenicityData(), equalTo(EXPECTED_PATH_DATA));
-        assertThat(filterResult.getFilterType(), equalTo(variantFilterType));
+        assertThat(variant.pathogenicityData(), equalTo(EXPECTED_PATH_DATA));
+        assertThat(filterResult.filterType(), equalTo(variantFilterType));
     }
 
     @Test
     public void testGetFilterType() {
         VariantFilter decoratedFilter = new PathogenicityFilter(true);
         instance = new PathogenicityDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
-        assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
+        assertThat(instance.filterType(), equalTo(decoratedFilter.filterType()));
     }
  
     @Test
     public void testGetDecoratedFilter() {
         VariantFilter decoratedFilter = new PathogenicityFilter(true);
         instance = new PathogenicityDataProvider(variantDataService, EMPTY_SET, decoratedFilter);
-        assertThat(instance.getDecoratedFilter(), equalTo(decoratedFilter));
+        assertThat(instance.variantFilter(), equalTo(decoratedFilter));
     }
 }

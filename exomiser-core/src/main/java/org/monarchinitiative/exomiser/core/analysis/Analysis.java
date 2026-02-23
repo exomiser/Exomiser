@@ -30,9 +30,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import jakarta.annotation.Nullable;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
@@ -42,68 +41,48 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * This class allows an the excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
- *
+ * This class allows the excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
+ * <p>
  * Creation of an Analysis is *strongly* recommended to be done via an {@link AnalysisBuilder} obtained from an
  * {@link AnalysisFactory} or the {@link org.monarchinitiative.exomiser.core.Exomiser} class.
  * Not doing so will likely result in incorrect/meaningless results.
- * 
- * @since 7.0.0
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @since 7.0.0
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
 @JsonPropertyOrder({"analysisMode", "inheritanceModes", "frequencySources", "pathogenicitySources", "steps"})
-public class Analysis {
+public record Analysis(
+        AnalysisMode analysisMode,
+        @JsonProperty("inheritanceModes")
+        InheritanceModeOptions inheritanceModeOptions,
+        Set<FrequencySource> frequencySources,
+        Set<PathogenicitySource> pathogenicitySources,
+        @JsonProperty("steps")
+        List<AnalysisStep> analysisSteps
+) {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
 
-    private final AnalysisMode analysisMode;
-    @JsonProperty("inheritanceModes")
-    private final InheritanceModeOptions inheritanceModeOptions;
-    private final Set<FrequencySource> frequencySources;
-    private final Set<PathogenicitySource> pathogenicitySources;
-    @JsonProperty("steps")
-    private final List<AnalysisStep> analysisSteps;
 
-    private Analysis(Builder builder) {
-        this.analysisMode = builder.analysisMode;
-        this.inheritanceModeOptions = builder.inheritanceModeOptions;
-        this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
-        this.pathogenicitySources = Sets.immutableEnumSet(builder.pathogenicitySources);
-        this.analysisSteps = List.copyOf(builder.analysisSteps);
-    }
-
-    public AnalysisMode getAnalysisMode() {
-        return analysisMode;
-    }
-
-    public InheritanceModeOptions getInheritanceModeOptions() {
-        return inheritanceModeOptions;
-    }
-
-    public Set<FrequencySource> getFrequencySources() {
-        return frequencySources;
-    }
-
-    public Set<PathogenicitySource> getPathogenicitySources() {
-        return pathogenicitySources;
-    }
-
-    public List<AnalysisStep> getAnalysisSteps() {
-        return analysisSteps;
+    public Analysis {
+        Objects.requireNonNull(analysisMode);
+        Objects.requireNonNull(inheritanceModeOptions);
+        frequencySources = (frequencySources == null || frequencySources.isEmpty()) ? Collections.emptySet() : Collections.unmodifiableSet(EnumSet.copyOf(frequencySources));
+        pathogenicitySources = (pathogenicitySources == null || pathogenicitySources.isEmpty()) ? Collections.emptySet() : Collections.unmodifiableSet(EnumSet.copyOf(pathogenicitySources));
+        analysisSteps = List.copyOf(analysisSteps);
     }
 
     @JsonIgnore
-    public PriorityType getMainPrioritiserType() {
+    public PriorityType mainPrioritiserType() {
         for (AnalysisStep analysisStep : analysisSteps) {
             if (analysisStep instanceof Prioritiser<? extends PriorityResult> prioritiser) {
                 //OMIM, if combined with other prioritisers isn't the main one.
-                if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
-                    return prioritiser.getPriorityType();
+                if (prioritiser.priorityType() != PriorityType.OMIM_PRIORITY) {
+                    return prioritiser.priorityType();
                 }
             }
         }
@@ -112,7 +91,7 @@ public class Analysis {
 
     @JsonIgnore
     @Nullable
-    public Prioritiser<PriorityResult> getMainPrioritiser() {
+    public Prioritiser<PriorityResult> mainPrioritiser() {
         for (AnalysisStep analysisStep : analysisSteps) {
             if (analysisStep instanceof Prioritiser && !(analysisStep instanceof OmimPriority)) {
                 return (Prioritiser<PriorityResult>) analysisStep;
@@ -125,7 +104,7 @@ public class Analysis {
      * Returns a new builder instance for creating Analysis objects. *CAUTION* It is strongly advisable to create Analysis
      * objects using the {@link AnalysisBuilder} objects created with the {@link AnalysisFactory}. This will ensure the
      * analysis is in a fit state to run.
-     *
+     * <p>
      * This method should only be used for simple unit tests. More complete ones should use the {@link AnalysisBuilder}
      * as stated above.
      *
@@ -139,6 +118,7 @@ public class Analysis {
     /**
      * Creates a shallow copy of the current Analysis. This is only a potential issue for the AnalysisSteps as all other
      * compound classes are immutable.
+     *
      * @return an Analysis.Builder copy of the current Analysis.
      */
     public Builder copy() {
@@ -159,7 +139,13 @@ public class Analysis {
         private List<AnalysisStep> analysisSteps = new ArrayList<>();
 
         public Analysis build() {
-            return new Analysis(this);
+            return new Analysis(
+                    analysisMode,
+                    inheritanceModeOptions,
+                    frequencySources,
+                    pathogenicitySources,
+                    analysisSteps
+            );
         }
 
         public Builder inheritanceModeOptions(InheritanceModeOptions inheritanceModeOptions) {
@@ -199,23 +185,6 @@ public class Analysis {
             return this;
         }
 
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Analysis analysis = (Analysis) o;
-        return analysisMode == analysis.analysisMode &&
-                inheritanceModeOptions == analysis.inheritanceModeOptions &&
-                Objects.equals(frequencySources, analysis.frequencySources) &&
-                Objects.equals(pathogenicitySources, analysis.pathogenicitySources) &&
-                Objects.equals(analysisSteps, analysis.analysisSteps);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(inheritanceModeOptions, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
     }
 
     @Override

@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -73,20 +72,20 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
-        assertThat(rbm8a.getPassedVariantEvaluations().size(), equalTo(1));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
+        assertThat(rbm8a.passedVariantEvaluations().size(), equalTo(1));
 
-        VariantEvaluation rbm8Variant2 = rbm8a.getPassedVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = rbm8a.passedVariantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
@@ -104,30 +103,30 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.variantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
+        assertThat(gnrh2Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
         
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(false));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(true));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
+        assertThat(rbm8a.passedVariantEvaluations().isEmpty(), is(true));
         
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
+        assertThat(rbm8Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
             
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(false));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
-        assertThat(rbm8Variant2.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER)));
+        assertThat(rbm8Variant2.failedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER)));
     }
 
     @Test
@@ -143,28 +142,28 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.variantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
         assertThat(gnrh2Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(gnrh2Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
+        assertThat(rbm8a.passedVariantEvaluations().isEmpty(), is(false));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
+        assertThat(rbm8Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
             
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -176,7 +175,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Double> hiPhiveGeneScores = Map.of("GNRHR2", 0.75, "RBM8A", 0.65);
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        GeneFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Sample sample = vcfandPhenotypesSample;
 
@@ -191,29 +190,29 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.variantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
         assertThat(gnrh2Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(gnrh2Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
+        assertThat(rbm8a.passedVariantEvaluations().isEmpty(), is(false));
         assertThat(rbm8a.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER, FilterType.INHERITANCE_FILTER)));
+        assertThat(rbm8Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER, FilterType.INHERITANCE_FILTER)));
 
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -234,15 +233,15 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(4));
+        assertThat(analysisResults.genes().size(), equalTo(4));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
         assertThat(rbm8a.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
         assertThat(rbm8a.hasVariants(), equalTo(false));
-        assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(rbm8a.priorityScore(), equalTo(desiredPrioritiserScore));
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -273,33 +272,33 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Analysis analysis = makeAnalysis(prioritiser, priorityScoreFilter, intervalFilter);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.variantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.PRIORITY_SCORE_FILTER)));
+        assertThat(gnrh2Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.PRIORITY_SCORE_FILTER)));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
-        assertThat(rbm8a.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
+        assertThat(rbm8a.entrezGeneId(), equalTo(9939));
+        assertThat(rbm8a.geneSymbol(), equalTo("RBM8A"));
+        assertThat(rbm8a.priorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(rbm8Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
 
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(rbm8a.geneSymbol()));
     }
 
     @Test
@@ -311,7 +310,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser prioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, desiredPrioritiserScore - 0.1);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Sample sample = vcfandPhenotypesSample;
         Analysis analysis = Analysis.builder()
@@ -325,34 +324,34 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         //TODO: remove all this repetitive cruft into common method
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
-        assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
+        assertThat(gnrh2.numberOfVariants(), equalTo(1));
 
-        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        VariantEvaluation gnrh2Variant1 = gnrh2.variantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.PRIORITY_SCORE_FILTER)));
+        assertThat(gnrh2Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.PRIORITY_SCORE_FILTER)));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getEntrezGeneID(), equalTo(9939));
-        assertThat(rbm8a.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(rbm8a.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(2));
+        assertThat(rbm8a.entrezGeneId(), equalTo(9939));
+        assertThat(rbm8a.geneSymbol(), equalTo("RBM8A"));
+        assertThat(rbm8a.priorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(rbm8a.numberOfVariants(), equalTo(2));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
+        assertThat(rbm8Variant1.failedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
 
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(rbm8a.getGeneSymbol()));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(rbm8a.geneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
@@ -395,24 +394,24 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(vcfandPhenotypesSample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.priorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
 
-        VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = passedGene.variantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
-        assertThat(rbm8Variant2.getFrequencyData(), equalTo(frequencyData));
-        assertThat(rbm8Variant2.getPathogenicityData(), equalTo(pathogenicityData));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(passedGene.geneSymbol()));
+        assertThat(rbm8Variant2.frequencyData(), equalTo(frequencyData));
+        assertThat(rbm8Variant2.pathogenicityData(), equalTo(pathogenicityData));
     }
 
 }

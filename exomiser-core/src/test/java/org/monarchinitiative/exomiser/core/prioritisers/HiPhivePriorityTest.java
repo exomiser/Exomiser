@@ -102,7 +102,7 @@ public class HiPhivePriorityTest {
     //TODO: this should be the output of a Prioritiser: Genes + HPO -> PrioritiserResults
     private List<HiPhivePriorityResult> getPriorityResultsOrderedByScore(List<Gene> genes) {
         return genes.stream()
-                .flatMap(gene -> gene.getPriorityResults().values()
+                .flatMap(gene -> gene.priorityResults().values()
                         .stream())
                 .map(result -> (HiPhivePriorityResult) result)
                 .sorted(Comparator.naturalOrder())
@@ -111,7 +111,7 @@ public class HiPhivePriorityTest {
 
     private Consumer<HiPhivePriorityResult> checkScores(Map<String, List<Double>> geneScores) {
         return result -> {
-            List<Double> scores = geneScores.get(result.getGeneSymbol());
+            List<Double> scores = geneScores.get(result.geneSymbol());
             checkResultScores(result, scores);
         };
     }
@@ -129,19 +129,19 @@ public class HiPhivePriorityTest {
 
     private void checkResultScores(HiPhivePriorityResult result, List<Double> scores) {
 //        System.out.printf("geneId=%s, geneSymbol='%s', score=%.25f, humanScore=%.25f, mouseScore=%.25f, fishScore=%.25f, ppiScore=%.25f%n", result.geneId, result.getGeneSymbol(), result.getScore(), new BigDecimal(result.getHumanScore()), new BigDecimal(result.getMouseScore()), result.getFishScore(), result.getPpiScore());
-        assertThat(result.getGeneSymbol() + " Top score", result.getScore(), equalTo(scores.subList(0, 3).stream().sorted(Comparator.reverseOrder()).findFirst().get()));
-        assertThat(result.getGeneSymbol() + " Human score", BigDecimal.valueOf(result.getHumanScore()), closeTo(BigDecimal.valueOf(scores.get(0)), ERROR));
-        assertThat(result.getGeneSymbol() + " Mouse score", BigDecimal.valueOf(result.getMouseScore()), closeTo(BigDecimal.valueOf(scores.get(1)), ERROR));
-        assertThat(result.getGeneSymbol() + " Fish score", result.getFishScore(), equalTo(scores.get(2)));
-        assertThat(result.getGeneSymbol() + " PPI score", result.getPpiScore(), equalTo(scores.get(3)));
+        assertThat(result.geneSymbol() + " Top score", result.score(), equalTo(scores.subList(0, 3).stream().sorted(Comparator.reverseOrder()).findFirst().get()));
+        assertThat(result.geneSymbol() + " Human score", BigDecimal.valueOf(result.humanScore()), closeTo(BigDecimal.valueOf(scores.get(0)), ERROR));
+        assertThat(result.geneSymbol() + " Mouse score", BigDecimal.valueOf(result.mouseScore()), closeTo(BigDecimal.valueOf(scores.get(1)), ERROR));
+        assertThat(result.geneSymbol() + " Fish score", result.fishScore(), equalTo(scores.get(2)));
+        assertThat(result.geneSymbol() + " PPI score", result.ppiScore(), equalTo(scores.get(3)));
         boolean isCandidateGeneMatch = (scores.get(4) == 1.0);
-        assertThat(result.getGeneSymbol() + " Candidate gene", result.isCandidateGeneMatch(), equalTo(isCandidateGeneMatch));
+        assertThat(result.geneSymbol() + " Candidate gene", result.isCandidateGeneMatch(), equalTo(isCandidateGeneMatch));
     }
 
     @Test
-    public void testGetPriorityType() {
+    public void testPriorityType() {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), testMatrix, priorityService);
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
+        assertThat(instance.priorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
     @Test
@@ -212,7 +212,7 @@ public class HiPhivePriorityTest {
 
     @Test
     public void testPrioritizeGenesRestrictedGeneList() {
-        List<Gene> genes = getGenes().stream().filter(gene -> gene.getGeneSymbol().equals("FGFR2")).collect(toList());
+        List<Gene> genes = getGenes().stream().filter(gene -> gene.geneSymbol().equals("FGFR2")).collect(toList());
 
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.builder()
                 .runParams("human,mouse,fish")
@@ -271,7 +271,7 @@ public class HiPhivePriorityTest {
         assertThat(results.size(), equalTo(genes.size()));
 
         HiPhivePriorityResult topResult = results.get(0);
-        assertThat(topResult.getGeneSymbol(), not(equalTo(candidateGeneSymbol)));
+        assertThat(topResult.geneSymbol(), not(equalTo(candidateGeneSymbol)));
 
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
         Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
@@ -288,7 +288,7 @@ public class HiPhivePriorityTest {
     @Test
     public void testToString() {
         HiPhivePriority instance = new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), priorityService);
-        assertThat(instance.toString(), equalTo("HiPhivePriority{options=HiPhiveOptions{diseaseId='', candidateGeneSymbol='', benchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}}"));
+        assertThat(instance.toString(), equalTo("HiPhivePriority{options=HiPhiveOptions{diseaseId='', candidateGeneSymbol='', isBenchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}}"));
     }
     
 }

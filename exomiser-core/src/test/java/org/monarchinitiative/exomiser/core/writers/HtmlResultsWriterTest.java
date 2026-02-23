@@ -37,6 +37,7 @@ import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.SampleGenotype;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
@@ -83,7 +84,7 @@ public class HtmlResultsWriterTest {
     }
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         TestVariantFactory varFactory = new TestVariantFactory();
 
         VariantEvaluation fgfr2MissenseVariantEvaluation = TestVariantFactory.buildVariant(10, 123256215, "T", "G", SampleGenotype.het(), 30, 2.2);
@@ -101,8 +102,9 @@ public class HtmlResultsWriterTest {
         shhGene = TestFactory.newGeneSHH();
         shhGene.addVariant(shhIndelVariantEvaluation);
 
-        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
-        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addGeneScore(new GeneScore(fgfr2Gene.geneIdentifier(), ModeOfInheritance.AUTOSOMAL_DOMINANT, 1.0, 1.0, 1.0, 0.0, List.of(fgfr2MissenseVariantEvaluation), List.of(), List.of()));
+        shhGene.addPriorityResult(new OmimPriorityResult(shhGene.entrezGeneId(), shhGene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
 
         unAnnotatedVariantEvaluation1 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
         unAnnotatedVariantEvaluation2 = TestVariantFactory.buildVariant(5, 10, "C", "T", SampleGenotype.het(), 30, 1.0);
@@ -129,7 +131,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(outputPrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path testOutFile = Paths.get(outputPrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
         assertTrue(testOutFile.toFile().delete());
@@ -148,7 +150,7 @@ public class HtmlResultsWriterTest {
                 .outputPrefix(testOutFilePrefix)
                 .build();
 
-        instance.writeFile(ModeOfInheritance.AUTOSOMAL_DOMINANT, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
         assertTrue(testOutFile.toFile().exists());
@@ -167,7 +169,7 @@ public class HtmlResultsWriterTest {
         String testOutFilePrefix = testOutDir.resolve("testWriteTemplateWithUnAnnotatedVariantDataAndGenes").toString();
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(ModeOfInheritance.ANY, analysisResults, settings);
+        instance.writeFile(analysisResults, settings);
         Path testOutFile = Paths.get(testOutFilePrefix + ".html");
 
         List<String> lines = Files.readAllLines(testOutFile);
@@ -194,7 +196,7 @@ public class HtmlResultsWriterTest {
         AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, Collections.emptyList(), Collections.emptyList());
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
+        String output = instance.writeString(analysisResults, settings);
         assertFalse(output.isEmpty());
     }
 
@@ -220,10 +222,32 @@ public class HtmlResultsWriterTest {
 
         OutputSettings settings = OutputSettings.builder().build();
 
-        String output = instance.writeString(ModeOfInheritance.ANY, analysisResults, settings);
-        assertTrue(output.contains("Exomiser Analysis Results for"));
+        String output = instance.writeString(analysisResults, settings);
+        assertTrue(output.contains("Gene Symbol"));
         assertTrue(output.contains("FGFR2"));
-        assertTrue(output.contains("SHH"));
     }
 
+    @Test
+    void testWriteTemplateWithPhenotypeOnlyAnalysis() throws Exception {
+        Gene rbma8Gene = TestFactory.newGeneRBM8A();
+        rbma8Gene.addGeneScore(GeneScore.builder().geneIdentifier(rbma8Gene.geneIdentifier()).modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT).combinedScore(0.85).build());
+
+        List<Gene> genes = List.of(fgfr2Gene, rbma8Gene, shhGene);
+
+        Sample sample = Sample.builder()
+                .hpoIds(List.of("HP:000001", "HP:000002"))
+                .build();
+
+        Analysis analysis = Analysis.builder()
+                .addStep(new PhivePriority(TestPriorityServiceFactory.stubPriorityService()))
+                .build();
+        AnalysisResults analysisResults = buildAnalysisResults(sample, analysis, genes, List.of());
+
+        OutputSettings settings = OutputSettings.builder().build();
+
+        String output = instance.writeString(analysisResults, settings);
+        assertTrue(output.contains("Gene Symbol"));
+        assertTrue(output.contains("FGFR2"));
+        assertTrue(output.contains("RBM8A"));
+    }
 }

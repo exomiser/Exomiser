@@ -208,9 +208,9 @@ public class AlleleProtoAdaptorTest {
                 .build();
 
         ClinVarData actual = AlleleProtoAdaptor.toClinVarData(clinVar);
-        assertThat(actual.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
-        assertThat(actual.getHgvsCdna(), equalTo("c.12345A>C"));
-        assertThat(actual.getHgvsProtein(), equalTo("p.Arg123Lys"));
+        assertThat(actual.variantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+        assertThat(actual.hgvsCdna(), equalTo("c.12345A>C"));
+        assertThat(actual.hgvsProtein(), equalTo("p.Arg123Lys"));
     }
 
     @Test
@@ -221,7 +221,7 @@ public class AlleleProtoAdaptorTest {
                 .build();
 
         ClinVarData actual = AlleleProtoAdaptor.toClinVarData(clinVar);
-        assertThat(actual.getConflictingInterpretationCounts(),
+        assertThat(actual.conflictingInterpretationCounts(),
                 equalTo(Map.of(ClinVarData.ClinSig.PATHOGENIC, 3, ClinVarData.ClinSig.UNCERTAIN_SIGNIFICANCE, 2)));
     }
 }

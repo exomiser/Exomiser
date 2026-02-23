@@ -11,11 +11,11 @@ import org.monarchinitiative.exomiser.core.proto.AlleleData;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto.FrequencySource;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 import org.monarchinitiative.svart.Strand;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 
 /**

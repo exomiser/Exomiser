@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
@@ -146,6 +145,11 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
         return this;
     }
 
+    public AnalysisBuilder addAlleleBalanceFilter() {
+        analysisSteps.add(new AlleleBalanceFilter());
+        return this;
+    }
+
     public AnalysisBuilder addKnownVariantFilter() {
         if (frequencySources.isEmpty()) {
             throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
@@ -163,7 +167,7 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
     }
     @Override
     public AnalysisBuilder addGeneBlacklistFilter() {
-        analysisSteps.add(new GeneBlacklistFilter());
+        analysisSteps.add(GeneBlacklistFilter.defaultInstance());
         return this;
     }
 

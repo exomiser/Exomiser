@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 /**
@@ -38,20 +39,24 @@ public interface PriorityResult extends Comparable<PriorityResult> {
     /**
      * @return the gene id for which this result is associated.
      */
-    int getGeneId();
+    @JsonProperty
+    int geneId();
 
     /**
      * @return the gene symbol for which this result is associated.
      */
-    String getGeneSymbol();
+    @JsonProperty
+    String geneSymbol();
 
     /**
      * @return return a float representation of the prioritiser result with values between 0..1 where zero means no match
      * and one is the best match.
      */
-    double getScore();
-    
-    PriorityType getPriorityType();
+    @JsonProperty
+    double score();
+
+    @JsonProperty
+    PriorityType priorityType();
 
     /**
      * @return HTML code representing this prioritization/relevance score
@@ -71,8 +76,8 @@ public interface PriorityResult extends Comparable<PriorityResult> {
      */
     @Override
     default int compareTo(PriorityResult o) {
-        int scoreComparison = Double.compare(this.getScore(), o.getScore());
-        return scoreComparison == 0 ? this.getGeneSymbol().compareTo(o.getGeneSymbol()) : - scoreComparison;
+        int scoreComparison = Double.compare(this.score(), o.score());
+        return scoreComparison == 0 ? this.geneSymbol().compareTo(o.geneSymbol()) : - scoreComparison;
     }
 
 }

@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisStep;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
@@ -62,9 +64,9 @@ public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
      */
     default void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
         Map<Integer, Optional<T>> results = prioritise(hpoIds, genes)
-                .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
+                .collect(groupingBy(PriorityResult::geneId, maxBy(comparingDouble(PriorityResult::score))));
 
-        genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
+        genes.forEach(gene -> results.getOrDefault(gene.entrezGeneId(), Optional.empty())
                 .ifPresent(gene::addPriorityResult));
     }
 
@@ -81,6 +83,6 @@ public interface Prioritiser<T extends PriorityResult> extends AnalysisStep {
     /**
      * @return an enum constant representing the type of the implementing class.
      */
-    PriorityType getPriorityType();
+    PriorityType priorityType();
 
 }

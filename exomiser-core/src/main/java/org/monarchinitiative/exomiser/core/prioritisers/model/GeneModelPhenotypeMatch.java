@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 
@@ -31,86 +30,51 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneModelPhenotypeMatch implements GeneModel {
+public record GeneModelPhenotypeMatch(double score, GeneModel model, List<PhenotypeMatch> bestPhenotypeMatches) implements GeneModel {
 
-    private final double score;
-    private final GeneModel model;
-    private final List<PhenotypeMatch> bestModelPhenotypeMatches;
-
-    public GeneModelPhenotypeMatch(double score, GeneModel model, List<PhenotypeMatch> bestModelPhenotypeMatches) {
-        this.score = score;
-        this.model = model;
-        this.bestModelPhenotypeMatches = List.copyOf(bestModelPhenotypeMatches);
-    }
-
-    public GeneModelPhenotypeMatch(ModelPhenotypeMatch<GeneModel> match) {
-        this(match.getScore(), match.getModel(), match.getBestPhenotypeMatches());
-    }
-
-    public double getScore() {
-        return score;
-    }
-
-    public GeneModel getModel() {
-        return model;
-    }
-
-    public List<PhenotypeMatch> getBestModelPhenotypeMatches() {
-        return bestModelPhenotypeMatches;
+    public GeneModelPhenotypeMatch {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(bestPhenotypeMatches);
+        bestPhenotypeMatches = List.copyOf(bestPhenotypeMatches);
     }
 
     @JsonIgnore
     @Override
-    public String getId() {
-        return model.getId();
+    public String id() {
+        return model.id();
     }
 
     @JsonIgnore
     @Override
-    public List<String> getPhenotypeIds() {
-        return model.getPhenotypeIds();
+    public List<String> phenotypeIds() {
+        return model.phenotypeIds();
     }
 
     @JsonIgnore
     @Override
-    public Organism getOrganism() {
-        return model.getOrganism();
+    public Organism organism() {
+        return model.organism();
     }
 
     @JsonIgnore
     @Override
-    public int getEntrezGeneId() {
-        return model.getEntrezGeneId();
+    public int entrezGeneId() {
+        return model.entrezGeneId();
     }
 
     @JsonIgnore
     @Override
-    public String getHumanGeneSymbol() {
-        return model.getHumanGeneSymbol();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GeneModelPhenotypeMatch)) return false;
-        GeneModelPhenotypeMatch that = (GeneModelPhenotypeMatch) o;
-        return Double.compare(that.score, score) == 0 &&
-                Objects.equals(model, that.model) &&
-                Objects.equals(bestModelPhenotypeMatches, that.bestModelPhenotypeMatches);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(model, bestModelPhenotypeMatches, score);
+    public String humanGeneSymbol() {
+        return model.humanGeneSymbol();
     }
 
 
     @Override
     public String toString() {
         return "GeneModelPhenotypeMatch{" +
-                "score=" + score +
-                ", model=" + model +
-                ", bestModelPhenotypeMatches=" + bestModelPhenotypeMatches +
-                '}';
+               "score=" + score +
+               ", model=" + model +
+               ", bestPhenotypeMatches=" + bestPhenotypeMatches +
+               '}';
     }
 }

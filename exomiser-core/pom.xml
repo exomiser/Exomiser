@@ -30,9 +30,11 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>14.1.0</version>
+        <version>15.0.0-RC5</version>
     </parent>
-
+    <properties>
+        <arrow.version>18.2.0</arrow.version>
+    </properties>
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -118,7 +120,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.1</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -145,6 +147,11 @@
             <version>7.6.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.jerolba</groupId>
+            <artifactId>carpet-record</artifactId>
+            <version>0.5.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -155,28 +162,18 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <extensions>
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>1.5.0.Final</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
+                <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.5.1</version>
-                <extensions>true</extensions>
+                <version>3.8.0</version>
                 <configuration>
-                    <protocArtifact>
-                        com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
-                    </protocArtifact>
+                    <protocVersion>${protobuf.version}</protocVersion>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>compile</goal>
+                            <goal>generate</goal>
                         </goals>
                     </execution>
                 </executions>

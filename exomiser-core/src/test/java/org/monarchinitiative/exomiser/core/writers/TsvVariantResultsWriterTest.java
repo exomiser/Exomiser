@@ -79,12 +79,12 @@ public class TsvVariantResultsWriterTest {
         Gene fgfr2Gene = TestFactory.newGeneFGFR2();
         fgfr2Gene.addVariant(fgfr2PassMissenseVariant);
         fgfr2Gene.addVariant(fgfr2ContributingVariant);
-        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
+        fgfr2Gene.addPriorityResult(new OmimPriorityResult(fgfr2Gene.entrezGeneId(), fgfr2Gene.geneSymbol(), 1f, Collections.emptyList(), Collections.emptyMap()));
         GeneScore geneScore = GeneScore.builder()
                 .combinedScore(1f)
                 .phenotypeScore(1f)
-                .variantScore(fgfr2ContributingVariant.getVariantScore())
-                .geneIdentifier(fgfr2Gene.getGeneIdentifier())
+                .variantScore(fgfr2ContributingVariant.variantScore())
+                .geneIdentifier(fgfr2Gene.geneIdentifier())
                 .contributingVariants(List.of(fgfr2ContributingVariant))
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();

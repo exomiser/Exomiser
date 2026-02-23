@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>14.1.0</version>
+    <version>15.0.0-RC5</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>
@@ -85,20 +85,22 @@
     </modules>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>exomiser</sonar.organization>
+        <sonar.projectKey>org.monarchinitiative.exomiser:exomiser</sonar.projectKey>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.41</jannovar.version>
-        <svart.version>2.0.0-RC6</svart.version>
+        <svart.version>2.0.0-RC7</svart.version>
         <htsjdk.version>3.0.5</htsjdk.version>
         <guava.version>31.1-jre</guava.version>
-        <protobuf.version>3.21.12</protobuf.version>
-        <spring-boot.version>3.2.3</spring-boot.version>
+        <protobuf.version>4.28.2</protobuf.version>
+        <spring-boot.version>3.4.3</spring-boot.version>
+        <picocli.version>4.7.6</picocli.version>
         <!-- H2 version 1.4.200 was used for 2309 and below, 2.1.214 is part of Spring boot 3.1.1 the file formats and
         API for the MVStore are different so consider very hard if this needs updating.-->
         <h2.version>2.2.224</h2.version>
@@ -110,8 +112,8 @@
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
         <!--    These properties are used for the README.md and updating the application.properties -->
-        <genome.data.version>2410</genome.data.version>
-        <phenotype.data.version>2410</phenotype.data.version>
+        <genome.data.version>2502</genome.data.version>
+        <phenotype.data.version>2502</phenotype.data.version>
     </properties>
 
     <dependencyManagement>
@@ -243,10 +245,34 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.3</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.version}</version>
+                                </requireJavaVersion>
+                                <banDuplicatePomDependencyVersions/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <!-- n.b. the wrapper plugin is completely broken and will only work on Maven 3.7.0+ -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-wrapper-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.3.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -267,11 +293,25 @@
                 <!--                <configuration>-->
                 <!--                    <forkCount>0</forkCount>-->
                 <!--                </configuration>-->
+                <configuration>
+                    <!-- attempt to suppress WARNING: A Java agent has been loaded dynamically (...byte-buddy-agent-1.14.12.jar)
+                    ... this is caused by calling Mockito. But "Dynamic loading of agents will be disallowed by default
+                    in a future release", so this is likely a short-term fix -->
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <propertiesEncoding>ISO-8859-1</propertiesEncoding>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.7.0.1746</version>
+                <version>5.5.0.6356</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

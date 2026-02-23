@@ -59,13 +59,13 @@ public class VariantEffectCountTest {
     }
 
     @Test
-    public void testGetVariantType() {
-        assertThat(instance.getVariantType(), equalTo(effect));
+    public void testVariantEffect() {
+        assertThat(instance.variantEffect(), equalTo(effect));
     }
 
     @Test
-    public void testGetSampleVariantTypeCounts() {
-        assertThat(instance.getSampleVariantTypeCounts(), equalTo(counts));
+    public void testSampleVariantEffectCounts() {
+        assertThat(instance.sampleVariantEffectCounts(), equalTo(counts));
     }
 
     @Test

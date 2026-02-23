@@ -63,8 +63,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings outputSettings) {
-        Sample sample = analysisResults.getSample();
-        Path outFile = outputSettings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
+        Sample sample = analysisResults.sample();
+        Path outFile = outputSettings.makeOutputFilePath(sample.vcfPath(), OUTPUT_FORMAT);
 
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), this.csvFormat)){
             writeData(analysisResults, outputSettings, printer);
@@ -116,39 +116,36 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         String phenoEvidence = "";
         int matchesCandidateGene = 0;
 
-        for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
-            if (prioritiserResult instanceof HiPhivePriorityResult) {
-                HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) prioritiserResult;
-                phiveAllSpeciesScore = hiPhiveResult.getScore();
-                humanPhenScore = hiPhiveResult.getHumanScore();
-                mousePhenScore = hiPhiveResult.getMouseScore();
-                fishPhenScore = hiPhiveResult.getFishScore();
-                walkerScore = hiPhiveResult.getPpiScore();
+        for (PriorityResult prioritiserResult : gene.priorityResults().values()) {
+            if (prioritiserResult instanceof HiPhivePriorityResult hiPhiveResult) {
+                phiveAllSpeciesScore = hiPhiveResult.score();
+                humanPhenScore = hiPhiveResult.humanScore();
+                mousePhenScore = hiPhiveResult.mouseScore();
+                fishPhenScore = hiPhiveResult.fishScore();
+                walkerScore = hiPhiveResult.ppiScore();
                 phenoEvidence = hiPhiveResult.getPhenotypeEvidenceText();
                 if (hiPhiveResult.isCandidateGeneMatch()) {
                     matchesCandidateGene = 1;
                 }
-            } else if (prioritiserResult instanceof OmimPriorityResult) {
-                OmimPriorityResult omimResult = (OmimPriorityResult) prioritiserResult;
-                omimScore = omimResult.getScoreForMode(geneScore.getModeOfInheritance());
-            } else if (prioritiserResult instanceof ExomeWalkerPriorityResult) {
-                ExomeWalkerPriorityResult walkerResult = (ExomeWalkerPriorityResult) prioritiserResult;
-                walkerScore = walkerResult.getScore();
+            } else if (prioritiserResult instanceof OmimPriorityResult omimResult) {
+                omimScore = omimResult.scoreForMode(geneScore.modeOfInheritance());
+            } else if (prioritiserResult instanceof ExomeWalkerPriorityResult walkerResult) {
+                walkerScore = walkerResult.score();
             }
         }
         List<String> values = new ArrayList<>(16);
-        ModeOfInheritance modeOfInheritance = geneScore.getModeOfInheritance();
+        ModeOfInheritance modeOfInheritance = geneScore.modeOfInheritance();
         String moiAbbreviation = modeOfInheritance.getAbbreviation() == null ? "ANY" : modeOfInheritance.getAbbreviation();
         values.add(Integer.toString(rank));
-        String geneSymbol = gene.getGeneSymbol();
+        String geneSymbol = gene.geneSymbol();
         values.add(geneSymbol + "_" + moiAbbreviation);
         values.add(geneSymbol);
-        values.add(Integer.toString(gene.getEntrezGeneID()));
+        values.add(Integer.toString(gene.entrezGeneId()));
         values.add(moiAbbreviation);
         values.add(decimalFormat.format(geneScore.pValue()));
-        values.add(decimalFormat.format(geneScore.getCombinedScore()));
-        values.add(decimalFormat.format(geneScore.getPhenotypeScore()));
-        values.add(decimalFormat.format(geneScore.getVariantScore()));
+        values.add(decimalFormat.format(geneScore.combinedScore()));
+        values.add(decimalFormat.format(geneScore.phenotypeScore()));
+        values.add(decimalFormat.format(geneScore.variantScore()));
         values.add(decimalFormat.format(humanPhenScore));
         values.add(decimalFormat.format(mousePhenScore));
         values.add(decimalFormat.format(fishPhenScore));

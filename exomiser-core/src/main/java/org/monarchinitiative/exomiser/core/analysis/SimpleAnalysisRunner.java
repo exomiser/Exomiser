@@ -42,7 +42,7 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
     @Override
     protected Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes) {
-        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
+        return variantEvaluation -> genes.containsKey(variantEvaluation.geneSymbol());
     }
 
     @Override

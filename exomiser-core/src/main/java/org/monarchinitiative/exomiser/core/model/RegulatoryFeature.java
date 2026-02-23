@@ -22,75 +22,30 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
+import java.util.Objects;
+
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class RegulatoryFeature implements ChromosomalRegion {
+public record RegulatoryFeature(int contigId, int start, int end, FeatureType featureType) implements ChromosomalRegion {
 
     public enum FeatureType {ENHANCER, TF_BINDING_SITE, PROMOTER, PROMOTER_FLANKING_REGION, CTCF_BINDING_SITE, OPEN_CHROMATIN, FANTOM_PERMISSIVE, UNKNOWN}
 
-    private final int chromosome;
-    private final int start;
-    private final int end;
-    private final FeatureType featureType;
-
-    public RegulatoryFeature(int chromosome, int start, int end, FeatureType featureType) {
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
-        this.featureType = featureType;
+    public RegulatoryFeature {
+        Objects.requireNonNull(featureType, "featureType cannot be null");
+        if (start > end) {
+            throw new IllegalArgumentException(String.format("Start %d position defined as occurring after end position %d. Please check your positions", start, end));
+        }
     }
 
-    @Override
-    public int contigId() {
-        return chromosome;
-    }
-
-    @Override
-    public int start() {
-        return start;
-    }
-
-    @Override
-    public int end() {
-        return end;
-    }
-
-    public FeatureType getFeatureType() {
-        return featureType;
-    }
-
-    public VariantEffect getVariantEffect() {
+    public VariantEffect variantEffect() {
         return VariantEffect.REGULATORY_REGION_VARIANT;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        RegulatoryFeature that = (RegulatoryFeature) o;
-
-        if (chromosome != that.chromosome) return false;
-        if (start != that.start) return false;
-        if (end != that.end) return false;
-        return featureType == that.featureType;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = chromosome;
-        result = 31 * result + start;
-        result = 31 * result + end;
-        result = 31 * result + (featureType != null ? featureType.hashCode() : 0);
-        return result;
     }
 
     @Override
     public String toString() {
         return "RegulatoryFeature{" +
-                "chromosome=" + chromosome +
+                "contigId=" + contigId +
                 ", start=" + start +
                 ", end=" + end +
                 ", featureType=" + featureType +

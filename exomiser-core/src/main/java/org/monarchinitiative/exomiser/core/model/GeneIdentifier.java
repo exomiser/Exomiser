@@ -20,8 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.Objects;
 
 /**
@@ -32,85 +30,20 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public final class GeneIdentifier implements Comparable<GeneIdentifier>{
+public record GeneIdentifier(String geneId,
+                             String geneSymbol,
 
-    public static final String EMPTY_FIELD = "";
+                             String hgncId,
+                             String hgncSymbol,
 
-    private final String geneId;
-    private final String geneSymbol;
+                             String entrezId,
+                             String ensemblId,
+                             String ucscId) implements Comparable<GeneIdentifier> {
 
-    private final String hgncId;
-    private final String hgncSymbol;
-
-    private final String entrezId;
-    private final int entrezIdIntValue;
-    private final String ensemblId;
-    private final String ucscId;
-
-    private GeneIdentifier(Builder builder) {
-        this.geneId = Objects.requireNonNull(builder.geneId, "GeneIdentifier geneId cannot be null");
-        this.geneSymbol = Objects.requireNonNull(builder.geneSymbol, "GeneIdentifier geneSymbol cannot be null");
-
-        this.hgncId = builder.hgncId;
-        this.hgncSymbol = builder.hgncSymbol;
-
-        //the entrezId is used by the Prioritisers as a primary key for the gene so this is important!
-        this.entrezId = builder.entrezId;
-        this.entrezIdIntValue = validateEntrezIdIntValue(builder.entrezId);
-        this.ensemblId = builder.ensemblId;
-        this.ucscId = builder.ucscId;
-    }
-
-    private int validateEntrezIdIntValue(String entrezId) {
-        Objects.requireNonNull(entrezId, "GeneIdentifier entrezId cannot be null");
-        if (entrezId.isEmpty()) {
-            //This is permissible - will default to returning a NULL_ENTREZ_ID
-            return -1;
-        }
-        try {
-            return Integer.parseInt(entrezId);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("entrezId '" + entrezId + "' is invalid. GeneIdentifier entrezId must be a positive integer");
-        }
-    }
-
-    public String getGeneId() {
-        return geneId;
-    }
-
-    public String getGeneSymbol() {
-        return geneSymbol;
-    }
-
-    public String getHgncId() {
-        return hgncId;
-    }
-
-    public String getHgncSymbol() {
-        return hgncSymbol;
-    }
-
-    public String getEntrezId() {
-        return entrezId;
-    }
-
-    @JsonIgnore
-    public Integer getEntrezIdAsInteger() {
-        return entrezIdIntValue;
-    }
 
     public boolean hasEntrezId() {
         return !entrezId.isEmpty();
     }
-
-    public String getEnsemblId() {
-        return ensemblId;
-    }
-
-    public String getUcscId() {
-        return ucscId;
-    }
-
 
     /**
      * Compares the two specified {@code GeneIdentifier} values based on the natural lexicographical order of their
@@ -139,41 +72,22 @@ public final class GeneIdentifier implements Comparable<GeneIdentifier>{
      * @since 10.0.0
      */
     public static int compare(GeneIdentifier g1, GeneIdentifier g2) {
-        String g1GeneSymbol = g1.getGeneSymbol();
-        String g2GeneSymbol = g2.getGeneSymbol();
+        String g1GeneSymbol = g1.geneSymbol();
+        String g2GeneSymbol = g2.geneSymbol();
         return g1GeneSymbol.compareTo(g2GeneSymbol);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GeneIdentifier that = (GeneIdentifier) o;
-        return Objects.equals(geneId, that.geneId) &&
-                Objects.equals(geneSymbol, that.geneSymbol) &&
-                Objects.equals(hgncId, that.hgncId) &&
-                Objects.equals(hgncSymbol, that.hgncSymbol) &&
-                Objects.equals(entrezId, that.entrezId) &&
-                Objects.equals(ensemblId, that.ensemblId) &&
-                Objects.equals(ucscId, that.ucscId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(geneId, geneSymbol, hgncId, hgncSymbol, entrezId, ensemblId, ucscId);
     }
 
     @Override
     public String toString() {
         return "GeneIdentifier{" +
-                "geneId='" + geneId + '\'' +
-                ", geneSymbol='" + geneSymbol + '\'' +
-                ", hgncId='" + hgncId + '\'' +
-                ", hgncSymbol='" + hgncSymbol + '\'' +
-                ", entrezId='" + entrezId + '\'' +
-                ", ensemblId='" + ensemblId + '\'' +
-                ", ucscId='" + ucscId + '\'' +
-                '}';
+               "geneId='" + geneId + '\'' +
+               ", geneSymbol='" + geneSymbol + '\'' +
+               ", hgncId='" + hgncId + '\'' +
+               ", hgncSymbol='" + hgncSymbol + '\'' +
+               ", entrezId='" + entrezId + '\'' +
+               ", ensemblId='" + ensemblId + '\'' +
+               ", ucscId='" + ucscId + '\'' +
+               '}';
     }
 
     public static Builder builder() {
@@ -182,17 +96,18 @@ public final class GeneIdentifier implements Comparable<GeneIdentifier>{
 
     public static class Builder {
 
-        private String geneId = EMPTY_FIELD;
-        private String geneSymbol = EMPTY_FIELD;
+        private String geneId = "";
+        private String geneSymbol = "";
 
-        private String hgncId = EMPTY_FIELD;
-        private String hgncSymbol = EMPTY_FIELD;
+        private String hgncId = "";
+        private String hgncSymbol = "";
 
-        private String entrezId = EMPTY_FIELD;
-        private String ensemblId = EMPTY_FIELD;
-        private String ucscId = EMPTY_FIELD;
+        private String entrezId = "";
+        private String ensemblId = "";
+        private String ucscId = "";
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder geneId(String geneId) {
             this.geneId = geneId;
@@ -205,12 +120,12 @@ public final class GeneIdentifier implements Comparable<GeneIdentifier>{
         }
 
         public Builder hgncId(String hgncId) {
-            this.hgncId = hgncId;
+            this.hgncId = Objects.requireNonNullElse(hgncId, "");
             return this;
         }
 
         public Builder hgncSymbol(String hgncSymbol) {
-            this.hgncSymbol = hgncSymbol;
+            this.hgncSymbol = Objects.requireNonNullElse(hgncSymbol, "");
             return this;
         }
 
@@ -225,12 +140,22 @@ public final class GeneIdentifier implements Comparable<GeneIdentifier>{
         }
 
         public Builder ucscId(String ucscId) {
-            this.ucscId = ucscId;
+            this.ucscId = Objects.requireNonNullElse(ucscId, "");
             return this;
         }
 
         public GeneIdentifier build() {
-            return new GeneIdentifier(this);
+            return new GeneIdentifier(
+                    Objects.requireNonNull(geneId, "GeneIdentifier geneId cannot be null"),
+                    Objects.requireNonNull(geneSymbol, "GeneIdentifier geneSymbol cannot be null"),
+
+                    hgncId,
+                    hgncSymbol,
+
+                    //the entrezId is used by the Prioritisers as a primary key for the gene so this is important!
+                    Objects.requireNonNull(entrezId, "GeneIdentifier entrezId cannot be null"),
+                    ensemblId,
+                    ucscId);
         }
     }
 }

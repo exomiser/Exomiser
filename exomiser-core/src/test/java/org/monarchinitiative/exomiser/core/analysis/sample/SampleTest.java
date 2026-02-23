@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,8 +33,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.FEMALE;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.FEMALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.MALE;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -44,30 +44,30 @@ class SampleTest {
     @Test
     void defaultInstance() {
         Sample instance = Sample.builder().build();
-        assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+        assertThat(instance.genomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
         assertThat(instance.hasVcf(), is(false));
-        assertThat(instance.getVcfPath(), equalTo(null));
-        assertThat(instance.getPedigree(), equalTo(Pedigree.empty()));
-        assertThat(instance.getProbandSampleName(), equalTo(""));
-        assertThat(instance.getSex(), equalTo(Pedigree.Individual.Sex.UNKNOWN));
-        assertThat(instance.getAge(), equalTo(Age.unknown()));
-        assertThat(instance.getHpoIds(), equalTo(Collections.emptyList()));
+        assertThat(instance.vcfPath(), equalTo(null));
+        assertThat(instance.pedigree(), equalTo(Pedigree.empty()));
+        assertThat(instance.probandSampleName(), equalTo(""));
+        assertThat(instance.sex(), equalTo(Pedigree.Individual.Sex.UNKNOWN));
+        assertThat(instance.age(), equalTo(Age.unknown()));
+        assertThat(instance.hpoIds(), equalTo(Collections.emptyList()));
     }
 
     @Test
-    void getGenomeAssembly() {
+    void genomeAssembly() {
         Sample instance = Sample.builder()
                 .genomeAssembly(GenomeAssembly.HG38)
                 .build();
-        assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(instance.genomeAssembly(), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
-    void getVcfPath() {
+    void vcfPath() {
         Sample instance = Sample.builder()
                 .vcfPath(Paths.get(""))
                 .build();
-        assertThat(instance.getVcfPath(), equalTo(Paths.get("")));
+        assertThat(instance.vcfPath(), equalTo(Paths.get("")));
     }
 
     @Test
@@ -79,35 +79,35 @@ class SampleTest {
     }
 
     @Test
-    void getProbandSampleName() {
+    void probandSampleName() {
         Sample instance = Sample.builder()
                 .probandSampleName("Bart")
                 .build();
-        assertThat(instance.getProbandSampleName(), equalTo("Bart"));
+        assertThat(instance.probandSampleName(), equalTo("Bart"));
     }
 
     @Test
-    void getAge() {
+    void age() {
         Sample instance = Sample.builder()
                 .age(Age.parse("P2Y3M"))
                 .build();
-        assertThat(instance.getAge(), equalTo(Age.parse("P2Y3M")));
+        assertThat(instance.age(), equalTo(Age.parse("P2Y3M")));
     }
 
     @Test
-    void getSex() {
+    void sex() {
         Sample instance = Sample.builder()
                 .sex(MALE)
                 .build();
-        assertThat(instance.getSex(), equalTo(MALE));
+        assertThat(instance.sex(), equalTo(MALE));
     }
 
     @Test
-    void getPedigree() {
+    void pedigree() {
         Sample instance = Sample.builder()
                 .pedigree(Pedigree.empty())
                 .build();
-        assertThat(instance.getPedigree(), equalTo(Pedigree.empty()));
+        assertThat(instance.pedigree(), equalTo(Pedigree.empty()));
     }
 
     @Test
@@ -116,7 +116,7 @@ class SampleTest {
                 .sex(MALE)
                 .pedigree(Pedigree.empty())
                 .build();
-        assertThat(instance.getSex(), equalTo(MALE));
+        assertThat(instance.sex(), equalTo(MALE));
     }
 
     @Test
@@ -126,7 +126,7 @@ class SampleTest {
                 .sex(MALE)
                 .pedigree(Pedigree.empty())
                 .build();
-        assertThat(instance.getSex(), equalTo(MALE));
+        assertThat(instance.sex(), equalTo(MALE));
     }
 
 //    @Test
@@ -165,7 +165,7 @@ class SampleTest {
                 .probandSampleName("Bart")
                 .pedigree(Pedigree.of(Pedigree.Individual.builder().id("Bart").sex(MALE).build()))
                 .build();
-        assertThat(instance.getSex(), equalTo(MALE));
+        assertThat(instance.sex(), equalTo(MALE));
     }
 
     @Test
@@ -184,15 +184,15 @@ class SampleTest {
                 .probandSampleName("Lisa")
                 .pedigree(Pedigree.of(Pedigree.Individual.builder().id("Lisa").sex(FEMALE).build()))
                 .build();
-        assertThat(instance.getSex(), equalTo(FEMALE));
+        assertThat(instance.sex(), equalTo(FEMALE));
     }
 
     @Test
-    void getHpoIds() {
+    void hpoIds() {
         Sample instance = Sample.builder()
                 .hpoIds(List.of("HP:0000001", "HP:0000002"))
                 .build();
-        assertThat(instance.getHpoIds(), equalTo(List.of("HP:0000001", "HP:0000002")));
+        assertThat(instance.hpoIds(), equalTo(List.of("HP:0000001", "HP:0000002")));
     }
 
     @Test
@@ -217,12 +217,12 @@ class SampleTest {
                 .age(age)
                 .build();
 
-        assertThat(fromFirstWithAge.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-        assertThat(fromFirstWithAge.getVcfPath(), equalTo(vcfPath));
-        assertThat(fromFirstWithAge.getAge(), equalTo(age));
-        assertThat(fromFirstWithAge.getSex(), equalTo(firstSample.getSex()));
-        assertThat(fromFirstWithAge.getProbandSampleName(), equalTo(firstSample.getProbandSampleName()));
-        assertThat(fromFirstWithAge.getPedigree(), equalTo(firstSample.getPedigree()));
-        assertThat(fromFirstWithAge.getHpoIds(), equalTo(firstSample.getHpoIds()));
+        assertThat(fromFirstWithAge.genomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(fromFirstWithAge.vcfPath(), equalTo(vcfPath));
+        assertThat(fromFirstWithAge.age(), equalTo(age));
+        assertThat(fromFirstWithAge.sex(), equalTo(firstSample.sex()));
+        assertThat(fromFirstWithAge.probandSampleName(), equalTo(firstSample.probandSampleName()));
+        assertThat(fromFirstWithAge.pedigree(), equalTo(firstSample.pedigree()));
+        assertThat(fromFirstWithAge.hpoIds(), equalTo(firstSample.hpoIds()));
     }
 }

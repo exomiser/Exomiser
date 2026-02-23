@@ -24,7 +24,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.TranscriptSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

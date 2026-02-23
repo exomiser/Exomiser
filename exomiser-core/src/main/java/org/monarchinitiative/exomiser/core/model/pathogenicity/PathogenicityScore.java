@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @since 3.0.0
@@ -50,15 +52,23 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
             case REMM -> RemmScore.of(score);
             case REVEL -> RevelScore.of(score);
             case SPLICE_AI -> SpliceAiScore.of(score);
-            default -> new BasePathogenicityScore(source, score);
+            default -> new DefaultPathogenicityScore(source, score);
         };
+    }
+
+    default void checkBounds(PathogenicitySource source, float score) {
+        if (score < 0f || score > 1f) {
+            String message = String.format("%s score of %.3f is out of range. Must be in the range of 0.0 - 1.0", source, score);
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /**
      * @since 7.0.0
      * @return the {@link PathogenicitySource} the score was derived from
      */
-    public PathogenicitySource getSource();
+    @JsonProperty
+    public PathogenicitySource source();
 
     /**
      * A score in the range of 0-1 where 0 is considered benign and 1 to be pathogenic. The precise nature of the score
@@ -67,7 +77,8 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
      *
      * @return a 0-1 scaled score for this object
      */
-    public float getScore();
+    @JsonProperty
+    public float score();
 
     /**
      * In cases such as SIFT or CADD the raw scores as contained in that data source require scaling in order to fit
@@ -76,7 +87,9 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
      * @since 12.0.0
      * @return the raw score for this object
      */
-    public float getRawScore();
+    default float rawScore() {
+        return score();
+    }
 
     /**
      * For the purposes of this comparator scores are ranked on a scale of 0 to
@@ -109,6 +122,6 @@ public interface PathogenicityScore extends Comparable<PathogenicityScore> {
      */
     public static int compare(PathogenicityScore o1, PathogenicityScore o2) {
         // Higher scores are considered more pathogenic, so use the reverse of the standard Float.compare
-        return - Float.compare(o1.getScore(), o2.getScore());
+        return - Float.compare(o1.score(), o2.score());
     }
 }

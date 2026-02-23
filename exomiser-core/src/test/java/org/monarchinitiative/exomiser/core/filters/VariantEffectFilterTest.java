@@ -70,8 +70,8 @@ public class VariantEffectFilterTest {
     }
 
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.VARIANT_EFFECT_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.VARIANT_EFFECT_FILTER));
     }
 
     @Test

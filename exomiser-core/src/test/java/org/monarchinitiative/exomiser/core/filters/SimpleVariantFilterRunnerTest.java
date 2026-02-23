@@ -196,10 +196,10 @@ public class SimpleVariantFilterRunnerTest {
 
     private void assertPassedFilterAndFailedAllOthers(VariantEvaluation variantEvaluation, VariantFilter filterToPass) {
         assertThat(variantEvaluation.passedFilters(), is(true));
-        assertThat(variantEvaluation.passedFilter(filterToPass.getFilterType()), is(true));
+        assertThat(variantEvaluation.passedFilter(filterToPass.filterType()), is(true));
         
         Set<FilterType> allOtherFilterTypes = EnumSet.allOf(FilterType.class);
-        allOtherFilterTypes.remove(filterToPass.getFilterType());
+        allOtherFilterTypes.remove(filterToPass.filterType());
         //filters not run should return false
         allOtherFilterTypes.forEach(otherFilterType -> {
             assertThat(variantEvaluation.passedFilter(otherFilterType), is(false));
@@ -226,12 +226,12 @@ public class SimpleVariantFilterRunnerTest {
         List<VariantEvaluation> secondResults = instance.run(secondFilterToPass, variantEvaluations);
         
         assertThat(secondResults, equalTo(variantEvaluations));     
-        assertPassedFilters(passesAllFilters, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
+        assertPassedFilters(passesAllFilters, firstFilterToPass.filterType(), secondFilterToPass.filterType());
 
-        assertPassedFilters(passesQualityFrequencyFilter, firstFilterToPass.getFilterType());    
-        assertFailedFilters(passesQualityFrequencyFilter, secondFilterToPass.getFilterType());
+        assertPassedFilters(passesQualityFrequencyFilter, firstFilterToPass.filterType());
+        assertFailedFilters(passesQualityFrequencyFilter, secondFilterToPass.filterType());
 
-        assertPassedFilters(passesTargetQualityFilter, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
+        assertPassedFilters(passesTargetQualityFilter, firstFilterToPass.filterType(), secondFilterToPass.filterType());
 
         assertFailsEverything(failsAllFilters);     
     }

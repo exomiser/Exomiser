@@ -60,14 +60,14 @@ public class Contigs {
 
         // RefSeq and GenBank NC / CM accessions for chromosomes 1-24
         for (int i = 1; i < 25; i++) {
-            mapBuilder.put(GenomeAssembly.HG19.getRefSeqAccession(i), i);
-            mapBuilder.put(GenomeAssembly.HG19.getGenBankAccession(i), i);
-            mapBuilder.put(GenomeAssembly.HG38.getRefSeqAccession(i), i);
-            mapBuilder.put(GenomeAssembly.HG38.getGenBankAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG19.refSeqAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG19.genBankAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG38.refSeqAccession(i), i);
+            mapBuilder.put(GenomeAssembly.HG38.genBankAccession(i), i);
         }
         // Mitochondrial chromosome has same RefSeq and GenBank accession
-        mapBuilder.put(GenomeAssembly.HG19.getRefSeqAccession(25), 25);
-        mapBuilder.put(GenomeAssembly.HG19.getGenBankAccession(25), 25);
+        mapBuilder.put(GenomeAssembly.HG19.refSeqAccession(25), 25);
+        mapBuilder.put(GenomeAssembly.HG19.genBankAccession(25), 25);
 
         CONTIG_MAP = mapBuilder.build();
     }
@@ -107,15 +107,11 @@ public class Contigs {
             // Exomiser uses '0' to represent unplaced contigs
             throw new IllegalArgumentException("Unsupported chromosome number: " + chr);
         }
-        switch (chr) {
-            case 23:
-                return "X";
-            case 24:
-                return "Y";
-            case 25:
-                return "MT";
-            default:
-                return Integer.toString(chr);
-        }
+        return switch (chr) {
+            case 23 -> "X";
+            case 24 -> "Y";
+            case 25 -> "MT";
+            default -> Integer.toString(chr);
+        };
     }
 }

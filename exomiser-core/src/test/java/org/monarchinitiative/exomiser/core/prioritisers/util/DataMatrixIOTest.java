@@ -52,7 +52,7 @@ public class DataMatrixIOTest {
 
         //Here the single integer row is linked to an Entrez geneId in the entrezIdToRowIndex
 
-        //floatMatrix.put(row, column, value);
+        //floatMatrix.put(row, column, frequency);
         floatMatrix.put(0, 0, 00);
         floatMatrix.put(0, 1, 01);
         floatMatrix.put(0, 2, 02);

@@ -33,10 +33,10 @@ public class FilterTestHelper {
     }
 
     public static void assertPassed(FilterResult filterResult) {
-        assertThat("Expected passed " + filterResult.getFilterType() + " filter", filterResult.passed(), is(true));
+        assertThat("Expected passed " + filterResult.filterType() + " filter", filterResult.passed(), is(true));
     }
 
     public static void assertFailed(FilterResult filterResult) {
-        assertThat("Expected failed " + filterResult.getFilterType() + " filter", filterResult.failed(), is(true));
+        assertThat("Expected failed " + filterResult.filterType() + " filter", filterResult.failed(), is(true));
     }
 }

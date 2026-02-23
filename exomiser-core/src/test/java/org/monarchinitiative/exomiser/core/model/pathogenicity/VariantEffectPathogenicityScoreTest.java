@@ -37,7 +37,7 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEff
 /**
  * @author jj8
  */
-public class VariantEffectPathogenicityScoreTest {
+class VariantEffectPathogenicityScoreTest {
 
     @Test
     void sequenceVariantScore() {
@@ -45,7 +45,7 @@ public class VariantEffectPathogenicityScoreTest {
     }
 
     @Test
-    public void testGetPathogenicityScoreForDefaultMissense() {
+    void testGetPathogenicityScoreForDefaultMissense() {
         assertThat(pathogenicityScoreOf(MISSENSE_VARIANT), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
@@ -102,29 +102,29 @@ public class VariantEffectPathogenicityScoreTest {
     }
 
     @Test
-    public void inversionScore() {
+    void inversionScore() {
         assertThat(pathogenicityScoreOf(INVERSION), equalTo(INVERSION_SCORE));
     }
 
     @Test
-    public void testGetPathogenicityScoreForNonPathogenicVariantType() {
+    void testGetPathogenicityScoreForNonPathogenicVariantType() {
         assertThat(pathogenicityScoreOf(DOWNSTREAM_GENE_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
     }
 
     @Test
-    public void testGetPathogenicityScoreForUnListedHighImpactVariantEffect() {
+    void testGetPathogenicityScoreForUnListedHighImpactVariantEffect() {
         assertThat(COPY_NUMBER_CHANGE.getImpact(), equalTo(PutativeImpact.HIGH));
         assertThat(pathogenicityScoreOf(COPY_NUMBER_CHANGE), equalTo(DEFAULT_HIGH_SCORE));
     }
 
     @Test
-    public void testGetPathogenicityScoreForUnListedModerateImpactVariantEffect() {
+    void testGetPathogenicityScoreForUnListedModerateImpactVariantEffect() {
         assertThat(THREE_PRIME_UTR_TRUNCATION.getImpact(), equalTo(PutativeImpact.MODERATE));
         assertThat(pathogenicityScoreOf(THREE_PRIME_UTR_TRUNCATION), equalTo(DEFAULT_MISSENSE_SCORE));
     }
 
     @Test
-    public void testGetPathogenicityScoreForUnListedLowImpactVariantEffect() {
+    void testGetPathogenicityScoreForUnListedLowImpactVariantEffect() {
         assertThat(CODING_TRANSCRIPT_INTRON_VARIANT.getImpact(), equalTo(PutativeImpact.LOW));
         assertThat(pathogenicityScoreOf(CODING_TRANSCRIPT_INTRON_VARIANT), equalTo(NON_PATHOGENIC_SCORE));
     }

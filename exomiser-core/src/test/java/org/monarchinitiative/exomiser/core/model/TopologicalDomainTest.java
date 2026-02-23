@@ -29,6 +29,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -44,8 +45,16 @@ public class TopologicalDomainTest {
     }
 
     @Test
+    public void testStartBeforeEnd() {
+       Exception exception = assertThrows(IllegalArgumentException.class,
+               () -> new TopologicalDomain(1, 1, 0, new HashMap<>())
+       );
+       assertThat(exception.getMessage(), equalTo("Start 1 position defined as occurring after end position 0. Please check your positions"));
+    }
+
+    @Test
     public void testGetStart() {
-        instance = new TopologicalDomain(0, 1, 0, new HashMap<>());
+        instance = new TopologicalDomain(0, 1, 1, new HashMap<>());
         assertThat(instance.start(), equalTo(1));
     }
 
@@ -61,7 +70,7 @@ public class TopologicalDomainTest {
         genes.put("GENE1", 12345);
         genes.put("GENE2", 23456);
         instance = new TopologicalDomain(0, 0, 0, genes);
-        assertThat(instance.getGenes(), equalTo(genes));
+        assertThat(instance.genes(), equalTo(genes));
     }
 
     @Test

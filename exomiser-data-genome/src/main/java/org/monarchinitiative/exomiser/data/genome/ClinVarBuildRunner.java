@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 
@@ -89,15 +88,15 @@ public class ClinVarBuildRunner {
         GenomicVariant genomicVariant = GenomicVariant.of(genomeAssembly.getContigById(allele.getChr()), Strand.POSITIVE, Coordinates.ofAllele(CoordinateSystem.ONE_BASED, allele.getPos(), allele.getRef()), allele.getRef(), allele.getAlt());
         List<VariantAnnotation> variantAnnotations = variantAnnotator.annotate(genomicVariant);
         if (!variantAnnotations.isEmpty()) {
-            VariantAnnotation variantAnnotation = variantAnnotations.get(0);
-            if (!variantAnnotation.getTranscriptAnnotations().isEmpty()) {
-                TranscriptAnnotation transcriptAnnotation = variantAnnotation.getTranscriptAnnotations().get(0);
+            VariantAnnotation variantAnnotation = variantAnnotations.getFirst();
+            if (variantAnnotation.hasTranscriptAnnotations()) {
+                TranscriptAnnotation transcriptAnnotation = variantAnnotation.transcriptAnnotations().getFirst();
                 return allele.getClinVarData()
                         .toBuilder()
-                        .geneSymbol(variantAnnotation.getGeneSymbol())
-                        .variantEffect(variantAnnotation.getVariantEffect())
-                        .hgvsCdna(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsCdna())
-                        .hgvsProtein(transcriptAnnotation == null ? "" : transcriptAnnotation.getHgvsProtein())
+                        .geneSymbol(variantAnnotation.geneSymbol())
+                        .variantEffect(variantAnnotation.variantEffect())
+                        .hgvsCdna(transcriptAnnotation == null ? "" : transcriptAnnotation.hgvsCdna())
+                        .hgvsProtein(transcriptAnnotation == null ? "" : transcriptAnnotation.hgvsProtein())
                         .build();
             }
         }

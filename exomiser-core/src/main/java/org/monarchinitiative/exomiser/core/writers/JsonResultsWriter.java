@@ -21,8 +21,10 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -32,9 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -52,17 +54,54 @@ public class JsonResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
-        Sample sample = analysisResults.getSample();
-        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
-        ObjectWriter objectWriter = new ObjectMapper()
+        Sample sample = analysisResults.sample();
+        Path outFile = settings.makeOutputFilePath(sample.vcfPath(), OUTPUT_FORMAT);
+        ObjectMapper objectMapper = new ObjectMapper()
+                .addMixIn(Gene.class, JsonGeneMixin.class)
                 .addMixIn(GenomicVariant.class, JsonVariantMixin.class)
-                .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT);
+        ObjectWriter objectWriter = objectMapper
                 .writer();
-        try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
-            writeData(analysisResults, settings, objectWriter, bufferedWriter);
-        } catch (IOException ex) {
-            logger.error("Unable to write results to file {}", outFile, ex);
+
+        List<Gene> compatibleGenes = analysisResults.genes();
+        List<Gene> genes;
+        if (settings.outputContributingVariantsOnly()) {
+            logger.debug("Writing out only CONTRIBUTING variants");
+            List<Gene> passedGenes = makePassedGenes(compatibleGenes);
+            genes = settings.filterGenesForOutput(passedGenes);
+        } else {
+            genes = settings.filterGenesForOutput(compatibleGenes);
         }
+
+//        try (OutputStream outputStream = Files.newOutputStream(Path.of(outFile.toString().replace(".json", ".jsonl")));
+//             JsonGenerator jGenerator = objectMapper
+//                     .createGenerator(outputStream, JsonEncoding.UTF8)
+//                     .setRootValueSeparator(new SerializedString("\n"))) {
+//            for (Gene gene : genes) {
+//                jGenerator.writeObject(gene);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        // see https://cowtowncoder.medium.com/line-delimited-json-with-jackson-69c9e4cb6c00
+
+        try (OutputStream outputStream = Files.newOutputStream(outFile);
+             SequenceWriter seq = objectWriter
+                     .withRootValueSeparator("\n") // Important! Default value separator is single space
+                     .writeValues(objectMapper.createGenerator(outputStream, JsonEncoding.UTF8))) {
+            for (Gene gene : genes) {
+                seq.write(gene);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+//        try (Writer bufferedWriter = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
+//            writeData(analysisResults, settings, objectWriter, bufferedWriter);
+//        } catch (IOException ex) {
+//            logger.error("Unable to write results to file {}", outFile, ex);
+//        }
         logger.debug("{} results written to file {}", OUTPUT_FORMAT, outFile);
     }
 
@@ -84,7 +123,7 @@ public class JsonResultsWriter implements ResultsWriter {
     }
 
     private void writeData(AnalysisResults analysisResults, OutputSettings settings, ObjectWriter objectWriter, Writer writer) throws IOException {
-        List<Gene> compatibleGenes = analysisResults.getGenes();
+        List<Gene> compatibleGenes = analysisResults.genes();
         if (settings.outputContributingVariantsOnly()) {
             logger.debug("Writing out only CONTRIBUTING variants");
             List<Gene> passedGenes = makePassedGenes(compatibleGenes);
@@ -106,13 +145,13 @@ public class JsonResultsWriter implements ResultsWriter {
     }
 
     private Gene makeContributingOnlyGene(Gene gene) {
-        Gene contributingOnlyGene = new Gene(gene.getGeneIdentifier());
-        contributingOnlyGene.setCompatibleInheritanceModes(gene.getCompatibleInheritanceModes());
-        gene.getPriorityResults().values().forEach(contributingOnlyGene::addPriorityResult);
-        gene.getVariantEvaluations().stream()
+        Gene contributingOnlyGene = new Gene(gene.geneIdentifier());
+        contributingOnlyGene.setCompatibleInheritanceModes(gene.compatibleInheritanceModes());
+        gene.priorityResults().values().forEach(contributingOnlyGene::addPriorityResult);
+        gene.variantEvaluations().stream()
                 .filter(VariantEvaluation::contributesToGeneScore)
                 .forEach(contributingOnlyGene::addVariant);
-        gene.getGeneScores()
+        gene.geneScores()
                 .forEach(contributingOnlyGene::addGeneScore);
         return contributingOnlyGene;
     }

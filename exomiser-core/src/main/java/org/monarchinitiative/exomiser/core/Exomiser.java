@@ -76,8 +76,8 @@ public class Exomiser {
      * @since 13.0.0
      */
     public AnalysisResults run(Sample sample, Analysis analysis) {
-        GenomeAssembly genomeAssembly = sample.getGenomeAssembly();
-        AnalysisMode analysisMode = analysis.getAnalysisMode();
+        GenomeAssembly genomeAssembly = sample.genomeAssembly();
+        AnalysisMode analysisMode = analysis.analysisMode();
         logger.info("Running analysis using {} assembly with mode: {}", genomeAssembly, analysisMode);
         AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunner(genomeAssembly, analysisMode);
         return analysisRunner.run(sample, analysis);

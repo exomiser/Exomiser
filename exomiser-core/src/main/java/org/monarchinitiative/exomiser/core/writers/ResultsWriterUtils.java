@@ -66,7 +66,7 @@ public class ResultsWriterUtils {
      *
      * @param outputPrefix String representing the absolute or relative directory or filename path.
      * @return A directory path where the output files will be written.
-     * @deprecated Replaced by {@link OutputSettings#getOutputDirectory()}
+     * @deprecated Replaced by {@link OutputSettings#outputDirectory()}
      */
     @Deprecated(forRemoval = true)
     public static Path resolveOutputDir(String outputPrefix) {
@@ -105,7 +105,7 @@ public class ResultsWriterUtils {
             String vcfFileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
             baseFileName = vcfFileName + "-exomiser";
         }
-        return outputDir.resolve(baseFileName + '.' + outputFormat.getFileExtension()).toString();
+        return outputDir.resolve(baseFileName + '.' + outputFormat.fileExtension()).toString();
     }
 
     private static String moiAbbreviation(ModeOfInheritance modeOfInheritance) {

@@ -33,7 +33,7 @@ public interface VariantFilterDataProvider extends VariantFilter {
     /**
      * @return the decorated filter which the DataProvider is providing data for.
      */
-    VariantFilter getDecoratedFilter();
+    VariantFilter variantFilter();
 
     /**
      * Provides the variantEvaluation with the implementation-specific data.
@@ -44,12 +44,12 @@ public interface VariantFilterDataProvider extends VariantFilter {
     @Override
     default FilterResult runFilter(VariantEvaluation variantEvaluation) {
         provideVariantData(variantEvaluation);
-        return getDecoratedFilter().runFilter(variantEvaluation);
+        return variantFilter().runFilter(variantEvaluation);
     }
 
     @Override
-    default FilterType getFilterType() {
-        return getDecoratedFilter().getFilterType();
+    default FilterType filterType() {
+        return variantFilter().filterType();
     }
 
 }

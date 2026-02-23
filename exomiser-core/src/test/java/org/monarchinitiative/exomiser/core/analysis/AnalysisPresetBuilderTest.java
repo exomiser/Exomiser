@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -33,7 +32,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.OmimPriority;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,11 +48,11 @@ public class AnalysisPresetBuilderTest {
     @Test
     public void testBuildExomePreset() {
         Analysis analysis = instance.buildExomePreset();
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
-        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
-        assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP)));
-        assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
+        assertThat(analysis.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+        assertThat(analysis.frequencySources(), equalTo(FREQUENCY_SOURCES));
+        assertThat(analysis.pathogenicitySources(), equalTo(Set.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI)));
+        assertThat(analysis.analysisSteps().stream().map(AnalysisStep::getClass).toList(),
                 equalTo(List.of(
                         VariantEffectFilter.class,
                         FailedVariantFilter.class,
@@ -69,11 +67,11 @@ public class AnalysisPresetBuilderTest {
     @Test
     public void testBuildGenomePreset() {
         Analysis analysis = instance.buildGenomePreset();
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
-        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
-        assertThat(analysis.getFrequencySources(), equalTo(FREQUENCY_SOURCES));
-        assertThat(analysis.getPathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM)));
-        assertThat(analysis.getAnalysisSteps().stream().map(AnalysisStep::getClass).collect(Collectors.toList()),
+        assertThat(analysis.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+        assertThat(analysis.frequencySources(), equalTo(FREQUENCY_SOURCES));
+        assertThat(analysis.pathogenicitySources(), equalTo(Set.of(REVEL, MVP, REMM, ALPHA_MISSENSE, SPLICE_AI)));
+        assertThat(analysis.analysisSteps().stream().map(AnalysisStep::getClass).toList(),
                 equalTo(List.of(
                         HiPhivePriority.class,
                         PriorityScoreFilter.class,

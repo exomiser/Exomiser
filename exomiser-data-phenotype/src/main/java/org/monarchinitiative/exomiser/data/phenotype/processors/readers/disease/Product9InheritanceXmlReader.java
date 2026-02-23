@@ -123,8 +123,6 @@ public class Product9InheritanceXmlReader implements ResourceReader<ArrayListMul
 
         try (InputStream in = Files.newInputStream(product9XmlResource.getResourcePath())) {
             XMLInputFactory factory = XMLInputFactory.newInstance();
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             XMLEventReader eventReader = factory.createXMLEventReader(in);
             String currentOrphanum = null;
             String currentDiseaseName = null;

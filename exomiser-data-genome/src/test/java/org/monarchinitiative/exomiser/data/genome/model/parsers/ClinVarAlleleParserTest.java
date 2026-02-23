@@ -22,10 +22,7 @@ package org.monarchinitiative.exomiser.data.genome.model.parsers;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
-import org.monarchinitiative.exomiser.core.proto.AlleleProto;
-import org.monarchinitiative.exomiser.data.genome.indexers.AlleleConverter;
 import org.monarchinitiative.exomiser.data.genome.model.Allele;
 
 import java.io.*;
@@ -275,6 +272,43 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
                 .variationId("7888")
                 .primaryInterpretation(PATHOGENIC_OR_LIKELY_PATHOGENIC)
                 .reviewStatus(CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS)
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
+
+    /* new fun added in Jan 05, 2026 */
+    @Test
+    void clnSigVusHot() {
+        // variant id 3065236
+        String line = "2\t241684718\t.\tCAACATT\tC\t.\t.\tCLNSIG=Uncertain_significance/VUS-high";
+        Allele expected = new Allele(2, 241684718, "CAACATT", "C");
+        expected.setClinVarData(ClinVarData.builder()
+                .primaryInterpretation(UNCERTAIN_SIGNIFICANCE)
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
+
+    // 9	134164522	4688033	C	T	.	.	ALLELEID=4799506;CLNDISDB=.;CLNDN=See_cases;CLNHGVS=NC_000009.12:g.134164522C>T;CLNREVSTAT=no_assertion_criteria_provided;CLNSIG=VUS-mid;CLNSIGSCV=SCV007334818;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;GENEINFO=RNU6ATAC:100151684;MC=SO:0001619|non-coding_transcript_variant;ORIGIN=64
+    @Test
+    void clnSigJustVusMid() {
+        // variant id 4688033 RNU6TAC
+        String line = "9\t134164522\t.\tC\tT\t.\t.\tCLNSIG=VUS-mid";
+        Allele expected = new Allele(9, 134164522, "C", "T");
+        expected.setClinVarData(ClinVarData.builder()
+                .primaryInterpretation(UNCERTAIN_SIGNIFICANCE)
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
+    @Test
+    void conflictingInterpretationCounts() {
+        String line = "1\t94051698\t7879\tC\tG\t.\t.\tCLNREVSTAT=criteria_provided,_conflicting_classifications;CLNSIG=Conflicting_classifications_of_pathogenicity;CLNSIGCONF=Pathogenic(19)|Likely_pathogenic(4)|Pathogenic,_low_penetrance(1)|Uncertain_significance(1);RS=1660844326";
+        Allele expected = new Allele(1, 94051698, "C", "G");
+        expected.setRsId("1660844326");
+        expected.setClinVarData(ClinVarData.builder()
+                .variationId("7879")
+                .primaryInterpretation(CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .reviewStatus(CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
+                .conflictingInterpretationCounts(Map.of(PATHOGENIC, 20, LIKELY_PATHOGENIC, 4, UNCERTAIN_SIGNIFICANCE, 1))
                 .build());
         assertParseLineEquals(line, List.of(expected));
     }

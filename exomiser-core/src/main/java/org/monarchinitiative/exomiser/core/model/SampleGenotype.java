@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
@@ -34,25 +33,30 @@ import java.util.regex.Pattern;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 10.0.0
  */
-public class SampleGenotype {
+public record SampleGenotype(Phasing phasing, List<AlleleCall> calls) {
 
     private static final Pattern GT = Pattern.compile("([0-9.-][/|]?)*+");
 
-    private static final SampleGenotype EMPTY = new SampleGenotype(false);
+    private static final SampleGenotype EMPTY = new SampleGenotype(Phasing.UNPHASED, List.of());
     //cached common diploid genotypes - these are going to be super-common in multi-sample cases
-    private static final SampleGenotype UNPHASED_DIPLOID_NO_CALL = new SampleGenotype(false, AlleleCall.NO_CALL, AlleleCall.NO_CALL);
-    private static final SampleGenotype UNPHASED_DIPLOID_HET = new SampleGenotype(false, AlleleCall.REF, AlleleCall.ALT);
-    private static final SampleGenotype UNPHASED_DIPLOID_HOM_REF = new SampleGenotype(false, AlleleCall.REF, AlleleCall.REF);
-    private static final SampleGenotype UNPHASED_DIPLOID_HOM_ALT = new SampleGenotype(false, AlleleCall.ALT, AlleleCall.ALT);
+    private static final SampleGenotype UNPHASED_DIPLOID_NO_CALL = new SampleGenotype(Phasing.UNPHASED,  List.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL));
+    private static final SampleGenotype UNPHASED_DIPLOID_HET = new SampleGenotype(Phasing.UNPHASED, List.of(AlleleCall.REF, AlleleCall.ALT));
+    private static final SampleGenotype UNPHASED_DIPLOID_HOM_REF = new SampleGenotype(Phasing.UNPHASED, List.of(AlleleCall.REF, AlleleCall.REF));
+    private static final SampleGenotype UNPHASED_DIPLOID_HOM_ALT = new SampleGenotype(Phasing.UNPHASED, List.of(AlleleCall.ALT, AlleleCall.ALT));
 
-    private static final SampleGenotype PHASED_DIPLOID_NO_CALL = new SampleGenotype(true, AlleleCall.NO_CALL, AlleleCall.NO_CALL);
-    private static final SampleGenotype PHASED_DIPLOID_HET_REF_ALT = new SampleGenotype(true, AlleleCall.REF, AlleleCall.ALT);
-    private static final SampleGenotype PHASED_DIPLOID_HET_ALT_REF = new SampleGenotype(true, AlleleCall.ALT, AlleleCall.REF);
-    private static final SampleGenotype PHASED_DIPLOID_HOM_REF = new SampleGenotype(true, AlleleCall.REF, AlleleCall.REF);
-    private static final SampleGenotype PHASED_DIPLOID_HOM_ALT = new SampleGenotype(true, AlleleCall.ALT, AlleleCall.ALT);
+    private static final SampleGenotype PHASED_DIPLOID_NO_CALL = new SampleGenotype(Phasing.PHASED, List.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL));
+    private static final SampleGenotype PHASED_DIPLOID_HET_REF_ALT = new SampleGenotype(Phasing.PHASED, List.of(AlleleCall.REF, AlleleCall.ALT));
+    private static final SampleGenotype PHASED_DIPLOID_HET_ALT_REF = new SampleGenotype(Phasing.PHASED, List.of(AlleleCall.ALT, AlleleCall.REF));
+    private static final SampleGenotype PHASED_DIPLOID_HOM_REF = new SampleGenotype(Phasing.PHASED, List.of(AlleleCall.REF, AlleleCall.REF));
+    private static final SampleGenotype PHASED_DIPLOID_HOM_ALT = new SampleGenotype(Phasing.PHASED, List.of(AlleleCall.ALT, AlleleCall.ALT));
 
-    private final AlleleCall[] alleleCalls;
-    private final boolean phased;
+    enum Phasing {
+        UNPHASED, PHASED;
+    }
+
+    public SampleGenotype {
+        calls = List.copyOf(calls);
+    }
 
     public static SampleGenotype empty() {
         return EMPTY;
@@ -101,46 +105,43 @@ public class SampleGenotype {
             return EMPTY;
         }
         Arrays.sort(alleleCalls);
-        if (Arrays.equals(alleleCalls, UNPHASED_DIPLOID_HET.alleleCalls) ) {
+        var calls = List.of(alleleCalls);
+        if (calls.equals(UNPHASED_DIPLOID_HET.calls) ) {
             return UNPHASED_DIPLOID_HET;
         }
-        if (Arrays.equals(alleleCalls, UNPHASED_DIPLOID_HOM_ALT.alleleCalls) ) {
+        if (calls.equals(UNPHASED_DIPLOID_HOM_ALT.calls) ) {
             return UNPHASED_DIPLOID_HOM_ALT;
         }
-        if (Arrays.equals(alleleCalls, UNPHASED_DIPLOID_HOM_REF.alleleCalls) ) {
+        if (calls.equals(UNPHASED_DIPLOID_HOM_REF.calls) ) {
             return UNPHASED_DIPLOID_HOM_REF;
         }
-        if (Arrays.equals(alleleCalls, UNPHASED_DIPLOID_NO_CALL.alleleCalls) ) {
+        if (calls.equals(UNPHASED_DIPLOID_NO_CALL.calls) ) {
             return UNPHASED_DIPLOID_NO_CALL;
         }
-        return new SampleGenotype(false, alleleCalls);
+        return new SampleGenotype(Phasing.UNPHASED, calls);
     }
 
     public static SampleGenotype phased(AlleleCall... alleleCalls) {
         if (alleleCalls.length == 0) {
             return EMPTY;
         }
-        if (Arrays.equals(alleleCalls, PHASED_DIPLOID_HET_REF_ALT.alleleCalls) ) {
+        var calls = List.of(alleleCalls);
+        if (calls.equals(PHASED_DIPLOID_HET_REF_ALT.calls) ) {
             return PHASED_DIPLOID_HET_REF_ALT;
         }
-        if (Arrays.equals(alleleCalls, PHASED_DIPLOID_HET_ALT_REF.alleleCalls) ) {
+        if (calls.equals(PHASED_DIPLOID_HET_ALT_REF.calls) ) {
             return PHASED_DIPLOID_HET_ALT_REF;
         }
-        if (Arrays.equals(alleleCalls, PHASED_DIPLOID_HOM_ALT.alleleCalls) ) {
+        if (calls.equals(PHASED_DIPLOID_HOM_ALT.calls) ) {
             return PHASED_DIPLOID_HOM_ALT;
         }
-        if (Arrays.equals(alleleCalls, PHASED_DIPLOID_HOM_REF.alleleCalls) ) {
+        if (calls.equals(PHASED_DIPLOID_HOM_REF.calls) ) {
             return PHASED_DIPLOID_HOM_REF;
         }
-        if (Arrays.equals(alleleCalls, PHASED_DIPLOID_NO_CALL.alleleCalls) ) {
+        if (calls.equals(PHASED_DIPLOID_NO_CALL.calls) ) {
             return PHASED_DIPLOID_NO_CALL;
         }
-        return new SampleGenotype(true, alleleCalls);
-    }
-
-    private SampleGenotype(boolean phased, AlleleCall... alleleCalls) {
-        this.alleleCalls = Arrays.copyOf(alleleCalls, alleleCalls.length);
-        this.phased = phased;
+        return new SampleGenotype(Phasing.PHASED, calls);
     }
 
     /**
@@ -172,10 +173,6 @@ public class SampleGenotype {
         return alleleCalls;
     }
 
-    public List<AlleleCall> getCalls() {
-        return List.of(alleleCalls);
-    }
-
     /**
      * Returns the number of calls for the {@link SampleGenotype}. For example a monoploid sample would return 1,
      * diploid 2, triploid 3 etc.
@@ -185,7 +182,7 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public int numCalls() {
-        return alleleCalls.length;
+        return calls.size();
     }
 
     /**
@@ -196,12 +193,12 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isHet() {
-        if (alleleCalls.length <= 1) {
+        if (calls.size() <= 1) {
             return false;
         }
-        AlleleCall first = alleleCalls[0];
-        for (int i = 1; i < alleleCalls.length; i++) {
-            AlleleCall current = alleleCalls[i];
+        AlleleCall first = calls.getFirst();
+        for (int i = 1; i < calls.size(); i++) {
+            AlleleCall current = calls.get(i);
             if (first != current) {
                 return true;
             }
@@ -217,11 +214,11 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isHomRef() {
-        if (alleleCalls.length == 0) {
+        if (calls.isEmpty()) {
             return false;
         }
-        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
-            AlleleCall alleleCall = alleleCalls[i];
+        for (int i = 0; i < calls.size(); i++) {
+            AlleleCall alleleCall = calls.get(i);
             if (alleleCall == AlleleCall.ALT || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
                 return false;
             }
@@ -237,11 +234,11 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isHomAlt() {
-        if (alleleCalls.length == 0) {
+        if (calls.isEmpty()) {
             return false;
         }
-        for (int i = 0, alleleCallsLength = alleleCalls.length; i < alleleCallsLength; i++) {
-            AlleleCall alleleCall = alleleCalls[i];
+        for (int i = 0; i < calls.size(); i++) {
+            AlleleCall alleleCall = calls.get(i);
             if (alleleCall == AlleleCall.REF || alleleCall == AlleleCall.NO_CALL || alleleCall == AlleleCall.OTHER_ALT) {
                 return false;
             }
@@ -257,7 +254,7 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isPhased() {
-        return phased;
+        return phasing == Phasing.PHASED;
     }
 
     /**
@@ -268,7 +265,7 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isEmpty() {
-        return alleleCalls.length == 0;
+        return calls.isEmpty();
     }
 
     /**
@@ -279,28 +276,12 @@ public class SampleGenotype {
      */
     @JsonIgnore
     public boolean isNoCall() {
-        for (int i = 0; i < alleleCalls.length; i++) {
-            if (alleleCalls[i] != AlleleCall.NO_CALL) {
+        for (int i = 0; i < calls.size(); i++) {
+            if (calls.get(i) != AlleleCall.NO_CALL) {
                 return false;
             }
         }
         return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SampleGenotype that = (SampleGenotype) o;
-        return phased == that.phased &&
-                Arrays.equals(alleleCalls, that.alleleCalls);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(phased);
-        result = 31 * result + Arrays.hashCode(alleleCalls);
-        return result;
     }
 
     @Override
@@ -309,12 +290,12 @@ public class SampleGenotype {
             return ".";
         }
         StringJoiner stringJoiner;
-        if (phased) {
+        if (isPhased()) {
             stringJoiner = new StringJoiner("|");
         } else {
             stringJoiner = new StringJoiner("/");
         }
-        for (AlleleCall alleleCall : alleleCalls) {
+        for (AlleleCall alleleCall : calls) {
             stringJoiner.add(alleleCall.toVcfString());
         }
         return stringJoiner.toString();

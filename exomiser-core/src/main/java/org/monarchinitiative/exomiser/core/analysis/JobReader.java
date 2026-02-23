@@ -78,11 +78,7 @@ public class JobReader {
     private static JobProto.Job parseJob(Path jobPath) {
         // wrap any exception from the ProtoParser with a more user-friendly one.
         try {
-            JobProto.Job job = ProtoParser.parseFromJsonOrYaml(JobProto.Job.newBuilder(), jobPath).build();
-            if (job.equals(JobProto.Job.getDefaultInstance())) {
-                throw new IllegalArgumentException("Unable to parse job from file " + jobPath + " please check the format.");
-            }
-            return job;
+            return ProtoParser.parseFromJsonOrYaml(JobProto.Job.newBuilder(), jobPath).build();
         } catch (Exception exception) {
             throw new IllegalArgumentException("Unable to parse job from file " + jobPath + " please check the format.", exception);
         }

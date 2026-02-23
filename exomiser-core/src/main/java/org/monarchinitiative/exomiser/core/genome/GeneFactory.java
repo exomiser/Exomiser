@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -65,7 +66,7 @@ public class GeneFactory {
                 // We're assuming the GeneIdentifier includes Entrez ids here. They should be present.
                 // If not the entire analysis will fail.
                 .map(Gene::new)
-                .collect(toList());
+                .collect(Collectors.toCollection(ArrayList::new));
         logger.debug("Created {} known genes.", knownGenes.size());
         return knownGenes;
     }
@@ -92,7 +93,7 @@ public class GeneFactory {
                     .findFirst()
                     .orElse(GeneIdentifier.builder().geneSymbol(geneSymbol).build());
 
-            if (geneIdentifier.getEntrezId().isEmpty()) {
+            if (geneIdentifier.entrezId().isEmpty()) {
                 noEntrezId++;
                 logger.debug("No geneId associated with gene symbol {} geneId set to {}", geneSymbol, geneIdentifier);
             }

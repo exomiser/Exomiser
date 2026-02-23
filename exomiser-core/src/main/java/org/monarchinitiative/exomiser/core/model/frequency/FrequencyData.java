@@ -23,7 +23,7 @@ package org.monarchinitiative.exomiser.core.model.frequency;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -34,7 +34,7 @@ import java.util.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FrequencyData {
+public record FrequencyData(String rsId, @JsonIgnore FrequencySource[] sources, @JsonIgnore float[] data) {
 
     private static final String VCF_EMPTY_VALUE = ".";
     private static final FrequencyData EMPTY_DATA = new FrequencyData("", new FrequencySource[0], new float[0]);
@@ -52,12 +52,15 @@ public class FrequencyData {
     private static final float VERY_RARE_SCORE = 1f;
     private static final float NOT_RARE_SCORE = 0f;
 
-    private final String rsId;
 
-    private final int size;
-    private final FrequencySource[] sources;
-    private final float[] data;
-    private final int maxSource;
+    public FrequencyData {
+        rsId = Objects.requireNonNullElse(rsId, "");
+        sources = Objects.requireNonNullElse(sources, new FrequencySource[0]);
+        data = Objects.requireNonNullElse(data, new float[0]);
+        if (sources.length != data.length / WORD_SIZE) {
+           throw new IllegalArgumentException("Data must have length " + WORD_SIZE + " * " + sources.length + ". Expected " + sources.length * WORD_SIZE + " but got " + data.length + ".");
+        }
+    }
 
     public static FrequencyData empty() {
         return EMPTY_DATA;
@@ -103,18 +106,11 @@ public class FrequencyData {
         return id == null || id.isEmpty() || VCF_EMPTY_VALUE.equals(id);
     }
 
-    private FrequencyData(String rsId, FrequencySource[] sources, float[] data) {
-        this.rsId = rsId;
-        this.size = sources.length;
-        this.sources = sources;
-        this.data = data;
-        this.maxSource = findMaxSource();
-    }
-
     private int findMaxSource() {
         float max = 0.0f;
         int source = -1;
-        for(int i = 0; i < this.size; ++i) {
+        int size = size();
+        for(int i = 0; i < size; ++i) {
             float value = freq(i);
             if (value > max) {
                 max = value;
@@ -130,7 +126,7 @@ public class FrequencyData {
      * @since 13.3.0
      */
     public int size() {
-        return size;
+        return sources.length;
     }
 
     /**
@@ -141,7 +137,7 @@ public class FrequencyData {
      * @since 13.3.0
      */
     public boolean isEmpty() {
-        return size == 0;
+        return size() == 0;
     }
 
     /**
@@ -262,6 +258,7 @@ public class FrequencyData {
      */
     public float maxFreqForPopulation(Set<FrequencySource> frequencySources) {
         float max = 0f;
+        int size = size();
         for (int i = 0; i < size; i++) {
             FrequencySource freqSource = this.sources[i];
             if (frequencySources.contains(freqSource)) {
@@ -273,7 +270,7 @@ public class FrequencyData {
 
     @JsonIgnore
     public boolean hasKnownFrequency() {
-        return size != 0;
+        return size() != 0;
     }
 
     /**
@@ -298,6 +295,7 @@ public class FrequencyData {
      */
     @JsonProperty
     public List<Frequency> frequencies() {
+        int size = size();
         Frequency[] freqs = new Frequency[size];
         for (int i = 0; i < size; i++) {
             freqs[i] = frequency(i);
@@ -313,6 +311,7 @@ public class FrequencyData {
      */
     @JsonIgnore
     public float maxFreq() {
+        int maxSource = findMaxSource();
         return maxSource == -1 ? 0f : freq(maxSource);
     }
 
@@ -324,6 +323,7 @@ public class FrequencyData {
     @JsonIgnore
     @Nullable
     public Frequency maxFrequency() {
+        int maxSource = findMaxSource();
         return maxSource == -1 ? null : frequency(maxSource);
     }
 
@@ -352,14 +352,13 @@ public class FrequencyData {
         if (o == null || getClass() != o.getClass()) return false;
         FrequencyData that = (FrequencyData) o;
         return Objects.equals(rsId, that.rsId) &&
-                size == that.size &&
                 Arrays.equals(sources, that.sources) &&
                 Arrays.equals(data, that.data);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(rsId, size);
+        int result = Objects.hash(rsId);
         result = 31 * result + Arrays.hashCode(sources);
         result = 31 * result + Arrays.hashCode(data);
         return result;
@@ -369,7 +368,7 @@ public class FrequencyData {
     public String toString() {
         StringBuilder sb = new StringBuilder().append('{');
         boolean first = true;
-
+        int size = size();
         for (int i = 0; i < size; i++) {
             if (!first) {
                 sb.append(", ");

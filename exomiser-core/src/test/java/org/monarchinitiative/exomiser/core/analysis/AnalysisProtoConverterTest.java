@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
 import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -38,6 +37,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -73,15 +73,17 @@ class AnalysisProtoConverterTest {
     @Test
     void testToProtoExomeAnalysisSteps() {
         Analysis analysis = Analysis.builder()
-                .addStep((new GeneBlacklistFilter()))
+                .addStep(new AlleleBalanceFilter())
+                .addStep(new GeneBlacklistFilter(Set.of()))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
+                .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .addStep(new HiPhivePriority(HiPhiveOptions.defaults(), DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService()))
                 .build();
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);
         AnalysisProto.Analysis expected = AnalysisProto.Analysis.newBuilder()
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
@@ -99,10 +101,10 @@ class AnalysisProtoConverterTest {
                 .addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))
                 .addStep(new FailedVariantFilter())
                 .addStep(new RegulatoryFeatureFilter())
-                .addStep(new GeneBlacklistFilter())
+                .addStep(new GeneBlacklistFilter(Set.of()))
                 .addStep(new FrequencyFilter(0.2f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter())
+                .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
         AnalysisProto.Analysis result = new AnalysisProtoConverter().toProto(analysis);

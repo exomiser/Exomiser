@@ -40,7 +40,7 @@ import java.util.Set;
 public class AnalysisResultsWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisResultsWriter.class);
-    private static final Set<OutputFormat> DEFAULT_OUTPUT_FORMATS = Collections.unmodifiableSet(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON));
+    private static final Set<OutputFormat> DEFAULT_OUTPUT_FORMATS = Collections.unmodifiableSet(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.PARQUET));
 
     private AnalysisResultsWriter() {
     }
@@ -59,9 +59,9 @@ public class AnalysisResultsWriter {
         Path outputDir = createOutputDirectoriesIfNotExists(outputSettings);
         logger.debug("Writing results to directory {}", outputDir);
 
-        var outputFormats = outputSettings.getOutputFormats().isEmpty()
+        var outputFormats = outputSettings.outputFormats().isEmpty()
                 ? DEFAULT_OUTPUT_FORMATS
-                : outputSettings.getOutputFormats();
+                : outputSettings.outputFormats();
 
         for (OutputFormat outputFormat : outputFormats) {
             var resultsWriter = ResultsWriterFactory.getResultsWriter(outputFormat);
@@ -71,7 +71,7 @@ public class AnalysisResultsWriter {
     }
 
     private static Path createOutputDirectoriesIfNotExists(OutputSettings outputSettings) {
-        Path outputDir = outputSettings.getOutputDirectory();
+        Path outputDir = outputSettings.outputDirectory();
         if (Files.notExists(outputDir)) {
             try {
                 return Files.createDirectories(outputDir);

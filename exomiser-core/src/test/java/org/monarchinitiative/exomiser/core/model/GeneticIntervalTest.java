@@ -46,101 +46,101 @@ public class GeneticIntervalTest {
     private final GeneticInterval instance = new GeneticInterval(CHR, START, END);
 
     @Test
-    public void testParseStringNumericChromosomeSingleDigit() {
+    public void testParseGeneticIntervalNumericChromosomeSingleDigit() {
         String interval = "chr3:123-456";
         GeneticInterval expResult = new GeneticInterval(3, 123, 456);
-        GeneticInterval result = GeneticInterval.parseString(interval);
+        GeneticInterval result = GeneticInterval.parseGeneticInterval(interval);
 
         assertThat(result, equalTo(expResult));
 
     }
 
     @Test
-    public void testParseStringNumericChromosomeDoubleDigit() {
+    public void testParseGeneticIntervalNumericChromosomeDoubleDigit() {
         String interval = "chr14:123-456";
         GeneticInterval expResult = new GeneticInterval(14, 123, 456);
-        GeneticInterval result = GeneticInterval.parseString(interval);
+        GeneticInterval result = GeneticInterval.parseGeneticInterval(interval);
 
         assertThat(result, equalTo(expResult));
     }
 
     @Test
-    public void testParseStringChromosomeX() {
+    public void testParseGeneticIntervalChromosomeX() {
         String interval = "chrX:123-456";
         GeneticInterval expResult = new GeneticInterval(23, 123, 456);
-        GeneticInterval result = GeneticInterval.parseString(interval);
+        GeneticInterval result = GeneticInterval.parseGeneticInterval(interval);
 
         assertThat(result, equalTo(expResult));
 
     }
 
     @Test
-    public void testParseStringChromosomeY() {
+    public void testParseGeneticIntervalChromosomeY() {
         String interval = "chrY:123-456";
         GeneticInterval expResult = new GeneticInterval(24, 123, 456);
-        GeneticInterval result = GeneticInterval.parseString(interval);
+        GeneticInterval result = GeneticInterval.parseGeneticInterval(interval);
 
         assertThat(result, equalTo(expResult));
 
     }
 
     @Test
-    public void testParseStringChromosomeM() {
+    public void testParseGeneticIntervalChromosomeM() {
         String interval = "chrM:123-456";
         GeneticInterval expResult = new GeneticInterval(25, 123, 456);
-        GeneticInterval result = GeneticInterval.parseString(interval);
+        GeneticInterval result = GeneticInterval.parseGeneticInterval(interval);
 
         assertThat(result, equalTo(expResult));
 
     }
 
     @Test
-    public void testParseStringMtPrefix() {
+    public void testParseGeneticIntervalMtPrefix() {
         String interval = "MT:123-456";
-        assertThat(GeneticInterval.parseString(interval), equalTo(new GeneticInterval(25, 123, 456)));
+        assertThat(GeneticInterval.parseGeneticInterval(interval), equalTo(new GeneticInterval(25, 123, 456)));
     }
 
     @Test
-    public void testParseStringNoChrPrefix() {
+    public void testParseGeneticIntervalNoChrPrefix() {
         String interval = "3:123-456";
-        assertThat(GeneticInterval.parseString(interval), equalTo(new GeneticInterval(3, 123, 456)));
+        assertThat(GeneticInterval.parseGeneticInterval(interval), equalTo(new GeneticInterval(3, 123, 456)));
     }
 
     @Test
-    public void testParseStringThrowsErrorOnIncorrectChromosomeNumber() {
+    public void testParseGeneticIntervalThrowsErrorOnIncorrectChromosomeNumber() {
         String interval = "chr33:123-456";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
     @Test
-    public void testParseStringThrowsErrorOnAnotherIncorrectChromosomeNumber() {
+    public void testParseGeneticIntervalThrowsErrorOnAnotherIncorrectChromosomeNumber() {
         String interval = "chr666:123-456";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
     @Test
-    public void testParseStringThrowsErrorOnUndefinedStart() {
+    public void testParseGeneticIntervalThrowsErrorOnUndefinedStart() {
         String interval = "chr6:-456";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
     @Test
-    public void testParseStringThrowsErrorOnUndefinedEnd() {
+    public void testParseGeneticIntervalThrowsErrorOnUndefinedEnd() {
         String interval = "chr6:123-";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
     @Test
-    public void testParseStringThrowsErrorWithIncorrectPositionDelimiter() {
+    public void testParseGeneticIntervalThrowsErrorWithIncorrectPositionDelimiter() {
         String interval = "chr6:123:456";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
 
     @Test
-    public void testParseStringThrowsErrorWithSwitchedPositions() {
+    public void testParseGeneticIntervalThrowsErrorWithSwitchedPositions() {
         String interval = "chr6:456:123";
-        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseString(interval));
+        assertThrows(IllegalArgumentException.class, () -> GeneticInterval.parseGeneticInterval(interval));
     }
 
     @Test
@@ -212,7 +212,7 @@ public class GeneticIntervalTest {
 
     @Test
     void testMitochnodrialRoundTrip() {
-        GeneticInterval mito = GeneticInterval.parseString("chrM:100-200");
+        GeneticInterval mito = GeneticInterval.parseGeneticInterval("chrM:100-200");
         assertThat(mito.toString(), equalTo("chrM:100-200"));
     }
 }

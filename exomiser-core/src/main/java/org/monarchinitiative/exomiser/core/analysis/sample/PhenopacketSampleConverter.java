@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
@@ -30,7 +30,7 @@ import org.phenopackets.schema.v1.core.Individual;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.PhenotypicFeature;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;

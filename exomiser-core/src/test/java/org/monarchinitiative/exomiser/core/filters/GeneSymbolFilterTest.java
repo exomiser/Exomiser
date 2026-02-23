@@ -58,16 +58,16 @@ public class GeneSymbolFilterTest {
     }
 
     @Test
-    public void testGetGeneIds() {
+    public void testGeneIds() {
         Set<String> genesToKeep = genesToKeep(WANTED_GENE_SYMBOL);
         GeneSymbolFilter instance = new GeneSymbolFilter(genesToKeep);
         assertThat(instance.getGeneSymbols(), equalTo(genesToKeep));
     }
 
     @Test
-    public void testGetFilterType() {
+    public void testFilterType() {
         GeneSymbolFilter instance = new GeneSymbolFilter(Collections.emptySet());
-        assertThat(instance.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
+        assertThat(instance.filterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class GeneSymbolFilterTest {
         FilterResult filterResult = instance.runFilter(variantWithGeneSymbol(WANTED_GENE_SYMBOL));
 
         FilterTestHelper.assertPassed(filterResult);
-        assertThat(filterResult.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
+        assertThat(filterResult.filterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class GeneSymbolFilterTest {
         FilterResult filterResult = instance.runFilter(variantWithGeneSymbol(UNWANTED_GENE_SYMBOL));
 
         FilterTestHelper.assertFailed(filterResult);
-        assertThat(filterResult.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
+        assertThat(filterResult.filterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }
 
     @Test

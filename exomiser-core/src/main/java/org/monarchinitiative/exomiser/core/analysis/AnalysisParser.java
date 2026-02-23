@@ -26,14 +26,13 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
+import org.monarchinitiative.exomiser.core.pedigree.PedFiles;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
@@ -253,7 +252,7 @@ public class AnalysisParser {
         private Boolean parseBooleanValue(String key, Map<String, Boolean> analysisMap) {
             Boolean booleanValue = analysisMap.get(key);
             if (booleanValue == null) {
-                throw new AnalysisParserException("'" + key + "' value cannot be null.", analysisMap);
+                throw new AnalysisParserException("'" + key + "' frequency cannot be null.", analysisMap);
             }
             return booleanValue;
         }
@@ -328,7 +327,7 @@ public class AnalysisParser {
         private InheritanceModeOptions inheritanceModeOptions(Map<String, Object> analysisMap) {
             String modeOfInheritanceInput = (String) analysisMap.get("modeOfInheritance");
 
-            //Pre 10.0.0 version - only expected a single string value
+            //Pre 10.0.0 version - only expected a single string frequency
             if (modeOfInheritanceInput != null) {
                 logger.info("modeOfInheritance option no longer supported. Please supply a map of inheritanceModes. See examples for details.");
                 if (modeOfInheritanceInput.equals("UNDEFINED") || modeOfInheritanceInput.equals("UNINITIALIZED") || modeOfInheritanceInput.equals("ANY")) {
@@ -407,47 +406,36 @@ public class AnalysisParser {
         private AnalysisBuilder addAnalysisStep(Entry<String, Map> entry, Map analysisMap, AnalysisBuilder analysisBuilder) {
             String key = entry.getKey();
             Map analysisStepOptions = entry.getValue();
-            switch (key) {
-                case "failedVariantFilter":
-                    return analysisBuilder.addFailedVariantFilter();
-                case "intervalFilter":
-                    return makeIntervalFilter(analysisStepOptions, analysisBuilder);
-                case "genePanelFilter":
-                    return makeGeneSymbolFilter(analysisStepOptions, analysisBuilder);
-                case "variantEffectFilter":
-                    return makeVariantEffectFilter(analysisStepOptions, analysisBuilder);
-                case "qualityFilter":
-                    return makeQualityFilter(analysisStepOptions, analysisBuilder);
-                case "knownVariantFilter":
-                    return makeKnownVariantFilter(analysisStepOptions, parseFrequencySources(analysisMap), analysisBuilder);
-                case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepOptions, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap), analysisBuilder);
-                case "pathogenicityFilter":
-                    return makePathogenicityFilter(analysisStepOptions, parsePathogenicitySources(analysisMap), analysisBuilder);
-                case "inheritanceFilter":
-                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap), analysisBuilder);
-                case "priorityScoreFilter":
-                    return makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
-                case "regulatoryFeatureFilter":
-                    return analysisBuilder.addRegulatoryFeatureFilter();
-                case "geneBlacklistFilter":
-                    return makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
-                case "omimPrioritiser":
-                    return analysisBuilder.addOmimPrioritiser();
-                case "hiPhivePrioritiser":
-                    return makeHiPhivePrioritiser(analysisStepOptions, analysisBuilder);
-                case "phivePrioritiser":
-                    return analysisBuilder.addPhivePrioritiser();
-                case "phenixPrioritiser":
+            return switch (key) {
+                case "failedVariantFilter" -> analysisBuilder.addFailedVariantFilter();
+                case "intervalFilter" -> makeIntervalFilter(analysisStepOptions, analysisBuilder);
+                case "genePanelFilter" -> makeGeneSymbolFilter(analysisStepOptions, analysisBuilder);
+                case "variantEffectFilter" -> makeVariantEffectFilter(analysisStepOptions, analysisBuilder);
+                case "qualityFilter" -> makeQualityFilter(analysisStepOptions, analysisBuilder);
+                case "alleleBalanceFilter" -> analysisBuilder.addAlleleBalanceFilter();
+                case "knownVariantFilter" ->
+                        makeKnownVariantFilter(analysisStepOptions, parseFrequencySources(analysisMap), analysisBuilder);
+                case "frequencyFilter" ->
+                        makeFrequencyFilter(analysisStepOptions, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap), analysisBuilder);
+                case "pathogenicityFilter" ->
+                        makePathogenicityFilter(analysisStepOptions, parsePathogenicitySources(analysisMap), analysisBuilder);
+                case "inheritanceFilter" -> makeInheritanceFilter(inheritanceModeOptions(analysisMap), analysisBuilder);
+                case "priorityScoreFilter" -> makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
+                case "regulatoryFeatureFilter" -> analysisBuilder.addRegulatoryFeatureFilter();
+                case "geneBlacklistFilter" -> makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
+                case "omimPrioritiser" -> analysisBuilder.addOmimPrioritiser();
+                case "hiPhivePrioritiser" -> makeHiPhivePrioritiser(analysisStepOptions, analysisBuilder);
+                case "phivePrioritiser" -> analysisBuilder.addPhivePrioritiser();
+                case "phenixPrioritiser" ->
 //                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
-                    return analysisBuilder.addPhenixPrioritiser();
-                case "exomeWalkerPrioritiser":
-                    return makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
-                default:
+                        analysisBuilder.addPhenixPrioritiser();
+                case "exomeWalkerPrioritiser" -> makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
+                default -> {
                     //throw exception here?
                     logger.error("Unsupported exomiser step: {}", key);
-                    return analysisBuilder;
-            }
+                    yield analysisBuilder;
+                }
+            };
         }
 
         private AnalysisBuilder makeIntervalFilter(Map<String, Object> options, AnalysisBuilder analysisBuilder) {
@@ -458,12 +446,12 @@ public class AnalysisParser {
         private List<ChromosomalRegion> parseIntervalFilterOptions(Map<String, Object> options){
             if (options.containsKey("interval")) {
                 String interval = (String) options.get("interval");
-                return List.of(GeneticInterval.parseString(interval));
+                return List.of(GeneticInterval.parseGeneticInterval(interval));
             }
             if (options.containsKey("intervals")) {
                 List<String> intervalStrings = (List<String>) options.get("intervals");
                 List<ChromosomalRegion> intervals = new ArrayList<>();
-                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseString(string)));
+                intervalStrings.forEach(string -> intervals.add(GeneticInterval.parseGeneticInterval(string)));
                 return intervals;
             }
             if (options.containsKey("bed")) {
@@ -520,7 +508,7 @@ public class AnalysisParser {
         private double parseQualityFilterOptions(Map<String, Double> options) {
             Double quality = options.get("minQuality");
             if (quality == null) {
-                throw new AnalysisParserException("Quality filter requires a floating point value for the minimum PHRED score e.g. {minQuality: 50.0}", options);
+                throw new AnalysisParserException("Quality filter requires a floating point frequency for the minimum PHRED score e.g. {minQuality: 50.0}", options);
             }
             return quality;
         }
@@ -537,7 +525,7 @@ public class AnalysisParser {
             Double maxFreq = getMaxFreq(options, inheritanceModeOptions);
             if (maxFreq == null) {
                 //this shouldn't be the case, but to be on the safe side...
-                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
+                throw new AnalysisParserException("Frequency filter requires a floating point frequency for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
             }
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
@@ -548,7 +536,7 @@ public class AnalysisParser {
         private Double getMaxFreq(Map<String, Object> options, InheritanceModeOptions inheritanceModeOptions) {
             Double maxFreq = (Double) options.get("maxFrequency");
             if (maxFreq == null && inheritanceModeOptions.isEmpty()) {
-                throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
+                throw new AnalysisParserException("Frequency filter requires a floating point frequency for the maximum frequency e.g. {maxFrequency: 2.0} if inheritanceModes have not been defined.", options);
             }
             if (maxFreq == null && !inheritanceModeOptions.isEmpty()) {
                 logger.debug("maxFrequency not defined - using inheritanceModeOptions max frequency.");
@@ -589,7 +577,7 @@ public class AnalysisParser {
         private AnalysisBuilder makePathogenicityFilter(Map<String, Object> options, Set<PathogenicitySource> sources, AnalysisBuilder analysisBuilder) {
             Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
             if (keepNonPathogenic == null) {
-                throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
+                throw new AnalysisParserException("Pathogenicity filter requires a boolean frequency for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Pathogenicity filter requires a list of pathogenicity sources for the analysis e.g. {pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]}", options);
@@ -620,13 +608,13 @@ public class AnalysisParser {
         private AnalysisBuilder makePriorityScoreFilter(Map<String, Object> options, AnalysisBuilder analysisBuilder) {
             String priorityTypeString = (String) options.get("priorityType");
             if (priorityTypeString == null) {
-                throw new AnalysisParserException("Priority score filter requires a string value for the prioritiser type e.g. {priorityType: HIPHIVE_PRIORITY}", options);
+                throw new AnalysisParserException("Priority score filter requires a string frequency for the prioritiser type e.g. {priorityType: HIPHIVE_PRIORITY}", options);
             }
             PriorityType priorityType = PriorityType.valueOf(priorityTypeString);
 
             Double minPriorityScore = (Double) options.get("minPriorityScore");
             if (minPriorityScore == null) {
-                throw new AnalysisParserException("Priority score filter requires a floating point value for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
+                throw new AnalysisParserException("Priority score filter requires a floating point frequency for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
             }
             return analysisBuilder.addPriorityScoreFilter(priorityType, minPriorityScore.floatValue());
         }

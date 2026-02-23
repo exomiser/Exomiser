@@ -107,13 +107,13 @@ public class InMemoryDataMatrixTest {
 
         assertThat(instance.getColumnMatrixForGene(3333), equalTo(geneColumn));
 //        System.out.println("Column matrix for gene 3333:");
-//        for (float value : geneColumn.toArray()) {
-//            System.out.println(value);
+//        for (float frequency : geneColumn.toArray()) {
+//            System.out.println(frequency);
 //        }
 //
 //        System.out.println("Column matrix for gene 3333 multiplied by 2:");
-//        for (float value : instance.getColumnMatrixForGene(3333).mul(2.0f).toArray()) {
-//            System.out.println(value);
+//        for (float frequency : instance.getColumnMatrixForGene(3333).mul(2.0f).toArray()) {
+//            System.out.println(frequency);
 //        }
 //
 //        System.out.printf("%nMatrix is (%d rows * %d columns:%n)", floatMatrix.rows, floatMatrix.columns);
@@ -124,8 +124,8 @@ public class InMemoryDataMatrixTest {
 //        for (int i = 0; i < columns.size(); i++) {
 //            FloatMatrix matrix = columns.get(i);
 //            System.out.printf("Column %d: ", i);
-//            for (float value : matrix.toArray()) {
-//                System.out.printf("%f ", value);
+//            for (float frequency : matrix.toArray()) {
+//                System.out.printf("%f ", frequency);
 //            }
 //            System.out.println();
 //        }
@@ -134,8 +134,8 @@ public class InMemoryDataMatrixTest {
 //        for (int i = 0; i < rows.size(); i++) {
 //            FloatMatrix matrix = rows.get(i);
 //            System.out.printf("Row %d: ", i);
-//            for (float value : matrix.toArray()) {
-//                System.out.printf("%f, ", value);
+//            for (float frequency : matrix.toArray()) {
+//                System.out.printf("%f, ", frequency);
 //            }
 //            System.out.println();
 //        }

@@ -35,71 +35,29 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FilterReport {
+public record FilterReport(FilterType filterType, int passed, int failed, List<String> messages) {
 
-    private final FilterType filterType;
-    private final List<String> messages;
-    private final int passed;
-    private final int failed;
-
-    public FilterReport(FilterType filterType, int pass, int fail, List<String> messages) {
-        this.filterType = filterType;
-        this.passed = pass;
-        this.failed = fail;
-        this.messages = List.copyOf(messages);
-    }
-
-    public FilterType getFilterType() {
-        return filterType;
-    }
-
-    public List<String> getMessages() {
-        return messages;
+    public FilterReport {
+        Objects.requireNonNull(filterType);
+        Objects.requireNonNull(messages);
+        messages = List.copyOf(messages);
     }
 
     public boolean hasMessages() {
         return !messages.isEmpty();
     }
 
-    public int getPassed() {
-        return passed;
+    public double percentageFilteredFromBeginning(double originalSize) {
+        return ((originalSize - (double) passed) / originalSize) * 100;
     }
 
-    public int getFailed() {
-        return failed;
+    public double percentageFilteredFromReport(double originalSize) {
+        return (failed / originalSize) * 100;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + Objects.hashCode(this.filterType);
-        hash = 97 * hash + Objects.hashCode(this.messages);
-        hash = 97 * hash + this.passed;
-        hash = 97 * hash + this.failed;
-        return hash;
+    public int totalEvaluationCount() {
+        return passed + failed;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final FilterReport other = (FilterReport) obj;
-        if (this.filterType != other.filterType) {
-            return false;
-        }
-        if (!Objects.equals(this.messages, other.messages)) {
-            return false;
-        }
-        if (this.passed != other.passed) {
-            return false;
-        }
-        return this.failed == other.failed;
-    }
-
 
     @Override
     public String toString() {

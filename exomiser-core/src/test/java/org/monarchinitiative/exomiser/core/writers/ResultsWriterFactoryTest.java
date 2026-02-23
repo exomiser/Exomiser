@@ -71,4 +71,11 @@ class ResultsWriterFactoryTest {
         assertThat(result, instanceOf(JsonResultsWriter.class));
     }
 
+    @Test
+    void testGetParquetResultsWriter() {
+        OutputFormat outputFormat = OutputFormat.PARQUET;
+        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
+        assertThat(result, instanceOf(ParquetVariantResultsWriter.class));
+    }
+
 }

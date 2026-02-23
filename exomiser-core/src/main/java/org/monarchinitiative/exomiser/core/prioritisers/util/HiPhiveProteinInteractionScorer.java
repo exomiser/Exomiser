@@ -83,12 +83,12 @@ public class HiPhiveProteinInteractionScorer {
     private Map<Integer, Double> getHighestGeneIdPhenoScoresInDataMatrix(double highQualityPhenoScoreCutOff, DataMatrix dataMatrix, Collection<GeneModelPhenotypeMatch> bestGeneModelPhenoMatches) {
         Map<Integer, Double> highestGeneIdPhenoScores = new LinkedHashMap<>();
         for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : bestGeneModelPhenoMatches) {
-            Integer entrezId = geneModelPhenotypeMatch.getEntrezGeneId();
-            double score = geneModelPhenotypeMatch.getScore();
+            Integer entrezId = geneModelPhenotypeMatch.entrezGeneId();
+            double score = geneModelPhenotypeMatch.score();
             // only build PPI network for high quality hits contained in the matrix
             if (score > highQualityPhenoScoreCutOff && dataMatrix.containsGene(entrezId)) {
-                logger.debug("Adding high quality score for {} score={}", geneModelPhenotypeMatch.getHumanGeneSymbol(), geneModelPhenotypeMatch
-                        .getScore());
+                logger.debug("Adding high quality score for {} score={}", geneModelPhenotypeMatch.humanGeneSymbol(), geneModelPhenotypeMatch
+                        .score());
                 if (!highestGeneIdPhenoScores.containsKey(entrezId) || score > highestGeneIdPhenoScores.get(entrezId)) {
                     highestGeneIdPhenoScores.put(entrezId, score);
                 }

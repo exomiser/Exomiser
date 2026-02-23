@@ -37,13 +37,14 @@ import org.monarchinitiative.exomiser.core.model.GeneScore;
 
 import java.nio.file.Path;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.writers.OutputFormat.*;
+import static org.monarchinitiative.exomiser.core.writers.OutputFormat.PARQUET;
 import static org.monarchinitiative.exomiser.core.writers.OutputFormat.TSV_VARIANT;
 
 /**
@@ -71,7 +72,7 @@ public class OutputSettingsTest {
     @Test
     public void testThatDefaultNumberOfGenesToShowIsZero() {
         OutputSettings instance = OutputSettings.builder().build();
-        assertThat(instance.getNumberOfGenesToShow(), equalTo(0));
+        assertThat(instance.numberOfGenesToShow(), equalTo(0));
     }
 
     @Test
@@ -80,7 +81,7 @@ public class OutputSettingsTest {
         OutputSettings instance = OutputSettings.builder()
                 .numberOfGenesToShow(numGenes)
                 .build();
-        assertThat(instance.getNumberOfGenesToShow(), equalTo(numGenes));
+        assertThat(instance.numberOfGenesToShow(), equalTo(numGenes));
     }
 
     /**
@@ -106,8 +107,8 @@ public class OutputSettingsTest {
         OutputSettings instance = OutputSettings.builder()
                 .build();
         assertThat(instance.getOutputPrefix(), equalTo("results/"));
-        assertThat(instance.getOutputDirectory(), equalTo(Path.of("results")));
-        assertThat(instance.getOutputFileName(), equalTo(""));
+        assertThat(instance.outputDirectory(), equalTo(Path.of("results")));
+        assertThat(instance.outputFileName(), equalTo(""));
     }
 
     @ParameterizedTest
@@ -131,8 +132,8 @@ public class OutputSettingsTest {
     public void testBuilderOutputDirectoryAndFileName(String outputPrefix, Path outputDirectory, String outputFileName) {
         for (OutputSettings instance : allOutputPrefixDirectoryFileNameCombos(outputPrefix, outputDirectory, outputFileName)) {
             assertThat(instance.toString(), instance.getOutputPrefix(), equalTo(outputPrefix));
-            assertThat(instance.toString(), instance.getOutputDirectory(), equalTo(outputDirectory));
-            assertThat(instance.toString(), instance.getOutputFileName(), equalTo(outputFileName));
+            assertThat(instance.toString(), instance.outputDirectory(), equalTo(outputDirectory));
+            assertThat(instance.toString(), instance.outputFileName(), equalTo(outputFileName));
         }
     }
 
@@ -220,7 +221,7 @@ public class OutputSettingsTest {
         OutputSettings instance =  OutputSettings.builder()
                 .outputDirectory(outputDirectory)
                 .build();
-        assertThat(instance.getOutputDirectory(), equalTo(expected));
+        assertThat(instance.outputDirectory(), equalTo(expected));
     }
 
     /**
@@ -229,16 +230,16 @@ public class OutputSettingsTest {
     @Test
     public void testThatDefaultOutputFormatIsHtml() {
         OutputSettings instance = OutputSettings.builder().build();
-        assertThat(instance.getOutputFormats(), equalTo(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON)));
+        assertThat(instance.outputFormats(), equalTo(EnumSet.of(HTML, JSON, PARQUET)));
     }
 
     @Test
     public void testThatBuilderProducesSetOutputFormat() {
-        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.TSV_GENE);
+        Set<OutputFormat> outputFormats = EnumSet.of(TSV_GENE);
         OutputSettings instance = OutputSettings.builder()
                 .outputFormats(outputFormats)
                 .build();
-        assertThat(instance.getOutputFormats(), equalTo(outputFormats));
+        assertThat(instance.outputFormats(), equalTo(outputFormats));
     }
 
     @Test
@@ -268,12 +269,13 @@ public class OutputSettingsTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
         OutputSettings createdFromYaml = mapper.readValue(
-                "outputContributingVariantsOnly: false\n"
-                        + "numGenes: 0\n"
-                        + "outputPrefix: \"this/is/ignored\"\n"
-                        + "outputDirectory: \"results\"\n"
-                        + "outputFileName: \"\"\n"
-                        + "outputFormats: [HTML, JSON]",
+                """
+                    outputContributingVariantsOnly: false
+                    numGenes: 0
+                    outputPrefix: "this/is/ignored"
+                    outputDirectory: "results"
+                    outputFileName: ""
+                    outputFormats: [HTML, JSON, PARQUET]""".formatted(),
                 OutputSettings.class);
         assertThat(instance, equalTo(createdFromYaml));
     }
@@ -283,15 +285,18 @@ public class OutputSettingsTest {
         OutputSettings instance = OutputSettings.builder().build();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String output = mapper.writeValueAsString(instance);
-        String expected = "---\n" +
-                "outputContributingVariantsOnly: false\n" +
-                "minExomiserGeneScore: 0.0\n" +
-                "outputDirectory: \"" + OutputSettings.DEFAULT_OUTPUT_DIR.toUri() + "\"\n" +
-                "outputFileName: \"\"\n" +
-                "outputFormats:\n" +
-                "- \"HTML\"\n" +
-                "- \"JSON\"\n" +
-                "numGenes: 0\n";
+        String expected = """
+                ---
+                outputContributingVariantsOnly: false
+                numGenes: 0
+                minExomiserGeneScore: 0.0
+                outputDirectory: "%s"
+                outputFileName: ""
+                outputFormats:
+                - "HTML"
+                - "JSON"
+                - "PARQUET"
+                """.formatted(OutputSettings.DEFAULT_OUTPUT_DIR.toUri());
         assertThat(output, equalTo(expected));
     }
 

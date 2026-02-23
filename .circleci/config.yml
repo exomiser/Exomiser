@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  codecov: codecov/codecov@5.4.3
 jobs:
   build:
     working_directory: ~/exomiser
@@ -6,9 +8,7 @@ jobs:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-      # was circleci/openjdk:8-jdk but something changed and it tests failed on fork
-      #- image: circleci/openjdk@sha256:3640c4f42886e796e805c23af48b0d7348dc1d3fa8dae9a365e1f023f913c795
-      - image: cimg/openjdk:17.0.7
+      - image: cimg/openjdk:21.0
     steps:
       - checkout
       - run:
@@ -21,7 +21,8 @@ jobs:
           paths:
             - ~/.m2
           key: exomiser-{{ arch }}-{{ checksum "pom.xml" }}
-      - run: ./mvnw sonar:sonar -Dsonar.login=$SONAR_TOKEN
+      # SonarQube now breaks due to shallow clone checkouts and I've lost the will to try and make this work again.
+#      - run: ./mvnw sonar:sonar -Dsonar.token=$SONAR_TOKEN -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=exomiser -Dsonar.projectKey=org.monarchinitiative.exomiser:exomiser
       #Save junit xml
       - run: mkdir -p $CIRCLE_TEST_REPORTS/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/ \;
@@ -37,7 +38,8 @@ jobs:
           path: /tmp/circleci-artifacts
       - store_artifacts:
           path: /tmp/circleci-test-results
-      - run: bash <(curl -s https://codecov.io/bash)
+#      - run: bash <(curl -s https://codecov.io/bash)
+      - codecov/upload
 workflows:
   version: 2
   build:

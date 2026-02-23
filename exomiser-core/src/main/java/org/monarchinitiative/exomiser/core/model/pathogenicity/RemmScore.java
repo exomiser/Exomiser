@@ -25,14 +25,25 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class RemmScore extends BasePathogenicityScore {
+public record RemmScore(float score) implements PathogenicityScore {
+
+    // Using REMM v1.4 https://doi.org/10.1093/gigascience/giad024 Fig 1. These thresholds can be considered
+    //  'weakly pathogenic' when used in ACMG classification. Using lower score thresholds results in unusable numbers
+    //  of false positives.
+    public static final double LIKELY_PATHOGENIC_THRESHOLD = 0.914;
+    public static final double PATHOGENIC_THRESHOLD = 0.963;
 
     public static RemmScore of(float score) {
         return new RemmScore(score);
     }
 
-    private RemmScore(float score) {
-        super(PathogenicitySource.REMM, score);
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.REMM;
     }
-    
+
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f", source(), score);
+    }
 }

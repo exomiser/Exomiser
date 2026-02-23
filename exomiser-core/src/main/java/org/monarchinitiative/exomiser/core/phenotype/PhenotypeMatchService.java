@@ -80,16 +80,12 @@ public class PhenotypeMatchService {
     }
 
     private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
-        switch (species) {
-            case HUMAN:
-                return ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
-            case MOUSE:
-                return ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
-            case FISH:
-                return ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
-            default:
-                return Collections.emptySet();
-        }
+        return switch (species) {
+            case HUMAN -> ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
+            case MOUSE -> ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
+            case FISH -> ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
+            default -> Collections.emptySet();
+        };
     }
 
 }

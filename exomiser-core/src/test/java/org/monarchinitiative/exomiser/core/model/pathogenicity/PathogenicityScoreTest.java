@@ -137,12 +137,12 @@ public class PathogenicityScoreTest {
     @Test
     void testStaticConstructor() {
         PathogenicityScore instance = PathogenicityScore.of(PathogenicitySource.REVEL, 0.95f);
-        assertThat(instance, equalTo(new BasePathogenicityScore(PathogenicitySource.REVEL, 0.95f)));
+        assertThat(instance, equalTo(new RevelScore(0.95f)));
     }
 
     @Test
     void testRevelConstructor() {
         PathogenicityScore instance = RevelScore.of(0.95f);
-        assertThat(instance, equalTo(new BasePathogenicityScore(PathogenicitySource.REVEL, 0.95f)));
+        assertThat(instance, equalTo(new RevelScore(0.95f)));
     }
 }

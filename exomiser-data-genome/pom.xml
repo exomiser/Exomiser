@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>14.1.0</version>
+        <version>15.0.0-RC5</version>
     </parent>
 
     <dependencies>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli-spring-boot-starter</artifactId>
-            <version>4.7.4</version>
+            <version>${picocli.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -103,6 +103,19 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>zip</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>gz</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>bgz</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>tbi</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>ser</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

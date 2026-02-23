@@ -59,6 +59,11 @@ public class DiseasePhenotypeReader implements ResourceReader<List<DiseasePhenot
                 String[] fields = line.split("\\t");
                 String diseaseId = fields[0];
                 String hpId = fields[3];
+                // 0/13 or "HP:0040285" (Excluded) fields[7] SHOULD BE EXCLUDED!
+                if (fields[7].startsWith("0") || fields[7].equals("HP:0040285")) {
+                    logger.debug("Excluding phenotypic feature {} from disease {}", hpId, diseaseId);
+                    continue;
+                }
                 if (disease2PhenotypeMap.containsKey(diseaseId)) {
                     disease2PhenotypeMap.get(diseaseId).add(hpId);
                 } else {

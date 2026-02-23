@@ -33,20 +33,20 @@ public class VariantEffectUtilityTest {
 
     @Test
     public void testIsNonCodingVariant() throws Exception {
-        assertThat(VariantEffectUtility.isNonCodingVariant(VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT), is(true));
-        assertThat(VariantEffectUtility.isNonCodingVariant(VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT), is(true));
+        assertThat(VariantEffects.isNonCodingVariant(VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT), is(true));
+        assertThat(VariantEffects.isNonCodingVariant(VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT), is(true));
     }
 
     @Test
     public void testIsRegulatoryNonCodingVariant() throws Exception {
-        assertThat(VariantEffectUtility.isRegulatoryNonCodingVariant(VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT), is(false));
-        assertThat(VariantEffectUtility.isRegulatoryNonCodingVariant(VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT), is(true));
+        assertThat(VariantEffects.isRegulatoryNonCodingVariant(VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT), is(false));
+        assertThat(VariantEffects.isRegulatoryNonCodingVariant(VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT), is(true));
     }
 
     @Test
     public void testMissenseVariantIsNotConsideredNonCodingVariant() throws Exception {
-        assertThat(VariantEffectUtility.isNonCodingVariant(VariantEffect.MISSENSE_VARIANT), is(false));
-        assertThat(VariantEffectUtility.isRegulatoryNonCodingVariant(VariantEffect.MISSENSE_VARIANT), is(false));
+        assertThat(VariantEffects.isNonCodingVariant(VariantEffect.MISSENSE_VARIANT), is(false));
+        assertThat(VariantEffects.isRegulatoryNonCodingVariant(VariantEffect.MISSENSE_VARIANT), is(false));
     }
 
 }

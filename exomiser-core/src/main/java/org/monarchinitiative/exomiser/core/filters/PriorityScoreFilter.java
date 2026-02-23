@@ -31,39 +31,19 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
-import java.util.Objects;
-
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonRootName("priorityScoreFilter")
-public class PriorityScoreFilter implements GeneFilter {
+public record PriorityScoreFilter(PriorityType priorityType, double minPriorityScore) implements GeneFilter {
 
     private static final FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final double minPriorityScore;
-
-    private final PriorityType priorityType;
-
-    public PriorityScoreFilter(PriorityType priorityType, double minPriorityScore) {
-        this.minPriorityScore = minPriorityScore;
-        this.priorityType = priorityType;
-    }
-
-    public PriorityType getPriorityType() {
-        return priorityType;
-    }
-
-    public double getMinPriorityScore() {
-        return minPriorityScore;
-    }
-
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 
@@ -80,31 +60,18 @@ public class PriorityScoreFilter implements GeneFilter {
         PriorityResult priorityResult = gene.getPriorityResult(priorityType);
         if (priorityResult == null) {
             return FAIL;
-        }       
-        if (priorityResult.getScore() >= minPriorityScore) {
+        }
+        if (priorityResult.score() >= minPriorityScore) {
             return addFilterResultToVariants(PASS, gene);
         }
         return addFilterResultToVariants(FAIL, gene);
     }
 
     private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
-        for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+        for (VariantEvaluation variant : gene.variantEvaluations()) {
             variant.addFilterResult(filterResult);
         }
         return filterResult;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PriorityScoreFilter that = (PriorityScoreFilter) o;
-        return Double.compare(that.minPriorityScore, minPriorityScore) == 0 && priorityType == that.priorityType;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(minPriorityScore, priorityType);
     }
 
     @Override

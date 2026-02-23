@@ -7,7 +7,7 @@ Software and Hardware requirements
 
 - Minimum 8/16GB RAM (For an exome analysis of a 30,000 variant sample 4GB RAM should suffice. For a genome analysis of a 4,400,000 variant sample 8GB RAM should suffice.)
 - Any 64-bit operating system
-- Java 17 or above
+- Java 21 or above
 - At least 100GB free disk space (SSD preferred for best performance)
 - An internet connection is not required to run the Exomiser, although network access will be required if accessing a networked database (optional).
 - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
@@ -22,7 +22,10 @@ Pre-built Binaries
 
 Pre-built binaries are available from `The Monarch Initiative <https://monarchinitiative.org>`_ or from the Exomiser repository on `GitHub <https://github.com/exomiser/Exomiser/releases/>`_.
 
-Exomiser requires 2-3 data files to be available as well - one for the phenotype data and one for each genome assembly required.
+Exomiser requires 2-3 data files to be available as well - one for the phenotype data and one for each genome assembly
+required. These should preferably be unzipped into a common directory e.g. `exomiser-data`, the full path of which
+should be specified in the `application.properties` in the `exomiser.data-directory` property. The data files are
+available from https://data.monarchinitiative.org/exomiser/latest or GitHub discussions https://github.com/exomiser/Exomiser/discussions/categories/data-release
 
 Windows install
 ~~~~~~~~~~~~~~~
@@ -32,7 +35,11 @@ Windows install
 3. Extract the distribution files by right-clicking exomiser-cli-|version|-distribution.zip and selecting 7-Zip > Extract Here
 4. Extract the data files (e.g. 2402_phenotype.zip, 2402_hg19.zip) by right-clicking the archive and selecting 7-Zip > Extract files... into the exomiser data directory. By default exomiser expects this to be 'exomiser-cli-\ |version|\/data', but this can be changed in the ``application.properties``
 5. cd exomiser-cli-|version|
-6. java -Xmx4g -jar exomiser-cli-|version|.jar --analysis examples/test-analysis-exome.yml
+6. Check the `application.properties` are pointing to the correct versions:
+     exomiser.hg19.data-version=2402
+     exomiser.hg38.data-version=2402
+     exomiser.phenotype.data-version=2402
+7. java -Xmx4g -jar exomiser-cli-|version|.jar analyse --analysis examples/test-analysis-exome.yml
 
 Linux install
 ~~~~~~~~~~~~~
@@ -59,7 +66,7 @@ The following shell script should work-
 
     # run a test exome analysis
     cd exomiser-cli-|version|
-    java -Xmx4g -jar exomiser-cli-|version|.jar --analysis examples/test-analysis-exome.yml
+    java -Xmx4g -jar exomiser-cli-|version|.jar analyse --analysis examples/test-analysis-exome.yml
 
 
 This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
@@ -84,7 +91,7 @@ Having done this, run the analysis like this:
 
 .. parsed-literal::
 
-    java -Xmx6g -jar exomiser-cli-|version|.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+    java -Xmx4g -jar exomiser-cli-|version|.jar analyse --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
 
 This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952)
@@ -211,6 +218,20 @@ Or an install supporting both assemblies:
 
     ### phenotypes ###
     exomiser.phenotype.data-version=2402
+
+
+Specifying properties on the command line
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Properties can be provided using `-D` arguments before the `--jar` argument. These will override properties specified in
+the `application.properties` file e.g.
+
+.. code-block:: bash
+
+  java -Xmx4g -Dexomiser.data-directory=full/path/to/exomiser-data \
+  -Dexomiser.hg19.data-version=|genome_data_version| \
+  -Dexomiser.phenotype.data-version=|phenotype_data_version| \
+  -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml
 
 
 *n.b.* each assembly will require approximately 1GB RAM to load. Attempting to analyse a VCF called using an

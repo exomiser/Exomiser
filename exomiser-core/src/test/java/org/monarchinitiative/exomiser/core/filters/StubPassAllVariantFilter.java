@@ -45,11 +45,11 @@ public class StubPassAllVariantFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        return new PassFilterResult(mockFilterType);
+        return FilterResult.pass(mockFilterType);
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return mockFilterType;
     }
 

@@ -64,7 +64,7 @@ public class FrequencyDataProviderTest {
 
         instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EMPTY_SET, decoratedFilter);
 
-        assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
+        assertThat(instance.filterType(), equalTo(decoratedFilter.filterType()));
         assertThat(instance.isVariantFilter(), is(true));
     }
 
@@ -74,7 +74,7 @@ public class FrequencyDataProviderTest {
 
         instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EMPTY_SET, decoratedFilter);
 
-        assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
+        assertThat(instance.filterType(), equalTo(decoratedFilter.filterType()));
         assertThat(instance.isVariantFilter(), is(true));
     }
 
@@ -84,10 +84,10 @@ public class FrequencyDataProviderTest {
         VariantDataService variantDataService = TestVariantDataService.builder().put(variant, expectedData).build();
        
         instance = new FrequencyDataProvider(variantDataService, EnumSet.allOf(FrequencySource.class), new KnownVariantFilter());
-        assertThat(variant.getFrequencyData(), equalTo(defaultFrequencyData));
+        assertThat(variant.frequencyData(), equalTo(defaultFrequencyData));
 
         instance.runFilter(variant);
-        assertThat(variant.getFrequencyData(), equalTo(expectedData));
+        assertThat(variant.frequencyData(), equalTo(expectedData));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class FrequencyDataProviderTest {
 
         FilterResult filterResult = instance.runFilter(variant);
         FilterTestHelper.assertPassed(filterResult);
-        assertThat(filterResult.getFilterType(), equalTo(decoratedFilter.getFilterType()));
+        assertThat(filterResult.filterType(), equalTo(decoratedFilter.filterType()));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class FrequencyDataProviderTest {
         instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EnumSet.of(ESP_ALL), decoratedFilter);
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.empty()));
+        assertThat(variant.frequencyData(), equalTo(FrequencyData.empty()));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class FrequencyDataProviderTest {
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.source()), new KnownVariantFilter());
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RS_ID, espAll)));
+        assertThat(variant.frequencyData(), equalTo(FrequencyData.of(RS_ID, espAll)));
     }
     
     @Test
@@ -138,13 +138,13 @@ public class FrequencyDataProviderTest {
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.source(), exacAfr.source()), new KnownVariantFilter());
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RS_ID, espAll, exacAfr)));
+        assertThat(variant.frequencyData(), equalTo(FrequencyData.of(RS_ID, espAll, exacAfr)));
     }
     
     @Test
     public void testGetDecoratedFilter() {
         VariantFilter decoratedFilter = new KnownVariantFilter();
         instance = new FrequencyDataProvider(STUB_VARIANT_DATA_SERVICE, EnumSet.noneOf(FrequencySource.class), decoratedFilter);
-        assertThat(instance.getDecoratedFilter(), equalTo(decoratedFilter));
+        assertThat(instance.variantFilter(), equalTo(decoratedFilter));
     }
 }

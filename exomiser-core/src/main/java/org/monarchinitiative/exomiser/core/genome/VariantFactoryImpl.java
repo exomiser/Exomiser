@@ -33,7 +33,7 @@ import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,10 +189,10 @@ public class VariantFactoryImpl implements VariantFactory {
 
     private VariantEvaluation.Builder addAnnotations(VariantEvaluation.Builder variantBuilder, VariantAnnotation variantAnnotation) {
         return variantBuilder
-                .geneId(variantAnnotation.getGeneId())
-                .geneSymbol(variantAnnotation.getGeneSymbol())
-                .variantEffect(variantAnnotation.getVariantEffect())
-                .annotations(variantAnnotation.getTranscriptAnnotations());
+                .geneId(variantAnnotation.geneId())
+                .geneSymbol(variantAnnotation.geneSymbol())
+                .variantEffect(variantAnnotation.variantEffect())
+                .transcriptAnnotations(variantAnnotation.transcriptAnnotations());
     }
 
     /**

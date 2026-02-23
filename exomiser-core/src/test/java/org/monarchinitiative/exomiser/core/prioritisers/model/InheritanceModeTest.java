@@ -39,13 +39,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class InheritanceModeTest {
+class InheritanceModeTest {
 
     /**
      * Test of valueOf method, of class InheritanceMode.
      */
     @Test
-    public void testValueOf() {
+    void testValueOf() {
         assertThat(InheritanceMode.valueOf("X_RECESSIVE"), equalTo(InheritanceMode.X_RECESSIVE));
     }
 
@@ -53,7 +53,7 @@ public class InheritanceModeTest {
      * Test of getTerm method, of class InheritanceMode.
      */
     @Test
-    public void testGetTerm() {
+    void testGetTerm() {
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.getTerm(), equalTo("autosomal recessive"));
     }
 
@@ -61,7 +61,7 @@ public class InheritanceModeTest {
      * Test of getInheritanceCode method, of class InheritanceMode.
      */
     @Test
-    public void testGetInheritanceCode() {
+    void testGetInheritanceCode() {
         assertThat(InheritanceMode.MITOCHONDRIAL.getInheritanceCode(), equalTo("M"));
     }
 
@@ -69,7 +69,7 @@ public class InheritanceModeTest {
      * Test of valueOfInheritanceCode method, of class InheritanceMode.
      */
     @Test
-    public void testValueOfInheritanceCode() {
+    void testValueOfInheritanceCode() {
         assertThat(InheritanceMode.valueOfInheritanceCode("D"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT));
         assertThat(InheritanceMode.valueOfInheritanceCode("R"), equalTo(InheritanceMode.AUTOSOMAL_RECESSIVE));
         assertThat(InheritanceMode.valueOfInheritanceCode("B"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE));
@@ -85,7 +85,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void isCompatibleWithDominant() {
+    void isCompatibleWithDominant() {
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWithDominant(), is(true));
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithDominant(), is(true));
 
@@ -93,7 +93,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void isCompatibleWithRecessive() {
+    void isCompatibleWithRecessive() {
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWithRecessive(), is(true));
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithRecessive(), is(true));
 
@@ -101,7 +101,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void isXlinked() {
+    void isXlinked() {
         assertThat(InheritanceMode.X_DOMINANT.isXlinked(), is(true));
         assertThat(InheritanceMode.X_LINKED.isXlinked(), is(true));
         assertThat(InheritanceMode.X_RECESSIVE.isXlinked(), is(true));
@@ -110,7 +110,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void testToModeOfInheritance() {
+    void testToModeOfInheritance() {
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.toModeOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE, ModeOfInheritance.AUTOSOMAL_DOMINANT)));
@@ -122,7 +122,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void testIsCompatibleWithModeOfInheritance() {
+    void testIsCompatibleWithModeOfInheritance() {
         assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -151,7 +151,7 @@ public class InheritanceModeTest {
     }
 
     @Test
-    public void testToStringIsNotOverridden() {
+    void testToStringIsNotOverridden() {
         assertThat(InheritanceMode.X_DOMINANT.toString(), equalTo("X_DOMINANT"));
     }
 }

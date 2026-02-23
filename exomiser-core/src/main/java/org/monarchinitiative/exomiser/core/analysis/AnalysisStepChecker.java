@@ -143,7 +143,7 @@ class AnalysisStepChecker {
                 .filter(Prioritiser.class::isInstance)
                 .map(step -> {
                     Prioritiser prioritiser = (Prioritiser) step;
-                    return prioritiser.getPriorityType();
+                    return prioritiser.priorityType();
                 })
                 .collect(toSet());
     }
@@ -151,7 +151,7 @@ class AnalysisStepChecker {
     private void removePriorityScoreFiltersNotOfType(List<AnalysisStep> analysisSteps, Set<PriorityType> prioritiserTypes) {
         analysisSteps.removeIf(step -> {
             if (step instanceof PriorityScoreFilter filter) {
-                if (!prioritiserTypes.contains(filter.getPriorityType())) {
+                if (!prioritiserTypes.contains(filter.priorityType())) {
                     logger.info("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
                     return true;
                 }
@@ -187,7 +187,7 @@ class AnalysisStepChecker {
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
             if (step instanceof Prioritiser prioritiser) {
-                if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
+                if (prioritiser.priorityType() == priorityScoreFilter.priorityType()) {
                     containsMatchingPrioritiser = true;
                     positionOfMatchingPrioritiser = i;
                     break;
@@ -241,7 +241,7 @@ class AnalysisStepChecker {
             if (o1 instanceof Prioritiser && o2 instanceof PriorityScoreFilter) {
                 Prioritiser prioritiser = (Prioritiser) o1;
                 PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) o2;
-                if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
+                if (prioritiser.priorityType() == priorityScoreFilter.priorityType()) {
                     return BEFORE;
                 }
                 return EQUAL;
@@ -249,7 +249,7 @@ class AnalysisStepChecker {
             if (o1 instanceof PriorityScoreFilter && o2 instanceof Prioritiser) {
                 PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) o1;
                 Prioritiser prioritiser = (Prioritiser) o2;
-                if (prioritiser.getPriorityType() == priorityScoreFilter.getPriorityType()) {
+                if (prioritiser.priorityType() == priorityScoreFilter.priorityType()) {
                     return AFTER;
                 }
                 return EQUAL;

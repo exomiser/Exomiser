@@ -166,7 +166,7 @@ class TestTranscriptModelFactory {
 
             Map<String, String> altGeneIds = buildAltGeneIdentifiers(geneIdentifier);
 
-            GeneTranscriptModelBuilder geneTranscriptModelBuilder = new GeneTranscriptModelBuilder(geneIdentifier.getGeneSymbol(), geneIdentifier.getEntrezId(), accession, chr, strand, mRnaSequence)
+            GeneTranscriptModelBuilder geneTranscriptModelBuilder = new GeneTranscriptModelBuilder(geneIdentifier.geneSymbol(), geneIdentifier.entrezId(), accession, chr, strand, mRnaSequence)
                     .buildTxRegion(txStart, txEnd)
                     .buildCdsRegion(cdsStart, cdsEnd)
                     .addAltGeneIds(altGeneIds);
@@ -203,11 +203,11 @@ class TestTranscriptModelFactory {
 
         private Map<String,String> buildAltGeneIdentifiers(GeneIdentifier geneIdentifier) {
             Map<String, String> altGeneIds = new HashMap<>();
-            altGeneIds.put(AltGeneIDType.HGNC_ID.toString(), geneIdentifier.getHgncId());
-            altGeneIds.put(AltGeneIDType.HGNC_SYMBOL.toString(), geneIdentifier.getHgncSymbol());
-            altGeneIds.put(AltGeneIDType.ENTREZ_ID.toString(), geneIdentifier.getEntrezId());
-            altGeneIds.put(AltGeneIDType.ENSEMBL_GENE_ID.toString(), geneIdentifier.getEnsemblId());
-            altGeneIds.put(AltGeneIDType.UCSC_ID.toString(), geneIdentifier.getUcscId());
+            altGeneIds.put(AltGeneIDType.HGNC_ID.toString(), geneIdentifier.hgncId());
+            altGeneIds.put(AltGeneIDType.HGNC_SYMBOL.toString(), geneIdentifier.hgncSymbol());
+            altGeneIds.put(AltGeneIDType.ENTREZ_ID.toString(), geneIdentifier.entrezId());
+            altGeneIds.put(AltGeneIDType.ENSEMBL_GENE_ID.toString(), geneIdentifier.ensemblId());
+            altGeneIds.put(AltGeneIDType.UCSC_ID.toString(), geneIdentifier.ucscId());
             return altGeneIds;
         }
     }

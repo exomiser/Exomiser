@@ -2,10 +2,16 @@
 Publications
 ============
 
+| **Efficient reinterpretation of rare disease cases using Exomiser**
+| Vestito L, Jacobsen JOB, Walker S, Cipriani V, Harris NL, Haendel MA, Mungall CJ, Robinson P, Smedley D.
+| *NPJ Genom Med. 2024 Dec 18;9(1):65.*
+| PMID:39695184 PMCID:PMC11655964 DOI:`10.1038/s41525-024-00456-2 <https://www.doi.org/10.1038/s41525-024-00456-2>`_
+
+
 | **Evaluation of phenotype-driven gene prioritization methods for Mendelian diseases.**
 | Jacobsen JOB, Kelly C, Cipriani V, Robinson PN, Smedley D.
 | *Brief Bioinformatics. 2022 Sept 20; 23(5) bbac188*
-| PMID: 35595299 DOI:`10.1093/bib/bbac188 <https://www.doi.org/10.1093/bib/bbac188>`_
+| PMID:35595299 DOI:`10.1093/bib/bbac188 <https://www.doi.org/10.1093/bib/bbac188>`_
 
 
 | **Phenotype-aware prioritisation of rare Mendelian disease variants.**

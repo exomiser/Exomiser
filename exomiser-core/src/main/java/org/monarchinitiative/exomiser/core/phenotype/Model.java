@@ -37,8 +37,8 @@ import java.util.List;
  */
 public interface Model {
 
-    String getId();
+    String id();
     
-    List<String> getPhenotypeIds();
+    List<String> phenotypeIds();
 
 }

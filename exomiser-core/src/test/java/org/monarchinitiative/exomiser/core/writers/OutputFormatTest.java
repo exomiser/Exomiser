@@ -47,10 +47,10 @@ public class OutputFormatTest {
     }
 
     @Test
-    public void testGetFileExtension() {
+    public void testFileExtension() {
         OutputFormat instance = OutputFormat.HTML;
         String expResult = "html";
-        String result = instance.getFileExtension();
+        String result = instance.fileExtension();
         assertThat(result, equalTo(expResult));
     }
 

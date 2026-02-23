@@ -32,7 +32,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>14.1.0</version>
+        <version>15.0.0-RC5</version>
     </parent>
 
 
@@ -51,6 +51,11 @@
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
             <version>1.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>${picocli.version}</version>
         </dependency>
         <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
         <dependency>
@@ -87,7 +92,11 @@
                             classpath has the SNAPSHOT instead of the build number prefixed to the dependency -->
                             <useUniqueVersions>false</useUniqueVersions>
                             <mainClass>org.monarchinitiative.exomiser.cli.Main</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
@@ -115,8 +124,8 @@
             </plugin>
             <!-- Specify the resources which need to be made accessible to the user-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

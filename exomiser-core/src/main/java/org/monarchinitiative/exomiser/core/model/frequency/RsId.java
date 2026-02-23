@@ -20,21 +20,17 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import java.util.Objects;
-
 /**
- * Immutable value Class representing an NCBI dbSNP reference SNP rsID.
+ * Immutable class representing an NCBI dbSNP reference SNP rsID.
  * <p>
- * {@link http://www.ncbi.nlm.nih.gov/projects/SNP/index.html}
+ * {@link <a href="https://www.ncbi.nlm.nih.gov/projects/SNP/index.html">...</a>}
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class RsId {
+public record RsId(int id) {
 
     private static final RsId EMPTY = new RsId(0);
     private static final String VCF_EMPTY_VALUE = ".";
-
-    private final int id;
 
     /**
      * Returns new RsId from the integer provided. Integers less than or equal to zero will return an instance
@@ -76,29 +72,12 @@ public class RsId {
         return EMPTY;
     }
 
-    private RsId(int id) {
-        this.id = id;
-    }
-
     public int getId() {
         return id;
     }
 
     public boolean isEmpty() {
         return id == EMPTY.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RsId rsId = (RsId) o;
-        return id == rsId.id;
     }
 
     /**

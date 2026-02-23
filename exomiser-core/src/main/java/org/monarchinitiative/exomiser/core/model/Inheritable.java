@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public interface Inheritable {
 
-    public Set<ModeOfInheritance> getCompatibleInheritanceModes();
+    public Set<ModeOfInheritance> compatibleInheritanceModes();
 
     public void setCompatibleInheritanceModes(Set<ModeOfInheritance> inheritanceModes);
 

@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
+@Deprecated(forRemoval = true)
 public class CommandLineJobReader {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandLineJobReader.class);
@@ -190,7 +191,8 @@ public class CommandLineJobReader {
         if (jobBuilder.getOutputOptions().getOutputFormatsList().isEmpty()) {
             jobBuilder.getOutputOptionsBuilder()
                     .addOutputFormats(OutputFormat.HTML.toString())
-                    .addOutputFormats(OutputFormat.JSON.toString());
+                    .addOutputFormats(OutputFormat.JSON.toString())
+                    .addOutputFormats(OutputFormat.PARQUET.toString());
         }
     }
 

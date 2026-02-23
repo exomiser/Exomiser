@@ -3,7 +3,7 @@ package org.monarchinitiative.exomiser.core.writers;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-class ScoreRanker {
+final class ScoreRanker {
 
     /** Positive zero. */
     private static final double POSITIVE_ZERO = 0d;

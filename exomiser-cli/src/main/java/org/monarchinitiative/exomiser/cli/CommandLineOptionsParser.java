@@ -32,6 +32,7 @@ import java.util.List;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
+@Deprecated(forRemoval = true)
 public class CommandLineOptionsParser {
 
     private static final Options options = new Options();

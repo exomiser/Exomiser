@@ -74,7 +74,7 @@ public class JsonResultsWriterTest {
         contributingDominantAndRecessiveVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         fgfr2.addVariant(contributingDominantAndRecessiveVariant);
         fgfr2.addGeneScore(GeneScore.builder()
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .variantScore(1.0f)
                 .phenotypeScore(1.0f)
                 .combinedScore(1.0f)
@@ -88,7 +88,7 @@ public class JsonResultsWriterTest {
         contributingRecessiveCompHetVariant.setContributesToGeneScoreUnderMode(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         fgfr2.addVariant(contributingRecessiveCompHetVariant);
         fgfr2.addGeneScore(GeneScore.builder()
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .variantScore(0.945f)
                 .phenotypeScore(1.0f)
                 .combinedScore(0.945f)
@@ -105,7 +105,7 @@ public class JsonResultsWriterTest {
         VariantEvaluation failVariant = makeFailVariant();
         shh.addVariant(failVariant);
         shh.addGeneScore(GeneScore.builder()
-                .geneIdentifier(shh.getGeneIdentifier())
+                .geneIdentifier(shh.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build()
         );

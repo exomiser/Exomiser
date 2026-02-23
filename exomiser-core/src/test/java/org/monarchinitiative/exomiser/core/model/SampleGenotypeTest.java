@@ -32,28 +32,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class SampleGenotypeTest {
+class SampleGenotypeTest {
 
     @Test
-    public void testUnobserved() {
+    void testUnobserved() {
         assertThat(SampleGenotype.of(), equalTo(SampleGenotype.empty()));
         assertThat(SampleGenotype.phased(), equalTo(SampleGenotype.empty()));
     }
 
     @Test
-    public void testHetUnphased() {
-        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+    void testHetUnphased() {
+        assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT).calls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF).calls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
     }
 
     @Test
-    public void testHetPhased() {
-        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).getCalls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
-        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).getCalls(), equalTo(List.of(AlleleCall.ALT, AlleleCall.REF)));
+    void testHetPhased() {
+        assertThat(SampleGenotype.phased(AlleleCall.REF, AlleleCall.ALT).calls(), equalTo(List.of(AlleleCall.REF, AlleleCall.ALT)));
+        assertThat(SampleGenotype.phased(AlleleCall.ALT, AlleleCall.REF).calls(), equalTo(List.of(AlleleCall.ALT, AlleleCall.REF)));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertThat(SampleGenotype.empty().toString(), equalTo("."));
 
         // unphased
@@ -92,7 +92,7 @@ public class SampleGenotypeTest {
     }
 
     @Test
-    public void testConvenienceConstructors() {
+    void testConvenienceConstructors() {
         assertThat(SampleGenotype.noCall(), equalTo(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL)));
         assertThat(SampleGenotype.het(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
         assertThat(SampleGenotype.homRef(), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.REF)));
@@ -152,7 +152,7 @@ public class SampleGenotypeTest {
     }
 
     @Test
-    public void testMonoploid() {
+    void testMonoploid() {
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL).toString(), equalTo("."));
 
         assertThat(SampleGenotype.of(AlleleCall.ALT).toString(), equalTo("1"));
@@ -163,7 +163,7 @@ public class SampleGenotypeTest {
     }
 
     @Test
-    public void testTriploid() {
+    void testTriploid() {
         assertThat(SampleGenotype.of(AlleleCall.NO_CALL, AlleleCall.NO_CALL, AlleleCall.NO_CALL)
                 .toString(), equalTo("././."));
         assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF, AlleleCall.ALT).toString(), equalTo("0/1/1"));
@@ -184,7 +184,7 @@ public class SampleGenotypeTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         assertThat(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
         assertThat(SampleGenotype.of(AlleleCall.ALT, AlleleCall.REF), equalTo(SampleGenotype.of(AlleleCall.REF, AlleleCall.ALT)));
 

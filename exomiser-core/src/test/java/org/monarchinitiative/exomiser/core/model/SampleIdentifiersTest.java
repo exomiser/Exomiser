@@ -89,13 +89,13 @@ public class SampleIdentifiersTest {
     }
 
     @Test
-    public void testGetProbandSampleNameWithEmptyProbandNameAndOneSampleNameInList() {
+    public void testProbandNameAndOneSampleNameInList() {
         String sampleId = SampleIdentifiers.checkProbandIdentifier("", List.of("David"));
         assertThat(sampleId, equalTo("David"));
     }
 
     @Test
-    public void testGetProbandSampleNameWithEmptyProbandNameAndMultipleSampleNamesInList() {
+    public void testProbandNameAndMultipleSampleNamesInList() {
         List<String> sampleNames = List.of("Slartibartfast", "David");
         assertThrows(IllegalStateException.class, () ->
                 SampleIdentifiers.checkProbandIdentifier("", sampleNames)

@@ -43,7 +43,12 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
     static {
         Map<String, ClinSig> temp = new HashMap<>();
+        // ClinVar just seem to make up whatever as they go along. None of this is documented, just found through errors...
         temp.put("Uncertain_significance", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-high", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-mid", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-low", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS", UNCERTAIN_SIGNIFICANCE);
 //        temp.put("Uncertain_significance/Uncertain_risk_allele", UNCERTAIN_SIGNIFICANCE);
         temp.put("Benign", BENIGN);
 //        temp.put("Benign/Likely_benign", BENIGN_OR_LIKELY_BENIGN);
@@ -109,30 +114,29 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             String key = keyValue[0];
             String value = keyValue[1];
             switch (key) {
-                case "CLNSIG":
+                case "CLNSIG" -> {
                     String[] clinsigs = value.split("\\|");
                     clinVarBuilder.primaryInterpretation(parseClinSig(clinsigs[0]));
                     clinVarBuilder.secondaryInterpretations(parseSecondaryClinSig(clinsigs));
-                    break;
-                case "CLNREVSTAT":
+                }
+                case "CLNREVSTAT" ->
                     //CLNREVSTAT criteria_provided,_conflicting_interpretations, criteria_provided,_multiple_submitters,_no_conflicts, criteria_provided,_single_submitter, no_assertion_criteria_provided, no_assertion_provided, no_interpretation_for_the_single_variant, practice_guideline, reviewed_by_expert_panel
                     //CLNREVSTAT counts: criteria_provided,_conflicting_interpretations=12678, criteria_provided,_multiple_submitters,_no_conflicts=34967, criteria_provided,_single_submitter=197277, no_assertion_criteria_provided=34308, no_assertion_provided=10980, no_interpretation_for_the_single_variant=500, practice_guideline=23, reviewed_by_expert_panel=8786
-                    clinVarBuilder.reviewStatus(ReviewStatus.parseReviewStatus(value));
-                    break;
-                case "CLNSIGINCL":
-                    Map<String, ClinVarData.ClinSig> includedAlleles = parseIncludedAlleles(value);
+                        clinVarBuilder.reviewStatus(ReviewStatus.parseReviewStatus(value));
+                case "CLNSIGINCL" -> {
+                    Map<String, ClinSig> includedAlleles = parseIncludedAlleles(value);
                     clinVarBuilder.includedAlleles(includedAlleles);
-                    break;
-                case "CLNSIGCONF":
+                }
+                case "CLNSIGCONF" -> {
                     Map<ClinSig, Integer> clnSigConf = parseClnSigConf(value);
                     clinVarBuilder.conflictingInterpretationCounts(clnSigConf);
-                    break;
-                case "RS":
+                }
+                case "RS" ->
                     // Clinvar use their variation ID in the ID field and indicate the rsID in the RS INFO field.
-                    allele.setRsId(value);
-                    break;
-                default:
-                    break;
+                        allele.setRsId(value);
+                default -> {
+                    // do nothing, this is not the field we are looking for.
+                }
             }
         }
         return clinVarBuilder.build();
@@ -171,7 +175,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             int openParenIndex = category.indexOf("(");
             ClinSig clinSig = parseClinSig(category.substring(0, openParenIndex));
             int count = Integer.parseInt(category.substring(openParenIndex + 1, category.length() - 1));
-            confMap.put(clinSig, count);
+            confMap.compute(clinSig, (k, v) -> (v == null) ? count : v + count);
         }
         return confMap;
     }
@@ -188,10 +192,11 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         clinsig = clinsig.replace(",_low_penetrance", "");
         Set<ClinSig> clinSigs = Arrays.stream(clinsig.split("/"))
                 .map(CLINSIG_MAP::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(ClinSig.class)));
 
         if (clinSigs.isEmpty()) {
-            throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
+            throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG frequency");
         }
         if (clinSigs.size() == 1) {
             return clinSigs.iterator().next();
@@ -209,7 +214,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             return BENIGN_OR_LIKELY_BENIGN;
         }
         // shouldn't get here....
-        throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG value");
+        throw new IllegalArgumentException("'" + clinsig + "' is not a recognised ClinVar CLNSIG frequency");
     }
 
 }

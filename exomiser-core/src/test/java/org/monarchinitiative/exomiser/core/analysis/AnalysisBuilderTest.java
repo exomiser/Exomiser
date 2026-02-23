@@ -27,7 +27,6 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -66,7 +65,7 @@ public class AnalysisBuilderTest {
     }
 
     private List<AnalysisStep> analysisSteps() {
-        return analysisBuilder.build().getAnalysisSteps();
+        return analysisBuilder.build().analysisSteps();
     }
 
     @Test
@@ -93,53 +92,53 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAnalysisBuilderModeOfInheritanceDefault() {
-        assertThat(analysisBuilder.build().getInheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
+        assertThat(analysisBuilder.build().inheritanceModeOptions(), equalTo(InheritanceModeOptions.empty()));
     }
 
     @Test
     public void testAnalysisBuilderModeOfInheritance() {
         analysisBuilder.inheritanceModes(InheritanceModeOptions.defaults());
-        assertThat(analysisBuilder.build().getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+        assertThat(analysisBuilder.build().inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
     }
 
     @Test
     public void testAnalysisBuilderAnalysisModeDefault() {
-        assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(analysisBuilder.build().analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
 
     @Test
     public void testAnalysisBuilderAnalysisMode() {
         analysisBuilder.analysisMode(AnalysisMode.FULL);
-        assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.FULL));
+        assertThat(analysisBuilder.build().analysisMode(), equalTo(AnalysisMode.FULL));
     }
 
     @Test
     public void testAnalysisBuilderFrequencySourcesDefault() {
-        assertThat(analysisBuilder.build().getFrequencySources(), equalTo(Collections.<FrequencySource>emptySet()));
+        assertThat(analysisBuilder.build().frequencySources(), equalTo(Collections.<FrequencySource>emptySet()));
     }
 
     @Test
     public void testAnalysisBuilderFrequencySources() {
         EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         analysisBuilder.frequencySources(frequencySources);
-        assertThat(analysisBuilder.build().getFrequencySources(), equalTo(frequencySources));
+        assertThat(analysisBuilder.build().frequencySources(), equalTo(frequencySources));
     }
 
     @Test
     public void testAnalysisBuilderPathogenicitySourcesDefault() {
-        assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(Collections.<PathogenicitySource>emptySet()));
+        assertThat(analysisBuilder.build().pathogenicitySources(), equalTo(Collections.<PathogenicitySource>emptySet()));
     }
 
     @Test
     public void testAnalysisBuilderPathogenicitySources() {
         EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
         analysisBuilder.pathogenicitySources(pathogenicitySources);
-        assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(pathogenicitySources));
+        assertThat(analysisBuilder.build().pathogenicitySources(), equalTo(pathogenicitySources));
     }
 
     private List<AnalysisStep> buildAndGetSteps() {
         Analysis analysis = analysisBuilder.build();
-        return analysis.getAnalysisSteps();
+        return analysis.analysisSteps();
     }
 
     @Test
@@ -174,6 +173,12 @@ public class AnalysisBuilderTest {
         double cutoff = 500.0;
         analysisBuilder.addQualityFilter(cutoff);
         assertThat(buildAndGetSteps(), equalTo(singletonList(new QualityFilter(cutoff))));
+    }
+
+    @Test
+    public void testAddAlleleBalanceFilter() {
+        analysisBuilder.addAlleleBalanceFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new AlleleBalanceFilter())));
     }
 
     @Test
@@ -261,7 +266,7 @@ public class AnalysisBuilderTest {
     public void testAddInheritanceModeFilter() {
         analysisBuilder.inheritanceModes(InheritanceModeOptions.of(ImmutableMap.of(SubModeOfInheritance.AUTOSOMAL_DOMINANT, 0.1f)));
         analysisBuilder.addInheritanceFilter();
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT))));
+        assertThat(buildAndGetSteps(), equalTo(singletonList(InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT))));
     }
 
     @Test
@@ -270,11 +275,11 @@ public class AnalysisBuilderTest {
         EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AA, FrequencySource.EXAC_EAST_ASIAN);
         float frequencyCutOff = 2f;
         FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
-        GeneBlacklistFilter geneBlacklistFilter = new GeneBlacklistFilter();
+        GeneBlacklistFilter geneBlacklistFilter = GeneBlacklistFilter.defaultInstance();
 
         PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser();
 
-        PriorityType priorityType = phivePrioritiser.getPriorityType();
+        PriorityType priorityType = phivePrioritiser.priorityType();
         float minPriorityScore = 0.501f;
         PriorityScoreFilter priorityScoreFilter = new PriorityScoreFilter(priorityType, minPriorityScore);
         RegulatoryFeatureFilter regulatoryFeatureFilter = new RegulatoryFeatureFilter();
@@ -291,17 +296,17 @@ public class AnalysisBuilderTest {
                 .addGeneBlacklistFilter();
 
         Analysis analysis = analysisBuilder.build();
-        assertThat(analysis.getInheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
-        assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
-        assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
-        assertThat(analysis.getAnalysisSteps(), hasItem(priorityScoreFilter));
-        assertThat(analysis.getAnalysisSteps(), hasItem(frequencyFilter));
-        assertThat(analysis.getAnalysisSteps(), hasItem(phivePrioritiser));
-        assertThat(analysis.getAnalysisSteps(), hasItem(regulatoryFeatureFilter));
-        assertThat(analysis.getAnalysisSteps(), hasItem(geneBlacklistFilter));
+        assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
+        assertThat(analysis.analysisMode(), equalTo(AnalysisMode.FULL));
+        assertThat(analysis.frequencySources(), equalTo(frequencySources));
+        assertThat(analysis.pathogenicitySources(), equalTo(pathogenicitySources));
+        assertThat(analysis.analysisSteps(), hasItem(priorityScoreFilter));
+        assertThat(analysis.analysisSteps(), hasItem(frequencyFilter));
+        assertThat(analysis.analysisSteps(), hasItem(phivePrioritiser));
+        assertThat(analysis.analysisSteps(), hasItem(regulatoryFeatureFilter));
+        assertThat(analysis.analysisSteps(), hasItem(geneBlacklistFilter));
         //check that the order of analysis steps is preserved
-        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(phivePrioritiser, priorityScoreFilter, regulatoryFeatureFilter, frequencyFilter, geneBlacklistFilter)));
+        assertThat(analysis.analysisSteps(), equalTo(Arrays.asList(phivePrioritiser, priorityScoreFilter, regulatoryFeatureFilter, frequencyFilter, geneBlacklistFilter)));
     }
 
     @Test
@@ -399,7 +404,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanAddGeneblacklistFilter() {
-        AnalysisStep blacklistfilter = new GeneBlacklistFilter();
+        AnalysisStep blacklistfilter = new GeneBlacklistFilter(Set.of());
         analysisBuilder.addAnalysisStep(blacklistfilter);
         assertThat(analysisSteps(), equalTo(List.of(blacklistfilter)));
     }

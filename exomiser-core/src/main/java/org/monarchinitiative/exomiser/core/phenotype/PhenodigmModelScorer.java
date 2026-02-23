@@ -116,11 +116,11 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
             PhenotypeTerm queryTerm = entry.getKey();
             Set<PhenotypeMatch> matches = entry.getValue();
             if (matches.isEmpty()) {
-                logger.debug("{}-NOT MATCHED", queryTerm.getId());
+                logger.debug("{}-NOT MATCHED", queryTerm.id());
             } else {
                 matches.stream()
-                        .max(Comparator.comparingDouble(PhenotypeMatch::getScore))
-                        .ifPresent(bestMatch -> logger.debug("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore()));
+                        .max(Comparator.comparingDouble(PhenotypeMatch::score))
+                        .ifPresent(bestMatch -> logger.debug("{}-{}={}", queryTerm.id(), bestMatch.matchPhenotypeId(), bestMatch.score()));
             }
         }
         QueryPhenotypeMatch organismQueryPhenotypeMatch = organismPhenotypeMatcher.getQueryPhenotypeMatch();
@@ -130,9 +130,9 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
 
     @Override
     public ModelPhenotypeMatch<T> scoreModel(T model) {
-        PhenodigmMatchRawScore rawModelScore = organismPhenotypeMatcher.matchPhenotypeIds(model.getPhenotypeIds());
+        PhenodigmMatchRawScore rawModelScore = organismPhenotypeMatcher.matchPhenotypeIds(model.phenotypeIds());
         double score = calculateCombinedScore(rawModelScore);
-        return ModelPhenotypeMatch.of(score, model, rawModelScore.getBestPhenotypeMatches());
+        return ModelPhenotypeMatch.of(score, model, rawModelScore.bestPhenotypeMatches());
     }
 
     private double calculateCombinedScore(PhenodigmMatchRawScore rawModelScore) {
@@ -149,11 +149,11 @@ public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
          * models with large numbers of phenotypes (e.g. 40+) performed badly compared to models with smaller number when matched against a small query. So we have
          * implemented a sort of semi-symmetrical comparison which only takes into account the model terms matching those in the query HP-MP subsets.
          */
-        double maxModelMatchScore = rawModelScore.getMaxModelMatchScore();
-        double sumModelBestMatchScores = rawModelScore.getSumModelBestMatchScores();
+        double maxModelMatchScore = rawModelScore.maxModelMatchScore();
+        double sumModelBestMatchScores = rawModelScore.sumModelBestMatchScores();
 
         if (sumModelBestMatchScores > 0) {
-            int totalPhenotypesWithMatch = numQueryPhenotypes + rawModelScore.getMatchingPhenotypes().size();
+            int totalPhenotypesWithMatch = numQueryPhenotypes + rawModelScore.matchingPhenotypes().size();
             double modelBestAvgScore = sumModelBestMatchScores / totalPhenotypesWithMatch;
             // combined score ranging from 0.0 - 1.0
             return Math.min((maxModelMatchScore / theoreticalMaxMatchScore + modelBestAvgScore / theoreticalBestAvgScore) / 2, 1);

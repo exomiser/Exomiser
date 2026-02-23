@@ -31,19 +31,19 @@ import java.util.List;
  */
 public interface VariantAnnotations {
 
-    public String getGeneSymbol();
+    public String geneSymbol();
 
-    public String getGeneId();
+    public String geneId();
 
-    public VariantEffect getVariantEffect();
+    public VariantEffect variantEffect();
 
-    public List<TranscriptAnnotation> getTranscriptAnnotations();
+    public List<TranscriptAnnotation> transcriptAnnotations();
 
     public boolean hasTranscriptAnnotations();
 
     @JsonIgnore
     public default boolean isNonCodingVariant() {
-        return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
+        return VariantEffects.isNonCodingVariant(variantEffect());
     }
 
     /**
@@ -52,7 +52,7 @@ public interface VariantAnnotations {
      */
     @JsonIgnore
     public default boolean isCodingVariant() {
-        return VariantEffectUtility.affectsCodingRegion(getVariantEffect());
+        return VariantEffects.affectsCodingRegion(variantEffect());
     }
 
 }

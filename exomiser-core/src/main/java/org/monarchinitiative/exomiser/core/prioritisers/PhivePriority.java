@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class PhivePriority implements Prioritiser<PhivePriorityResult> {
      * Flag to output results of filtering against PhenoDigm data.
      */
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return PRIORITY_TYPE;
     }
 
@@ -82,10 +83,10 @@ public class PhivePriority implements Prioritiser<PhivePriorityResult> {
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
         PhenotypeMatcher humanMousePhenotypeMatcher = priorityService.getPhenotypeMatcherForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
 
-        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(ImmutableSet.toImmutableSet());
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::entrezGeneId).collect(ImmutableSet.toImmutableSet());
 
         Set<GeneModel> modelsToScore = priorityService.getModelsForOrganism(Organism.MOUSE).stream()
-                .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
+                .filter(model -> wantedGeneIds.contains(model.entrezGeneId()))
                 .collect(ImmutableSet.toImmutableSet());
 
         List<GeneModelPhenotypeMatch> scoredModels = scoreModels(humanMousePhenotypeMatcher, modelsToScore);
@@ -93,22 +94,29 @@ public class PhivePriority implements Prioritiser<PhivePriorityResult> {
         //n.b. this will contain models but with a phenotype score of zero
         Map<Integer, Optional<GeneModelPhenotypeMatch>> geneModelPhenotypeMatches = scoredModels.parallelStream()
 //                .filter(model -> model.getScore() > 0)
-                .collect(groupingByConcurrent(GeneModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::getScore))));
+                .collect(groupingByConcurrent(GeneModelPhenotypeMatch::entrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::score))));
 
         return genes.stream().map(getPhivePriorityResult(geneModelPhenotypeMatches));
     }
 
     private Function<Gene, PhivePriorityResult> getPhivePriorityResult(Map<Integer, Optional<GeneModelPhenotypeMatch>> geneModelPhenotypeMatches) {
-        return gene -> geneModelPhenotypeMatches.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
-                    .map(makeModelPhivePriorityResult())
-                    //This is set to 0.6 otherwise the performance is poor for genes with no mouse models.
-                    //The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
-                    //n.b. this ranks genes with no model higher than those with a model with a score of zero.
-                    .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null));
+        return gene -> {
+            return geneModelPhenotypeMatches.getOrDefault(gene.entrezGeneId(), Optional.empty())
+                        .map(makeModelPhivePriorityResult())
+                        //This is set to 0.6 otherwise the performance is poor for genes with no mouse models.
+                        //The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
+                        //n.b. this ranks genes with no model higher than those with a model with a score of zero.
+                        .orElse(newEmptyPhiveResultForGene(gene.entrezGeneId(), gene.geneSymbol()));
+        };
+    }
+
+    private static PhivePriorityResult newEmptyPhiveResultForGene(int geneId, String geneSymbol) {
+        GeneOrthologModel model = new GeneOrthologModel("", Organism.MOUSE, geneId, geneSymbol, "", "", List.of());
+        return new PhivePriorityResult(geneId, geneSymbol, NO_MOUSE_MODEL_SCORE, new GeneModelPhenotypeMatch(NO_MOUSE_MODEL_SCORE, model, List.of()));
     }
 
     private Function<GeneModelPhenotypeMatch, PhivePriorityResult> makeModelPhivePriorityResult() {
-        return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.getEntrezGeneId(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch);
+        return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.entrezGeneId(), modelPhenotypeMatch.humanGeneSymbol(), modelPhenotypeMatch.score(), modelPhenotypeMatch);
     }
 
     private List<GeneModelPhenotypeMatch> scoreModels(PhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
@@ -121,8 +129,9 @@ public class PhivePriority implements Prioritiser<PhivePriorityResult> {
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
                 .map(modelScorer::scoreModel)
-                .map(GeneModelPhenotypeMatch::new)
-                .collect(toList());
+                .map(match ->
+                        new GeneModelPhenotypeMatch(match.score(), match.model(), match.bestPhenotypeMatches()))
+                .toList();
 
         Duration duration = Duration.between(timeStart, Instant.now());
         logger.info("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());

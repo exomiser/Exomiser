@@ -7,9 +7,9 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.*;
+import org.monarchinitiative.exomiser.core.analysis.acmg.*;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraint;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraints;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
@@ -21,8 +21,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
@@ -309,31 +308,31 @@ class ClinVarDaoMvStoreTest {
         AlleleProto.AlleleProperties alleleProperties = allelePropertiesDao.getAlleleProperties(alleleKey, assembly);
         FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties).toBuilder().filterSources(FrequencySource.NON_FOUNDER_POPS).build();
         PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-        pathogenicityData = PathogenicityData.of(pathogenicityData.pathogenicityScores().stream().filter(score -> pathSources.contains(score.getSource())).toList());
+        pathogenicityData = PathogenicityData.of(pathogenicityData.pathogenicityScores().stream().filter(score -> pathSources.contains(score.source())).toList());
         ClinVarData clinVarData = clinVarDao.getClinVarData(genomicVariant);
-        VariantAnnotation variantAnnotation = variantAnnotations.isEmpty() ? null : variantAnnotations.get(0);
+        VariantAnnotation variantAnnotation = variantAnnotations.isEmpty() ? null : variantAnnotations.getFirst();
         VariantEvaluation variantEvaluation = VariantEvaluation.builder()
                 .variant(genomicVariant)
-                .geneId(variantAnnotation.getGeneId())
-                .geneSymbol(variantAnnotation.getGeneSymbol())
-                .variantEffect(variantAnnotation.getVariantEffect())
-                .annotations(variantAnnotation.getTranscriptAnnotations())
+                .geneId(variantAnnotation.geneId())
+                .geneSymbol(variantAnnotation.geneSymbol())
+                .variantEffect(variantAnnotation.variantEffect())
+                .transcriptAnnotations(variantAnnotation.transcriptAnnotations())
                 .frequencyData(frequencyData)
                 .pathogenicityData(PathogenicityData.of(clinVarData, pathogenicityData.pathogenicityScores()))
 //                .whiteListed()
                 .compatibleInheritanceModes(Set.of(modeOfInheritance))
                 .build();
 
-        TranscriptAnnotation transcriptAnnotation = variantAnnotation != null && variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.getTranscriptAnnotations().get(0) : null;
-        Set<VariantEffect> varEffects = variantAnnotation != null && variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.getTranscriptAnnotations().stream().map(TranscriptAnnotation::getVariantEffect).collect(Collectors.toUnmodifiableSet()) : Set.of();
-        System.out.println(toBroad(genomicVariant) + " " + (frequencyData.getRsId().isEmpty() ? "-" : frequencyData.getRsId()) + " " + (variantAnnotation == null ? "" : variantAnnotation.getGeneSymbol() + (transcriptAnnotation == null ? "" :  ":" + transcriptAnnotation.getAccession() + ":" + transcriptAnnotation.getHgvsCdna() + ":" + transcriptAnnotation.getHgvsProtein() + " " + transcriptAnnotation.getRankType() + " " + transcriptAnnotation.getRank() + "/" + transcriptAnnotation.getRankTotal()) + " " + varEffects));
-        String geneSymbol = variantAnnotation.getGeneSymbol();
+        TranscriptAnnotation transcriptAnnotation = variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.transcriptAnnotations().get(0) : null;
+        Set<VariantEffect> varEffects = variantAnnotation.hasTranscriptAnnotations() ? variantAnnotation.transcriptAnnotations().stream().map(TranscriptAnnotation::variantEffect).collect(Collectors.toUnmodifiableSet()) : Set.of();
+        System.out.println(toBroad(genomicVariant) + " " + (frequencyData.getRsId().isEmpty() ? "-" : frequencyData.getRsId()) + " " + (variantAnnotation == null ? "" : variantAnnotation.geneSymbol() + (transcriptAnnotation == null ? "" : ":" + transcriptAnnotation.accession() + ":" + transcriptAnnotation.hgvsCdna() + ":" + transcriptAnnotation.hgvsProtein() + " " + transcriptAnnotation.rankType() + " " + transcriptAnnotation.rank() + "/" + transcriptAnnotation.rankTotal()) + " " + varEffects));
+        String geneSymbol = variantAnnotation.geneSymbol();
         GeneConstraint geneConstraint = GeneConstraints.geneConstraint(geneSymbol);
         if (geneConstraint != null) {
             System.out.println(geneSymbol + " " + geneConstraint + (geneConstraint.isLossOfFunctionIntolerant() ? (" (LOF INTOLERANT)") : ""));
         }
         System.out.println("ClinVar: " + (clinVarData.isEmpty() ? "-" : formatClinVarData(clinVarData)));
-        System.out.println("Variant score: " + variantEvaluation.getVariantScore() + " Frequency score: " + variantEvaluation.getFrequencyScore() + " Pathogenicity score: " + variantEvaluation.getPathogenicityScore() + (variantEvaluation.isWhiteListed() ? " (WHITELIST VARIANT - all scores set to 1.0)" : ""));
+        System.out.println("Variant score: " + variantEvaluation.variantScore() + " Frequency score: " + variantEvaluation.frequencyScore() + " Pathogenicity score: " + variantEvaluation.pathogenicityScore() + (variantEvaluation.isWhiteListed() ? " (WHITELIST VARIANT - all scores set to 1.0)" : ""));
         System.out.println("Frequency score: " + frequencyData.frequencyScore());
         if (frequencyData.isEmpty()) {
             System.out.println("\t(no frequency data)");
@@ -373,7 +372,7 @@ class ClinVarDaoMvStoreTest {
     }
 
     private String formatClinVarData(ClinVarData clinVarData) {
-        return clinVarData.getPrimaryInterpretation() + (clinVarData.getPrimaryInterpretation() == ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? " " + clinVarData.getConflictingInterpretationCounts() : "") + " (" + clinVarData.starRating() + "*) " + clinVarData.getVariationId() + " " + clinVarData.getGeneSymbol() + ":" + clinVarData.getHgvsCdna() + ":" + clinVarData.getHgvsProtein() + " " + clinVarData.getVariantEffect() + " (" + clinVarData.getReviewStatus() + ")";
+        return clinVarData.primaryInterpretation() + (clinVarData.primaryInterpretation() == ClinVarData.ClinSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS ? " " + clinVarData.conflictingInterpretationCounts() : "") + " (" + clinVarData.starRating() + "*) " + clinVarData.variationId() + " " + clinVarData.geneSymbol() + ":" + clinVarData.hgvsCdna() + ":" + clinVarData.hgvsProtein() + " " + clinVarData.variantEffect() + " (" + clinVarData.reviewStatus() + ")";
     }
 
     private String toBroad(GenomicVariant genomicVariant) {

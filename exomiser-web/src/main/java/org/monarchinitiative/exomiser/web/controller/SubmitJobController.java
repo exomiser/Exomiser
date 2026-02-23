@@ -19,22 +19,26 @@
  */
 package org.monarchinitiative.exomiser.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
+import org.monarchinitiative.exomiser.api.v1.JobProto;
+import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisBuilder;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
+import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.pedigree.PedFiles;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
@@ -52,10 +56,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -221,7 +224,7 @@ public class SubmitJobController {
         }
         //Genetic interval:
         if (!geneticInterval.isEmpty()) {
-            analysisBuilder.addIntervalFilter(GeneticInterval.parseString(geneticInterval));
+            analysisBuilder.addIntervalFilter(GeneticInterval.parseGeneticInterval(geneticInterval));
         }
         //Keep off-target variants:
         if (!keepOffTarget) {
@@ -275,30 +278,32 @@ public class SubmitJobController {
     }
 
     private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        //required for correct output of Path types
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        StringWriter jsonSettings = new StringWriter();
-        Sample sample = analysisResults.getSample();
+        Sample sample = analysisResults.sample();
+        SampleProto.Sample protoSample = new SampleProtoConverter().toProto(sample);
+        AnalysisProto.Analysis protoAnalysis = new AnalysisProtoConverter().toProto(analysis);
+
+        JobProto.Job protoJob = JobProto.Job.newBuilder()
+                .setSample(protoSample)
+                .setAnalysis(protoAnalysis)
+                .build();
+
         try {
-            mapper.writeValue(jsonSettings, sample);
-            mapper.writeValue(jsonSettings, analysisResults.getAnalysis());
-        } catch (Exception ex) {
-            logger.error("Unable to process JSON settings", ex);
+            String jsonString = JsonFormat.printer().print(protoJob);
+            JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
+            model.addAttribute("settings", new YAMLMapper().writeValueAsString(jsonNodeTree));
+        } catch (InvalidProtocolBufferException | JsonProcessingException e) {
+            logger.error("Unable to process JSON settings", e);
         }
-        model.addAttribute("settings", jsonSettings.toString());
 
         //make the user aware of any unanalysed variants
-        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
+        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.unAnnotatedVariantEvaluations();
         model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the filter reports section
         List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         model.addAttribute("filterReports", filterReports);
 
-        List<String> sampleNames = analysisResults.getSampleNames();
+        List<String> sampleNames = analysisResults.sampleNames();
         String sampleName = "Anonymous";
         if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
@@ -307,11 +312,11 @@ public class SubmitJobController {
         model.addAttribute("sampleNames", sampleNames);
 
         //write out the variant type counters
-        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
+        List<VariantEvaluation> variantEvaluations = analysisResults.variantEvaluations();
         List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, variantEvaluations);
         model.addAttribute("variantTypeCounters", variantEffectCounters);
 
-        List<Gene> sampleGenes = analysisResults.getGenes();
+        List<Gene> sampleGenes = analysisResults.genes();
         model.addAttribute("geneResultsTruncated", false);
         int numCandidateGenes = numGenesPassedFilters(sampleGenes);
         if (numCandidateGenes > maxGenes) {
@@ -327,10 +332,10 @@ public class SubmitJobController {
         // For the time being we're going to maintain the original behaviour (UCSC)
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
-        var transcriptDb = analysisResults.getContributingVariants().stream()
-                .flatMap(variantEvaluation -> variantEvaluation.getTranscriptAnnotations().stream())
+        var transcriptDb = analysisResults.contributingVariants().stream()
+                .flatMap(variantEvaluation -> variantEvaluation.transcriptAnnotations().stream())
                 .findFirst()
-                .map(TranscriptAnnotation::getAccession)
+                .map(TranscriptAnnotation::accession)
                 .map(value -> {
                     if (value.startsWith("ENST")) {
                         return "ENSEMBL";
@@ -343,8 +348,8 @@ public class SubmitJobController {
                 })
                 .orElse("ENSEMBL");
         model.addAttribute("transcriptDb", transcriptDb);
-        model.addAttribute("ensemblAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
-        model.addAttribute("ucscAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
+        model.addAttribute("ensemblAssembly", sample.genomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
+        model.addAttribute("ucscAssembly", sample.genomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
         model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         model.addAttribute("pValueFormatter", new HtmlResultsWriter.ScientificDecimalFormat("0.0E0"));
         model.addAttribute("conflictingInterpretationsFormatter", new HtmlResultsWriter.ConflictingInterpretationsFormatter());

@@ -61,7 +61,7 @@ public class RemmDao implements PathogenicityDao {
     public PathogenicityData getPathogenicityData(Variant variant) {
         logger.debug("Getting REMM data for {}", variant);
         // REMM has not been trained on missense variants so skip these
-        if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
+        if (variant.variantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();
         }
         String chromosome = variant.contigName();

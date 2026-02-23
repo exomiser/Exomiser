@@ -59,7 +59,9 @@ copyright = u'2024, Jules Jacobsen, Damian Smedley, Peter Robinson'
 author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
-version = u'14.0.0'
+version = u'15.0.0'
+genome_data_version = u'2502'
+phenotype_data_version = u'2502'
 # The full version, including alpha/beta/rc tags
 release = version
 

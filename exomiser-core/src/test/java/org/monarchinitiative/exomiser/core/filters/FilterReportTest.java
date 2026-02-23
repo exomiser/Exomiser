@@ -55,17 +55,17 @@ public class FilterReportTest {
     }
 
     @Test
-    public void testGetFilterType() {
+    public void testFilterType() {
         FilterType expResult = FilterType.FREQUENCY_FILTER;
 
-        assertThat(instance.getFilterType(), equalTo(expResult));
+        assertThat(instance.filterType(), equalTo(expResult));
     }
 
     @Test
     public void testGetMessages() {
         List<String> expectedMessages = new ArrayList<>();
         expectedMessages.add(MESSAGE);
-        assertThat(instance.getMessages(), equalTo(expectedMessages));
+        assertThat(instance.messages(), equalTo(expectedMessages));
     }
 
     @Test
@@ -81,12 +81,12 @@ public class FilterReportTest {
 
     @Test
     public void testGetPassed() {
-        assertThat(instance.getPassed(), equalTo(PASSED));
+        assertThat(instance.passed(), equalTo(PASSED));
     }
 
     @Test
     public void testGetFailed() {
-        assertThat(instance.getFailed(), equalTo(FAILED));
+        assertThat(instance.failed(), equalTo(FAILED));
     }
 
     @Test
@@ -143,6 +143,12 @@ public class FilterReportTest {
     public void testToString() {
         String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, List.of(MESSAGE));
         assertThat(instance.toString(), equalTo(expResult));
+    }
+
+    @Test
+    public void testPercentageFailed(){
+        double expected = ((double)(345 - 12) / 345) * 100;
+        assertThat(instance.percentageFilteredFromBeginning(345), equalTo(expected));
     }
 
 }

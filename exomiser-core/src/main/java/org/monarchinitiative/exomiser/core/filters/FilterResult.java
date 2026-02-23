@@ -18,6 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.monarchinitiative.exomiser.core.filters;
 
 /**
@@ -26,29 +31,39 @@ package org.monarchinitiative.exomiser.core.filters;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface FilterResult {
+public record FilterResult(FilterType filterType, Status status) {
 
     enum Status {
         PASS, FAIL, NOT_RUN
     }
 
-    static FilterResult pass(FilterType filterType) {
-        return new PassFilterResult(filterType);
+    public static FilterResult pass(FilterType filterType) {
+        return new FilterResult(filterType, Status.PASS);
     }
 
-    static FilterResult fail(FilterType filterType) {
-        return new FailFilterResult(filterType);
+    public static FilterResult fail(FilterType filterType) {
+        return new FilterResult(filterType, Status.FAIL);
     }
 
-    static FilterResult notRun(FilterType filterType) {
-        return new NotRunFilterResult(filterType);
+    public static FilterResult notRun(FilterType filterType) {
+        return new FilterResult(filterType, Status.NOT_RUN);
     }
 
-    FilterType getFilterType();
+    public boolean passed() {
+        return status == Status.PASS;
+    }
 
-    boolean passed();
+    public boolean failed() {
+        return status == Status.FAIL;
+    }
 
-    boolean failed();
+    public boolean wasRun() {
+        return status != Status.NOT_RUN;
+    }
 
-    boolean wasRun();
+    @Override
+    public String toString() {
+        return "Filter=" + filterType + " status=" + status;
+    }
+
 }

@@ -143,22 +143,22 @@ public class AlleleConverter {
 
     public static ClinVar toProtoClinVar(ClinVarData clinVarData) {
         ClinVar.Builder builder = ClinVar.newBuilder();
-        builder.setVariationId(clinVarData.getVariationId());
-        builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.getPrimaryInterpretation()));
-        for (Map.Entry<ClinVarData.ClinSig, Integer> entry : clinVarData.getConflictingInterpretationCounts().entrySet()) {
+        builder.setVariationId(clinVarData.variationId());
+        builder.setPrimaryInterpretation(toProtoClinSig(clinVarData.primaryInterpretation()));
+        for (Map.Entry<ClinVarData.ClinSig, Integer> entry : clinVarData.conflictingInterpretationCounts().entrySet()) {
             builder.putClinSigCounts(entry.getKey().toString(), entry.getValue());
         }
-        for (ClinVarData.ClinSig clinSig : clinVarData.getSecondaryInterpretations()) {
+        for (ClinVarData.ClinSig clinSig : clinVarData.secondaryInterpretations()) {
             builder.addSecondaryInterpretations(toProtoClinSig(clinSig));
         }
-        builder.setReviewStatus(toProtoReviewStatus(clinVarData.getReviewStatus()));
-        for (Map.Entry<String, ClinVarData.ClinSig> entry : clinVarData.getIncludedAlleles().entrySet()) {
+        builder.setReviewStatus(toProtoReviewStatus(clinVarData.reviewStatus()));
+        for (Map.Entry<String, ClinVarData.ClinSig> entry : clinVarData.includedAlleles().entrySet()) {
             builder.putIncludedAlleles(entry.getKey(), toProtoClinSig(entry.getValue()));
         }
-        builder.setGeneSymbol(clinVarData.getGeneSymbol());
-        builder.setVariantEffect(toProtoVariantEffect(clinVarData.getVariantEffect()));
-        builder.setHgvsCdna(clinVarData.getHgvsCdna());
-        builder.setHgvsProtein(clinVarData.getHgvsProtein());
+        builder.setGeneSymbol(clinVarData.geneSymbol());
+        builder.setVariantEffect(toProtoVariantEffect(clinVarData.variantEffect()));
+        builder.setHgvsCdna(clinVarData.hgvsCdna());
+        builder.setHgvsProtein(clinVarData.hgvsProtein());
         return builder.build();
     }
 

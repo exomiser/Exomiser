@@ -35,10 +35,12 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneScore;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * The results of an Exomiser Analysis run.
@@ -46,29 +48,24 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public class AnalysisResults {
+public record AnalysisResults(
+        Sample sample,
+        Analysis analysis,
+        @JsonIgnore
+        List<String> sampleNames,
+        List<Gene> genes,
+        @JsonIgnore
+        List<VariantEvaluation> variantEvaluations,
+        List<FilterResultCount> filterResultCounts
+) {
 
-    private final Sample sample;
-    private final Analysis analysis;
-
-    @JsonIgnore
-    private final List<String> sampleNames;
-
-    private final List<Gene> genes;
-    @JsonIgnore
-    private final List<VariantEvaluation> variantEvaluations;
-
-    private final List<FilterResultCount> filterResultCounts;
-
-    public AnalysisResults(Builder builder) {
-        this.sample = builder.sample;
-        this.analysis = builder.analysis;
-
-        this.sampleNames = builder.sampleNames;
-
-        this.genes = builder.genes;
-        this.variantEvaluations = builder.variantEvaluations;
-        this.filterResultCounts = builder.filtercounts;
+    public AnalysisResults {
+        Objects.requireNonNull(sample);
+        Objects.requireNonNull(analysis);
+        Objects.requireNonNull(sampleNames);
+        Objects.requireNonNull(genes);
+        Objects.requireNonNull(variantEvaluations);
+        Objects.requireNonNull(filterResultCounts);
     }
 
     /**
@@ -76,14 +73,14 @@ public class AnalysisResults {
      *
      * @return the proband sample name.
      */
-    public String getProbandSampleName() {
-        return sample.getProbandSampleName();
+    public String probandSampleName() {
+        return sample.probandSampleName();
     }
 
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */
-    public List<String> getSampleNames() {
+    public List<String> sampleNames() {
         return sampleNames;
     }
 
@@ -91,7 +88,7 @@ public class AnalysisResults {
      * @return The {@link Sample} which was run through the {@link Analysis} to generate the {@link AnalysisResults}.
      * @since 13.0.0
      */
-    public Sample getSample() {
+    public Sample sample() {
         return sample;
     }
 
@@ -99,7 +96,7 @@ public class AnalysisResults {
      * @return The {@link Analysis} through which the {@link Sample} was run in order to generate the {@link AnalysisResults}.
      * @since 13.0.0
      */
-    public Analysis getAnalysis() {
+    public Analysis analysis() {
         return analysis;
     }
 
@@ -114,7 +111,7 @@ public class AnalysisResults {
      *
      * @return a list of {@link Gene} objects resulting from an {@link Analysis}.
      */
-    public List<Gene> getGenes() {
+    public List<Gene> genes() {
         return genes;
     }
 
@@ -128,20 +125,19 @@ public class AnalysisResults {
      *
      * @return a list of {@link VariantEvaluation} objects resulting from an {@link Analysis}.
      */
-    public List<VariantEvaluation> getVariantEvaluations() {
+    public List<VariantEvaluation> variantEvaluations() {
         return variantEvaluations;
     }
 
 
     /**
-     *
      * @return the {@link FilterResultCount} for this {@link Analysis}.
      */
-    public List<FilterResultCount> getFilterCounts() {
+    public List<FilterResultCount> filterCounts() {
         return filterResultCounts;
     }
 
-    public FilterResultCount getFilterCount(FilterType filterType) {
+    public FilterResultCount filterCountForType(FilterType filterType) {
         // this is only ever a max of ~5-10 so not worth making into a map
         for (FilterResultCount filterResultCount : filterResultCounts) {
             if (filterResultCount.filterType() == filterType) {
@@ -162,9 +158,8 @@ public class AnalysisResults {
      * @since 10.1.0
      */
     @JsonIgnore
-    public List<GeneScore> getGeneScores() {
-        return sortedGeneScoresWithContributingVariants()
-                .collect(toList());
+    public List<GeneScore> geneScores() {
+        return sortedGeneScoresWithContributingVariants().toList();
     }
 
     /**
@@ -179,9 +174,9 @@ public class AnalysisResults {
      * @since 10.1.0
      */
     @JsonIgnore
-    public List<GeneScore> getGeneScoresForMode(ModeOfInheritance modeOfInheritance) {
+    public List<GeneScore> geneScoresForMode(ModeOfInheritance modeOfInheritance) {
         return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance)
-                .collect(toList());
+                .toList();
     }
 
     /**
@@ -189,11 +184,11 @@ public class AnalysisResults {
      * @since 10.1.0
      */
     @JsonIgnore
-    public List<VariantEvaluation> getContributingVariants() {
+    public List<VariantEvaluation> contributingVariants() {
         return sortedGeneScoresWithContributingVariants()
-                .map(GeneScore::getContributingVariants)
+                .map(GeneScore::contributingVariants)
                 .flatMap(Collection::stream)
-                .collect(toList());
+                .toList();
     }
 
     /**
@@ -201,17 +196,17 @@ public class AnalysisResults {
      * @since 10.1.0
      */
     @JsonIgnore
-    public List<VariantEvaluation> getContributingVariantsForMode(ModeOfInheritance modeOfInheritance) {
+    public List<VariantEvaluation> contributingVariantsForMode(ModeOfInheritance modeOfInheritance) {
         return sortedGeneScoresWithContributingVariantsForMode(modeOfInheritance)
-                .map(GeneScore::getContributingVariants)
+                .map(GeneScore::contributingVariants)
                 .flatMap(Collection::stream)
                 .sorted()
-                .collect(toList());
+                .toList();
     }
 
     private Stream<GeneScore> sortedGeneScoresWithContributingVariants() {
         return genes.stream()
-                .map(Gene::getGeneScores)
+                .map(Gene::geneScores)
                 .flatMap(Collection::stream)
                 // A geneScore can have no contributing variants, so want to skip these
                 .filter(GeneScore::hasContributingVariants)
@@ -220,15 +215,15 @@ public class AnalysisResults {
 
     private Stream<GeneScore> sortedGeneScoresWithContributingVariantsForMode(ModeOfInheritance modeOfInheritance) {
         return genes.stream()
-                .map(gene -> gene.getGeneScoreForMode(modeOfInheritance))
+                .map(gene -> gene.geneScoreForMode(modeOfInheritance))
                 // A geneScore can have no contributing variants, so want to skip these
                 .filter(GeneScore::hasContributingVariants)
                 .sorted();
     }
 
     @JsonIgnore
-    public List<VariantEvaluation> getUnAnnotatedVariantEvaluations() {
-        return variantEvaluations.stream().filter(varEval -> !varEval.hasTranscriptAnnotations()).collect(toList());
+    public List<VariantEvaluation> unAnnotatedVariantEvaluations() {
+        return variantEvaluations.stream().filter(varEval -> !varEval.hasTranscriptAnnotations()).toList();
     }
 
     @Override
@@ -242,19 +237,19 @@ public class AnalysisResults {
         if (o == null || getClass() != o.getClass()) return false;
         AnalysisResults that = (AnalysisResults) o;
         return Objects.equals(sample, that.sample) &&
-                Objects.equals(sampleNames, that.sampleNames) &&
-                Objects.equals(variantEvaluations, that.variantEvaluations) &&
-                Objects.equals(genes, that.genes);
+               Objects.equals(sampleNames, that.sampleNames) &&
+               Objects.equals(variantEvaluations, that.variantEvaluations) &&
+               Objects.equals(genes, that.genes);
     }
 
     @Override
     public String toString() {
         return "AnalysisResults{" +
-                "sample='" + sample + '\'' +
-                ", sampleNames=" + sampleNames +
-                ", genes=" + genes.size() +
-                ", variantEvaluations=" + variantEvaluations.size() +
-                '}';
+               "sample='" + sample + '\'' +
+               ", sampleNames=" + sampleNames +
+               ", genes=" + genes.size() +
+               ", variantEvaluations=" + variantEvaluations.size() +
+               '}';
     }
 
     public static Builder builder() {
@@ -304,7 +299,14 @@ public class AnalysisResults {
         }
 
         public AnalysisResults build() {
-            return new AnalysisResults(this);
+            return new AnalysisResults(
+                    sample,
+                    analysis,
+                    sampleNames,
+                    genes,
+                    variantEvaluations,
+                    filtercounts
+            );
         }
 
     }

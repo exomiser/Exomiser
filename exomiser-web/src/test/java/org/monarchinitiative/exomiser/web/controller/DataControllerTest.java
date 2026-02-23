@@ -49,7 +49,7 @@ public class DataControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(content().string("[{\"text\":\"Gruffalo syndrome\",\"value\":\"OMIM:101600\"}]"))
+                .andExpect(content().string("[{\"value\":\"OMIM:101600\",\"text\":\"Gruffalo syndrome\"}]"))
                 .andExpect(jsonPath("$[0].text").value("Gruffalo syndrome"))
                 .andExpect(jsonPath("$[0].value").value("OMIM:101600"));
     }

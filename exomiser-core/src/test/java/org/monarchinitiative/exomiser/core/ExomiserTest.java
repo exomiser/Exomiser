@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -54,7 +54,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserTest {
+class ExomiserTest {
 
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
@@ -87,21 +87,21 @@ public class ExomiserTest {
     }
 
     @Test
-    public void canRunAnalysisFull() {
+    void canRunAnalysisFull() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
         AnalysisResults analysisResults = instance.run(sample, analysis);
-        assertThat(analysisResults.getGenes().size(), equalTo(3));
+        assertThat(analysisResults.genes().size(), equalTo(3));
     }
     
     @Test
-    public void canRunAnalysisPassOnly() {
+    void canRunAnalysisPassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
         AnalysisResults analysisResults = instance.run(sample, analysis);
-        assertThat(analysisResults.getGenes().size(), equalTo(3));
+        assertThat(analysisResults.genes().size(), equalTo(3));
     }
 
     @Test
-    public void canRunAnalysisUsingAlternateGenomeAssemblyPassOnly() {
+    void canRunAnalysisUsingAlternateGenomeAssemblyPassOnly() {
         GenomeAnalysisService grch37Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
         GenomeAnalysisService grch38Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
@@ -117,9 +117,9 @@ public class ExomiserTest {
                 .build();
 
         AnalysisResults hg37AnalysisResults = twoAssembliesSupportedExomiser.run(hg37Sample, analysis);
-        assertThat(hg37AnalysisResults.getSample().getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
-        assertThat(hg37AnalysisResults.getGenes().size(), equalTo(3));
-        assertThat(hg37AnalysisResults.getVariantEvaluations().size(), equalTo(4));
+        assertThat(hg37AnalysisResults.sample().genomeAssembly(), equalTo(GenomeAssembly.HG19));
+        assertThat(hg37AnalysisResults.genes().size(), equalTo(3));
+        assertThat(hg37AnalysisResults.variantEvaluations().size(), equalTo(4));
 
 
         Sample hg38Sample = Sample.builder()
@@ -128,13 +128,13 @@ public class ExomiserTest {
                 .build();
 
         AnalysisResults hg38AnalysisResults = twoAssembliesSupportedExomiser.run(hg38Sample, analysis);
-        assertThat(hg38AnalysisResults.getSample().getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
-        assertThat(hg38AnalysisResults.getGenes().size(), equalTo(3));
-        assertThat(hg38AnalysisResults.getVariantEvaluations().size(), equalTo(4));
+        assertThat(hg38AnalysisResults.sample().genomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(hg38AnalysisResults.genes().size(), equalTo(3));
+        assertThat(hg38AnalysisResults.variantEvaluations().size(), equalTo(4));
     }
 
     @Test
-    public void canGetAnalysisBuilder() {
+    void canGetAnalysisBuilder() {
         AnalysisBuilder analysisBuilder = instance.getAnalysisBuilder();
         assertThat(analysisBuilder, instanceOf(AnalysisBuilder.class));
     }

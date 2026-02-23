@@ -26,15 +26,11 @@ import java.util.Objects;
 /**
  * DTO class for transferring data from {@link PhenotypeMatcher} to {@link PhenodigmModelScorer}.
  *
- * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @since 8.0.0
  */
-class PhenodigmMatchRawScore {
-
-    private final double maxModelMatchScore;
-    private final double sumModelBestMatchScores;
-    private final List<String> matchingPhenotypes;
-    private final List<PhenotypeMatch> bestPhenotypeMatches;
+record PhenodigmMatchRawScore(double maxModelMatchScore, double sumModelBestMatchScores,
+                              List<String> matchingPhenotypes, List<PhenotypeMatch> bestPhenotypeMatches) {
 
     PhenodigmMatchRawScore(double maxModelMatchScore, double sumModelBestMatchScores, List<String> matchingPhenotypes, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.maxModelMatchScore = maxModelMatchScore;
@@ -43,45 +39,24 @@ class PhenodigmMatchRawScore {
         this.bestPhenotypeMatches = List.copyOf(bestPhenotypeMatches);
     }
 
-    double getMaxModelMatchScore() {
-        return maxModelMatchScore;
-    }
-
-    double getSumModelBestMatchScores() {
-        return sumModelBestMatchScores;
-    }
-
-    List<String> getMatchingPhenotypes() {
-        return matchingPhenotypes;
-    }
-
-    List<PhenotypeMatch> getBestPhenotypeMatches() {
-        return bestPhenotypeMatches;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PhenodigmMatchRawScore that = (PhenodigmMatchRawScore) o;
         return Double.compare(that.maxModelMatchScore, maxModelMatchScore) == 0 &&
-                Double.compare(that.sumModelBestMatchScores, sumModelBestMatchScores) == 0 &&
-                Objects.equals(matchingPhenotypes, that.matchingPhenotypes) &&
-                Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxModelMatchScore, sumModelBestMatchScores, matchingPhenotypes, bestPhenotypeMatches);
+               Double.compare(that.sumModelBestMatchScores, sumModelBestMatchScores) == 0 &&
+               Objects.equals(matchingPhenotypes, that.matchingPhenotypes) &&
+               Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
     }
 
     @Override
     public String toString() {
         return "PhenodigmMatchRawScore{" +
-                "maxModelMatchScore=" + maxModelMatchScore +
-                ", sumModelBestMatchScores=" + sumModelBestMatchScores +
-                ", matchingPhenotypes=" + matchingPhenotypes +
-                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
-                '}';
+               "maxModelMatchScore=" + maxModelMatchScore +
+               ", sumModelBestMatchScores=" + sumModelBestMatchScores +
+               ", matchingPhenotypes=" + matchingPhenotypes +
+               ", bestPhenotypeMatches=" + bestPhenotypeMatches +
+               '}';
     }
 }

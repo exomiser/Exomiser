@@ -176,7 +176,7 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     private void addAllWantedScores(Set<PathogenicitySource> pathogenicitySources, PathogenicityData defaultPathogenicityData, List<PathogenicityScore> allPathScores) {
         for (PathogenicityScore score : defaultPathogenicityData.pathogenicityScores()) {
-            if (pathogenicitySources.contains(score.getSource())) {
+            if (pathogenicitySources.contains(score.source())) {
                 allPathScores.add(score);
             }
         }

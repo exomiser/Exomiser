@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.disease;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.data.phenotype.processors.Resource;
@@ -84,7 +83,7 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
             e.printStackTrace();
         }
         logger.info("Extracted {} OMIM disease-gene associations from {}", diseases.size(), geneMap2Resource.getResourcePath());
-        return ImmutableList.copyOf(diseases);
+        return List.copyOf(diseases);
     }
 
     protected List<DiseaseGene> parseLine(Map<String, InheritanceMode> diseaseInheritanceCache, String line) {
@@ -200,36 +199,18 @@ public class OmimGeneMap2Reader implements ResourceReader<List<DiseaseGene>> {
             for (String localMoi : localMois) {
                 logger.debug("'{}'", localMoi);
                 switch (localMoi) {
-                    case "Autosomal dominant":
-                    case "Pseudoautosomal dominant":
-                        inheritanceModes.add(InheritanceMode.AUTOSOMAL_DOMINANT);
-                        break;
-                    case "Autosomal recessive":
-                    case "Pseudoautosomal recessive":
-                        inheritanceModes.add(InheritanceMode.AUTOSOMAL_RECESSIVE);
-                        break;
-                    case "Mitochondrial":
-                        inheritanceModes.add(InheritanceMode.MITOCHONDRIAL);
-                        break;
-                    case "X-linked":
-                        inheritanceModes.add(InheritanceMode.X_LINKED);
-                        break;
-                    case "X-linked dominant":
-                        inheritanceModes.add(InheritanceMode.X_DOMINANT);
-                        break;
-                    case "X-linked recessive":
-                        inheritanceModes.add(InheritanceMode.X_RECESSIVE);
-                        break;
-                    case "Y-linked":
-                        inheritanceModes.add(InheritanceMode.Y_LINKED);
-                        break;
-                    case "Somatic mosaicism":
-                    case "Somatic mutation":
-                        inheritanceModes.add(InheritanceMode.SOMATIC);
-                        break;
-                    case "Multifactorial":
-                        inheritanceModes.add(InheritanceMode.POLYGENIC);
-                        break;
+                    case "Autosomal dominant", "Pseudoautosomal dominant" ->
+                            inheritanceModes.add(InheritanceMode.AUTOSOMAL_DOMINANT);
+                    case "Autosomal recessive", "Pseudoautosomal recessive" ->
+                            inheritanceModes.add(InheritanceMode.AUTOSOMAL_RECESSIVE);
+                    case "Mitochondrial" -> inheritanceModes.add(InheritanceMode.MITOCHONDRIAL);
+                    case "X-linked" -> inheritanceModes.add(InheritanceMode.X_LINKED);
+                    case "X-linked dominant" -> inheritanceModes.add(InheritanceMode.X_DOMINANT);
+                    case "X-linked recessive" -> inheritanceModes.add(InheritanceMode.X_RECESSIVE);
+                    case "Y-linked" -> inheritanceModes.add(InheritanceMode.Y_LINKED);
+                    case "Somatic mosaicism", "Somatic mutation" -> inheritanceModes.add(InheritanceMode.SOMATIC);
+                    case "Multifactorial" -> inheritanceModes.add(InheritanceMode.POLYGENIC);
+                    default -> logger.warn("Unknown inheritance mode '{}'", localMoi);
                 }
             }
             return InheritanceModeWrangler.wrangleInheritanceMode(inheritanceModes);

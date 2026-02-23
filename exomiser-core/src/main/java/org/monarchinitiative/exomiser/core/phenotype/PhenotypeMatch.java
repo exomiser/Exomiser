@@ -32,100 +32,49 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
 
 /**
- * Contains information about how well a pair of <code>PhenotypeTerm</code> 
+ * Contains information about how well a pair of <code>PhenotypeTerm</code>
  * match each other.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonPropertyOrder({"query", "match", "lcs", "ic", "simj", "score"})
-public final class PhenotypeMatch {
+public record PhenotypeMatch(
+        @JsonProperty("query")
+        PhenotypeTerm queryPhenotype,
+        @JsonProperty("match")
+        PhenotypeTerm matchPhenotype,
+        //lowest common subsumer
+        PhenotypeTerm lcs,
+        double ic,
+        @JsonProperty("simj")
+        double simJ,
+        double score) {
 
-    private final PhenotypeTerm queryPhenotype;
-    private final PhenotypeTerm matchPhenotype;
-    //lowest common subsumer
-    private final PhenotypeTerm lcs;
-    //Jaccard similarity score
-    private final double ic;
-    private final double simJ;
-    private final double score;
-
-    public PhenotypeMatch(Builder builder) {
-        this.queryPhenotype = builder.queryPhenotype;
-        this.matchPhenotype = builder.matchPhenotype;
-        this.ic = builder.ic;
-        this.lcs = builder.lcs;
-        this.simJ = builder.simJ;
-        this.score = builder.score;
+    public PhenotypeMatch {
+//        Objects.requireNonNull(queryPhenotype);
+//        Objects.requireNonNull(matchPhenotype);
     }
 
     @JsonIgnore
-    public String getQueryPhenotypeId() {
-        return (queryPhenotype == null) ? "null" : queryPhenotype.getId();
-    }
-    
-    @JsonProperty("query")
-    public PhenotypeTerm getQueryPhenotype() {
-        return queryPhenotype;
+    public String queryPhenotypeId() {
+        return (queryPhenotype == null) ? "null" : queryPhenotype.id();
     }
 
     @JsonIgnore
-    public String getMatchPhenotypeId() {
-        return (matchPhenotype == null) ? "null" : matchPhenotype.getId();
-    }
-    
-    @JsonProperty("match")
-    public PhenotypeTerm getMatchPhenotype() {
-        return matchPhenotype;
-    }
-
-    @JsonProperty("lcs")
-    public PhenotypeTerm getLcs() {
-        return lcs;
-    }
-
-    @JsonProperty("ic")
-    public double getIc() {
-        return ic;
-    }
-
-    @JsonProperty("simj")
-    public double getSimJ() {
-        return simJ;
-    }
-
-    @JsonProperty("score")
-    public double getScore() {
-        return score;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PhenotypeMatch)) return false;
-        PhenotypeMatch that = (PhenotypeMatch) o;
-        return Double.compare(that.ic, ic) == 0 &&
-                Double.compare(that.simJ, simJ) == 0 &&
-                Double.compare(that.score, score) == 0 &&
-                Objects.equals(queryPhenotype, that.queryPhenotype) &&
-                Objects.equals(matchPhenotype, that.matchPhenotype) &&
-                Objects.equals(lcs, that.lcs);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(queryPhenotype, matchPhenotype, lcs, ic, simJ, score);
+    public String matchPhenotypeId() {
+        return (matchPhenotype == null) ? "null" : matchPhenotype.id();
     }
 
     @Override
     public String toString() {
         return "PhenotypeMatch{" +
-                "queryPhenotype=" + queryPhenotype +
-                ", matchPhenotype=" + matchPhenotype +
-                ", lcs=" + lcs +
-                ", ic=" + ic +
-                ", simJ=" + simJ +
-                ", score=" + score +
-                '}';
+               "queryPhenotype=" + queryPhenotype +
+               ", matchPhenotype=" + matchPhenotype +
+               ", lcs=" + lcs +
+               ", ic=" + ic +
+               ", simJ=" + simJ +
+               ", score=" + score +
+               '}';
     }
 
     @JsonCreator
@@ -178,7 +127,14 @@ public final class PhenotypeMatch {
         }
 
         public PhenotypeMatch build() {
-            return new PhenotypeMatch(this);
+            return new PhenotypeMatch(
+                    queryPhenotype,
+                    matchPhenotype,
+                    lcs,
+                    ic,
+                    simJ,
+                    score
+            );
         }
     }
 }

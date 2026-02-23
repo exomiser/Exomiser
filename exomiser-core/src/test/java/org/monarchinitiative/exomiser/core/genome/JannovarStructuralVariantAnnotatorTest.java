@@ -29,7 +29,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataSourceLoa
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 import org.monarchinitiative.svart.*;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -56,9 +56,9 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.TRANSCRIPT_ABLATION));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.TRANSCRIPT_ABLATION));
     }
 
     private GenomicVariant variant(Contig contig, int start, int end, String ref, String alt, int changeLength) {
@@ -75,9 +75,9 @@ class JannovarStructuralVariantAnnotatorTest {
 
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
 
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
     }
 
     @Test
@@ -90,11 +90,11 @@ class JannovarStructuralVariantAnnotatorTest {
             assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
             // Jannovar would add an artificially HIGH impact INSERTION annotation to all non-intergenic insertions which
             // leads to hugely over-inflated variant effect scores.
-            if (variantAnnotation.getGeneSymbol().equals("RBM8A")) {
-                assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_SEQUENCE_VARIANT));
+            if (variantAnnotation.geneSymbol().equals("RBM8A")) {
+                assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.CODING_SEQUENCE_VARIANT));
             }
-            if (variantAnnotation.getGeneSymbol().equals("GNRHR2")) {
-                assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
+            if (variantAnnotation.geneSymbol().equals("GNRHR2")) {
+                assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.DOWNSTREAM_GENE_VARIANT));
             }
         }
     }
@@ -109,10 +109,10 @@ class JannovarStructuralVariantAnnotatorTest {
         VariantAnnotation variantAnnotation = annotations.get(0);
 
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
         // this is an EXON_LOSS
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.START_LOST));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.START_LOST));
     }
 
     @Test
@@ -125,10 +125,10 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
 
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
     }
 
     @Test
@@ -140,10 +140,10 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
         // this is an EXON_LOSS
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.CODING_TRANSCRIPT_VARIANT));
     }
 
     @Test
@@ -155,10 +155,10 @@ class JannovarStructuralVariantAnnotatorTest {
         assertThat(annotations.size(), equalTo(1));
         VariantAnnotation variantAnnotation = annotations.get(0);
         assertThat(variantAnnotation.hasTranscriptAnnotations(), is(true));
-        assertThat(variantAnnotation.getGeneId(), equalTo("2263"));
-        assertThat(variantAnnotation.getGeneSymbol(), equalTo("FGFR2"));
+        assertThat(variantAnnotation.geneId(), equalTo("2263"));
+        assertThat(variantAnnotation.geneSymbol(), equalTo("FGFR2"));
 
-        assertThat(variantAnnotation.getVariantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
+        assertThat(variantAnnotation.variantEffect(), equalTo(VariantEffect.UPSTREAM_GENE_VARIANT));
     }
 
     @Test
