@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-@Command(name = "analyse", description = "Runs an Exomiser analysis using the parameters provided")
+@Command(name = "analyse", description = "Runs an Exomiser analysis on a single sample")
 public final class AnalyseCommand implements ExomiserCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyseCommand.class);
