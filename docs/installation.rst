@@ -211,7 +211,9 @@ After downloading and extracting the data files, configure
 ``application.properties`` as described in the Linux section above.
 
 Given the nature of how Homebrew manages the application, you might want to consider
-installing the data in a separate data directory (see :ref:`data-directory`).
+installing the data in a separate data directory (see :ref:`data-directory`) and
+providing the variables needed in the ``application.properties`` via environment
+variables (see :ref:`overriding-settings`).
 
 .. _data-directory:
 
@@ -269,6 +271,7 @@ For both assemblies:
     Loading an assembly not present in your data directory will cause
     Exomiser to fail.
 
+.. _overriding-settings:
 
 Optional: Overriding Settings from the Command Line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -284,8 +287,10 @@ different configurations without editing the file. For example:
       -Dexomiser.phenotype.data-version=\ |phenotype_data_version| \
       -jar exomiser-cli-\ |version|\.jar analyse --sample examples/pfeiffer-phenopacket.yml
 
-Command-line settings take priority over ``application.properties``. If you installed Exomiser
-via Homebrew, you will need to use either the JAVA_TOOL_OPTIONS environment variable e.g.
+Command-line settings take priority over ``application.properties``.
+
+If you installed Exomiser via Homebrew, you will need to do this using environment variables, either
+with the JAVA_TOOL_OPTIONS environment variable e.g.
 
 .. code-block:: bash
 
@@ -300,8 +305,8 @@ Alternatively, Exomiser will recognise exomiser-specific environment variables, 
     export EXOMISER_HG38_DATA_VERSION=2602
 
 These can be reverted using the ``unset`` command e.g. ``unset EXOMISER_HG38_DATA_VERSION`` will remove that variable
-from the environment and exomiser will not try to load that version. Note that it will still use the version from the
-``application.properties`` file if it is set there.
+from the environment and exomiser will not try to load that version. Note that Exomiser will still use the version from
+the ``application.properties`` file if it is set there.
 
 .. _remm:
 
